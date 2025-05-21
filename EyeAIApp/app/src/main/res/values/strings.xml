@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Eye AI</string>
+    <string name="depth_preview_image_description">Depth Preview Image</string>
+    <string name="allow_camera_permission_notice">Allow Camera Permissions!</string>
+    <string name="allow">Allow</string>
+    <string name="enable_flashlight">Enable Flashlight</string>
+    <string name="enable_flashlight_description">Enable Flashlight Checkbox</string>
+    <string name="switch_model_button_description">Switch Model Button</string>
+</resources>
