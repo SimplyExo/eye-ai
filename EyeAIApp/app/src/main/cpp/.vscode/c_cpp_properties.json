@@ -1,0 +1,32 @@
+{
+	"configurations": [
+		{
+			"name": "Linux",
+			"includePath": [
+				"${workspaceFolder}/**",
+				"${env:ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include"
+			],
+			"defines": ["__ANDROID_API__=35", "ANDROID_ABI=arm64-v8a"],
+			"compilerPath": "${env:ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++",
+			"cStandard": "c11",
+			"cppStandard": "c++20",
+			"intelliSenseMode": "linux-clang-x64",
+			"configurationProvider": "vector-of-bool.cmake-tools",
+			"compileCommands": "${workspaceFolder}/build/compile_commands.json"
+		}
+	],
+	"version": 4
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

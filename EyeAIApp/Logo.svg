@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="108"
+   height="108"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath20">
+      <ellipse
+         style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.395479;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         id="ellipse20"
+         cx="256"
+         cy="173.18965"
+         rx="374.38953"
+         ry="191.65923" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath21">
+      <circle
+         style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.377953;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         id="circle21"
+         cx="256"
+         cy="256"
+         r="256"
+         clip-path="url(#clipPath20)" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath22">
+      <circle
+         style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.377953;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         id="circle22"
+         cx="256"
+         cy="256"
+         r="256"
+         clip-path="url(#clipPath20)" />
+    </clipPath>
+  </defs>
+  <g
+     id="layer1">
+    <circle
+       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.377953;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="path1"
+       cx="256"
+       cy="256"
+       r="256" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       d="m 112.20951,355.94231 c 0,0 59.82379,-70.21164 144.18605,-70.21164 84.36227,0 146.73542,70.21164 146.73542,70.21164"
+       id="path2" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       d="m 112.20951,356.23075 c 0,0 59.82379,70.21168 144.18605,70.21168 84.36227,0 146.73542,-70.21168 146.73542,-70.21168"
+       id="path3" />
+    <circle
+       style="fill:#387ecd;fill-opacity:1;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="path4"
+       cx="256.39557"
+       cy="355.94229"
+       r="70.353004" />
+    <circle
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="circle6"
+       cx="256.39557"
+       cy="355.94229"
+       r="31.09687" />
+    <circle
+       style="fill:none;fill-opacity:1;stroke:#33c3c9;stroke-width:27.8804;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="circle7"
+       cx="256.39557"
+       cy="355.94229"
+       r="178.16782"
+       clip-path="url(#clipPath22)" />
+    <circle
+       style="fill:none;fill-opacity:1;stroke:#33c3c9;stroke-width:44.2688;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="circle8"
+       cx="256.39557"
+       cy="355.94229"
+       r="282.89682"
+       clip-path="url(#clipPath21)" />
+  </g>
+</svg>
