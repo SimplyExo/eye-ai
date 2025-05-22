@@ -17,7 +17,7 @@ class EyeAIApp : Application() {
 	lateinit var depthModel: DepthModel
 
 	companion object {
-		const val APP_LOG_TAG = "Depth Camera"
+		const val APP_LOG_TAG = "Eye AI"
 
 		val MODELS = arrayOf(
 			DepthModelInfo(
