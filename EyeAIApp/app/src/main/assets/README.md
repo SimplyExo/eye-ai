@@ -1,3 +1,8 @@
+# Speech Recognition: Vosk
+Documentation: <https://alphacephei.com/vosk/>
+Model source: <https://alphacephei.com/vosk/models/vosk-model-small-de-0.15.zip>
+
+
 # Depth Estimation Models
 
 ## MiDaS 2.1:
