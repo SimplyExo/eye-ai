@@ -10,18 +10,30 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 
-/** Helper class that manages all app permissions, for now only camera permissions */
+/** Helper class that manages all app permissions: camera and microphone for now */
 class PermissionManager(
 	var activity: ComponentActivity,
-	onCameraPermissionResult: (isGranted: Boolean) -> Unit
+	onCameraPermissionResult: (isGranted: Boolean) -> Unit,
+	onMicrophonePermissionResult: (isGranted: Boolean) -> Unit
 ) {
-	private val requestPermissionLauncher =
-		activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-			onCameraPermissionResult(isGranted)
+	private val requestPermissionsLauncher =
+		activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+			onCameraPermissionResult(permissions.getOrDefault(Manifest.permission.CAMERA, false))
+			onMicrophonePermissionResult(
+				permissions.getOrDefault(
+					Manifest.permission.RECORD_AUDIO,
+					false
+				)
+			)
 		}
 
-	fun requestCameraPermission() {
-		requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+	fun requestPermissions() {
+		requestPermissionsLauncher.launch(
+			arrayOf(
+				Manifest.permission.CAMERA,
+				Manifest.permission.RECORD_AUDIO
+			)
+		)
 	}
 
 	fun isCameraPermissionGranted(): Boolean {
@@ -29,7 +41,12 @@ class PermissionManager(
 			PackageManager.PERMISSION_GRANTED
 	}
 
-	fun openCameraPermissionSettings() {
+	fun isMicrophonePermissionGranted(): Boolean {
+		return ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) ==
+			PackageManager.PERMISSION_GRANTED
+	}
+
+	fun openAppPermissionSettings() {
 		val intent =
 			Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
 				data =
