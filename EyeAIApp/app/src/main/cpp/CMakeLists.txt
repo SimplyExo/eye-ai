@@ -25,7 +25,7 @@ add_library(
 
 target_compile_features(NativeLib PUBLIC cxx_std_20)
 
-target_include_directories(NativeLib PUBLIC
+target_include_directories(NativeLib PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/src"
 
 	${THIRD_PARTY_INCLUDE_DIRS}

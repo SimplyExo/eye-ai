@@ -118,12 +118,23 @@ class MainActivity : ComponentActivity() {
 		if (eyeAIApp().cameraManager.cameraPreview == null && cameraPermissionGranted) initCamera()
 
 		eyeAIApp().voskModel.setPaused(false)
+
+		NativeLib.enableSpatialAudio()
+		NativeLib.updateSpatialAudio(
+			0.5f,
+			440.0f,
+			0.0f,
+			0.0f,
+			0.0f
+		)
 	}
 
 	override fun onPause() {
 		super.onPause()
 
 		eyeAIApp().voskModel.setPaused(false)
+
+		NativeLib.disableSpatialAudio()
 	}
 
 	private fun onCameraPermissionResult(isGranted: Boolean) {

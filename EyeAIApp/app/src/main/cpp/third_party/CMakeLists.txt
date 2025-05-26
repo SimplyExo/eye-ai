@@ -1,3 +1,14 @@
+include(FetchContent)
+
+# OpenAL Soft
+set(ALSOFT_EXAMPLES OFF CACHE BOOL "Disable examples")
+set(ALSOFT_UTILS OFF CACHE BOOL "Disable utils")
+FetchContent_Declare(
+	openal_soft
+	GIT_REPOSITORY https://github.com/kcat/openal-soft.git
+	GIT_TAG 1.24.3
+)
+FetchContent_MakeAvailable(openal_soft)
 
 # LiteRT (TFLite)
 set(LITERT_INCLUDE_DIRS
@@ -23,5 +34,6 @@ set(THIRD_PARTY_LIBS
 	${LITERT_LIB}
 	${LITERT_GPU_LIB}
 	${ONNXRUNTIME_LIB}
+	OpenAL
 	PARENT_SCOPE
 )

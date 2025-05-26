@@ -1,8 +1,10 @@
 #include <android/log.h>
 #include <jni.h>
 #include <memory>
+#include <vector>
 
 #include "DepthEstimation.hpp"
+#include "audio/SpatialAudioEngine.hpp"
 #include "onnx/OnnxRuntime.hpp"
 #include "tflite/TfLiteRuntime.hpp"
 #include "utils/ImageUtils.hpp"
@@ -15,6 +17,8 @@
 static std::unique_ptr<TfLiteRuntime> depth_estimation_tflite_runtime = nullptr;
 
 static std::unique_ptr<OnnxRuntime> depth_estimation_onnx_runtime = nullptr;
+
+static std::unique_ptr<SpatialAudioEngine> spatial_audio_engine = nullptr;
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 // NOLINTBEGIN(readability-identifier-naming,
@@ -240,6 +244,47 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatCameraFrame(
 	return env->NewStringUTF(
 		get_last_camera_profiling_frame_formatted().c_str()
 	);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_enableSpatialAudio(
+	JNIEnv* /*env*/,
+	jobject /*this*/
+) {
+	spatial_audio_engine = std::make_unique<SpatialAudioEngine>();
+	spatial_audio_engine->start();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_disableSpatialAudio(
+	JNIEnv* /*env*/,
+	jobject /*this*/
+) {
+	if (spatial_audio_engine) {
+		spatial_audio_engine->stop();
+		spatial_audio_engine.reset();
+	}
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_updateSpatialAudio(
+	JNIEnv* /*env*/,
+	jobject /*this*/,
+	jfloat amplitude,
+	jfloat frequency,
+	jfloat position_x,
+	jfloat position_y,
+	jfloat position_z
+) {
+	if (spatial_audio_engine == nullptr) {
+		LOG_ERROR("SpatialAudioEngine not initialized!");
+		return;
+	}
+
+	std::vector<OscillatorInfo> oscillators{
+		OscillatorInfo(amplitude, frequency, position_x, position_y, position_z)
+	};
+	LOG_ON_EXCEPTION(spatial_audio_engine->update_oscillators(oscillators);)
 }
 
 // NOLINTEND(readability-identifier-naming,

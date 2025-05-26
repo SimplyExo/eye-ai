@@ -61,6 +61,19 @@ object NativeLib {
 
 	external fun imageBytesToArgbIntArray(imageBytes: ByteArray, outIntArray: IntArray)
 
+	external fun enableSpatialAudio()
+
+	external fun disableSpatialAudio()
+
+	/** TODO: add proper interface for kotlin to take Array<OscillatorInfo> as an argument instead */
+	external fun updateSpatialAudio(
+		amplitude: Float,
+		frequency: Float,
+		positionX: Float,
+		positionY: Float,
+		positionZ: Float,
+	)
+
 	/** @param input values should be between 0.0f and 1.0f */
 	fun depthColorMap(input: FloatArray, inputImageSize: Size): Bitmap {
 		if (input.size != inputImageSize.width * inputImageSize.height) {
