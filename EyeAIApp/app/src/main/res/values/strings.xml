@@ -8,4 +8,7 @@
     <string name="switch_model_button_description">Switch Model Button</string>
     <string name="speech_recognition_partial_result_description">Partial speech recognition results</string>
     <string name="speech_recognition_final_result_description">Final speech recognition results</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="settings_button_description">Settings button</string>
+    <string name="depth_model_setting">depth_model</string>
 </resources>

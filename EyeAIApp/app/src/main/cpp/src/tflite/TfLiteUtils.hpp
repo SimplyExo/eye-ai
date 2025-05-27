@@ -23,10 +23,10 @@ class TfLiteStatusException : public std::runtime_error {
 		TfLiteStatus status,
 		std::string_view context
 	)
-		: status(status), context(context),
-		  std::runtime_error(
+		: std::runtime_error(
 			  std::format("{}: {}", context, format_tflite_status(status))
-		  ) {}
+		  ),
+		  context(context), status(status) {}
 
 	std::string_view context;
 	TfLiteStatus status;
@@ -299,18 +299,4 @@ std::string_view format_tflite_status(TfLiteStatus status) {
 	default:
 		return "unknown";
 	}
-}
-
-/// prints an error if status is != kTfLiteOk
-inline static void check_tflite_status(
-	TfLiteStatus status,
-	std::string_view tflite_function_name
-) {
-	if (status == kTfLiteOk)
-		return;
-
-	LOG_ERROR(
-		"{} returned {} during", tflite_function_name,
-		format_tflite_status(status)
-	);
 }

@@ -13,14 +13,14 @@ static std::string padding_tabs(size_t amount) {
 }
 
 static std::string format_duration_millis(profile_clock::duration duration) {
-	auto duration_micros =
+	const auto duration_micros =
 		std::chrono::duration_cast<std::chrono::microseconds>(duration);
-	return std::format("{:.2f} ms", (float)duration_micros.count() / 1000.0f);
+	return std::format("{:.2f} ms", static_cast<float>(duration_micros.count()) / 1000.0f);
 }
 
 ProfileScope::ProfileScope(std::string_view name, ProfilingFrame& frame)
-	: name(name), frame(frame), start(profile_clock::now()),
-	  scope_depth(frame.start_scope()) {}
+	: name(name), scope_depth(frame.start_scope()), frame(frame),
+	  start(profile_clock::now()) {}
 
 ProfileScope::~ProfileScope() noexcept {
 	auto duration = profile_clock::now() - start;
@@ -38,7 +38,7 @@ int ProfilingFrame::start_scope() noexcept {
 	return current_frame_scope_depth++;
 }
 
-void ProfilingFrame::end_scope(ProfileScopeRecord scope) noexcept {
+void ProfilingFrame::end_scope(const ProfileScopeRecord& scope) noexcept {
 	// NOLINTBEGIN(bugprone-empty-catch)
 	try {
 		profile_scopes.push_back(scope);
@@ -61,9 +61,8 @@ std::string ProfilingFrame::finish() {
 	}
 	auto frame_duration = end - start;
 	auto frame_duration_ms =
-		(float
-		)std::chrono::duration_cast<std::chrono::microseconds>(frame_duration)
-			.count() /
+		static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(frame_duration)
+			.count()) /
 		1000.0f;
 	auto frame_fps = 1.0 / (frame_duration_ms / 1000.0f);
 	auto formatted = std::format(
@@ -79,7 +78,7 @@ std::string ProfilingFrame::finish() {
 }
 
 ProfilingFrame& get_depth_profiling_frame() {
-	static ProfilingFrame depth_profiling_frame = ProfilingFrame("Depth");
+	static auto depth_profiling_frame = ProfilingFrame("Depth");
 	return depth_profiling_frame;
 }
 std::string& get_last_depth_profiling_frame_formatted() {
@@ -87,7 +86,7 @@ std::string& get_last_depth_profiling_frame_formatted() {
 	return last_depth_profiling_frame_formatted;
 }
 ProfilingFrame& get_camera_profiling_frame() {
-	static ProfilingFrame camera_profiling_frame = ProfilingFrame("Camera");
+	static auto camera_profiling_frame = ProfilingFrame("Camera");
 	return camera_profiling_frame;
 }
 std::string& get_last_camera_profiling_frame_formatted() {

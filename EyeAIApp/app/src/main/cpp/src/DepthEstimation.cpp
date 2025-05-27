@@ -228,6 +228,6 @@ constexpr std::array<int, INFERNO_COLOR_COUNT> INFERNO_COLORS = {
 
 int inferno_depth_colormap(float relative_depth) {
 	relative_depth = std::clamp(relative_depth, 0.0f, 1.0f);
-	auto index = (size_t)(relative_depth * (INFERNO_COLOR_COUNT - 1));
+	auto index = static_cast<size_t>(relative_depth * (INFERNO_COLOR_COUNT - 1));
 	return INFERNO_COLORS[index];
 }

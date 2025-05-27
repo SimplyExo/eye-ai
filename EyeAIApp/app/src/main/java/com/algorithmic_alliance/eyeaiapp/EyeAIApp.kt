@@ -13,18 +13,22 @@ import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
  */
 class EyeAIApp : Application() {
 	var cameraManager = CameraManager()
-	var selectedModelIndex = 0
+	var selectedDepthModelName = DEFAULT_DEPTH_MODEL_NAME
 		private set
 	lateinit var depthModel: DepthModel
+		private set
 	lateinit var voskModel: VoskModel
 
 	companion object {
 		const val APP_LOG_TAG = "Eye AI"
 
-		val MODELS =
+		const val DEFAULT_DEPTH_MODEL_NAME = "MiDaS V2.1"
+
+		/** make sure to change res/values/arrays.xml 'depth_models' array as well! */
+		val DEPTH_MODELS =
 			arrayOf(
 				DepthModelInfo(
-					"MiDaS V2.1",
+					DEFAULT_DEPTH_MODEL_NAME,
 					"midas_v2_1_256x256.tflite",
 					false,
 					256,
@@ -53,19 +57,25 @@ class EyeAIApp : Application() {
 	override fun onCreate() {
 		super.onCreate()
 
-		depthModel = MODELS[selectedModelIndex].createDepthModel(this)!!
+		depthModel = findDepthModelInfo(selectedDepthModelName).createDepthModel(this)!!
 
 		voskModel = VoskModel(this, "model-de")
 	}
 
-	fun switchModel(newModelIndex: Int) {
-		selectedModelIndex = newModelIndex
-		val newDepthModel = MODELS[selectedModelIndex].createDepthModel(this)
+	fun switchDepthModel(modelName: String) {
+		if (selectedDepthModelName == modelName) return
+
+		selectedDepthModelName = modelName
+		val newDepthModel = findDepthModelInfo(modelName).createDepthModel(this)
 		if (newDepthModel != null) depthModel = newDepthModel
 		else
 			Log.e(
 				APP_LOG_TAG,
-				"Failed to switch from model ${depthModel.getName()} to new model ${MODELS[newModelIndex].name}"
+				"Failed to switch from model ${depthModel.getName()} to new model $modelName"
 			)
+	}
+
+	private fun findDepthModelInfo(modelName: String): DepthModelInfo {
+		return DEPTH_MODELS.find { it.name == modelName } ?: DEPTH_MODELS[0]
 	}
 }

@@ -40,7 +40,7 @@ class ProfilingFrame {
 	/// returns the scopes depth, should always include calling end_scope after
 	int start_scope() noexcept;
 
-	void end_scope(ProfileScopeRecord scope) noexcept;
+	void end_scope(const ProfileScopeRecord& scope) noexcept;
 
 	/// returns formatted info of the finished frame and clears all contents to
 	/// start a new frame
@@ -72,7 +72,7 @@ std::string& get_last_camera_profiling_frame_formatted();
 		name, get_camera_profiling_frame()                                     \
 	);
 
-#ifndef __FUNCTION_NAME__
+#ifndef FUNCTION_NAME
 #ifdef WIN32 // WINDOWS
 #define FUNCTION_NAME() __FUNCTION__
 #else //*NIX

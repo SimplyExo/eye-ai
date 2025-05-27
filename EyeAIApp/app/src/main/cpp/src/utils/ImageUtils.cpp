@@ -2,7 +2,6 @@
 #include "Exceptions.hpp"
 #include "Log.hpp"
 #include "Profiling.hpp"
-#include <cstddef>
 
 void check_android_bitmap_result(int result) {
 	if (result == ANDROID_BITMAP_RESULT_SUCCESS)
