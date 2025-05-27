@@ -1,8 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp
 
+import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -13,10 +12,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AlertDialog
 import androidx.camera.view.PreviewView
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -32,7 +30,6 @@ class MainActivity : ComponentActivity() {
 	private var cameraPermissionNotice: LinearLayout? = null
 	private var allowCameraPermission: Button? = null
 	private var enableFlashlightCheckbox: CheckBox? = null
-	private var switchModelButton: Button? = null
 
 	private var depthPreviewImage: ImageView? = null
 
@@ -66,29 +63,13 @@ class MainActivity : ComponentActivity() {
 			enableFlashlightCheckbox!!.isChecked = flashlightOn
 		}
 
-		switchModelButton = findViewById(R.id.switch_model_button)
-		switchModelButton!!.text = EyeAIApp.MODELS[eyeAIApp().selectedModelIndex].name
-		switchModelButton!!.setOnClickListener {
-			val modelNames = EyeAIApp.MODELS.map { it.name }.toTypedArray()
-
-			MaterialAlertDialogBuilder(this)
-				.setTitle("Select Depth Model")
-				.setSingleChoiceItems(modelNames, eyeAIApp().selectedModelIndex) { dialog, _ ->
-					val selectedPosition = (dialog as AlertDialog).listView.checkedItemPosition
-					if (selectedPosition >= 0) {
-						eyeAIApp().switchModel(selectedPosition)
-						switchModelButton!!.text =
-							EyeAIApp.MODELS[eyeAIApp().selectedModelIndex].name
-					}
-
-					// close popup after small delay
-					Handler(Looper.getMainLooper()).postDelayed({ dialog.dismiss() }, 200)
-				}
-				.show()
-		}
-
 		speechRecognitionPartialResultText = findViewById(R.id.speech_recognition_partial_output)
 		speechRecognitionFinalResultText = findViewById(R.id.speech_recognition_final_output)
+
+		findViewById<FloatingActionButton>(R.id.settings_button).setOnClickListener {
+			startActivity(Intent(this, SettingsActivity::class.java))
+			overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+		}
 
 		cameraFrameAnalyzer =
 			CameraFrameAnalyzer(eyeAIApp(), depthPreviewImage!!, performanceText!!)
@@ -106,10 +87,18 @@ class MainActivity : ComponentActivity() {
 				.init(::onPartialSpeechRecognitionResult, ::onFinalSpeechRecognitionResult)
 
 		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+		eyeAIApp().switchDepthModel(
+			Settings.getDepthModel(this)
+		)
 	}
 
 	override fun onResume() {
 		super.onResume()
+
+		eyeAIApp().switchDepthModel(
+			Settings.getDepthModel(this)
+		)
 
 		enableFlashlightCheckbox!!.isChecked = eyeAIApp().cameraManager.isCameraFlashlightOn()
 

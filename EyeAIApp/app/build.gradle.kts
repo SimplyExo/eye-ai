@@ -57,6 +57,7 @@ dependencies {
 	implementation(libs.androidx.ui.graphics)
 	implementation(libs.androidx.ui.tooling.preview)
 	implementation(libs.androidx.material3)
+	implementation(libs.androidx.preference.ktx)
 
 	// Camera
 	implementation(libs.androidx.camera.camera2)
@@ -67,6 +68,8 @@ dependencies {
 
 	// Vosk
 	implementation(libs.vosk)
+	implementation(libs.androidx.preference)
+	implementation(libs.androidx.appcompat)
 
 	testImplementation(libs.junit)
 	androidTestImplementation(libs.androidx.junit)

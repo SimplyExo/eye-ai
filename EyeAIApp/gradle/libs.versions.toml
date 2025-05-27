@@ -9,9 +9,12 @@ lifecycleRuntimeKtx = "2.9.0"
 activityCompose = "1.10.1"
 composeBom = "2025.05.01"
 cameraX = "1.4.2"
+preferenceKtx = "1.2.1"
 constraintlayout = "2.2.1"
 material = "1.12.0"
 vosk = "0.3.47"
+preference = "1.2.1"
+appcompat = "1.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -29,6 +32,8 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferenceKtx" }
+
 # Camera
 androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "cameraX" }
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "cameraX" }
@@ -37,6 +42,8 @@ androidx-camera-extensions = { group = "androidx.camera", name = "camera-extensi
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 # Vosk
 vosk = { group = "com.alphacephei", name = "vosk-android", version.ref = "vosk" }
+androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
