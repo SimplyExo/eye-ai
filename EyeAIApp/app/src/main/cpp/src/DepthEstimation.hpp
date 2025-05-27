@@ -2,7 +2,6 @@
 
 #include "onnx/OnnxRuntime.hpp"
 #include "tflite/TfLiteRuntime.hpp"
-#include "utils/Exceptions.hpp"
 #include <span>
 
 constexpr size_t RGB_CHANNELS = 3;

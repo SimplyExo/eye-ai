@@ -1,0 +1,11 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:title="Depth Estimation">
+        <ListPreference
+            app:key="@string/depth_model_setting"
+            app:title="Depth Estimation Model"
+            app:summary="%s"
+            app:entries="@array/depth_models"
+            app:entryValues="@array/depth_models"
+            app:defaultValue="MiDaS V2.1" />
+    </PreferenceCategory>
+</PreferenceScreen>

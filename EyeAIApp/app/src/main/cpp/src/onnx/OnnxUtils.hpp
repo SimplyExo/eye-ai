@@ -29,13 +29,13 @@ static void throw_on_onnx_status(Ort::Status&& status) {
 class OnnxInvalidInputCount : public std::runtime_error {
   public:
 	explicit OnnxInvalidInputCount(size_t actual_count)
-		: actual_count(actual_count),
-		  std::runtime_error(
+		: std::runtime_error(
 			  std::format(
 				  "invalid input count of {}, should be 1",
 				  actual_count
 			  )
-		  ) {}
+		  ),
+		  actual_count(actual_count) {}
 
 	size_t actual_count;
 };
@@ -43,13 +43,13 @@ class OnnxInvalidInputCount : public std::runtime_error {
 class OnnxInvalidOutputCount : public std::runtime_error {
   public:
 	explicit OnnxInvalidOutputCount(size_t actual_count)
-		: actual_count(actual_count),
-		  std::runtime_error(
+		: std::runtime_error(
 			  std::format(
 				  "invalid output count of {}, should be 1",
 				  actual_count
 			  )
-		  ) {}
+		  ),
+		  actual_count(actual_count) {}
 
 	size_t actual_count;
 };
