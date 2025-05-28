@@ -4,10 +4,19 @@
 #include "tflite/c/c_api.h" // IWYU pragma: export
 #include "tflite/c/c_api_types.h"
 #include "tflite/c/common.h"
+#include "tflite_profiler.h"
 #include "utils/Profiling.hpp"
 #include <cassert>
+#include <chrono>
+#include <optional>
 #include <span>
+#include <string>
 #include <string_view>
+
+struct TfLiteProfilerEntry {
+	std::string name;
+	std::chrono::microseconds duration;
+};
 
 /** Helper class that wraps the tflite c api */
 class TfLiteRuntime {
@@ -18,11 +27,17 @@ class TfLiteRuntime {
 	/// can be null if GPU delegates are not supported on this device
 	TfLiteDelegate* gpu_delegate = nullptr;
 
+	/// data is `this` pointer of TfLiteRuntime
+	std::optional<TfLiteTelemetryProfilerStruct> telemetry_profiler =
+		std::nullopt;
+	std::vector<TfLiteProfilerEntry> current_invoke_profiler_entries;
+
   public:
 	explicit TfLiteRuntime(
 		std::span<const int8_t> model_data,
 		std::string_view gpu_delegate_serialization_dir,
-		std::string_view model_token
+		std::string_view model_token,
+		bool enable_profiling
 	);
 	~TfLiteRuntime();
 
@@ -32,7 +47,11 @@ class TfLiteRuntime {
 	void operator=(const TfLiteRuntime&) = delete;
 
 	template<typename I, typename O>
-	void run_inference(std::span<const I> input, std::span<O> output) {
+	void run_inference(
+		std::span<const I> input,
+		std::span<O> output,
+		std::vector<TfLiteProfilerEntry>& out_profiler_entries
+	) {
 		PROFILE_DEPTH_FUNCTION()
 
 		load_input<I>(input);
@@ -45,6 +64,9 @@ class TfLiteRuntime {
 			);
 		}
 		read_output<O>(output);
+
+		out_profiler_entries = std::move(current_invoke_profiler_entries);
+		current_invoke_profiler_entries.clear();
 	}
 
   private:
