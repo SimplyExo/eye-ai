@@ -6,15 +6,14 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
-import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.camera.view.PreviewView
-import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -29,7 +28,7 @@ class MainActivity : ComponentActivity() {
 	private var cameraPreviewView: PreviewView? = null
 	private var cameraPermissionNotice: LinearLayout? = null
 	private var allowCameraPermission: Button? = null
-	private var enableFlashlightCheckbox: CheckBox? = null
+	private var flashlightButton: FloatingActionButton? = null
 
 	private var depthPreviewImage: ImageView? = null
 
@@ -56,11 +55,11 @@ class MainActivity : ComponentActivity() {
 		allowCameraPermission = findViewById(R.id.allow_camera_permission_btn)
 		allowCameraPermission!!.setOnClickListener { permissionManager.openAppPermissionSettings() }
 
-		enableFlashlightCheckbox = findViewById(R.id.enable_flashlight)
-		enableFlashlightCheckbox!!.isChecked = eyeAIApp().cameraManager.isCameraFlashlightOn()
-		enableFlashlightCheckbox!!.setOnClickListener {
+		flashlightButton = findViewById(R.id.flashlight_button)
+		updateFlashlightButtonTint(eyeAIApp().cameraManager.isCameraFlashlightOn())
+		flashlightButton!!.setOnClickListener {
 			val flashlightOn = eyeAIApp().cameraManager.toggleCameraFlashlight()
-			enableFlashlightCheckbox!!.isChecked = flashlightOn
+			updateFlashlightButtonTint(flashlightOn)
 		}
 
 		speechRecognitionPartialResultText = findViewById(R.id.speech_recognition_partial_output)
@@ -96,7 +95,7 @@ class MainActivity : ComponentActivity() {
 
 		eyeAIApp().updateSettings()
 
-		enableFlashlightCheckbox!!.isChecked = eyeAIApp().cameraManager.isCameraFlashlightOn()
+		updateFlashlightButtonTint(eyeAIApp().cameraManager.isCameraFlashlightOn())
 
 		val cameraPermissionGranted = permissionManager.isCameraPermissionGranted()
 
@@ -178,5 +177,15 @@ class MainActivity : ComponentActivity() {
 		} else {
 			cameraPermissionNotice!!.visibility = View.VISIBLE
 		}
+	}
+
+	private fun updateFlashlightButtonTint(isFlashlightOn: Boolean) {
+		flashlightButton?.backgroundTintList = getColorStateList(
+			if (isFlashlightOn) {
+				R.color.flashlight_button_on
+			} else {
+				R.color.flashlight_button_off
+			}
+		)
 	}
 }
