@@ -8,4 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="final_speech_recognition">#00ff00</color>
+    <color name="flashlight_button_off">#FFFFFFFF</color>
+    <color name="flashlight_button_on">#FFFF00</color>
 </resources>

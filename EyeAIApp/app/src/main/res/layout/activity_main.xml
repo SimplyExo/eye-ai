@@ -115,39 +115,30 @@
         </FrameLayout>
 
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginHorizontal="5dp"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:fillViewport="true">
 
-            <CheckBox
-                android:id="@+id/enable_flashlight"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:layout_marginVertical="5dp"
-                android:buttonTint="@color/white"
-                android:contentDescription="@string/enable_flashlight_description"
-                android:text="@string/enable_flashlight"
-                android:textColor="@color/white" />
-
-            <ScrollView
+            <TextView
+                android:id="@+id/performance_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fillViewport="true">
+                android:text=""
+                android:textColor="@color/white" />
 
-                <TextView
-                    android:id="@+id/performance_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text=""
-                    android:textColor="@color/white" />
+        </ScrollView>
 
-            </ScrollView>
-
-        </LinearLayout>
-
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/flashlight_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/thunder"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="110dp"
+            android:layout_marginBottom="30dp" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/settings_button"
@@ -159,6 +150,7 @@
             android:layout_margin="30dp"
             android:backgroundTint="@color/white"
             android:contentDescription="@string/settings_button_description"
+            android:foregroundTint="@color/white"
             android:src="@android:drawable/ic_menu_preferences" />
 
     </RelativeLayout>
