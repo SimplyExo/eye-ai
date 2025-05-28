@@ -9,13 +9,16 @@ void run_depth_estimation(
 	std::span<float> input,
 	std::span<float> output,
 	std::array<float, RGB_CHANNELS> mean,
-	std::array<float, RGB_CHANNELS> stddev
+	std::array<float, RGB_CHANNELS> stddev,
+	std::vector<TfLiteProfilerEntry>& out_profiler_entries
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
 	normalize_rgb(input, mean, stddev);
 
-	tflite_runtime.run_inference<float, float>(input, output);
+	tflite_runtime.run_inference<float, float>(
+		input, output, out_profiler_entries
+	);
 
 	min_max_scaling(output);
 }
@@ -228,6 +231,7 @@ constexpr std::array<int, INFERNO_COLOR_COUNT> INFERNO_COLORS = {
 
 int inferno_depth_colormap(float relative_depth) {
 	relative_depth = std::clamp(relative_depth, 0.0f, 1.0f);
-	auto index = static_cast<size_t>(relative_depth * (INFERNO_COLOR_COUNT - 1));
+	auto index =
+		static_cast<size_t>(relative_depth * (INFERNO_COLOR_COUNT - 1));
 	return INFERNO_COLORS[index];
 }

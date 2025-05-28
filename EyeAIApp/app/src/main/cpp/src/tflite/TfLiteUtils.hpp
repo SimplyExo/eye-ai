@@ -1,6 +1,5 @@
 #pragma once
 
-#include "utils/Log.hpp"
 #include "utils/Profiling.hpp"
 #include <cassert>
 #include <span>
@@ -40,12 +39,10 @@ throw_on_tflite_status(TfLiteStatus status, std::string_view context) {
 class UnsupportedTypeQuantizationException : public std::runtime_error {
   public:
 	explicit UnsupportedTypeQuantizationException(TfLiteType unsupported_type)
-		: std::runtime_error(
-			  std::format(
-				  "unsupported quantization type: {}",
-				  format_tflite_type(unsupported_type)
-			  )
-		  ) {}
+		: std::runtime_error(std::format(
+			  "unsupported quantization type: {}",
+			  format_tflite_type(unsupported_type)
+		  )) {}
 };
 
 class UnsupportedAsymmetricQuantizationException : public std::exception {
@@ -68,13 +65,11 @@ class WrongTypeException : public std::runtime_error {
 		TfLiteType expected_type,
 		TfLiteType provided_type
 	)
-		: std::runtime_error(
-			  std::format(
-				  "invalid type of {}, expected {}",
-				  format_tflite_type(provided_type),
-				  format_tflite_type(expected_type)
-			  )
-		  ) {}
+		: std::runtime_error(std::format(
+			  "invalid type of {}, expected {}",
+			  format_tflite_type(provided_type),
+			  format_tflite_type(expected_type)
+		  )) {}
 };
 
 template<typename T>
@@ -93,7 +88,7 @@ inline static void dequantize(
 	const TfLiteAffineQuantization& quantization
 );
 
-inline static TfLiteDelegate* create_gpu_delegate(
+static TfLiteDelegate* create_gpu_delegate(
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token
 ) {
@@ -101,7 +96,7 @@ inline static TfLiteDelegate* create_gpu_delegate(
 
 	TfLiteGpuDelegateOptionsV2 gpu_delegate_options =
 		TfLiteGpuDelegateOptionsV2Default();
-	gpu_delegate_options.is_precision_loss_allowed = (int32_t)true;
+	gpu_delegate_options.is_precision_loss_allowed = (int32_t) true;
 	gpu_delegate_options.inference_preference =
 		TFLITE_GPU_INFERENCE_PREFERENCE_FAST_SINGLE_ANSWER;
 	gpu_delegate_options.experimental_flags |= TfLiteGpuExperimentalFlags::
@@ -111,6 +106,9 @@ inline static TfLiteDelegate* create_gpu_delegate(
 	gpu_delegate_options.model_token = model_token.data();
 
 	return TfLiteGpuDelegateV2Create(&gpu_delegate_options);
+}
+static void delete_gpu_delegate(TfLiteDelegate* delegate) {
+	TfLiteGpuDelegateV2Delete(delegate);
 }
 
 template<>
@@ -138,9 +136,9 @@ void quantize<float>(
 
 	for (size_t i = 0; i < values.size(); i++) {
 		static_assert(sizeof(std::byte) == sizeof(uint8_t));
-		quantized_values[i] =
-			(std::byte)((uint8_t)(values[i] / quantization_scale) +
-						quantization_zero_point);
+		quantized_values[i] = (std::byte)(
+			(uint8_t)(values[i] / quantization_scale) + quantization_zero_point
+		);
 	}
 }
 

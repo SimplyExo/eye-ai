@@ -1,9 +1,10 @@
 #include "TfLiteRuntime.hpp"
 #include "tflite/TfLiteUtils.hpp"
+#include "utils/Log.hpp"
 #include "utils/Profiling.hpp"
 
-#include "tflite/c/common.h"
-#include <cassert>
+#include <tflite/c/c_api_experimental.h>
+#include <tflite/c/common.h>
 
 static void
 tflite_error_callback(void* /*user_data*/, const char* format, va_list args);
@@ -13,7 +14,8 @@ tflite_error_callback(void* /*user_data*/, const char* format, va_list args);
 TfLiteRuntime::TfLiteRuntime(
 	std::span<const int8_t> model_data,
 	std::string_view gpu_delegate_serialization_dir,
-	std::string_view model_token
+	std::string_view model_token,
+	bool enable_profiling
 )
 	: model(nullptr), interpreter(nullptr), interpreter_options(nullptr),
 	  gpu_delegate(nullptr) {
@@ -27,6 +29,48 @@ TfLiteRuntime::TfLiteRuntime(
 		interpreter_options, tflite_error_callback, nullptr
 	);
 	TfLiteInterpreterOptionsSetNumThreads(interpreter_options, 4);
+
+	if (enable_profiling) {
+		telemetry_profiler = TfLiteTelemetryProfilerStruct{
+			.data = this,
+			.ReportTelemetryEvent =
+				[](struct TfLiteTelemetryProfilerStruct* profiler,
+				   const char* event_name, uint64_t status) {
+					/* unused */
+				},
+			.ReportTelemetryOpEvent =
+				[](struct TfLiteTelemetryProfilerStruct* profiler,
+				   const char* event_name, int64_t op_idx, int64_t subgraph_idx,
+				   uint64_t status) { /* not used */ },
+			.ReportSettings = [](struct TfLiteTelemetryProfilerStruct* profiler,
+								 const char* setting_name,
+								 const TfLiteTelemetrySettings* settings
+							  ) { /* unused */ },
+			.ReportBeginOpInvokeEvent =
+				[](struct TfLiteTelemetryProfilerStruct* profiler,
+				   const char* op_name, int64_t op_idx,
+				   int64_t subgraph_idx) -> uint32_t {
+				/* unused */
+				return 0;
+			},
+			.ReportEndOpInvokeEvent =
+				[](struct TfLiteTelemetryProfilerStruct* profiler,
+				   uint32_t event_handle) { /* unused */ },
+			.ReportOpInvokeEvent =
+				[](struct TfLiteTelemetryProfilerStruct* profiler,
+				   const char* op_name, uint64_t elapsed_time, int64_t op_idx,
+				   int64_t subgraph_idx) {
+					auto* runtime =
+						reinterpret_cast<TfLiteRuntime*>(profiler->data);
+					runtime->current_invoke_profiler_entries.emplace_back(
+						op_name, std::chrono::microseconds(elapsed_time)
+					);
+				},
+		};
+		TfLiteInterpreterOptionsSetTelemetryProfiler(
+			interpreter_options, &telemetry_profiler.value()
+		);
+	}
 
 	gpu_delegate =
 		create_gpu_delegate(gpu_delegate_serialization_dir, model_token);
@@ -47,7 +91,7 @@ TfLiteRuntime::~TfLiteRuntime() {
 
 	TfLiteInterpreterDelete(interpreter);
 	if (gpu_delegate != nullptr)
-		TfLiteGpuDelegateV2Delete(gpu_delegate);
+		delete_gpu_delegate(gpu_delegate);
 	TfLiteInterpreterOptionsDelete(interpreter_options);
 	TfLiteModelDelete(model);
 }
