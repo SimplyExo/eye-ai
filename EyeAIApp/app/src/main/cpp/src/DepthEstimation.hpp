@@ -11,7 +11,8 @@ void run_depth_estimation(
 	std::span<float> input,
 	std::span<float> output,
 	std::array<float, RGB_CHANNELS> mean,
-	std::array<float, RGB_CHANNELS> stddev
+	std::array<float, RGB_CHANNELS> stddev,
+	std::vector<TfLiteProfilerEntry>& out_profiler_entries
 );
 
 void run_depth_estimation(

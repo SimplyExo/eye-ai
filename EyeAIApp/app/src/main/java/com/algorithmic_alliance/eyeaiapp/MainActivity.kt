@@ -88,17 +88,13 @@ class MainActivity : ComponentActivity() {
 
 		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-		eyeAIApp().switchDepthModel(
-			Settings.getDepthModel(this)
-		)
+		eyeAIApp().updateSettings()
 	}
 
 	override fun onResume() {
 		super.onResume()
 
-		eyeAIApp().switchDepthModel(
-			Settings.getDepthModel(this)
-		)
+		eyeAIApp().updateSettings()
 
 		enableFlashlightCheckbox!!.isChecked = eyeAIApp().cameraManager.isCameraFlashlightOn()
 

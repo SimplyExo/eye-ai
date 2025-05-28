@@ -22,11 +22,13 @@ object NativeLib {
 	external fun initDepthTfLiteRuntime(
 		model: ByteArray,
 		gpuDelegateSerializationDir: String,
-		modelToken: String
+		modelToken: String,
+		enableProfiling: Boolean
 	)
 
 	external fun shutdownDepthTfLiteRuntime()
 
+	/** @return formatted list of profiler events and their duration, only if enableProfiling was true when calling [initDepthTfLiteRuntime] */
 	external fun runDepthTfLiteInference(
 		input: FloatArray,
 		output: FloatArray,
@@ -36,7 +38,7 @@ object NativeLib {
 		stddevR: Float,
 		stddevG: Float,
 		stddevB: Float
-	)
+	): String?
 
 	external fun initDepthOnnxRuntime(model: ByteArray)
 

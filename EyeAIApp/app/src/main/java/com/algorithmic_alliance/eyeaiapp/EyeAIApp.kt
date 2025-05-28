@@ -13,11 +13,12 @@ import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
  */
 class EyeAIApp : Application() {
 	var cameraManager = CameraManager()
-	var selectedDepthModelName = DEFAULT_DEPTH_MODEL_NAME
+	lateinit var settings: Settings
 		private set
 	lateinit var depthModel: DepthModel
 		private set
 	lateinit var voskModel: VoskModel
+		private set
 
 	companion object {
 		const val APP_LOG_TAG = "Eye AI"
@@ -57,16 +58,30 @@ class EyeAIApp : Application() {
 	override fun onCreate() {
 		super.onCreate()
 
-		depthModel = findDepthModelInfo(selectedDepthModelName).createDepthModel(this)!!
+		settings = Settings(this)
+
+		depthModel =
+			findDepthModelInfo(settings.depthModel).createDepthModel(
+				this,
+				settings.profilingEnabled
+			)!!
 
 		voskModel = VoskModel(this, "model-de")
 	}
 
-	fun switchDepthModel(modelName: String) {
-		if (selectedDepthModelName == modelName) return
+	fun updateSettings() {
+		val newSettings = Settings(this)
 
-		selectedDepthModelName = modelName
-		val newDepthModel = findDepthModelInfo(modelName).createDepthModel(this)
+		if (settings.depthModel != newSettings.depthModel || settings.profilingEnabled != newSettings.profilingEnabled) {
+			switchDepthModel(newSettings.depthModel, newSettings.profilingEnabled)
+		}
+
+		settings = newSettings
+	}
+
+	private fun switchDepthModel(modelName: String, profilingEnabled: Boolean) {
+		val newDepthModel =
+			findDepthModelInfo(modelName).createDepthModel(this, profilingEnabled)
 		if (newDepthModel != null) depthModel = newDepthModel
 		else
 			Log.e(

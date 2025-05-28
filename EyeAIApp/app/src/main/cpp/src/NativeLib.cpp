@@ -30,7 +30,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthTfLiteRuntime(
 	jobject /*thiz*/,
 	jbyteArray model,
 	jstring gpu_delegate_serialization_dir,
-	jstring model_token
+	jstring model_token,
+	jboolean enable_profiling
 ) {
 
 	NativeByteArrayScope model_data(env, model);
@@ -42,7 +43,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthTfLiteRuntime(
 	LOG_ON_EXCEPTION(
 		depth_estimation_tflite_runtime = std::make_unique<TfLiteRuntime>(
 			model_data, gpu_delegate_serialization_dir_string,
-			model_token_string
+			model_token_string, enable_profiling
 		);
 	)
 }
@@ -55,7 +56,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_shutdownDepthTfLiteRuntime(
 	depth_estimation_tflite_runtime.reset(nullptr);
 }
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" JNIEXPORT jstring JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthTfLiteInference(
 	JNIEnv* env,
 	jobject /*thiz*/,
@@ -70,7 +71,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthTfLiteInference(
 ) {
 	if (depth_estimation_tflite_runtime == nullptr) {
 		LOG_ERROR("TfLiteRuntime not initialized!");
-		return;
+		return nullptr;
 	}
 
 	NativeFloatArrayScope input_array(env, input);
@@ -79,10 +80,22 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthTfLiteInference(
 	const std::array<float, 3> mean = {mean_r, mean_g, mean_b};
 	const std::array<float, 3> stddev = {stddev_r, stddev_g, stddev_b};
 
+	std::vector<TfLiteProfilerEntry> profiler_entries;
+
 	LOG_ON_EXCEPTION(run_depth_estimation(
 						 *depth_estimation_tflite_runtime, input_array,
-						 output_array, mean, stddev
+						 output_array, mean, stddev, profiler_entries
 	);)
+
+	if (profiler_entries.empty()) {
+		return nullptr;
+	} else {
+		std::string formatted;
+		for (const auto& entry : profiler_entries)
+			formatted += std::format("{}: {}\n", entry.name, entry.duration);
+
+		return env->NewStringUTF(formatted.c_str());
+	}
 }
 
 extern "C" JNIEXPORT void JNICALL

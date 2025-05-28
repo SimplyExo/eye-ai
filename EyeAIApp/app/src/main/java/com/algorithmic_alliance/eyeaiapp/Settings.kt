@@ -1,14 +1,26 @@
 package com.algorithmic_alliance.eyeaiapp
 
-import android.app.Activity
+import android.content.Context
 import androidx.preference.PreferenceManager
 
-object Settings {
-	fun getDepthModel(activity: Activity): String {
-		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity)
-		return sharedPreferences.getString(
-			activity.getString(R.string.depth_model_setting),
+class Settings(val context: Context) {
+	private var sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+	var depthModel: String
+		private set
+
+	var profilingEnabled: Boolean
+		private set
+
+	init {
+		depthModel = sharedPreferences.getString(
+			context.getString(R.string.depth_model_setting),
 			EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
 		).toString()
+
+		profilingEnabled = sharedPreferences.getBoolean(
+			context.getString(R.string.profiling_enabled_setting),
+			false
+		)
 	}
 }
