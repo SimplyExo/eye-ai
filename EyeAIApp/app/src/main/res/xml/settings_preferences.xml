@@ -3,7 +3,7 @@
         <CheckBoxPreference
             app:key="@string/profiling_enabled_setting"
             app:title="Enable Profiling"
-            app:summary="Has a big effect on performance!"/>
+            app:summary="Has a big effect on performance!" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Depth Estimation">
@@ -14,5 +14,13 @@
             app:entries="@array/depth_models"
             app:entryValues="@array/depth_models"
             app:defaultValue="MiDaS V2.1" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Spatial Audio">
+        <CheckBoxPreference
+            app:key="@string/spatial_audio_enabled_setting"
+            app:title="Enable Spatial Audio"
+            app:summary="For now, only experimental oscillator sounds"
+            app:defaultValue="true"/>
     </PreferenceCategory>
 </PreferenceScreen>

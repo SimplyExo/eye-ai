@@ -12,6 +12,9 @@ class Settings(val context: Context) {
 	var profilingEnabled: Boolean
 		private set
 
+	var spatialAudioEnabled: Boolean
+		private set
+
 	init {
 		depthModel = sharedPreferences.getString(
 			context.getString(R.string.depth_model_setting),
@@ -21,6 +24,11 @@ class Settings(val context: Context) {
 		profilingEnabled = sharedPreferences.getBoolean(
 			context.getString(R.string.profiling_enabled_setting),
 			false
+		)
+
+		spatialAudioEnabled = sharedPreferences.getBoolean(
+			context.getString(R.string.spatial_audio_enabled_setting),
+			true
 		)
 	}
 }

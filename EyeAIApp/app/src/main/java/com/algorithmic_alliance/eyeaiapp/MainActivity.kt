@@ -104,14 +104,18 @@ class MainActivity : ComponentActivity() {
 
 		eyeAIApp().voskModel.setPaused(false)
 
-		NativeLib.enableSpatialAudio()
-		NativeLib.updateSpatialAudio(
-			0.5f,
-			440.0f,
-			0.0f,
-			0.0f,
-			0.0f
-		)
+		if (eyeAIApp().settings.spatialAudioEnabled) {
+			NativeLib.enableSpatialAudio()
+			NativeLib.updateSpatialAudio(
+				0.5f,
+				440.0f,
+				0.0f,
+				0.0f,
+				0.0f
+			)
+		} else {
+			NativeLib.disableSpatialAudio()
+		}
 	}
 
 	override fun onPause() {

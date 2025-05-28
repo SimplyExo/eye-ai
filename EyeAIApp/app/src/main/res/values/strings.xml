@@ -12,4 +12,5 @@
     <string name="settings_button_description">Settings button</string>
     <string name="depth_model_setting">depth_model</string>
     <string name="profiling_enabled_setting">profiling_enabled</string>
+    <string name="spatial_audio_enabled_setting">spatial_audio_enabled</string>
 </resources>
