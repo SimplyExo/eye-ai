@@ -4,10 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/white">
 
     <LinearLayout
-        android:id="@+id/camera_permission_notice"
+        android:id="@+id/ungranted_permissions_notice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
@@ -17,12 +18,13 @@
         tools:visibility="visible">
 
         <TextView
+            android:id="@+id/ungranted_permissions_notice_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_margin="10dp"
             android:layout_weight="1"
-            android:text="@string/allow_camera_permission_notice"
+            android:text="@string/allow_camera_and_microphone_permission_notice"
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="18sp"

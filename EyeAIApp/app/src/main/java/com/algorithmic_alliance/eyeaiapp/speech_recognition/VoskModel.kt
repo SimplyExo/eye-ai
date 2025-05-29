@@ -64,6 +64,11 @@ class VoskModel(val context: Context, val modelName: String) : AutoCloseable {
 		}
 	}
 
+	private fun isInitialized(): Boolean {
+		return model != null && speechService != null && speechStreamService != null
+	}
+
+	/** only sets callbacks if already initialized (see: [isInitialized]) */
 	fun init(
 		onPartialResult: (partial: String) -> Unit,
 		onFinalResult: (final: String) -> Unit
@@ -72,6 +77,9 @@ class VoskModel(val context: Context, val modelName: String) : AutoCloseable {
 		this.onFinalResultCallback = onFinalResult
 
 		LibVosk.setLogLevel(LogLevel.INFO)
+
+		if (isInitialized())
+			return
 
 		StorageService.unpack(
 			context, modelName, "unpacked_vosk_model",

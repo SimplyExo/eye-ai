@@ -12,8 +12,8 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.camera.view.PreviewView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -26,7 +26,8 @@ class MainActivity : ComponentActivity() {
 	private var cameraFrameAnalyzer: CameraFrameAnalyzer? = null
 
 	private var cameraPreviewView: PreviewView? = null
-	private var cameraPermissionNotice: LinearLayout? = null
+	private var ungrantedPermissionsNotice: LinearLayout? = null
+	private var ungrantedPermissionsNoticeText: TextView? = null
 	private var allowCameraPermission: Button? = null
 	private var flashlightButton: FloatingActionButton? = null
 
@@ -50,7 +51,8 @@ class MainActivity : ComponentActivity() {
 
 		performanceText = findViewById(R.id.performance_text)
 
-		cameraPermissionNotice = findViewById(R.id.camera_permission_notice)
+		ungrantedPermissionsNotice = findViewById(R.id.ungranted_permissions_notice)
+		ungrantedPermissionsNoticeText = findViewById(R.id.ungranted_permissions_notice_text)
 
 		allowCameraPermission = findViewById(R.id.allow_camera_permission_btn)
 		allowCameraPermission!!.setOnClickListener { permissionManager.openAppPermissionSettings() }
@@ -75,15 +77,16 @@ class MainActivity : ComponentActivity() {
 
 		permissionManager.requestPermissions()
 
-		if (permissionManager.isCameraPermissionGranted()) {
-			cameraPermissionNotice!!.visibility = View.GONE
-			initCamera()
-		}
+		updateUngrantedPermissionsNotice()
 
-		if (permissionManager.isMicrophonePermissionGranted())
+		if (permissionManager.isCameraPermissionGranted())
+			initCamera()
+
+		if (permissionManager.isMicrophonePermissionGranted()) {
 			eyeAIApp()
 				.voskModel
 				.init(::onPartialSpeechRecognitionResult, ::onFinalSpeechRecognitionResult)
+		}
 
 		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
@@ -95,11 +98,22 @@ class MainActivity : ComponentActivity() {
 
 		eyeAIApp().updateSettings()
 
+		permissionManager.requestPermissions()
+		updateUngrantedPermissionsNotice()
+
 		updateFlashlightButtonTint(eyeAIApp().cameraManager.isCameraFlashlightOn())
 
 		val cameraPermissionGranted = permissionManager.isCameraPermissionGranted()
 
-		if (eyeAIApp().cameraManager.cameraPreview == null && cameraPermissionGranted) initCamera()
+		if (eyeAIApp().cameraManager.cameraPreview == null && cameraPermissionGranted)
+			initCamera()
+
+		if (permissionManager.isMicrophonePermissionGranted()) {
+			eyeAIApp().voskModel.init(
+				::onPartialSpeechRecognitionResult,
+				::onFinalSpeechRecognitionResult
+			)
+		}
 
 		eyeAIApp().voskModel.setPaused(false)
 
@@ -127,15 +141,21 @@ class MainActivity : ComponentActivity() {
 
 	private fun onCameraPermissionResult(isGranted: Boolean) {
 		if (isGranted) {
-			cameraPermissionNotice!!.visibility = View.GONE
+			ungrantedPermissionsNotice!!.visibility = View.GONE
 			initCamera()
 		} else {
-			cameraPermissionNotice!!.visibility = View.VISIBLE
+			ungrantedPermissionsNotice!!.visibility = View.VISIBLE
 		}
 	}
 
 	private fun onMicrophonePermissionResult(isGranted: Boolean) {
-		Log.i(EyeAIApp.APP_LOG_TAG, "Microphone permission granted: $isGranted")
+		if (isGranted) {
+			eyeAIApp()
+				.voskModel
+				.init(::onPartialSpeechRecognitionResult, ::onFinalSpeechRecognitionResult)
+		} else {
+			Log.w(EyeAIApp.APP_LOG_TAG, "Microphone Permission not granted!")
+		}
 	}
 
 	private fun onPartialSpeechRecognitionResult(partial: String) {
@@ -165,7 +185,7 @@ class MainActivity : ComponentActivity() {
 
 	private fun initCamera() {
 		if (permissionManager.isCameraPermissionGranted()) {
-			cameraPermissionNotice!!.visibility = View.GONE
+			ungrantedPermissionsNotice!!.visibility = View.GONE
 			eyeAIApp()
 				.cameraManager
 				.init(
@@ -175,7 +195,27 @@ class MainActivity : ComponentActivity() {
 					cameraFrameAnalyzer!!
 				)
 		} else {
-			cameraPermissionNotice!!.visibility = View.VISIBLE
+			ungrantedPermissionsNotice!!.visibility = View.VISIBLE
+		}
+	}
+
+	private fun updateUngrantedPermissionsNotice() {
+		val cameraGranted = permissionManager.isCameraPermissionGranted()
+		val microphoneGranted = permissionManager.isMicrophonePermissionGranted()
+
+		if (cameraGranted && microphoneGranted) {
+			ungrantedPermissionsNotice?.visibility = View.GONE
+		} else {
+			ungrantedPermissionsNotice?.visibility = View.VISIBLE
+			ungrantedPermissionsNoticeText?.text = getString(
+				if (cameraGranted) {
+					R.string.allow_microphone_permission_notice
+				} else if (microphoneGranted) {
+					R.string.allow_camera_permission_notice
+				} else {
+					R.string.allow_camera_and_microphone_permission_notice
+				}
+			)
 		}
 	}
 
