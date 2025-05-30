@@ -5,16 +5,9 @@
 #include <string_view>
 
 struct NativeFloatArrayScope {
-	explicit NativeFloatArrayScope(JNIEnv* env, jfloatArray array)
-		: array(array), env(env) {
-		const size_t length = env->GetArrayLength(array);
-		jfloat* pointer = env->GetFloatArrayElements(array, nullptr);
-		native_array = std::span<jfloat>(pointer, length);
-	}
+	explicit NativeFloatArrayScope(JNIEnv* env, jfloatArray array);
 
-	~NativeFloatArrayScope() {
-		env->ReleaseFloatArrayElements(array, native_array.data(), 0);
-	}
+	~NativeFloatArrayScope();
 
 	NativeFloatArrayScope(const NativeFloatArrayScope&) = delete;
 	NativeFloatArrayScope(NativeFloatArrayScope&&) = delete;
@@ -37,16 +30,9 @@ struct NativeFloatArrayScope {
 };
 
 struct NativeByteArrayScope {
-	explicit NativeByteArrayScope(JNIEnv* env, jbyteArray array)
-		: array(array), env(env) {
-		const size_t length = env->GetArrayLength(array);
-		jbyte* pointer = env->GetByteArrayElements(array, nullptr);
-		native_array = std::span<jbyte>(pointer, length);
-	}
+	explicit NativeByteArrayScope(JNIEnv* env, jbyteArray array);
 
-	~NativeByteArrayScope() {
-		env->ReleaseByteArrayElements(array, native_array.data(), 0);
-	}
+	~NativeByteArrayScope();
 
 	NativeByteArrayScope(NativeByteArrayScope&&) = delete;
 	NativeByteArrayScope(const NativeByteArrayScope&) = delete;
@@ -69,16 +55,9 @@ struct NativeByteArrayScope {
 };
 
 struct NativeIntArrayScope {
-	explicit NativeIntArrayScope(JNIEnv* env, jintArray array)
-		: array(array), env(env) {
-		const size_t length = env->GetArrayLength(array);
-		jint* pointer = env->GetIntArrayElements(array, nullptr);
-		native_array = std::span<jint>(pointer, length);
-	}
+	explicit NativeIntArrayScope(JNIEnv* env, jintArray array);
 
-	~NativeIntArrayScope() {
-		env->ReleaseIntArrayElements(array, native_array.data(), 0);
-	}
+	~NativeIntArrayScope();
 
 	NativeIntArrayScope(NativeIntArrayScope&&) = delete;
 	NativeIntArrayScope(const NativeIntArrayScope&) = delete;
@@ -101,11 +80,9 @@ struct NativeIntArrayScope {
 };
 
 struct NativeStringScope {
-	explicit NativeStringScope(JNIEnv* env, jstring string)
-		: string(string), env(env),
-		  native_string(env->GetStringUTFChars(string, nullptr)) {}
+	explicit NativeStringScope(JNIEnv* env, jstring string);
 
-	~NativeStringScope() { env->ReleaseStringUTFChars(string, native_string); }
+	~NativeStringScope();
 
 	NativeStringScope(NativeStringScope&&) = delete;
 	NativeStringScope(const NativeStringScope&) = delete;
