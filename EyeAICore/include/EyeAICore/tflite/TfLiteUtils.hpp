@@ -3,6 +3,8 @@
 #include <cassert>
 #include <span>
 #include <string_view>
+#include <stdexcept>
+#include <optional>
 #include <tflite/c/c_api.h>
 #include <tflite/c/common.h>
 #include <tflite/delegates/gpu/delegate.h>

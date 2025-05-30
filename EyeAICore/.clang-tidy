@@ -1,0 +1,76 @@
+Checks: >
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  bugprone-*,
+  misc-*,
+  hicpp-noexcept-move,
+  -fuchsia-*,
+  -llvm-*,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-macro-usage,
+  -modernize-use-trailing-return-type,
+  -misc-use-anonymous-namespace,
+  -misc-include-cleaner,
+  -misc-non-private-member-variables-in-classes,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -readability-uppercase-literal-suffix,
+  -readability-braces-around-statements,
+
+HeaderFilterRegex: ''
+
+CheckOptions:
+  - key: modernize-use-nullptr.NullMacros
+    value: 'NULL'
+  - key: readability-identifier-naming.VariableCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.FunctionCase
+    value: 'lower_case'
+  - key: cppcoreguidelines-owning-memory
+    value: 'true'
+  - key: bugprone-assert-side-effect.AssertMacros
+    value: 'assert'
+  - key: bugprone-bool-pointer-implicit-conversion.AllowSafeFunctions
+    value: 'true'
+  - key: cert-err58-cpp.WarnOnlyOnThrowInDestructors
+    value: 'true'
+  - key: modernize-use-nodiscard.ReplacementString
+    value: '[[nodiscard]]'
+  - key: modernize-use-nullptr.NullMacros
+    value: 'NULL'
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: 'false'
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: 'false'
+  - key: readability-qualified-auto.IgnoreTemplateParameters
+    value: 'false'
+  - key: performance-for-range-copy.AllowedTypes
+    value: '::std::string;::std::string_view;llvm::StringRef'
+  - key: performance-move-const-arg.CheckTriviallyCopyableMove
+    value: 'true'
+  - key: portability-simd-intrinsics.Suggest
+    value: 'true'
+  - key: readability-identifier-naming.ClassCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.StructCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.EnumCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.FunctionCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.VariableCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.MemberCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.ConstexprFunctionCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.NamespaceCase
+    value: 'lower_case'

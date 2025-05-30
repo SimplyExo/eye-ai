@@ -1,5 +1,5 @@
-#include "TfLiteUtils.hpp"
-#include "utils/Profiling.hpp"
+#include "EyeAICore/tflite/TfLiteUtils.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 
 TfLiteStatusException::TfLiteStatusException(
 	TfLiteStatus status,

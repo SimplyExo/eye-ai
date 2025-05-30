@@ -1,11 +1,11 @@
 #pragma once
 
+#include "EyeAICore/utils/Profiling.hpp"
 #include "TfLiteUtils.hpp"
 #include "tflite/c/c_api.h" // IWYU pragma: export
 #include "tflite/c/c_api_types.h"
 #include "tflite/c/common.h"
 #include "tflite_profiler.h"
-#include "utils/Profiling.hpp"
 #include <cassert>
 #include <chrono>
 #include <optional>
@@ -17,6 +17,8 @@ struct TfLiteProfilerEntry {
 	std::string name;
 	std::chrono::microseconds duration;
 };
+
+using TfLiteLogErrorCallback = void(*)(std::string);
 
 /** Helper class that wraps the tflite c api */
 class TfLiteRuntime {
@@ -32,12 +34,15 @@ class TfLiteRuntime {
 		std::nullopt;
 	std::vector<TfLiteProfilerEntry> current_invoke_profiler_entries;
 
+	TfLiteLogErrorCallback log_error_callback;
+
   public:
 	explicit TfLiteRuntime(
 		std::span<const int8_t> model_data,
 		std::string_view gpu_delegate_serialization_dir,
 		std::string_view model_token,
-		bool enable_profiling
+		bool enable_profiling,
+		TfLiteLogErrorCallback log_error_callback
 	);
 	~TfLiteRuntime();
 
