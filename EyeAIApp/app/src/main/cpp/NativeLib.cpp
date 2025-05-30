@@ -3,14 +3,14 @@
 #include <memory>
 #include <vector>
 
-#include "DepthEstimation.hpp"
-#include "audio/SpatialAudioEngine.hpp"
-#include "onnx/OnnxRuntime.hpp"
-#include "tflite/TfLiteRuntime.hpp"
-#include "utils/ImageUtils.hpp"
-#include "utils/Log.hpp"
-#include "utils/NativeJavaScopes.hpp"
-#include "utils/Profiling.hpp"
+#include "EyeAICore/DepthEstimation.hpp"
+#include "EyeAICore/audio/SpatialAudioEngine.hpp"
+#include "EyeAICore/onnx/OnnxRuntime.hpp"
+#include "EyeAICore/tflite/TfLiteRuntime.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
+#include "ImageUtils.hpp"
+#include "Log.hpp"
+#include "NativeJavaScopes.hpp"
 
 // these 2 global variables are only used by a single thread from the kotlin
 // side NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
@@ -40,10 +40,14 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthTfLiteRuntime(
 	);
 	const NativeStringScope model_token_string(env, model_token);
 
+	const auto log_error_callback = [](std::string msg) {
+		LOG_ERROR("[TfLiteRuntime] {}", msg);
+	};
+
 	LOG_ON_EXCEPTION(
 		depth_estimation_tflite_runtime = std::make_unique<TfLiteRuntime>(
 			model_data, gpu_delegate_serialization_dir_string,
-			model_token_string, enable_profiling
+			model_token_string, enable_profiling, log_error_callback
 		);
 	)
 }
@@ -106,9 +110,15 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthOnnxRuntime(
 ) {
 	NativeByteArrayScope model_data(env, model);
 
+	OnnxLogCallbacks log_callbacks{
+		.log_info = [](const auto msg) { LOG_INFO("[OnnxRuntime] {}", msg); },
+		.log_error = [](const auto msg) { LOG_ERROR("[OnnxRuntime] {}", msg); }
+	};
+
 	LOG_ON_EXCEPTION(
 		depth_estimation_onnx_runtime = std::make_unique<OnnxRuntime>(
-			std::as_bytes((std::span<const jbyte>)model_data)
+			std::as_bytes((std::span<const jbyte>)model_data),
+			std::move(log_callbacks)
 		);
 	)
 }

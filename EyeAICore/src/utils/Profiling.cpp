@@ -1,4 +1,4 @@
-#include "Profiling.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include <algorithm>
 #include <chrono>
 #include <format>
@@ -23,7 +23,7 @@ ProfileScope::ProfileScope(std::string_view name, ProfilingFrame& frame)
 	  start(profile_clock::now()) {}
 
 ProfileScope::~ProfileScope() noexcept {
-	auto duration = profile_clock::now() - start;
+	const auto duration = profile_clock::now() - start;
 	frame.end_scope(ProfileScopeRecord(name, scope_depth, start, duration));
 }
 
@@ -49,7 +49,7 @@ void ProfilingFrame::end_scope(const ProfileScopeRecord& scope) noexcept {
 }
 
 std::string ProfilingFrame::finish() {
-	auto end = profile_clock::now();
+	const auto end = profile_clock::now();
 
 	std::ranges::sort(profile_scopes, [](const auto& a, const auto& b) -> bool {
 		return a.start < b.start;
@@ -59,8 +59,8 @@ std::string ProfilingFrame::finish() {
 		profile_scopes_formatted +=
 			std::format("    {}\n", profile_scope.formatted());
 	}
-	auto frame_duration = end - start;
-	auto frame_duration_ms =
+	const auto frame_duration = end - start;
+	const auto frame_duration_ms =
 		static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(frame_duration)
 			.count()) /
 		1000.0f;
