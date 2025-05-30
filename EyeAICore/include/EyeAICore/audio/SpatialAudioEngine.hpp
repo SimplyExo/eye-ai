@@ -1,12 +1,14 @@
 #pragma once
 
-#include "utils/MutexGuard.hpp"
+#include "EyeAICore/utils/MutexGuard.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <array>
 #include <atomic>
+#include <cmath>
 #include <span>
 #include <thread>
+#include <vector>
 
 struct OscillatorInfo {
 	float amplitude = 0.5f;
@@ -18,6 +20,8 @@ struct OscillatorInfo {
 	/** front (-), back (+) */
 	float position_z = 0.0f;
 };
+
+using AudioLogCallback = void (*)(std::string_view);
 
 struct Oscillator {
 	explicit Oscillator(const OscillatorInfo& info);
@@ -54,7 +58,10 @@ struct Oscillator {
 
 class SpatialAudioEngine {
   public:
-	explicit SpatialAudioEngine();
+	explicit SpatialAudioEngine(
+		AudioLogCallback log_warning_callback,
+		AudioLogCallback log_error_callback
+	);
 	~SpatialAudioEngine() noexcept;
 
 	SpatialAudioEngine(SpatialAudioEngine&&) = delete;
@@ -68,11 +75,14 @@ class SpatialAudioEngine {
 	void start();
 	void stop();
 
-	void
-	update_oscillators(const std::vector<OscillatorInfo>& oscillator_infos);
+	void update_oscillators(const std::vector<OscillatorInfo>& oscillator_infos
+	);
 
   private:
 	void streaming_thread();
+
+	AudioLogCallback log_warning_callback;
+	AudioLogCallback log_error_callback;
 
 	bool enabled = false;
 	ALCdevice* device = nullptr;

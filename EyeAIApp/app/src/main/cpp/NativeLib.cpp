@@ -274,7 +274,16 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_enableSpatialAudio(
 	JNIEnv* /*env*/,
 	jobject /*this*/
 ) {
-	spatial_audio_engine = std::make_unique<SpatialAudioEngine>();
+	AudioLogCallback log_warning_callback = [](std::string_view msg) {
+		LOG_WARN("[SpatialAudioEngine] {}", msg);
+	};
+	AudioLogCallback log_error_callback = [](std::string_view msg) {
+		LOG_WARN("[SpatialAudioEngine] {}", msg);
+	};
+
+	spatial_audio_engine = std::make_unique<SpatialAudioEngine>(
+		log_warning_callback, log_error_callback
+	);
 	spatial_audio_engine->start();
 }
 

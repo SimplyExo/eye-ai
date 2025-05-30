@@ -1,25 +1,27 @@
-#include "SpatialAudioEngine.hpp"
-#include "al.h"
-#include "utils/Log.hpp"
+#include "EyeAICore/audio/SpatialAudioEngine.hpp"
 
-SpatialAudioEngine::SpatialAudioEngine() { enable(); }
+#include "al.h"
+
+SpatialAudioEngine::SpatialAudioEngine(AudioLogCallback log_warning_callback, AudioLogCallback log_error_callback)
+	:  log_warning_callback(log_warning_callback), log_error_callback(log_error_callback)
+{ enable(); }
 
 SpatialAudioEngine::~SpatialAudioEngine() noexcept { disable(); }
 
 void SpatialAudioEngine::enable() {
 	if (enabled) {
-		LOG_WARN("SpatialAudioEngine::enable called, but already enabled");
+		log_warning_callback("SpatialAudioEngine::enable called, but already enabled");
 		return;
 	}
 
 	device = alcOpenDevice(nullptr);
 	if (device == nullptr) {
-		LOG_ERROR("Failed to open audio device");
+		log_error_callback("Failed to open audio device");
 		return;
 	}
 	context = alcCreateContext(device, nullptr);
 	if (context == nullptr) {
-		LOG_ERROR("Failed to create audio context");
+		log_error_callback("Failed to create audio context");
 		return;
 	}
 	alcMakeContextCurrent(context);
@@ -29,7 +31,7 @@ void SpatialAudioEngine::enable() {
 
 void SpatialAudioEngine::disable() noexcept {
 	if (!enabled) {
-		LOG_WARN("SpatialAudioEngine::disable called, but already disabled");
+		log_warning_callback("SpatialAudioEngine::disable called, but already disabled");
 		return;
 	}
 
@@ -112,7 +114,7 @@ void Oscillator::play() {
 		const auto samples_data = std::as_bytes(std::span<short>(samples));
 		alBufferData(
 			buffer, AL_FORMAT_MONO16, samples_data.data(),
-			(ALsizei)samples_data.size_bytes(), SAMPLE_RATE
+			static_cast<ALsizei>(samples_data.size_bytes()), SAMPLE_RATE
 		);
 	}
 	alSourceQueueBuffers(source, NUM_BUFFERS, buffers.data());
@@ -144,7 +146,7 @@ void Oscillator::fill_unqueued_buffer() {
 		const auto samples_data = std::as_bytes(std::span<short>(samples));
 		alBufferData(
 			unqueued_buffer, FORMAT, samples_data.data(),
-			(ALsizei)samples_data.size_bytes(), SAMPLE_RATE
+			static_cast<ALsizei>(samples_data.size_bytes()), SAMPLE_RATE
 		);
 
 		alSourceQueueBuffers(source, 1, &unqueued_buffer);
@@ -158,13 +160,13 @@ void Oscillator::fill_unqueued_buffer() {
 
 void Oscillator::generate(std::span<short> buffer) {
 	const float phase_increment =
-		(TWO_PI * info.frequency) / (float)SAMPLE_RATE;
+		(TWO_PI * info.frequency) / static_cast<float>(SAMPLE_RATE);
 	for (auto& sample : buffer) {
 		if (phase < M_PI) {
-			sample = static_cast<short>((float)SHRT_MAX * info.amplitude);
+			sample = static_cast<short>(static_cast<float>(SHRT_MAX) * info.amplitude);
 		} else {
 			sample =
-				static_cast<short>((float)SHRT_MAX * info.amplitude * -1.0f);
+				static_cast<short>(static_cast<float>(SHRT_MAX) * info.amplitude * -1.0f);
 		}
 		phase += phase_increment;
 		if (phase >= TWO_PI)
