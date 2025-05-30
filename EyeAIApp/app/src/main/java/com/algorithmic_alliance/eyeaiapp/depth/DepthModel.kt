@@ -11,7 +11,6 @@ import java.io.File
 class DepthModelInfo(
 	val name: String,
 	val fileName: String,
-	val quantized: Boolean,
 	val inputDim: Int,
 	val normMean: FloatArray,
 	val normStddev: FloatArray
@@ -30,13 +29,7 @@ class DepthModelInfo(
 				enableProfiling
 			)
 		} else if (fileName.endsWith(".onnx")) {
-			return OnnxModel(
-				context,
-				fileName,
-				inputDim,
-				normMean,
-				normStddev
-			)
+			return OnnxModel(context, fileName, inputDim, normMean, normStddev)
 		}
 
 		return null
@@ -48,7 +41,8 @@ interface DepthModel : AutoCloseable {
 	fun getName(): String
 
 	/**
-	 * @param input is not enforced to match output of [getInputSize], but should be at least a bit larger
+	 * @param input is not enforced to match output of [getInputSize], but should be at least a bit
+	 * larger
 	 * @return relative depth for each pixel between 0.0f and 1.0f
 	 */
 	fun predictDepth(input: Bitmap): FloatArray
@@ -62,8 +56,7 @@ interface DepthModel : AutoCloseable {
 
 fun createSerializedGpuDelegateCacheDirectory(context: Context): File {
 	val gpuDelegateCacheDirectory = File(context.cacheDir, "gpu_delegate_cache")
-	if (!gpuDelegateCacheDirectory.exists())
-		gpuDelegateCacheDirectory.mkdirs()
+	if (!gpuDelegateCacheDirectory.exists()) gpuDelegateCacheDirectory.mkdirs()
 	return gpuDelegateCacheDirectory
 }
 
@@ -82,7 +75,9 @@ private fun getLastAppUpdateTime(context: Context): Long {
 	}
 }
 
-/** generates a unique token based on the model file name and last install/update time of this app */
+/**
+ * generates a unique token based on the model file name and last install/update time of this app
+ */
 fun getModelToken(context: Context, modelFilename: String): String {
 	val lastUpdateTime = getLastAppUpdateTime(context)
 	return "${modelFilename}_${lastUpdateTime}"

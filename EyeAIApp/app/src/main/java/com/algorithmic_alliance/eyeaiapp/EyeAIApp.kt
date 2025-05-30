@@ -31,7 +31,6 @@ class EyeAIApp : Application() {
 				DepthModelInfo(
 					DEFAULT_DEPTH_MODEL_NAME,
 					"midas_v2_1_256x256.tflite",
-					false,
 					256,
 					floatArrayOf(123.675f, 116.28f, 103.53f),
 					floatArrayOf(58.395f, 57.12f, 57.375f)
@@ -39,7 +38,6 @@ class EyeAIApp : Application() {
 				DepthModelInfo(
 					"MiDaS V2.1 (quantized)",
 					"midas_v2_1_256x256_quantized.tflite",
-					true,
 					256,
 					floatArrayOf(123.675f, 116.28f, 103.53f),
 					floatArrayOf(58.395f, 57.12f, 57.375f)
@@ -47,7 +45,6 @@ class EyeAIApp : Application() {
 				DepthModelInfo(
 					"Depth Anything V2",
 					"depth_anything_v2_vits_210x210.onnx",
-					false,
 					210,
 					floatArrayOf(0.485f, 0.456f, 0.406f),
 					floatArrayOf(0.229f, 0.224f, 0.225f)
@@ -61,10 +58,8 @@ class EyeAIApp : Application() {
 		settings = Settings(this)
 
 		depthModel =
-			findDepthModelInfo(settings.depthModel).createDepthModel(
-				this,
-				settings.profilingEnabled
-			)!!
+			findDepthModelInfo(settings.depthModel)
+				.createDepthModel(this, settings.profilingEnabled)!!
 
 		voskModel = VoskModel(this, "model-de")
 	}
@@ -72,7 +67,9 @@ class EyeAIApp : Application() {
 	fun updateSettings() {
 		val newSettings = Settings(this)
 
-		if (settings.depthModel != newSettings.depthModel || settings.profilingEnabled != newSettings.profilingEnabled) {
+		if (settings.depthModel != newSettings.depthModel ||
+			settings.profilingEnabled != newSettings.profilingEnabled
+		) {
 			switchDepthModel(newSettings.depthModel, newSettings.profilingEnabled)
 		}
 
@@ -80,8 +77,7 @@ class EyeAIApp : Application() {
 	}
 
 	private fun switchDepthModel(modelName: String, profilingEnabled: Boolean) {
-		val newDepthModel =
-			findDepthModelInfo(modelName).createDepthModel(this, profilingEnabled)
+		val newDepthModel = findDepthModelInfo(modelName).createDepthModel(this, profilingEnabled)
 		if (newDepthModel != null) depthModel = newDepthModel
 		else
 			Log.e(
@@ -91,6 +87,7 @@ class EyeAIApp : Application() {
 	}
 
 	private fun findDepthModelInfo(modelName: String): DepthModelInfo {
-		return DEPTH_MODELS.find { it.name == modelName } ?: DEPTH_MODELS[0]
+		return DEPTH_MODELS.find { it.name == modelName }
+			?: (DEPTH_MODELS.find { it.name == DEFAULT_DEPTH_MODEL_NAME } ?: DEPTH_MODELS[0])
 	}
 }

@@ -3,16 +3,13 @@
         <CheckBoxPreference
             app:key="@string/profiling_enabled_setting"
             app:title="Enable Profiling"
-            app:summary="Has a big effect on performance!"/>
+            app:summary="Has a big effect on performance!" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Depth Estimation">
         <ListPreference
             app:key="@string/depth_model_setting"
             app:title="Depth Estimation Model"
-            app:summary="%s"
-            app:entries="@array/depth_models"
-            app:entryValues="@array/depth_models"
-            app:defaultValue="MiDaS V2.1" />
+            app:summary="%s" />
     </PreferenceCategory>
 </PreferenceScreen>
