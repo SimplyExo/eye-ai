@@ -1,10 +1,9 @@
-#include "TfLiteRuntime.hpp"
-#include "tflite/TfLiteUtils.hpp"
-#include "utils/Log.hpp"
-#include "utils/Profiling.hpp"
+#include "EyeAICore/tflite/TfLiteRuntime.hpp"
+#include "EyeAICore/tflite/TfLiteUtils.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 
+#include <format>
 #include <tflite/c/c_api_experimental.h>
-#include <tflite/c/common.h>
 
 static void
 tflite_error_callback(void* /*user_data*/, const char* format, va_list args);
@@ -15,10 +14,11 @@ TfLiteRuntime::TfLiteRuntime(
 	std::span<const int8_t> model_data,
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
-	bool enable_profiling
+	bool enable_profiling,
+	TfLiteLogErrorCallback log_error_callback
 )
 	: model(nullptr), interpreter(nullptr), interpreter_options(nullptr),
-	  gpu_delegate(nullptr) {
+	  gpu_delegate(nullptr), log_error_callback(log_error_callback) {
 
 	PROFILE_DEPTH_SCOPE("Initialize TfLiteRuntime")
 
@@ -26,7 +26,8 @@ TfLiteRuntime::TfLiteRuntime(
 
 	interpreter_options = TfLiteInterpreterOptionsCreate();
 	TfLiteInterpreterOptionsSetErrorReporter(
-		interpreter_options, tflite_error_callback, nullptr
+		interpreter_options, tflite_error_callback,
+		reinterpret_cast<void*>(log_error_callback)
 	);
 	TfLiteInterpreterOptionsSetNumThreads(interpreter_options, 4);
 
@@ -128,11 +129,12 @@ void TfLiteRuntime::read_nonquantized_output(
 	);
 }
 
-void tflite_error_callback(
-	void* /*user_data*/,
-	const char* format,
-	va_list args
-) {
+void tflite_error_callback(void* user_data, const char* format, va_list args) {
+	// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
+	const auto log_error_calback =
+		reinterpret_cast<TfLiteLogErrorCallback>(user_data);
+	// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
+
 	// c style va_list args is necessary as its required by the tflite c api for
 	// error reporting
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-vararg,
@@ -152,5 +154,7 @@ void tflite_error_callback(
 	// NOLINTEND(cppcoreguidelines-pro-type-vararg,
 	// cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
-	LOG_ERROR("[TfLiteRuntime Error] {}", formatted_error_msg.c_str());
+	log_error_calback(
+		std::format("[TfLiteRuntime Error] {}", formatted_error_msg)
+	);
 }

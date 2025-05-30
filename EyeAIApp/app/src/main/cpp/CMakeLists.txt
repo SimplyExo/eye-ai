@@ -10,26 +10,19 @@ if (CLANG_TIDY_EXE)
 	set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
 endif ()
 
-add_subdirectory(third_party)
-
-file(GLOB_RECURSE NATIVE_LIB_SOURCE_FILES
-	"${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
-	"${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-)
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../../../../EyeAICore" "${CMAKE_BINARY_DIR}/EyeAICore")
 
 add_library(
 	NativeLib
 	SHARED
-	${NATIVE_LIB_SOURCE_FILES}
+	"${CMAKE_CURRENT_SOURCE_DIR}/NativeLib.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/ImageUtils.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/NativeJavaScopes.cpp"
 )
 
 target_compile_features(NativeLib PUBLIC cxx_std_20)
 
-target_include_directories(NativeLib PUBLIC
-	"${CMAKE_CURRENT_SOURCE_DIR}/src"
-
-	${THIRD_PARTY_INCLUDE_DIRS}
-
+target_include_directories(NativeLib PRIVATE
 	# just so that vscode knows where to look for headers
 	"${CMAKE_SYSROOT}/usr/include/"
 	"${CMAKE_SYSROOT}/usr/include/c++/v1"
@@ -41,5 +34,5 @@ target_link_libraries(
 	android
 	log
 	jnigraphics
-	${THIRD_PARTY_LIBS}
+	EyeAICore
 )

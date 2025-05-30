@@ -1,13 +1,19 @@
 #pragma once
 
-#include "OnnxUtils.hpp"
-#include <cassert>
 #include <onnxruntime_cxx_api.h>
 #include <span>
 
+struct OnnxLogCallbacks {
+	std::function<void(std::string)> log_info;
+	std::function<void(std::string)> log_error;
+};
+
 class OnnxRuntime {
   public:
-	explicit OnnxRuntime(std::span<const std::byte> model_data);
+	explicit OnnxRuntime(
+		std::span<const std::byte> model_data,
+		OnnxLogCallbacks&& log_callbacks
+	);
 
 	OnnxRuntime(OnnxRuntime&&) = delete;
 	OnnxRuntime(const OnnxRuntime&) = delete;
@@ -37,6 +43,7 @@ class OnnxRuntime {
 	Ort::Env env = nullptr;
 	Ort::Session session{nullptr};
 	Ort::MemoryInfo memory_info{nullptr};
+	OnnxLogCallbacks log_callbacks;
 
 	std::string input_name;
 	std::vector<int64_t> input_shape;

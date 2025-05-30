@@ -1,43 +1,52 @@
-#include "OnnxRuntime.hpp"
+#include "EyeAICore/onnx/OnnxRuntime.hpp"
+#include "EyeAICore/onnx/OnnxUtils.hpp"
+#include "EyeAICore/utils/Exceptions.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include "onnxruntime_c_api.h"
 #include "onnxruntime_cxx_api.h"
-#include "utils/Exceptions.hpp"
-#include "utils/Log.hpp"
-#include "utils/Profiling.hpp"
 
 #include <cpu_provider_factory.h>
+#include <format>
 #include <nnapi_provider_factory.h>
 
 static void onnx_logging_callback(
-	void* /*param*/,
+	void* log_callbacks_param, // see OnnxRuntime constructor
 	OrtLoggingLevel severity,
 	const char* category,
 	const char* logid,
 	const char* code_location,
 	const char* message
 ) {
+	const auto* callbacks = static_cast<OnnxLogCallbacks*>(log_callbacks_param);
 	switch (severity) {
 	default:
-		LOG_INFO(
-			"[OnnxRuntime] [{}] [{}] {} ({})", category, logid, message,
-			code_location
+		callbacks->log_info(
+			std::format(
+				"[{}] [{}] {} ({})", category, logid, message, code_location
+			)
 		);
 		break;
 	case ORT_LOGGING_LEVEL_ERROR:
 	case ORT_LOGGING_LEVEL_FATAL:
-		LOG_ERROR(
-			"[OnnxRuntime] [{}] [{}] {} ({})", category, logid, message,
-			code_location
+		callbacks->log_error(
+			std::format(
+				"[{}] [{}] {} ({})", category, logid, message, code_location
+			)
 		);
 		break;
 	}
 }
 
-OnnxRuntime::OnnxRuntime(std::span<const std::byte> model_data) {
+OnnxRuntime::OnnxRuntime(
+	std::span<const std::byte> model_data,
+	OnnxLogCallbacks&& log_callbacks
+)
+	: log_callbacks(std::move(log_callbacks)) {
 	PROFILE_DEPTH_SCOPE("Init OnnxRuntime")
 
 	env = Ort::Env(
-		ORT_LOGGING_LEVEL_WARNING, "Default", onnx_logging_callback, nullptr
+		ORT_LOGGING_LEVEL_WARNING, "Default", onnx_logging_callback,
+		&this->log_callbacks
 	);
 
 	auto session_options = Ort::SessionOptions();
@@ -51,12 +60,12 @@ OnnxRuntime::OnnxRuntime(std::span<const std::byte> model_data) {
 	);
 
 	// TODO: test out what impact NNAPI_FLAG_USE_FP16 has
-	const uint32_t nnapi_flags =
+	constexpr uint32_t NNAPI_FLAGS =
 		NNAPI_FLAG_USE_FP16; // | NNAPI_FLAG_CPU_DISABLED;
 
 	throw_on_onnx_status(
 		Ort::Status(OrtSessionOptionsAppendExecutionProvider_Nnapi(
-			session_options, nnapi_flags
+			session_options, NNAPI_FLAGS
 		))
 	);
 

@@ -1,7 +1,7 @@
-#include "DepthEstimation.hpp"
+#include "EyeAICore/DepthEstimation.hpp"
 
-#include "utils/ImageUtils.hpp"
-#include "utils/Profiling.hpp"
+#include "EyeAICore/utils/ImageUtils.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include <algorithm>
 
 void run_depth_estimation(

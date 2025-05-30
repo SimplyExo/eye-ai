@@ -1,4 +1,4 @@
-#include "Exceptions.hpp"
+#include "EyeAICore/utils/Exceptions.hpp"
 #include <format>
 
 FormatNotRGBA888Exception::FormatNotRGBA888Exception(int32_t actual_format)

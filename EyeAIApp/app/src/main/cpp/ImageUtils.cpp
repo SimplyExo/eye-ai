@@ -1,7 +1,8 @@
 #include "ImageUtils.hpp"
-#include "Exceptions.hpp"
+#include "EyeAICore/utils/Exceptions.hpp"
+#include "EyeAICore/utils/ImageUtils.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include "Log.hpp"
-#include "Profiling.hpp"
 
 void check_android_bitmap_result(int result) {
 	if (result == ANDROID_BITMAP_RESULT_SUCCESS)
