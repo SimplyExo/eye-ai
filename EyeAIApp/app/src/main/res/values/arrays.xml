@@ -1,7 +1,0 @@
-<resources>
-    <string-array name="depth_models">
-        <item>MiDaS V2.1</item>
-        <item>MiDaS V2.1 (quantized)</item>
-        <item>Depth Anything V2</item>
-    </string-array>
-</resources>
