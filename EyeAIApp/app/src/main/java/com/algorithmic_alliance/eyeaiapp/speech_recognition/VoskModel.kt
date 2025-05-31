@@ -10,13 +10,15 @@ import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.RecognitionListener
 import org.vosk.android.SpeechService
-import org.vosk.android.SpeechStreamService
 import org.vosk.android.StorageService
 
-class VoskModel(val context: Context, val modelName: String) : AutoCloseable {
+class VoskModel(val context: Context, val modelName: String) {
+	companion object {
+		private const val SAMPLE_RATE = 48000.0f // 16000.0f
+	}
+
 	private var model: Model? = null
 	private var speechService: SpeechService? = null
-	private var speechStreamService: SpeechStreamService? = null
 
 	private var onPartialResultCallback: (partial: String) -> Unit = {}
 	private var onFinalResultCallback: (partial: String) -> Unit = {}
@@ -64,37 +66,31 @@ class VoskModel(val context: Context, val modelName: String) : AutoCloseable {
 		}
 	}
 
-	private fun isInitialized(): Boolean {
-		return model != null && speechService != null && speechStreamService != null
+	init {
+		LibVosk.setLogLevel(LogLevel.INFO)
 	}
 
-	/** only sets callbacks if already initialized (see: [isInitialized]) */
-	fun init(
+	fun isInitialized(): Boolean {
+		return model != null && speechService != null
+	}
+
+	fun initService(
 		onPartialResult: (partial: String) -> Unit,
-		onFinalResult: (final: String) -> Unit
+		onFinalResult: (final: String) -> Unit,
+		onModelLoaded: () -> Unit
 	) {
 		this.onPartialResultCallback = onPartialResult
 		this.onFinalResultCallback = onFinalResult
 
-		LibVosk.setLogLevel(LogLevel.INFO)
-
-		if (isInitialized())
+		if (model != null && speechService != null)
 			return
 
 		StorageService.unpack(
 			context, modelName, "unpacked_vosk_model",
 			{ model ->
 				this.model = model
-				try {
-					val rec = Recognizer(model, 16000.0f)
-					speechService = SpeechService(rec, 16000.0f)
-					speechService!!.startListening(recognitionListener)
-				} catch (e: Exception) {
-					Log.e(
-						EyeAIApp.APP_LOG_TAG,
-						"[VoskModel] failed to create speech recognition listener for model: $modelName: $e"
-					)
-				}
+				startListening()
+				onModelLoaded()
 			},
 			{ exception ->
 				Log.e(
@@ -105,17 +101,36 @@ class VoskModel(val context: Context, val modelName: String) : AutoCloseable {
 		)
 	}
 
-	override fun close() {
-		speechService?.let {
-			it.stop()
-			it.shutdown()
+	fun closeService() {
+		speechService?.apply {
+			stop()
+			shutdown()
 		}
-
-		speechStreamService?.stop()
 	}
 
-	fun setPaused(paused: Boolean) {
-		speechService?.apply { setPause(paused) }
+	fun startListening() {
+		if (model == null) {
+			Log.w(EyeAIApp.APP_LOG_TAG, "[VoskModel] cannot startListening: model not loaded")
+			return
+		}
+
+		if (speechService == null) {
+			try {
+				val rec = Recognizer(model, SAMPLE_RATE)
+				speechService = SpeechService(rec, SAMPLE_RATE)
+			} catch (e: Exception) {
+				Log.e(
+					EyeAIApp.APP_LOG_TAG,
+					"[VoskModel] failed to create speech recognition listener for model: $modelName: $e"
+				)
+			}
+		}
+		speechService?.startListening(recognitionListener)
+	}
+
+	fun stopListening() {
+		speechService?.stop()
+		speechService = null
 	}
 
 	/**
