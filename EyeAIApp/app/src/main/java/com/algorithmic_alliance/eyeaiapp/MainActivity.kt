@@ -14,10 +14,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.camera.view.PreviewView
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 	private var permissionManager =
@@ -85,7 +81,11 @@ class MainActivity : ComponentActivity() {
 		if (permissionManager.isMicrophonePermissionGranted()) {
 			eyeAIApp()
 				.voskModel
-				.init(::onPartialSpeechRecognitionResult, ::onFinalSpeechRecognitionResult)
+				.initService(
+					::onPartialSpeechRecognitionResult,
+					::onFinalSpeechRecognitionResult,
+					::onSpeechRecognitionLoaded
+				)
 		}
 
 		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -108,14 +108,15 @@ class MainActivity : ComponentActivity() {
 		if (eyeAIApp().cameraManager.cameraPreview == null && cameraPermissionGranted)
 			initCamera()
 
-		if (permissionManager.isMicrophonePermissionGranted()) {
-			eyeAIApp().voskModel.init(
+		if (!eyeAIApp().voskModel.isInitialized() && permissionManager.isMicrophonePermissionGranted()) {
+			eyeAIApp().voskModel.initService(
 				::onPartialSpeechRecognitionResult,
-				::onFinalSpeechRecognitionResult
+				::onFinalSpeechRecognitionResult,
+				::onSpeechRecognitionLoaded
 			)
 		}
 
-		eyeAIApp().voskModel.setPaused(false)
+		eyeAIApp().voskModel.startListening()
 
 		if (eyeAIApp().settings.spatialAudioEnabled) {
 			NativeLib.enableSpatialAudio()
@@ -134,7 +135,13 @@ class MainActivity : ComponentActivity() {
 	override fun onPause() {
 		super.onPause()
 
-		eyeAIApp().voskModel.setPaused(false)
+		eyeAIApp().voskModel.stopListening()
+	}
+
+	override fun onDestroy() {
+		super.onDestroy()
+
+		eyeAIApp().voskModel.closeService()
 
 		NativeLib.disableSpatialAudio()
 	}
@@ -152,7 +159,11 @@ class MainActivity : ComponentActivity() {
 		if (isGranted) {
 			eyeAIApp()
 				.voskModel
-				.init(::onPartialSpeechRecognitionResult, ::onFinalSpeechRecognitionResult)
+				.initService(
+					::onPartialSpeechRecognitionResult,
+					::onFinalSpeechRecognitionResult,
+					::onSpeechRecognitionLoaded
+				)
 		} else {
 			Log.w(EyeAIApp.APP_LOG_TAG, "Microphone Permission not granted!")
 		}
@@ -163,19 +174,28 @@ class MainActivity : ComponentActivity() {
 	}
 
 	private fun onFinalSpeechRecognitionResult(final: String) {
-		speechRecognitionFinalResultText?.apply { text = final }
-		val lastFinalResultDurationMillis = System.currentTimeMillis() - lastFinalResultMillis
-		if (!final.isEmpty() && lastFinalResultDurationMillis > 1500) {
-			lastFinalResultMillis = System.currentTimeMillis()
+		if (final.isEmpty()) {
+			return
+		}
 
-			// turns speech recognition model off for 500ms to not pick up vibration sounds
-			CoroutineScope(Dispatchers.Main).launch {
-				eyeAIApp().voskModel.setPaused(true)
-				// vibrate for 100ms
-				vibrate(eyeAIApp(), 100)
-				delay(1000)
-				eyeAIApp().voskModel.setPaused(false)
-			}
+		speechRecognitionFinalResultText?.apply { text = final }
+
+		// pause recognition for 500ms after final speech command to prevent mic picking up the vibration sounds
+		if (System.currentTimeMillis() - lastFinalResultMillis > 1000) {
+			eyeAIApp().voskModel.stopListening()
+
+			// vibrate for 100ms
+			vibrate(eyeAIApp(), 100)
+
+			eyeAIApp().voskModel.startListening()
+
+			lastFinalResultMillis = System.currentTimeMillis()
+		}
+	}
+
+	private fun onSpeechRecognitionLoaded() {
+		speechRecognitionFinalResultText?.apply {
+			text = getString(R.string.speech_recognition_ready)
 		}
 	}
 
