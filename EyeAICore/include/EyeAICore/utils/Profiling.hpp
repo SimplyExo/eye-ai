@@ -84,6 +84,7 @@ std::string& get_last_camera_profiling_frame_formatted();
 	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
 		FUNCTION_NAME(), get_depth_profiling_frame()                           \
 	);
+
 #define PROFILE_CAMERA_FUNCTION()                                              \
 	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
 		FUNCTION_NAME(), get_camera_profiling_frame()                          \
