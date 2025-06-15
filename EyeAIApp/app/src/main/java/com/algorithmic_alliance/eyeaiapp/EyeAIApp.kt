@@ -5,6 +5,8 @@ import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModelInfo
+import com.algorithmic_alliance.eyeaiapp.llm.GoogleAIStudioLLM
+import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 
 /**
@@ -18,6 +20,8 @@ class EyeAIApp : Application() {
 	lateinit var depthModel: DepthModel
 		private set
 	lateinit var voskModel: VoskModel
+		private set
+	var llm: LLM? = null
 		private set
 
 	companion object {
@@ -62,6 +66,11 @@ class EyeAIApp : Application() {
 				.createDepthModel(this)!!
 
 		voskModel = VoskModel(this, "model-de")
+
+		settings.googleAiStudioApiKey?.let {
+			if (!it.isEmpty())
+				llm = GoogleAIStudioLLM(it)
+		}
 	}
 
 	fun updateSettings() {
@@ -71,6 +80,15 @@ class EyeAIApp : Application() {
 			settings.showProfilingInfo != newSettings.showProfilingInfo
 		) {
 			switchDepthModel(newSettings.depthModel)
+		}
+
+		if (settings.googleAiStudioApiKey != newSettings.googleAiStudioApiKey) {
+			val apiKey = newSettings.googleAiStudioApiKey
+			llm = if (apiKey != null && !apiKey.isEmpty()) {
+				GoogleAIStudioLLM(apiKey)
+			} else {
+				null
+			}
 		}
 
 		settings = newSettings

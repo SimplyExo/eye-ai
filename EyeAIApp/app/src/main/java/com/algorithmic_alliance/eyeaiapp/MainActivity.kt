@@ -14,6 +14,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.camera.view.PreviewView
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.concurrent.Executors
 
 class MainActivity : ComponentActivity() {
 	private var permissionManager =
@@ -33,7 +39,10 @@ class MainActivity : ComponentActivity() {
 
 	private var speechRecognitionPartialResultText: TextView? = null
 	private var speechRecognitionFinalResultText: TextView? = null
+	private var llmResponseText: TextView? = null
 	private var lastFinalResultMillis = System.currentTimeMillis()
+
+	private var llmThreadExecutor = Executors.newSingleThreadExecutor()
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -62,6 +71,7 @@ class MainActivity : ComponentActivity() {
 
 		speechRecognitionPartialResultText = findViewById(R.id.speech_recognition_partial_output)
 		speechRecognitionFinalResultText = findViewById(R.id.speech_recognition_final_output)
+		llmResponseText = findViewById(R.id.llm_response)
 
 		findViewById<FloatingActionButton>(R.id.settings_button).setOnClickListener {
 			startActivity(Intent(this, SettingsActivity::class.java))
@@ -116,6 +126,14 @@ class MainActivity : ComponentActivity() {
 			)
 		}
 
+		llmResponseText?.apply {
+			text = if (eyeAIApp().llm == null)
+				getString(R.string.setup_llm_notice)
+			else
+				""
+		}
+
+
 		eyeAIApp().voskModel.startListening()
 	}
 
@@ -167,6 +185,24 @@ class MainActivity : ComponentActivity() {
 
 		// pause recognition for 500ms after final speech command to prevent mic picking up the vibration sounds
 		if (System.currentTimeMillis() - lastFinalResultMillis > 1000) {
+
+			if (eyeAIApp().llm == null) {
+				llmResponseText?.apply { text = getString(R.string.setup_llm_notice) }
+			} else {
+				llmResponseText?.apply { text = getString(R.string.llm_responding_notice) }
+
+				CoroutineScope(llmThreadExecutor.asCoroutineDispatcher()).launch {
+					val llmResponse = eyeAIApp().llm!!.generate(final)
+
+					withContext(Dispatchers.Main) {
+						llmResponseText?.apply {
+							text =
+								getString(R.string.llm_response, llmResponse)
+						}
+					}
+				}
+			}
+
 			eyeAIApp().voskModel.stopListening()
 
 			// vibrate for 100ms

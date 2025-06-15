@@ -10,9 +10,14 @@
     <string name="switch_model_button_description">Switch Model Button</string>
     <string name="speech_recognition_partial_result_description">Partial speech recognition results</string>
     <string name="speech_recognition_final_result_description">Final speech recognition results</string>
+    <string name="llm_response_description">LLM response</string>
+    <string name="setup_llm_notice">LLM not setup! Go to the settings!</string>
+    <string name="llm_responding_notice">LLM is responding…</string>
+    <string name="llm_response">LLM: %1$s</string>
     <string name="title_activity_settings">Settings</string>
     <string name="settings_button_description">Settings button</string>
     <string name="depth_model_setting">depth_model</string>
     <string name="show_profiling_info_setting">show_profiling_info</string>
+    <string name="google_ai_studio_api_key_stetting">google_ai_studio_api_key</string>
     <string name="speech_recognition_ready">Speech Recognition Ready!</string>
 </resources>

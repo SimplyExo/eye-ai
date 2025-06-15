@@ -11,4 +11,10 @@
             app:title="Depth Estimation Model"
             app:summary="%s" />
     </PreferenceCategory>
+
+    <PreferenceCategory app:title="LLM">
+        <EditTextPreference
+            app:key="@string/google_ai_studio_api_key_stetting"
+            app:title="Google AI Studio API Key" />
+    </PreferenceCategory>
 </PreferenceScreen>

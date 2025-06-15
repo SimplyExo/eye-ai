@@ -12,6 +12,9 @@ class Settings(val context: Context) {
 	var showProfilingInfo: Boolean
 		private set
 
+	var googleAiStudioApiKey: String?
+		private set
+
 	init {
 		depthModel = sharedPreferences.getString(
 			context.getString(R.string.depth_model_setting),
@@ -21,6 +24,11 @@ class Settings(val context: Context) {
 		showProfilingInfo = sharedPreferences.getBoolean(
 			context.getString(R.string.show_profiling_info_setting),
 			false
+		)
+
+		googleAiStudioApiKey = sharedPreferences.getString(
+			context.getString(R.string.google_ai_studio_api_key_stetting),
+			null
 		)
 	}
 }
