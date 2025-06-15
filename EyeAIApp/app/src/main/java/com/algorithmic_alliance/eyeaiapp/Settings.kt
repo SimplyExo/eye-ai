@@ -9,7 +9,7 @@ class Settings(val context: Context) {
 	var depthModel: String
 		private set
 
-	var profilingEnabled: Boolean
+	var showProfilingInfo: Boolean
 		private set
 
 	init {
@@ -18,8 +18,8 @@ class Settings(val context: Context) {
 			EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
 		).toString()
 
-		profilingEnabled = sharedPreferences.getBoolean(
-			context.getString(R.string.profiling_enabled_setting),
+		showProfilingInfo = sharedPreferences.getBoolean(
+			context.getString(R.string.show_profiling_info_setting),
 			false
 		)
 	}

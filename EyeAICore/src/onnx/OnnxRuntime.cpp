@@ -1,6 +1,6 @@
 #include "EyeAICore/onnx/OnnxRuntime.hpp"
 #include "EyeAICore/onnx/OnnxUtils.hpp"
-#include "EyeAICore/utils/Exceptions.hpp"
+#include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 #include "onnxruntime_c_api.h"
 #include "onnxruntime_cxx_api.h"
@@ -37,63 +37,85 @@ static void onnx_logging_callback(
 	}
 }
 
-OnnxRuntime::OnnxRuntime(
+tl::expected<std::unique_ptr<OnnxRuntime>, std::string> OnnxRuntime::create(
 	std::span<const std::byte> model_data,
 	OnnxLogCallbacks&& log_callbacks
-)
-	: log_callbacks(std::move(log_callbacks)) {
+) {
 	PROFILE_DEPTH_SCOPE("Init OnnxRuntime")
 
-	env = Ort::Env(
+	std::unique_ptr<OnnxRuntime> runtime(
+		new OnnxRuntime(std::move(log_callbacks))
+	);
+
+	Ort::Env env(
 		ORT_LOGGING_LEVEL_WARNING, "Default", onnx_logging_callback,
-		&this->log_callbacks
+		&runtime->log_callbacks
 	);
 
 	auto session_options = Ort::SessionOptions();
 	session_options.SetInterOpNumThreads(4);
 	session_options.SetGraphOptimizationLevel(ORT_ENABLE_ALL);
 
-	throw_on_onnx_status(
-		Ort::Status(OrtSessionOptionsAppendExecutionProvider_CPU(
-			session_options, (int)true
-		))
+	const auto append_cpu_status = Ort::Status(
+		OrtSessionOptionsAppendExecutionProvider_CPU(session_options, true)
 	);
+	if (!append_cpu_status.IsOK()) {
+		return tl::unexpected_fmt(
+			"failed to append cpu execution provider: {}: {}",
+			format_ort_error_code(append_cpu_status.GetErrorCode()),
+			append_cpu_status.GetErrorMessage()
+		);
+	}
 
 	// TODO: test out what impact NNAPI_FLAG_USE_FP16 has
 	constexpr uint32_t NNAPI_FLAGS =
 		NNAPI_FLAG_USE_FP16; // | NNAPI_FLAG_CPU_DISABLED;
 
-	throw_on_onnx_status(
+	const auto append_nnapi_status =
 		Ort::Status(OrtSessionOptionsAppendExecutionProvider_Nnapi(
 			session_options, NNAPI_FLAGS
-		))
+		));
+	if (!append_nnapi_status.IsOK()) {
+		return tl::unexpected_fmt(
+			"failed to append nnapi execution provider: {}: {}",
+			format_ort_error_code(append_nnapi_status.GetErrorCode()),
+			append_nnapi_status.GetErrorMessage()
+		);
+	}
+
+	runtime->session = Ort::Session(
+		runtime->env, model_data.data(), model_data.size_bytes(),
+		session_options
 	);
 
-	session = Ort::Session(
-		env, model_data.data(), model_data.size_bytes(), session_options
-	);
-
-	const auto input_names = session.GetInputNames();
+	const auto input_names = runtime->session.GetInputNames();
 	if (input_names.size() != 1)
-		throw OnnxInvalidInputCount(input_names.size());
-	input_name = input_names[0];
+		return tl::unexpected_fmt(
+			"invalid model input count: {}", input_names.size()
+		);
+	runtime->input_name = input_names[0];
 
 	const auto input_type_and_shape_info =
-		session.GetInputTypeInfo(0).GetTensorTypeAndShapeInfo();
-	input_shape = input_type_and_shape_info.GetShape();
-	input_type = input_type_and_shape_info.GetElementType();
+		runtime->session.GetInputTypeInfo(0).GetTensorTypeAndShapeInfo();
+	runtime->input_shape = input_type_and_shape_info.GetShape();
+	runtime->input_type = input_type_and_shape_info.GetElementType();
 
-	const auto output_names = session.GetOutputNames();
+	const auto output_names = runtime->session.GetOutputNames();
 	if (output_names.size() != 1)
-		throw OnnxInvalidOutputCount(output_names.size());
-	output_name = output_names[0];
+		return tl::unexpected_fmt(
+			"invalid model output count: {}", output_names.size()
+		);
+	runtime->output_name = output_names[0];
 
 	const auto output_type_and_shape_info =
-		session.GetOutputTypeInfo(0).GetTensorTypeAndShapeInfo();
-	output_shape = output_type_and_shape_info.GetShape();
-	output_type = output_type_and_shape_info.GetElementType();
+		runtime->session.GetOutputTypeInfo(0).GetTensorTypeAndShapeInfo();
+	runtime->output_shape = output_type_and_shape_info.GetShape();
+	runtime->output_type = output_type_and_shape_info.GetElementType();
 
-	memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeCPU);
+	runtime->memory_info =
+		Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeCPU);
+
+	return runtime;
 }
 
 void OnnxRuntime::run_inference_raw(

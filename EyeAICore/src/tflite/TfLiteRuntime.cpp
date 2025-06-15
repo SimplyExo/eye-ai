@@ -8,84 +8,46 @@
 static void
 tflite_error_callback(void* /*user_data*/, const char* format, va_list args);
 
-// NOLINTBEGIN(modernize-use-default-member-init,
-// cppcoreguidelines-prefer-member-initializer)
-TfLiteRuntime::TfLiteRuntime(
+tl::expected<std::unique_ptr<TfLiteRuntime>, std::string> TfLiteRuntime::create(
 	std::span<const int8_t> model_data,
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
-	bool enable_profiling,
 	TfLiteLogErrorCallback log_error_callback
-)
-	: model(nullptr), interpreter(nullptr), interpreter_options(nullptr),
-	  gpu_delegate(nullptr), log_error_callback(log_error_callback) {
-
+) {
 	PROFILE_DEPTH_SCOPE("Initialize TfLiteRuntime")
 
-	model = TfLiteModelCreate(model_data.data(), model_data.size());
+	std::unique_ptr<TfLiteRuntime> runtime(new TfLiteRuntime(log_error_callback)
+	);
 
-	interpreter_options = TfLiteInterpreterOptionsCreate();
+	runtime->model = TfLiteModelCreate(model_data.data(), model_data.size());
+
+	runtime->interpreter_options = TfLiteInterpreterOptionsCreate();
 	TfLiteInterpreterOptionsSetErrorReporter(
-		interpreter_options, tflite_error_callback,
+		runtime->interpreter_options, tflite_error_callback,
 		reinterpret_cast<void*>(log_error_callback)
 	);
-	TfLiteInterpreterOptionsSetNumThreads(interpreter_options, 4);
+	TfLiteInterpreterOptionsSetNumThreads(runtime->interpreter_options, 4);
 
-	if (enable_profiling) {
-		telemetry_profiler = TfLiteTelemetryProfilerStruct{
-			.data = this,
-			.ReportTelemetryEvent =
-				[](struct TfLiteTelemetryProfilerStruct* profiler,
-				   const char* event_name, uint64_t status) {
-					/* unused */
-				},
-			.ReportTelemetryOpEvent =
-				[](struct TfLiteTelemetryProfilerStruct* profiler,
-				   const char* event_name, int64_t op_idx, int64_t subgraph_idx,
-				   uint64_t status) { /* not used */ },
-			.ReportSettings = [](struct TfLiteTelemetryProfilerStruct* profiler,
-								 const char* setting_name,
-								 const TfLiteTelemetrySettings* settings
-							  ) { /* unused */ },
-			.ReportBeginOpInvokeEvent =
-				[](struct TfLiteTelemetryProfilerStruct* profiler,
-				   const char* op_name, int64_t op_idx,
-				   int64_t subgraph_idx) -> uint32_t {
-				/* unused */
-				return 0;
-			},
-			.ReportEndOpInvokeEvent =
-				[](struct TfLiteTelemetryProfilerStruct* profiler,
-				   uint32_t event_handle) { /* unused */ },
-			.ReportOpInvokeEvent =
-				[](struct TfLiteTelemetryProfilerStruct* profiler,
-				   const char* op_name, uint64_t elapsed_time, int64_t op_idx,
-				   int64_t subgraph_idx) {
-					auto* runtime =
-						reinterpret_cast<TfLiteRuntime*>(profiler->data);
-					runtime->current_invoke_profiler_entries.emplace_back(
-						op_name, std::chrono::microseconds(elapsed_time)
-					);
-				},
-		};
-		TfLiteInterpreterOptionsSetTelemetryProfiler(
-			interpreter_options, &telemetry_profiler.value()
+	runtime->gpu_delegate =
+		create_gpu_delegate(gpu_delegate_serialization_dir, model_token);
+	TfLiteInterpreterOptionsAddDelegate(
+		runtime->interpreter_options, runtime->gpu_delegate
+	);
+
+	runtime->interpreter =
+		TfLiteInterpreterCreate(runtime->model, runtime->interpreter_options);
+
+	const TfLiteStatus allocate_tensors_status =
+		TfLiteInterpreterAllocateTensors(runtime->interpreter);
+	if (allocate_tensors_status != kTfLiteOk) {
+		return tl::unexpected_fmt(
+			"failed to allocate tensors: {}",
+			format_tflite_status(allocate_tensors_status)
 		);
 	}
 
-	gpu_delegate =
-		create_gpu_delegate(gpu_delegate_serialization_dir, model_token);
-	TfLiteInterpreterOptionsAddDelegate(interpreter_options, gpu_delegate);
-
-	interpreter = TfLiteInterpreterCreate(model, interpreter_options);
-
-	throw_on_tflite_status(
-		TfLiteInterpreterAllocateTensors(interpreter),
-		"failed to allocate tensors"
-	);
+	return runtime;
 }
-// NOLINTEND(modernize-use-default-member-init,
-// cppcoreguidelines-prefer-member-initializer)
 
 TfLiteRuntime::~TfLiteRuntime() {
 	PROFILE_DEPTH_SCOPE("Shutdown TfLiteRuntime")
@@ -97,35 +59,66 @@ TfLiteRuntime::~TfLiteRuntime() {
 	TfLiteModelDelete(model);
 }
 
-void TfLiteRuntime::load_nonquantized_input(
+tl::expected<void, std::string> TfLiteRuntime::invoke() {
+	PROFILE_DEPTH_SCOPE("Invoking of model")
+
+	const TfLiteStatus status = TfLiteInterpreterInvoke(interpreter);
+	if (status == kTfLiteOk)
+		return {};
+	return tl::unexpected_fmt(
+		"failed to invoke interpreter: {}", format_tflite_status(status)
+	);
+}
+
+tl::expected<void, std::string> TfLiteRuntime::load_nonquantized_input(
 	std::span<const std::byte> input_bytes,
 	TfLiteTensor* input_tensor,
 	TfLiteType input_type
 ) {
-	if (input_tensor->type != input_type)
-		throw WrongTypeException(input_tensor->type, input_type);
+	if (input_tensor->type != input_type) {
+		return tl::unexpected_fmt(
+			"invalid input type of {}, expected {}",
+			format_tflite_type(input_type),
+			format_tflite_type(input_tensor->type)
+		);
+	}
 
-	throw_on_tflite_status(
-		TfLiteTensorCopyFromBuffer(
-			input_tensor, input_bytes.data(), input_bytes.size_bytes()
-		),
-		"failed to load input from tensor"
+	const TfLiteStatus copy_from_buffer_status = TfLiteTensorCopyFromBuffer(
+		input_tensor, input_bytes.data(), input_bytes.size_bytes()
+	);
+
+	if (copy_from_buffer_status == kTfLiteOk)
+		return {};
+
+	return tl::unexpected_fmt(
+		"failed to copy input buffer to tensor: {}",
+		format_tflite_status(copy_from_buffer_status)
 	);
 }
 
-void TfLiteRuntime::read_nonquantized_output(
+tl::expected<void, std::string> TfLiteRuntime::read_nonquantized_output(
 	std::span<std::byte> output_bytes,
 	const TfLiteTensor* output_tensor,
 	TfLiteType output_type
 ) {
-	if (output_tensor->type != output_type)
-		throw WrongTypeException(output_tensor->type, output_type);
+	if (output_tensor->type != output_type) {
+		return tl::unexpected_fmt(
+			"invalid output type of {}, expected {}",
+			format_tflite_type(output_type),
+			format_tflite_type(output_tensor->type)
+		);
+	}
 
-	throw_on_tflite_status(
-		TfLiteTensorCopyToBuffer(
-			output_tensor, output_bytes.data(), output_bytes.size_bytes()
-		),
-		"failed to read output from tensor"
+	const TfLiteStatus copy_from_buffer_status = TfLiteTensorCopyToBuffer(
+		output_tensor, output_bytes.data(), output_bytes.size_bytes()
+	);
+
+	if (copy_from_buffer_status == kTfLiteOk)
+		return {};
+
+	return tl::unexpected_fmt(
+		"failed to copy from tensor to buffer: {}",
+		format_tflite_status(copy_from_buffer_status)
 	);
 }
 

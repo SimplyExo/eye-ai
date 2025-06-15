@@ -1,9 +1,8 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory app:title="General">
         <CheckBoxPreference
-            app:key="@string/profiling_enabled_setting"
-            app:title="Enable Profiling"
-            app:summary="Has a big effect on performance!" />
+            app:key="@string/show_profiling_info_setting"
+            app:title="Show Profiling Information" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Depth Estimation">

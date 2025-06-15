@@ -1,30 +1,27 @@
 #include "ImageUtils.hpp"
-#include "EyeAICore/utils/Exceptions.hpp"
+#include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/ImageUtils.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 #include "Log.hpp"
 
-void check_android_bitmap_result(int result) {
-	if (result == ANDROID_BITMAP_RESULT_SUCCESS)
-		return;
-
+tl::expected<void, std::string> check_android_bitmap_result(int result) {
 	switch (result) {
+	case ANDROID_BITMAP_RESULT_SUCCESS:
+		return {};
 	case ANDROID_BITMAP_RESULT_BAD_PARAMETER:
-		LOG_ERROR("Android Bitmap error: Bad Parameter");
-		break;
+		return tl::unexpected("Android Bitmap error: Bad Parameter");
 	case ANDROID_BITMAP_RESULT_JNI_EXCEPTION:
-		LOG_ERROR("Android Bitmap error: JNI Exception");
-		break;
+		return tl::unexpected("Android Bitmap error: JNI Exception");
 	case ANDROID_BITMAP_RESULT_ALLOCATION_FAILED:
-		LOG_ERROR("Android Bitmap error: Allocation failed");
-		break;
+		return tl::unexpected("Android Bitmap error: Allocation failed");
 	default:
-		LOG_ERROR("Android Bitmap error: Unknown code: {}", result);
-		break;
+		return tl::unexpected_fmt(
+			"Android Bitmap error: Unknown code: {}", result
+		);
 	}
 }
 
-void bitmap_to_rgb_hwc_255_float_array(
+tl::expected<void, std::string> bitmap_to_rgb_hwc_255_float_array(
 	JNIEnv* env,
 	jobject bitmap,
 	std::span<float> out_float_array
@@ -32,20 +29,29 @@ void bitmap_to_rgb_hwc_255_float_array(
 	PROFILE_CAMERA_FUNCTION()
 
 	AndroidBitmapInfo info;
-	check_android_bitmap_result(AndroidBitmap_getInfo(env, bitmap, &info));
+	auto result =
+		check_android_bitmap_result(AndroidBitmap_getInfo(env, bitmap, &info));
+	if (!result.has_value())
+		return tl::unexpected(result.error());
 
-	if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888)
-		throw FormatNotRGBA888Exception(info.format);
+	if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+		return tl::unexpected_fmt(
+			"bitmap has format {}, but RGBA_8888 was expected", info.format
+		);
+	}
 
 	if (out_float_array.size() != (size_t)info.width * (size_t)info.height * 3)
 		throw std::invalid_argument("out_float_array");
 
 	void* address_ptr = nullptr;
-	check_android_bitmap_result(
+	result = check_android_bitmap_result(
 		AndroidBitmap_lockPixels(env, bitmap, &address_ptr)
 	);
-	if (address_ptr == nullptr)
-		throw FailedToLockPixelsException();
+	if (!result.has_value())
+		return tl::unexpected(result.error());
+	if (address_ptr == nullptr) {
+		return tl::unexpected("failed to lock bitmap pixels");
+	}
 	// RGBA 8888 -> one int for each pixel, lint supression needed because of c
 	// api
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -65,10 +71,10 @@ void bitmap_to_rgb_hwc_255_float_array(
 		out_float_array[j++] = (float)blue_channel_from_argb_color(pixel_color);
 	}
 
-	check_android_bitmap_result(AndroidBitmap_unlockPixels(env, bitmap));
+	return check_android_bitmap_result(AndroidBitmap_unlockPixels(env, bitmap));
 }
 
-void bitmap_to_rgb_chw_float_array(
+tl::expected<void, std::string> bitmap_to_rgb_chw_float_array(
 	JNIEnv* env,
 	jobject bitmap,
 	std::span<float> out_float_array
@@ -76,20 +82,30 @@ void bitmap_to_rgb_chw_float_array(
 	PROFILE_CAMERA_FUNCTION()
 
 	AndroidBitmapInfo info;
-	check_android_bitmap_result(AndroidBitmap_getInfo(env, bitmap, &info));
+	auto result =
+		check_android_bitmap_result(AndroidBitmap_getInfo(env, bitmap, &info));
+	if (!result.has_value())
+		return tl::unexpected(result.error());
 
-	if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888)
-		throw FormatNotRGBA888Exception(info.format);
+	if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+		return tl::unexpected_fmt(
+			"bitmap has format {}, but RGBA_8888 was expected", info.format
+		);
+	}
 
 	if (out_float_array.size() != (size_t)info.width * (size_t)info.height * 3)
 		throw std::invalid_argument("out_float_array");
 
 	void* address_ptr = nullptr;
-	check_android_bitmap_result(
+	result = check_android_bitmap_result(
 		AndroidBitmap_lockPixels(env, bitmap, &address_ptr)
 	);
-	if (address_ptr == nullptr)
-		throw FailedToLockPixelsException();
+	if (!result.has_value())
+		return tl::unexpected(result.error());
+
+	if (address_ptr == nullptr) {
+		return tl::unexpected("failed to lock bitmap pixels");
+	}
 	// RGBA 8888 -> one int for each pixel
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
 	const auto int_pixels = std::span<int>(
@@ -114,17 +130,21 @@ void bitmap_to_rgb_chw_float_array(
 			(float)blue_channel_from_argb_color(pixel_color) / 255.f;
 	}
 
-	check_android_bitmap_result(AndroidBitmap_unlockPixels(env, bitmap));
+	return check_android_bitmap_result(AndroidBitmap_unlockPixels(env, bitmap));
 }
 
-void image_bytes_to_argb_int_array(
+tl::expected<void, std::string> image_bytes_to_argb_int_array(
 	const std::span<const jbyte> image_bytes,
 	std::span<jint> out_pixels
 ) {
 	PROFILE_CAMERA_FUNCTION()
 
-	if (image_bytes.size_bytes() != out_pixels.size_bytes())
-		throw std::invalid_argument("out_pixels");
+	if (image_bytes.size_bytes() != out_pixels.size_bytes()) {
+		return tl::unexpected_fmt(
+			"image_bytes has {} bytes, but out_pixels has {} bytes!",
+			image_bytes.size_bytes(), out_pixels.size_bytes()
+		);
+	}
 
 	size_t i = 0;
 	size_t j = 0;
@@ -135,4 +155,6 @@ void image_bytes_to_argb_int_array(
 		auto a = image_bytes[j++];
 		out_pixels[i] = color_argb(a, r, g, b);
 	}
+
+	return {};
 }

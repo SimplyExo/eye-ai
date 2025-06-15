@@ -1,63 +1,23 @@
 #pragma once
 
-#include <cassert>
-#include <span>
-#include <string_view>
-#include <stdexcept>
+#include "EyeAICore/utils/Errors.hpp"
 #include <optional>
+#include <span>
+#include <stdexcept>
+#include <string_view>
 #include <tflite/c/c_api.h>
-#include <tflite/c/common.h>
 #include <tflite/delegates/gpu/delegate.h>
 
 std::string_view format_tflite_type(TfLiteType type);
 
 std::string_view format_tflite_status(TfLiteStatus status);
 
-inline static bool is_tensor_quantized(const TfLiteTensor* tensor) {
+static bool is_tensor_quantized(const TfLiteTensor* tensor) {
 	return tensor->quantization.type == kTfLiteAffineQuantization;
 }
 
-class TfLiteStatusException : public std::runtime_error {
-  public:
-	explicit TfLiteStatusException(
-		TfLiteStatus status,
-		std::string_view context
-	);
-
-	std::string_view context;
-	TfLiteStatus status;
-};
-void throw_on_tflite_status(TfLiteStatus status, std::string_view context);
-
-class UnsupportedTypeQuantizationException : public std::runtime_error {
-  public:
-	explicit UnsupportedTypeQuantizationException(TfLiteType unsupported_type);
-};
-
-class UnsupportedAsymmetricQuantizationException : public std::exception {
-  public:
-	[[nodiscard]] const char* what() const noexcept override {
-		return "asymmetric quantization unsupported";
-	}
-};
-
-class TensorNotYetCreatedException : public std::exception {
-  public:
-	[[nodiscard]] const char* what() const noexcept override {
-		return "tensor not yet created";
-	}
-};
-
-class WrongTypeException : public std::runtime_error {
-  public:
-	explicit WrongTypeException(
-		TfLiteType expected_type,
-		TfLiteType provided_type
-	);
-};
-
 template<typename T>
-void quantize(
+[[nodiscard]] tl::expected<void, std::string> quantize(
 	std::span<const T> values,
 	std::span<std::byte> quantized_values,
 	TfLiteType quantized_type,
@@ -65,7 +25,7 @@ void quantize(
 );
 
 template<typename T>
-void dequantize(
+[[nodiscard]] tl::expected<void, std::string> dequantize(
 	std::span<const std::byte> quantized_values,
 	std::span<T> real_values,
 	TfLiteType quantized_type,

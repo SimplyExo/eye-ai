@@ -26,8 +26,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthTfLiteRuntime(
 	jobject /*thiz*/,
 	jbyteArray model,
 	jstring gpu_delegate_serialization_dir,
-	jstring model_token,
-	jboolean enable_profiling
+	jstring model_token
 ) {
 
 	NativeByteArrayScope model_data(env, model);
@@ -40,12 +39,14 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthTfLiteRuntime(
 		LOG_ERROR("[TfLiteRuntime] {}", msg);
 	};
 
-	LOG_ON_EXCEPTION(
-		depth_estimation_tflite_runtime = std::make_unique<TfLiteRuntime>(
-			model_data, gpu_delegate_serialization_dir_string,
-			model_token_string, enable_profiling, log_error_callback
-		);
-	)
+	auto result = TfLiteRuntime::create(
+		model_data, gpu_delegate_serialization_dir_string, model_token_string,
+		log_error_callback
+	);
+	if (result)
+		depth_estimation_tflite_runtime.swap(*result);
+	else
+		LOG_ERROR("[TfLiteRuntime] Failed to create: {}", result.error());
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -56,7 +57,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_shutdownDepthTfLiteRuntime(
 	depth_estimation_tflite_runtime.reset(nullptr);
 }
 
-extern "C" JNIEXPORT jstring JNICALL
+extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthTfLiteInference(
 	JNIEnv* env,
 	jobject /*thiz*/,
@@ -71,7 +72,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthTfLiteInference(
 ) {
 	if (depth_estimation_tflite_runtime == nullptr) {
 		LOG_ERROR("TfLiteRuntime not initialized!");
-		return nullptr;
+		return;
 	}
 
 	NativeFloatArrayScope input_array(env, input);
@@ -80,22 +81,14 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthTfLiteInference(
 	const std::array<float, 3> mean = {mean_r, mean_g, mean_b};
 	const std::array<float, 3> stddev = {stddev_r, stddev_g, stddev_b};
 
-	std::vector<TfLiteProfilerEntry> profiler_entries;
-
-	LOG_ON_EXCEPTION(run_depth_estimation(
-						 *depth_estimation_tflite_runtime, input_array,
-						 output_array, mean, stddev, profiler_entries
-	);)
-
-	if (profiler_entries.empty()) {
-		return nullptr;
-	} else {
-		std::string formatted;
-		for (const auto& entry : profiler_entries)
-			formatted += std::format("{}: {}\n", entry.name, entry.duration);
-
-		return env->NewStringUTF(formatted.c_str());
-	}
+	const auto result = run_depth_estimation(
+		*depth_estimation_tflite_runtime, input_array, output_array, mean,
+		stddev
+	);
+	if (!result.has_value())
+		LOG_ERROR(
+			"[TfLiteRuntime] Failed to run inference: {}", result.error()
+		);
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -111,12 +104,14 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthOnnxRuntime(
 		.log_error = [](const auto msg) { LOG_ERROR("[OnnxRuntime] {}", msg); }
 	};
 
-	LOG_ON_EXCEPTION(
-		depth_estimation_onnx_runtime = std::make_unique<OnnxRuntime>(
-			std::as_bytes((std::span<const jbyte>)model_data),
-			std::move(log_callbacks)
-		);
-	)
+	auto result = OnnxRuntime::create(
+		std::as_bytes((std::span<const jbyte>)model_data),
+		std::move(log_callbacks)
+	);
+	if (result)
+		depth_estimation_onnx_runtime.swap(*result);
+	else
+		LOG_ERROR("[OnnxRuntime] Failed to create: {}", result.error());
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -151,10 +146,11 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthOnnxInference(
 	const std::array<float, 3> mean = {mean_r, mean_g, mean_b};
 	const std::array<float, 3> stddev = {stddev_r, stddev_g, stddev_b};
 
-	LOG_ON_EXCEPTION(run_depth_estimation(
-						 *depth_estimation_onnx_runtime, input_array,
-						 output_array, mean, stddev
-	);)
+	const auto result = run_depth_estimation(
+		*depth_estimation_onnx_runtime, input_array, output_array, mean, stddev
+	);
+	if (!result.has_value())
+		LOG_ERROR("[OnnxRuntime] Failed to run inference: {}", result.error());
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -168,9 +164,10 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_depthColormap(
 	NativeIntArrayScope colormapped_pixel_array(env, colormapped_pixels);
 
 	if (depth_value_array.size() == colormapped_pixel_array.size()) {
-		LOG_ON_EXCEPTION(
+		const auto result =
 			depth_colormap(depth_value_array, colormapped_pixel_array);
-		)
+		if (!result.has_value())
+			LOG_ERROR("depthColormap failed: {}", result.error());
 	} else {
 		LOG_ERROR(
 			"depth and colormapped pixel array should have the same length! "
@@ -190,9 +187,10 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbChwFloatArray(
 
 	NativeFloatArrayScope out_float_array_scope(env, out_float_array);
 
-	LOG_ON_EXCEPTION(
+	const auto result =
 		bitmap_to_rgb_chw_float_array(env, bitmap, out_float_array_scope);
-	)
+	if (!result.has_value())
+		LOG_ERROR("bitmapToRgbChwFloatArray failed: {}", result.error());
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -205,9 +203,10 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 
 	NativeFloatArrayScope out_float_array_scope(env, out_float_array);
 
-	LOG_ON_EXCEPTION(
+	const auto result =
 		bitmap_to_rgb_hwc_255_float_array(env, bitmap, out_float_array_scope);
-	)
+	if (!result.has_value())
+		LOG_ERROR("bitmapToRgbHwc255FloatArray failed: {}", result.error());
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -221,9 +220,10 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_imageBytesToArgbIntArray(
 	NativeByteArrayScope image_byte_array(env, image_bytes);
 	NativeIntArrayScope out_int_array_scope(env, out_int_array);
 
-	LOG_ON_EXCEPTION(
+	const auto result =
 		image_bytes_to_argb_int_array(image_byte_array, out_int_array_scope);
-	)
+	if (!result.has_value())
+		LOG_ERROR("imageBytesToArgbIntArray failed: {}", result.error());
 }
 
 extern "C" JNIEXPORT void JNICALL

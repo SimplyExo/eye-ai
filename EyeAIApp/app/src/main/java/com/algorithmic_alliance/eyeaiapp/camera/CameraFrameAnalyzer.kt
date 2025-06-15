@@ -52,16 +52,14 @@ class CameraFrameAnalyzer(
 						)
 						depthView.setImageBitmap(colorMappedImage)
 
-						if (eyeAIApp.settings.profilingEnabled) {
+						if (eyeAIApp.settings.showProfilingInfo) {
 							val formattedInputResolution = "${inputWidth}x${inputHeight}"
 							val modelName = eyeAIApp.depthModel.getName()
 							val modelInputSize = eyeAIApp.depthModel.getInputSize()
 							val formattedModelInputSize =
 								"${modelInputSize.width}x${modelInputSize.height}"
-							val formattedDepthModelProfilerEntries =
-								eyeAIApp.depthModel.getFormattedProfilerEntries() ?: ""
 							performanceText.text =
-								"Model: $modelName\nCamera resolution: $formattedInputResolution --> Model input: $formattedModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}\n\nDepth Model Profiler:\n$formattedDepthModelProfilerEntries"
+								"Model: $modelName\nCamera resolution: $formattedInputResolution --> Model input: $formattedModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}"
 						} else {
 							performanceText.text = ""
 						}
