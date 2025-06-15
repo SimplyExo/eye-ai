@@ -16,7 +16,7 @@ class DepthModelInfo(
 	val normStddev: FloatArray
 ) {
 	/** @return null if model type is not supported */
-	fun createDepthModel(context: Context, enableProfiling: Boolean): DepthModel? {
+	fun createDepthModel(context: Context): DepthModel? {
 		if (normMean.size != 3 || normStddev.size != 3) return null
 
 		if (fileName.endsWith(".tflite")) {
@@ -25,8 +25,7 @@ class DepthModelInfo(
 				fileName,
 				inputDim,
 				normMean,
-				normStddev,
-				enableProfiling
+				normStddev
 			)
 		} else if (fileName.endsWith(".onnx")) {
 			return OnnxModel(context, fileName, inputDim, normMean, normStddev)
@@ -49,9 +48,6 @@ interface DepthModel : AutoCloseable {
 
 	/** @return preferred input image dimensions of the model */
 	fun getInputSize(): Size
-
-	/** @return profiler entries formatted if profiling was enabled, else null */
-	fun getFormattedProfilerEntries(): String?
 }
 
 fun createSerializedGpuDelegateCacheDirectory(context: Context): File {

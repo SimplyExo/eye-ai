@@ -1,29 +1,23 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.22)
 
 project(EyeAICore)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# configure clang-tidy if installed
-find_program(CLANG_TIDY_EXE NAMES clang-tidy)
-if (CLANG_TIDY_EXE)
-	set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
-endif ()
-
-if(DEFINED CMAKE_ANDROID_ARCH_ABI)
+if (DEFINED CMAKE_ANDROID_ARCH_ABI)
 	set(EYE_AI_CORE_ABI ${CMAKE_ANDROID_ARCH_ABI})
-else()
+else ()
 	message(STATUS "EyeAICore: Not using Android NDK, setting EyeAICore ABI to host arch")
-	if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+	if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
 		set(EYE_AI_CORE_ABI "x86_64")
-	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "i386")
+	elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "i386")
 		set(EYE_AI_CORE_ABI "x86")
-	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+	elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
 		set(EYE_AI_CORE_ABI "arm64-v8a")
-	else()
+	else ()
 		set(EYE_AI_CORE_ABI "armeabi-v7a")
-	endif()
-endif()
+	endif ()
+endif ()
 
 message(STATUS "EyeAICore ABI: ${EYE_AI_CORE_ABI}")
 
@@ -44,9 +38,9 @@ add_library(
 target_compile_features(EyeAICore PUBLIC cxx_std_20)
 
 target_include_directories(EyeAICore
-		PUBLIC
-		"${CMAKE_CURRENT_SOURCE_DIR}/include"
-		${THIRD_PARTY_INCLUDE_DIRS}
+	PUBLIC
+	"${CMAKE_CURRENT_SOURCE_DIR}/include"
+	${THIRD_PARTY_INCLUDE_DIRS}
 )
 
 target_link_libraries(

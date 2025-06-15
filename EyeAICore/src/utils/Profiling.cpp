@@ -15,7 +15,9 @@ static std::string padding_tabs(size_t amount) {
 static std::string format_duration_millis(profile_clock::duration duration) {
 	const auto duration_micros =
 		std::chrono::duration_cast<std::chrono::microseconds>(duration);
-	return std::format("{:.2f} ms", static_cast<float>(duration_micros.count()) / 1000.0f);
+	return std::format(
+		"{:.2f} ms", static_cast<float>(duration_micros.count()) / 1000.0f
+	);
 }
 
 ProfileScope::ProfileScope(std::string_view name, ProfilingFrame& frame)
@@ -61,8 +63,11 @@ std::string ProfilingFrame::finish() {
 	}
 	const auto frame_duration = end - start;
 	const auto frame_duration_ms =
-		static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(frame_duration)
-			.count()) /
+		static_cast<float>(
+			std::chrono::duration_cast<std::chrono::microseconds>(frame_duration
+			)
+				.count()
+		) /
 		1000.0f;
 	auto frame_fps = 1.0 / (frame_duration_ms / 1000.0f);
 	auto formatted = std::format(

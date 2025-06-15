@@ -3,19 +3,19 @@
 #include "onnx/OnnxRuntime.hpp"
 #include "tflite/TfLiteRuntime.hpp"
 #include <span>
+#include <tl/expected.hpp>
 
 constexpr size_t RGB_CHANNELS = 3;
 
-void run_depth_estimation(
+[[nodiscard]] tl::expected<void, std::string> run_depth_estimation(
 	TfLiteRuntime& tflite_runtime,
 	std::span<float> input,
 	std::span<float> output,
 	std::array<float, RGB_CHANNELS> mean,
-	std::array<float, RGB_CHANNELS> stddev,
-	std::vector<TfLiteProfilerEntry>& out_profiler_entries
+	std::array<float, RGB_CHANNELS> stddev
 );
 
-void run_depth_estimation(
+[[nodiscard]] tl::expected<void, std::string> run_depth_estimation(
 	OnnxRuntime& onnx_runtime,
 	std::span<float> input_data,
 	std::span<float> output_data,
@@ -36,7 +36,7 @@ void min_max_scaling(std::span<float> values);
 
 /// computes the int representation of the inferno colormap of the depth at each
 /// pixel
-void depth_colormap(
+[[nodiscard]] tl::expected<void, std::string> depth_colormap(
 	std::span<const float> depth_values,
 	std::span<int> colormapped_pixels
 );

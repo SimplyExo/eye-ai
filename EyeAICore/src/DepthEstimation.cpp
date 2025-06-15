@@ -4,26 +4,28 @@
 #include "EyeAICore/utils/Profiling.hpp"
 #include <algorithm>
 
-void run_depth_estimation(
+tl::expected<void, std::string> run_depth_estimation(
 	TfLiteRuntime& tflite_runtime,
 	std::span<float> input,
 	std::span<float> output,
 	std::array<float, RGB_CHANNELS> mean,
-	std::array<float, RGB_CHANNELS> stddev,
-	std::vector<TfLiteProfilerEntry>& out_profiler_entries
+	std::array<float, RGB_CHANNELS> stddev
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
 	normalize_rgb(input, mean, stddev);
 
-	tflite_runtime.run_inference<float, float>(
-		input, output, out_profiler_entries
-	);
+	const auto result =
+		tflite_runtime.run_inference<float, float>(input, output);
+	if (!result.has_value())
+		return tl::unexpected(result.error());
 
 	min_max_scaling(output);
+
+	return {};
 }
 
-void run_depth_estimation(
+tl::expected<void, std::string> run_depth_estimation(
 	OnnxRuntime& onnx_runtime,
 	std::span<float> input_data,
 	std::span<float> output_data,
@@ -34,9 +36,14 @@ void run_depth_estimation(
 
 	normalize_rgb(input_data, mean, stddev);
 
-	onnx_runtime.run_inference<float, float>(input_data, output_data);
+	const auto result =
+		onnx_runtime.run_inference<float, float>(input_data, output_data);
+	if (!result.has_value())
+		return tl::unexpected(result.error());
 
 	min_max_scaling(output_data);
+
+	return {};
 }
 
 void normalize_rgb(
@@ -79,16 +86,22 @@ void min_max_scaling(std::span<float> values) {
 
 static int inferno_depth_colormap(float relative_depth);
 
-void depth_colormap(
+tl::expected<void, std::string> depth_colormap(
 	std::span<const float> depth_values,
 	std::span<int> colormapped_pixels
 ) {
-	if (depth_values.size() != colormapped_pixels.size())
-		throw std::invalid_argument("depth_values and colormapped_pixels");
+	if (depth_values.size() != colormapped_pixels.size()) {
+		return tl::unexpected_fmt(
+			"depth_values ({}) does not match colormapped_pixels ({})",
+			depth_values.size(), colormapped_pixels.size()
+		);
+	}
 
 	for (size_t i = 0; i < depth_values.size(); i++) {
 		colormapped_pixels[i] = inferno_depth_colormap(depth_values[i]);
 	}
+
+	return {};
 }
 
 constexpr size_t INFERNO_COLOR_COUNT = 256;

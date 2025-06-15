@@ -36,27 +36,54 @@ std::string_view format_ort_error_code(OrtErrorCode error_code) {
 	}
 }
 
-OnnxStatusException::OnnxStatusException(Ort::Status&& status)
-	: std::runtime_error(std::format(
-		  "{}: {}",
-		  format_ort_error_code(status.GetErrorCode()),
-		  status.GetErrorMessage()
-	  )),
-	  status(std::move(status)) {}
-
-void throw_on_onnx_status(Ort::Status&& status) {
-	if (!status.IsOK())
-		throw OnnxStatusException(std::move(status));
+std::string_view format_ort_element_type(ONNXTensorElementDataType type) {
+	switch (type) {
+	default:
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED:
+		return "undefined";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT:
+		return "float";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT8:
+		return "uint8";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT8:
+		return "int8";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT16:
+		return "uint16";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT16:
+		return "int16";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT32:
+		return "int32";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64:
+		return "int64";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_STRING:
+		return "string";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_BOOL:
+		return "bool";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16:
+		return "float16";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_DOUBLE:
+		return "double";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT32:
+		return "uint32";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT64:
+		return "uint64";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX64:
+		return "complex64";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX128:
+		return "complex128";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_BFLOAT16:
+		return "bfloat16";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E4M3FN:
+		return "float8e4m3fn";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E4M3FNUZ:
+		return "float8e4m3fnuz";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E5M2:
+		return "float8e5m2";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E5M2FNUZ:
+		return "float8e5m2fnuz";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT4:
+		return "uint4";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT4:
+		return "int4";
+	}
 }
-
-OnnxInvalidInputCount::OnnxInvalidInputCount(size_t actual_count)
-	: std::runtime_error(
-		  std::format("invalid input count of {}, should be 1", actual_count)
-	  ),
-	  actual_count(actual_count) {}
-
-OnnxInvalidOutputCount::OnnxInvalidOutputCount(size_t actual_count)
-	: std::runtime_error(
-		  std::format("invalid output count of {}, should be 1", actual_count)
-	  ),
-	  actual_count(actual_count) {}

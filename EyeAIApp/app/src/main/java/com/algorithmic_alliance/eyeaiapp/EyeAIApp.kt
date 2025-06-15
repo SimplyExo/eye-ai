@@ -59,7 +59,7 @@ class EyeAIApp : Application() {
 
 		depthModel =
 			findDepthModelInfo(settings.depthModel)
-				.createDepthModel(this, settings.profilingEnabled)!!
+				.createDepthModel(this)!!
 
 		voskModel = VoskModel(this, "model-de")
 	}
@@ -68,16 +68,16 @@ class EyeAIApp : Application() {
 		val newSettings = Settings(this)
 
 		if (settings.depthModel != newSettings.depthModel ||
-			settings.profilingEnabled != newSettings.profilingEnabled
+			settings.showProfilingInfo != newSettings.showProfilingInfo
 		) {
-			switchDepthModel(newSettings.depthModel, newSettings.profilingEnabled)
+			switchDepthModel(newSettings.depthModel)
 		}
 
 		settings = newSettings
 	}
 
-	private fun switchDepthModel(modelName: String, profilingEnabled: Boolean) {
-		val newDepthModel = findDepthModelInfo(modelName).createDepthModel(this, profilingEnabled)
+	private fun switchDepthModel(modelName: String) {
+		val newDepthModel = findDepthModelInfo(modelName).createDepthModel(this)
 		if (newDepthModel != null) depthModel = newDepthModel
 		else
 			Log.e(

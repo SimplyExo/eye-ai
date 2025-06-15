@@ -55,6 +55,4 @@ class OnnxModel(
 
 		return output
 	}
-
-	override fun getFormattedProfilerEntries(): String? = null
 }

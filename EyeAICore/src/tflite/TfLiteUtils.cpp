@@ -1,41 +1,7 @@
 #include "EyeAICore/tflite/TfLiteUtils.hpp"
+
+#include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
-
-TfLiteStatusException::TfLiteStatusException(
-	TfLiteStatus status,
-	std::string_view context
-)
-	: std::runtime_error(
-		  std::format("{}: {}", context, format_tflite_status(status))
-	  ),
-	  context(context), status(status) {}
-
-void throw_on_tflite_status(TfLiteStatus status, std::string_view context) {
-	if (status != kTfLiteOk)
-		throw TfLiteStatusException(status, context);
-}
-
-UnsupportedTypeQuantizationException::UnsupportedTypeQuantizationException(
-	TfLiteType unsupported_type
-)
-	: std::runtime_error(
-		  std::format(
-			  "unsupported quantization type: {}",
-			  format_tflite_type(unsupported_type)
-		  )
-	  ) {}
-
-WrongTypeException::WrongTypeException(
-	TfLiteType expected_type,
-	TfLiteType provided_type
-)
-	: std::runtime_error(
-		  std::format(
-			  "invalid type of {}, expected {}",
-			  format_tflite_type(provided_type),
-			  format_tflite_type(expected_type)
-		  )
-	  ) {}
 
 TfLiteDelegate* create_gpu_delegate(
 	std::string_view gpu_delegate_serialization_dir,
@@ -45,10 +11,10 @@ TfLiteDelegate* create_gpu_delegate(
 
 	TfLiteGpuDelegateOptionsV2 gpu_delegate_options =
 		TfLiteGpuDelegateOptionsV2Default();
-	gpu_delegate_options.is_precision_loss_allowed = (int32_t)true;
+	gpu_delegate_options.is_precision_loss_allowed = static_cast<int32_t>(true);
 	gpu_delegate_options.inference_preference =
 		TFLITE_GPU_INFERENCE_PREFERENCE_FAST_SINGLE_ANSWER;
-	gpu_delegate_options.experimental_flags |= TfLiteGpuExperimentalFlags::
+	gpu_delegate_options.experimental_flags |=
 		TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
 	gpu_delegate_options.serialization_dir =
 		gpu_delegate_serialization_dir.data();
@@ -62,7 +28,7 @@ void delete_gpu_delegate(TfLiteDelegate* delegate) {
 }
 
 template<>
-void quantize<float>(
+tl::expected<void, std::string> quantize<float>(
 	std::span<const float> values,
 	std::span<std::byte> quantized_values,
 	TfLiteType quantized_type,
@@ -70,30 +36,41 @@ void quantize<float>(
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
-	if (quantized_type != kTfLiteUInt8)
-		throw UnsupportedTypeQuantizationException(quantized_type);
+	if (quantized_type != kTfLiteUInt8) {
+		return tl::unexpected_fmt(
+			"unsupported quantization of float32 to {}",
+			format_tflite_type(quantized_type)
+		);
+	}
 
-	if (values.size() != quantized_values.size())
-		throw std::invalid_argument("values and quantized_values");
+	if (values.size() != quantized_values.size()) {
+		return tl::unexpected_fmt(
+			"values ({}) and quantized_values ({}) dont match", values.size(),
+			quantized_values.size()
+		);
+	}
 
 	// for now, only 1 input, 1 output
 	if (quantization.scale->size != 1)
-		throw UnsupportedAsymmetricQuantizationException();
+		return tl::unexpected("only symmetric quantization supported for now");
 	const float quantization_scale = quantization.scale->data[0];
 	if (quantization.zero_point->size != 1)
-		throw UnsupportedAsymmetricQuantizationException();
+		return tl::unexpected("only symmetric quantization supported for now");
 	const int quantization_zero_point = quantization.zero_point->data[0];
 
 	for (size_t i = 0; i < values.size(); i++) {
 		static_assert(sizeof(std::byte) == sizeof(uint8_t));
-		quantized_values[i] =
-			(std::byte)((uint8_t)(values[i] / quantization_scale) +
-						quantization_zero_point);
+		quantized_values[i] = static_cast<std::byte>(
+			static_cast<uint8_t>(values[i] / quantization_scale) +
+			quantization_zero_point
+		);
 	}
+
+	return {};
 }
 
 template<>
-void dequantize<float>(
+tl::expected<void, std::string> dequantize<float>(
 	std::span<const std::byte> quantized_values,
 	std::span<float> real_values,
 	TfLiteType quantized_type,
@@ -101,26 +78,37 @@ void dequantize<float>(
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
-	if (quantized_type != kTfLiteUInt8)
-		throw UnsupportedTypeQuantizationException(quantized_type);
+	if (quantized_type != kTfLiteUInt8) {
+		return tl::unexpected_fmt(
+			"unsupported dequantization of {} to float32",
+			format_tflite_type(quantized_type)
+		);
+	}
 
-	if (quantized_values.size() != real_values.size())
-		throw std::invalid_argument("real_values and quantized_values");
+	if (quantized_values.size() != real_values.size()) {
+		return tl::unexpected_fmt(
+			"real_values ({}) and quantized_values ({}) dont match",
+			real_values.size(), quantized_values.size()
+		);
+	}
 
 	// for now, only 1 input, 1 output
 	if (quantization.scale->size != 1)
-		throw UnsupportedAsymmetricQuantizationException();
+		return tl::unexpected("only symmetric quantization supported for now");
 	const float quantization_scale = quantization.scale->data[0];
 	if (quantization.zero_point->size != 1)
-		throw UnsupportedAsymmetricQuantizationException();
+		return tl::unexpected("only symmetric quantization supported for now");
 	const int quantization_zero_point = quantization.zero_point->data[0];
 
 	for (size_t i = 0; i < real_values.size(); i++) {
 		static_assert(sizeof(std::byte) == sizeof(uint8_t));
-		const auto quantized = (const uint8_t)quantized_values[i];
+		const auto quantized = static_cast<const uint8_t>(quantized_values[i]);
 		real_values[i] =
-			quantization_scale * (float)(quantized - quantization_zero_point);
+			quantization_scale *
+			static_cast<float>(quantized - quantization_zero_point);
 	}
+
+	return {};
 }
 
 std::optional<size_t> get_tflite_type_size(TfLiteType type) {

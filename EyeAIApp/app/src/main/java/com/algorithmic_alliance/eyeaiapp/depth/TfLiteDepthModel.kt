@@ -13,11 +13,8 @@ class TfLiteDepthModel(
 	val fileName: String,
 	val inputDim: Int,
 	val normMean: FloatArray,
-	val normStddev: FloatArray,
-	enableProfiling: Boolean
+	val normStddev: FloatArray
 ) : DepthModel {
-	private var formattedProfilerEntries: String? = null
-
 	init {
 		val modelData = context.assets.open(fileName).readBytes()
 
@@ -44,8 +41,7 @@ class TfLiteDepthModel(
 		NativeLib.initDepthTfLiteRuntime(
 			modelData,
 			gpuDelegateCacheDirectory.path,
-			modelToken,
-			enableProfiling
+			modelToken
 		)
 	}
 
@@ -56,8 +52,6 @@ class TfLiteDepthModel(
 	override fun getName(): String = fileName
 
 	override fun getInputSize(): Size = Size(inputDim, inputDim)
-
-	override fun getFormattedProfilerEntries(): String? = formattedProfilerEntries
 
 	override fun predictDepth(input: Bitmap): FloatArray {
 		if (normMean.size != 3 || normStddev.size != 3) {
@@ -72,7 +66,7 @@ class TfLiteDepthModel(
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled)
 		var output = FloatArray(inputDim * inputDim)
 
-		val optionalFormattedProfilerEntries = NativeLib.runDepthTfLiteInference(
+		NativeLib.runDepthTfLiteInference(
 			input,
 			output,
 			normMean[0],
@@ -82,8 +76,6 @@ class TfLiteDepthModel(
 			normStddev[1],
 			normStddev[2]
 		)
-		if (optionalFormattedProfilerEntries != null)
-			formattedProfilerEntries = optionalFormattedProfilerEntries
 
 		return output
 	}
