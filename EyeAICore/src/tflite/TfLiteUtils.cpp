@@ -3,7 +3,8 @@
 #include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 
-TfLiteDelegate* create_gpu_delegate(
+std::unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
+create_gpu_delegate(
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token
 ) {
@@ -20,11 +21,10 @@ TfLiteDelegate* create_gpu_delegate(
 		gpu_delegate_serialization_dir.data();
 	gpu_delegate_options.model_token = model_token.data();
 
-	return TfLiteGpuDelegateV2Create(&gpu_delegate_options);
-}
-
-void delete_gpu_delegate(TfLiteDelegate* delegate) {
-	TfLiteGpuDelegateV2Delete(delegate);
+	return {
+		TfLiteGpuDelegateV2Create(&gpu_delegate_options),
+		TfLiteGpuDelegateV2Delete
+	};
 }
 
 template<>

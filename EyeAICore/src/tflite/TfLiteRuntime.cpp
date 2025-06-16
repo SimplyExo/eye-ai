@@ -5,40 +5,87 @@
 #include <format>
 #include <tflite/c/c_api_experimental.h>
 
+/// user_data_ptr is a pointer to a TfLiteErrorReporterUserData
 static void
-tflite_error_callback(void* /*user_data*/, const char* format, va_list args);
+tflite_error_callback(void* user_data_ptr, const char* format, va_list args);
 
 tl::expected<std::unique_ptr<TfLiteRuntime>, std::string> TfLiteRuntime::create(
-	std::span<const int8_t> model_data,
+	std::vector<int8_t>&& model_data,
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
+	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback
 ) {
 	PROFILE_DEPTH_SCOPE("Initialize TfLiteRuntime")
 
-	std::unique_ptr<TfLiteRuntime> runtime(new TfLiteRuntime(log_error_callback)
-	);
+	std::unique_ptr<TfLiteRuntime> runtime(new TfLiteRuntime(
+		std::move(model_data),
+		TfLiteErrorReporterUserData(log_warning_callback, log_error_callback)
+	));
 
-	runtime->model = TfLiteModelCreate(model_data.data(), model_data.size());
+	runtime->model = {
+		TfLiteModelCreate(
+			runtime->model_data.data(), runtime->model_data.size()
+		),
+		TfLiteModelDelete
+	};
 
-	runtime->interpreter_options = TfLiteInterpreterOptionsCreate();
+	TfLiteInterpreterOptions* interpreter_options_without_gpu_delegate =
+		TfLiteInterpreterOptionsCreate();
 	TfLiteInterpreterOptionsSetErrorReporter(
-		runtime->interpreter_options, tflite_error_callback,
-		reinterpret_cast<void*>(log_error_callback)
+		interpreter_options_without_gpu_delegate, tflite_error_callback,
+		&runtime->error_reporter_user_data
 	);
-	TfLiteInterpreterOptionsSetNumThreads(runtime->interpreter_options, 4);
+	TfLiteInterpreterOptionsSetNumThreads(
+		interpreter_options_without_gpu_delegate, 4
+	);
 
+	TfLiteInterpreterOptions* interpreter_options_with_gpu_delegate =
+		TfLiteInterpreterOptionsCopy(interpreter_options_without_gpu_delegate);
 	runtime->gpu_delegate =
 		create_gpu_delegate(gpu_delegate_serialization_dir, model_token);
 	TfLiteInterpreterOptionsAddDelegate(
-		runtime->interpreter_options, runtime->gpu_delegate
+		interpreter_options_with_gpu_delegate, runtime->gpu_delegate.get()
 	);
 
-	runtime->interpreter =
-		TfLiteInterpreterCreate(runtime->model, runtime->interpreter_options);
+	// first try to create interpreter with gpu delegate
+	runtime->interpreter = {
+		TfLiteInterpreterCreate(
+			runtime->model.get(), interpreter_options_with_gpu_delegate
+		),
+		TfLiteInterpreterDelete
+	};
+
+	if (runtime->interpreter == nullptr) {
+		// trying to create interpreter again, just without gpu delegate
+		log_warning_callback(
+			"GPU Delegate is not supported, falling back to CPU only mode"
+		);
+		runtime->interpreter = {
+			TfLiteInterpreterCreate(
+				runtime->model.get(), interpreter_options_without_gpu_delegate
+			),
+			TfLiteInterpreterDelete
+		};
+		if (runtime->interpreter == nullptr) {
+			return tl::unexpected(
+				"failed to create interpreter: with and without gpu delegate"
+			);
+		}
+		runtime->interpreter_options = {
+			interpreter_options_without_gpu_delegate,
+			TfLiteInterpreterOptionsDelete
+		};
+		runtime->gpu_delegate.reset();
+	} else {
+		runtime->interpreter_options = {
+			interpreter_options_with_gpu_delegate,
+			TfLiteInterpreterOptionsDelete
+		};
+	}
 
 	const TfLiteStatus allocate_tensors_status =
-		TfLiteInterpreterAllocateTensors(runtime->interpreter);
+		TfLiteInterpreterAllocateTensors(runtime->interpreter.get());
 	if (allocate_tensors_status != kTfLiteOk) {
 		return tl::unexpected_fmt(
 			"failed to allocate tensors: {}",
@@ -52,17 +99,16 @@ tl::expected<std::unique_ptr<TfLiteRuntime>, std::string> TfLiteRuntime::create(
 TfLiteRuntime::~TfLiteRuntime() {
 	PROFILE_DEPTH_SCOPE("Shutdown TfLiteRuntime")
 
-	TfLiteInterpreterDelete(interpreter);
-	if (gpu_delegate != nullptr)
-		delete_gpu_delegate(gpu_delegate);
-	TfLiteInterpreterOptionsDelete(interpreter_options);
-	TfLiteModelDelete(model);
+	interpreter.reset();
+	gpu_delegate.reset();
+	interpreter_options.reset();
+	model.reset();
 }
 
 tl::expected<void, std::string> TfLiteRuntime::invoke() {
 	PROFILE_DEPTH_SCOPE("Invoking of model")
 
-	const TfLiteStatus status = TfLiteInterpreterInvoke(interpreter);
+	const TfLiteStatus status = TfLiteInterpreterInvoke(interpreter.get());
 	if (status == kTfLiteOk)
 		return {};
 	return tl::unexpected_fmt(
@@ -122,11 +168,13 @@ tl::expected<void, std::string> TfLiteRuntime::read_nonquantized_output(
 	);
 }
 
-void tflite_error_callback(void* user_data, const char* format, va_list args) {
-	// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
-	const auto log_error_calback =
-		reinterpret_cast<TfLiteLogErrorCallback>(user_data);
-	// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
+void tflite_error_callback(
+	void* user_data_ptr,
+	const char* format,
+	va_list args
+) {
+	const auto* user_data =
+		static_cast<TfLiteErrorReporterUserData*>(user_data_ptr);
 
 	// c style va_list args is necessary as its required by the tflite c api for
 	// error reporting
@@ -147,7 +195,7 @@ void tflite_error_callback(void* user_data, const char* format, va_list args) {
 	// NOLINTEND(cppcoreguidelines-pro-type-vararg,
 	// cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
-	log_error_calback(
+	user_data->log_error_callback(
 		std::format("[TfLiteRuntime Error] {}", formatted_error_msg)
 	);
 }

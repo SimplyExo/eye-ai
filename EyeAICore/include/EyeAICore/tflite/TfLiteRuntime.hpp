@@ -5,37 +5,46 @@
 #include "TfLiteUtils.hpp"
 #include "tflite/c/c_api.h" // IWYU pragma: export
 #include "tflite/c/c_api_types.h"
-#include <chrono>
 #include <optional>
 #include <span>
 #include <string>
 #include <string_view>
 #include <tl/expected.hpp>
 
-struct TfLiteProfilerEntry {
-	std::string name;
-	std::chrono::microseconds duration;
-};
-
+using TfLiteLogWarningCallback = void (*)(std::string);
 using TfLiteLogErrorCallback = void (*)(std::string);
+
+struct TfLiteErrorReporterUserData {
+	TfLiteLogWarningCallback log_warning_callback;
+	TfLiteLogErrorCallback log_error_callback;
+};
 
 /** Helper class that wraps the tflite c api */
 class TfLiteRuntime {
-	TfLiteModel* model = nullptr;
-	TfLiteInterpreter* interpreter = nullptr;
-	TfLiteInterpreterOptions* interpreter_options = nullptr;
+	std::vector<int8_t> model_data;
+	std::unique_ptr<TfLiteModel, decltype(&TfLiteModelDelete)> model{
+		nullptr, TfLiteModelDelete
+	};
+	std::unique_ptr<TfLiteInterpreter, decltype(&TfLiteInterpreterDelete)>
+		interpreter{nullptr, TfLiteInterpreterDelete};
+	std::unique_ptr<
+		TfLiteInterpreterOptions,
+		decltype(&TfLiteInterpreterOptionsDelete)>
+		interpreter_options{nullptr, TfLiteInterpreterOptionsDelete};
 	/// can be null if GPU delegates are not supported on this device
-	TfLiteDelegate* gpu_delegate = nullptr;
+	std::unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
+		gpu_delegate{nullptr, TfLiteGpuDelegateV2Delete};
 
-	TfLiteLogErrorCallback log_error_callback;
+	TfLiteErrorReporterUserData error_reporter_user_data;
 
   public:
 	[[nodiscard]] static tl::
 		expected<std::unique_ptr<TfLiteRuntime>, std::string>
 		create(
-			std::span<const int8_t> model_data,
+			std::vector<int8_t>&& model_data,
 			std::string_view gpu_delegate_serialization_dir,
 			std::string_view model_token,
+			TfLiteLogWarningCallback log_warning_callback,
 			TfLiteLogErrorCallback log_error_callback
 		);
 
@@ -51,13 +60,17 @@ class TfLiteRuntime {
 	run_inference(std::span<const I> input, std::span<O> output) {
 		PROFILE_DEPTH_FUNCTION()
 
-		return load_input<I>(input).and_then([&]() { return invoke(); }
-		).and_then([&]() { return read_output<O>(output); });
+		return load_input<I>(input).and_then([this]() { return invoke(); }
+		).and_then([this, output]() { return read_output<O>(output); });
 	}
 
   private:
-	explicit TfLiteRuntime(TfLiteLogErrorCallback log_error_callback)
-		: log_error_callback(log_error_callback) {}
+	explicit TfLiteRuntime(
+		std::vector<int8_t>&& model_data,
+		TfLiteErrorReporterUserData error_reporter_user_data
+	)
+		: model_data(std::move(model_data)),
+		  error_reporter_user_data(error_reporter_user_data) {}
 
 	[[nodiscard]] tl::expected<void, std::string> invoke();
 
@@ -66,7 +79,8 @@ class TfLiteRuntime {
 	load_input(std::span<const I> input) {
 		PROFILE_DEPTH_SCOPE("Loading input")
 
-		auto* input_tensor = TfLiteInterpreterGetInputTensor(interpreter, 0);
+		auto* input_tensor =
+			TfLiteInterpreterGetInputTensor(interpreter.get(), 0);
 
 		return is_tensor_quantized(input_tensor)
 				   ? load_quantized_input<I>(input, input_tensor)
@@ -79,7 +93,7 @@ class TfLiteRuntime {
 		PROFILE_DEPTH_SCOPE("Reading output")
 
 		const auto* output_tensor =
-			TfLiteInterpreterGetOutputTensor(interpreter, 0);
+			TfLiteInterpreterGetOutputTensor(interpreter.get(), 0);
 
 		return is_tensor_quantized(output_tensor)
 				   ? read_quantized_output<O>(output, output_tensor)

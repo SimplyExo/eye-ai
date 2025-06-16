@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EyeAICore/utils/Errors.hpp"
+#include <memory>
 #include <optional>
 #include <span>
 #include <stdexcept>
@@ -32,7 +33,8 @@ template<typename T>
 	const TfLiteAffineQuantization& quantization
 );
 
-TfLiteDelegate* create_gpu_delegate(
+std::unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
+create_gpu_delegate(
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token
 );

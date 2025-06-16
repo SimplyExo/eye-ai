@@ -3,6 +3,7 @@
 #include <jni.h>
 #include <span>
 #include <string_view>
+#include <vector>
 
 struct NativeFloatArrayScope {
 	explicit NativeFloatArrayScope(JNIEnv* env, jfloatArray array);
@@ -47,6 +48,10 @@ struct NativeByteArrayScope {
 	}
 
 	[[nodiscard]] size_t size() const { return native_array.size(); }
+
+	[[nodiscard]] std::vector<jbyte> to_vector() const {
+		return {native_array.begin(), native_array.end()};
+	}
 
   private:
 	jbyteArray array = nullptr;
