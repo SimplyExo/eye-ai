@@ -39,13 +39,17 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthTfLiteRuntime(
 	);
 	const NativeStringScope model_token_string(env, model_token);
 
+	const auto log_warning_callback = [](std::string msg) {
+		LOG_WARN("[TfLiteRuntime] {}", msg);
+	};
+
 	const auto log_error_callback = [](std::string msg) {
 		LOG_ERROR("[TfLiteRuntime] {}", msg);
 	};
 
 	auto result = TfLiteRuntime::create(
-		model_data, gpu_delegate_serialization_dir_string, model_token_string,
-		log_error_callback
+		model_data.to_vector(), gpu_delegate_serialization_dir_string,
+		model_token_string, log_warning_callback, log_error_callback
 	);
 	if (result)
 		depth_estimation_tflite_runtime.swap(*result);
