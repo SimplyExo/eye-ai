@@ -2,5 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/openal_soft-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/tl-expected-src" vcs="Git" />
   </component>
 </project>

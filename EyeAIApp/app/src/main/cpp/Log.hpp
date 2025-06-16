@@ -13,6 +13,7 @@ void formatted_log(int priority, const char* format, Args... args) {
 }
 
 #define LOG_INFO(...) formatted_log(ANDROID_LOG_INFO, __VA_ARGS__)
+#define LOG_WARN(...) formatted_log(ANDROID_LOG_WARN, __VA_ARGS__)
 #define LOG_ERROR(...) formatted_log(ANDROID_LOG_ERROR, __VA_ARGS__)
 
 #define LOG_ON_EXCEPTION(...)                                                  \
