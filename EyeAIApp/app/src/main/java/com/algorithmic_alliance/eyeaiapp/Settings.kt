@@ -15,6 +15,9 @@ class Settings(val context: Context) {
 	var spatialAudioEnabled: Boolean
 		private set
 
+	var enableSpeechRecognition: Boolean
+		private set
+
 	init {
 		depthModel = sharedPreferences.getString(
 			context.getString(R.string.depth_model_setting),
@@ -28,6 +31,11 @@ class Settings(val context: Context) {
 
 		spatialAudioEnabled = sharedPreferences.getBoolean(
 			context.getString(R.string.spatial_audio_enabled_setting),
+			true
+		)
+
+		enableSpeechRecognition = sharedPreferences.getBoolean(
+			context.getString(R.string.enable_speech_recognition_setting),
 			true
 		)
 	}

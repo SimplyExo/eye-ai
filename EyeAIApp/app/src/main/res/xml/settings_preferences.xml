@@ -19,4 +19,11 @@
             app:summary="For now, only experimental oscillator sounds"
             app:defaultValue="true"/>
     </PreferenceCategory>
+
+    <PreferenceCategory app:title="Speech Recognition">
+        <CheckBoxPreference
+            app:key="@string/enable_speech_recognition_setting"
+            app:title="Enabled"
+            app:defaultValue="true"/>
+    </PreferenceCategory>
 </PreferenceScreen>

@@ -17,7 +17,9 @@ class EyeAIApp : Application() {
 		private set
 	lateinit var depthModel: DepthModel
 		private set
-	lateinit var voskModel: VoskModel
+
+	/** can be [null] if enableSpeechRecognition is disabled in settings */
+	var voskModel: VoskModel? = null
 		private set
 
 	companion object {
@@ -61,16 +63,24 @@ class EyeAIApp : Application() {
 			findDepthModelInfo(settings.depthModel)
 				.createDepthModel(this)!!
 
-		voskModel = VoskModel(this, "model-de")
+		if (settings.enableSpeechRecognition)
+			voskModel = VoskModel(this, "model-de")
 	}
 
 	fun updateSettings() {
 		val newSettings = Settings(this)
 
-		if (settings.depthModel != newSettings.depthModel ||
-			settings.showProfilingInfo != newSettings.showProfilingInfo
-		) {
+		if (settings.depthModel != newSettings.depthModel) {
 			switchDepthModel(newSettings.depthModel)
+		}
+
+		if (settings.enableSpeechRecognition != newSettings.enableSpeechRecognition) {
+			if (newSettings.enableSpeechRecognition) {
+				voskModel = VoskModel(this, "model-de")
+			} else {
+				voskModel?.closeService()
+				voskModel = null
+			}
 		}
 
 		settings = newSettings
