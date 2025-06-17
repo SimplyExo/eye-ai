@@ -12,6 +12,9 @@ class Settings(val context: Context) {
 	var showProfilingInfo: Boolean
 		private set
 
+	var enableSpeechRecognition: Boolean
+		private set
+
 	var googleAiStudioApiKey: String?
 		private set
 
@@ -24,6 +27,11 @@ class Settings(val context: Context) {
 		showProfilingInfo = sharedPreferences.getBoolean(
 			context.getString(R.string.show_profiling_info_setting),
 			false
+		)
+
+		enableSpeechRecognition = sharedPreferences.getBoolean(
+			context.getString(R.string.enable_speech_recognition_setting),
+			true
 		)
 
 		googleAiStudioApiKey = sharedPreferences.getString(

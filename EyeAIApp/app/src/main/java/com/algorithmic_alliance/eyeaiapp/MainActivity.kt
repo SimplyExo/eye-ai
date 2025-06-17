@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity() {
 		if (permissionManager.isMicrophonePermissionGranted()) {
 			eyeAIApp()
 				.voskModel
-				.initService(
+				?.initService(
 					::onPartialSpeechRecognitionResult,
 					::onFinalSpeechRecognitionResult,
 					::onSpeechRecognitionLoaded
@@ -101,12 +101,16 @@ class MainActivity : ComponentActivity() {
 		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
 		eyeAIApp().updateSettings()
+
+		updateSpeechRecognitionUIVisibility()
 	}
 
 	override fun onResume() {
 		super.onResume()
 
 		eyeAIApp().updateSettings()
+
+		updateSpeechRecognitionUIVisibility()
 
 		permissionManager.requestPermissions()
 		updateUngrantedPermissionsNotice()
@@ -118,12 +122,17 @@ class MainActivity : ComponentActivity() {
 		if (eyeAIApp().cameraManager.cameraPreview == null && cameraPermissionGranted)
 			initCamera()
 
-		if (!eyeAIApp().voskModel.isInitialized() && permissionManager.isMicrophonePermissionGranted()) {
-			eyeAIApp().voskModel.initService(
-				::onPartialSpeechRecognitionResult,
-				::onFinalSpeechRecognitionResult,
-				::onSpeechRecognitionLoaded
-			)
+		val voskModelInitialized = eyeAIApp().voskModel?.isInitialized() == true
+		if (permissionManager.isMicrophonePermissionGranted() && !voskModelInitialized) {
+			eyeAIApp().voskModel?.apply {
+				initService(
+					::onPartialSpeechRecognitionResult,
+					::onFinalSpeechRecognitionResult,
+					::onSpeechRecognitionLoaded
+				)
+
+				startListening()
+			}
 		}
 
 		llmResponseText?.apply {
@@ -132,21 +141,18 @@ class MainActivity : ComponentActivity() {
 			else
 				""
 		}
-
-
-		eyeAIApp().voskModel.startListening()
 	}
 
 	override fun onPause() {
 		super.onPause()
 
-		eyeAIApp().voskModel.stopListening()
+		eyeAIApp().voskModel?.stopListening()
 	}
 
 	override fun onDestroy() {
 		super.onDestroy()
 
-		eyeAIApp().voskModel.closeService()
+		eyeAIApp().voskModel?.closeService()
 	}
 
 	private fun onCameraPermissionResult(isGranted: Boolean) {
@@ -159,10 +165,10 @@ class MainActivity : ComponentActivity() {
 	}
 
 	private fun onMicrophonePermissionResult(isGranted: Boolean) {
-		if (isGranted) {
+		if (isGranted && eyeAIApp().settings.enableSpeechRecognition) {
 			eyeAIApp()
 				.voskModel
-				.initService(
+				?.initService(
 					::onPartialSpeechRecognitionResult,
 					::onFinalSpeechRecognitionResult,
 					::onSpeechRecognitionLoaded
@@ -203,12 +209,12 @@ class MainActivity : ComponentActivity() {
 				}
 			}
 
-			eyeAIApp().voskModel.stopListening()
+			eyeAIApp().voskModel?.stopListening()
 
 			// vibrate for 100ms
 			vibrate(eyeAIApp(), 100)
 
-			eyeAIApp().voskModel.startListening()
+			eyeAIApp().voskModel?.startListening()
 
 			lastFinalResultMillis = System.currentTimeMillis()
 		}
@@ -238,6 +244,17 @@ class MainActivity : ComponentActivity() {
 		} else {
 			ungrantedPermissionsNotice!!.visibility = View.VISIBLE
 		}
+	}
+
+	private fun updateSpeechRecognitionUIVisibility() {
+		val visibility = if (eyeAIApp().settings.enableSpeechRecognition) {
+			View.VISIBLE
+		} else {
+			View.GONE
+		}
+
+		speechRecognitionPartialResultText?.visibility = visibility
+		speechRecognitionFinalResultText?.visibility = visibility
 	}
 
 	private fun updateUngrantedPermissionsNotice() {

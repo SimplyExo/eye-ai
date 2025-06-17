@@ -19,7 +19,9 @@ class EyeAIApp : Application() {
 		private set
 	lateinit var depthModel: DepthModel
 		private set
-	lateinit var voskModel: VoskModel
+
+	/** can be [null] if enableSpeechRecognition is disabled in settings */
+	var voskModel: VoskModel? = null
 		private set
 	var llm: LLM? = null
 		private set
@@ -65,7 +67,8 @@ class EyeAIApp : Application() {
 			findDepthModelInfo(settings.depthModel)
 				.createDepthModel(this)!!
 
-		voskModel = VoskModel(this, "model-de")
+		if (settings.enableSpeechRecognition)
+			voskModel = VoskModel(this, "model-de")
 
 		settings.googleAiStudioApiKey?.let {
 			if (!it.isEmpty())
@@ -76,18 +79,25 @@ class EyeAIApp : Application() {
 	fun updateSettings() {
 		val newSettings = Settings(this)
 
-		if (settings.depthModel != newSettings.depthModel ||
-			settings.showProfilingInfo != newSettings.showProfilingInfo
-		) {
+		if (settings.depthModel != newSettings.depthModel) {
 			switchDepthModel(newSettings.depthModel)
 		}
 
-		if (settings.googleAiStudioApiKey != newSettings.googleAiStudioApiKey) {
-			val apiKey = newSettings.googleAiStudioApiKey
-			llm = if (apiKey != null && !apiKey.isEmpty()) {
-				GoogleAIStudioLLM(apiKey)
+		if (settings.enableSpeechRecognition != newSettings.enableSpeechRecognition) {
+			if (newSettings.enableSpeechRecognition) {
+				voskModel = VoskModel(this, "model-de")
 			} else {
-				null
+				voskModel?.closeService()
+				voskModel = null
+			}
+		}
+
+		if (settings.enableSpeechRecognition != newSettings.enableSpeechRecognition) {
+			if (newSettings.enableSpeechRecognition) {
+				voskModel = VoskModel(this, "model-de")
+			} else {
+				voskModel?.closeService()
+				voskModel = null
 			}
 		}
 
