@@ -14,5 +14,6 @@
     <string name="settings_button_description">Settings button</string>
     <string name="depth_model_setting">depth_model</string>
     <string name="show_profiling_info_setting">show_profiling_info</string>
+    <string name="enable_speech_recognition_setting">enable_speech_recognition</string>
     <string name="speech_recognition_ready">Speech Recognition Ready!</string>
 </resources>
