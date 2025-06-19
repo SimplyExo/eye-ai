@@ -83,6 +83,8 @@ class MainActivity : ComponentActivity() {
 
 		permissionManager.requestPermissions()
 
+		eyeAIApp().onDepthModelLoadedCallback = { initCamera() }
+
 		updateUngrantedPermissionsNotice()
 
 		if (permissionManager.isCameraPermissionGranted())
@@ -233,14 +235,17 @@ class MainActivity : ComponentActivity() {
 	private fun initCamera() {
 		if (permissionManager.isCameraPermissionGranted()) {
 			ungrantedPermissionsNotice!!.visibility = View.GONE
-			eyeAIApp()
-				.cameraManager
-				.init(
-					this,
-					eyeAIApp().depthModel.getInputSize(),
-					cameraPreviewView,
-					cameraFrameAnalyzer!!
-				)
+			val preferredInputSize = eyeAIApp().depthModel?.getInputSize()
+			if (preferredInputSize != null) {
+				eyeAIApp()
+					.cameraManager
+					.init(
+						this,
+						preferredInputSize,
+						cameraPreviewView,
+						cameraFrameAnalyzer!!
+					)
+			}
 		} else {
 			ungrantedPermissionsNotice!!.visibility = View.VISIBLE
 		}

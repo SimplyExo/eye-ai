@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModel
@@ -8,6 +9,10 @@ import com.algorithmic_alliance.eyeaiapp.depth.DepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * App class that holds everything that should persist when switching to another app, for example
@@ -17,8 +22,9 @@ class EyeAIApp : Application() {
 	var cameraManager = CameraManager()
 	lateinit var settings: Settings
 		private set
-	lateinit var depthModel: DepthModel
+	var depthModel: DepthModel? = null
 		private set
+	var onDepthModelLoadedCallback: () -> Unit = {}
 
 	/** can be [null] if enableSpeechRecognition is disabled in settings */
 	var voskModel: VoskModel? = null
@@ -63,9 +69,7 @@ class EyeAIApp : Application() {
 
 		settings = Settings(this)
 
-		depthModel =
-			findDepthModelInfo(settings.depthModel)
-				.createDepthModel(this)!!
+		switchDepthModel(settings.depthModel)
 
 		if (settings.enableSpeechRecognition)
 			voskModel = VoskModel(this, "model-de")
@@ -105,13 +109,27 @@ class EyeAIApp : Application() {
 	}
 
 	private fun switchDepthModel(modelName: String) {
-		val newDepthModel = findDepthModelInfo(modelName).createDepthModel(this)
-		if (newDepthModel != null) depthModel = newDepthModel
-		else
-			Log.e(
-				APP_LOG_TAG,
-				"Failed to switch from model ${depthModel.getName()} to new model $modelName"
-			)
+		if (depthModel?.getName() == modelName) return
+
+		depthModel?.close()
+		depthModel = null
+
+		val context = this as Context
+		CoroutineScope(Dispatchers.IO).launch {
+			depthModel = findDepthModelInfo(modelName)
+				.createDepthModel(context)
+
+			if (depthModel != null) {
+				withContext(Dispatchers.Main) {
+					onDepthModelLoadedCallback()
+				}
+			} else {
+				Log.e(
+					APP_LOG_TAG,
+					"Failed to init depth model $modelName"
+				)
+			}
+		}
 	}
 
 	private fun findDepthModelInfo(modelName: String): DepthModelInfo {

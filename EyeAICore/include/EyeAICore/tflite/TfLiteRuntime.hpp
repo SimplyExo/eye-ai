@@ -84,7 +84,10 @@ class TfLiteRuntime {
 
 		return is_tensor_quantized(input_tensor)
 				   ? load_quantized_input<I>(input, input_tensor)
-				   : load_nonquantized_input(std::as_bytes(input), input_tensor, TFLITE_TYPE_FROM_TYPE<I>);
+				   : load_nonquantized_input(
+						 std::as_bytes(input), input_tensor,
+						 TFLITE_TYPE_FROM_TYPE<I>
+					 );
 	}
 
 	template<typename O>
@@ -97,7 +100,10 @@ class TfLiteRuntime {
 
 		return is_tensor_quantized(output_tensor)
 				   ? read_quantized_output<O>(output, output_tensor)
-				   : read_nonquantized_output(std::as_writable_bytes(output), output_tensor, TFLITE_TYPE_FROM_TYPE<O>);
+				   : read_nonquantized_output(
+						 std::as_writable_bytes(output), output_tensor,
+						 TFLITE_TYPE_FROM_TYPE<O>
+					 );
 	}
 
 	[[nodiscard]] static tl::expected<void, std::string>
@@ -121,7 +127,7 @@ class TfLiteRuntime {
 
 		if (!quantized_type_size.has_value()) {
 			return tl::unexpected_fmt(
-				"invalid qunatized input type: {}",
+				"invalid quantized input type: {}",
 				format_tflite_type(input_tensor->type)
 			);
 		}
@@ -162,7 +168,7 @@ class TfLiteRuntime {
 			get_tflite_type_size(output_tensor->type);
 		if (!quantized_type_size.has_value()) {
 			return tl::unexpected_fmt(
-				"invalid qunatized output type: {}",
+				"invalid quantized output type: {}",
 				format_tflite_type(output_tensor->type)
 			);
 		}

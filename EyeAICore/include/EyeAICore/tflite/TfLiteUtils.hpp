@@ -1,13 +1,12 @@
 #pragma once
 
-#include "EyeAICore/utils/Errors.hpp"
 #include <memory>
 #include <optional>
 #include <span>
-#include <stdexcept>
 #include <string_view>
 #include <tflite/c/c_api.h>
 #include <tflite/delegates/gpu/delegate.h>
+#include <tl/expected.hpp>
 
 std::string_view format_tflite_type(TfLiteType type);
 
@@ -25,10 +24,26 @@ template<typename T>
 	const TfLiteAffineQuantization& quantization
 );
 
+template<>
+[[nodiscard]] tl::expected<void, std::string> quantize<float>(
+	std::span<const float> values,
+	std::span<std::byte> quantized_values,
+	TfLiteType quantized_type,
+	const TfLiteAffineQuantization& quantization
+);
+
 template<typename T>
 [[nodiscard]] tl::expected<void, std::string> dequantize(
 	std::span<const std::byte> quantized_values,
 	std::span<T> real_values,
+	TfLiteType quantized_type,
+	const TfLiteAffineQuantization& quantization
+);
+
+template<>
+[[nodiscard]] tl::expected<void, std::string> dequantize<float>(
+	std::span<const std::byte> quantized_values,
+	std::span<float> real_values,
 	TfLiteType quantized_type,
 	const TfLiteAffineQuantization& quantization
 );
