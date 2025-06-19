@@ -96,12 +96,12 @@ class EyeAIApp : Application() {
 			}
 		}
 
-		if (settings.enableSpeechRecognition != newSettings.enableSpeechRecognition) {
-			if (newSettings.enableSpeechRecognition) {
-				voskModel = VoskModel(this, "model-de")
+		if (settings.googleAiStudioApiKey != newSettings.googleAiStudioApiKey) {
+			val apiKey = newSettings.googleAiStudioApiKey
+			llm = if (apiKey != null && !apiKey.isEmpty()) {
+				GoogleAIStudioLLM(apiKey)
 			} else {
-				voskModel?.closeService()
-				voskModel = null
+				null
 			}
 		}
 
