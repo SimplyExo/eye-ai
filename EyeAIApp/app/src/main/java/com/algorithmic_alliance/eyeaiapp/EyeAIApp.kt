@@ -88,11 +88,14 @@ class EyeAIApp : Application() {
 		}
 
 		if (settings.enableSpeechRecognition != newSettings.enableSpeechRecognition) {
-			if (newSettings.enableSpeechRecognition) {
-				voskModel = VoskModel(this, "model-de")
-			} else {
-				voskModel?.closeService()
-				voskModel = null
+			val context = this as Context
+			CoroutineScope(Dispatchers.IO).launch {
+				if (newSettings.enableSpeechRecognition) {
+					voskModel = VoskModel(context, "model-de")
+				} else {
+					voskModel?.closeService()
+					voskModel = null
+				}
 			}
 		}
 
