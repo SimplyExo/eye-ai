@@ -35,12 +35,14 @@ class CameraFrameAnalyzer(
 	init {
 		CoroutineScope(processingExecutor.asCoroutineDispatcher()).launch {
 			while (isActive) {
+				val depthModel = eyeAIApp.depthModel
+
 				val frame = latestCameraFrame.getAndSet(null)
 
-				if (frame != null) {
+				if (frame != null && depthModel != null) {
 					NativeLib.newDepthFrame()
 
-					val predictionOutput = eyeAIApp.depthModel.predictDepth(frame)
+					val predictionOutput = depthModel.predictDepth(frame)
 
 					val inputWidth = frame.width
 					val inputHeight = frame.height
@@ -48,14 +50,14 @@ class CameraFrameAnalyzer(
 					withContext(Dispatchers.Main) {
 						val colorMappedImage = NativeLib.depthColorMap(
 							predictionOutput,
-							eyeAIApp.depthModel.getInputSize()
+							depthModel.getInputSize()
 						)
 						depthView.setImageBitmap(colorMappedImage)
 
 						if (eyeAIApp.settings.showProfilingInfo) {
 							val formattedInputResolution = "${inputWidth}x${inputHeight}"
-							val modelName = eyeAIApp.depthModel.getName()
-							val modelInputSize = eyeAIApp.depthModel.getInputSize()
+							val modelName = depthModel.getName()
+							val modelInputSize = depthModel.getInputSize()
 							val formattedModelInputSize =
 								"${modelInputSize.width}x${modelInputSize.height}"
 							performanceText.text =

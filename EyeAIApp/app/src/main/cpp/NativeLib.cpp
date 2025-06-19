@@ -7,19 +7,23 @@
 #include "EyeAICore/audio/SpatialAudioEngine.hpp"
 #include "EyeAICore/onnx/OnnxRuntime.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
+#include "EyeAICore/utils/MutexGuard.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 #include "ImageUtils.hpp"
 #include "Log.hpp"
 #include "NativeJavaScopes.hpp"
 
-// these 2 global variables are only used by a single thread from the kotlin
-// side NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
-static std::unique_ptr<TfLiteRuntime> depth_estimation_tflite_runtime = nullptr;
+// these 2 global variables are using MutexGuard, so they are thread-safe
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+static MutexGuard<std::unique_ptr<TfLiteRuntime>>
+	depth_estimation_tflite_runtime{std::unique_ptr<TfLiteRuntime>(nullptr)};
 
-static std::unique_ptr<OnnxRuntime> depth_estimation_onnx_runtime = nullptr;
+static MutexGuard<std::unique_ptr<OnnxRuntime>> depth_estimation_onnx_runtime{
+	std::unique_ptr<OnnxRuntime>(nullptr)
+};
+// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 static std::unique_ptr<SpatialAudioEngine> spatial_audio_engine = nullptr;
-// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 // NOLINTBEGIN(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)
@@ -51,9 +55,9 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthTfLiteRuntime(
 		model_data.to_vector(), gpu_delegate_serialization_dir_string,
 		model_token_string, log_warning_callback, log_error_callback
 	);
-	if (result)
-		depth_estimation_tflite_runtime.swap(*result);
-	else
+	if (result) {
+		depth_estimation_tflite_runtime.lock()->swap(*result);
+	} else
 		LOG_ERROR("[TfLiteRuntime] Failed to create: {}", result.error());
 }
 
@@ -62,7 +66,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_shutdownDepthTfLiteRuntime(
 	JNIEnv* /*env*/,
 	jobject /*thiz*/
 ) {
-	depth_estimation_tflite_runtime.reset(nullptr);
+	depth_estimation_tflite_runtime.lock()->reset(nullptr);
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -78,7 +82,10 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthTfLiteInference(
 	jfloat stddev_g,
 	jfloat stddev_b
 ) {
-	if (depth_estimation_tflite_runtime == nullptr) {
+	auto depth_estimation_tflite_runtime_scope =
+		depth_estimation_tflite_runtime.lock();
+
+	if (*depth_estimation_tflite_runtime_scope == nullptr) {
 		LOG_ERROR("TfLiteRuntime not initialized!");
 		return;
 	}
@@ -90,8 +97,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthTfLiteInference(
 	const std::array<float, 3> stddev = {stddev_r, stddev_g, stddev_b};
 
 	const auto result = run_depth_estimation(
-		*depth_estimation_tflite_runtime, input_array, output_array, mean,
-		stddev
+		*(*depth_estimation_tflite_runtime_scope), input_array, output_array,
+		mean, stddev
 	);
 	if (!result.has_value())
 		LOG_ERROR(
@@ -117,7 +124,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthOnnxRuntime(
 		std::move(log_callbacks)
 	);
 	if (result)
-		depth_estimation_onnx_runtime.swap(*result);
+		depth_estimation_onnx_runtime.lock()->swap(*result);
 	else
 		LOG_ERROR("[OnnxRuntime] Failed to create: {}", result.error());
 }
@@ -127,7 +134,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_shutdownDepthOnnxRuntime(
 	JNIEnv* /*env*/,
 	jobject /*thiz*/
 ) {
-	depth_estimation_onnx_runtime.reset(nullptr);
+	depth_estimation_onnx_runtime.lock()->reset(nullptr);
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -143,7 +150,10 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthOnnxInference(
 	jfloat stddev_g,
 	jfloat stddev_b
 ) {
-	if (depth_estimation_onnx_runtime == nullptr) {
+	auto depth_estimation_onnx_runtime_scope =
+		depth_estimation_onnx_runtime.lock();
+
+	if (*depth_estimation_onnx_runtime_scope == nullptr) {
 		LOG_ERROR("OnnxRuntime not initialized!");
 		return;
 	}
@@ -155,7 +165,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthOnnxInference(
 	const std::array<float, 3> stddev = {stddev_r, stddev_g, stddev_b};
 
 	const auto result = run_depth_estimation(
-		*depth_estimation_onnx_runtime, input_array, output_array, mean, stddev
+		*(*depth_estimation_onnx_runtime_scope), input_array, output_array,
+		mean, stddev
 	);
 	if (!result.has_value())
 		LOG_ERROR("[OnnxRuntime] Failed to run inference: {}", result.error());
