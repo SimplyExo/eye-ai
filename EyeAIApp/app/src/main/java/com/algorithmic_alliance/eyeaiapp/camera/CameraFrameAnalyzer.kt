@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.camera
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.OptIn
@@ -29,15 +30,17 @@ class CameraFrameAnalyzer(
 	private var performanceText: TextView,
 ) : ImageAnalysis.Analyzer {
 
-	private var processingExecutor = Executors.newSingleThreadExecutor()
+	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
+	private var objectDetectionProcessingExecutor = Executors.newSingleThreadExecutor()
 	private var latestCameraFrame = AtomicReference<Bitmap?>(null)
 
 	init {
-		CoroutineScope(processingExecutor.asCoroutineDispatcher()).launch {
+		// DepthAnalyzer
+		CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher()).launch {
 			while (isActive) {
 				val depthModel = eyeAIApp.depthModel
 
-				val frame = latestCameraFrame.getAndSet(null)
+				val frame = latestCameraFrame.getAndSet(null) // TODO: Verhindern dass Bilder "gestohlen" werden
 
 				if (frame != null && depthModel != null) {
 					NativeLib.newDepthFrame()
@@ -66,6 +69,20 @@ class CameraFrameAnalyzer(
 							performanceText.text = ""
 						}
 					}
+				}
+			}
+		}
+
+		// Objekterkennung
+		CoroutineScope(objectDetectionProcessingExecutor.asCoroutineDispatcher()).launch {
+			while (isActive) {
+				// val depthModel = eyeAIApp.depthModel
+
+				val frame = latestCameraFrame.getAndSet(null)
+
+				if (frame != null) {
+					Log.e("object-recognition", "passed")
+					// Frame analysieren
 				}
 			}
 		}
