@@ -38,21 +38,6 @@ object NativeLib {
 		stddevB: Float
 	)
 
-	external fun initDepthOnnxRuntime(model: ByteArray)
-
-	external fun shutdownDepthOnnxRuntime()
-
-	external fun runDepthOnnxInference(
-		inputData: FloatArray,
-		outputData: FloatArray,
-		meanR: Float,
-		meanG: Float,
-		meanB: Float,
-		stddevR: Float,
-		stddevG: Float,
-		stddevB: Float
-	)
-
 	external fun depthColormap(depthValues: FloatArray, colormappedPixels: IntArray)
 
 	external fun bitmapToRgbChwFloatArray(bitmap: Bitmap, outFloatArray: FloatArray)
