@@ -25,27 +25,6 @@ tl::expected<void, std::string> run_depth_estimation(
 	return {};
 }
 
-tl::expected<void, std::string> run_depth_estimation(
-	OnnxRuntime& onnx_runtime,
-	std::span<float> input_data,
-	std::span<float> output_data,
-	std::array<float, RGB_CHANNELS> mean,
-	std::array<float, RGB_CHANNELS> stddev
-) {
-	PROFILE_DEPTH_FUNCTION()
-
-	normalize_rgb(input_data, mean, stddev);
-
-	const auto result =
-		onnx_runtime.run_inference<float, float>(input_data, output_data);
-	if (!result.has_value())
-		return tl::unexpected(result.error());
-
-	min_max_scaling(output_data);
-
-	return {};
-}
-
 void normalize_rgb(
 	std::span<float> values,
 	std::array<float, RGB_CHANNELS> mean,

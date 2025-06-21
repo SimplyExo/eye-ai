@@ -3,8 +3,13 @@
 #include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 #include "TfLiteUtils.hpp"
+#if EYE_AI_CORE_USE_PREBUILT_TFLITE
 #include "tflite/c/c_api.h" // IWYU pragma: export
 #include "tflite/c/c_api_types.h"
+#else
+#include "tensorflow/lite/c/c_api.h" // IWYU pragma: export
+#include "tensorflow/lite/c/c_api_types.h"
+#endif
 #include <optional>
 #include <span>
 #include <string>

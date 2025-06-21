@@ -4,7 +4,10 @@ project(EyeAICore)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(EYE_AI_CORE_USE_PREBUILT_TFLITE "Use prebuilt TFLite library from LiteRT in third_party/litert(-gpu)-1.2.0 (requires EYE_AI_CORE_ABI)" OFF)
+
 if (DEFINED CMAKE_ANDROID_ARCH_ABI)
+	set(EYE_AI_CORE_USE_PREBUILT_TFLITE ON CACHE BOOL "Use prebuilt TFLite library from LiteRT in third_party/litert(-gpu)-1.2.0 (requires EYE_AI_CORE_ABI)" FORCE)
 	set(EYE_AI_CORE_ABI ${CMAKE_ANDROID_ARCH_ABI})
 else ()
 	message(STATUS "EyeAICore: Not using Android NDK, setting EyeAICore ABI to host arch")
@@ -45,5 +48,12 @@ target_include_directories(EyeAICore
 
 target_link_libraries(
 	EyeAICore
+	PUBLIC
 	${THIRD_PARTY_LIBS}
 )
+
+if(EYE_AI_CORE_USE_PREBUILT_TFLITE)
+	target_compile_definitions(EyeAICore PUBLIC EYE_AI_CORE_USE_PREBUILT_TFLITE=1)
+else()
+	target_compile_definitions(EyeAICore PUBLIC EYE_AI_CORE_USE_PREBUILT_TFLITE=0)
+endif()

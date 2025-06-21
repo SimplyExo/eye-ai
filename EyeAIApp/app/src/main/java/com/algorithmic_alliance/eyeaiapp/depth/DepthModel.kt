@@ -27,8 +27,6 @@ class DepthModelInfo(
 				normMean,
 				normStddev
 			)
-		} else if (fileName.endsWith(".onnx")) {
-			return OnnxModel(context, fileName, inputDim, normMean, normStddev)
 		}
 
 		return null
