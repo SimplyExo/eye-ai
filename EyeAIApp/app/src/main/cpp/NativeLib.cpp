@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "EyeAICore/DepthEstimation.hpp"
-#include "EyeAICore/onnx/OnnxRuntime.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
 #include "EyeAICore/utils/MutexGuard.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
@@ -11,14 +10,10 @@
 #include "Log.hpp"
 #include "NativeJavaScopes.hpp"
 
-// these 2 global variables are using MutexGuard, so they are thread-safe
+// the global variable is using MutexGuard, so they are thread-safe
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 static MutexGuard<std::unique_ptr<TfLiteRuntime>>
 	depth_estimation_tflite_runtime{std::unique_ptr<TfLiteRuntime>(nullptr)};
-
-static MutexGuard<std::unique_ptr<OnnxRuntime>> depth_estimation_onnx_runtime{
-	std::unique_ptr<OnnxRuntime>(nullptr)
-};
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 // NOLINTBEGIN(readability-identifier-naming,
@@ -100,72 +95,6 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthTfLiteInference(
 		LOG_ERROR(
 			"[TfLiteRuntime] Failed to run inference: {}", result.error()
 		);
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthOnnxRuntime(
-	JNIEnv* env,
-	jobject /*thiz*/,
-	jbyteArray model
-) {
-	NativeByteArrayScope model_data(env, model);
-
-	OnnxLogCallbacks log_callbacks{
-		.log_info = [](const auto msg) { LOG_INFO("[OnnxRuntime] {}", msg); },
-		.log_error = [](const auto msg) { LOG_ERROR("[OnnxRuntime] {}", msg); }
-	};
-
-	auto result = OnnxRuntime::create(
-		std::as_bytes((std::span<const jbyte>)model_data),
-		std::move(log_callbacks)
-	);
-	if (result)
-		depth_estimation_onnx_runtime.lock()->swap(*result);
-	else
-		LOG_ERROR("[OnnxRuntime] Failed to create: {}", result.error());
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_shutdownDepthOnnxRuntime(
-	JNIEnv* /*env*/,
-	jobject /*thiz*/
-) {
-	depth_estimation_onnx_runtime.lock()->reset(nullptr);
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthOnnxInference(
-	JNIEnv* env,
-	jobject /*thiz*/,
-	jfloatArray input_data,
-	jfloatArray output_data,
-	jfloat mean_r,
-	jfloat mean_g,
-	jfloat mean_b,
-	jfloat stddev_r,
-	jfloat stddev_g,
-	jfloat stddev_b
-) {
-	auto depth_estimation_onnx_runtime_scope =
-		depth_estimation_onnx_runtime.lock();
-
-	if (*depth_estimation_onnx_runtime_scope == nullptr) {
-		LOG_ERROR("OnnxRuntime not initialized!");
-		return;
-	}
-
-	NativeFloatArrayScope input_array(env, input_data);
-	NativeFloatArrayScope output_array(env, output_data);
-
-	const std::array<float, 3> mean = {mean_r, mean_g, mean_b};
-	const std::array<float, 3> stddev = {stddev_r, stddev_g, stddev_b};
-
-	const auto result = run_depth_estimation(
-		*(*depth_estimation_onnx_runtime_scope), input_array, output_array,
-		mean, stddev
-	);
-	if (!result.has_value())
-		LOG_ERROR("[OnnxRuntime] Failed to run inference: {}", result.error());
 }
 
 extern "C" JNIEXPORT void JNICALL
