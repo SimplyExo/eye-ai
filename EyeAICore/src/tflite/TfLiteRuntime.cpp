@@ -3,7 +3,12 @@
 #include "EyeAICore/utils/Profiling.hpp"
 
 #include <format>
+
+#if EYE_AI_CORE_USE_PREBUILT_TFLITE
 #include <tflite/c/c_api_experimental.h>
+#else
+#include <tensorflow/lite/c/c_api_experimental.h>
+#endif
 
 /// user_data_ptr is a pointer to a TfLiteErrorReporterUserData
 static void

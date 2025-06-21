@@ -4,8 +4,13 @@
 #include <optional>
 #include <span>
 #include <string_view>
+#if EYE_AI_CORE_USE_PREBUILT_TFLITE
 #include <tflite/c/c_api.h>
 #include <tflite/delegates/gpu/delegate.h>
+#else
+#include <tensorflow/lite/c/c_api.h>
+#include <tensorflow/lite/delegates/gpu/delegate.h>
+#endif
 #include <tl/expected.hpp>
 
 std::string_view format_tflite_type(TfLiteType type);

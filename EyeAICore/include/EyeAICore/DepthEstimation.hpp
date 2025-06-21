@@ -1,6 +1,5 @@
 #pragma once
 
-#include "onnx/OnnxRuntime.hpp"
 #include "tflite/TfLiteRuntime.hpp"
 #include <span>
 #include <tl/expected.hpp>
@@ -11,14 +10,6 @@ constexpr size_t RGB_CHANNELS = 3;
 	TfLiteRuntime& tflite_runtime,
 	std::span<float> input,
 	std::span<float> output,
-	std::array<float, RGB_CHANNELS> mean,
-	std::array<float, RGB_CHANNELS> stddev
-);
-
-[[nodiscard]] tl::expected<void, std::string> run_depth_estimation(
-	OnnxRuntime& onnx_runtime,
-	std::span<float> input_data,
-	std::span<float> output_data,
 	std::array<float, RGB_CHANNELS> mean,
 	std::array<float, RGB_CHANNELS> stddev
 );

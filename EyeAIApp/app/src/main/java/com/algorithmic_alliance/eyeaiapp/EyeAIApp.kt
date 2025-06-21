@@ -37,7 +37,6 @@ class EyeAIApp : Application() {
 
 		const val DEFAULT_DEPTH_MODEL_NAME = "MiDaS V2.1"
 
-		/** make sure to change res/values/arrays.xml 'depth_models' array as well! */
 		val DEPTH_MODELS =
 			arrayOf(
 				DepthModelInfo(
@@ -53,13 +52,6 @@ class EyeAIApp : Application() {
 					256,
 					floatArrayOf(123.675f, 116.28f, 103.53f),
 					floatArrayOf(58.395f, 57.12f, 57.375f)
-				),
-				DepthModelInfo(
-					"Depth Anything V2",
-					"depth_anything_v2_vits_210x210.onnx",
-					210,
-					floatArrayOf(0.485f, 0.456f, 0.406f),
-					floatArrayOf(0.229f, 0.224f, 0.225f)
 				)
 			)
 	}
