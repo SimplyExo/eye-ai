@@ -134,6 +134,23 @@ tl::expected<void, std::string> TfLiteRuntime::load_nonquantized_input(
 		);
 	}
 
+	const auto type_size_bytes = get_tflite_type_size(input_type);
+	if (!type_size_bytes.has_value()) {
+		return tl::unexpected_fmt(
+			"invalid input type {}", format_tflite_type(input_type)
+		);
+	}
+
+	const auto input_data_bytes = TfLiteTensorByteSize(input_tensor);
+	const auto input_elements = input_data_bytes / *type_size_bytes;
+	if (input_bytes.size_bytes() != input_data_bytes) {
+		return tl::unexpected_fmt(
+			"input buffer ({} bytes) does not match expected {} "
+			"bytes from tensor",
+			input_bytes.size_bytes(), input_data_bytes
+		);
+	}
+
 	const TfLiteStatus copy_from_buffer_status = TfLiteTensorCopyFromBuffer(
 		input_tensor, input_bytes.data(), input_bytes.size_bytes()
 	);
@@ -157,6 +174,23 @@ tl::expected<void, std::string> TfLiteRuntime::read_nonquantized_output(
 			"invalid output type of {}, expected {}",
 			format_tflite_type(output_type),
 			format_tflite_type(output_tensor->type)
+		);
+	}
+
+	const auto type_size_bytes = get_tflite_type_size(output_type);
+	if (!type_size_bytes.has_value()) {
+		return tl::unexpected_fmt(
+			"invalid output type {}", format_tflite_type(output_type)
+		);
+	}
+
+	const auto output_data_bytes = TfLiteTensorByteSize(output_tensor);
+	const auto output_elements = output_data_bytes / *type_size_bytes;
+	if (output_bytes.size_bytes() != output_data_bytes) {
+		return tl::unexpected_fmt(
+			"output buffer ({} bytes) does not match expected {} "
+			"bytes from tensor",
+			output_bytes.size_bytes(), output_data_bytes
 		);
 	}
 
