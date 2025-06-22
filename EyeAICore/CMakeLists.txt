@@ -57,3 +57,5 @@ if(EYE_AI_CORE_USE_PREBUILT_TFLITE)
 else()
 	target_compile_definitions(EyeAICore PUBLIC EYE_AI_CORE_USE_PREBUILT_TFLITE=0)
 endif()
+
+add_subdirectory(metric_depth)

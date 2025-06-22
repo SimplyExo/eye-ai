@@ -25,6 +25,25 @@ tl::expected<void, std::string> run_depth_estimation(
 	return {};
 }
 
+tl::expected<void, std::string> run_raw_depth_estimation(
+	TfLiteRuntime& tflite_runtime,
+	std::span<float> input,
+	std::span<float> output,
+	std::array<float, RGB_CHANNELS> mean,
+	std::array<float, RGB_CHANNELS> stddev
+) {
+	PROFILE_DEPTH_FUNCTION()
+
+	normalize_rgb(input, mean, stddev);
+
+	const auto result =
+		tflite_runtime.run_inference<float, float>(input, output);
+	if (!result.has_value())
+		return tl::unexpected(result.error());
+
+	return {};
+}
+
 void normalize_rgb(
 	std::span<float> values,
 	std::array<float, RGB_CHANNELS> mean,

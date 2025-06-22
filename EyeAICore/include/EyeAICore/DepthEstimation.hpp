@@ -14,6 +14,16 @@ constexpr size_t RGB_CHANNELS = 3;
 	std::array<float, RGB_CHANNELS> stddev
 );
 
+/// similar to run_depth_estimation but without the min_max_scaling of the raw
+/// model output values
+[[nodiscard]] tl::expected<void, std::string> run_raw_depth_estimation(
+	TfLiteRuntime& tflite_runtime,
+	std::span<float> input,
+	std::span<float> output,
+	std::array<float, RGB_CHANNELS> mean,
+	std::array<float, RGB_CHANNELS> stddev
+);
+
 /// normalizes rgb input values (3 floats for r, g and b) based on their mean
 /// and standard deviation values
 void normalize_rgb(
