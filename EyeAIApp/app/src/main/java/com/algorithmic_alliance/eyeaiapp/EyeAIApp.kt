@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModelInfo
@@ -42,16 +43,12 @@ class EyeAIApp : Application() {
 				DepthModelInfo(
 					DEFAULT_DEPTH_MODEL_NAME,
 					"midas_v2_1_256x256.tflite",
-					256,
-					floatArrayOf(123.675f, 116.28f, 103.53f),
-					floatArrayOf(58.395f, 57.12f, 57.375f)
+					Size(256, 256)
 				),
 				DepthModelInfo(
 					"MiDaS V2.1 (quantized)",
 					"midas_v2_1_256x256_quantized.tflite",
-					256,
-					floatArrayOf(123.675f, 116.28f, 103.53f),
-					floatArrayOf(58.395f, 57.12f, 57.375f)
+					Size(256, 256)
 				)
 			)
 	}
@@ -104,7 +101,7 @@ class EyeAIApp : Application() {
 	}
 
 	private fun switchDepthModel(modelName: String) {
-		if (depthModel?.getName() == modelName) return
+		if (depthModel?.name == modelName) return
 
 		depthModel?.close()
 		depthModel = null

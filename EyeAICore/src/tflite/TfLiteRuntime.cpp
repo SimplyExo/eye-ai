@@ -1,5 +1,6 @@
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
 #include "EyeAICore/tflite/TfLiteUtils.hpp"
+#include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 
 #include <format>
@@ -18,13 +19,16 @@ tl::expected<std::unique_ptr<TfLiteRuntime>, std::string> TfLiteRuntime::create(
 	std::vector<int8_t>&& model_data,
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
+	std::vector<std::unique_ptr<Operator>>&& input_operators,
+	std::vector<std::unique_ptr<Operator>>&& output_operators,
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback
 ) {
 	PROFILE_DEPTH_SCOPE("Initialize TfLiteRuntime")
 
 	std::unique_ptr<TfLiteRuntime> runtime(new TfLiteRuntime(
-		std::move(model_data),
+		std::move(model_data), std::move(input_operators),
+		std::move(output_operators),
 		TfLiteErrorReporterUserData(log_warning_callback, log_error_callback)
 	));
 
@@ -121,90 +125,62 @@ tl::expected<void, std::string> TfLiteRuntime::invoke() {
 	);
 }
 
-tl::expected<void, std::string> TfLiteRuntime::load_nonquantized_input(
-	std::span<const std::byte> input_bytes,
-	TfLiteTensor* input_tensor,
-	TfLiteType input_type
-) {
-	if (input_tensor->type != input_type) {
-		return tl::unexpected_fmt(
-			"invalid input type of {}, expected {}",
-			format_tflite_type(input_type),
-			format_tflite_type(input_tensor->type)
-		);
+tl::expected<void, std::string>
+TfLiteRuntime::run_inference(std::span<float> input, std::span<float> output) {
+	PROFILE_DEPTH_FUNCTION()
+
+	{
+		PROFILE_DEPTH_SCOPE("Preprocessing input using operators")
+
+		for (auto& input_operator : input_operators) {
+			const auto result = input_operator->execute(input);
+			if (!result.has_value())
+				return result;
+		}
 	}
 
-	const auto type_size_bytes = get_tflite_type_size(input_type);
-	if (!type_size_bytes.has_value()) {
-		return tl::unexpected_fmt(
-			"invalid input type {}", format_tflite_type(input_type)
+	// clang-format off
+	return load_input(input)
+		.and_then(
+			[this]() { return invoke(); }
+		)
+		.and_then(
+			[this, output]() { return read_output(output); }
+		)
+		.and_then(
+			[this, output]() {
+				PROFILE_DEPTH_SCOPE("Postprocessing output using operators")
+
+				for (auto& output_operator : output_operators) {
+					const auto result = output_operator->execute(output);
+					if (!result.has_value())
+						return result;
+				}
+
+				return tl::expected<void, std::string>{};
+			}
 		);
-	}
-
-	const auto input_data_bytes = TfLiteTensorByteSize(input_tensor);
-	const auto input_elements = input_data_bytes / *type_size_bytes;
-	if (input_bytes.size_bytes() != input_data_bytes) {
-		return tl::unexpected_fmt(
-			"input buffer ({} bytes) does not match expected {} "
-			"bytes from tensor",
-			input_bytes.size_bytes(), input_data_bytes
-		);
-	}
-
-	const TfLiteStatus copy_from_buffer_status = TfLiteTensorCopyFromBuffer(
-		input_tensor, input_bytes.data(), input_bytes.size_bytes()
-	);
-
-	if (copy_from_buffer_status == kTfLiteOk)
-		return {};
-
-	return tl::unexpected_fmt(
-		"failed to copy input buffer to tensor: {}",
-		format_tflite_status(copy_from_buffer_status)
-	);
+	// clang-format on
 }
 
-tl::expected<void, std::string> TfLiteRuntime::read_nonquantized_output(
-	std::span<std::byte> output_bytes,
-	const TfLiteTensor* output_tensor,
-	TfLiteType output_type
-) {
-	if (output_tensor->type != output_type) {
-		return tl::unexpected_fmt(
-			"invalid output type of {}, expected {}",
-			format_tflite_type(output_type),
-			format_tflite_type(output_tensor->type)
-		);
-	}
+tl::expected<void, std::string>
+TfLiteRuntime::load_input(std::span<const float> input) {
+	PROFILE_DEPTH_SCOPE("Loading input")
 
-	const auto type_size_bytes = get_tflite_type_size(output_type);
-	if (!type_size_bytes.has_value()) {
-		return tl::unexpected_fmt(
-			"invalid output type {}", format_tflite_type(output_type)
-		);
-	}
+	TfLiteTensor* input_tensor =
+		TfLiteInterpreterGetInputTensor(interpreter.get(), 0);
 
-	const auto output_data_bytes = TfLiteTensorByteSize(output_tensor);
-	const auto output_elements = output_data_bytes / *type_size_bytes;
-	if (output_bytes.size_bytes() != output_data_bytes) {
-		return tl::unexpected_fmt(
-			"output buffer ({} bytes) does not match expected {} "
-			"bytes from tensor",
-			output_bytes.size_bytes(), output_data_bytes
-		);
-	}
+	return load_input_tensor_with_floats(input_tensor, input);
+}
 
-	const TfLiteStatus copy_from_buffer_status = TfLiteTensorCopyToBuffer(
-		output_tensor, output_bytes.data(), output_bytes.size_bytes()
-	);
+tl::expected<void, std::string>
+TfLiteRuntime::read_output(std::span<float> output) {
+	PROFILE_DEPTH_SCOPE("Reading output")
 
-	if (copy_from_buffer_status == kTfLiteOk)
-		return {};
+	const TfLiteTensor* output_tensor =
+		TfLiteInterpreterGetOutputTensor(interpreter.get(), 0);
 
-	return tl::unexpected_fmt(
-		"failed to copy from tensor to buffer: {}",
-		format_tflite_status(copy_from_buffer_status)
-	);
+	return read_floats_from_output_tensor(output_tensor, output);
 }
 
 void tflite_error_callback(

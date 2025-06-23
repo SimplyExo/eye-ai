@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cctype>
+#include <cstdint>
 
 /// argb 8888 formatted
 constexpr int color_argb(uint8_t a, uint8_t r, uint8_t g, uint8_t b) {
