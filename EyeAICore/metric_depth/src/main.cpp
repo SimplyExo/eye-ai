@@ -46,19 +46,19 @@ int main(const int argc, const char* argv[]) {
 		println_error_fmt("[TfLite Error] {}", msg);
 	};
 
-	auto runtime_result = TfLiteRuntime::create(
+	auto depth_model_result = DepthModel::create_with_raw_output(
 		std::move(model_data), GPU_DELEGATE_SERIALIZATION_DIR,
 		MIDAS_MODEL_TOKEN, tflite_log_warning_callback,
 		tflite_log_error_callback
 	);
 
-	if (!runtime_result.has_value()) {
+	if (!depth_model_result.has_value()) {
 		println_error_fmt(
-			"Could not create TfLiteRuntime: {}", runtime_result.error()
+			"Could not create depth model: {}", depth_model_result.error()
 		);
 		return 1;
 	}
-	auto& runtime = runtime_result.value();
+	auto& depth_model = depth_model_result.value();
 
 	std::cout << "\n=== Scanning Dataset for entries ===\n\n";
 
@@ -92,7 +92,7 @@ int main(const int argc, const char* argv[]) {
 				data_point.imgname
 			);
 
-		const auto result = evaluate_set(*runtime, paths, result_filepath);
+		const auto result = evaluate_set(*depth_model, paths, result_filepath);
 
 		if (result.has_value()) {
 			println_fmt("    Finished, took {} ms", result.value().count());

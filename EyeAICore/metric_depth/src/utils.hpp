@@ -1,7 +1,6 @@
 #pragma once
 
-#include "EyeAICore/DepthEstimation.hpp"
-#include "EyeAICore/tflite/TfLiteRuntime.hpp"
+#include "EyeAICore/DepthModel.hpp"
 #include "EyeAICore/utils/Errors.hpp"
 #include <cmath>
 #include <cstddef>
@@ -156,8 +155,6 @@ struct EvaluateResult {
 	std::vector<float> relative_absolute_pairs;
 };
 
-constexpr std::array<float, 3> MEAN = {123.675f, 116.28f, 103.53f};
-constexpr std::array<float, 3> STDDEV = {58.395f, 57.12f, 57.375f};
 constexpr size_t INPUT_WIDTH = 256;
 constexpr size_t INPUT_HEIGHT = 256;
 constexpr size_t DATASET_WIDTH = 1024;
@@ -166,7 +163,7 @@ constexpr float DATASET_MIN = 0.6f;
 constexpr float DATASET_MAX = 350.f;
 
 static tl::expected<EvaluateResult, std::string> evaluate(
-	TfLiteRuntime& runtime,
+	DepthModel& depth_model,
 	std::span<float> image_rgb,
 	std::span<float> metric_depth,
 	std::span<float> depth_mask
@@ -197,9 +194,8 @@ static tl::expected<EvaluateResult, std::string> evaluate(
 
 	std::vector<float> depth_estimation(pixel_count);
 
-	const auto status = run_raw_depth_estimation(
-		runtime, image_rgb, std::span<float>(depth_estimation), MEAN, STDDEV
-	);
+	const auto status =
+		depth_model.run(image_rgb, std::span<float>(depth_estimation));
 	if (!status.has_value())
 		return tl::unexpected(status.error());
 
@@ -263,7 +259,7 @@ static tl::expected<EvaluateResult, std::string> evaluate(
 }
 
 static tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
-	TfLiteRuntime& runtime,
+	DepthModel& depth_model,
 	const DatasetPointPaths& dataset_point_paths,
 	const std::filesystem::path& evaluation_output_filepath
 ) {
@@ -298,7 +294,7 @@ static tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
 	std::vector<float>& depth_mask = depth_mask_result.value();
 
 	const auto result = evaluate(
-		runtime, std::span<float>(image), std::span<float>(depth),
+		depth_model, std::span<float>(image), std::span<float>(depth),
 		std::span<float>(depth_mask)
 	);
 	if (!result.has_value())
