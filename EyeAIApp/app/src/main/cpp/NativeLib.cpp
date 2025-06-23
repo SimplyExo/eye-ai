@@ -2,8 +2,9 @@
 #include <jni.h>
 #include <memory>
 
-#include "EyeAICore/DepthEstimation.hpp"
+#include "EyeAICore/DepthModel.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
+#include "EyeAICore/utils/DepthColormap.hpp"
 #include "EyeAICore/utils/MutexGuard.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 #include "ImageUtils.hpp"
@@ -12,15 +13,16 @@
 
 // the global variable is using MutexGuard, so they are thread-safe
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
-static MutexGuard<std::unique_ptr<TfLiteRuntime>>
-	depth_estimation_tflite_runtime{std::unique_ptr<TfLiteRuntime>(nullptr)};
+static MutexGuard<std::unique_ptr<DepthModel>> depth_model{
+	std::unique_ptr<DepthModel>(nullptr)
+};
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 // NOLINTBEGIN(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthTfLiteRuntime(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthModel(
 	JNIEnv* env,
 	jobject /*thiz*/,
 	jbyteArray model,
@@ -42,58 +44,48 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthTfLiteRuntime(
 		LOG_ERROR("[TfLiteRuntime] {}", msg);
 	};
 
-	auto result = TfLiteRuntime::create(
+	auto result = DepthModel::create(
 		model_data.to_vector(), gpu_delegate_serialization_dir_string,
 		model_token_string, log_warning_callback, log_error_callback
 	);
 	if (result) {
-		depth_estimation_tflite_runtime.lock()->swap(*result);
+		depth_model.lock()->swap(*result);
 	} else
-		LOG_ERROR("[TfLiteRuntime] Failed to create: {}", result.error());
+		LOG_ERROR(
+			"[TfLiteRuntime] Failed to create depth model: {}", result.error()
+		);
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_shutdownDepthTfLiteRuntime(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_shutdownDepthModel(
 	JNIEnv* /*env*/,
 	jobject /*thiz*/
 ) {
-	depth_estimation_tflite_runtime.lock()->reset(nullptr);
+	depth_model.lock()->reset(nullptr);
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthTfLiteInference(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthModelInference(
 	JNIEnv* env,
 	jobject /*thiz*/,
 	jfloatArray input,
-	jfloatArray output,
-	jfloat mean_r,
-	jfloat mean_g,
-	jfloat mean_b,
-	jfloat stddev_r,
-	jfloat stddev_g,
-	jfloat stddev_b
+	jfloatArray output
 ) {
-	auto depth_estimation_tflite_runtime_scope =
-		depth_estimation_tflite_runtime.lock();
+	auto depth_model_scope = depth_model.lock();
 
-	if (*depth_estimation_tflite_runtime_scope == nullptr) {
-		LOG_ERROR("TfLiteRuntime not initialized!");
+	if (*depth_model_scope == nullptr) {
+		LOG_ERROR("depth model not initialized!");
 		return;
 	}
 
 	NativeFloatArrayScope input_array(env, input);
 	NativeFloatArrayScope output_array(env, output);
 
-	const std::array<float, 3> mean = {mean_r, mean_g, mean_b};
-	const std::array<float, 3> stddev = {stddev_r, stddev_g, stddev_b};
-
-	const auto result = run_depth_estimation(
-		*(*depth_estimation_tflite_runtime_scope), input_array, output_array,
-		mean, stddev
-	);
+	const auto result = (*depth_model_scope)->run(input_array, output_array);
 	if (!result.has_value())
 		LOG_ERROR(
-			"[TfLiteRuntime] Failed to run inference: {}", result.error()
+			"[TfLiteRuntime] Failed to run depth model inference: {}",
+			result.error()
 		);
 }
 

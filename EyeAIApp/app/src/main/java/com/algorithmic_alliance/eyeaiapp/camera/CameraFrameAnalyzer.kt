@@ -50,14 +50,14 @@ class CameraFrameAnalyzer(
 					withContext(Dispatchers.Main) {
 						val colorMappedImage = NativeLib.depthColorMap(
 							predictionOutput,
-							depthModel.getInputSize()
+							depthModel.inputDim
 						)
 						depthView.setImageBitmap(colorMappedImage)
 
 						if (eyeAIApp.settings.showProfilingInfo) {
 							val formattedInputResolution = "${inputWidth}x${inputHeight}"
-							val modelName = depthModel.getName()
-							val modelInputSize = depthModel.getInputSize()
+							val modelName = depthModel.name
+							val modelInputSize = depthModel.inputDim
 							val formattedModelInputSize =
 								"${modelInputSize.width}x${modelInputSize.height}"
 							performanceText.text =
