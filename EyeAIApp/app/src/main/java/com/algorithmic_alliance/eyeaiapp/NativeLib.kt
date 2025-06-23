@@ -19,23 +19,17 @@ object NativeLib {
 	external fun newCameraFrame()
 	external fun formatCameraFrame(): String
 
-	external fun initDepthTfLiteRuntime(
+	external fun initDepthModel(
 		model: ByteArray,
 		gpuDelegateSerializationDir: String,
 		modelToken: String
 	)
 
-	external fun shutdownDepthTfLiteRuntime()
+	external fun shutdownDepthModel()
 
-	external fun runDepthTfLiteInference(
+	external fun runDepthModelInference(
 		input: FloatArray,
-		output: FloatArray,
-		meanR: Float,
-		meanG: Float,
-		meanB: Float,
-		stddevR: Float,
-		stddevG: Float,
-		stddevB: Float
+		output: FloatArray
 	)
 
 	external fun depthColormap(depthValues: FloatArray, colormappedPixels: IntArray)
