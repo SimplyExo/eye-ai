@@ -1,5 +1,6 @@
 #include "utils.hpp"
 #include <chrono>
+#include <cstdlib>
 #include <filesystem>
 #include <format>
 #include <iostream>
@@ -9,10 +10,11 @@
 int main(const int argc, const char* argv[]) {
 	const auto start = std::chrono::high_resolution_clock::now();
 
-	if (argc != 4) {
+	if (argc != 5) {
 		println_error_fmt(
-			"Usage: EvaluateDataset <midas.tflite> <dataset_directory> "
-			"<evaluation_output_directory>\n"
+			"Usage: EvaluateDataset <midas.tflite> <prepare_dataset.py> "
+			"<dataset_directory> "
+			"<evaluation_output_directory>"
 		);
 		return 1;
 	}
@@ -20,8 +22,12 @@ int main(const int argc, const char* argv[]) {
 	std::span<const char*> args(argv, argc);
 
 	const std::filesystem::path midas_model_path = args[1];
-	const std::filesystem::path dataset_directory = args[2];
-	const std::filesystem::path evaluation_output_directory = args[3];
+	const std::filesystem::path prepare_dataset_python_path = args[2];
+	const std::filesystem::path dataset_directory = args[3];
+	const std::filesystem::path evaluation_output_directory = args[4];
+	const std::filesystem::path prepared_dataset_scan_directory =
+		"/tmp/EyeAICore/prepared_dataset_scan";
+	std::filesystem::remove_all(prepared_dataset_scan_directory);
 
 	constexpr const char* GPU_DELEGATE_SERIALIZATION_DIR =
 		"/tmp/EyeAICore/gpu_delegate_cache";
@@ -60,9 +66,9 @@ int main(const int argc, const char* argv[]) {
 	}
 	auto& depth_model = depth_model_result.value();
 
-	std::cout << "\n=== Scanning Dataset for entries ===\n\n";
+	std::cout << "\n=== Searching Dataset for scans ===\n\n";
 
-	const auto dataset_paths = scan_dataset(dataset_directory);
+	const auto scans = search_for_scans_in_dataset(dataset_directory);
 
 	std::cout << "\n=== Evaluating Dataset ===\n\n";
 
@@ -73,34 +79,94 @@ int main(const int argc, const char* argv[]) {
 		evaluation_output_directory / "outdoor";
 	std::filesystem::create_directories(outdoors_directory);
 
-	size_t i = 0;
-	for (const auto& [data_point, paths] : dataset_paths) {
-		const float percentage = static_cast<float>(i) /
-								 static_cast<float>(dataset_paths.size() - 1);
-		const std::string progress = std::format(
-			"[{}/{} {}%]", i + 1, dataset_paths.size(),
-			static_cast<int>(percentage * 100.f)
+	size_t total_image_count = 0;
+	size_t current_scan_index = 0;
+	for (const auto& [scan_id, scan_directory] : scans) {
+		const float scan_percentage =
+			static_cast<float>(current_scan_index + 1) /
+			static_cast<float>(scans.size());
+		println_fmt(
+			"=== Scan {} [{}/{} {}%] ===", scan_id, current_scan_index + 1,
+			scans.size(), scan_percentage
 		);
-		std::cout << progress << " === Evaluating " << data_point.to_string()
-				  << " ===";
-		i++;
+		current_scan_index++;
 
-		const auto result_filepath =
-			(data_point.indoors ? indoors_directory : outdoors_directory) /
-			std::format(
-				"{}_{}_{}_result.csv", data_point.scene_id, data_point.scan_id,
-				data_point.imgname
-			);
+		const int preparation_exit_code = prepare_dataset_scan(
+			prepare_dataset_python_path, scan_directory,
+			prepared_dataset_scan_directory
+		);
 
-		const auto result = evaluate_set(*depth_model, paths, result_filepath);
-
-		if (result.has_value()) {
-			println_fmt("    Finished, took {} ms", result.value().count());
-		} else {
+		if (preparation_exit_code != EXIT_SUCCESS) {
 			println_error_fmt(
-				"   Failed with error: {}, skipping!\n", result.error()
+				"Failed to prepare dataset scan using python script {}, exited "
+				"with code {}",
+				prepare_dataset_python_path.string(), preparation_exit_code
 			);
+			continue;
 		}
+
+		std::string progress_bar;
+
+		const DatasetScan dataset_scan =
+			search_for_images_in_prepared_scan(prepared_dataset_scan_directory);
+
+		const auto scan_evaluation_start =
+			std::chrono::high_resolution_clock::now();
+		size_t image_index = 0;
+		for (const auto& [datapoint, paths] : dataset_scan.paths) {
+			const float percentage =
+				static_cast<float>(image_index + 1) /
+				static_cast<float>(dataset_scan.paths.size());
+			progress_bar = std::format(
+				"[{}/{} {}%] Evaluating {}", image_index + 1,
+				dataset_scan.paths.size(), static_cast<int>(percentage * 100.f),
+				datapoint.to_string()
+			);
+			std::cout << '\r' << progress_bar;
+			std::cout.flush();
+			image_index++;
+			total_image_count++;
+
+			const auto result_filepath =
+				(datapoint.indoors ? indoors_directory : outdoors_directory) /
+				std::format(
+					"{}_{}_{}_result.csv", datapoint.scene_id,
+					datapoint.scan_id, datapoint.imgname
+				);
+
+			const auto result =
+				evaluate_set(*depth_model, paths, result_filepath);
+
+			if (result.has_value()) {
+				progress_bar +=
+					std::format(", took {} ms", result.value().count());
+				std::cout << '\r' << progress_bar;
+				std::cout.flush();
+			} else {
+				progress_bar.clear();
+				println_error_fmt(
+					"   Failed with error: {}, skipping!", result.error()
+				);
+			}
+		}
+
+		const auto scan_evaluation_duration =
+			std::chrono::duration_cast<std::chrono::milliseconds>(
+				std::chrono::high_resolution_clock::now() -
+				scan_evaluation_start
+			);
+
+		if (!progress_bar.empty()) {
+			for (char& c : progress_bar)
+				c = ' ';
+			std::cout << '\r' << progress_bar;
+			std::cout.flush();
+		}
+		std::cout << "\rScan evaluation took "
+				  << scan_evaluation_duration.count() << " ms\n\n";
+		std::cout.flush();
+
+		std::filesystem::remove_all(prepared_dataset_scan_directory);
 	}
 
 	const auto total_duration =
@@ -108,15 +174,16 @@ int main(const int argc, const char* argv[]) {
 			std::chrono::high_resolution_clock::now() - start
 		);
 	println_fmt(
-		"\n==========================\nAll {} scans finished! Total time "
-		"taken: {} s\n",
-		dataset_paths.size(), total_duration.count()
+		"==========================\nAll {} images finished! Total time "
+		"taken: {} s",
+		total_image_count, total_duration.count()
 	);
 
-	if (dataset_paths.size() != 771) {
+	if (total_image_count != 771) {
 		println_error_fmt(
-			"Scanning the dataset found {}, but 771 were expected!",
-			dataset_paths.size()
+			"Warning: Searching the dataset found {} scanned images, but 771 "
+			"were expected!",
+			total_image_count
 		);
 	}
 }

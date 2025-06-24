@@ -1,40 +1,47 @@
 # Metric Depth: Converting relative depth estimation to absolute(/metric) depth using the DIODE dataset
 
-### How to enable OpenCL support (optional):
+### Requirements for prepare_dataset.py python script:
 
-Install opencl dev package: (linux/ubuntu)
+- numpy
+
+### How to enable OpenCL (GPU) support on Linux (optional):
+
+Install opencl dev package: (ubuntu)
 
 ```bash
 sudo apt install ocl-icd-opencl-dev
 ```
 
-### How to prepare and evaluate the DIODE dataset:
-
-1. Download the dataset (prefer the testing dataset, as it is much smaller) by visiting <https://diode-dataset.org/>
-2. Prepare the dataset (converting .png and .npy files to simple binary .bin files)
+If you have a NVIDIA card, also install this package:
 
 ```bash
-python3 ./scripts/prepare_dataset.py <path_to_diode_dataset_directory> <path_to_prepared_diode_dataset_directory>
+sudo apt install nvidia-opencl-dev
 ```
 
-3. Evaluate the prepared dataset:
+<br>
 
-(for example: midas_model_filepath could be "../../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite")
+### How to evaluate the DIODE dataset:
 
-```bash
-./scripts/build_and_run_eval_dataset.sh <midas_model_filepath.tflite> <prepared_dataset_directory> <evaluation_dataset_directory>
-```
+1. Download and extract the dataset (prefer the testing dataset, as it is much smaller) by visiting <https://diode-dataset.org/>
 
-4. (optional) Visualize the evaluation:
+2. Evaluate the dataset:
 
-Visualize a single scan evaluation:
+   (for example: midas_model_filepath could be "../../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite" and prepare_dataset.py could be "./scripts/prepare_dataset.py")
 
-```bash
-python3 ./scripts/visualize_result_file.py <filepath_to_result_file.csv>
-```
+   ```bash
+   ./scripts/build_and_run_eval_dataset.sh <midas_model_filepath.tflite> <prepare_dataset.py> <prepared_dataset_directory> <evaluation_dataset_directory>
+   ```
 
-Or visualilze all evaluations of either indoors or outdoors:
+3. (optional) Visualize the evaluation:
 
-```bash
-python3 ./scripts/visualize_all_trendlines.py <indoors/outdoor evaluation_directory>
-```
+   Visualize a single scan evaluation:
+
+   ```bash
+   python3 ./scripts/visualize_result_file.py <filepath_to_result_file.csv>
+   ```
+
+   Or visualilze all evaluations of either indoors or outdoors:
+
+   ```bash
+   python3 ./scripts/visualize_all_trendlines.py <indoors/outdoor evaluation_directory>
+   ```

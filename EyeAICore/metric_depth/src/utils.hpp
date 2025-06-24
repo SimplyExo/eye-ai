@@ -4,6 +4,7 @@
 #include "EyeAICore/utils/Errors.hpp"
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -144,6 +145,17 @@ match_depth_mask_file(const std::string& filename) {
 	return std::nullopt;
 }
 
+static std::optional<std::string>
+match_scan_directory(const std::string& directory) {
+	std::regex pattern(R"(scan_(\d+))", std::regex::icase);
+	std::smatch match;
+
+	if (std::regex_match(directory, match, pattern)) {
+		return match[1];
+	}
+	return std::nullopt;
+}
+
 struct DatasetPointPaths {
 	std::filesystem::path image_filepath;
 	std::filesystem::path depth_filepath;
@@ -199,9 +211,6 @@ static tl::expected<EvaluateResult, std::string> evaluate(
 	if (!status.has_value())
 		return tl::unexpected(status.error());
 
-	float mean_squared_metric_estimation_error = 0.f;
-	size_t mean_squared_metric_estimation_error_count = 0;
-	bool ignore_error = false;
 	for (size_t y = 0; y < INPUT_HEIGHT; ++y) {
 		for (size_t x = 0; x < INPUT_WIDTH; ++x) {
 			size_t input_image_index = (y * INPUT_WIDTH) + x;
@@ -221,38 +230,10 @@ static tl::expected<EvaluateResult, std::string> evaluate(
 			if (absolute < DATASET_MIN || absolute > DATASET_MAX)
 				continue;
 
-			// ignore probably outdoor scenes
-			if (absolute > 7.5f || absolute < -2.5f)
-				ignore_error = true;
-
 			float relative = depth_estimation[input_image_index];
 			result.relative_absolute_pairs.push_back(relative);
 			result.relative_absolute_pairs.push_back(absolute);
-
-			// indoors coeffs: 4.05221043e-13 -5.11228601e-10  1.23966749e-06
-			// -3.01295207e-03 3.46789584e+00
-			float relative2 = relative * relative;
-			float relative3 = relative2 * relative;
-			float relative4 = relative3 * relative;
-			float metric_estimation =
-				(4.05221043e-13f * relative4) - (5.11228601e-10f * relative3) +
-				(1.23966749e-06f * relative2) - (3.01295207e-03f * relative) +
-				3.46789584e+00f;
-
-			float error = abs(absolute - metric_estimation);
-			mean_squared_metric_estimation_error += error * error;
-			mean_squared_metric_estimation_error_count++;
 		}
-	}
-
-	mean_squared_metric_estimation_error /=
-		static_cast<float>(mean_squared_metric_estimation_error_count);
-
-	if (!ignore_error) {
-		println_fmt(
-			"mean_squared_metric_estimation_error (indoors): {}",
-			mean_squared_metric_estimation_error
-		);
 	}
 
 	return result;
@@ -312,19 +293,48 @@ static tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
 	);
 }
 
-static std::unordered_map<DataPoint, DatasetPointPaths>
-scan_dataset(const std::filesystem::path& dataset_directory) {
+struct DatasetScan {
+	std::filesystem::path directory;
+	std::unordered_map<DataPoint, DatasetPointPaths> paths;
+};
+
+static std::unordered_map<std::string, std::filesystem::path>
+search_for_scans_in_dataset(const std::filesystem::path& dataset_directory) {
+	std::unordered_map<std::string, std::filesystem::path> scan_paths;
+
+	for (const auto& entry :
+		 std::filesystem::recursive_directory_iterator(dataset_directory)) {
+
+		if (!entry.is_regular_file()) {
+			const auto& filepath = entry.path();
+			const auto filename = filepath.filename();
+
+			const std::optional<std::string> scan_id =
+				match_scan_directory(filename);
+
+			if (scan_id)
+				scan_paths[*scan_id] = filepath;
+		}
+	}
+
+	return scan_paths;
+}
+
+static DatasetScan search_for_images_in_prepared_scan(
+	const std::filesystem::path& prepared_scan_directory
+) {
 	std::unordered_map<DataPoint, std::filesystem::path> image_filepaths;
 	std::unordered_map<DataPoint, std::filesystem::path> depth_filepaths;
 	std::unordered_map<DataPoint, std::filesystem::path> depth_mask_filepaths;
 
 	for (const auto& entry :
-		 std::filesystem::recursive_directory_iterator(dataset_directory)) {
-		if (!entry.is_regular_file())
-			continue;
+		 std::filesystem::directory_iterator(prepared_scan_directory)) {
 
 		const auto& filepath = entry.path();
 		const auto filename = filepath.filename();
+		if (!entry.is_regular_file())
+			continue;
+
 		const std::optional<DataPoint> image_data_point =
 			match_image_file(filename);
 		if (image_data_point) {
@@ -379,5 +389,19 @@ scan_dataset(const std::filesystem::path& dataset_directory) {
 			);
 		}
 	}
-	return dataset_paths;
+
+	return DatasetScan(prepared_scan_directory, dataset_paths);
+}
+
+/// @return exit code of python script
+[[nodiscard]] static int prepare_dataset_scan(
+	const std::filesystem::path& prepare_dataset_python_path,
+	const std::filesystem::path& dataset_scan_directory,
+	const std::filesystem::path& output_directory
+) {
+	const std::string command = std::format(
+		"python3 {} {} {}", prepare_dataset_python_path.string(),
+		dataset_scan_directory.string(), output_directory.string()
+	);
+	return system(command.c_str());
 }
