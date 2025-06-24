@@ -6,46 +6,84 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.util.Size
 import java.io.File
+import android.util.Log
+import androidx.core.graphics.scale
+import com.algorithmic_alliance.eyeaiapp.EyeAIApp
+import com.algorithmic_alliance.eyeaiapp.NativeLib
 
 /** All needed information to create and use a depth model */
 class DepthModelInfo(
 	val name: String,
 	val fileName: String,
-	val inputDim: Int,
-	val normMean: FloatArray,
-	val normStddev: FloatArray
+	val inputDim: Size
 ) {
 	/** @return null if model type is not supported */
-	fun createDepthModel(context: Context): DepthModel? {
-		if (normMean.size != 3 || normStddev.size != 3) return null
-
-		if (fileName.endsWith(".tflite")) {
-			return TfLiteDepthModel(
-				context,
-				fileName,
-				inputDim,
-				normMean,
-				normStddev
-			)
-		}
-
-		return null
+	fun createDepthModel(context: Context): DepthModel {
+		return DepthModel(
+			context,
+			name,
+			fileName,
+			inputDim
+		)
 	}
 }
 
-/** Base class that all depth estimation models implement */
-interface DepthModel : AutoCloseable {
-	fun getName(): String
+class DepthModel(
+	context: Context,
+	val name: String,
+	val fileName: String,
+	val inputDim: Size
+) : AutoCloseable {
+	init {
+		val modelData = context.assets.open(fileName).readBytes()
+
+		val gpuDelegateCacheDirectory =
+			createSerializedGpuDelegateCacheDirectory(context)
+		val modelToken = getModelToken(context, fileName)
+
+		// cleanup old cached gpu delegate files
+		if (gpuDelegateCacheDirectory.exists()) {
+			for (file in gpuDelegateCacheDirectory.listFiles()!!) {
+				if (!file.name.contains(modelToken)) {
+					try {
+						Log.i(
+							EyeAIApp.APP_LOG_TAG,
+							"Deleting old gpu delegate cache file: ${file.name}"
+						)
+						file.delete()
+					} catch (_: SecurityException) {
+					}
+				}
+			}
+		}
+
+		NativeLib.initDepthModel(
+			modelData,
+			gpuDelegateCacheDirectory.path,
+			modelToken
+		)
+	}
+
+	override fun close() {
+		NativeLib.shutdownDepthModel()
+	}
 
 	/**
-	 * @param input is not enforced to match output of [getInputSize], but should be at least a bit
-	 * larger
+	 * @param input is not enforced to match [inputDim], but should be at least a bit larger
 	 * @return relative depth for each pixel between 0.0f and 1.0f
 	 */
-	fun predictDepth(input: Bitmap): FloatArray
+	fun predictDepth(input: Bitmap): FloatArray {
+		val scaled = input.scale(inputDim.width, inputDim.height)
+		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled)
+		var output = FloatArray(inputDim.width * inputDim.height)
 
-	/** @return preferred input image dimensions of the model */
-	fun getInputSize(): Size
+		NativeLib.runDepthModelInference(
+			input,
+			output,
+		)
+
+		return output
+	}
 }
 
 fun createSerializedGpuDelegateCacheDirectory(context: Context): File {

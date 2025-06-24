@@ -1,67 +1,9 @@
-#include "EyeAICore/DepthEstimation.hpp"
+#include "EyeAICore/utils/DepthColormap.hpp"
 
+#include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/ImageUtils.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 #include <algorithm>
-
-tl::expected<void, std::string> run_depth_estimation(
-	TfLiteRuntime& tflite_runtime,
-	std::span<float> input,
-	std::span<float> output,
-	std::array<float, RGB_CHANNELS> mean,
-	std::array<float, RGB_CHANNELS> stddev
-) {
-	PROFILE_DEPTH_FUNCTION()
-
-	normalize_rgb(input, mean, stddev);
-
-	const auto result =
-		tflite_runtime.run_inference<float, float>(input, output);
-	if (!result.has_value())
-		return tl::unexpected(result.error());
-
-	min_max_scaling(output);
-
-	return {};
-}
-
-void normalize_rgb(
-	std::span<float> values,
-	std::array<float, RGB_CHANNELS> mean,
-	std::array<float, RGB_CHANNELS> stddev
-) {
-	PROFILE_DEPTH_FUNCTION()
-
-	size_t channel = 0;
-
-	for (float& value : values) {
-		value = (value - mean[channel]) / stddev[channel];
-		channel = (channel + 1) % RGB_CHANNELS;
-	}
-}
-
-void min_max_scaling(std::span<float> values) {
-	PROFILE_DEPTH_FUNCTION()
-
-	if (values.empty())
-		return;
-
-	const auto [min_iter, max_iter] = std::ranges::minmax_element(values);
-	const float min = *min_iter;
-	const float max = *max_iter;
-
-	const float diff = max - min;
-
-	if (diff > 0.0f) {
-		for (float& value : values) {
-			value = (value - min) / diff;
-		}
-	} else {
-		for (float& value : values) {
-			value = 0.5f;
-		}
-	}
-}
 
 static int inferno_depth_colormap(float relative_depth);
 
@@ -69,6 +11,8 @@ tl::expected<void, std::string> depth_colormap(
 	std::span<const float> depth_values,
 	std::span<int> colormapped_pixels
 ) {
+	PROFILE_DEPTH_FUNCTION()
+
 	if (depth_values.size() != colormapped_pixels.size()) {
 		return tl::unexpected_fmt(
 			"depth_values ({}) does not match colormapped_pixels ({})",
