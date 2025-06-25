@@ -14,6 +14,13 @@ object NativeLib {
 		System.loadLibrary("NativeLib")
 	}
 
+	// Yolo
+	external fun initYoloRuntime(model: ByteArray,
+	                               gpuDelegateSerializationDir: String,
+	                               modelToken: String): Boolean
+
+	//external fun runYoloOperation(input: FloatArray);
+
 	external fun newDepthFrame()
 	external fun formatDepthFrame(): String
 	external fun newCameraFrame()

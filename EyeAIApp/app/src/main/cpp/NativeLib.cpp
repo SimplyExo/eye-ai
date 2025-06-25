@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "EyeAICore/DepthModel.hpp"
+#include "EyeAICore/YoloModel.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
 #include "EyeAICore/utils/DepthColormap.hpp"
 #include "EyeAICore/utils/MutexGuard.hpp"
@@ -16,10 +17,55 @@
 static MutexGuard<std::unique_ptr<DepthModel>> depth_model{
 	std::unique_ptr<DepthModel>(nullptr)
 };
+
+YoloModel yolo_instance;
+
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 // NOLINTBEGIN(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
+	JNIEnv* env,
+	jobject /*thiz*/,
+	jbyteArray model,
+	jstring gpu_delegate_serialization_dir,
+	jstring model_token
+)
+{
+	NativeByteArrayScope model_data(env, model);
+	const NativeStringScope gpu_delegate_serialization_dir_string(
+		env, gpu_delegate_serialization_dir
+	);
+	const NativeStringScope model_token_string(env, model_token);
+
+	const auto log_warning_callback = [](std::string msg) {
+		LOG_WARN("[YoloRuntime] {}", msg);
+	};
+
+	const auto log_error_callback = [](std::string msg) {
+		LOG_ERROR("[YoloRuntime] {}", msg);
+	};
+
+	auto result = yolo_instance.create(
+		model_data.to_vector(),
+		gpu_delegate_serialization_dir_string,
+		model_token_string,
+		log_warning_callback,
+		log_error_callback
+	);
+
+	if (!result.has_value()) {
+		LOG_ERROR("[YoloRuntime] Could not create YoloModel: {}", result.error());
+		return false;
+	}
+
+	LOG_INFO("[YoloRuntime] Runtime erstellt!");
+	return true;
+}
+
+
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthModel(

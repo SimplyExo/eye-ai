@@ -81,7 +81,7 @@ class CameraFrameAnalyzer(
 				val frame = latestCameraFrame.getAndSet(null)
 
 				if (frame != null) {
-					Log.e("object-recognition", "passed")
+					//Log.e("object-recognition", "passed")
 					// Frame analysieren
 				}
 			}
