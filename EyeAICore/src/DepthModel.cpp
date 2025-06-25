@@ -31,16 +31,13 @@ DepthModel::create_with_raw_output(
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback
 ) {
-	std::vector<std::unique_ptr<Operator>> input_operators;
-	input_operators.emplace_back(std::make_unique<RgbNormalizeOperator>());
-
-	std::vector<std::unique_ptr<Operator>> output_operators;
-
-	auto runtime = TfLiteRuntime::create(
-		std::move(model_data), gpu_delegate_serialization_dir, model_token,
-		std::move(input_operators), std::move(output_operators),
-		log_warning_callback, log_error_callback
-	);
+	auto runtime =
+		TfLiteRuntimeBuilder(
+			std::move(model_data), gpu_delegate_serialization_dir, model_token,
+			log_warning_callback, log_error_callback
+		)
+			.add_input_operator(std::make_unique<RgbNormalizeOperator>())
+			.build();
 	if (!runtime.has_value())
 		return tl::unexpected(runtime.error());
 
