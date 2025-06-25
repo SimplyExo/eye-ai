@@ -88,3 +88,34 @@ class TfLiteRuntime {
 	[[nodiscard]] tl::expected<void, std::string>
 	read_output(std::span<float> output);
 };
+
+class TfLiteRuntimeBuilder {
+  public:
+	explicit TfLiteRuntimeBuilder(
+		std::vector<int8_t>&& model_data,
+		std::string_view gpu_delegate_serialization_dir,
+		std::string_view model_token,
+		TfLiteLogWarningCallback log_warning_callback,
+		TfLiteLogErrorCallback log_error_callback
+	);
+
+	TfLiteRuntimeBuilder&
+	add_input_operator(std::unique_ptr<Operator>&& input_operator);
+
+	TfLiteRuntimeBuilder&
+	add_output_operator(std::unique_ptr<Operator>&& output_operator);
+
+	/// all modified configurations of `this` will be discarded after this
+	/// method
+	[[nodiscard]] tl::expected<std::unique_ptr<TfLiteRuntime>, std::string>
+	build();
+
+  private:
+	std::vector<int8_t> model_data;
+	std::string_view gpu_delegate_serialization_dir;
+	std::string_view model_token;
+	std::vector<std::unique_ptr<Operator>> input_operators;
+	std::vector<std::unique_ptr<Operator>> output_operators;
+	TfLiteLogWarningCallback log_warning_callback;
+	TfLiteLogErrorCallback log_error_callback;
+};

@@ -214,3 +214,38 @@ void tflite_error_callback(
 		std::format("[TfLiteRuntime Error] {}", formatted_error_msg)
 	);
 }
+
+TfLiteRuntimeBuilder::TfLiteRuntimeBuilder(
+	std::vector<int8_t>&& model_data,
+	std::string_view gpu_delegate_serialization_dir,
+	std::string_view model_token,
+	TfLiteLogWarningCallback log_warning_callback,
+	TfLiteLogErrorCallback log_error_callback
+)
+	: model_data(std::move(model_data)),
+	  gpu_delegate_serialization_dir(gpu_delegate_serialization_dir),
+	  model_token(model_token), log_warning_callback(log_warning_callback),
+	  log_error_callback(log_error_callback) {}
+
+TfLiteRuntimeBuilder& TfLiteRuntimeBuilder::add_input_operator(
+	std::unique_ptr<Operator>&& input_operator
+) {
+	input_operators.push_back(std::move(input_operator));
+	return *this;
+}
+
+TfLiteRuntimeBuilder& TfLiteRuntimeBuilder::add_output_operator(
+	std::unique_ptr<Operator>&& output_operator
+) {
+	output_operators.push_back(std::move(output_operator));
+	return *this;
+}
+
+tl::expected<std::unique_ptr<TfLiteRuntime>, std::string>
+TfLiteRuntimeBuilder::build() {
+	return TfLiteRuntime::create(
+		std::move(model_data), gpu_delegate_serialization_dir, model_token,
+		std::move(input_operators), std::move(output_operators),
+		log_warning_callback, log_error_callback
+	);
+}
