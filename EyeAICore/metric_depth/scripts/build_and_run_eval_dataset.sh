@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ $# -ne 4 ]; then
-    echo "Usage: $0 <midas_model_filepath> <prepare_dataset.py> <dataset_directory> <evaluation_dataset_directory>"
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <dataset_directory> <evaluation_dataset_directory>"
     exit 1
 fi
 
@@ -12,5 +12,5 @@ echo "Building..."
 cmake --build "$scripts_directory/../../build" -j8 --target EvaluateDataset
 
 echo "Running..."
-
-"$scripts_directory/../../build/metric_depth/EvaluateDataset" $1 $2 $3 $4
+midas_model_filepath="$scripts_directory/../../../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite"
+"$scripts_directory/../../build/metric_depth/EvaluateDataset" "$midas_model_filepath" "$1" "$2"

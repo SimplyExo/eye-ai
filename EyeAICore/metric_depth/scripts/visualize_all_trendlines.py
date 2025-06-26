@@ -2,16 +2,26 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from collections import defaultdict
 
-def load_csv_and_find_coeff(filepath):
+def load_result_file_and_find_coeffs(filepath):
     try:
-        data = pd.read_csv(filepath, header=None)
-        data.columns = ['relative', 'absolute']
-        data = data.sort_values(by='relative')
-        coeff = np.polyfit(data['relative'], data['absolute'], 4)
-        p = np.poly1d(coeff)
-        return coeff
+        data = np.fromfile(filepath, dtype=np.float32)
+        unsorted_relative_values = data[::2]
+        unsorted_absolute_values = data[1::2]
+        sort_indices = np.argsort(unsorted_relative_values)
+        relative_values = unsorted_relative_values[sort_indices]
+        absolute_values = unsorted_absolute_values[sort_indices]
+
+        num_bins = 20
+        bin_edges = np.linspace(relative_values.min(), relative_values.max(), num_bins)
+        bin_indices = np.digitize(relative_values, bin_edges) - 1
+        bin_indices[bin_indices == num_bins] = num_bins - 1
+        avg_absolute_values = np.array([
+            absolute_values[bin_indices == i].mean()
+            for i in range(num_bins)
+        ])
+        coeffs = np.polyfit(bin_edges, avg_absolute_values, 4)
+        return coeffs
     except Exception as e:
         print(f"Skipping {filepath}: {e}")
         return None
@@ -19,14 +29,10 @@ def load_csv_and_find_coeff(filepath):
 def write_coeffs(directory):
     with open(directory + "/coeffs.csv", "w") as f:
         for filename in os.listdir(directory):
-            if not filename.lower().endswith(".csv"):
-                continue
-            if filename.startswith("coeffs.csv"):
-                continue
-            if "outdoor" in filename:
+            if not filename.lower().endswith(".bin"):
                 continue
             filepath = os.path.join(directory, filename)
-            coeffs = load_csv_and_find_coeff(filepath)
+            coeffs = load_result_file_and_find_coeffs(filepath)
             if coeffs is None:
                 continue
             f.write(",".join(str(coeff) for coeff in coeffs) + "\n")
@@ -45,9 +51,7 @@ def plot_coeffs(directory):
     for idx, row in coeffs_df.iterrows():
         a, b, c, d, e = row
         f = np.poly1d(np.array([a, b, c, d, e]))
-        y = f(x)# a * x**4 + b * x**3 + c * x**2 + d * x + e
-        if np.any(y > 7.5) or np.any(y < -2.5):
-            continue
+        y = f(x)
 
         plt.plot(x, y, alpha=0.15)
         avg_y += y

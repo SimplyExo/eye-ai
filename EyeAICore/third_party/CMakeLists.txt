@@ -48,8 +48,30 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tl-expected)
 
+# libnpy
+message(STATUS "Downloading libnpy...")
+FetchContent_Declare(
+	libnpy
+	GIT_REPOSITORY https://github.com/llohse/libnpy.git
+	GIT_TAG master
+)
+FetchContent_MakeAvailable(libnpy)
+set(LIBNPY_INCLUDE_DIR "${libnpy_SOURCE_DIR}/include")
+
+# stb (stb_image, stb_image_resize2)
+message(STATUS "Downloading stb (stb_image, stb_image_resize2)...")
+FetchContent_Declare(
+	stb
+	GIT_REPOSITORY https://github.com/nothings/stb.git
+	GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+set(STB_INCLUDE_DIR ${stb_SOURCE_DIR})
+
 set(THIRD_PARTY_INCLUDE_DIRS
 	${TFLITE_INCLUDE_DIRS}
+	${LIBNPY_INCLUDE_DIR}
+	${STB_INCLUDE_DIR}
 	PARENT_SCOPE
 )
 set(THIRD_PARTY_LIBS

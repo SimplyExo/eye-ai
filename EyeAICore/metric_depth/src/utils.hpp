@@ -3,14 +3,21 @@
 #include "EyeAICore/DepthModel.hpp"
 #include "EyeAICore/utils/Errors.hpp"
 #include <cmath>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <functional>
 #include <iostream>
+#include <npy.hpp>
+#include <queue>
 #include <regex>
 #include <span>
+#include <stb_image.h>
+#include <stb_image_resize2.h>
 #include <tl/expected.hpp>
 
 template<typename T>
@@ -49,12 +56,10 @@ save_evaluation_result_file(
 	if (!file.is_open())
 		return tl::unexpected_fmt("Failed to open file: {}", filepath.string());
 
-	for (size_t i = 0; i < relative_absolute_pairs.size(); i += 2) {
-		file << std::format(
-			"{},{}\n", relative_absolute_pairs[i],
-			relative_absolute_pairs[i + 1]
-		);
-	}
+	file.write(
+		reinterpret_cast<const char*>(relative_absolute_pairs.data()),
+		static_cast<std::streamsize>(relative_absolute_pairs.size_bytes())
+	);
 
 	file.flush();
 
@@ -109,7 +114,7 @@ struct hash<DataPoint> {
 
 static std::optional<DataPoint> match_image_file(const std::string& filename) {
 	std::regex pattern(
-		R"((\d+)_(\d+)_(outdoor|indoors)_(\w+)_image\.bin)", std::regex::icase
+		R"((\d+)_(\d+)_(outdoor|indoors)_(\w+)\.png)", std::regex::icase
 	);
 	std::smatch match;
 
@@ -121,7 +126,7 @@ static std::optional<DataPoint> match_image_file(const std::string& filename) {
 
 static std::optional<DataPoint> match_depth_file(const std::string& filename) {
 	std::regex pattern(
-		R"((\d+)_(\d+)_(outdoor|indoors)_(\w+)_depth\.bin)", std::regex::icase
+		R"((\d+)_(\d+)_(outdoor|indoors)_(\w+)_depth\.npy)", std::regex::icase
 	);
 	std::smatch match;
 
@@ -134,7 +139,7 @@ static std::optional<DataPoint> match_depth_file(const std::string& filename) {
 static std::optional<DataPoint>
 match_depth_mask_file(const std::string& filename) {
 	std::regex pattern(
-		R"((\d+)_(\d+)_(outdoor|indoors)_(\w+)_depth_mask\.bin)",
+		R"((\d+)_(\d+)_(outdoor|indoors)_(\w+)_depth_mask\.npy)",
 		std::regex::icase
 	);
 	std::smatch match;
@@ -239,6 +244,59 @@ static tl::expected<EvaluateResult, std::string> evaluate(
 	return result;
 }
 
+static tl::expected<std::vector<float>, std::string>
+load_image_file(const std::filesystem::path& filepath) {
+	const std::string filepath_str = filepath.string();
+	int width = 0;
+	int height = 0;
+	int channels = 3;
+	float* data =
+		stbi_loadf(filepath_str.c_str(), &width, &height, &channels, STBI_rgb);
+	if (channels != STBI_rgb) {
+		return tl::unexpected_fmt(
+			"invalid channels other than RGB in image file {}", filepath_str
+		);
+	}
+	if (data == nullptr) {
+		return tl::unexpected_fmt("failed to load image file {}", filepath_str);
+	}
+
+	const size_t target_width = INPUT_WIDTH;
+	const size_t target_height = INPUT_HEIGHT;
+	std::vector<float> resized_image(target_width * target_height * STBI_rgb);
+
+	stbir_resize_float_linear(
+		data, width, height, 0, resized_image.data(), target_width,
+		target_height, 0, STBIR_RGB
+	);
+
+	stbi_image_free(data);
+
+	return resized_image;
+}
+
+static tl::expected<std::vector<float>, std::string>
+load_npy_file(const std::filesystem::path& filepath) {
+	// first try loading as float
+	try {
+		const auto npy_data = npy::read_npy<float>(filepath);
+		return npy_data.data;
+	} catch (const std::exception& e) {
+		// then as double -> float
+		try {
+			const auto npy_data = npy::read_npy<double>(filepath);
+			std::vector<float> values(npy_data.data.size());
+			for (size_t i = 0; i < values.size(); ++i)
+				values[i] = static_cast<float>(npy_data.data[i]);
+			return values;
+		} catch (const std::exception& e) {
+			return tl::unexpected_fmt(
+				"failed to load npy file {}: {}", filepath.string(), e.what()
+			);
+		}
+	}
+}
+
 static tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
 	DepthModel& depth_model,
 	const DatasetPointPaths& dataset_point_paths,
@@ -246,8 +304,7 @@ static tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
 ) {
 	const auto start = std::chrono::high_resolution_clock::now();
 
-	auto image_result =
-		read_binary_file<float>(dataset_point_paths.image_filepath);
+	auto image_result = load_image_file(dataset_point_paths.image_filepath);
 	if (!image_result.has_value())
 		return tl::unexpected(image_result.error());
 
@@ -260,24 +317,20 @@ static tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
 		);
 	}
 
-	auto depth_result =
-		read_binary_file<float>(dataset_point_paths.depth_filepath);
+	auto depth_result = load_npy_file(dataset_point_paths.depth_filepath);
 	if (!depth_result.has_value())
 		return tl::unexpected(depth_result.error());
 
 	std::vector<float>& depth = depth_result.value();
 
 	auto depth_mask_result =
-		read_binary_file<float>(dataset_point_paths.depth_mask_filepath);
+		load_npy_file(dataset_point_paths.depth_mask_filepath);
 	if (!depth_mask_result.has_value())
 		return tl::unexpected(depth_mask_result.error());
 
 	std::vector<float>& depth_mask = depth_mask_result.value();
 
-	const auto result = evaluate(
-		depth_model, std::span<float>(image), std::span<float>(depth),
-		std::span<float>(depth_mask)
-	);
+	const auto result = evaluate(depth_model, image, depth, depth_mask);
 	if (!result.has_value())
 		return tl::unexpected(result.error());
 
@@ -305,7 +358,7 @@ search_for_scans_in_dataset(const std::filesystem::path& dataset_directory) {
 	for (const auto& entry :
 		 std::filesystem::recursive_directory_iterator(dataset_directory)) {
 
-		if (!entry.is_regular_file()) {
+		if (entry.is_directory()) {
 			const auto& filepath = entry.path();
 			const auto filename = filepath.filename();
 
@@ -320,15 +373,14 @@ search_for_scans_in_dataset(const std::filesystem::path& dataset_directory) {
 	return scan_paths;
 }
 
-static DatasetScan search_for_images_in_prepared_scan(
-	const std::filesystem::path& prepared_scan_directory
-) {
+static DatasetScan
+search_for_images_in_scan(const std::filesystem::path& scan_directory) {
 	std::unordered_map<DataPoint, std::filesystem::path> image_filepaths;
 	std::unordered_map<DataPoint, std::filesystem::path> depth_filepaths;
 	std::unordered_map<DataPoint, std::filesystem::path> depth_mask_filepaths;
 
 	for (const auto& entry :
-		 std::filesystem::directory_iterator(prepared_scan_directory)) {
+		 std::filesystem::directory_iterator(scan_directory)) {
 
 		const auto& filepath = entry.path();
 		const auto filename = filepath.filename();
@@ -390,18 +442,71 @@ static DatasetScan search_for_images_in_prepared_scan(
 		}
 	}
 
-	return DatasetScan(prepared_scan_directory, dataset_paths);
+	return DatasetScan(scan_directory, dataset_paths);
 }
 
-/// @return exit code of python script
-[[nodiscard]] static int prepare_dataset_scan(
-	const std::filesystem::path& prepare_dataset_python_path,
-	const std::filesystem::path& dataset_scan_directory,
-	const std::filesystem::path& output_directory
-) {
-	const std::string command = std::format(
-		"python3 {} {} {}", prepare_dataset_python_path.string(),
-		dataset_scan_directory.string(), output_directory.string()
-	);
-	return system(command.c_str());
-}
+/// Simple thread pool, with a context for each thread, that can be referenced
+/// by the enqueued tasks
+template<typename Context>
+class ThreadPool {
+  public:
+	using Task = std::function<void(Context&)>;
+
+	explicit ThreadPool(
+		std::function<Context()> thread_context_generator,
+		size_t num_threads
+	) {
+		for (size_t i = 0; i < num_threads; ++i) {
+
+			workers.emplace_back([this, thread_context_generator] {
+				Context thread_context = thread_context_generator();
+
+				while (true) {
+					Task task;
+					{
+						std::unique_lock<std::mutex> lock(this->queue_mutex);
+						this->condition.wait(lock, [this] {
+							return this->stop || !this->tasks.empty();
+						});
+						if (this->stop && this->tasks.empty())
+							return;
+						task = std::move(this->tasks.front());
+						this->tasks.pop();
+					}
+					task(thread_context);
+				}
+			});
+		}
+	}
+
+	~ThreadPool() {
+		{
+			std::unique_lock<std::mutex> lock(queue_mutex);
+			stop = true;
+		}
+		condition.notify_all();
+		for (std::thread& worker : workers) {
+			worker.join();
+		}
+	}
+
+	ThreadPool& operator=(const ThreadPool&) = delete;
+	ThreadPool& operator=(ThreadPool&&) = delete;
+	ThreadPool(const ThreadPool&) = delete;
+	ThreadPool(ThreadPool&&) = delete;
+
+	void enqueue(Task&& task) {
+		{
+			std::unique_lock<std::mutex> lock(queue_mutex);
+			tasks.emplace(std::move(task));
+		}
+		condition.notify_one();
+	}
+
+  private:
+	std::vector<std::thread> workers;
+	std::queue<Task> tasks;
+	std::mutex queue_mutex;
+	std::condition_variable condition;
+	bool stop = false;
+};

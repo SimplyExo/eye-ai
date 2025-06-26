@@ -3,6 +3,7 @@
 ### Requirements for prepare_dataset.py python script:
 
 - numpy
+- matplotlib
 
 ### How to enable OpenCL (GPU) support on Linux (optional):
 
@@ -26,10 +27,8 @@ sudo apt install nvidia-opencl-dev
 
 2. Evaluate the dataset:
 
-   (for example: midas_model_filepath could be "../../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite" and prepare_dataset.py could be "./scripts/prepare_dataset.py")
-
    ```bash
-   ./scripts/build_and_run_eval_dataset.sh <midas_model_filepath.tflite> <prepare_dataset.py> <prepared_dataset_directory> <evaluation_dataset_directory>
+   ./scripts/build_and_run_eval_dataset.sh <dataset_directory> <dataset_evaluation_directory>
    ```
 
 3. (optional) Visualize the evaluation:
