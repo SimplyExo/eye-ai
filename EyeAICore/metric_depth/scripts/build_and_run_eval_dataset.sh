@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# exit immediately on error
+set -e
+
 if [ $# -ne 2 ]; then
     echo "Usage: $0 <dataset_directory> <evaluation_dataset_directory>"
     exit 1

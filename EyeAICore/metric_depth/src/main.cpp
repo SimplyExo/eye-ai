@@ -99,53 +99,55 @@ int main(const int argc, const char* argv[]) {
 		for (const auto& [scan_id, scan_directory] : scans) {
 			const auto scans_size = scans.size();
 
-			pool.enqueue([&](std::unique_ptr<DepthModel>& depth_model) {
-				const DatasetScan dataset_scan =
-					search_for_images_in_scan(scan_directory);
+			pool.enqueue(
+				[&, scans_size](std::unique_ptr<DepthModel>& depth_model) {
+					const DatasetScan dataset_scan =
+						search_for_images_in_scan(scan_directory);
 
-				const auto scan_evaluation_start =
-					std::chrono::high_resolution_clock::now();
-				size_t image_index = 0;
-				for (const auto& [datapoint, paths] : dataset_scan.paths) {
-					image_index++;
-					total_image_count++;
+					const auto scan_evaluation_start =
+						std::chrono::high_resolution_clock::now();
+					size_t image_index = 0;
+					for (const auto& [datapoint, paths] : dataset_scan.paths) {
+						image_index++;
+						total_image_count++;
 
-					const auto result_filepath =
-						(datapoint.indoors ? indoors_directory
-										   : outdoors_directory) /
-						std::format(
-							"{}_{}_{}_result.bin", datapoint.scene_id,
-							datapoint.scan_id, datapoint.imgname
-						);
+						const auto result_filepath =
+							(datapoint.indoors ? indoors_directory
+											   : outdoors_directory) /
+							std::format(
+								"{}_{}_{}_result.bin", datapoint.scene_id,
+								datapoint.scan_id, datapoint.imgname
+							);
 
-					const auto result =
-						evaluate_set(*depth_model, paths, result_filepath);
+						const auto result =
+							evaluate_set(*depth_model, paths, result_filepath);
 
-					if (!result.has_value()) {
-						println_error_fmt(
-							"   Failed with error: {}, skipping!",
-							result.error()
-						);
+						if (!result.has_value()) {
+							println_error_fmt(
+								"   Failed with error: {}, skipping!",
+								result.error()
+							);
+						}
 					}
-				}
 
-				const auto scan_evaluation_duration =
-					std::chrono::duration_cast<std::chrono::milliseconds>(
-						std::chrono::high_resolution_clock::now() -
-						scan_evaluation_start
+					const auto scan_evaluation_duration =
+						std::chrono::duration_cast<std::chrono::milliseconds>(
+							std::chrono::high_resolution_clock::now() -
+							scan_evaluation_start
+						);
+
+					const float scan_percentage =
+						static_cast<float>(current_scan_index + 1) /
+						static_cast<float>(scans_size);
+					println_fmt(
+						"=== Scan {} [{}/{} {}%] evaluation took {} ms ===\n",
+						scan_id, current_scan_index + 1, scans_size,
+						static_cast<int>(scan_percentage * 100.f),
+						scan_evaluation_duration.count()
 					);
-
-				const float scan_percentage =
-					static_cast<float>(current_scan_index + 1) /
-					static_cast<float>(scans_size);
-				println_fmt(
-					"=== Scan {} [{}/{} {}%] evaluation took {} ms ===\n",
-					scan_id, current_scan_index + 1, scans_size,
-					static_cast<int>(scan_percentage * 100.f),
-					scan_evaluation_duration.count()
-				);
-				current_scan_index++;
-			});
+					current_scan_index++;
+				}
+			);
 		}
 	}
 

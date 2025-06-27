@@ -7,6 +7,11 @@
 
 ### How to enable OpenCL (GPU) support on Linux (optional):
 
+> [!NOTE]
+> For some unknown reason, OpenCL will not find any platform to use for the gpu delegate for TFLite when the AddressSanitizer is enabled
+>
+> --> dont have the "ENABLE_ASAN" cmake option set to "ON"
+
 Install opencl dev package: (ubuntu)
 
 ```bash
@@ -17,6 +22,12 @@ If you have a NVIDIA card, also install this package:
 
 ```bash
 sudo apt install nvidia-opencl-dev
+```
+
+Verify OpenCL installation:
+
+```
+clinfo
 ```
 
 <br>
