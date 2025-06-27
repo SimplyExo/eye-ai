@@ -7,11 +7,6 @@
 
 ### How to enable OpenCL (GPU) support on Linux (optional):
 
-> [!NOTE]
-> For some unknown reason, OpenCL will not find any platform to use for the gpu delegate for TFLite when the AddressSanitizer is enabled
->
-> --> dont have the "ENABLE_ASAN" cmake option set to "ON"
-
 Install opencl dev package: (ubuntu)
 
 ```bash
@@ -29,6 +24,17 @@ Verify OpenCL installation:
 ```
 clinfo
 ```
+
+> [!NOTE]
+> The NVIDIA OpenCL driver will not load correctly when AddressSanitizer is enabled in cmake (`cmake -B build -DENABLE_ASAN=ON`).
+>
+> An error `clGetPlatformIDs returned -1001` will occur, and we will fallback into CPU only mode (super slow!).
+>
+> To use TFLite GPU delegate using OpenCL with ASAN enabled, you need to set this environment variable when running the program:
+>
+> `ASAN_OPTIONS=protect_shadow_gap=0 ./build/metric_depth/EvaluateDataset ...`
+>
+> See this stackoverflow post for further information: <https://stackoverflow.com/questions/55750700/opencl-usable-when-compiling-host-application-with-address-sanitizer>
 
 <br>
 

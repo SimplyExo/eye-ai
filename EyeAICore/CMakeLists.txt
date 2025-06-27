@@ -29,7 +29,7 @@ message(STATUS "EyeAICore ABI: ${EYE_AI_CORE_ABI}")
 if (ENABLE_ASAN)
 	message(STATUS "Enabling AddressSanitizer")
 	add_compile_options(-fsanitize=address)
-	add_link_options(-fsanitize=address)
+	add_link_options(-fsanitize=address -static-libasan)
 endif()
 
 add_subdirectory(third_party)
