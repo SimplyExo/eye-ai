@@ -167,10 +167,9 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_newDepthFrame(
 	JNIEnv* /*env*/,
 	jobject /*this*/
 ) {
-	LOG_ON_EXCEPTION(
-		get_last_depth_profiling_frame_formatted() =
-			get_depth_profiling_frame().finish();
-	)
+	set_last_depth_profiling_frame_formatted(
+		std::move(get_depth_profiling_frame().finish())
+	);
 }
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatDepthFrame(
@@ -186,10 +185,9 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_newCameraFrame(
 	JNIEnv* /*env*/,
 	jobject /*this*/
 ) {
-	LOG_ON_EXCEPTION(
-		get_last_camera_profiling_frame_formatted() =
-			get_camera_profiling_frame().finish();
-	)
+	set_last_camera_profiling_frame_formatted(
+		std::move(get_camera_profiling_frame().finish())
+	);
 }
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatCameraFrame(

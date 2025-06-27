@@ -6,6 +6,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(EYE_AI_CORE_USE_PREBUILT_TFLITE "Use prebuilt TFLite library from LiteRT in third_party/litert(-gpu)-1.2.0 (requires EYE_AI_CORE_ABI)" OFF)
 
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+
 if (DEFINED CMAKE_ANDROID_ARCH_ABI)
 	set(EYE_AI_CORE_USE_PREBUILT_TFLITE ON CACHE BOOL "Use prebuilt TFLite library from LiteRT in third_party/litert(-gpu)-1.2.0 (requires EYE_AI_CORE_ABI)" FORCE)
 	set(EYE_AI_CORE_ABI ${CMAKE_ANDROID_ARCH_ABI})
@@ -24,6 +26,11 @@ endif ()
 
 message(STATUS "EyeAICore ABI: ${EYE_AI_CORE_ABI}")
 
+if (ENABLE_ASAN)
+	message(STATUS "Enabling AddressSanitizer")
+	add_compile_options(-fsanitize=address)
+	add_link_options(-fsanitize=address)
+endif()
 
 add_subdirectory(third_party)
 

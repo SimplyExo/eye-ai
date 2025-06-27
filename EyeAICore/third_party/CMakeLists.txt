@@ -68,6 +68,15 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(stb)
 set(STB_INCLUDE_DIR ${stb_SOURCE_DIR})
 
+# concurrentqueue
+message(STATUS "Downloading concurrentqueue...")
+FetchContent_Declare(
+	concurrentqueue
+	GIT_REPOSITORY    https://github.com/cameron314/concurrentqueue.git
+	GIT_TAG           v1.0.4
+)
+FetchContent_MakeAvailable(concurrentqueue)
+
 set(THIRD_PARTY_INCLUDE_DIRS
 	${TFLITE_INCLUDE_DIRS}
 	${LIBNPY_INCLUDE_DIR}
@@ -77,5 +86,6 @@ set(THIRD_PARTY_INCLUDE_DIRS
 set(THIRD_PARTY_LIBS
 	${TFLITE_LIBS}
 	tl::expected
+	concurrentqueue
 	PARENT_SCOPE
 )
