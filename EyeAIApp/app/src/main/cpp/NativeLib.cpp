@@ -52,7 +52,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthModel(
 		depth_model.lock()->swap(*result);
 	} else
 		LOG_ERROR(
-			"[TfLiteRuntime] Failed to create depth model: {}", result.error()
+			"[TfLiteRuntime] Failed to create depth model: {}",
+			result.error().to_string()
 		);
 }
 
@@ -81,12 +82,13 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthModelInference(
 	NativeFloatArrayScope input_array(env, input);
 	NativeFloatArrayScope output_array(env, output);
 
-	const auto result = (*depth_model_scope)->run(input_array, output_array);
-	if (!result.has_value())
+	if (const auto error =
+			(*depth_model_scope)->run(input_array, output_array)) {
 		LOG_ERROR(
 			"[TfLiteRuntime] Failed to run depth model inference: {}",
-			result.error()
+			error->to_string()
 		);
+	}
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -100,10 +102,9 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_depthColormap(
 	NativeIntArrayScope colormapped_pixel_array(env, colormapped_pixels);
 
 	if (depth_value_array.size() == colormapped_pixel_array.size()) {
-		const auto result =
-			depth_colormap(depth_value_array, colormapped_pixel_array);
-		if (!result.has_value())
-			LOG_ERROR("depthColormap failed: {}", result.error());
+		if (const auto error =
+				depth_colormap(depth_value_array, colormapped_pixel_array))
+			LOG_ERROR("depthColormap failed: {}", error->to_string());
 	} else {
 		LOG_ERROR(
 			"depth and colormapped pixel array should have the same length! "
@@ -123,10 +124,10 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbChwFloatArray(
 
 	NativeFloatArrayScope out_float_array_scope(env, out_float_array);
 
-	const auto result =
-		bitmap_to_rgb_chw_float_array(env, bitmap, out_float_array_scope);
-	if (!result.has_value())
-		LOG_ERROR("bitmapToRgbChwFloatArray failed: {}", result.error());
+	if (const auto error =
+			bitmap_to_rgb_chw_float_array(env, bitmap, out_float_array_scope)) {
+		LOG_ERROR("bitmapToRgbChwFloatArray failed: {}", error->to_string());
+	}
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -139,10 +140,11 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 
 	NativeFloatArrayScope out_float_array_scope(env, out_float_array);
 
-	const auto result =
-		bitmap_to_rgb_hwc_255_float_array(env, bitmap, out_float_array_scope);
-	if (!result.has_value())
-		LOG_ERROR("bitmapToRgbHwc255FloatArray failed: {}", result.error());
+	if (const auto error = bitmap_to_rgb_hwc_255_float_array(
+			env, bitmap, out_float_array_scope
+		)) {
+		LOG_ERROR("bitmapToRgbHwc255FloatArray failed: {}", error->to_string());
+	}
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -156,10 +158,11 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_imageBytesToArgbIntArray(
 	NativeByteArrayScope image_byte_array(env, image_bytes);
 	NativeIntArrayScope out_int_array_scope(env, out_int_array);
 
-	const auto result =
-		image_bytes_to_argb_int_array(image_byte_array, out_int_array_scope);
-	if (!result.has_value())
-		LOG_ERROR("imageBytesToArgbIntArray failed: {}", result.error());
+	if (const auto error = image_bytes_to_argb_int_array(
+			image_byte_array, out_int_array_scope
+		)) {
+		LOG_ERROR("imageBytesToArgbIntArray failed: {}", error->to_string());
+	}
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -167,10 +170,9 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_newDepthFrame(
 	JNIEnv* /*env*/,
 	jobject /*this*/
 ) {
-	LOG_ON_EXCEPTION(
-		get_last_depth_profiling_frame_formatted() =
-			get_depth_profiling_frame().finish();
-	)
+	set_last_depth_profiling_frame_formatted(
+		std::move(get_depth_profiling_frame().finish())
+	);
 }
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatDepthFrame(
@@ -186,10 +188,9 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_newCameraFrame(
 	JNIEnv* /*env*/,
 	jobject /*this*/
 ) {
-	LOG_ON_EXCEPTION(
-		get_last_camera_profiling_frame_formatted() =
-			get_camera_profiling_frame().finish();
-	)
+	set_last_camera_profiling_frame_formatted(
+		std::move(get_camera_profiling_frame().finish())
+	);
 }
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatCameraFrame(

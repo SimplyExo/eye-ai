@@ -1,8 +1,10 @@
 #pragma once
 
 #include <chrono>
+#include <concurrentqueue.h>
 #include <string_view>
-#include <vector>
+
+using moodycamel::ConcurrentQueue;
 
 using profile_clock = std::chrono::high_resolution_clock;
 
@@ -33,6 +35,7 @@ struct ProfileScopeRecord {
 	[[nodiscard]] std::string formatted() const;
 };
 
+/// collection of profile records from different threads (lock-free thread-safe)
 class ProfilingFrame {
   public:
 	explicit ProfilingFrame(std::string_view name) : name(name) {}
@@ -48,18 +51,21 @@ class ProfilingFrame {
 
   private:
 	std::string_view name;
-	std::vector<ProfileScopeRecord> profile_scopes;
-	int current_frame_scope_depth = 0;
 	profile_clock::time_point start = profile_clock::now();
+	ConcurrentQueue<ProfileScopeRecord> profile_scopes;
+	std::atomic_int current_frame_scope_depth = 0;
 };
 
 /// These four functions return global static variables (needed since NativeLib
-/// is loaded as a shared library, so a simple static variable does not work)
+/// is loaded as a shared library, so a simple static variable does not work).
+/// Both ProfilingFrame's are thread-safe
 
 ProfilingFrame& get_depth_profiling_frame();
-std::string& get_last_depth_profiling_frame_formatted();
+void set_last_depth_profiling_frame_formatted(std::string&& formatted);
+std::string get_last_depth_profiling_frame_formatted();
 ProfilingFrame& get_camera_profiling_frame();
-std::string& get_last_camera_profiling_frame_formatted();
+void set_last_camera_profiling_frame_formatted(std::string&& formatted);
+std::string get_last_camera_profiling_frame_formatted();
 
 #define COMBINE(x, y) x##y
 #define COMBINE2(x, y) COMBINE(x, y)
