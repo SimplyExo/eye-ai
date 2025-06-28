@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EyeAICore/Operators.hpp"
+#include "TfLiteUtils.hpp"
 #if EYE_AI_CORE_USE_PREBUILT_TFLITE
 #include "tflite/c/c_api.h" // IWYU pragma: export
 #include "tflite/delegates/gpu/delegate.h"
@@ -12,7 +13,6 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <tl/expected.hpp>
 
 using TfLiteLogWarningCallback = void (*)(std::string);
 using TfLiteLogErrorCallback = void (*)(std::string);
@@ -45,7 +45,7 @@ class TfLiteRuntime {
 
   public:
 	[[nodiscard]] static tl::
-		expected<std::unique_ptr<TfLiteRuntime>, std::string>
+		expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>
 		create(
 			std::vector<int8_t>&& model_data,
 			std::string_view gpu_delegate_serialization_dir,
@@ -65,7 +65,7 @@ class TfLiteRuntime {
 
 	/// input is going to be processed by input operators, so it will be
 	/// modified!
-	[[nodiscard]] tl::expected<void, std::string>
+	[[nodiscard]] std::optional<TfLiteRunInferenceError>
 	run_inference(std::span<float> input, std::span<float> output);
 
   private:
@@ -80,12 +80,12 @@ class TfLiteRuntime {
 		  output_operators(std::move(output_operators)),
 		  error_reporter_user_data(error_reporter_user_data) {}
 
-	[[nodiscard]] tl::expected<void, std::string> invoke();
+	[[nodiscard]] std::optional<TfLiteInvokeInterpreterError> invoke();
 
-	[[nodiscard]] tl::expected<void, std::string>
+	[[nodiscard]] std::optional<TfLiteLoadInputError>
 	load_input(std::span<const float> input);
 
-	[[nodiscard]] tl::expected<void, std::string>
+	[[nodiscard]] std::optional<TfLiteReadOutputError>
 	read_output(std::span<float> output);
 };
 
@@ -107,8 +107,9 @@ class TfLiteRuntimeBuilder {
 
 	/// all modified configurations of `this` will be discarded after this
 	/// method
-	[[nodiscard]] tl::expected<std::unique_ptr<TfLiteRuntime>, std::string>
-	build();
+	[[nodiscard]] tl::
+		expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>
+		build();
 
   private:
 	std::vector<int8_t> model_data;
