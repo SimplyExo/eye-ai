@@ -59,6 +59,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tl-expected)
 
+# concurrentqueue
+message(STATUS "Downloading concurrentqueue...")
+FetchContent_Declare(
+	concurrentqueue
+	GIT_REPOSITORY    https://github.com/cameron314/concurrentqueue.git
+	GIT_TAG           v1.0.4
+)
+FetchContent_MakeAvailable(concurrentqueue)
+
 set(THIRD_PARTY_INCLUDE_DIRS
 	${TFLITE_INCLUDE_DIRS}
 	PARENT_SCOPE
@@ -66,6 +75,7 @@ set(THIRD_PARTY_INCLUDE_DIRS
 set(THIRD_PARTY_LIBS
 	${TFLITE_LIBS}
 	tl::expected
+	concurrentqueue
 	OpenAL
 	PARENT_SCOPE
 )

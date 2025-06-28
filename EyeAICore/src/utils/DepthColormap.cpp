@@ -1,21 +1,18 @@
 #include "EyeAICore/utils/DepthColormap.hpp"
-
-#include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/ImageUtils.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 #include <algorithm>
 
 static int inferno_depth_colormap(float relative_depth);
 
-tl::expected<void, std::string> depth_colormap(
+std::optional<DepthColorArraySizeMismatch> depth_colormap(
 	std::span<const float> depth_values,
 	std::span<int> colormapped_pixels
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
 	if (depth_values.size() != colormapped_pixels.size()) {
-		return tl::unexpected_fmt(
-			"depth_values ({}) does not match colormapped_pixels ({})",
+		return DepthColorArraySizeMismatch(
 			depth_values.size(), colormapped_pixels.size()
 		);
 	}
@@ -24,7 +21,14 @@ tl::expected<void, std::string> depth_colormap(
 		colormapped_pixels[i] = inferno_depth_colormap(depth_values[i]);
 	}
 
-	return {};
+	return std::nullopt;
+}
+
+std::string DepthColorArraySizeMismatch::to_string() const {
+	return std::format(
+		"depth_values ({}) does not match colormapped_pixels ({})",
+		depth_values_size, colormapped_pixels_size
+	);
 }
 
 constexpr size_t INFERNO_COLOR_COUNT = 256;

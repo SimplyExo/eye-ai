@@ -1,4 +1,5 @@
 #include "EyeAICore/utils/Profiling.hpp"
+#include "EyeAICore/utils/MutexGuard.hpp"
 #include <algorithm>
 #include <chrono>
 #include <format>
@@ -41,30 +42,33 @@ int ProfilingFrame::start_scope() noexcept {
 }
 
 void ProfilingFrame::end_scope(const ProfileScopeRecord& scope) noexcept {
-	// NOLINTBEGIN(bugprone-empty-catch)
-	try {
-		profile_scopes.push_back(scope);
-	} catch (const std::exception&) {
-	}
-	// NOLINTEND(bugprone-empty-catch)
+	profile_scopes.enqueue(scope);
 	current_frame_scope_depth--;
 }
 
 std::string ProfilingFrame::finish() {
 	const auto end = profile_clock::now();
 
-	std::ranges::sort(profile_scopes, [](const auto& a, const auto& b) -> bool {
-		return a.start < b.start;
-	});
+	std::vector<ProfileScopeRecord> profile_scopes_vector;
+	profile_scopes_vector.reserve(profile_scopes.size_approx());
+	ProfileScopeRecord tmp;
+	while (profile_scopes.try_dequeue(tmp))
+		profile_scopes_vector.push_back(tmp);
+
+	std::ranges::sort(
+		profile_scopes_vector,
+		[](const auto& a, const auto& b) -> bool { return a.start < b.start; }
+	);
 	std::string profile_scopes_formatted;
-	for (const auto& profile_scope : profile_scopes) {
+	for (const auto& profile_scope : profile_scopes_vector) {
 		profile_scopes_formatted +=
 			std::format("    {}\n", profile_scope.formatted());
 	}
 	const auto frame_duration = end - start;
 	const auto frame_duration_ms =
 		static_cast<float>(
-			std::chrono::duration_cast<std::chrono::microseconds>(frame_duration
+			std::chrono::duration_cast<std::chrono::microseconds>(
+				frame_duration
 			)
 				.count()
 		) /
@@ -75,26 +79,32 @@ std::string ProfilingFrame::finish() {
 		frame_duration_ms, profile_scopes_formatted
 	);
 
-	profile_scopes.clear();
 	current_frame_scope_depth = 0;
 	start = profile_clock::now();
 
 	return formatted;
 }
 
-ProfilingFrame& get_depth_profiling_frame() {
-	static auto depth_profiling_frame = ProfilingFrame("Depth");
-	return depth_profiling_frame;
+// All 4 global variables are thread-safe.
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+static auto depth_profiling_frame = ProfilingFrame("Depth");
+static MutexGuard<std::string> last_depth_profiling_frame_formatted;
+static auto camera_profiling_frame = ProfilingFrame("Camera");
+static MutexGuard<std::string> last_camera_profiling_frame_formatted;
+// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
+
+void set_last_depth_profiling_frame_formatted(std::string&& formatted) {
+	*last_depth_profiling_frame_formatted.lock() = std::move(formatted);
 }
-std::string& get_last_depth_profiling_frame_formatted() {
-	static std::string last_depth_profiling_frame_formatted;
-	return last_depth_profiling_frame_formatted;
+std::string get_last_depth_profiling_frame_formatted() {
+	return *last_depth_profiling_frame_formatted.lock();
 }
-ProfilingFrame& get_camera_profiling_frame() {
-	static auto camera_profiling_frame = ProfilingFrame("Camera");
-	return camera_profiling_frame;
+ProfilingFrame& get_depth_profiling_frame() { return depth_profiling_frame; }
+
+ProfilingFrame& get_camera_profiling_frame() { return camera_profiling_frame; }
+void set_last_camera_profiling_frame_formatted(std::string&& formatted) {
+	*last_camera_profiling_frame_formatted.lock() = std::move(formatted);
 }
-std::string& get_last_camera_profiling_frame_formatted() {
-	static std::string last_camera_profiling_frame_formatted;
-	return last_camera_profiling_frame_formatted;
+std::string get_last_camera_profiling_frame_formatted() {
+	return *last_camera_profiling_frame_formatted.lock();
 }

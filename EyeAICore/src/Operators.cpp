@@ -1,15 +1,14 @@
 #include "EyeAICore/Operators.hpp"
-#include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 
 #include <algorithm>
 
-tl::expected<void, std::string>
+std::optional<OperatorError>
 MinMaxOperator::execute(std::span<float> values) const {
 	PROFILE_DEPTH_SCOPE("MinMaxOperator")
 
 	if (values.empty())
-		return {};
+		return std::nullopt;
 
 	const auto [min_iter, max_iter] = std::ranges::minmax_element(values);
 	const float min = *min_iter;
@@ -27,15 +26,15 @@ MinMaxOperator::execute(std::span<float> values) const {
 		}
 	}
 
-	return {};
+	return std::nullopt;
 }
 
-tl::expected<void, std::string>
+std::optional<OperatorError>
 RgbNormalizeOperator::execute(std::span<float> values) const {
 	PROFILE_DEPTH_SCOPE("RgbNormalizeOperator")
 
 	if (values.size() % 3 != 0)
-		return tl::unexpected_fmt(
+		return OperatorError::fmt(
 			"Invalid values size of {}, it is not a multiple of 3",
 			values.size()
 		);
@@ -47,5 +46,5 @@ RgbNormalizeOperator::execute(std::span<float> values) const {
 		channel = (channel + 1) % 3;
 	}
 
-	return {};
+	return std::nullopt;
 }
