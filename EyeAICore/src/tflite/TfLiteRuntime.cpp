@@ -1,6 +1,5 @@
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
 #include "EyeAICore/tflite/TfLiteUtils.hpp"
-#include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 
 #include <format>
@@ -15,7 +14,8 @@
 static void
 tflite_error_callback(void* user_data_ptr, const char* format, va_list args);
 
-tl::expected<std::unique_ptr<TfLiteRuntime>, std::string> TfLiteRuntime::create(
+tl::expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>
+TfLiteRuntime::create(
 	std::vector<int8_t>&& model_data,
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
@@ -87,9 +87,7 @@ tl::expected<std::unique_ptr<TfLiteRuntime>, std::string> TfLiteRuntime::create(
 			TfLiteInterpreterDelete
 		};
 		if (runtime->interpreter == nullptr) {
-			return tl::unexpected(
-				"failed to create interpreter: with and without gpu delegate"
-			);
+			return tl::unexpected(TfLiteCreateInterpreterError());
 		}
 		runtime->interpreter_options =
 			std::move(interpreter_options_without_gpu_delegate);
@@ -102,9 +100,8 @@ tl::expected<std::unique_ptr<TfLiteRuntime>, std::string> TfLiteRuntime::create(
 	const TfLiteStatus allocate_tensors_status =
 		TfLiteInterpreterAllocateTensors(runtime->interpreter.get());
 	if (allocate_tensors_status != kTfLiteOk) {
-		return tl::unexpected_fmt(
-			"failed to allocate tensors: {}",
-			format_tflite_status(allocate_tensors_status)
+		return tl::unexpected(
+			TfLiteAllocateTensorsError(allocate_tensors_status)
 		);
 	}
 
@@ -120,18 +117,16 @@ TfLiteRuntime::~TfLiteRuntime() {
 	model.reset();
 }
 
-tl::expected<void, std::string> TfLiteRuntime::invoke() {
+std::optional<TfLiteInvokeInterpreterError> TfLiteRuntime::invoke() {
 	PROFILE_DEPTH_SCOPE("Invoking of model")
 
 	const TfLiteStatus status = TfLiteInterpreterInvoke(interpreter.get());
 	if (status == kTfLiteOk)
-		return {};
-	return tl::unexpected_fmt(
-		"failed to invoke interpreter: {}", format_tflite_status(status)
-	);
+		return std::nullopt;
+	return TfLiteInvokeInterpreterError(status);
 }
 
-tl::expected<void, std::string>
+std::optional<TfLiteRunInferenceError>
 TfLiteRuntime::run_inference(std::span<float> input, std::span<float> output) {
 	PROFILE_DEPTH_FUNCTION()
 
@@ -139,37 +134,33 @@ TfLiteRuntime::run_inference(std::span<float> input, std::span<float> output) {
 		PROFILE_DEPTH_SCOPE("Preprocessing input using operators")
 
 		for (auto& input_operator : input_operators) {
-			const auto result = input_operator->execute(input);
-			if (!result.has_value())
-				return result;
+			if (const auto error = input_operator->execute(input))
+				return error;
 		}
 	}
 
-	// clang-format off
-	return load_input(input)
-		.and_then(
-			[this]() { return invoke(); }
-		)
-		.and_then(
-			[this, output]() { return read_output(output); }
-		)
-		.and_then(
-			[this, output]() {
-				PROFILE_DEPTH_SCOPE("Postprocessing output using operators")
+	if (const auto load_input_error = load_input(input))
+		return load_input_error;
 
-				for (auto& output_operator : output_operators) {
-					const auto result = output_operator->execute(output);
-					if (!result.has_value())
-						return result;
-				}
+	if (const auto invoke_error = invoke())
+		return invoke_error;
 
-				return tl::expected<void, std::string>{};
-			}
-		);
-	// clang-format on
+	if (const auto read_output_error = read_output(output))
+		return read_output_error;
+
+	{
+		PROFILE_DEPTH_SCOPE("Postprocessing output using operators")
+
+		for (auto& output_operator : output_operators) {
+			if (const auto error = output_operator->execute(output))
+				return error;
+		}
+	}
+
+	return std::nullopt;
 }
 
-tl::expected<void, std::string>
+std::optional<TfLiteLoadInputError>
 TfLiteRuntime::load_input(std::span<const float> input) {
 	PROFILE_DEPTH_SCOPE("Loading input")
 
@@ -179,7 +170,7 @@ TfLiteRuntime::load_input(std::span<const float> input) {
 	return load_input_tensor_with_floats(input_tensor, input);
 }
 
-tl::expected<void, std::string>
+std::optional<TfLiteReadOutputError>
 TfLiteRuntime::read_output(std::span<float> output) {
 	PROFILE_DEPTH_SCOPE("Reading output")
 
@@ -247,11 +238,28 @@ TfLiteRuntimeBuilder& TfLiteRuntimeBuilder::add_output_operator(
 	return *this;
 }
 
-tl::expected<std::unique_ptr<TfLiteRuntime>, std::string>
+tl::expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>
 TfLiteRuntimeBuilder::build() {
 	return TfLiteRuntime::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
 		std::move(input_operators), std::move(output_operators),
 		log_warning_callback, log_error_callback
+	);
+}
+
+std::string TfLiteCreateInterpreterError::to_string() const {
+	return "failed to create TfLite Interpreter (with and without gpu "
+		   "delegate)";
+}
+
+std::string TfLiteAllocateTensorsError::to_string() const {
+	return std::format(
+		"failed to allocate tflite tensors: {}", format_tflite_status(status)
+	);
+}
+
+std::string TfLiteInvokeInterpreterError::to_string() const {
+	return std::format(
+		"failed to invoke tflite interpreter: {}", format_tflite_status(status)
 	);
 }

@@ -1,16 +1,14 @@
 #include "EyeAICore/tflite/TfLiteUtils.hpp"
-
-#include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 
-[[nodiscard]] static tl::expected<void, std::string> quantize_floats(
+[[nodiscard]] static std::optional<QuantizeFloatError> quantize_floats(
 	std::span<const float> values,
 	std::span<std::byte> out_quantized_values,
 	TfLiteType quantized_type,
 	const TfLiteAffineQuantization& quantization
 );
 
-[[nodiscard]] static tl::expected<void, std::string> dequantize_to_floats(
+[[nodiscard]] static std::optional<DequantizeFloatError> dequantize_to_floats(
 	std::span<const std::byte> quantized_values,
 	std::span<float> out_values,
 	TfLiteType quantized_type,
@@ -51,47 +49,40 @@ create_gpu_delegate(
 	};
 }
 
-[[nodiscard]] static tl::expected<void, std::string>
+[[nodiscard]] static std::optional<TfLiteLoadNonQuantizedInputError>
 load_nonquantized_input_tensor_with_floats(
 	TfLiteTensor* input_tensor,
 	std::span<const float> values
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
-	if (input_tensor->type != kTfLiteFloat32) {
-		return tl::unexpected_fmt(
-			"cannot load input tensor with floats, its element type is {}",
-			format_tflite_type(input_tensor->type)
+	if (input_tensor->type != kTfLiteFloat32)
+		return TfLiteNonFloatTensorTypeError(
+			TensorType::Input, input_tensor->type
 		);
-	}
 
 	void* tensor_data_ptr = TfLiteTensorData(input_tensor);
 	if (tensor_data_ptr == nullptr)
-		return tl::unexpected("input tensor not yet created!");
+		return TfLiteTensorsNotCreatedError(TensorType::Input);
 
 	const auto input_tensor_data_bytes = TfLiteTensorByteSize(input_tensor);
 	const auto input_tensor_elements = input_tensor_data_bytes / sizeof(float);
 	if (values.size() != input_tensor_elements) {
-		return tl::unexpected_fmt(
-			"values ({} elements) does not match expected {} "
-			"elements from input tensor",
-			values.size(), input_tensor_elements
+		return TfLiteTensorElementCountMismatch(
+			TensorType::Input, values.size(), input_tensor_elements
 		);
 	}
 	const TfLiteStatus copy_from_buffer_status = TfLiteTensorCopyFromBuffer(
 		input_tensor, values.data(), values.size_bytes()
 	);
 
-	if (copy_from_buffer_status == kTfLiteOk)
-		return {};
+	if (copy_from_buffer_status != kTfLiteOk)
+		return TfLiteCopyFromInputTensorError(copy_from_buffer_status);
 
-	return tl::unexpected_fmt(
-		"failed to copy values to input tensor: {}",
-		format_tflite_status(copy_from_buffer_status)
-	);
+	return std::nullopt;
 }
 
-[[nodiscard]] static tl::expected<void, std::string>
+[[nodiscard]] static std::optional<TfLiteLoadQuantizedInputError>
 load_quantized_input_tensor_with_floats(
 	TfLiteTensor* input_tensor,
 	const TfLiteAffineQuantization& quantization,
@@ -102,36 +93,32 @@ load_quantized_input_tensor_with_floats(
 	const auto quantized_type_size = get_tflite_type_size(input_tensor->type);
 
 	if (!quantized_type_size.has_value()) {
-		return tl::unexpected_fmt(
-			"invalid quantized input type: {}",
-			format_tflite_type(input_tensor->type)
-		);
+		return InvalidQuantizedType(input_tensor->type);
 	}
 
 	void* quantized_input_data_ptr = TfLiteTensorData(input_tensor);
 	if (quantized_input_data_ptr == nullptr)
-		return tl::unexpected("quantized input tensor not yet created!");
+		return TfLiteTensorsNotCreatedError(TensorType::Input);
 
 	const auto quantized_input_data_bytes = TfLiteTensorByteSize(input_tensor);
 	const auto quantized_input_elements =
 		quantized_input_data_bytes / *quantized_type_size;
 	if (values.size() != quantized_input_elements) {
-		return tl::unexpected_fmt(
-			"values buffer ({} elements) does not match expected {} "
-			"elements from tensor",
-			values.size(), quantized_input_elements
+		return TfLiteTensorElementCountMismatch(
+			TensorType::Input, values.size(), quantized_input_elements
 		);
 	}
 	const std::span quantized_span(
 		static_cast<std::byte*>(quantized_input_data_ptr),
 		quantized_input_data_bytes
 	);
+
 	return quantize_floats(
 		values, quantized_span, input_tensor->type, quantization
 	);
 }
 
-tl::expected<void, std::string> load_input_tensor_with_floats(
+std::optional<TfLiteLoadInputError> load_input_tensor_with_floats(
 	TfLiteTensor* input_tensor,
 	std::span<const float> values
 ) {
@@ -147,7 +134,7 @@ tl::expected<void, std::string> load_input_tensor_with_floats(
 	return load_nonquantized_input_tensor_with_floats(input_tensor, values);
 }
 
-static tl::expected<void, std::string>
+static std::optional<TfLiteReadNonQuantizedOutputError>
 read_floats_from_nonquantized_output_tensor(
 	const TfLiteTensor* output_tensor,
 	std::span<float> output
@@ -155,9 +142,8 @@ read_floats_from_nonquantized_output_tensor(
 	PROFILE_DEPTH_FUNCTION()
 
 	if (output_tensor->type != kTfLiteFloat32) {
-		return tl::unexpected_fmt(
-			"cannot read floats from output tensor, its element type is {}",
-			format_tflite_type(output_tensor->type)
+		return TfLiteNonFloatTensorTypeError(
+			TensorType::Output, output_tensor->type
 		);
 	}
 
@@ -165,10 +151,8 @@ read_floats_from_nonquantized_output_tensor(
 	const auto output_tensor_data_elements =
 		output_tensor_data_bytes / sizeof(float);
 	if (output.size() != output_tensor_data_elements) {
-		return tl::unexpected_fmt(
-			"output ({} elements) does not match expected {} "
-			"elements from output tensor",
-			output.size(), output_tensor_data_elements
+		return TfLiteTensorElementCountMismatch(
+			TensorType::Output, output.size(), output_tensor_data_elements
 		);
 	}
 
@@ -176,16 +160,14 @@ read_floats_from_nonquantized_output_tensor(
 		output_tensor, output.data(), output.size_bytes()
 	);
 
-	if (copy_from_buffer_status == kTfLiteOk)
-		return {};
+	if (copy_from_buffer_status != kTfLiteOk)
+		return TfLiteCopyToOutputTensorError(copy_from_buffer_status);
 
-	return tl::unexpected_fmt(
-		"failed to read floats from output tensor: {}",
-		format_tflite_status(copy_from_buffer_status)
-	);
+	return std::nullopt;
 }
 
-static tl::expected<void, std::string> read_floats_from_quantized_output_tensor(
+static std::optional<TfLiteReadQuantizedOutputError>
+read_floats_from_quantized_output_tensor(
 	const TfLiteTensor* output_tensor,
 	std::span<float> output,
 	const TfLiteAffineQuantization& quantization
@@ -193,25 +175,19 @@ static tl::expected<void, std::string> read_floats_from_quantized_output_tensor(
 	PROFILE_DEPTH_FUNCTION()
 
 	const auto quantized_type_size = get_tflite_type_size(output_tensor->type);
-	if (!quantized_type_size.has_value()) {
-		return tl::unexpected_fmt(
-			"invalid quantized output type: {}",
-			format_tflite_type(output_tensor->type)
-		);
-	}
+	if (!quantized_type_size.has_value())
+		return InvalidFloat32QuantizationTypeError(output_tensor->type);
 
 	const void* quantized_output_data_ptr = TfLiteTensorData(output_tensor);
 	if (quantized_output_data_ptr == nullptr)
-		return tl::unexpected("quantized output tensor not yet created!");
+		return TfLiteTensorsNotCreatedError(TensorType::Output);
 	const auto quantized_output_data_bytes =
 		TfLiteTensorByteSize(output_tensor);
 	const auto quantized_output_elements =
 		quantized_output_data_bytes / *quantized_type_size;
 	if (quantized_output_elements != output.size()) {
-		return tl::unexpected_fmt(
-			"output buffer ({} elements) does not match expected {} "
-			"elements from tensor",
-			output.size(), quantized_output_elements
+		return TfLiteTensorElementCountMismatch(
+			TensorType::Output, output.size(), quantized_output_elements
 		);
 	}
 	const std::span quantized_output_span(
@@ -224,7 +200,7 @@ static tl::expected<void, std::string> read_floats_from_quantized_output_tensor(
 	);
 }
 
-tl::expected<void, std::string> read_floats_from_output_tensor(
+std::optional<TfLiteReadOutputError> read_floats_from_output_tensor(
 	const TfLiteTensor* output_tensor,
 	std::span<float> output
 ) {
@@ -240,7 +216,7 @@ tl::expected<void, std::string> read_floats_from_output_tensor(
 	return read_floats_from_nonquantized_output_tensor(output_tensor, output);
 }
 
-tl::expected<void, std::string> quantize_floats(
+std::optional<QuantizeFloatError> quantize_floats(
 	std::span<const float> values,
 	std::span<std::byte> out_quantized_values,
 	TfLiteType quantized_type,
@@ -248,26 +224,21 @@ tl::expected<void, std::string> quantize_floats(
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
-	if (quantized_type != kTfLiteUInt8) {
-		return tl::unexpected_fmt(
-			"unsupported quantization of float32 to {}",
-			format_tflite_type(quantized_type)
-		);
-	}
+	if (quantized_type != kTfLiteUInt8)
+		return InvalidFloat32QuantizationTypeError(quantized_type);
 
 	if (values.size() != out_quantized_values.size()) {
-		return tl::unexpected_fmt(
-			"values ({}) and out_quantized_values ({}) dont match",
+		return QuantizationElementsMismatch(
 			values.size(), out_quantized_values.size()
 		);
 	}
 
 	// for now, only 1 input, 1 output
 	if (quantization.scale->size != 1)
-		return tl::unexpected("only symmetric quantization supported for now");
+		return AsymmetricQuantizationError();
 	const float quantization_scale = quantization.scale->data[0];
 	if (quantization.zero_point->size != 1)
-		return tl::unexpected("only symmetric quantization supported for now");
+		return AsymmetricQuantizationError();
 	const int quantization_zero_point = quantization.zero_point->data[0];
 
 	for (size_t i = 0; i < values.size(); i++) {
@@ -278,10 +249,10 @@ tl::expected<void, std::string> quantize_floats(
 		);
 	}
 
-	return {};
+	return std::nullopt;
 }
 
-tl::expected<void, std::string> dequantize_to_floats(
+std::optional<DequantizeFloatError> dequantize_to_floats(
 	std::span<const std::byte> quantized_values,
 	std::span<float> out_values,
 	TfLiteType quantized_type,
@@ -289,26 +260,21 @@ tl::expected<void, std::string> dequantize_to_floats(
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
-	if (quantized_type != kTfLiteUInt8) {
-		return tl::unexpected_fmt(
-			"unsupported dequantization of {} to float32",
-			format_tflite_type(quantized_type)
-		);
-	}
+	if (quantized_type != kTfLiteUInt8)
+		return InvalidFloat32QuantizationTypeError(quantized_type);
 
 	if (quantized_values.size() != out_values.size()) {
-		return tl::unexpected_fmt(
-			"out_values ({}) and quantized_values ({}) dont match",
+		return QuantizationElementsMismatch(
 			out_values.size(), quantized_values.size()
 		);
 	}
 
 	// for now, only 1 input, 1 output
 	if (quantization.scale->size != 1)
-		return tl::unexpected("only symmetric quantization supported for now");
+		return AsymmetricQuantizationError();
 	const float quantization_scale = quantization.scale->data[0];
 	if (quantization.zero_point->size != 1)
-		return tl::unexpected("only symmetric quantization supported for now");
+		return AsymmetricQuantizationError();
 	const int quantization_zero_point = quantization.zero_point->data[0];
 
 	for (size_t i = 0; i < out_values.size(); i++) {
@@ -318,7 +284,76 @@ tl::expected<void, std::string> dequantize_to_floats(
 						static_cast<float>(quantized - quantization_zero_point);
 	}
 
-	return {};
+	return std::nullopt;
+}
+
+std::string TfLiteNonFloatTensorTypeError::to_string() const {
+	return std::format(
+		"{} tensor has element type {}, but should be float32",
+		tensor_type.to_string(), format_tflite_type(tensor_element_type)
+	);
+}
+
+std::string TfLiteTensorsNotCreatedError::to_string() const {
+	return std::format("{} tensor not yet created!", tensor_type.to_string());
+}
+
+std::string TfLiteTensorElementCountMismatch::to_string() const {
+	return std::format(
+		"{0} {2} elements where provided but {1} elements where expected from "
+		"{2} tensor",
+		provided_elements, expected_elements, tensor_type.to_string()
+	);
+}
+
+std::string TfLiteCopyFromInputTensorError::to_string() const {
+	return std::format(
+		"failed to load values into input tensor: {}",
+		format_tflite_status(status)
+	);
+}
+
+std::string InvalidFloat32QuantizationTypeError::to_string() const {
+	return std::format(
+		"unsupported quantization of float32 to {}",
+		format_tflite_type(quantized_type)
+	);
+}
+
+std::string QuantizationElementsMismatch::to_string() const {
+	return std::format(
+		"values given ({} elements) do not match quantized values ({} "
+		"elements)",
+		input_elements, quantized_out_elements
+	);
+}
+
+std::string AsymmetricQuantizationError::to_string() {
+	return "only symmetric quantization supported for now";
+}
+
+std::string InvalidQuantizedType::to_string() const {
+	return std::format(
+		"invalid quantized input type: {} (probably has dynamic size)",
+		format_tflite_type(quantized_type)
+	);
+}
+
+std::string_view TensorType::to_string() const {
+	switch (type) {
+	case Input:
+		return "input";
+	case Output:
+		return "output";
+	default:
+		return "<invalid tensor type>";
+	}
+}
+
+std::string TfLiteCopyToOutputTensorError::to_string() const {
+	return std::format(
+		"failed to read from output tensor: {}", format_tflite_status(status)
+	);
 }
 
 std::string_view format_tflite_type(TfLiteType type) {

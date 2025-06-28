@@ -1,8 +1,23 @@
 #pragma once
 
+#include <format>
+#include <optional>
 #include <span>
 #include <string>
-#include <tl/expected.hpp>
+
+struct [[nodiscard]] OperatorError {
+	std::string error_msg;
+
+	[[nodiscard]] std::string to_string() const { return error_msg; }
+
+	template<typename... Args>
+	[[nodiscard]] static OperatorError
+	fmt(const std::format_string<Args...> fmt, Args&&... args) {
+		return OperatorError(
+			std::vformat(fmt.get(), std::make_format_args(args...))
+		);
+	}
+};
 
 class Operator {
   public:
@@ -13,14 +28,14 @@ class Operator {
 	Operator& operator=(Operator&&) = default;
 	virtual ~Operator() = default;
 
-	[[nodiscard]] virtual tl::expected<void, std::string>
+	[[nodiscard]] virtual std::optional<OperatorError>
 	execute(std::span<float> input) const = 0;
 };
 
 /// rescales values from [min, max] to [0, 1]
 class MinMaxOperator : public Operator {
   public:
-	[[nodiscard]] tl::expected<void, std::string>
+	[[nodiscard]] std::optional<OperatorError>
 	execute(std::span<float> values) const override;
 };
 
@@ -31,6 +46,6 @@ class RgbNormalizeOperator : public Operator {
 	std::array<float, 3> mean = {123.675f, 116.28f, 103.53f};
 	std::array<float, 3> stddev = {58.395f, 57.12f, 57.375f};
 
-	[[nodiscard]] tl::expected<void, std::string>
+	[[nodiscard]] std::optional<OperatorError>
 	execute(std::span<float> values) const override;
 };
