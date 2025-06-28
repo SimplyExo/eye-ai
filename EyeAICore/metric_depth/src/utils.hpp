@@ -211,10 +211,10 @@ static tl::expected<EvaluateResult, std::string> evaluate(
 
 	std::vector<float> depth_estimation(pixel_count);
 
-	const auto status =
-		depth_model.run(image_rgb, std::span<float>(depth_estimation));
-	if (!status.has_value())
-		return tl::unexpected(status.error());
+	if (const auto error =
+			depth_model.run(image_rgb, std::span<float>(depth_estimation))) {
+		return tl::unexpected(error->to_string());
+	}
 
 	for (size_t y = 0; y < INPUT_HEIGHT; ++y) {
 		for (size_t x = 0; x < INPUT_WIDTH; ++x) {
