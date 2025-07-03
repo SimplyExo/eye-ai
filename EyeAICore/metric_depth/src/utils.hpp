@@ -69,7 +69,7 @@ save_evaluation_result_file(
 template<typename... Args>
 void println_fmt(const std::format_string<Args...> fmt, Args&&... args) {
 	const std::string formatted = std::vformat(
-		fmt.get(), std::make_format_args(std::forward<Args>(args)...)
+		fmt.get(), std::make_format_args(args...)
 	);
 
 	std::cout << formatted << '\n';
@@ -78,7 +78,7 @@ void println_fmt(const std::format_string<Args...> fmt, Args&&... args) {
 template<typename... Args>
 void println_error_fmt(const std::format_string<Args...> fmt, Args&&... args) {
 	const std::string formatted = std::vformat(
-		fmt.get(), std::make_format_args(std::forward<Args>(args)...)
+		fmt.get(), std::make_format_args(args...)
 	);
 
 	std::cerr << formatted << '\n';
