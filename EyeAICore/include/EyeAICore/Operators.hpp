@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <format>
 #include <optional>
 #include <span>
@@ -7,6 +8,9 @@
 
 struct [[nodiscard]] OperatorError {
 	std::string error_msg;
+
+	explicit OperatorError(std::string&& error_msg)
+		: error_msg(std::move(error_msg)) {}
 
 	[[nodiscard]] std::string to_string() const { return error_msg; }
 

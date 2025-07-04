@@ -101,7 +101,7 @@ TfLiteRuntime::create(
 		TfLiteInterpreterAllocateTensors(runtime->interpreter.get());
 	if (allocate_tensors_status != kTfLiteOk) {
 		return tl::unexpected(
-			TfLiteAllocateTensorsError(allocate_tensors_status)
+			TfLiteAllocateTensorsError{.status = allocate_tensors_status}
 		);
 	}
 
@@ -123,7 +123,7 @@ std::optional<TfLiteInvokeInterpreterError> TfLiteRuntime::invoke() {
 	const TfLiteStatus status = TfLiteInterpreterInvoke(interpreter.get());
 	if (status == kTfLiteOk)
 		return std::nullopt;
-	return TfLiteInvokeInterpreterError(status);
+	return TfLiteInvokeInterpreterError{status};
 }
 
 std::optional<TfLiteRunInferenceError>
@@ -247,7 +247,7 @@ TfLiteRuntimeBuilder::build() {
 	);
 }
 
-std::string TfLiteCreateInterpreterError::to_string() const {
+std::string TfLiteCreateInterpreterError::to_string() {
 	return "failed to create TfLite Interpreter (with and without gpu "
 		   "delegate)";
 }

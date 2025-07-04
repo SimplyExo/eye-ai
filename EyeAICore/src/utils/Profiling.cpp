@@ -67,8 +67,7 @@ std::string ProfilingFrame::finish() {
 	const auto frame_duration = end - start;
 	const auto frame_duration_ms =
 		static_cast<float>(
-			std::chrono::duration_cast<std::chrono::microseconds>(
-				frame_duration
+			std::chrono::duration_cast<std::chrono::microseconds>(frame_duration
 			)
 				.count()
 		) /
