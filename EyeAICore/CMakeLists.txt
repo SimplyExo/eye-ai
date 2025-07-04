@@ -12,8 +12,9 @@ option(ENABLE_CLANG_TIDY "Enable Clang Tidy" ON)
 
 if (ENABLE_CLANG_TIDY)
 	find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-	if (NOT DEFINED CLANG_TIDY_EXE)
-		message(WARNING "clang-tidy not found, not using clang-tidy for static analysis")
+	if (CLANG_TIDY_EXE STREQUAL "CLANG_TIDY_EXE-NOTFOUND")
+		message(WARNING "clang-tidy not found, not using clang-tidy for static analysis despite ENABLE_CLANG_TIDY begin ON")
+		unset(CLANG_TIDY_EXE)
 	endif ()
 endif()
 
