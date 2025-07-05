@@ -18,6 +18,12 @@ if (ENABLE_CLANG_TIDY)
 	endif ()
 endif()
 
+find_program(CCACHE_FOUND ccache)
+if(CCACHE_FOUND)
+	set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+	set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+endif()
+
 if (DEFINED CMAKE_ANDROID_ARCH_ABI)
 	set(EYE_AI_CORE_USE_PREBUILT_TFLITE ON CACHE BOOL "Use prebuilt TFLite library from LiteRT in third_party/litert(-gpu)-1.2.0 (requires EYE_AI_CORE_ABI)" FORCE)
 	set(EYE_AI_CORE_ABI ${CMAKE_ANDROID_ARCH_ABI})
