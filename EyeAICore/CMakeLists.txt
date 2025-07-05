@@ -8,6 +8,16 @@ option(EYE_AI_CORE_USE_PREBUILT_TFLITE "Use prebuilt TFLite library from LiteRT 
 
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 
+option(ENABLE_CLANG_TIDY "Enable Clang Tidy" ON)
+
+if (ENABLE_CLANG_TIDY)
+	find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+	if (CLANG_TIDY_EXE STREQUAL "CLANG_TIDY_EXE-NOTFOUND")
+		message(WARNING "clang-tidy not found, not using clang-tidy for static analysis despite ENABLE_CLANG_TIDY begin ON")
+		unset(CLANG_TIDY_EXE)
+	endif ()
+endif()
+
 if (DEFINED CMAKE_ANDROID_ARCH_ABI)
 	set(EYE_AI_CORE_USE_PREBUILT_TFLITE ON CACHE BOOL "Use prebuilt TFLite library from LiteRT in third_party/litert(-gpu)-1.2.0 (requires EYE_AI_CORE_ABI)" FORCE)
 	set(EYE_AI_CORE_ABI ${CMAKE_ANDROID_ARCH_ABI})
@@ -46,6 +56,13 @@ add_library(
 )
 
 target_compile_features(EyeAICore PUBLIC cxx_std_20)
+target_compile_options(EyeAICore PRIVATE
+					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+										-Wall -Wextra -Werror>
+					$<$<CXX_COMPILER_ID:MSVC>:
+										/W4 /WX>)
+
+set_property(TARGET EyeAICore PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
 target_include_directories(EyeAICore
 	PUBLIC
@@ -64,5 +81,12 @@ if(EYE_AI_CORE_USE_PREBUILT_TFLITE)
 else()
 	target_compile_definitions(EyeAICore PUBLIC EYE_AI_CORE_USE_PREBUILT_TFLITE=0)
 endif()
+
+if (ENABLE_CLANG_TIDY)
+	if (DEFINED CLANG_TIDY_EXE)
+		set_target_properties(EyeAICore PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+	endif ()
+endif()
+
 
 add_subdirectory(metric_depth)

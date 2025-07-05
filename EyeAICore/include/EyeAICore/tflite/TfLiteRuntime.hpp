@@ -20,6 +20,13 @@ using TfLiteLogErrorCallback = void (*)(std::string);
 struct TfLiteErrorReporterUserData {
 	TfLiteLogWarningCallback log_warning_callback;
 	TfLiteLogErrorCallback log_error_callback;
+
+	explicit TfLiteErrorReporterUserData(
+		TfLiteLogWarningCallback log_warning_callback,
+		TfLiteLogErrorCallback log_error_callback
+	)
+		: log_warning_callback(log_warning_callback),
+		  log_error_callback(log_error_callback) {}
 };
 
 /** Helper class that wraps the tflite c api */
@@ -76,9 +83,9 @@ class TfLiteRuntime {
 		TfLiteErrorReporterUserData error_reporter_user_data
 	)
 		: model_data(std::move(model_data)),
+		  error_reporter_user_data(error_reporter_user_data),
 		  input_operators(std::move(input_operators)),
-		  output_operators(std::move(output_operators)),
-		  error_reporter_user_data(error_reporter_user_data) {}
+		  output_operators(std::move(output_operators)) {}
 
 	[[nodiscard]] std::optional<TfLiteInvokeInterpreterError> invoke();
 
