@@ -25,8 +25,7 @@ else()
 	set(TFLITE_C_BUILD_SHARED_LIBS OFF)
 	FetchContent_Declare(
 		tensorflow
-		GIT_REPOSITORY https://github.com/tensorflow/tensorflow.git
-		GIT_TAG v2.19.0
+		URL https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.19.0.zip
 	)
 	FetchContent_MakeAvailable(tensorflow)
 	add_subdirectory(

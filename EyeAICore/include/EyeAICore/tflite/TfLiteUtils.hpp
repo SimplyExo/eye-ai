@@ -20,7 +20,7 @@ std::optional<size_t> get_tflite_type_size(TfLiteType type);
 
 std::string_view format_tflite_status(TfLiteStatus status);
 
-[[nodiscard]] static std::optional<TfLiteAffineQuantization>
+[[nodiscard]] std::optional<TfLiteAffineQuantization>
 get_tensor_quantization(const TfLiteTensor* tensor);
 
 [[nodiscard]] std::
@@ -154,7 +154,7 @@ read_floats_from_output_tensor(
 );
 
 struct [[nodiscard]] TfLiteCreateInterpreterError {
-	[[nodiscard]] std::string to_string() const;
+	[[nodiscard]] static std::string to_string();
 };
 
 struct [[nodiscard]] TfLiteAllocateTensorsError {

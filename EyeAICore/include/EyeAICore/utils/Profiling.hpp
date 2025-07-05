@@ -30,7 +30,17 @@ struct ProfileScopeRecord {
 	std::string_view name;
 	int scope_depth = 0;
 	profile_clock::time_point start;
-	profile_clock::duration duration;
+	profile_clock::duration duration = profile_clock::duration::zero();
+
+	explicit ProfileScopeRecord() = default;
+	explicit ProfileScopeRecord(
+		std::string_view name,
+		int scope_depth,
+		profile_clock::time_point start,
+		profile_clock::duration duration
+	)
+		: name(name), scope_depth(scope_depth), start(start),
+		  duration(duration) {}
 
 	[[nodiscard]] std::string formatted() const;
 };
@@ -88,10 +98,11 @@ std::string get_last_camera_profiling_frame_formatted();
 
 #define PROFILE_DEPTH_FUNCTION()                                               \
 	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
-		FUNCTION_NAME(), get_depth_profiling_frame()                           \
+		static_cast<const char*>(FUNCTION_NAME()), get_depth_profiling_frame() \
 	);
 
 #define PROFILE_CAMERA_FUNCTION()                                              \
 	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
-		FUNCTION_NAME(), get_camera_profiling_frame()                          \
+		static_cast<const char*>(FUNCTION_NAME()),                             \
+		get_camera_profiling_frame()                                           \
 	);

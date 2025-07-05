@@ -14,6 +14,9 @@ unexpected_fmt(const std::format_string<Args...> fmt, Args&&... args) {
 }
 } // namespace tl
 
+template<typename E>
+concept Error = requires(E error) { error.to_string(); };
+
 template<typename... Ts>
 struct Overloads : Ts... {
 	using Ts::operator()...;
@@ -22,7 +25,7 @@ struct Overloads : Ts... {
 template<typename... Ts>
 Overloads(Ts...) -> Overloads<Ts...>;
 
-template<typename... Ts>
+template<Error... Ts>
 struct [[nodiscard]] CombinedError : public std::variant<Ts...> {
 	using std::variant<Ts...>::variant;
 	using std::variant<Ts...>::operator=;

@@ -39,11 +39,10 @@ RgbNormalizeOperator::execute(std::span<float> values) const {
 			values.size()
 		);
 
-	size_t channel = 0;
-
-	for (float& value : values) {
-		value = (value - mean[channel]) / stddev[channel];
-		channel = (channel + 1) % 3;
+	for (size_t i = 0; i < values.size(); i += 3) {
+		values[i + 0] = (values[i + 0] - mean[0]) / stddev[0];
+		values[i + 1] = (values[i + 1] - mean[1]) / stddev[1];
+		values[i + 2] = (values[i + 2] - mean[2]) / stddev[2];
 	}
 
 	return std::nullopt;
