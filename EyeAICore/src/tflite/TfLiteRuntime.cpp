@@ -11,8 +11,11 @@
 #endif
 
 /// user_data_ptr is a pointer to a TfLiteErrorReporterUserData
-static void
-tflite_error_callback(void* user_data_ptr, const char* format, va_list args);
+void tflite_error_callback(
+	void* user_data_ptr,
+	const char* format,
+	va_list args
+);
 
 tl::expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>
 TfLiteRuntime::create(
@@ -29,7 +32,7 @@ TfLiteRuntime::create(
 	std::unique_ptr<TfLiteRuntime> runtime(new TfLiteRuntime(
 		std::move(model_data), std::move(input_operators),
 		std::move(output_operators),
-		TfLiteErrorReporterUserData(log_warning_callback, log_error_callback)
+		TfLiteReporterUserData(log_warning_callback, log_error_callback)
 	));
 
 	runtime->model = {
@@ -46,7 +49,7 @@ TfLiteRuntime::create(
 		};
 	TfLiteInterpreterOptionsSetErrorReporter(
 		interpreter_options_without_gpu_delegate.get(), tflite_error_callback,
-		&runtime->error_reporter_user_data
+		&runtime->reporter_user_data
 	);
 	TfLiteInterpreterOptionsSetNumThreads(
 		interpreter_options_without_gpu_delegate.get(), 4
@@ -185,8 +188,7 @@ void tflite_error_callback(
 	const char* format,
 	va_list args
 ) {
-	const auto* user_data =
-		static_cast<TfLiteErrorReporterUserData*>(user_data_ptr);
+	const auto* user_data = static_cast<TfLiteReporterUserData*>(user_data_ptr);
 
 	// c style va_list args is necessary as its required by the tflite c api for
 	// error reporting

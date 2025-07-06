@@ -23,6 +23,7 @@ struct [[nodiscard]] OperatorError {
 	}
 };
 
+/// Abstract base class for all input/output operators that modify a float array
 class Operator {
   public:
 	Operator() = default;
@@ -32,6 +33,8 @@ class Operator {
 	Operator& operator=(Operator&&) = default;
 	virtual ~Operator() = default;
 
+	/// Will be called in @ref TfLiteRuntime either before or after the
+	/// inference
 	[[nodiscard]] virtual std::optional<OperatorError>
 	execute(std::span<float> input) const = 0;
 };

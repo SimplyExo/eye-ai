@@ -3,8 +3,8 @@
 #include <mutex>
 #include <utility>
 
-/** Helper class that encapsulates T value and protects every access to it using
- * a mutex */
+/// Helper class that encapsulates T value and protects every access to it using
+/// a mutex
 template<typename T>
 class MutexGuard {
   public:
@@ -44,6 +44,8 @@ class MutexGuard {
 		std::lock_guard<std::mutex> lock;
 	};
 
+	/// @return RAII object that locks the mutex and provides access to the
+	/// value
 	ScopedAccess lock() { return ScopedAccess(value, mutex); }
 
 	struct ConstScopedAccess {
@@ -69,6 +71,8 @@ class MutexGuard {
 		std::lock_guard<std::mutex> lock;
 	};
 
+	/// @return RAII object that locks the mutex and provides access to the
+	/// value
 	ConstScopedAccess lock() const { return ConstScopedAccess(value, mutex); }
 
   private:

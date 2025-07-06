@@ -16,13 +16,22 @@
 
 std::string_view format_tflite_type(TfLiteType type);
 
+/// @return byte size of type, or nullopt if type has a dynamic size
 std::optional<size_t> get_tflite_type_size(TfLiteType type);
 
 std::string_view format_tflite_status(TfLiteStatus status);
 
+/// @return internal quantization parameters of tensor, or nullopt if
+/// tensor is not quantized
 [[nodiscard]] std::optional<TfLiteAffineQuantization>
 get_tensor_quantization(const TfLiteTensor* tensor);
 
+/**
+ * @param gpu_delegate_serialization_dir Directory where TfLite saves compiled
+ * GPU delegate kernels
+ * @param model_token unique token to identify the model, should change on model
+ * update
+ */
 [[nodiscard]] std::
 	unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
 	create_gpu_delegate(
@@ -30,6 +39,7 @@ get_tensor_quantization(const TfLiteTensor* tensor);
 		std::string_view model_token
 	);
 
+/// either a input or a output tensor
 class TensorType {
   public:
 	enum Type : uint8_t { Input, Output } type;
@@ -112,6 +122,7 @@ COMBINED_ERROR(
 	TfLiteLoadQuantizedInputError
 );
 
+/// loads input tensor with floats array, supports quantization
 [[nodiscard]] std::optional<TfLiteLoadInputError> load_input_tensor_with_floats(
 	TfLiteTensor* input_tensor,
 	std::span<const float> values
@@ -147,6 +158,7 @@ COMBINED_ERROR(
 	TfLiteReadQuantizedOutputError
 );
 
+/// reads floats array from output tensor, supports quantization
 [[nodiscard]] std::optional<TfLiteReadOutputError>
 read_floats_from_output_tensor(
 	const TfLiteTensor* output_tensor,
