@@ -34,7 +34,7 @@ std::string DepthColorArraySizeMismatch::to_string() const {
 
 /**
  * Inferno Colormap: index is depth (0..255)
- * value based on:
+ * values based on:
  * https://github.com/kennethmoreland-com/kennethmoreland-com.github.io/blob/master/color-advice/inferno/inferno-table-byte-0256.csv
  */
 constexpr std::array<int, 256> INFERNO_COLORS = {

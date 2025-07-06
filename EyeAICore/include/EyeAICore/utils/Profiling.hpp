@@ -10,6 +10,7 @@ using profile_clock = std::chrono::high_resolution_clock;
 
 class ProfilingFrame;
 
+/// A RAII object to start and stop a profile scope of a @ref ProfilingFrame
 struct ProfileScope {
 	explicit ProfileScope(std::string_view name, ProfilingFrame& frame);
 	~ProfileScope() noexcept;
@@ -26,6 +27,8 @@ struct ProfileScope {
 	profile_clock::time_point start;
 };
 
+/// A profile scope record represents a instrumented function or scope by @ref
+/// ProfileScope
 struct ProfileScopeRecord {
 	std::string_view name;
 	int scope_depth = 0;
@@ -66,9 +69,11 @@ class ProfilingFrame {
 	std::atomic_int current_frame_scope_depth = 0;
 };
 
-/// These four functions return global static variables (needed since NativeLib
-/// is loaded as a shared library, so a simple static variable does not work).
-/// Both ProfilingFrame's are thread-safe
+/**
+ * These four functions return global static variables (needed since NativeLib
+ * is loaded as a shared library, so a simple static variable does not work).
+ * Both ProfilingFrame's are thread-safe
+ */
 
 ProfilingFrame& get_depth_profiling_frame();
 void set_last_depth_profiling_frame_formatted(std::string&& formatted);

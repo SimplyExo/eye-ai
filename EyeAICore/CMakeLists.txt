@@ -10,6 +10,8 @@ option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 
 option(ENABLE_CLANG_TIDY "Enable Clang Tidy" ON)
 
+option(GENERATE_DOCS "Generate docs using doxygen" OFF)
+
 if (ENABLE_CLANG_TIDY)
 	find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
 	if (CLANG_TIDY_EXE STREQUAL "CLANG_TIDY_EXE-NOTFOUND")
@@ -92,4 +94,55 @@ if (ENABLE_CLANG_TIDY)
 	if (DEFINED CLANG_TIDY_EXE)
 		set_target_properties(EyeAICore PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
 	endif ()
+endif()
+
+if (GENERATE_DOCS)
+	find_package(Doxygen REQUIRED)
+
+	include(FetchContent)
+	message("Downloading doxygen-awesome-css...")
+	FetchContent_Declare(
+		doxygen-awesome-css
+		URL "https://github.com/jothepro/doxygen-awesome-css/archive/refs/tags/v2.3.4.zip"
+	)
+	FetchContent_MakeAvailable(doxygen-awesome-css)
+	FetchContent_GetProperties(doxygen-awesome-css SOURCE_DIR AWESOME_CSS_DIR)
+
+	# Doxyfile configuration
+	set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/docs")
+	set(DOXYGEN_FILE_PATTERNS *.cpp *.hpp *.md)
+	set(DOXYGEN_RECURSIVE YES)
+	set(DOXYGEN_EXTRACT_ALL YES)
+	set(DOXYGEN_QUIET YES)
+	set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
+	set(DOXYGEN_ENABLE_PREPROCESSING YES)
+	set(DOXYGEN_MACRO_EXPANSION YES)
+	set(DOXYGEN_GENERATE_TREEVIEW YES)
+	set(DOXYGEN_DISABLE_INDEX NO)
+	set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+	set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+	set(DOXYGEN_HTML_EXTRA_STYLESHEET
+		"${AWESOME_CSS_DIR}/doxygen-awesome.css"
+		"${AWESOME_CSS_DIR}/doxygen-awesome-sidebar-only.css"
+		"${AWESOME_CSS_DIR}/doxygen-awesome-sidebar-only-darkmode-toggle.css"
+	)
+	set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/docs/header.html")
+	set(DOXYGEN_HTML_EXTRA_FILES
+		"${AWESOME_CSS_DIR}/doxygen-awesome-darkmode-toggle.js"
+		"${AWESOME_CSS_DIR}/doxygen-awesome-fragment-copy-button.js"
+		"${AWESOME_CSS_DIR}/doxygen-awesome-interactive-toc.js"
+	)
+	set(DOXYGEN_HTML_COPY_CLIPBOARD NO)
+	set(DOXYGEN_HAVE_DOT YES)
+	set(DOXYGEN_DOT_IMAGE_FORMAT svg)
+	set(DOXYGEN_DOT_TRANSPARENT YES)
+
+	doxygen_add_docs(
+		EyeAICoreDoxygenDocs
+		"${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/docs"
+		"${CMAKE_CURRENT_SOURCE_DIR}/include/EyeAICore"
+		"${CMAKE_CURRENT_SOURCE_DIR}/src"
+		COMMENT "Generating EyeAICore documentation with Doxygen"
+	)
 endif()

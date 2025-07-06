@@ -2,6 +2,7 @@
 
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
 
+/// A utility class for running depth estimation models like MiDaS.
 class DepthModel {
   public:
 	[[nodiscard]] static tl::
@@ -14,9 +15,14 @@ class DepthModel {
 			TfLiteLogErrorCallback log_error_callback
 		);
 
+	/// see @ref DepthModel::create
 	DepthModel(std::unique_ptr<TfLiteRuntime>&& runtime)
 		: runtime(std::move(runtime)) {}
 
+	/**
+	 * @param input should have 3 * width * height elements.
+	 * @param output should have width * height elements.
+	 */
 	[[nodiscard]] std::optional<TfLiteRunInferenceError>
 	run(std::span<float> input, std::span<float> output);
 
