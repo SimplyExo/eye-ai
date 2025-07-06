@@ -6,7 +6,7 @@
 #include <variant>
 
 namespace tl {
-/** same as tl::unexpected, but with formatted error using std::format */
+/// same as tl::unexpected, but with formatted error using std::format
 template<typename... Args>
 [[nodiscard]] unexpected<std::string>
 unexpected_fmt(const std::format_string<Args...> fmt, Args&&... args) {
@@ -14,6 +14,7 @@ unexpected_fmt(const std::format_string<Args...> fmt, Args&&... args) {
 }
 } // namespace tl
 
+/// An error is simply a value that can be formatted by calling to_string()
 template<typename E>
 concept Error = requires(E error) { error.to_string(); };
 
@@ -25,18 +26,21 @@ struct Overloads : Ts... {
 template<typename... Ts>
 Overloads(Ts...) -> Overloads<Ts...>;
 
+/// Rust Enum style errors as values helper class, see @ref Error concept
 template<Error... Ts>
 struct [[nodiscard]] CombinedError : public std::variant<Ts...> {
 	using std::variant<Ts...>::variant;
 	using std::variant<Ts...>::operator=;
 	using std::variant<Ts...>::swap;
 
+	/// Formats every underlying @ref Error variant
 	[[nodiscard]] std::string to_string() const {
 		return std::visit(
 			[](const auto& ts) -> std::string { return ts.to_string(); }, *this
 		);
 	}
 
+	/// Match on every underlying @ref Error variant
 	template<typename... Fs>
 	auto match(Fs&&... fs) const& {
 		const auto visitor = Overloads(std::forward<Fs>(fs)...);
@@ -44,6 +48,7 @@ struct [[nodiscard]] CombinedError : public std::variant<Ts...> {
 		return std::visit(visitor, *this);
 	}
 
+	/// Match on every underlying @ref Error variant
 	template<typename... Fs>
 	auto match(Fs&&... fs) & {
 		const auto visitor = Overloads(std::forward<Fs>(fs)...);
@@ -51,6 +56,7 @@ struct [[nodiscard]] CombinedError : public std::variant<Ts...> {
 		return std::visit(visitor, *this);
 	}
 
+	/// Match on every underlying @ref Error variant
 	template<typename... Fs>
 	auto match(Fs&&... fs) && {
 		const auto visitor = Overloads(std::forward<Fs>(fs)...);
