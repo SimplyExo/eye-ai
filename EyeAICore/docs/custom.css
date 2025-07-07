@@ -1,0 +1,68 @@
+html {
+	--border-radius-small: 10px;
+	--border-radius-medium: 15px;
+	--border-radius-large: 20px;
+
+	--top-height: 50px;
+
+	--fragment-background: #e8e9ea;
+	--fragment-foreground: #17272f;
+
+	--side-nav-arrow-opacity: 0.5;
+	--side-nav-arrow-hover-opacity: 1;
+
+	--box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+}
+html.dark-mode {
+	color-scheme: dark;
+
+	--border-radius-small: 10px;
+	--border-radius-medium: 15px;
+	--border-radius-large: 20px;
+
+	--top-height: 50px;
+
+	--page-background-color: #050505;
+
+	--side-nav-arrow-opacity: 0.5;
+	--side-nav-arrow-hover-opacity: 1;
+	--side-nav-background: #151515;
+
+	--fragment-background: #151515;
+	--fragment-foreground: #dbe4eb;
+
+	--code-background: #151515;
+
+	--box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+}
+
+.github-corner svg {
+	fill: var(--primary-light-color);
+	color: var(--page-background-color);
+	width: 72px;
+	height: 72px;
+}
+@media screen and (max-width: 767px) {
+	.github-corner svg {
+		width: 50px;
+		height: 50px;
+	}
+}
+
+.arrow {
+	font-size: 65%;
+}
+
+/* hides "useless" summary of topics in a page */
+div.header div.summary {
+	display: none;
+}
+
+/* inline, static, delete, virtual, ... was too small */
+.mlabel {
+	font-size: 11pt !important;
+}
+
+#top {
+	background: var(--side-nav-background);
+}
