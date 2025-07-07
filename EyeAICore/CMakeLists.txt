@@ -122,16 +122,17 @@ if (GENERATE_DOCS)
 	set(DOXYGEN_DISABLE_INDEX NO)
 	set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
 	set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+	set(DOXYGEN_LAYOUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/docs/DoxygenLayout.xml")
 	set(DOXYGEN_HTML_EXTRA_STYLESHEET
 		"${AWESOME_CSS_DIR}/doxygen-awesome.css"
 		"${AWESOME_CSS_DIR}/doxygen-awesome-sidebar-only.css"
 		"${AWESOME_CSS_DIR}/doxygen-awesome-sidebar-only-darkmode-toggle.css"
+		"${CMAKE_CURRENT_SOURCE_DIR}/docs/custom.css"
 	)
 	set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/docs/header.html")
 	set(DOXYGEN_HTML_EXTRA_FILES
 		"${AWESOME_CSS_DIR}/doxygen-awesome-darkmode-toggle.js"
 		"${AWESOME_CSS_DIR}/doxygen-awesome-fragment-copy-button.js"
-		"${AWESOME_CSS_DIR}/doxygen-awesome-interactive-toc.js"
 	)
 	set(DOXYGEN_HTML_COPY_CLIPBOARD NO)
 	set(DOXYGEN_HAVE_DOT YES)
