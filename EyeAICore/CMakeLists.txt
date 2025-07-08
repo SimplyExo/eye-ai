@@ -100,7 +100,7 @@ if (GENERATE_DOCS)
 	find_package(Doxygen REQUIRED)
 
 	include(FetchContent)
-	message("Downloading doxygen-awesome-css...")
+	message(STATUS "Downloading doxygen-awesome-css...")
 	FetchContent_Declare(
 		doxygen-awesome-css
 		URL "https://github.com/jothepro/doxygen-awesome-css/archive/refs/tags/v2.3.4.zip"
