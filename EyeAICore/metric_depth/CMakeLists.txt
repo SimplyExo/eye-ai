@@ -1,6 +1,10 @@
 project(metric_depth)
 
-add_executable(EvaluateDataset "src/main.cpp" "src/stb_image.cpp")
+add_executable(EvaluateDataset
+	"src/main.cpp"
+	"src/utils.cpp"
+	"src/stb_image.cpp"
+)
 
 target_compile_features(EvaluateDataset PUBLIC cxx_std_20)
 

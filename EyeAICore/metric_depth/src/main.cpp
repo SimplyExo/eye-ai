@@ -48,7 +48,7 @@ int main(const int argc, const char* argv[]) {
 
 	std::cout << "\n=== Initializing TFLite Runtime ===\n\n";
 
-	auto model_data_result = read_binary_file<int8_t>(midas_model_path);
+	auto model_data_result = read_binary_file(midas_model_path);
 	if (!model_data_result.has_value()) {
 		println_error_fmt(
 			"Failed to read model file: {}", model_data_result.error()
@@ -85,13 +85,20 @@ int main(const int argc, const char* argv[]) {
 			[&]() -> std::unique_ptr<DepthModel> {
 				auto model_data_clone = model_data;
 
-				return DepthModel::create_with_raw_output(
-						   std::move(model_data_clone),
-						   gpu_delegate_serialization_dir.string(),
-						   midas_model_token, tflite_log_warning_callback,
-						   tflite_log_error_callback
-				)
-					.value();
+				auto result = DepthModel::create_with_raw_output(
+					std::move(model_data_clone),
+					gpu_delegate_serialization_dir.string(), midas_model_token,
+					tflite_log_warning_callback, tflite_log_error_callback
+				);
+
+				if (result) {
+					return std::move(result.value());
+				}
+				println_error_fmt(
+					"Failed to create depth model, aborting: {}",
+					result.error().to_string()
+				);
+				exit(1);
 			},
 			thread_count
 		);

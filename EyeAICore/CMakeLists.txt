@@ -145,6 +145,7 @@ if (GENERATE_DOCS)
 		"${CMAKE_CURRENT_SOURCE_DIR}/docs"
 		"${CMAKE_CURRENT_SOURCE_DIR}/include/EyeAICore"
 		"${CMAKE_CURRENT_SOURCE_DIR}/src"
+		"${CMAKE_CURRENT_SOURCE_DIR}/metric_depth"
 		COMMENT "Generating EyeAICore documentation with Doxygen"
 	)
 endif()

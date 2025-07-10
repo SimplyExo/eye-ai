@@ -1,9 +1,11 @@
 # Metric Depth: Converting relative depth estimation to absolute(/metric) depth using the DIODE dataset
 
-### Requirements for prepare_dataset.py python script:
+### Requirements for the visualization python scripts:
 
 - numpy
 - matplotlib
+- pandas
+- jenkspy
 
 ### How to enable OpenCL (GPU) support on Linux (optional):
 
