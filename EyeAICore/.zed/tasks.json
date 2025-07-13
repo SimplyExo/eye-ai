@@ -1,0 +1,11 @@
+[
+	{
+		"label": "Run Tests",
+		"command": "cmake --build --preset=debug && ctest --preset=default",
+		"use_new_terminal": false,
+		"allow_concurrent_runs": false,
+		"reveal": "always",
+		"reveal_target": "dock",
+		"hide": "never"
+	}
+]

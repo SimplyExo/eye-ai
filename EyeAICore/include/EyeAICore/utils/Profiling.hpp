@@ -51,7 +51,7 @@ struct ProfileScopeRecord {
 /// collection of profile records from different threads (lock-free thread-safe)
 class ProfilingFrame {
   public:
-	explicit ProfilingFrame(std::string_view name) : name(name) {}
+	explicit ProfilingFrame(std::string_view name) noexcept : name(name) {}
 
 	/// returns the scopes depth, should always include calling end_scope after
 	int start_scope() noexcept;

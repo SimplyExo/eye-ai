@@ -1,0 +1,68 @@
+{
+	"version": 3,
+	"configurePresets": [
+		{
+			"name": "default",
+			"hidden": true,
+			"description": "Default development setup",
+			"binaryDir": "${sourceDir}/build",
+			"generator": "Ninja",
+			"cacheVariables": {
+				"CMAKE_COLOR_DIAGNOSTICS": true,
+				"EYE_AI_CORE_GENERATE_DOCS": true,
+				"EYE_AI_CORE_ENABLE_TESTS": true
+			}
+		},
+		{
+			"name": "debug",
+			"displayName": "Debug",
+			"inherits": "default",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "release",
+			"displayName": "Release",
+			"inherits": "default",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		}
+	],
+	"buildPresets": [
+		{
+			"name": "debug",
+			"displayName": "Debug",
+			"configurePreset": "debug",
+			"jobs": 8
+		},
+		{
+			"name": "release",
+			"displayName": "Release",
+			"configurePreset": "release",
+			"jobs": 8
+		},
+		{
+			"name": "generate_docs",
+			"displayName": "Generate EyeAICore Docs",
+			"configurePreset": "debug",
+			"jobs": 8,
+			"targets": "EyeAICoreDoxygenDocs"
+		}
+	],
+	"testPresets": [
+		{
+			"name": "default",
+			"displayName": "Default",
+			"configurePreset": "debug",
+			"output": {
+				"outputOnFailure": true,
+				"shortProgress": true
+			},
+			"execution": {
+				"stopOnFailure": true
+			}
+		}
+	]
+}
