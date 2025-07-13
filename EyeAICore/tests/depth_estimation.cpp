@@ -2,9 +2,13 @@
 #include "utils.hpp"
 #include <tl/expected.hpp>
 
+using ::testing::FloatNear;
+using ::testing::Pointwise;
+
 TEST(DepthEstimationTest, CorrectOutput) {
 	constexpr size_t width = 256;
 	constexpr size_t height = 256;
+	constexpr float tolerance = 1e-3f;
 	constexpr auto test_image_path = "../tests/00022_00193_outdoor_010_030.png";
 	constexpr auto expected_rel_depth_path =
 		"../tests/00022_00193_outdoor_010_030_expected.npy";
@@ -30,8 +34,8 @@ TEST(DepthEstimationTest, CorrectOutput) {
 	const auto run_error = depth_model->run(input, output);
 	EXPECT_EQ(run_error, std::nullopt);
 
-	// this might fail due to precision errors --> custom compare with tolerance
-	EXPECT_EQ(output, expected_output.data);
+	// this might fail due to precision errors -> added tolerance
+	EXPECT_THAT(output, Pointwise(FloatNear(tolerance), expected_output.data));
 
 	/* Uncomment, when the expected output changes:
 	 * (npy file viewer: https://perchance.org/npy-file-viewer)
