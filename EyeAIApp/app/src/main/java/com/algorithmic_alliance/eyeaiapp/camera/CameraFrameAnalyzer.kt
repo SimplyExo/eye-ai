@@ -34,6 +34,8 @@ class CameraFrameAnalyzer(
 	private var objectDetectionProcessingExecutor = Executors.newSingleThreadExecutor()
 	private var latestCameraFrame = AtomicReference<Bitmap?>(null)
 
+	private lateinit var colorMappedImage: Bitmap
+
 	init {
 		// DepthAnalyzer
 		CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher()).launch {
@@ -51,11 +53,11 @@ class CameraFrameAnalyzer(
 					val inputHeight = frame.height
 
 					withContext(Dispatchers.Main) {
-						val colorMappedImage = NativeLib.depthColorMap(
+						colorMappedImage = NativeLib.depthColorMap(
 							predictionOutput,
 							depthModel.inputDim
 						)
-						depthView.setImageBitmap(colorMappedImage)
+						//depthView.setImageBitmap(colorMappedImage)
 
 						if (eyeAIApp.settings.showProfilingInfo) {
 							val formattedInputResolution = "${inputWidth}x${inputHeight}"
@@ -76,13 +78,26 @@ class CameraFrameAnalyzer(
 		// Objekterkennung
 		CoroutineScope(objectDetectionProcessingExecutor.asCoroutineDispatcher()).launch {
 			while (isActive) {
-				// val depthModel = eyeAIApp.depthModel
-
 				val frame = latestCameraFrame.getAndSet(null)
 
 				if (frame != null) {
 					//Log.e("object-recognition", "passed")
 					// Frame analysieren
+					val boxes = eyeAIApp.yoloModel?.runInference(frame);
+
+					// Verarbeiten und Anzeigen der Boxes
+					if (boxes != null) {
+						Log.i("ObjectDetection", "Anzahl Boxen: " + boxes.size)
+
+						withContext(Dispatchers.Main) {
+							val deptViewAndBoxes = eyeAIApp.yoloModel?.drawBoxesToBitmap(colorMappedImage, boxes)
+							depthView.setImageBitmap(deptViewAndBoxes)
+						}
+					}
+					else {
+						Log.i("ObjectDetection", "Anzahl Boxen: Null")
+						depthView.setImageBitmap(colorMappedImage)
+					}
 				}
 			}
 		}

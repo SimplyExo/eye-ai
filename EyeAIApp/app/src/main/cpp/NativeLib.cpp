@@ -247,5 +247,34 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatCameraFrame(
 	);
 }
 
+extern "C" JNIEXPORT jfloatArray
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
+	JNIEnv* env,
+	jobject /*this*/
+) {
+	int size = 10;
+	jfloatArray result = env->NewFloatArray(size);
+
+	if (result == nullptr) {
+		// Out of memory error thrown
+		return nullptr;
+	}
+
+	// Step 2: Fill the array with some data (for example, 0.0, 1.0, ..., size-1)
+	jfloat* fill = new jfloat[size];
+	for (int i = 0; i < size; ++i) {
+		fill[i] = static_cast<jfloat>(i);
+	}
+
+	// Step 3: Set the region (copy values into the Java array)
+	env->SetFloatArrayRegion(result, 0, size, fill);
+
+	// Clean up temporary native array
+	delete[] fill;
+
+	// Step 4: Return the array to Java
+	return result;
+}
+
 // NOLINTEND(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)
