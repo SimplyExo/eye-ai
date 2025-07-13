@@ -7,6 +7,8 @@ import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModelInfo
+import com.algorithmic_alliance.eyeaiapp.llm.GoogleAIStudioLLM
+import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +29,8 @@ class EyeAIApp : Application() {
 
 	/** can be [null] if enableSpeechRecognition is disabled in settings */
 	var voskModel: VoskModel? = null
+		private set
+	var llm: LLM? = null
 		private set
 
 	companion object {
@@ -58,6 +62,11 @@ class EyeAIApp : Application() {
 
 		if (settings.enableSpeechRecognition)
 			voskModel = VoskModel(this, "model-de")
+
+		settings.googleAiStudioApiKey?.let {
+			if (!it.isEmpty())
+				llm = GoogleAIStudioLLM(it)
+		}
 	}
 
 	fun updateSettings() {
@@ -76,6 +85,15 @@ class EyeAIApp : Application() {
 					voskModel?.closeService()
 					voskModel = null
 				}
+			}
+		}
+
+		if (settings.googleAiStudioApiKey != newSettings.googleAiStudioApiKey) {
+			val apiKey = newSettings.googleAiStudioApiKey
+			llm = if (apiKey != null && !apiKey.isEmpty()) {
+				GoogleAIStudioLLM(apiKey)
+			} else {
+				null
 			}
 		}
 

@@ -15,6 +15,9 @@ class Settings(val context: Context) {
 	var enableSpeechRecognition: Boolean
 		private set
 
+	var googleAiStudioApiKey: String?
+		private set
+
 	init {
 		depthModel = sharedPreferences.getString(
 			context.getString(R.string.depth_model_setting),
@@ -29,6 +32,11 @@ class Settings(val context: Context) {
 		enableSpeechRecognition = sharedPreferences.getBoolean(
 			context.getString(R.string.enable_speech_recognition_setting),
 			true
+		)
+
+		googleAiStudioApiKey = sharedPreferences.getString(
+			context.getString(R.string.google_ai_studio_api_key_stetting),
+			null
 		)
 	}
 }
