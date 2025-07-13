@@ -18,4 +18,10 @@
             app:title="Enabled"
             app:defaultValue="true"/>
     </PreferenceCategory>
+
+    <PreferenceCategory app:title="LLM">
+        <EditTextPreference
+            app:key="@string/google_ai_studio_api_key_stetting"
+            app:title="Google AI Studio API Key" />
+    </PreferenceCategory>
 </PreferenceScreen>
