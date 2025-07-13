@@ -47,6 +47,7 @@ clinfo
 2. Evaluate the dataset:
 
    ```bash
+   cmake --preset=debug
    ./scripts/build_and_run_eval_dataset.sh <dataset_directory> <dataset_evaluation_directory>
    ```
 
