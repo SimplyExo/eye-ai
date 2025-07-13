@@ -46,7 +46,7 @@
 		{
 			"name": "generate_docs",
 			"displayName": "Generate EyeAICore Docs",
-			"configurePreset": "default",
+			"configurePreset": "debug",
 			"jobs": 8,
 			"targets": "EyeAICoreDoxygenDocs"
 		}
