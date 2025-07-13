@@ -8,10 +8,10 @@
 template<typename T>
 class MutexGuard {
   public:
-	explicit MutexGuard(T&& value) : value(std::move(value)) {}
+	explicit MutexGuard(T&& value) noexcept : value(std::move(value)) {}
 
 	template<typename... Args>
-	explicit MutexGuard(Args&&... args)
+	explicit MutexGuard(Args&&... args) noexcept
 		: value(std::forward<Args...>(args)...) {}
 
 	~MutexGuard() = default;
