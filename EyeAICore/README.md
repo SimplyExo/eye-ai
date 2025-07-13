@@ -28,7 +28,7 @@ sudo apt install doxygen graphviz
 generate docs:
 
 ```bash
-cmake --preset=default
+cmake --preset=debug
 cmake --build --preset=generate_docs
 ```
 
