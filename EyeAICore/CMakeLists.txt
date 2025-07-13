@@ -6,16 +6,18 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(EYE_AI_CORE_USE_PREBUILT_TFLITE "Use prebuilt TFLite library from LiteRT in third_party/litert(-gpu)-1.2.0 (requires EYE_AI_CORE_ABI)" OFF)
 
-option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(EYE_AI_CORE_ENABLE_ASAN "Enable AddressSanitizer" OFF)
 
-option(ENABLE_CLANG_TIDY "Enable Clang Tidy" ON)
+option(EYE_AI_CORE_ENABLE_CLANG_TIDY "Enable Clang Tidy" ON)
 
-option(GENERATE_DOCS "Generate docs using doxygen" OFF)
+option(EYE_AI_CORE_GENERATE_DOCS "Generate docs using doxygen" OFF)
 
-if (ENABLE_CLANG_TIDY)
+option(EYE_AI_CORE_ENABLE_TESTS "Enable tests" OFF)
+
+if (EYE_AI_CORE_ENABLE_CLANG_TIDY)
 	find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
 	if (CLANG_TIDY_EXE STREQUAL "CLANG_TIDY_EXE-NOTFOUND")
-		message(WARNING "clang-tidy not found, not using clang-tidy for static analysis despite ENABLE_CLANG_TIDY begin ON")
+		message(WARNING "clang-tidy not found, not using clang-tidy for static analysis despite EYE_AI_CORE_ENABLE_CLANG_TIDY begin ON")
 		unset(CLANG_TIDY_EXE)
 	endif ()
 endif()
@@ -44,10 +46,10 @@ endif ()
 
 message(STATUS "EyeAICore ABI: ${EYE_AI_CORE_ABI}")
 
-if (ENABLE_ASAN)
+if (EYE_AI_CORE_ENABLE_ASAN)
 	message(STATUS "Enabling AddressSanitizer")
-	add_compile_options(-fsanitize=address)
-	add_link_options(-fsanitize=address)
+	add_compile_options(-fsanitize=address,undefined,leak -fno-omit-frame-pointer -fno-optimize-sibling-calls)
+	add_link_options(-fsanitize=address,undefined,leak -static-libasan)
 endif()
 
 add_subdirectory(third_party)
@@ -66,7 +68,7 @@ add_library(
 target_compile_features(EyeAICore PUBLIC cxx_std_20)
 target_compile_options(EyeAICore PRIVATE
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-										-Wall -Wextra -Werror>
+										-Wall -Wextra -Werror -Wno-c99-extensions>
 					$<$<CXX_COMPILER_ID:MSVC>:
 										/W4 /WX>)
 
@@ -90,13 +92,14 @@ else()
 	target_compile_definitions(EyeAICore PUBLIC EYE_AI_CORE_USE_PREBUILT_TFLITE=0)
 endif()
 
-if (ENABLE_CLANG_TIDY)
+if (EYE_AI_CORE_ENABLE_CLANG_TIDY)
 	if (DEFINED CLANG_TIDY_EXE)
 		set_target_properties(EyeAICore PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
 	endif ()
 endif()
 
-if (GENERATE_DOCS)
+
+if (EYE_AI_CORE_GENERATE_DOCS)
 	find_package(Doxygen REQUIRED)
 
 	include(FetchContent)
@@ -146,4 +149,14 @@ if (GENERATE_DOCS)
 		"${CMAKE_CURRENT_SOURCE_DIR}/src"
 		COMMENT "Generating EyeAICore documentation with Doxygen"
 	)
+endif()
+
+if (EYE_AI_CORE_ENABLE_TESTS)
+	enable_testing()
+	include(GoogleTest)
+
+	add_executable(test_depth_estimation "tests/depth_estimation.cpp")
+	target_include_directories(test_depth_estimation PRIVATE ${LIBNPY_INCLUDE_DIR} ${STB_INCLUDE_DIR})
+	target_link_libraries(test_depth_estimation EyeAICore GTest::gtest_main GTest::gmock)
+	gtest_discover_tests(test_depth_estimation)
 endif()

@@ -19,6 +19,9 @@ class DepthModel {
 	DepthModel(std::unique_ptr<TfLiteRuntime>&& runtime)
 		: runtime(std::move(runtime)) {}
 
+	DepthModel(DepthModel&&) = default;
+	DepthModel& operator=(DepthModel&&) = default;
+
 	/**
 	 * @param input should have 3 * width * height elements.
 	 * @param output should have width * height elements.
