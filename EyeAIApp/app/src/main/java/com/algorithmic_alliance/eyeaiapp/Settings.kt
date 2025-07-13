@@ -15,6 +15,9 @@ class Settings(val context: Context) {
 	var enableSpeechRecognition: Boolean
 		private set
 
+	var enableObjectDetection: Boolean
+		private set
+
 	init {
 		depthModel = sharedPreferences.getString(
 			context.getString(R.string.depth_model_setting),
@@ -28,6 +31,11 @@ class Settings(val context: Context) {
 
 		enableSpeechRecognition = sharedPreferences.getBoolean(
 			context.getString(R.string.enable_speech_recognition_setting),
+			true
+		)
+
+		enableObjectDetection = sharedPreferences.getBoolean(
+			context.getString(R.string.enable_object_detection_setting),
 			true
 		)
 	}

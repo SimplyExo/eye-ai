@@ -41,8 +41,7 @@ class CameraFrameAnalyzer(
 		CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher()).launch {
 			while (isActive) {
 				val depthModel = eyeAIApp.depthModel
-
-				val frame = latestCameraFrame.getAndSet(null) // TODO: Verhindern dass Bilder "gestohlen" werden
+				val frame = latestCameraFrame.getAndSet(null)
 
 				if (frame != null && depthModel != null) {
 					NativeLib.newDepthFrame()
@@ -57,7 +56,6 @@ class CameraFrameAnalyzer(
 							predictionOutput,
 							depthModel.inputDim
 						)
-						//depthView.setImageBitmap(colorMappedImage)
 
 						if (eyeAIApp.settings.showProfilingInfo) {
 							val formattedInputResolution = "${inputWidth}x${inputHeight}"
@@ -80,8 +78,7 @@ class CameraFrameAnalyzer(
 			while (isActive) {
 				val frame = latestCameraFrame.getAndSet(null)
 
-				if (frame != null) {
-					//Log.e("object-recognition", "passed")
+				if (frame != null && eyeAIApp.settings.enableObjectDetection) {
 					// Frame analysieren
 					val boxes = eyeAIApp.yoloModel?.runInference(frame);
 

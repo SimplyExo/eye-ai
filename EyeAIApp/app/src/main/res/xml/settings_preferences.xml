@@ -18,4 +18,11 @@
             app:title="Enabled"
             app:defaultValue="true"/>
     </PreferenceCategory>
+
+    <PreferenceCategory app:title="Object Detection">
+        <CheckBoxPreference
+            app:key="@string/enable_object_detection_setting"
+            app:title="Enabled"
+            app:defaultValue="true"/>
+    </PreferenceCategory>
 </PreferenceScreen>
