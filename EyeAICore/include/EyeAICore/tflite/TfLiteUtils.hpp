@@ -26,6 +26,8 @@ std::string_view format_tflite_status(TfLiteStatus status);
 [[nodiscard]] std::optional<TfLiteAffineQuantization>
 get_tensor_quantization(const TfLiteTensor* tensor);
 
+[[nodiscard]] std::span<const int> get_tensor_shape(const TfLiteTensor* tensor);
+
 /**
  * @param gpu_delegate_serialization_dir Directory where TfLite saves compiled
  * GPU delegate kernels

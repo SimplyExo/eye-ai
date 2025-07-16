@@ -80,6 +80,10 @@ class TfLiteRuntime {
 	[[nodiscard]] std::optional<TfLiteRunInferenceError>
 	run_inference(std::span<float> input, std::span<float> output);
 
+	[[nodiscard]] std::span<const int> get_input_shape() const;
+
+	[[nodiscard]] std::span<const int> get_output_shape() const;
+
 	TfLiteRuntime(TfLiteRuntime&&) = delete;
 	TfLiteRuntime(const TfLiteRuntime&) = delete;
 	void operator=(TfLiteRuntime&&) = delete;
