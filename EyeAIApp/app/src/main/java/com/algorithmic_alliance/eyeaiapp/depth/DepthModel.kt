@@ -15,15 +15,13 @@ import com.algorithmic_alliance.eyeaiapp.NativeLib
 class DepthModelInfo(
 	val name: String,
 	val fileName: String,
-	val inputDim: Size
 ) {
 	/** @return null if model type is not supported */
 	fun createDepthModel(context: Context): DepthModel {
 		return DepthModel(
 			context,
 			name,
-			fileName,
-			inputDim
+			fileName
 		)
 	}
 }
@@ -31,9 +29,10 @@ class DepthModelInfo(
 class DepthModel(
 	context: Context,
 	val name: String,
-	val fileName: String,
-	val inputDim: Size
+	val fileName: String
 ) : AutoCloseable {
+	val inputDim: Size
+
 	init {
 		val modelData = context.assets.open(fileName).readBytes()
 
@@ -62,6 +61,38 @@ class DepthModel(
 			gpuDelegateCacheDirectory.path,
 			modelToken
 		)
+
+		val inputShape = NativeLib.getDepthModelInputShape()
+		inputDim = if (inputShape.size == 4) {
+			if (inputShape[0] != 1) {
+				Log.e(
+					EyeAIApp.APP_LOG_TAG,
+					"first input shape of depth model should be 1, not ${inputShape[0]}"
+				)
+			}
+			if (inputShape[3] != 3) {
+				Log.e(
+					EyeAIApp.APP_LOG_TAG,
+					"depth model should take 3 channels for r,g,b, not ${inputShape[3]}"
+				)
+			}
+			Size(inputShape[2], inputShape[1])
+		} else {
+			Log.e(
+				EyeAIApp.APP_LOG_TAG,
+				"depth model input shape is not 4 dimensional, but ${inputShape.size} dimensional"
+			)
+			Size(256, 256)
+		}
+
+		val outputShape = NativeLib.getDepthModelOutputShape()
+		val expectedOutputShape = intArrayOf(1, inputDim.height, inputDim.width, 1)
+		if (!outputShape.contentEquals(expectedOutputShape)) {
+			Log.e(
+				EyeAIApp.APP_LOG_TAG,
+				"depth model has invalid output shape, expected [1, ${inputDim.height}, ${inputDim.width}, 1] but is [${outputShape}]"
+			)
+		}
 	}
 
 	override fun close() {

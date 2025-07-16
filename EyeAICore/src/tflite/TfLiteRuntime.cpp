@@ -163,6 +163,20 @@ TfLiteRuntime::run_inference(std::span<float> input, std::span<float> output) {
 	return std::nullopt;
 }
 
+std::span<const int> TfLiteRuntime::get_input_shape() const {
+	const TfLiteTensor* input_tensor =
+		TfLiteInterpreterGetInputTensor(interpreter.get(), 0);
+
+	return get_tensor_shape(input_tensor);
+}
+
+std::span<const int> TfLiteRuntime::get_output_shape() const {
+	const TfLiteTensor* output_tensor =
+		TfLiteInterpreterGetOutputTensor(interpreter.get(), 0);
+
+	return get_tensor_shape(output_tensor);
+}
+
 std::optional<TfLiteLoadInputError>
 TfLiteRuntime::load_input(std::span<const float> input) {
 	PROFILE_DEPTH_SCOPE("Loading input")

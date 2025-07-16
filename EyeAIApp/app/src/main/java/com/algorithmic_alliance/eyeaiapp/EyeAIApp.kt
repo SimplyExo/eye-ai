@@ -42,13 +42,11 @@ class EyeAIApp : Application() {
 			arrayOf(
 				DepthModelInfo(
 					DEFAULT_DEPTH_MODEL_NAME,
-					"midas_v2_1_256x256.tflite",
-					Size(256, 256)
+					"midas_v2_1_256x256.tflite"
 				),
 				DepthModelInfo(
 					"MiDaS V2.1 (quantized)",
-					"midas_v2_1_256x256_quantized.tflite",
-					Size(256, 256)
+					"midas_v2_1_256x256_quantized.tflite"
 				)
 			)
 	}

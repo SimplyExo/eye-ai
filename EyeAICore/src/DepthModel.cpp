@@ -28,3 +28,10 @@ std::optional<TfLiteRunInferenceError>
 DepthModel::run(std::span<float> input, std::span<float> output) {
 	return runtime->run_inference(input, output);
 }
+
+std::span<const int> DepthModel::get_input_shape() const {
+	return runtime->get_input_shape();
+}
+std::span<const int> DepthModel::get_output_shape() const {
+	return runtime->get_output_shape();
+}
