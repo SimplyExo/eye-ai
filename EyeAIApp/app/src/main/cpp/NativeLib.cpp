@@ -65,7 +65,36 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	return true;
 }
 
+extern "C" JNIEXPORT jfloatArray
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
+	JNIEnv* env,
+	jobject /* this */,
+	jfloatArray input) {
 
+	// Get input array length safely
+	jsize input_length = env->GetArrayLength(input);
+
+	// Allocate buffer for input
+	std::vector<float> converted_input(input_length);
+	env->GetFloatArrayRegion(input, 0, input_length, converted_input.data());
+
+	// Allocate output buffer (make sure size matches model output)
+	std::vector<float> object_recognition_output(84 * 8400);  // Replace with actual expected output size
+
+	// Run inference
+	const auto exec = yolo_instance.run(converted_input, object_recognition_output);
+
+	// Create Java float array for the result
+	jfloatArray result = env->NewFloatArray(object_recognition_output.size());
+	if (result == nullptr) {
+		return nullptr; // Out of memory
+	}
+
+	// Copy output data to Java array
+	env->SetFloatArrayRegion(result, 0, object_recognition_output.size(), object_recognition_output.data());
+
+	return result;
+}
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthModel(
@@ -245,35 +274,6 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatCameraFrame(
 	return env->NewStringUTF(
 		get_last_camera_profiling_frame_formatted().c_str()
 	);
-}
-
-extern "C" JNIEXPORT jfloatArray
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
-	JNIEnv* env,
-	jobject /*this*/
-) {
-	int size = 10;
-	jfloatArray result = env->NewFloatArray(size);
-
-	if (result == nullptr) {
-		// Out of memory error thrown
-		return nullptr;
-	}
-
-	// Step 2: Fill the array with some data (for example, 0.0, 1.0, ..., size-1)
-	jfloat* fill = new jfloat[size];
-	for (int i = 0; i < size; ++i) {
-		fill[i] = static_cast<jfloat>(i);
-	}
-
-	// Step 3: Set the region (copy values into the Java array)
-	env->SetFloatArrayRegion(result, 0, size, fill);
-
-	// Clean up temporary native array
-	delete[] fill;
-
-	// Step 4: Return the array to Java
-	return result;
 }
 
 // NOLINTEND(readability-identifier-naming,

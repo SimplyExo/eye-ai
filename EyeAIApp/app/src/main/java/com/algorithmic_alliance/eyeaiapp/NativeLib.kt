@@ -19,7 +19,7 @@ object NativeLib {
 	                               gpuDelegateSerializationDir: String,
 	                               modelToken: String): Boolean
 
-	//external fun runYoloOperation(input: FloatArray): FloatArray
+	external fun runYoloOperation(input: FloatArray): FloatArray
 
 	external fun newDepthFrame()
 	external fun formatDepthFrame(): String

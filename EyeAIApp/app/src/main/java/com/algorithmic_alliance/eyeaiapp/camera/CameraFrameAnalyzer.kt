@@ -93,7 +93,9 @@ class CameraFrameAnalyzer(
 					}
 					else {
 						Log.i("ObjectDetection", "Anzahl Boxen: Null")
-						depthView.setImageBitmap(colorMappedImage)
+						withContext(Dispatchers.Main) {
+							depthView.setImageBitmap(colorMappedImage)
+						}
 					}
 				}
 			}

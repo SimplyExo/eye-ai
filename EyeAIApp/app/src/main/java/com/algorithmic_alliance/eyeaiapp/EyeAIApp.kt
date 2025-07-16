@@ -65,7 +65,7 @@ class EyeAIApp : Application() {
 			voskModel = VoskModel(this, "model-de")
 
 		// Yolo Model erstellen
-		yoloModel = YoloModel(YoloModelInfo("yolo11n_float32.tflite",640))
+		yoloModel = YoloModel(YoloModelInfo("model.tflite",640))
 		yoloModel!!.create(baseContext)
 	}
 

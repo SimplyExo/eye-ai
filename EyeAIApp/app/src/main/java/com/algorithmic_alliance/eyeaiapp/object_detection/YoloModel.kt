@@ -9,7 +9,8 @@ import android.graphics.Paint
 import android.os.Build
 import android.os.SystemClock
 import android.util.Log
-import androidx.compose.ui.geometry.Rect
+import com.algorithmic_alliance.eyeaiapp.NativeLib
+import java.io.File
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.common.ops.CastOp
@@ -22,88 +23,7 @@ import java.nio.ByteOrder
 
 class YoloModel(var info: YoloModelInfo) {
 	private var interpreter: Interpreter? = null
-	private var labels = arrayOf(
-		"person",
-		"bicycle",
-		"car",
-		"motorcycle",
-		"airplane",
-		"bus",
-		"train",
-		"truck",
-		"boat",
-		"traffic light",
-		"fire hydrant",
-		"stop sign",
-		"parking meter",
-		"bench",
-		"bird",
-		"cat",
-		"dog",
-		"horse",
-		"sheep",
-		"cow",
-		"elephant",
-		"bear",
-		"zebra",
-		"giraffe",
-		"backpack",
-		"umbrella",
-		"handbag",
-		"tie",
-		"suitcase",
-		"frisbee",
-		"skis",
-		"snowboard",
-		"sports ball",
-		"kite",
-		"baseball bat",
-		"baseball glove",
-		"skateboard",
-		"surfboard",
-		"tennis racket",
-		"bottle",
-		"wine glass",
-		"cup",
-		"fork",
-		"knife",
-		"spoon",
-		"bowl",
-		"banana",
-		"apple",
-		"sandwich",
-		"orange",
-		"broccoli",
-		"carrot",
-		"hot dog",
-		"pizza",
-		"donut",
-		"cake",
-		"chair",
-		"couch",
-		"potted plant",
-		"bed",
-		"dining table",
-		"toilet",
-		"tv",
-		"laptop",
-		"mouse",
-		"remote",
-		"keyboard",
-		"cell phone",
-		"microwave",
-		"oven",
-		"toaster",
-		"sink",
-		"refrigerator",
-		"book",
-		"clock",
-		"vase",
-		"scissors",
-		"teddy bear",
-		"hair drier",
-		"toothbrush"
-	)
+	private lateinit var labels: Array<String>
 
 	private var tensorWidth = 0
 	private var tensorHeight = 0
@@ -129,11 +49,13 @@ class YoloModel(var info: YoloModelInfo) {
 	fun create(context: Context)
 	{
 		// Erstellen einer Yolo-Instanz
-		//NativeLib.initYoloRuntime(info.getAsBytes(context),
-		//	createSerializedGpuDelegateCacheDirectory(context).path,
-		//	getModelToken(context, info.filename))
+		NativeLib.initYoloRuntime(info.getAsBytes(context),
+			createSerializedGpuDelegateCacheDirectory(context).path,
+			getModelToken(context, info.filename))
 
 		val modelBytes = info.getAsBytes(context)
+
+		labels = info.readLinesFromAsset(context, "coco.names")
 
 		val model = ByteBuffer.allocateDirect(modelBytes.size)
 			.order(ByteOrder.nativeOrder())
@@ -167,7 +89,7 @@ class YoloModel(var info: YoloModelInfo) {
 			val bottom = box.y2 * input.height
 
 			canvas.drawRect(left, top, right, bottom, paint_box)
-			canvas.drawText(box.clsName, left, top, paint_text)
+			canvas.drawText(box.clsName + " " + box.cnf, left, top, paint_text)
 		}
 
 		return mutableBitmap
@@ -194,11 +116,19 @@ class YoloModel(var info: YoloModelInfo) {
 		val processedImage = imageProcessor.process(tensorImage)
 		val imageBuffer = processedImage.buffer
 
-		val output = TensorBuffer.createFixedSize(intArrayOf(1 , numChannel, numElements), OUTPUT_IMAGE_TYPE)
-		interpreter?.run(imageBuffer, output.buffer)
+        val buffer = tensorImage.buffer
+        buffer.rewind() // Wichtig: Position zurücksetzen
+
+        // Anzahl Floats = buffer.remaining() / 4 (da FLOAT32 = 4 Bytes)
+        val floatArray = FloatArray(buffer.remaining() / 4)
+        buffer.asFloatBuffer().get(floatArray)
+
+		//val output = TensorBuffer.createFixedSize(intArrayOf(1 , numChannel, numElements), OUTPUT_IMAGE_TYPE)
+		//interpreter?.run(imageBuffer, output.buffer)
+		val output = NativeLib.runYoloOperation(floatArray);
 
 
-		val bestBoxes = bestBox(output.floatArray)
+		val bestBoxes = bestBox(output)
 		inferenceTime = SystemClock.uptimeMillis() - inferenceTime
 
 
@@ -299,7 +229,6 @@ class YoloModel(var info: YoloModelInfo) {
 		private const val IOU_THRESHOLD = 0.5F
 	}
 
-	/*
 	fun createSerializedGpuDelegateCacheDirectory(context: Context): File {
 		val gpuDelegateCacheDirectory = File(context.cacheDir, "gpu_delegate_cache")
 		if (!gpuDelegateCacheDirectory.exists()) gpuDelegateCacheDirectory.mkdirs()
@@ -324,5 +253,5 @@ class YoloModel(var info: YoloModelInfo) {
 	private fun getModelToken(context: Context, modelFilename: String): String {
 		val lastUpdateTime = getLastAppUpdateTime(context)
 		return "${modelFilename}_${lastUpdateTime}"
-	}*/
+	}
 }
