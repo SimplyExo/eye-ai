@@ -26,10 +26,10 @@ get_tensor_quantization(const TfLiteTensor* tensor) {
 }
 
 std::span<const int> get_tensor_shape(const TfLiteTensor* tensor) {
-	return std::span<const int>(
+	return {
 		static_cast<const int*>(tensor->dims->data),
 		static_cast<size_t>(tensor->dims->size)
-	);
+	};
 }
 
 std::unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>

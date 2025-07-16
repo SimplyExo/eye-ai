@@ -78,8 +78,6 @@ struct EvaluateResult {
 	std::vector<float> relative_absolute_pairs;
 };
 
-constexpr size_t INPUT_WIDTH = 256;
-constexpr size_t INPUT_HEIGHT = 256;
 constexpr size_t DATASET_WIDTH = 1024;
 constexpr size_t DATASET_HEIGHT = 768;
 constexpr float DATASET_MIN = 0.6f;
@@ -87,13 +85,18 @@ constexpr float DATASET_MAX = 350.f;
 
 tl::expected<EvaluateResult, std::string> evaluate(
 	DepthModel& depth_model,
+	size_t depth_input_width,
+	size_t depth_input_height,
 	std::span<float> image_rgb,
 	std::span<float> metric_depth,
 	std::span<float> depth_mask
 );
 
-tl::expected<std::vector<float>, std::string>
-load_image_file(const std::filesystem::path& filepath);
+tl::expected<std::vector<float>, std::string> load_image_file(
+	const std::filesystem::path& filepath,
+	size_t target_width,
+	size_t target_height
+);
 
 tl::expected<std::vector<float>, std::string>
 load_npy_file(const std::filesystem::path& filepath);

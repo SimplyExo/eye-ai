@@ -47,8 +47,8 @@ std::string DataPoint::to_string() const noexcept {
 	);
 }
 
-std::size_t std::hash<DataPoint>::operator()(const DataPoint& dp
-) const noexcept {
+std::size_t
+std::hash<DataPoint>::operator()(const DataPoint& dp) const noexcept {
 	return std::hash<bool>{}(dp.indoors) ^
 		   std::hash<std::string>{}(dp.scene_id) ^
 		   std::hash<std::string>{}(dp.scan_id) ^
@@ -102,17 +102,32 @@ std::optional<std::string> match_scan_directory(const std::string& directory) {
 	return std::nullopt;
 }
 
+std::string format_span(std::span<const int> s) {
+	if (s.empty())
+		return "[]";
+	std::string result = "[";
+	for (size_t i = 0; i < s.size(); ++i) {
+		result += std::to_string(s[i]);
+		if (i < s.size() - 1)
+			result += ", ";
+	}
+	result += "]";
+	return result;
+}
+
 tl::expected<EvaluateResult, std::string> evaluate(
 	DepthModel& depth_model,
+	size_t depth_input_width,
+	size_t depth_input_height,
 	std::span<float> image_rgb,
 	std::span<float> metric_depth,
 	std::span<float> depth_mask
 ) {
 	size_t pixel_count = image_rgb.size() / 3;
-	if (pixel_count != INPUT_WIDTH * INPUT_HEIGHT) {
+	if (pixel_count != depth_input_width * depth_input_height) {
 		return tl::unexpected_fmt(
 			"Invalid image size of {} instead of {}", pixel_count,
-			INPUT_WIDTH * INPUT_HEIGHT
+			depth_input_width * depth_input_height
 		);
 	}
 
@@ -139,13 +154,13 @@ tl::expected<EvaluateResult, std::string> evaluate(
 		return tl::unexpected(error->to_string());
 	}
 
-	for (size_t y = 0; y < INPUT_HEIGHT; ++y) {
-		for (size_t x = 0; x < INPUT_WIDTH; ++x) {
-			size_t input_image_index = (y * INPUT_WIDTH) + x;
+	for (size_t y = 0; y < depth_input_height; ++y) {
+		for (size_t x = 0; x < depth_input_width; ++x) {
+			size_t input_image_index = (y * depth_input_width) + x;
 			float relative_x =
-				static_cast<float>(x) / static_cast<float>(INPUT_WIDTH);
+				static_cast<float>(x) / static_cast<float>(depth_input_width);
 			float relative_y =
-				static_cast<float>(y) / static_cast<float>(INPUT_HEIGHT);
+				static_cast<float>(y) / static_cast<float>(depth_input_height);
 			size_t dataset_image_index =
 				(static_cast<size_t>(relative_y * DATASET_HEIGHT) *
 				 DATASET_WIDTH) +
@@ -167,8 +182,11 @@ tl::expected<EvaluateResult, std::string> evaluate(
 	return result;
 }
 
-tl::expected<std::vector<float>, std::string>
-load_image_file(const std::filesystem::path& filepath) {
+tl::expected<std::vector<float>, std::string> load_image_file(
+	const std::filesystem::path& filepath,
+	size_t target_width,
+	size_t target_height
+) {
 	const std::string filepath_str = filepath.string();
 	int width = 0;
 	int height = 0;
@@ -184,13 +202,12 @@ load_image_file(const std::filesystem::path& filepath) {
 		return tl::unexpected_fmt("failed to load image file {}", filepath_str);
 	}
 
-	const size_t target_width = INPUT_WIDTH;
-	const size_t target_height = INPUT_HEIGHT;
 	std::vector<float> resized_image(target_width * target_height * STBI_rgb);
 
 	stbir_resize_float_linear(
-		data, width, height, 0, resized_image.data(), target_width,
-		target_height, 0, STBIR_RGB
+		data, width, height, 0, resized_image.data(),
+		static_cast<int>(target_width), static_cast<int>(target_height), 0,
+		STBIR_RGB
 	);
 
 	stbi_image_free(data);
@@ -227,16 +244,51 @@ tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
 ) {
 	const auto start = std::chrono::high_resolution_clock::now();
 
-	auto image_result = load_image_file(dataset_point_paths.image_filepath);
+	const std::span<const int> input_shape = depth_model.get_input_shape();
+	if (input_shape.size() != 4) {
+		return tl::unexpected_fmt(
+			"invalid input shape dimensions, expected 4 but has {}",
+			input_shape.size()
+		);
+	}
+	if (input_shape[0] != 1) {
+		return tl::unexpected_fmt(
+			"invalid batch size, expected 1 but has {}", input_shape[0]
+		);
+	}
+	if (input_shape[3] != 3) {
+		return tl::unexpected_fmt(
+			"invalid channel size, expected 3 (r,g,b) but has {}",
+			input_shape[3]
+		);
+	}
+	auto depth_input_width = static_cast<size_t>(input_shape[2]);
+	auto depth_input_height = static_cast<size_t>(input_shape[1]);
+
+	const std::span<const int> output_shape = depth_model.get_output_shape();
+	const std::array<int, 4> expected_output_shape{
+		1, input_shape[1], input_shape[2], 1
+	};
+	if (std::ranges::equal(output_shape, expected_output_shape)) {
+		return tl::unexpected_fmt(
+			"invalid output shape, expected [1, {}, {}, 1] but has [{}]",
+			depth_input_height, depth_input_width, format_span(output_shape)
+		);
+	}
+
+	auto image_result = load_image_file(
+		dataset_point_paths.image_filepath, depth_input_width,
+		depth_input_height
+	);
 	if (!image_result.has_value())
 		return tl::unexpected(image_result.error());
 
 	std::vector<float>& image = image_result.value();
-	if (image.size() != INPUT_WIDTH * INPUT_HEIGHT * 3) {
+	if (image.size() != depth_input_width * depth_input_height * 3) {
 		return tl::unexpected_fmt(
 			"invalid image size of {} pixels, expected {}x{}={} pixels",
-			image.size() / 3, INPUT_WIDTH, INPUT_HEIGHT,
-			INPUT_WIDTH * INPUT_HEIGHT * 3
+			image.size() / 3, depth_input_width, depth_input_height,
+			depth_input_width * depth_input_height * 3
 		);
 	}
 
@@ -253,7 +305,10 @@ tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
 
 	std::vector<float>& depth_mask = depth_mask_result.value();
 
-	const auto result = evaluate(depth_model, image, depth, depth_mask);
+	const auto result = evaluate(
+		depth_model, depth_input_width, depth_input_height, image, depth,
+		depth_mask
+	);
 	if (!result.has_value())
 		return tl::unexpected(result.error());
 
