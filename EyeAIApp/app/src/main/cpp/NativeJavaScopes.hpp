@@ -84,6 +84,8 @@ struct NativeIntArrayScope {
 	std::span<jint> native_array;
 };
 
+jintArray create_jni_int_array(JNIEnv* env, std::span<const jint> values);
+
 struct NativeStringScope {
 	explicit NativeStringScope(JNIEnv* env, jstring string);
 

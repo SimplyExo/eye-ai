@@ -32,6 +32,10 @@ object NativeLib {
 		output: FloatArray
 	)
 
+	external fun getDepthModelInputShape(): IntArray
+
+	external fun getDepthModelOutputShape(): IntArray
+
 	external fun depthColormap(depthValues: FloatArray, colormappedPixels: IntArray)
 
 	external fun bitmapToRgbChwFloatArray(bitmap: Bitmap, outFloatArray: FloatArray)

@@ -91,6 +91,27 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthModelInference(
 	}
 }
 
+extern "C" JNIEXPORT jintArray JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getDepthModelInputShape(
+	JNIEnv* env,
+	jobject /*thiz*/
+) {
+	std::span<const int> input_shape = (*depth_model.lock())->get_input_shape();
+
+	return create_jni_int_array(env, input_shape);
+}
+
+extern "C" JNIEXPORT jintArray JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getDepthModelOutputShape(
+	JNIEnv* env,
+	jobject /*thiz*/
+) {
+	std::span<const int> output_shape =
+		(*depth_model.lock())->get_output_shape();
+
+	return create_jni_int_array(env, output_shape);
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_depthColormap(
 	JNIEnv* env,

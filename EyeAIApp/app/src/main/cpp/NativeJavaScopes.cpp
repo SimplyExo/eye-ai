@@ -33,6 +33,18 @@ NativeIntArrayScope::~NativeIntArrayScope() {
 	env->ReleaseIntArrayElements(array, native_array.data(), 0);
 }
 
+jintArray create_jni_int_array(JNIEnv* env, std::span<const jint> values) {
+	jintArray array = env->NewIntArray(static_cast<jsize>(values.size()));
+	if (array == nullptr)
+		return nullptr;
+
+	env->SetIntArrayRegion(
+		array, 0, static_cast<jsize>(values.size()), values.data()
+	);
+
+	return array;
+}
+
 NativeStringScope::NativeStringScope(JNIEnv* env, jstring string)
 	: string(string), env(env),
 	  native_string(env->GetStringUTFChars(string, nullptr)) {}
