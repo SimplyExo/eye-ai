@@ -36,6 +36,16 @@ android {
 			)
 			signingConfig = signingConfigs.getByName("debug")
 		}
+		create("profiling") {
+			initWith(getByName("release"))
+			matchingFallbacks += listOf("release")
+
+			externalNativeBuild {
+				cmake {
+					arguments += "-DEYE_AI_CORE_ENABLE_TRACY_PROFILER=ON"
+				}
+			}
+		}
 	}
 	compileOptions {
 		sourceCompatibility = JavaVersion.VERSION_11

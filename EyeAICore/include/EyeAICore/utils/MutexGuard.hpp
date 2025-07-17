@@ -16,19 +16,19 @@ class MutexGuard {
 
 	~MutexGuard() = default;
 
-	MutexGuard(MutexGuard&&) = default;
-	MutexGuard(const MutexGuard&) = default;
-	MutexGuard& operator=(MutexGuard&&) = default;
-	MutexGuard& operator=(const MutexGuard&) = default;
+	MutexGuard(MutexGuard&&) noexcept = default;
+	MutexGuard(const MutexGuard&) = delete;
+	MutexGuard& operator=(MutexGuard&&) noexcept = default;
+	MutexGuard& operator=(const MutexGuard&) = delete;
 
 	struct ScopedAccess {
 		explicit ScopedAccess(T& value, std::mutex& mutex)
 			: value(value), lock(mutex) {}
 		~ScopedAccess() = default;
 
-		ScopedAccess(ScopedAccess&&) = default;
+		ScopedAccess(ScopedAccess&&) noexcept = default;
 		ScopedAccess(const ScopedAccess&) = delete;
-		ScopedAccess& operator=(ScopedAccess&&) = default;
+		ScopedAccess& operator=(ScopedAccess&&) noexcept = default;
 		ScopedAccess& operator=(const ScopedAccess&) = delete;
 
 		T* operator->() { return &value; }
@@ -53,9 +53,9 @@ class MutexGuard {
 			: value(value), lock(mutex) {}
 		~ConstScopedAccess() = delete;
 
-		ConstScopedAccess(ConstScopedAccess&&) = default;
+		ConstScopedAccess(ConstScopedAccess&&) noexcept = default;
 		ConstScopedAccess(const ConstScopedAccess&) = delete;
-		ConstScopedAccess& operator=(ConstScopedAccess&&) = default;
+		ConstScopedAccess& operator=(ConstScopedAccess&&) noexcept = default;
 		ConstScopedAccess& operator=(const ConstScopedAccess&) = delete;
 
 		const T* operator->() { return &value; }

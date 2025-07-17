@@ -17,6 +17,19 @@ cmake --build --preset=debug
 ctest --preset=default
 ```
 
+## Profile EyeAICore
+
+- For EyeAIApp: select the "profiling" build type
+
+- For running EyeAICore on your PC:
+
+  ```bash
+  cmake --preset=profiling
+  cmake --build --preset=profiling
+  ```
+
+  Then run EyeAICore and listen with the Tracy profiler
+
 ## Generating EyeAICore docs using doxygen
 
 install doxygen (here: using linux):

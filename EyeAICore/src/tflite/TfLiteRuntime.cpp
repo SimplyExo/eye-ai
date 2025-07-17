@@ -11,11 +11,8 @@
 #endif
 
 /// user_data_ptr is a pointer to a TfLiteErrorReporterUserData
-void tflite_error_callback(
-	void* user_data_ptr,
-	const char* format,
-	va_list args
-);
+static void
+tflite_error_callback(void* user_data_ptr, const char* format, va_list args);
 
 tl::expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>
 TfLiteRuntime::create(

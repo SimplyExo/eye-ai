@@ -14,6 +14,8 @@ option(EYE_AI_CORE_GENERATE_DOCS "Generate docs using doxygen" OFF)
 
 option(EYE_AI_CORE_ENABLE_TESTS "Enable tests" OFF)
 
+option(EYE_AI_CORE_ENABLE_TRACY_PROFILER "Enable tracy profiler" OFF)
+
 if (EYE_AI_CORE_ENABLE_CLANG_TIDY)
 	find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
 	if (CLANG_TIDY_EXE STREQUAL "CLANG_TIDY_EXE-NOTFOUND")
@@ -96,6 +98,13 @@ if (EYE_AI_CORE_ENABLE_CLANG_TIDY)
 	if (DEFINED CLANG_TIDY_EXE)
 		set_target_properties(EyeAICore PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
 	endif ()
+endif()
+
+if (EYE_AI_CORE_ENABLE_TRACY_PROFILER)
+	target_link_libraries(EyeAICore PUBLIC Tracy::TracyClient)
+	target_compile_definitions(EyeAICore PUBLIC EYE_AI_CORE_ENABLE_TRACY_PROFILER=1)
+else()
+	target_compile_definitions(EyeAICore PUBLIC EYE_AI_CORE_ENABLE_TRACY_PROFILER=0)
 endif()
 
 

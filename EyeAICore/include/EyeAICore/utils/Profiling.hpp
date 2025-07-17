@@ -82,17 +82,6 @@ ProfilingFrame& get_camera_profiling_frame();
 void set_last_camera_profiling_frame_formatted(std::string&& formatted);
 std::string get_last_camera_profiling_frame_formatted();
 
-#define COMBINE(x, y) x##y
-#define COMBINE2(x, y) COMBINE(x, y)
-#define PROFILE_DEPTH_SCOPE(name)                                              \
-	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
-		name, get_depth_profiling_frame()                                      \
-	);
-#define PROFILE_CAMERA_SCOPE(name)                                             \
-	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
-		name, get_camera_profiling_frame()                                     \
-	);
-
 #ifndef FUNCTION_NAME
 #ifdef WIN32 // WINDOWS
 #define FUNCTION_NAME() __FUNCTION__
@@ -100,6 +89,50 @@ std::string get_last_camera_profiling_frame_formatted();
 #define FUNCTION_NAME() __func__
 #endif
 #endif
+
+#define COMBINE(x, y) x##y
+#define COMBINE2(x, y) COMBINE(x, y)
+
+#if EYE_AI_CORE_ENABLE_TRACY_PROFILER
+
+#include <tracy/Tracy.hpp>
+
+#define PROFILE_DEPTH_SCOPE(name)                                              \
+	ZoneScopedN(name);                                                         \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		name, get_depth_profiling_frame()                                      \
+	);
+
+#define PROFILE_CAMERA_SCOPE(name)                                             \
+	ZoneScopedN(name);                                                         \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		name, get_camera_profiling_frame()                                     \
+	);
+
+#define PROFILE_DEPTH_FUNCTION()                                               \
+	ZoneScopedN(static_cast<const char*>(FUNCTION_NAME()));                    \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		static_cast<const char*>(FUNCTION_NAME()), get_depth_profiling_frame() \
+	);
+
+#define PROFILE_CAMERA_FUNCTION()                                              \
+	ZoneScopedN(static_cast<const char*>(FUNCTION_NAME()));                    \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		static_cast<const char*>(FUNCTION_NAME()),                             \
+		get_camera_profiling_frame()                                           \
+	);
+
+#else
+
+#define PROFILE_DEPTH_SCOPE(name)                                              \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		name, get_depth_profiling_frame()                                      \
+	);
+
+#define PROFILE_CAMERA_SCOPE(name)                                             \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		name, get_camera_profiling_frame()                                     \
+	);
 
 #define PROFILE_DEPTH_FUNCTION()                                               \
 	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
@@ -111,3 +144,5 @@ std::string get_last_camera_profiling_frame_formatted();
 		static_cast<const char*>(FUNCTION_NAME()),                             \
 		get_camera_profiling_frame()                                           \
 	);
+
+#endif
