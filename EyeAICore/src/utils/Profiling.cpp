@@ -4,6 +4,10 @@
 #include <chrono>
 #include <format>
 
+#if EYE_AI_CORE_ENABLE_TRACY_PROFILER
+#include <tracy/Tracy.hpp>
+#endif
+
 static std::string padding_tabs(size_t amount) {
 	std::string result;
 	result.reserve(amount * 4);
@@ -47,6 +51,10 @@ void ProfilingFrame::end_scope(const ProfileScopeRecord& scope) noexcept {
 }
 
 std::string ProfilingFrame::finish() {
+#if EYE_AI_CORE_ENABLE_TRACY_PROFILER
+	FrameMarkNamed(name.data());
+#endif
+
 	const auto end = profile_clock::now();
 
 	std::vector<ProfileScopeRecord> profile_scopes_vector;
@@ -67,7 +75,8 @@ std::string ProfilingFrame::finish() {
 	const auto frame_duration = end - start;
 	const auto frame_duration_ms =
 		static_cast<float>(
-			std::chrono::duration_cast<std::chrono::microseconds>(frame_duration
+			std::chrono::duration_cast<std::chrono::microseconds>(
+				frame_duration
 			)
 				.count()
 		) /
