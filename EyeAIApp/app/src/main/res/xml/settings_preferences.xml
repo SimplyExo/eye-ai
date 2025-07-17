@@ -23,6 +23,7 @@
         <EditTextPreference
             app:key="@string/google_ai_studio_api_key_stetting"
             app:title="Google AI Studio API Key" />
+    </PreferenceCategory>
             
     <PreferenceCategory app:title="Object Detection">
         <CheckBoxPreference
