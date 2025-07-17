@@ -8,7 +8,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.os.Build
 import android.os.SystemClock
-import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import java.io.File
 import org.tensorflow.lite.DataType
@@ -17,7 +16,6 @@ import org.tensorflow.lite.support.common.ops.CastOp
 import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -75,7 +73,7 @@ class YoloModel(var info: YoloModelInfo) {
 		numElements = outputShape[2]
 	}
 
-	fun drawBoxesToBitmap(input: Bitmap, boxes: List<BoundingBox>): Bitmap
+	fun drawBoxesToScreen(input: Bitmap, boxes: List<BoundingBox>): Bitmap
 	{
 		val mutableBitmap = input.copy(Bitmap.Config.ARGB_8888, true)
 		val canvas = Canvas(mutableBitmap)

@@ -11,6 +11,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
+import com.algorithmic_alliance.eyeaiapp.object_detection.OverlayView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -28,6 +29,7 @@ class CameraFrameAnalyzer(
 	private var eyeAIApp: EyeAIApp,
 	private var depthView: ImageView,
 	private var performanceText: TextView,
+	private var overlay: OverlayView
 ) : ImageAnalysis.Analyzer {
 
 	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
@@ -56,6 +58,8 @@ class CameraFrameAnalyzer(
 							predictionOutput,
 							depthModel.inputDim
 						)
+
+						depthView.setImageBitmap(colorMappedImage)
 
 						if (eyeAIApp.settings.showProfilingInfo) {
 							val formattedInputResolution = "${inputWidth}x${inputHeight}"
@@ -87,14 +91,14 @@ class CameraFrameAnalyzer(
 						Log.i("ObjectDetection", "Anzahl Boxen: " + boxes.size)
 
 						withContext(Dispatchers.Main) {
-							val deptViewAndBoxes = eyeAIApp.yoloModel?.drawBoxesToBitmap(colorMappedImage, boxes)
-							depthView.setImageBitmap(deptViewAndBoxes)
+							overlay.setResults(boxes)
 						}
 					}
 					else {
 						Log.i("ObjectDetection", "Anzahl Boxen: Null")
+
 						withContext(Dispatchers.Main) {
-							depthView.setImageBitmap(colorMappedImage)
+							overlay.reset()
 						}
 					}
 				}
