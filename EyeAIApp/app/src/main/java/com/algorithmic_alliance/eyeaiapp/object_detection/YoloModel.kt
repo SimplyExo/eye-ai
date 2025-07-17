@@ -225,7 +225,7 @@ class YoloModel(var info: YoloModelInfo) {
 		private const val INPUT_STANDARD_DEVIATION = 255f
 		private val INPUT_IMAGE_TYPE = DataType.FLOAT32
 		private val OUTPUT_IMAGE_TYPE = DataType.FLOAT32
-		private const val CONFIDENCE_THRESHOLD = 0.3F
+		private const val CONFIDENCE_THRESHOLD = 0.5F
 		private const val IOU_THRESHOLD = 0.5F
 	}
 
