@@ -28,6 +28,14 @@
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release"
 			}
+		},
+		{
+			"name": "profiling",
+			"displayName": "Profiling",
+			"inherits": "release",
+			"cacheVariables": {
+				"EYE_AI_CORE_ENABLE_TRACY_PROFILER": true
+			}
 		}
 	],
 	"buildPresets": [
@@ -41,6 +49,12 @@
 			"name": "release",
 			"displayName": "Release",
 			"configurePreset": "release",
+			"jobs": 8
+		},
+		{
+			"name": "profiling",
+			"displayName": "Profiling",
+			"configurePreset": "profiling",
 			"jobs": 8
 		},
 		{

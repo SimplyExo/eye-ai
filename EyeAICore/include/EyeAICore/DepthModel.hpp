@@ -32,6 +32,11 @@ class DepthModel {
 	DepthModel(DepthModel&&) = default;
 	DepthModel& operator=(DepthModel&&) = default;
 
+	DepthModel(const DepthModel&) = delete;
+	DepthModel& operator=(const DepthModel&) = delete;
+
+	~DepthModel() = default;
+
 	/**
 	 * @param input should have 3 * width * height elements.
 	 * @param output should have width * height elements.
