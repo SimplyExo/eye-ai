@@ -269,10 +269,10 @@ tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
 	const std::array<int, 4> expected_output_shape{
 		1, input_shape[1], input_shape[2], 1
 	};
-	if (std::ranges::equal(output_shape, expected_output_shape)) {
+	if (!std::ranges::equal(output_shape, expected_output_shape)) {
 		return tl::unexpected_fmt(
-			"invalid output shape, expected [1, {}, {}, 1] but has [{}]",
-			depth_input_height, depth_input_width, format_span(output_shape)
+			"invalid output shape, expected {} but has {}",
+			format_span(expected_output_shape), format_span(output_shape)
 		);
 	}
 
