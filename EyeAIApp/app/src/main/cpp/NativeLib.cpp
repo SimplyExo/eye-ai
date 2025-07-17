@@ -33,8 +33,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	jobjectArray labels,
 	jstring gpu_delegate_serialization_dir,
 	jstring model_token
-)
-{
+) {
 	NativeByteArrayScope model_data(env, model);
 	const NativeStringScope gpu_delegate_serialization_dir_string(
 		env, gpu_delegate_serialization_dir
@@ -54,7 +53,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	std::vector<std::string> labels_vector = {};
 
 	for (jsize i = 0; i < len; i++) {
-		jstring str = (jstring) env->GetObjectArrayElement(labels, i);
+		jstring str = (jstring)env->GetObjectArrayElement(labels, i);
 
 		const char* cstr = env->GetStringUTFChars(str, nullptr);
 		labels_vector.push_back(cstr);
@@ -64,21 +63,80 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	}
 
 	auto result = yolo_instance.create(
-		model_data.to_vector(),
-		labels_vector,
-		gpu_delegate_serialization_dir_string,
-		model_token_string,
-		log_warning_callback,
-		log_error_callback
+		model_data.to_vector(), labels_vector,
+		gpu_delegate_serialization_dir_string, model_token_string,
+		log_warning_callback, log_error_callback
 	);
 
 	if (!result.has_value()) {
-		LOG_ERROR("[YoloRuntime] Could not create YoloModel: {}", result.error());
+		LOG_ERROR(
+			"[YoloRuntime] Could not create YoloModel: {}", result.error()
+		);
 		return false;
 	}
 
 	LOG_INFO("[YoloRuntime] Runtime erstellt!");
 	return true;
+}
+
+static jobjectArray convertToJavaBoundingBoxArray(
+	JNIEnv* env,
+	const std::vector<YoloModel::BoundingBox>& boxes
+) {
+
+	// 1. Finde die Kotlin/Java-Klasse
+	jclass boxClass = env->FindClass(
+		"com/algorithmic_alliance/eyeaiapp/object_detection/BoundingBox"
+	);
+	if (boxClass == nullptr) {
+		return nullptr; // Klasse nicht gefunden
+	}
+
+	// 2. Hole den Konstruktor (8 floats, 1 int, 1 String)
+	jmethodID constructor =
+		env->GetMethodID(boxClass, "<init>", "(FFFFFFFFFILjava/lang/String;)V");
+	if (constructor == nullptr) {
+		return nullptr; // Konstruktor nicht gefunden
+	}
+
+	// 3. Neues Java-Array erstellen
+	jobjectArray resultArray = env->NewObjectArray(
+		static_cast<jsize>(boxes.size()), boxClass, nullptr
+	);
+
+	// 4. Elemente einfügen
+	for (size_t i = 0; i < boxes.size(); ++i) {
+		const YoloModel::BoundingBox& b = boxes[i];
+
+		// String erzeugen
+		jstring jClsName = env->NewStringUTF(b.clsName.c_str());
+
+		// Neues Objekt erzeugen — Reihenfolge der Parameter exakt wie im
+		// Konstruktor:
+		jobject boxObj = env->NewObject(
+			boxClass, constructor,
+			b.x1,	 // float
+			b.y1,	 // float
+			b.x2,	 // float
+			b.y2,	 // float
+			b.cx,	 // float
+			b.cy,	 // float
+			b.w,	 // float
+			b.h,	 // float
+			b.cnf,	 // float
+			b.cls,	 // int
+			jClsName // String
+		);
+
+		// Objekt ins Array setzen
+		env->SetObjectArrayElement(resultArray, static_cast<jsize>(i), boxObj);
+
+		// Lokale Referenzen löschen
+		env->DeleteLocalRef(jClsName);
+		env->DeleteLocalRef(boxObj);
+	}
+
+	return resultArray;
 }
 
 extern "C" JNIEXPORT jobjectArray
@@ -87,7 +145,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 	jobject /* this */,
 	jfloatArray input,
 	jint numElements,
-	jint numChannel) {
+	jint numChannel
+) {
 
 	// Get input array length safely
 	jsize input_length = env->GetArrayLength(input);
@@ -97,15 +156,20 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 	env->GetFloatArrayRegion(input, 0, input_length, converted_input.data());
 
 	// Allocate output buffer (make sure size matches model output)
-	std::vector<float> object_recognition_output(84 * 8400);  // Replace with actual expected output size
+	std::vector<float> object_recognition_output(
+		84 * 8400
+	); // Replace with actual expected output size
 
 	// Run inference
-	const auto exec = yolo_instance.run(converted_input, object_recognition_output);
+	const auto exec =
+		yolo_instance.run(converted_input, object_recognition_output);
 
 	// Find best boxes
-	auto boxes = yolo_instance.bestBox(object_recognition_output, numElements, numChannel);
+	auto boxes = yolo_instance.bestBox(
+		object_recognition_output, numElements, numChannel
+	);
 
-	return yolo_instance.convertToJavaBoundingBoxArray(env, boxes);
+	return convertToJavaBoundingBoxArray(env, boxes);
 }
 
 extern "C" JNIEXPORT void JNICALL

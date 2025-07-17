@@ -19,13 +19,20 @@ tl::expected<bool, std::string> YoloModel::create(
 	this->labels = std::move(labels);
 
 	std::vector<std::unique_ptr<Operator>> input_operators;
-	input_operators.emplace_back(std::make_unique<RgbNormalizeOperator>());
+	input_operators.emplace_back(
+		std::make_unique<RgbNormalizeOperator>(
+			std::array<float, 3>{0.f, 0.f, 0.f},
+			std::array<float, 3>{255.f, 255.f, 255.f}
+		)
+	);
 
 	auto new_runtime =
 		TfLiteRuntimeBuilder(
 			std::move(model_data), gpu_delegate_serialization_dir, model_token,
 			log_warning_callback, log_error_callback
-		).add_input_operator(std::make_unique<RgbNormalizeOperator>()).build();
+		)
+			.add_input_operator(std::make_unique<RgbNormalizeOperator>())
+			.build();
 
 	// bei Fehler gebe string aus
 	if (!new_runtime.has_value())
@@ -48,7 +55,8 @@ YoloModel::run(std::span<float> input, std::span<float> output) {
 	return {};
 }
 
-std::vector<YoloModel::BoundingBox> YoloModel::bestBox(std::span<float> array, int numElements, int numChannel) {
+std::vector<YoloModel::BoundingBox>
+YoloModel::bestBox(std::span<float> array, int numElements, int numChannel) {
 	std::vector<BoundingBox> boundingBoxes;
 
 	const size_t totalSize = array.size();
@@ -63,7 +71,8 @@ std::vector<YoloModel::BoundingBox> YoloModel::bestBox(std::span<float> array, i
 		size_t arrayIdx = c + numElements * j;
 
 		while (j < numChannel) {
-			if (arrayIdx >= totalSize) break; // Schutz gegen Überlauf
+			if (arrayIdx >= totalSize)
+				break; // Schutz gegen Überlauf
 
 			if (array[arrayIdx] > maxConf) {
 				maxConf = array[arrayIdx];
@@ -76,12 +85,13 @@ std::vector<YoloModel::BoundingBox> YoloModel::bestBox(std::span<float> array, i
 
 		if (maxConf > CONFIDENCE_THRESHOLD) {
 			// Index prüfen!
-			if (maxIdx < 0 || maxIdx >= static_cast<int>(labels.size())) continue;
+			if (maxIdx < 0 || maxIdx >= static_cast<int>(labels.size()))
+				continue;
 
-			float cx = array[c];                      // 0
-			float cy = array[c + numElements];        // 1
-			float w  = array[c + numElements * 2];
-			float h  = array[c + numElements * 3];
+			float cx = array[c];			   // 0
+			float cy = array[c + numElements]; // 1
+			float w = array[c + numElements * 2];
+			float h = array[c + numElements * 3];
 
 			float x1 = cx - w / 2.0f;
 			float y1 = cy - h / 2.0f;
@@ -89,10 +99,14 @@ std::vector<YoloModel::BoundingBox> YoloModel::bestBox(std::span<float> array, i
 			float y2 = cy + h / 2.0f;
 
 			// Bounds check wie in Kotlin
-			if (x1 < 0.0f || x1 > 1.0f) continue;
-			if (y1 < 0.0f || y1 > 1.0f) continue;
-			if (x2 < 0.0f || x2 > 1.0f) continue;
-			if (y2 < 0.0f || y2 > 1.0f) continue;
+			if (x1 < 0.0f || x1 > 1.0f)
+				continue;
+			if (y1 < 0.0f || y1 > 1.0f)
+				continue;
+			if (x2 < 0.0f || x2 > 1.0f)
+				continue;
+			if (y2 < 0.0f || y2 > 1.0f)
+				continue;
 
 			BoundingBox box;
 			box.clsName = labels[maxIdx];
@@ -119,8 +133,10 @@ std::vector<YoloModel::BoundingBox> YoloModel::bestBox(std::span<float> array, i
 	return applyNMS(boundingBoxes);
 }
 
-float YoloModel::calculateIoU(const YoloModel::BoundingBox& box1, const YoloModel::BoundingBox& box2)
-{
+float YoloModel::calculateIoU(
+	const YoloModel::BoundingBox& box1,
+	const YoloModel::BoundingBox& box2
+) {
 	float x1 = std::max(box1.x1, box2.x1);
 	float y1 = std::max(box1.y1, box2.y1);
 	float x2 = std::min(box1.x2, box2.x2);
@@ -136,14 +152,14 @@ float YoloModel::calculateIoU(const YoloModel::BoundingBox& box1, const YoloMode
 	return intersectionArea / (box1Area + box2Area - intersectionArea);
 }
 
-std::vector<YoloModel::BoundingBox> YoloModel::applyNMS(std::vector<YoloModel::BoundingBox>& boxes)
-{
+std::vector<YoloModel::BoundingBox>
+YoloModel::applyNMS(std::vector<YoloModel::BoundingBox>& boxes) {
 	// 1. Sortiere nach cnf absteigend
 	std::vector<BoundingBox> sortedBoxes = boxes;
-	std::sort(sortedBoxes.begin(), sortedBoxes.end(),
-			  [](const BoundingBox& a, const BoundingBox& b) {
-				  return a.cnf > b.cnf;
-			  });
+	std::sort(
+		sortedBoxes.begin(), sortedBoxes.end(),
+		[](const BoundingBox& a, const BoundingBox& b) { return a.cnf > b.cnf; }
+	);
 
 	std::vector<BoundingBox> selectedBoxes;
 
@@ -165,60 +181,3 @@ std::vector<YoloModel::BoundingBox> YoloModel::applyNMS(std::vector<YoloModel::B
 
 	return selectedBoxes;
 }
-
-jobjectArray YoloModel::convertToJavaBoundingBoxArray(JNIEnv* env, const std::vector<YoloModel::BoundingBox>& boxes) {
-	// 1. Finde die Kotlin/Java-Klasse
-	jclass boxClass = env->FindClass("com/algorithmic_alliance/eyeaiapp/object_detection/BoundingBox");
-	if (boxClass == nullptr) {
-		return nullptr; // Klasse nicht gefunden
-	}
-
-	// 2. Hole den Konstruktor (8 floats, 1 int, 1 String)
-	jmethodID constructor = env->GetMethodID(
-		boxClass,
-		"<init>",
-		"(FFFFFFFFFILjava/lang/String;)V"
-	);
-	if (constructor == nullptr) {
-		return nullptr; // Konstruktor nicht gefunden
-	}
-
-	// 3. Neues Java-Array erstellen
-	jobjectArray resultArray = env->NewObjectArray(static_cast<jsize>(boxes.size()), boxClass, nullptr);
-
-	// 4. Elemente einfügen
-	for (size_t i = 0; i < boxes.size(); ++i) {
-		const YoloModel::BoundingBox& b = boxes[i];
-
-		// String erzeugen
-		jstring jClsName = env->NewStringUTF(b.clsName.c_str());
-
-		// Neues Objekt erzeugen — Reihenfolge der Parameter exakt wie im Konstruktor:
-		jobject boxObj = env->NewObject(
-			boxClass,
-			constructor,
-			b.x1,  // float
-			b.y1,  // float
-			b.x2,  // float
-			b.y2,  // float
-			b.cx,  // float
-			b.cy,  // float
-			b.w,   // float
-			b.h,   // float
-			b.cnf, // float
-			b.cls, // int
-			jClsName // String
-		);
-
-		// Objekt ins Array setzen
-		env->SetObjectArrayElement(resultArray, static_cast<jsize>(i), boxObj);
-
-		// Lokale Referenzen löschen
-		env->DeleteLocalRef(jClsName);
-		env->DeleteLocalRef(boxObj);
-	}
-
-	return resultArray;
-}
-
-
