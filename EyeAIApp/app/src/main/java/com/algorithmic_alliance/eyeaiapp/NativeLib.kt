@@ -7,12 +7,22 @@ import android.media.Image
 import android.util.Log
 import android.util.Size
 import androidx.core.graphics.createBitmap
+import com.algorithmic_alliance.eyeaiapp.object_detection.BoundingBox
+import com.sun.jna.StringArray
 
 /** Kotlin interface with NativeLib c++ code */
 object NativeLib {
 	init {
 		System.loadLibrary("NativeLib")
 	}
+
+	// Yolo
+	external fun initYoloRuntime(model: ByteArray,
+	                             labels: Array<String>,
+	                               gpuDelegateSerializationDir: String,
+	                               modelToken: String): Boolean
+
+	external fun runYoloOperation(input: FloatArray, numElements: Int, numChannel: Int): Array<BoundingBox>
 
 	external fun newDepthFrame()
 	external fun formatDepthFrame(): String

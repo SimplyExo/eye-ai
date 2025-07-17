@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.camera
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.OptIn
@@ -10,6 +11,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
+import com.algorithmic_alliance.eyeaiapp.object_detection.OverlayView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -27,16 +29,20 @@ class CameraFrameAnalyzer(
 	private var eyeAIApp: EyeAIApp,
 	private var depthView: ImageView,
 	private var performanceText: TextView,
+	private var overlay: OverlayView
 ) : ImageAnalysis.Analyzer {
 
-	private var processingExecutor = Executors.newSingleThreadExecutor()
+	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
+	private var objectDetectionProcessingExecutor = Executors.newSingleThreadExecutor()
 	private var latestCameraFrame = AtomicReference<Bitmap?>(null)
 
+	private lateinit var colorMappedImage: Bitmap
+
 	init {
-		CoroutineScope(processingExecutor.asCoroutineDispatcher()).launch {
+		// DepthAnalyzer
+		CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher()).launch {
 			while (isActive) {
 				val depthModel = eyeAIApp.depthModel
-
 				val frame = latestCameraFrame.getAndSet(null)
 
 				if (frame != null && depthModel != null) {
@@ -48,10 +54,11 @@ class CameraFrameAnalyzer(
 					val inputHeight = frame.height
 
 					withContext(Dispatchers.Main) {
-						val colorMappedImage = NativeLib.depthColorMap(
+						colorMappedImage = NativeLib.depthColorMap(
 							predictionOutput,
 							depthModel.inputDim
 						)
+
 						depthView.setImageBitmap(colorMappedImage)
 
 						if (eyeAIApp.settings.showProfilingInfo) {
@@ -64,6 +71,30 @@ class CameraFrameAnalyzer(
 								"Model: $modelName\nCamera resolution: $formattedInputResolution --> Model input: $formattedModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}"
 						} else {
 							performanceText.text = ""
+						}
+					}
+				}
+			}
+		}
+
+		// Objekterkennung
+		CoroutineScope(objectDetectionProcessingExecutor.asCoroutineDispatcher()).launch {
+			while (isActive) {
+				val frame = latestCameraFrame.getAndSet(null)
+
+				if (frame != null && eyeAIApp.settings.enableObjectDetection) {
+					// Frame analysieren
+					val boxes = eyeAIApp.yoloModel?.runInference(frame);
+
+					// Verarbeiten und Anzeigen der Boxes
+					if (boxes != null) {
+						withContext(Dispatchers.Main) {
+							overlay.setResults(boxes)
+						}
+					}
+					else {
+						withContext(Dispatchers.Main) {
+							overlay.reset()
 						}
 					}
 				}

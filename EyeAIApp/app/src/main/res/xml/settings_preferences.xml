@@ -23,5 +23,11 @@
         <EditTextPreference
             app:key="@string/google_ai_studio_api_key_stetting"
             app:title="Google AI Studio API Key" />
+            
+    <PreferenceCategory app:title="Object Detection">
+        <CheckBoxPreference
+            app:key="@string/enable_object_detection_setting"
+            app:title="Enabled"
+            app:defaultValue="true"/>
     </PreferenceCategory>
 </PreferenceScreen>
