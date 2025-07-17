@@ -30,6 +30,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	JNIEnv* env,
 	jobject /*thiz*/,
 	jbyteArray model,
+	jobjectArray labels,
 	jstring gpu_delegate_serialization_dir,
 	jstring model_token
 )
@@ -48,8 +49,23 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 		LOG_ERROR("[YoloRuntime] {}", msg);
 	};
 
+	// Labels laden
+	jsize len = env->GetArrayLength(labels);
+	std::vector<std::string> labels_vector = {};
+
+	for (jsize i = 0; i < len; i++) {
+		jstring str = (jstring) env->GetObjectArrayElement(labels, i);
+
+		const char* cstr = env->GetStringUTFChars(str, nullptr);
+		labels_vector.push_back(cstr);
+		env->ReleaseStringUTFChars(str, cstr);
+
+		env->DeleteLocalRef(str);
+	}
+
 	auto result = yolo_instance.create(
 		model_data.to_vector(),
+		labels_vector,
 		gpu_delegate_serialization_dir_string,
 		model_token_string,
 		log_warning_callback,
@@ -65,11 +81,13 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	return true;
 }
 
-extern "C" JNIEXPORT jfloatArray
+extern "C" JNIEXPORT jobjectArray
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 	JNIEnv* env,
 	jobject /* this */,
-	jfloatArray input) {
+	jfloatArray input,
+	jint numElements,
+	jint numChannel) {
 
 	// Get input array length safely
 	jsize input_length = env->GetArrayLength(input);
@@ -84,16 +102,10 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 	// Run inference
 	const auto exec = yolo_instance.run(converted_input, object_recognition_output);
 
-	// Create Java float array for the result
-	jfloatArray result = env->NewFloatArray(object_recognition_output.size());
-	if (result == nullptr) {
-		return nullptr; // Out of memory
-	}
+	// Find best boxes
+	auto boxes = yolo_instance.bestBox(object_recognition_output, numElements, numChannel);
 
-	// Copy output data to Java array
-	env->SetFloatArrayRegion(result, 0, object_recognition_output.size(), object_recognition_output.data());
-
-	return result;
+	return yolo_instance.convertToJavaBoundingBoxArray(env, boxes);
 }
 
 extern "C" JNIEXPORT void JNICALL

@@ -18,6 +18,7 @@ import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import androidx.core.graphics.scale
 
 class YoloModel(var info: YoloModelInfo) {
 	private var interpreter: Interpreter? = null
@@ -47,13 +48,12 @@ class YoloModel(var info: YoloModelInfo) {
 	fun create(context: Context)
 	{
 		// Erstellen einer Yolo-Instanz
-		NativeLib.initYoloRuntime(info.getAsBytes(context),
+		val modelBytes = info.getAsBytes(context)
+		labels = info.readLinesFromAsset(context, "coco.names")
+
+		NativeLib.initYoloRuntime(modelBytes, labels,
 			createSerializedGpuDelegateCacheDirectory(context).path,
 			getModelToken(context, info.filename))
-
-		val modelBytes = info.getAsBytes(context)
-
-		labels = info.readLinesFromAsset(context, "coco.names")
 
 		val model = ByteBuffer.allocateDirect(modelBytes.size)
 			.order(ByteOrder.nativeOrder())
@@ -73,32 +73,12 @@ class YoloModel(var info: YoloModelInfo) {
 		numElements = outputShape[2]
 	}
 
-	fun drawBoxesToScreen(input: Bitmap, boxes: List<BoundingBox>): Bitmap
-	{
-		val mutableBitmap = input.copy(Bitmap.Config.ARGB_8888, true)
-		val canvas = Canvas(mutableBitmap)
-
-		// Boxen und labels zeichnen zeichnen
-		for (box in boxes)
-		{
-			val left = box.x1 * input.width
-			val top = box.y1 * input.height
-			val right = box.x2 * input.width
-			val bottom = box.y2 * input.height
-
-			canvas.drawRect(left, top, right, bottom, paint_box)
-			canvas.drawText(box.clsName + " " + box.cnf, left, top, paint_text)
-		}
-
-		return mutableBitmap
-	}
-
 	fun clear() {
 		interpreter?.close()
 		interpreter = null
 	}
 
-	fun runInference(frame: Bitmap): List<BoundingBox>? {
+	fun runInference(frame: Bitmap): Array<BoundingBox>? {
 		interpreter ?: return null
 		if (tensorWidth == 0) return null
 		if (tensorHeight == 0) return null
@@ -107,115 +87,23 @@ class YoloModel(var info: YoloModelInfo) {
 
 		var inferenceTime = SystemClock.uptimeMillis()
 
-		val resizedBitmap = Bitmap.createScaledBitmap(frame, tensorWidth, tensorHeight, false)
+		val resizedBitmap = frame.scale(tensorWidth, tensorHeight, false)
 
 		val tensorImage = TensorImage(DataType.FLOAT32)
 		tensorImage.load(resizedBitmap)
-		val processedImage = imageProcessor.process(tensorImage)
-		val imageBuffer = processedImage.buffer
 
         val buffer = tensorImage.buffer
-        buffer.rewind() // Wichtig: Position zurücksetzen
+        buffer.rewind()
 
-        // Anzahl Floats = buffer.remaining() / 4 (da FLOAT32 = 4 Bytes)
         val floatArray = FloatArray(buffer.remaining() / 4)
         buffer.asFloatBuffer().get(floatArray)
 
-		//val output = TensorBuffer.createFixedSize(intArrayOf(1 , numChannel, numElements), OUTPUT_IMAGE_TYPE)
-		//interpreter?.run(imageBuffer, output.buffer)
-		val output = NativeLib.runYoloOperation(floatArray);
+		val output = NativeLib.runYoloOperation(floatArray, numElements, numChannel);
 
-
-		val bestBoxes = bestBox(output)
+		val bestBoxes = output
 		inferenceTime = SystemClock.uptimeMillis() - inferenceTime
 
-
-		if (bestBoxes == null) {
-			return bestBoxes;
-		}
-
 		return bestBoxes
-	}
-
-	private fun bestBox(array: FloatArray) : List<BoundingBox>? {
-
-		val boundingBoxes = mutableListOf<BoundingBox>()
-
-		for (c in 0 until numElements) {
-			var maxConf = -1.0f
-			var maxIdx = -1
-			var j = 4
-			var arrayIdx = c + numElements * j
-			while (j < numChannel){
-				if (array[arrayIdx] > maxConf) {
-					maxConf = array[arrayIdx]
-					maxIdx = j - 4
-				}
-				j++
-				arrayIdx += numElements
-			}
-
-			if (maxConf > CONFIDENCE_THRESHOLD) {
-				val clsName = labels[maxIdx]
-				val cx = array[c] // 0
-				val cy = array[c + numElements] // 1
-				val w = array[c + numElements * 2]
-				val h = array[c + numElements * 3]
-				val x1 = cx - (w/2F)
-				val y1 = cy - (h/2F)
-				val x2 = cx + (w/2F)
-				val y2 = cy + (h/2F)
-				if (x1 < 0F || x1 > 1F) continue
-				if (y1 < 0F || y1 > 1F) continue
-				if (x2 < 0F || x2 > 1F) continue
-				if (y2 < 0F || y2 > 1F) continue
-
-				boundingBoxes.add(
-					BoundingBox(
-						x1 = x1, y1 = y1, x2 = x2, y2 = y2,
-						cx = cx, cy = cy, w = w, h = h,
-						cnf = maxConf, cls = maxIdx, clsName = clsName
-					)
-				)
-			}
-		}
-
-		if (boundingBoxes.isEmpty()) return null
-
-		return applyNMS(boundingBoxes)
-	}
-
-	private fun applyNMS(boxes: List<BoundingBox>) : MutableList<BoundingBox> {
-		val sortedBoxes = boxes.sortedByDescending { it.cnf }.toMutableList()
-		val selectedBoxes = mutableListOf<BoundingBox>()
-
-		while(sortedBoxes.isNotEmpty()) {
-			val first = sortedBoxes.first()
-			selectedBoxes.add(first)
-			sortedBoxes.remove(first)
-
-			val iterator = sortedBoxes.iterator()
-			while (iterator.hasNext()) {
-				val nextBox = iterator.next()
-				val iou = calculateIoU(first, nextBox)
-				if (iou >= IOU_THRESHOLD) {
-					iterator.remove()
-				}
-			}
-		}
-
-		return selectedBoxes
-	}
-
-	private fun calculateIoU(box1: BoundingBox, box2: BoundingBox): Float {
-		val x1 = maxOf(box1.x1, box2.x1)
-		val y1 = maxOf(box1.y1, box2.y1)
-		val x2 = minOf(box1.x2, box2.x2)
-		val y2 = minOf(box1.y2, box2.y2)
-		val intersectionArea = maxOf(0F, x2 - x1) * maxOf(0F, y2 - y1)
-		val box1Area = box1.w * box1.h
-		val box2Area = box2.w * box2.h
-		return intersectionArea / (box1Area + box2Area - intersectionArea)
 	}
 
 	companion object {

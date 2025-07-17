@@ -88,15 +88,11 @@ class CameraFrameAnalyzer(
 
 					// Verarbeiten und Anzeigen der Boxes
 					if (boxes != null) {
-						Log.i("ObjectDetection", "Anzahl Boxen: " + boxes.size)
-
 						withContext(Dispatchers.Main) {
 							overlay.setResults(boxes)
 						}
 					}
 					else {
-						Log.i("ObjectDetection", "Anzahl Boxen: Null")
-
 						withContext(Dispatchers.Main) {
 							overlay.reset()
 						}

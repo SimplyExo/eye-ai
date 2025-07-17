@@ -12,7 +12,7 @@ import com.algorithmic_alliance.eyeaiapp.R
 
 class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
-	private var results = listOf<BoundingBox>()
+	private var results = arrayOf<BoundingBox>()
 	private var boxPaint = Paint()
 	private var textBackgroundPaint = Paint()
 	private var textPaint = Paint()
@@ -32,7 +32,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 	}
 
 	fun reset() {
-		results = emptyList()
+		results = emptyArray()
 		invalidate()
 	}
 
@@ -77,7 +77,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 		}
 	}
 
-	fun setResults(boundingBoxes: List<BoundingBox>) {
+	fun setResults(boundingBoxes: Array<BoundingBox>) {
 		results = boundingBoxes
 		invalidate()
 	}
