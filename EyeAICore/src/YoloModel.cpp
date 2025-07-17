@@ -29,7 +29,7 @@ tl::expected<bool, std::string> YoloModel::create(
 
 	// bei Fehler gebe string aus
 	if (!new_runtime.has_value())
-		return tl::unexpected(new_runtime.error());
+		return tl::unexpected("Failed to create YoloModel");
 
 	// wenn keine Fehler auftreten dann bool
 	runtime = std::move(new_runtime.value());
@@ -39,7 +39,13 @@ tl::expected<bool, std::string> YoloModel::create(
 
 tl::expected<void, std::string>
 YoloModel::run(std::span<float> input, std::span<float> output) {
-	return runtime->run_inference(input, output);
+	auto result = runtime->run_inference(input, output);
+
+	if (result.has_value()) {
+		return tl::make_unexpected("Inference failed: ");
+	}
+
+	return {};
 }
 
 std::vector<YoloModel::BoundingBox> YoloModel::bestBox(std::span<float> array, int numElements, int numChannel) {
@@ -70,7 +76,7 @@ std::vector<YoloModel::BoundingBox> YoloModel::bestBox(std::span<float> array, i
 
 		if (maxConf > CONFIDENCE_THRESHOLD) {
 			// Index prüfen!
-			if (maxIdx < 0 || maxIdx >= labels.size()) continue;
+			if (maxIdx < 0 || maxIdx >= static_cast<int>(labels.size())) continue;
 
 			float cx = array[c];                      // 0
 			float cy = array[c + numElements];        // 1
