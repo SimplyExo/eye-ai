@@ -3,19 +3,10 @@ package com.algorithmic_alliance.eyeaiapp.object_detection
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.os.Build
 import android.os.SystemClock
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import java.io.File
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.support.common.ops.CastOp
-import org.tensorflow.lite.support.common.ops.NormalizeOp
-import org.tensorflow.lite.support.image.ImageProcessor
-import org.tensorflow.lite.support.image.TensorImage
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import androidx.core.graphics.scale
@@ -29,15 +20,16 @@ class YoloModel(var info: YoloModelInfo) {
 	private var numChannel = 0
 	private var numElements = 0
 
-	fun create(context: Context)
-	{
+	fun create(context: Context) {
 		// Erstellen einer Yolo-Instanz
 		val modelBytes = info.getAsBytes(context)
 		labels = info.readLinesFromAsset(context, "coco.names")
 
-		NativeLib.initYoloRuntime(modelBytes, labels,
+		NativeLib.initYoloRuntime(
+			modelBytes, labels,
 			createSerializedGpuDelegateCacheDirectory(context).path,
-			getModelToken(context, info.filename))
+			getModelToken(context, info.filename)
+		)
 
 		tensorWidth = NativeLib.getInputShape()[1]
 		tensorHeight = NativeLib.getInputShape()[2]
