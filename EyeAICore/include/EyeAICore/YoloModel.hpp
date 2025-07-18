@@ -35,7 +35,14 @@ class YoloModel {
 	run(std::span<float> input, std::span<float> output);
 
 	std::vector<YoloModel::BoundingBox>
-	bestBox(std::span<float> array, int numElements, int numChannel);
+	bestBox(std::span<float> array);
+
+	std::span<const int> get_input_shape();
+
+	std::span<const int> get_output_shape();
+
+	int num_channel;
+	int num_elements;
 
   private:
 	std::unique_ptr<TfLiteRuntime> runtime;
@@ -49,6 +56,6 @@ class YoloModel {
 		const YoloModel::BoundingBox& box2
 	);
 
-	float CONFIDENCE_THRESHOLD = 0.5F;
-	float IOU_THRESHOLD = 0.5F;
+	const float CONFIDENCE_THRESHOLD = 0.5F;
+	const float IOU_THRESHOLD = 0.5F;
 };

@@ -19,31 +19,15 @@ import org.tensorflow.lite.support.image.TensorImage
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import androidx.core.graphics.scale
+import java.lang.annotation.Native
 
 class YoloModel(var info: YoloModelInfo) {
-	private var interpreter: Interpreter? = null
 	private lateinit var labels: Array<String>
 
 	private var tensorWidth = 0
 	private var tensorHeight = 0
 	private var numChannel = 0
 	private var numElements = 0
-
-	private val imageProcessor = ImageProcessor.Builder()
-		.add(NormalizeOp(INPUT_MEAN, INPUT_STANDARD_DEVIATION))
-		.add(CastOp(INPUT_IMAGE_TYPE))
-		.build()
-
-	private val paint_box = Paint().apply {
-		color = Color.RED
-		style = Paint.Style.STROKE
-		strokeWidth = 2f
-	}
-
-	val paint_text = Paint().apply {
-		color = Color.RED
-		strokeWidth = 1f
-	}
 
 	fun create(context: Context)
 	{
@@ -55,64 +39,25 @@ class YoloModel(var info: YoloModelInfo) {
 			createSerializedGpuDelegateCacheDirectory(context).path,
 			getModelToken(context, info.filename))
 
-		val model = ByteBuffer.allocateDirect(modelBytes.size)
-			.order(ByteOrder.nativeOrder())
-		model.put(modelBytes)
-		model.rewind()
-
-		val options = Interpreter.Options()
-		options.numThreads = 4
-		interpreter = Interpreter(model, options)
-
-		val inputShape = interpreter?.getInputTensor(0)?.shape() ?: return
-		val outputShape = interpreter?.getOutputTensor(0)?.shape() ?: return
-
-		tensorWidth = inputShape[1]
-		tensorHeight = inputShape[2]
-		numChannel = outputShape[1]
-		numElements = outputShape[2]
+		tensorWidth = NativeLib.getInputShape()[1]
+		tensorHeight = NativeLib.getInputShape()[2]
+		numChannel = NativeLib.getOutputShape()[1]
+		numElements = NativeLib.getOutputShape()[2]
 	}
 
 	fun clear() {
-		interpreter?.close()
-		interpreter = null
+		// Not implemented yet!
 	}
 
 	fun runInference(frame: Bitmap): Array<BoundingBox>? {
-		interpreter ?: return null
-		if (tensorWidth == 0) return null
-		if (tensorHeight == 0) return null
-		if (numChannel == 0) return null
-		if (numElements == 0) return null
-
-		var inferenceTime = SystemClock.uptimeMillis()
-
 		val resizedBitmap = frame.scale(tensorWidth, tensorHeight, false)
+		val input = NativeLib.bitmapToRgbHwc255FloatArray(resizedBitmap)
 
-		val tensorImage = TensorImage(DataType.FLOAT32)
-		tensorImage.load(resizedBitmap)
-
-        val buffer = tensorImage.buffer
-        buffer.rewind()
-
-        val floatArray = FloatArray(buffer.remaining() / 4)
-        buffer.asFloatBuffer().get(floatArray)
-
-		val output = NativeLib.runYoloOperation(floatArray, numElements, numChannel);
+		val output = NativeLib.runYoloOperation(input);
 
 		val bestBoxes = output
-		inferenceTime = SystemClock.uptimeMillis() - inferenceTime
 
 		return bestBoxes
-	}
-
-	companion object {
-		private const val INPUT_MEAN = 0f
-		private const val INPUT_STANDARD_DEVIATION = 255f
-		private val INPUT_IMAGE_TYPE = DataType.FLOAT32
-		private val OUTPUT_IMAGE_TYPE = DataType.FLOAT32
-		private const val CONFIDENCE_THRESHOLD = 0.5F
-		private const val IOU_THRESHOLD = 0.5F
 	}
 
 	fun createSerializedGpuDelegateCacheDirectory(context: Context): File {

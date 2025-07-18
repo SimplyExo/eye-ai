@@ -139,13 +139,49 @@ static jobjectArray convertToJavaBoundingBoxArray(
 	return resultArray;
 }
 
+extern "C" JNIEXPORT jintArray
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getOutputShape(
+	JNIEnv* env,
+	jobject /* this */
+) {
+	auto shape = yolo_instance.get_output_shape();
+	jsize length = static_cast<jsize>(shape.size());
+
+	jintArray array = env->NewIntArray(length);
+	if (array == nullptr) {
+		// Fehlerbehandlung: Speicher konnte nicht alloziert werden
+		return nullptr;
+	}
+
+	env->SetIntArrayRegion(array, 0, length, shape.data());
+
+	return array;
+}
+
+extern "C" JNIEXPORT jintArray
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getInputShape(
+	JNIEnv* env,
+	jobject /* this */
+) {
+	auto shape = yolo_instance.get_input_shape();
+	jsize length = static_cast<jsize>(shape.size());
+
+	jintArray array = env->NewIntArray(length);
+	if (array == nullptr) {
+		// Fehlerbehandlung: Speicher konnte nicht alloziert werden
+		return nullptr;
+	}
+
+	env->SetIntArrayRegion(array, 0, length, shape.data());
+
+	return array;
+}
+
 extern "C" JNIEXPORT jobjectArray
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 	JNIEnv* env,
 	jobject /* this */,
-	jfloatArray input,
-	jint numElements,
-	jint numChannel
+	jfloatArray input
 ) {
 
 	// Get input array length safely
@@ -157,7 +193,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 
 	// Allocate output buffer (make sure size matches model output)
 	std::vector<float> object_recognition_output(
-		84 * 8400
+		yolo_instance.num_channel * yolo_instance.num_elements
 	); // Replace with actual expected output size
 
 	// Run inference
@@ -166,7 +202,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 
 	// Find best boxes
 	auto boxes = yolo_instance.bestBox(
-		object_recognition_output, numElements, numChannel
+		object_recognition_output
 	);
 
 	return convertToJavaBoundingBoxArray(env, boxes);

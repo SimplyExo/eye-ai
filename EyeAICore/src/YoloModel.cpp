@@ -33,7 +33,18 @@ tl::expected<bool, std::string> YoloModel::create(
 	// wenn keine Fehler auftreten dann bool
 	runtime = std::move(new_runtime.value());
 
+	num_channel = runtime->get_output_shape()[1];
+	num_elements = runtime->get_output_shape()[2];
+
 	return true;
+}
+
+std::span<const int> YoloModel::get_input_shape() {
+	return runtime->get_input_shape();
+}
+
+std::span<const int> YoloModel::get_output_shape() {
+	return runtime->get_output_shape();
 }
 
 tl::expected<void, std::string>
@@ -48,21 +59,21 @@ YoloModel::run(std::span<float> input, std::span<float> output) {
 }
 
 std::vector<YoloModel::BoundingBox>
-YoloModel::bestBox(std::span<float> array, int numElements, int numChannel) {
+YoloModel::bestBox(std::span<float> array) {
 	std::vector<BoundingBox> boundingBoxes;
 
 	const size_t totalSize = array.size();
-	if (totalSize < static_cast<size_t>(numElements * numChannel)) {
+	if (totalSize < static_cast<size_t>(num_elements * num_channel)) {
 		return {}; // Fehler: zu wenig Daten
 	}
 
-	for (int c = 0; c < numElements; ++c) {
+	for (int c = 0; c < num_elements; ++c) {
 		float maxConf = -1.0f;
 		int maxIdx = -1;
 		int j = 4;
-		size_t arrayIdx = c + numElements * j;
+		size_t arrayIdx = c + num_elements * j;
 
-		while (j < numChannel) {
+		while (j < num_channel) {
 			if (arrayIdx >= totalSize)
 				break; // Schutz gegen Überlauf
 
@@ -72,7 +83,7 @@ YoloModel::bestBox(std::span<float> array, int numElements, int numChannel) {
 			}
 
 			++j;
-			arrayIdx += numElements;
+			arrayIdx += num_elements;
 		}
 
 		if (maxConf > CONFIDENCE_THRESHOLD) {
@@ -81,9 +92,9 @@ YoloModel::bestBox(std::span<float> array, int numElements, int numChannel) {
 				continue;
 
 			float cx = array[c];			   // 0
-			float cy = array[c + numElements]; // 1
-			float w = array[c + numElements * 2];
-			float h = array[c + numElements * 3];
+			float cy = array[c + num_elements]; // 1
+			float w = array[c + num_elements * 2];
+			float h = array[c + num_elements * 3];
 
 			float x1 = cx - w / 2.0f;
 			float y1 = cy - h / 2.0f;
