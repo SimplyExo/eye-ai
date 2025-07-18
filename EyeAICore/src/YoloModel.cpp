@@ -9,29 +9,21 @@ YoloModel::YoloModel() {}
 
 tl::expected<bool, std::string> YoloModel::create(
 	std::vector<int8_t>&& model_data,
-	std::vector<std::string> labels,
+	std::vector<std::string> coco_labels,
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback
 ) {
 	// Labels laden
-	this->labels = std::move(labels);
-
-	std::vector<std::unique_ptr<Operator>> input_operators;
-	input_operators.emplace_back(
-		std::make_unique<RgbNormalizeOperator>(
-			std::array<float, 3>{0.f, 0.f, 0.f},
-			std::array<float, 3>{255.f, 255.f, 255.f}
-		)
-	);
+	this->labels = std::move(coco_labels);
 
 	auto new_runtime =
 		TfLiteRuntimeBuilder(
 			std::move(model_data), gpu_delegate_serialization_dir, model_token,
 			log_warning_callback, log_error_callback
 		)
-			.add_input_operator(std::make_unique<RgbNormalizeOperator>())
+			.add_input_operator(std::make_unique<RgbNormalizeOperatorYolo>())
 			.build();
 
 	// bei Fehler gebe string aus

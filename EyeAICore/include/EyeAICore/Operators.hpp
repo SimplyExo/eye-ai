@@ -60,3 +60,12 @@ class RgbNormalizeOperator : public Operator {
 	[[nodiscard]] std::optional<OperatorError>
 	execute(std::span<float> values) const override;
 };
+
+class RgbNormalizeOperatorYolo : public Operator {
+  public:
+	RgbNormalizeOperatorYolo() = default;
+
+	[[nodiscard]] std::optional<OperatorError>
+	execute(std::span<float> values) const override;
+};
+

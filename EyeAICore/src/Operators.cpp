@@ -47,3 +47,23 @@ RgbNormalizeOperator::execute(std::span<float> values) const {
 
 	return std::nullopt;
 }
+
+std::optional<OperatorError>
+RgbNormalizeOperatorYolo::execute(std::span<float> values) const {
+	PROFILE_DEPTH_SCOPE("RgbNormalizeOperatorYolo")
+
+	if (values.size() % 3 != 0)
+		return OperatorError::fmt(
+			"Invalid values size of {}, it is not a multiple of 3",
+			values.size()
+		);
+
+	for (size_t i = 0; i < values.size(); i += 3) {
+		values[i + 0] = values[i + 0] / 255.0f;
+		values[i + 1] = values[i + 1] / 255.0f;
+		values[i + 2] = values[i + 2] / 255.0f;
+	}
+
+	return std::nullopt;
+}
+
