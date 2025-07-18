@@ -106,7 +106,7 @@ class DepthModel(
 	fun predictDepth(input: Bitmap): FloatArray {
 		val scaled = input.scale(inputDim.width, inputDim.height)
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled)
-		val output = FloatArray(inputDim.width * inputDim.height)
+		var output = FloatArray(inputDim.width * inputDim.height)
 
 		NativeLib.runDepthModelInference(
 			input,
