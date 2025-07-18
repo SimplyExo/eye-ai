@@ -3,23 +3,10 @@ package com.algorithmic_alliance.eyeaiapp.object_detection
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.os.Build
-import android.os.SystemClock
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import java.io.File
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.support.common.ops.CastOp
-import org.tensorflow.lite.support.common.ops.NormalizeOp
-import org.tensorflow.lite.support.image.ImageProcessor
-import org.tensorflow.lite.support.image.TensorImage
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import androidx.core.graphics.scale
-import java.lang.annotation.Native
 
 class YoloModel(var info: YoloModelInfo) {
 	private lateinit var labels: Array<String>
