@@ -22,7 +22,7 @@ object NativeLib {
 	                               gpuDelegateSerializationDir: String,
 	                               modelToken: String): Boolean
 
-	external fun runYoloOperation(input: FloatArray): Array<BoundingBox>
+	external fun runYoloOperation(input: FloatArray): String
 
 	external fun getInputShape(): IntArray
 

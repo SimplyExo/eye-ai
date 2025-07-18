@@ -1,6 +1,7 @@
 #include <android/log.h>
 #include <jni.h>
 #include <memory>
+#include <nlohmann/json.hpp>
 
 #include "EyeAICore/DepthModel.hpp"
 #include "EyeAICore/YoloModel.hpp"
@@ -79,64 +80,29 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	return true;
 }
 
-static jobjectArray convertToJavaBoundingBoxArray(
+static jstring convertToJsonBoundingBoxString(
 	JNIEnv* env,
 	const std::vector<YoloModel::BoundingBox>& boxes
 ) {
+	nlohmann::json j;
 
-	// 1. Finde die Kotlin/Java-Klasse
-	jclass boxClass = env->FindClass(
-		"com/algorithmic_alliance/eyeaiapp/object_detection/BoundingBox"
-	);
-	if (boxClass == nullptr) {
-		return nullptr; // Klasse nicht gefunden
-	}
-
-	// 2. Hole den Konstruktor (8 floats, 1 int, 1 String)
-	jmethodID constructor =
-		env->GetMethodID(boxClass, "<init>", "(FFFFFFFFFILjava/lang/String;)V");
-	if (constructor == nullptr) {
-		return nullptr; // Konstruktor nicht gefunden
-	}
-
-	// 3. Neues Java-Array erstellen
-	jobjectArray resultArray = env->NewObjectArray(
-		static_cast<jsize>(boxes.size()), boxClass, nullptr
-	);
-
-	// 4. Elemente einfügen
 	for (size_t i = 0; i < boxes.size(); ++i) {
 		const YoloModel::BoundingBox& b = boxes[i];
 
-		// String erzeugen
-		jstring jClsName = env->NewStringUTF(b.clsName.c_str());
-
-		// Neues Objekt erzeugen — Reihenfolge der Parameter exakt wie im
-		// Konstruktor:
-		jobject boxObj = env->NewObject(
-			boxClass, constructor,
-			b.x1,	 // float
-			b.y1,	 // float
-			b.x2,	 // float
-			b.y2,	 // float
-			b.cx,	 // float
-			b.cy,	 // float
-			b.w,	 // float
-			b.h,	 // float
-			b.cnf,	 // float
-			b.cls,	 // int
-			jClsName // String
-		);
-
-		// Objekt ins Array setzen
-		env->SetObjectArrayElement(resultArray, static_cast<jsize>(i), boxObj);
-
-		// Lokale Referenzen löschen
-		env->DeleteLocalRef(jClsName);
-		env->DeleteLocalRef(boxObj);
+		j["bounding_boxes"][i]["clsName"] = b.clsName;
+		j["bounding_boxes"][i]["cx"] = b.cx;
+		j["bounding_boxes"][i]["cy"] = b.cy;
+		j["bounding_boxes"][i]["w"] = b.w;
+		j["bounding_boxes"][i]["h"] = b.h;
+		j["bounding_boxes"][i]["x1"] = b.x1;
+		j["bounding_boxes"][i]["y1"] = b.y1;
+		j["bounding_boxes"][i]["x2"] = b.x2;
+		j["bounding_boxes"][i]["y2"] = b.y2;
+		j["bounding_boxes"][i]["cls"] = b.cls;
+		j["bounding_boxes"][i]["cnf"] = b.cnf;
 	}
 
-	return resultArray;
+	return env->NewStringUTF(j.dump().c_str());
 }
 
 extern "C" JNIEXPORT jintArray
@@ -177,7 +143,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getInputShape(
 	return array;
 }
 
-extern "C" JNIEXPORT jobjectArray
+extern "C" JNIEXPORT jstring
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 	JNIEnv* env,
 	jobject /* this */,
@@ -205,7 +171,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 		object_recognition_output
 	);
 
-	return convertToJavaBoundingBoxArray(env, boxes);
+	return convertToJsonBoundingBoxString(env, boxes);
 }
 
 extern "C" JNIEXPORT void JNICALL

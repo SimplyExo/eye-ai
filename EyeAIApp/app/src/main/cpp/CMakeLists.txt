@@ -10,6 +10,16 @@ if (CLANG_TIDY_EXE)
 	set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
 endif ()
 
+include(FetchContent)
+
+FetchContent_Declare(
+	nlohmann_json
+	GIT_REPOSITORY https://github.com/nlohmann/json.git
+	GIT_TAG v3.12.0
+)
+
+FetchContent_MakeAvailable(nlohmann_json)
+
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../../../../EyeAICore" "${CMAKE_BINARY_DIR}/EyeAICore")
 
 add_library(
@@ -23,7 +33,6 @@ add_library(
 target_compile_features(NativeLib PUBLIC cxx_std_20)
 
 target_include_directories(NativeLib PRIVATE
-	# just so that vscode knows where to look for headers
 	"${CMAKE_SYSROOT}/usr/include/"
 	"${CMAKE_SYSROOT}/usr/include/c++/v1"
 	"${CMAKE_SYSROOT}/usr/include/${ANDROID_TOOLCHAIN_NAME}"
@@ -35,4 +44,5 @@ target_link_libraries(
 	log
 	jnigraphics
 	EyeAICore
+	nlohmann_json::nlohmann_json
 )
