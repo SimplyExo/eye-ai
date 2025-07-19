@@ -27,6 +27,7 @@ tl::expected<bool, std::string> YoloModel::create(
 			.build();
 
 	// bei Fehler gebe string aus
+	// TODO: Better Error Message
 	if (!new_runtime.has_value())
 		return tl::unexpected("Failed to create YoloModel");
 
@@ -52,6 +53,7 @@ YoloModel::run(std::span<float> input, std::span<float> output) {
 	auto result = runtime->run_inference(input, output);
 
 	if (result.has_value()) {
+		// TODO: Better Error Message
 		return tl::make_unexpected("Inference failed: ");
 	}
 
