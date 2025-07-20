@@ -55,6 +55,12 @@
             app:implementationMode="performance"
             app:scaleType="fitCenter" />
 
+        <com.algorithmic_alliance.eyeaiapp.object_detection.OverlayView
+            android:id="@+id/overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"

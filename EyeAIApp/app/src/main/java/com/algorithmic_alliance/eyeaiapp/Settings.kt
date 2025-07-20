@@ -16,6 +16,8 @@ class Settings(val context: Context) {
 		private set
 
 	var googleAiStudioApiKey: String?
+	
+	var enableObjectDetection: Boolean
 		private set
 
 	init {
@@ -37,6 +39,11 @@ class Settings(val context: Context) {
 		googleAiStudioApiKey = sharedPreferences.getString(
 			context.getString(R.string.google_ai_studio_api_key_stetting),
 			null
+		)
+
+		enableObjectDetection = sharedPreferences.getBoolean(
+			context.getString(R.string.enable_object_detection_setting),
+			true
 		)
 	}
 }

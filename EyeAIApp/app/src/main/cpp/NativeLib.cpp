@@ -1,8 +1,10 @@
 #include <android/log.h>
 #include <jni.h>
 #include <memory>
+#include <nlohmann/json.hpp>
 
 #include "EyeAICore/DepthModel.hpp"
+#include "EyeAICore/YoloModel.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
 #include "EyeAICore/utils/DepthColormap.hpp"
 #include "EyeAICore/utils/MutexGuard.hpp"
@@ -16,10 +18,161 @@
 static MutexGuard<std::unique_ptr<DepthModel>> depth_model{
 	std::unique_ptr<DepthModel>(nullptr)
 };
+
+YoloModel yolo_instance;
+
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 // NOLINTBEGIN(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
+	JNIEnv* env,
+	jobject /*thiz*/,
+	jbyteArray model,
+	jobjectArray labels,
+	jstring gpu_delegate_serialization_dir,
+	jstring model_token
+) {
+	NativeByteArrayScope model_data(env, model);
+	const NativeStringScope gpu_delegate_serialization_dir_string(
+		env, gpu_delegate_serialization_dir
+	);
+	const NativeStringScope model_token_string(env, model_token);
+
+	const auto log_warning_callback = [](std::string msg) {
+		LOG_WARN("[YoloRuntime] {}", msg);
+	};
+
+	const auto log_error_callback = [](std::string msg) {
+		LOG_ERROR("[YoloRuntime] {}", msg);
+	};
+
+	// Labels laden
+	jsize len = env->GetArrayLength(labels);
+	std::vector<std::string> labels_vector = {};
+
+	for (jsize i = 0; i < len; i++) {
+		jstring str = (jstring)env->GetObjectArrayElement(labels, i);
+
+		const char* cstr = env->GetStringUTFChars(str, nullptr);
+		labels_vector.push_back(cstr);
+		env->ReleaseStringUTFChars(str, cstr);
+
+		env->DeleteLocalRef(str);
+	}
+
+	auto result = yolo_instance.create(
+		model_data.to_vector(), labels_vector,
+		gpu_delegate_serialization_dir_string, model_token_string,
+		log_warning_callback, log_error_callback
+	);
+
+	if (!result.has_value()) {
+		LOG_ERROR(
+			"[YoloRuntime] Could not create YoloModel: {}", result.error()
+		);
+		return false;
+	}
+
+	LOG_INFO("[YoloRuntime] Runtime erstellt!");
+	return true;
+}
+
+static jstring convertToJsonBoundingBoxString(
+	JNIEnv* env,
+	const std::vector<YoloModel::BoundingBox>& boxes
+) {
+	nlohmann::json j;
+
+	for (size_t i = 0; i < boxes.size(); ++i) {
+		const YoloModel::BoundingBox& b = boxes[i];
+
+		j["bounding_boxes"][i]["clsName"] = b.clsName;
+		j["bounding_boxes"][i]["cx"] = b.cx;
+		j["bounding_boxes"][i]["cy"] = b.cy;
+		j["bounding_boxes"][i]["w"] = b.w;
+		j["bounding_boxes"][i]["h"] = b.h;
+		j["bounding_boxes"][i]["x1"] = b.x1;
+		j["bounding_boxes"][i]["y1"] = b.y1;
+		j["bounding_boxes"][i]["x2"] = b.x2;
+		j["bounding_boxes"][i]["y2"] = b.y2;
+		j["bounding_boxes"][i]["cls"] = b.cls;
+		j["bounding_boxes"][i]["cnf"] = b.cnf;
+	}
+
+	return env->NewStringUTF(j.dump().c_str());
+}
+
+extern "C" JNIEXPORT jintArray
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getOutputShape(
+	JNIEnv* env,
+	jobject /* this */
+) {
+	auto shape = yolo_instance.get_output_shape();
+	jsize length = static_cast<jsize>(shape.size());
+
+	jintArray array = env->NewIntArray(length);
+	if (array == nullptr) {
+		// Fehlerbehandlung: Speicher konnte nicht alloziert werden
+		return nullptr;
+	}
+
+	env->SetIntArrayRegion(array, 0, length, shape.data());
+
+	return array;
+}
+
+extern "C" JNIEXPORT jintArray
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getInputShape(
+	JNIEnv* env,
+	jobject /* this */
+) {
+	auto shape = yolo_instance.get_input_shape();
+	jsize length = static_cast<jsize>(shape.size());
+
+	jintArray array = env->NewIntArray(length);
+	if (array == nullptr) {
+		// Fehlerbehandlung: Speicher konnte nicht alloziert werden
+		return nullptr;
+	}
+
+	env->SetIntArrayRegion(array, 0, length, shape.data());
+
+	return array;
+}
+
+extern "C" JNIEXPORT jstring
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
+	JNIEnv* env,
+	jobject /* this */,
+	jfloatArray input
+) {
+
+	// Get input array length safely
+	jsize input_length = env->GetArrayLength(input);
+
+	// Allocate buffer for input
+	std::vector<float> converted_input(input_length);
+	env->GetFloatArrayRegion(input, 0, input_length, converted_input.data());
+
+	// Allocate output buffer (make sure size matches model output)
+	std::vector<float> object_recognition_output(
+		yolo_instance.num_channel * yolo_instance.num_elements
+	); // Replace with actual expected output size
+
+	// Run inference
+	const auto exec =
+		yolo_instance.run(converted_input, object_recognition_output);
+
+	// Find best boxes
+	auto boxes = yolo_instance.bestBox(
+		object_recognition_output
+	);
+
+	return convertToJsonBoundingBoxString(env, boxes);
+}
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthModel(

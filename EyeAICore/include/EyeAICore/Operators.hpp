@@ -53,6 +53,19 @@ class RgbNormalizeOperator : public Operator {
 	std::array<float, 3> mean = {123.675f, 116.28f, 103.53f};
 	std::array<float, 3> stddev = {58.395f, 57.12f, 57.375f};
 
+	RgbNormalizeOperator() = default;
+	RgbNormalizeOperator(std::array<float, 3> mean, std::array<float, 3> stddev)
+		: mean(mean), stddev(stddev) {}
+
 	[[nodiscard]] std::optional<OperatorError>
 	execute(std::span<float> values) const override;
 };
+
+class RgbNormalizeOperatorYolo : public Operator {
+  public:
+	RgbNormalizeOperatorYolo() = default;
+
+	[[nodiscard]] std::optional<OperatorError>
+	execute(std::span<float> values) const override;
+};
+
