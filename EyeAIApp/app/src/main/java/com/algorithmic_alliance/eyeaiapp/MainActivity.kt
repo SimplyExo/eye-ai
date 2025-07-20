@@ -13,6 +13,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.camera.view.PreviewView
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
+import com.algorithmic_alliance.eyeaiapp.object_detection.OverlayView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +38,8 @@ class MainActivity : ComponentActivity() {
 
 	private var performanceText: TextView? = null
 
+	private var overlay: OverlayView? = null
+
 	private var speechRecognitionPartialResultText: TextView? = null
 	private var speechRecognitionFinalResultText: TextView? = null
 	private var llmResponseText: TextView? = null
@@ -55,6 +58,8 @@ class MainActivity : ComponentActivity() {
 		depthPreviewImage = findViewById(R.id.depth_preview_image)
 
 		performanceText = findViewById(R.id.performance_text)
+
+		overlay = findViewById(R.id.overlay)
 
 		ungrantedPermissionsNotice = findViewById(R.id.ungranted_permissions_notice)
 		ungrantedPermissionsNoticeText = findViewById(R.id.ungranted_permissions_notice_text)
@@ -79,7 +84,7 @@ class MainActivity : ComponentActivity() {
 		}
 
 		cameraFrameAnalyzer =
-			CameraFrameAnalyzer(eyeAIApp(), depthPreviewImage!!, performanceText!!)
+			CameraFrameAnalyzer(eyeAIApp(), depthPreviewImage!!, performanceText!!, overlay!!)
 
 		permissionManager.requestPermissions()
 

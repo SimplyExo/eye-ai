@@ -9,6 +9,8 @@ import com.algorithmic_alliance.eyeaiapp.depth.DepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
+import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
+import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,10 +29,13 @@ class EyeAIApp : Application() {
 		private set
 	var onDepthModelLoadedCallback: () -> Unit = {}
 
-	/** can be [null] if enableSpeechRecognition is disabled in settings */
+	/* can be [null] if enableSpeechRecognition is disabled in settings */
 	var voskModel: VoskModel? = null
 		private set
 	var llm: LLM? = null
+		private set
+
+	var yoloModel: YoloModel? = null
 		private set
 
 	companion object {
@@ -65,6 +70,10 @@ class EyeAIApp : Application() {
 			if (!it.isEmpty())
 				llm = GoogleAIStudioLLM(it)
 		}
+		
+		// Yolo Model erstellen
+		yoloModel = YoloModel(YoloModelInfo("model.tflite",640))
+		yoloModel!!.create(baseContext)
 	}
 
 	fun updateSettings() {
