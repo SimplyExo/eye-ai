@@ -1,11 +1,9 @@
-#include <android/log.h>
 #include <jni.h>
 #include <memory>
 #include <nlohmann/json.hpp>
 
 #include "EyeAICore/DepthModel.hpp"
 #include "EyeAICore/YoloModel.hpp"
-#include "EyeAICore/tflite/TfLiteRuntime.hpp"
 #include "EyeAICore/utils/DepthColormap.hpp"
 #include "EyeAICore/utils/MutexGuard.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
@@ -15,12 +13,14 @@
 
 // the global variable is using MutexGuard, so they are thread-safe
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
-static MutexGuard<std::unique_ptr<DepthModel>> depth_model{
-	std::unique_ptr<DepthModel>(nullptr)
-};
 
-YoloModel yolo_instance;
+namespace {
+	MutexGuard<std::unique_ptr<DepthModel>> depth_model{
+		std::unique_ptr<DepthModel>(nullptr)
+	};
 
+	YoloModel yolo_instance;
+}
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 // NOLINTBEGIN(readability-identifier-naming,
@@ -89,7 +89,7 @@ static jstring convertToJsonBoundingBoxString(
 	for (size_t i = 0; i < boxes.size(); ++i) {
 		const YoloModel::BoundingBox& b = boxes[i];
 
-		j["bounding_boxes"][i]["clsName"] = b.clsName;
+		j["bounding_boxes"][i]["clsName"] = b.cls_name;
 		j["bounding_boxes"][i]["cx"] = b.cx;
 		j["bounding_boxes"][i]["cy"] = b.cy;
 		j["bounding_boxes"][i]["w"] = b.w;
@@ -167,7 +167,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 		yolo_instance.run(converted_input, object_recognition_output);
 
 	// Find best boxes
-	auto boxes = yolo_instance.bestBox(
+	auto boxes = yolo_instance.best_box(
 		object_recognition_output
 	);
 
