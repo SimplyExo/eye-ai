@@ -188,38 +188,3 @@ class YoloImageOperator : public Operator<
 	[[nodiscard]] std::optional<OperatorError>
 	execute(std::span<float> input) const override;
 };
-
-template<typename FirstOp, typename... RestOps>
-constexpr FloatTensorFormat last_output_format() {
-	return std::tuple_element_t<
-		sizeof...(RestOps), std::tuple<FirstOp, RestOps...>>::OUTPUT;
-}
-static_assert(
-	last_output_format<Operator<
-		FloatTensorFormat::ImageRGB255Float,
-		FloatTensorFormat::ImageRGB255Float>>() ==
-	FloatTensorFormat::ImageRGB255Float
-);
-static_assert(
-	last_output_format<
-		Operator<
-			FloatTensorFormat::ImageRGB255Float,
-			FloatTensorFormat::MiDaSImageRGBFloat>,
-		Operator<
-			FloatTensorFormat::MiDaSImageRGBFloat,
-			FloatTensorFormat::YoloImageRGBFloat>>() ==
-	FloatTensorFormat::YoloImageRGBFloat
-);
-static_assert(
-	last_output_format<
-		Operator<
-			FloatTensorFormat::ImageRGB255Float,
-			FloatTensorFormat::MiDaSImageRGBFloat>,
-		Operator<
-			FloatTensorFormat::MiDaSImageRGBFloat,
-			FloatTensorFormat::YoloImageRGBFloat>,
-		Operator<
-			FloatTensorFormat::YoloImageRGBFloat,
-			FloatTensorFormat::ImageRGB255Float>>() ==
-	FloatTensorFormat::ImageRGB255Float
-);
