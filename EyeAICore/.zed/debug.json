@@ -1,0 +1,17 @@
+// Project-local debug tasks
+//
+// For more documentation on how to configure debug tasks,
+// see: https://zed.dev/docs/debugger
+[
+	{
+		"adapter": "CodeLLDB",
+		"request": "launch",
+		"label": "EyeAICoreTests",
+		"program": "./build/EyeAICoreTests",
+		"cwd": "$ZED_WORKTREE_ROOT/build",
+		"build": {
+			"command": "cmake",
+			"args": ["--build", "--preset=debug"]
+		}
+	}
+]

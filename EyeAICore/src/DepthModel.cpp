@@ -10,14 +10,14 @@ DepthModel::create(
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback
 ) {
-	auto runtime_result =
-		TfLiteRuntimeBuilder(
-			std::move(model_data), gpu_delegate_serialization_dir, model_token,
-			log_warning_callback, log_error_callback
-		)
-			.add_input_operator(std::make_unique<RgbNormalizeOperator>())
-			.add_output_operator(std::make_unique<MinMaxOperator>())
-			.build();
+	auto runtime_result = TfLiteRuntime::create(
+		std::move(model_data), gpu_delegate_serialization_dir, model_token,
+		FloatTensorFormat::MiDaSImageRGBFloat,
+		FloatTensorFormat::RawRelativeDepth,
+		OperatorChain{MiDaSImageOperator{}},
+		OperatorChain{RelativeDepthPostOperator{}}, log_warning_callback,
+		log_error_callback
+	);
 	if (!runtime_result.has_value())
 		return tl::unexpected(runtime_result.error());
 
@@ -26,7 +26,10 @@ DepthModel::create(
 
 std::optional<TfLiteRunInferenceError>
 DepthModel::run(std::span<float> input, std::span<float> output) {
-	return runtime->run_inference(input, output);
+	return runtime->run_inference(
+		input, FloatTensorFormat::ImageRGB255Float, output,
+		FloatTensorFormat::RelativeDepth
+	);
 }
 
 std::span<const int> DepthModel::get_input_shape() const {

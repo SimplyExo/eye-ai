@@ -34,8 +34,7 @@ class YoloModel {
 	tl::expected<void, std::string>
 	run(std::span<float> input, std::span<float> output);
 
-	std::vector<YoloModel::BoundingBox>
-	best_box(std::span<float> array);
+	std::vector<YoloModel::BoundingBox> best_box(std::span<float> array);
 
 	std::span<const int> get_input_shape();
 

@@ -1,4 +1,5 @@
 #include "EyeAICore/tflite/TfLiteUtils.hpp"
+#include "EyeAICore/Operators.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 
 [[nodiscard]] static std::optional<QuantizeFloatError> quantize_floats(
@@ -375,6 +376,31 @@ std::string_view TensorType::to_string() const {
 std::string TfLiteCopyToOutputTensorError::to_string() const {
 	return std::format(
 		"failed to read from output tensor: {}", format_tflite_status(status)
+	);
+}
+
+std::string InvalidInputFormatForOperator::to_string() const {
+	return std::format(
+		"invalid format of {} for operator that expected {}",
+		format_float_tensor_format(provided),
+		format_float_tensor_format(expected)
+	);
+}
+
+std::string UnexpectedOperatorOutputFormat::to_string() const {
+	return std::format(
+		"unexpected operator output format of {}, {} was needed from "
+		"TfLiteRuntime",
+		format_float_tensor_format(operator_output),
+		format_float_tensor_format(expected_output)
+	);
+}
+
+std::string InvalidInputFormatForModel::to_string() const {
+	return std::format(
+		"invalid input format of {} for model that expected {}",
+		format_float_tensor_format(provided),
+		format_float_tensor_format(expected)
 	);
 }
 

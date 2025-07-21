@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EyeAICore/DepthModel.hpp"
+#include "EyeAICore/Operators.hpp"
 #include "EyeAICore/utils/Errors.hpp"
 #include <chrono>
 #include <filesystem>
@@ -8,13 +9,11 @@
 #include <fstream>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <memory>
 #include <npy.hpp>
-#include <tl/expected.hpp>
-
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <stb_image.h>
 #include <stb_image_resize2.h>
+#include <tl/expected.hpp>
 
 template<typename E>
 std::string error_to_string(const E& e);
@@ -79,6 +78,41 @@ create_test_depth_model() {
 	if (depth_model_result)
 		return std::move(depth_model_result.value());
 	return tl::unexpected(depth_model_result.error().to_string());
+}
+
+template<typename... InputOps, typename... OutputOps>
+static tl::expected<std::unique_ptr<TfLiteRuntime>, std::string>
+create_test_tflite_runtime(
+	const std::filesystem::path& model_path,
+	FloatTensorFormat model_input_format,
+	FloatTensorFormat model_output_format,
+	OperatorChain<InputOps...>&& input_operators,
+	OperatorChain<OutputOps...>&& output_operators
+) {
+	const auto model_last_modified =
+		std::filesystem::last_write_time(model_path);
+	const std::string model_token = std::format(
+		"{}_{}", model_path.filename().string(), model_last_modified
+	);
+
+	auto model_data_result = read_model_data(model_path);
+	if (!model_data_result)
+		return tl::unexpected(model_data_result.error());
+
+	const auto gpu_serialization_path =
+		std::filesystem::temp_directory_path() / "EyeAICore/gpu_delegate_cache";
+	std::filesystem::create_directories(gpu_serialization_path);
+
+	auto runtime_result = TfLiteRuntime::create(
+		std::move(*model_data_result), gpu_serialization_path.string(),
+		model_token, model_input_format, model_output_format,
+		std::move(input_operators), std::move(output_operators),
+		[](const std::string msg) { std::cout << "[WARN]  " << msg << '\n'; },
+		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; }
+	);
+	if (runtime_result)
+		return std::move(runtime_result.value());
+	return tl::unexpected(runtime_result.error().to_string());
 }
 
 static tl::expected<std::vector<float>, std::string> load_image_file(

@@ -165,8 +165,12 @@ if (EYE_AI_CORE_ENABLE_TESTS)
 	enable_testing()
 	include(GoogleTest)
 
-	add_executable(test_depth_estimation "tests/depth_estimation.cpp")
-	target_include_directories(test_depth_estimation PRIVATE ${LIBNPY_INCLUDE_DIR} ${STB_INCLUDE_DIR})
-	target_link_libraries(test_depth_estimation EyeAICore GTest::gtest_main GTest::gmock)
-	gtest_discover_tests(test_depth_estimation)
+	add_executable(EyeAICoreTests
+		"tests/depth_estimation.cpp"
+		"tests/tflite_runtime.cpp"
+		"tests/stb_image.cpp"
+	)
+	target_include_directories(EyeAICoreTests PRIVATE ${LIBNPY_INCLUDE_DIR} ${STB_INCLUDE_DIR})
+	target_link_libraries(EyeAICoreTests EyeAICore GTest::gtest_main GTest::gmock)
+	gtest_discover_tests(EyeAICoreTests)
 endif()

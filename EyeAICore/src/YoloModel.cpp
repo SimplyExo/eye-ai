@@ -20,13 +20,12 @@ tl::expected<bool, std::string> YoloModel::create(
 	// Labels laden
 	this->labels = std::move(coco_labels);
 
-	auto new_runtime =
-		TfLiteRuntimeBuilder(
-			std::move(model_data), gpu_delegate_serialization_dir, model_token,
-			log_warning_callback, log_error_callback
-		)
-			.add_input_operator(std::make_unique<RgbNormalizeOperatorYolo>())
-			.build();
+	auto new_runtime = TfLiteRuntime::create(
+		std::move(model_data), gpu_delegate_serialization_dir, model_token,
+		FloatTensorFormat::YoloImageRGBFloat, FloatTensorFormat::YoloOutput,
+		OperatorChain{YoloImageOperator{}}, OperatorChain{},
+		log_warning_callback, log_error_callback
+	);
 
 	// bei Fehler gebe string aus
 	// TODO: Better Error Message
@@ -52,7 +51,10 @@ std::span<const int> YoloModel::get_output_shape() {
 
 tl::expected<void, std::string>
 YoloModel::run(std::span<float> input, std::span<float> output) {
-	auto result = runtime->run_inference(input, output);
+	auto result = runtime->run_inference(
+		input, FloatTensorFormat::ImageRGB255Float, output,
+		FloatTensorFormat::YoloOutput
+	);
 
 	if (result.has_value()) {
 		// TODO: Better Error Message
@@ -97,7 +99,7 @@ YoloModel::best_box(std::span<float> array) {
 			if (maxIdx < 0 || maxIdx >= static_cast<int>(labels.size()))
 				continue;
 
-			const float cx = array[c];			   // 0
+			const float cx = array[c];				  // 0
 			const float cy = array[c + num_elements]; // 1
 			const float w = array[c + (num_elements * 2)];
 			const float h = array[c + (num_elements * 3)];
