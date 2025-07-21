@@ -8,7 +8,7 @@ class YoloModel {
 	YoloModel();
 
 	struct BoundingBox {
-		std::string clsName = "";
+		std::string cls_name;
 		float cx = 0; // 0
 		float cy = 0; // 1
 		float w = 0;
@@ -35,7 +35,7 @@ class YoloModel {
 	run(std::span<float> input, std::span<float> output);
 
 	std::vector<YoloModel::BoundingBox>
-	bestBox(std::span<float> array);
+	best_box(std::span<float> array);
 
 	std::span<const int> get_input_shape();
 
@@ -50,8 +50,8 @@ class YoloModel {
 	std::vector<std::string> labels;
 
 	std::vector<YoloModel::BoundingBox>
-	applyNMS(std::vector<YoloModel::BoundingBox>& boxes);
-	float calculateIoU(
+	apply_nms(std::vector<YoloModel::BoundingBox>& boxes) const;
+	static float calculate_iou(
 		const YoloModel::BoundingBox& box1,
 		const YoloModel::BoundingBox& box2
 	);

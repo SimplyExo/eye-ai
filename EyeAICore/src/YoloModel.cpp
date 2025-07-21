@@ -2,10 +2,12 @@
 #include "EyeAICore/Operators.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
 #include "tl/expected.hpp"
+#include <algorithm>
+#include <cstddef>
 #include <string>
 #include <utility>
 
-YoloModel::YoloModel() {}
+YoloModel::YoloModel() = default;
 
 tl::expected<bool, std::string> YoloModel::create(
 	std::vector<int8_t>&& model_data,
@@ -27,6 +29,7 @@ tl::expected<bool, std::string> YoloModel::create(
 			.build();
 
 	// bei Fehler gebe string aus
+	// TODO: Better Error Message
 	if (!new_runtime.has_value())
 		return tl::unexpected("Failed to create YoloModel");
 
@@ -52,6 +55,7 @@ YoloModel::run(std::span<float> input, std::span<float> output) {
 	auto result = runtime->run_inference(input, output);
 
 	if (result.has_value()) {
+		// TODO: Better Error Message
 		return tl::make_unexpected("Inference failed: ");
 	}
 
@@ -59,11 +63,13 @@ YoloModel::run(std::span<float> input, std::span<float> output) {
 }
 
 std::vector<YoloModel::BoundingBox>
-YoloModel::bestBox(std::span<float> array) {
+YoloModel::best_box(std::span<float> array) {
 	std::vector<BoundingBox> boundingBoxes;
 
-	const size_t totalSize = array.size();
-	if (totalSize < static_cast<size_t>(num_elements * num_channel)) {
+	const unsigned long total_size = array.size();
+	const unsigned long actual_size = num_elements * num_channel;
+
+	if (total_size < actual_size) {
 		return {}; // Fehler: zu wenig Daten
 	}
 
@@ -71,10 +77,10 @@ YoloModel::bestBox(std::span<float> array) {
 		float maxConf = -1.0f;
 		int maxIdx = -1;
 		int j = 4;
-		size_t arrayIdx = c + num_elements * j;
+		size_t arrayIdx = c + (num_elements * j);
 
 		while (j < num_channel) {
-			if (arrayIdx >= totalSize)
+			if (arrayIdx >= total_size)
 				break; // Schutz gegen Überlauf
 
 			if (array[arrayIdx] > maxConf) {
@@ -91,15 +97,15 @@ YoloModel::bestBox(std::span<float> array) {
 			if (maxIdx < 0 || maxIdx >= static_cast<int>(labels.size()))
 				continue;
 
-			float cx = array[c];			   // 0
-			float cy = array[c + num_elements]; // 1
-			float w = array[c + num_elements * 2];
-			float h = array[c + num_elements * 3];
+			const float cx = array[c];			   // 0
+			const float cy = array[c + num_elements]; // 1
+			const float w = array[c + (num_elements * 2)];
+			const float h = array[c + (num_elements * 3)];
 
-			float x1 = cx - w / 2.0f;
-			float y1 = cy - h / 2.0f;
-			float x2 = cx + w / 2.0f;
-			float y2 = cy + h / 2.0f;
+			const float x1 = cx - (w / 2.0f);
+			const float y1 = cy - (h / 2.0f);
+			const float x2 = cx + (w / 2.0f);
+			const float y2 = cy + (h / 2.0f);
 
 			// Bounds check wie in Kotlin
 			if (x1 < 0.0f || x1 > 1.0f)
@@ -112,7 +118,7 @@ YoloModel::bestBox(std::span<float> array) {
 				continue;
 
 			BoundingBox box;
-			box.clsName = labels[maxIdx];
+			box.cls_name = labels[maxIdx];
 			box.cls = maxIdx;
 			box.cnf = maxConf;
 			box.cx = cx;
@@ -133,47 +139,47 @@ YoloModel::bestBox(std::span<float> array) {
 	}
 
 	// Non-Maximum Suppression anwenden
-	return applyNMS(boundingBoxes);
+	return apply_nms(boundingBoxes);
 }
 
-float YoloModel::calculateIoU(
+float YoloModel::calculate_iou(
 	const YoloModel::BoundingBox& box1,
 	const YoloModel::BoundingBox& box2
 ) {
-	float x1 = std::max(box1.x1, box2.x1);
-	float y1 = std::max(box1.y1, box2.y1);
-	float x2 = std::min(box1.x2, box2.x2);
-	float y2 = std::min(box1.y2, box2.y2);
+	const float x1 = std::max(box1.x1, box2.x1);
+	const float y1 = std::max(box1.y1, box2.y1);
+	const float x2 = std::min(box1.x2, box2.x2);
+	const float y2 = std::min(box1.y2, box2.y2);
 
-	float intersectionWidth = std::max(0.0f, x2 - x1);
-	float intersectionHeight = std::max(0.0f, y2 - y1);
-	float intersectionArea = intersectionWidth * intersectionHeight;
+	const float intersectionWidth = std::max(0.0f, x2 - x1);
+	const float intersectionHeight = std::max(0.0f, y2 - y1);
+	const float intersectionArea = intersectionWidth * intersectionHeight;
 
-	float box1Area = box1.w * box1.h;
-	float box2Area = box2.w * box2.h;
+	const float box1Area = box1.w * box1.h;
+	const float box2Area = box2.w * box2.h;
 
 	return intersectionArea / (box1Area + box2Area - intersectionArea);
 }
 
 std::vector<YoloModel::BoundingBox>
-YoloModel::applyNMS(std::vector<YoloModel::BoundingBox>& boxes) {
+YoloModel::apply_nms(std::vector<YoloModel::BoundingBox>& boxes) const {
 	// 1. Sortiere nach cnf absteigend
 	std::vector<BoundingBox> sortedBoxes = boxes;
-	std::sort(
-		sortedBoxes.begin(), sortedBoxes.end(),
+	std::ranges::sort(
+		sortedBoxes,
 		[](const BoundingBox& a, const BoundingBox& b) { return a.cnf > b.cnf; }
 	);
 
 	std::vector<BoundingBox> selectedBoxes;
 
 	while (!sortedBoxes.empty()) {
-		BoundingBox first = sortedBoxes.front();
+		BoundingBox const first = sortedBoxes.front();
 		selectedBoxes.push_back(first);
 		sortedBoxes.erase(sortedBoxes.begin()); // entferne das erste Element
 
 		auto it = sortedBoxes.begin();
 		while (it != sortedBoxes.end()) {
-			float iou = calculateIoU(first, *it);
+			const float iou = calculate_iou(first, *it);
 			if (iou >= IOU_THRESHOLD) {
 				it = sortedBoxes.erase(it); // entferne überschneidende Box
 			} else {

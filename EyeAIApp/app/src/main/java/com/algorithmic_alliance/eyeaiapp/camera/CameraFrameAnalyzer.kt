@@ -29,7 +29,8 @@ class CameraFrameAnalyzer(
 	private var eyeAIApp: EyeAIApp,
 	private var depthView: ImageView,
 	private var performanceText: TextView,
-	private var overlay: OverlayView
+	private var overlay: OverlayView,
+	private var yoloInferenceDuration: TextView
 ) : ImageAnalysis.Analyzer {
 
 	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
@@ -84,17 +85,21 @@ class CameraFrameAnalyzer(
 
 				if (frame != null && eyeAIApp.settings.enableObjectDetection) {
 					// Frame analysieren
+					var inferenceTime = System.currentTimeMillis()
 					val boxes = eyeAIApp.yoloModel?.runInference(frame);
+					inferenceTime = System.currentTimeMillis() - inferenceTime
 
 					// Verarbeiten und Anzeigen der Boxes
 					if (boxes != null) {
 						withContext(Dispatchers.Main) {
 							overlay.setResults(boxes)
+							yoloInferenceDuration.text = "$inferenceTime ms"
 						}
 					}
 					else {
 						withContext(Dispatchers.Main) {
 							overlay.reset()
+							yoloInferenceDuration.text = "$inferenceTime ms"
 						}
 					}
 				}
