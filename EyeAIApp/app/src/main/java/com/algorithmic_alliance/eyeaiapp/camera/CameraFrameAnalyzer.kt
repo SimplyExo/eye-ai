@@ -2,7 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.camera
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.util.Size
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.OptIn
@@ -44,7 +44,7 @@ class CameraFrameAnalyzer(
 		CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher()).launch {
 			while (isActive) {
 				val depthModel = eyeAIApp.depthModel
-				val frame = latestCameraFrame.get()
+				val frame = latestCameraFrame.getAndSet(null)
 
 				if (frame != null && depthModel != null) {
 					NativeLib.newDepthFrame()
@@ -81,22 +81,22 @@ class CameraFrameAnalyzer(
 		// Objekterkennung
 		CoroutineScope(objectDetectionProcessingExecutor.asCoroutineDispatcher()).launch {
 			while (isActive) {
-				val frame = latestCameraFrame.get()
+				val frame = latestCameraFrame.getAndSet(null)
 
 				if (frame != null && eyeAIApp.settings.enableObjectDetection) {
 					// Frame analysieren
 					var inferenceTime = System.currentTimeMillis()
-					val boxes = eyeAIApp.yoloModel?.runInference(frame)
+					val boxes = eyeAIApp.yoloModel?.runInference(frame);
 					inferenceTime = System.currentTimeMillis() - inferenceTime
 
 					// Verarbeiten und Anzeigen der Boxes
 					if (boxes != null) {
 						withContext(Dispatchers.Main) {
 							overlay.setResults(boxes)
-							overlay.setCameraSize(Size(frame.width, frame.height))
 							yoloInferenceDuration.text = "$inferenceTime ms"
 						}
-					} else {
+					}
+					else {
 						withContext(Dispatchers.Main) {
 							overlay.reset()
 							yoloInferenceDuration.text = "$inferenceTime ms"

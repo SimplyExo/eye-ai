@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
-import android.util.Size
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.algorithmic_alliance.eyeaiapp.R
@@ -14,7 +13,6 @@ import com.algorithmic_alliance.eyeaiapp.R
 class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
 	private var results = arrayOf<BoundingBox>()
-	private var cameraSize = Size(720, 1280)
 	private var boxPaint = Paint()
 	private var textBackgroundPaint = Paint()
 	private var textPaint = Paint()
@@ -55,22 +53,11 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 	override fun draw(canvas: Canvas) {
 		super.draw(canvas)
 
-		val xOffset = if (cameraSize.width < width) {
-			(width - cameraSize.width) / 2
-		} else {
-			0
-		}
-		val yOffset = if (cameraSize.height < height) {
-			(height - cameraSize.height) / 2
-		} else {
-			0
-		}
-
 		results.forEach {
-			val left = it.x1 * cameraSize.width + xOffset
-			val top = it.y1 * cameraSize.height + yOffset
-			val right = it.x2 * cameraSize.width + xOffset
-			val bottom = it.y2 * cameraSize.height + yOffset
+			val left = it.x1 * width
+			val top = it.y1 * height
+			val right = it.x2 * width
+			val bottom = it.y2 * height
 
 			canvas.drawRect(left, top, right, bottom, boxPaint)
 			val drawableText = it.clsName
@@ -91,17 +78,8 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 	}
 
 	fun setResults(boundingBoxes: Array<BoundingBox>) {
-		val changed = !results.contentEquals(boundingBoxes)
 		results = boundingBoxes
-		if (changed)
-			invalidate()
-	}
-
-	fun setCameraSize(size: Size) {
-		val changed = cameraSize != size
-		cameraSize = size
-		if (changed)
-			invalidate()
+		invalidate()
 	}
 
 	companion object {
