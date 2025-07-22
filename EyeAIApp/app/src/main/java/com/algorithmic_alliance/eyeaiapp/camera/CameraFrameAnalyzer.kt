@@ -31,7 +31,7 @@ class CameraFrameAnalyzer(
 	private var depthView: ImageView,
 	private var performanceText: TextView,
 	private var overlay: OverlayView,
-	private var yoloInferenceDuration: TextView
+	private var cameraPreviewView: PreviewView
 ) : ImageAnalysis.Analyzer {
 
 	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
@@ -70,7 +70,7 @@ class CameraFrameAnalyzer(
 							val formattedModelInputSize =
 								"${modelInputSize.width}x${modelInputSize.height}"
 							performanceText.text =
-								"Model: $modelName\nCamera resolution: $formattedInputResolution --> Model input: $formattedModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}"
+								"Model: $modelName\nCamera resolution: $formattedInputResolution --> Model input: $formattedModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}\n${NativeLib.formatObjectFrame()}"
 						} else {
 							performanceText.text = ""
 						}
@@ -85,10 +85,10 @@ class CameraFrameAnalyzer(
 				val frame = latestCameraFrame.get()
 
 				if (frame != null && eyeAIApp.settings.enableObjectDetection) {
+					NativeLib.newObjectFrame()
+
 					// Frame analysieren
-					var inferenceTime = System.currentTimeMillis()
 					val boxes = eyeAIApp.yoloModel?.runInference(frame)
-					inferenceTime = System.currentTimeMillis() - inferenceTime
 
 					// Verarbeiten und Anzeigen der Boxes
 					if (boxes != null) {
@@ -97,12 +97,10 @@ class CameraFrameAnalyzer(
 							overlay.setCameraResolution(
 								Size(frame.width, frame.height)
 							)
-							yoloInferenceDuration.text = "$inferenceTime ms"
 						}
 					} else {
 						withContext(Dispatchers.Main) {
 							overlay.reset()
-							yoloInferenceDuration.text = "$inferenceTime ms"
 						}
 					}
 				}
