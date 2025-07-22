@@ -86,7 +86,14 @@ class MainActivity : ComponentActivity() {
 		}
 
 		cameraFrameAnalyzer =
-			CameraFrameAnalyzer(eyeAIApp(), depthPreviewImage!!, performanceText!!, overlay!!, yoloInferenceDuration!!)
+			CameraFrameAnalyzer(
+				eyeAIApp(),
+				depthPreviewImage!!,
+				performanceText!!,
+				overlay!!,
+				yoloInferenceDuration!!,
+				cameraPreviewView!!
+			)
 
 		permissionManager.requestPermissions()
 

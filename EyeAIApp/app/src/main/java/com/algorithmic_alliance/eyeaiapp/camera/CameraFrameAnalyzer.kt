@@ -2,13 +2,14 @@ package com.algorithmic_alliance.eyeaiapp.camera
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.util.Log
+import android.util.Size
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
+import androidx.camera.view.PreviewView
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.object_detection.OverlayView
@@ -30,7 +31,8 @@ class CameraFrameAnalyzer(
 	private var depthView: ImageView,
 	private var performanceText: TextView,
 	private var overlay: OverlayView,
-	private var yoloInferenceDuration: TextView
+	private var yoloInferenceDuration: TextView,
+	private var cameraPreviewView: PreviewView
 ) : ImageAnalysis.Analyzer {
 
 	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
@@ -44,7 +46,7 @@ class CameraFrameAnalyzer(
 		CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher()).launch {
 			while (isActive) {
 				val depthModel = eyeAIApp.depthModel
-				val frame = latestCameraFrame.getAndSet(null)
+				val frame = latestCameraFrame.get()
 
 				if (frame != null && depthModel != null) {
 					NativeLib.newDepthFrame()
@@ -81,22 +83,27 @@ class CameraFrameAnalyzer(
 		// Objekterkennung
 		CoroutineScope(objectDetectionProcessingExecutor.asCoroutineDispatcher()).launch {
 			while (isActive) {
-				val frame = latestCameraFrame.getAndSet(null)
+				val frame = latestCameraFrame.get()
 
 				if (frame != null && eyeAIApp.settings.enableObjectDetection) {
 					// Frame analysieren
 					var inferenceTime = System.currentTimeMillis()
-					val boxes = eyeAIApp.yoloModel?.runInference(frame);
+					val boxes = eyeAIApp.yoloModel?.runInference(frame)
 					inferenceTime = System.currentTimeMillis() - inferenceTime
 
 					// Verarbeiten und Anzeigen der Boxes
 					if (boxes != null) {
 						withContext(Dispatchers.Main) {
 							overlay.setResults(boxes)
+							overlay.setCameraSize(
+								Size(
+									cameraPreviewView.width,
+									cameraPreviewView.height
+								)
+							)
 							yoloInferenceDuration.text = "$inferenceTime ms"
 						}
-					}
-					else {
+					} else {
 						withContext(Dispatchers.Main) {
 							overlay.reset()
 							yoloInferenceDuration.text = "$inferenceTime ms"
