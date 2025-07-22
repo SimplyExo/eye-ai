@@ -11,7 +11,12 @@ import com.algorithmic_alliance.eyeaiapp.llm.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
+import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
+import com.google.mlkit.vision.text.internal.TextRecognizerOptionsUtils
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,6 +42,8 @@ class EyeAIApp : Application() {
 
 	var yoloModel: YoloModel? = null
 		private set
+
+	var ocrModel = GoogleOCR()
 
 	companion object {
 		const val APP_LOG_TAG = "Eye AI"
@@ -74,6 +81,9 @@ class EyeAIApp : Application() {
 		// Yolo Model erstellen
 		yoloModel = YoloModel(YoloModelInfo("model.tflite",640))
 		yoloModel!!.create(baseContext)
+
+		// Google ML Kit initialisieren
+		ocrModel.create()
 	}
 
 	fun updateSettings() {

@@ -9,10 +9,10 @@ import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import androidx.camera.view.PreviewView
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
-import com.algorithmic_alliance.eyeaiapp.object_detection.OverlayView
+import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
+import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -30,12 +30,15 @@ class CameraFrameAnalyzer(
 	private var eyeAIApp: EyeAIApp,
 	private var depthView: ImageView,
 	private var performanceText: TextView,
-	private var overlay: OverlayView,
-	private var cameraPreviewView: PreviewView
+	private var overlay_od: OverlayViewOD,
+	private var overlay_ocr: OverlayViewOCR,
+	private var yoloInferenceDuration: TextView
 ) : ImageAnalysis.Analyzer {
 
 	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
 	private var objectDetectionProcessingExecutor = Executors.newSingleThreadExecutor()
+	private var ocrProcessingExecutor = Executors.newSingleThreadExecutor()
+
 	private var latestCameraFrame = AtomicReference<Bitmap?>(null)
 
 	private lateinit var colorMappedImage: Bitmap
@@ -88,21 +91,39 @@ class CameraFrameAnalyzer(
 					NativeLib.newObjectFrame()
 
 					// Frame analysieren
-					val boxes = eyeAIApp.yoloModel?.runInference(frame)
+					var inferenceTime = System.currentTimeMillis()
+					val boxes = eyeAIApp.yoloModel?.runInference(frame);
+					inferenceTime = System.currentTimeMillis() - inferenceTime
 
 					// Verarbeiten und Anzeigen der Boxes
 					if (boxes != null) {
 						withContext(Dispatchers.Main) {
-							overlay.setResults(boxes)
-							overlay.setCameraResolution(
+							yoloInferenceDuration.text = "$inferenceTime ms"
+							overlay_od.setResults(boxes)
+							overlay_od.setCameraResolution(
 								Size(frame.width, frame.height)
 							)
 						}
 					} else {
 						withContext(Dispatchers.Main) {
-							overlay.reset()
+							overlay_od.reset()
 						}
 					}
+				}
+			}
+		}
+
+		// OCR Texterkennung
+		CoroutineScope(ocrProcessingExecutor.asCoroutineDispatcher()).launch {
+			while (isActive) {
+				val frame = latestCameraFrame.get()
+
+				if (frame != null) {
+					val text_boxes = eyeAIApp.ocrModel.analyzeFrame(frame).toTypedArray()
+					overlay_ocr.setCameraResolution(
+						Size(frame.width, frame.height)
+					)
+					overlay_ocr.setResults(text_boxes)
 				}
 			}
 		}

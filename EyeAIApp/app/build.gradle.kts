@@ -91,6 +91,8 @@ dependencies {
 	implementation(libs.vosk)
 	implementation(libs.androidx.preference)
 	implementation(libs.androidx.appcompat)
+	implementation(libs.play.services.mlkit.text.recognition.common)
+	implementation(libs.play.services.mlkit.text.recognition)
 
 	testImplementation(libs.junit)
 	androidTestImplementation(libs.androidx.junit)
@@ -99,4 +101,7 @@ dependencies {
 	androidTestImplementation(libs.androidx.ui.test.junit4)
 	debugImplementation(libs.androidx.ui.tooling)
 	debugImplementation(libs.androidx.ui.test.manifest)
+
+	// OCR
+	implementation("com.google.mlkit:text-recognition:16.0.1")
 }
