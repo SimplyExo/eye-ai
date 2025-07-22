@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
+import android.util.Size
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.algorithmic_alliance.eyeaiapp.R
@@ -13,6 +14,7 @@ import com.algorithmic_alliance.eyeaiapp.R
 class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
 	private var results = arrayOf<BoundingBox>()
+	private var cameraResolution = Size(720, 1280)
 	private var boxPaint = Paint()
 	private var textBackgroundPaint = Paint()
 	private var textPaint = Paint()
@@ -53,11 +55,37 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 	override fun draw(canvas: Canvas) {
 		super.draw(canvas)
 
+		val viewAspectRatio = width.toFloat() / height.toFloat()
+		val cameraAspectRatio = cameraResolution.width.toFloat() / cameraResolution.height.toFloat()
+
+		val cameraPreviewImageSize = if (viewAspectRatio > cameraAspectRatio) {
+			Size(
+				(height.toFloat() * cameraAspectRatio).toInt(),
+				height
+			)
+		} else {
+			Size(
+				width,
+				(width.toFloat() / cameraAspectRatio).toInt()
+			)
+		}
+
+		val xOffset = if (cameraPreviewImageSize.width < width) {
+			(width - cameraPreviewImageSize.width) / 2
+		} else {
+			0
+		}
+		val yOffset = if (cameraPreviewImageSize.height < height) {
+			(height - cameraPreviewImageSize.height) / 2
+		} else {
+			0
+		}
+
 		results.forEach {
-			val left = it.x1 * width
-			val top = it.y1 * height
-			val right = it.x2 * width
-			val bottom = it.y2 * height
+			val left = it.x1 * cameraPreviewImageSize.width + xOffset
+			val top = it.y1 * cameraPreviewImageSize.height + yOffset
+			val right = it.x2 * cameraPreviewImageSize.width + xOffset
+			val bottom = it.y2 * cameraPreviewImageSize.height + yOffset
 
 			canvas.drawRect(left, top, right, bottom, boxPaint)
 			val drawableText = it.clsName
@@ -78,8 +106,17 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 	}
 
 	fun setResults(boundingBoxes: Array<BoundingBox>) {
+		val changed = !results.contentEquals(boundingBoxes)
 		results = boundingBoxes
-		invalidate()
+		if (changed)
+			invalidate()
+	}
+
+	fun setCameraResolution(newCameraResolution: Size) {
+		val changed = cameraResolution != newCameraResolution
+		cameraResolution = newCameraResolution
+		if (changed)
+			invalidate()
 	}
 
 	companion object {

@@ -15,12 +15,12 @@
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
 namespace {
-	MutexGuard<std::unique_ptr<DepthModel>> depth_model{
-		std::unique_ptr<DepthModel>(nullptr)
-	};
+MutexGuard<std::unique_ptr<DepthModel>> depth_model{
+	std::unique_ptr<DepthModel>(nullptr)
+};
 
-	YoloModel yolo_instance;
-}
+YoloModel yolo_instance;
+} // namespace
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 // NOLINTBEGIN(readability-identifier-naming,
@@ -167,9 +167,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 		yolo_instance.run(converted_input, object_recognition_output);
 
 	// Find best boxes
-	auto boxes = yolo_instance.best_box(
-		object_recognition_output
-	);
+	auto boxes = yolo_instance.best_box(object_recognition_output);
 
 	return convertToJsonBoundingBoxString(env, boxes);
 }
@@ -373,6 +371,25 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatCameraFrame(
 ) {
 	return env->NewStringUTF(
 		get_last_camera_profiling_frame_formatted().c_str()
+	);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_newObjectFrame(
+	JNIEnv* /*env*/,
+	jobject /*this*/
+) {
+	set_last_object_profiling_frame_formatted(
+		std::move(get_object_profiling_frame().finish())
+	);
+}
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatObjectFrame(
+	JNIEnv* env,
+	jobject /*this*/
+) {
+	return env->NewStringUTF(
+		get_last_object_profiling_frame_formatted().c_str()
 	);
 }
 

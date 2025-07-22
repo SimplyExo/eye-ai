@@ -99,6 +99,8 @@ static auto depth_profiling_frame = ProfilingFrame("Depth");
 static MutexGuard<std::string> last_depth_profiling_frame_formatted;
 static auto camera_profiling_frame = ProfilingFrame("Camera");
 static MutexGuard<std::string> last_camera_profiling_frame_formatted;
+static auto object_profiling_frame = ProfilingFrame("Object Detection");
+static MutexGuard<std::string> last_object_profiling_frame_formatted;
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 void set_last_depth_profiling_frame_formatted(std::string&& formatted) {
@@ -115,4 +117,12 @@ void set_last_camera_profiling_frame_formatted(std::string&& formatted) {
 }
 std::string get_last_camera_profiling_frame_formatted() {
 	return *last_camera_profiling_frame_formatted.lock();
+}
+
+ProfilingFrame& get_object_profiling_frame() { return object_profiling_frame; }
+void set_last_object_profiling_frame_formatted(std::string&& formatted) {
+	*last_object_profiling_frame_formatted.lock() = std::move(formatted);
+}
+std::string get_last_object_profiling_frame_formatted() {
+	return *last_object_profiling_frame_formatted.lock();
 }
