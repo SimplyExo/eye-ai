@@ -17,10 +17,12 @@ object NativeLib {
 	}
 
 	// Yolo
-	external fun initYoloRuntime(model: ByteArray,
-	                             labels: Array<String>,
-	                               gpuDelegateSerializationDir: String,
-	                               modelToken: String): Boolean
+	external fun initYoloRuntime(
+		model: ByteArray,
+		labels: Array<String>,
+		gpuDelegateSerializationDir: String,
+		modelToken: String
+	): Boolean
 
 	external fun runYoloOperation(input: FloatArray): String
 
@@ -32,6 +34,8 @@ object NativeLib {
 	external fun formatDepthFrame(): String
 	external fun newCameraFrame()
 	external fun formatCameraFrame(): String
+	external fun newObjectFrame()
+	external fun formatObjectFrame(): String
 
 	external fun initDepthModel(
 		model: ByteArray,
