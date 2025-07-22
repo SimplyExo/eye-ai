@@ -9,12 +9,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <npy.hpp>
-#include <tl/expected.hpp>
-
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <stb_image.h>
 #include <stb_image_resize2.h>
+#include <tl/expected.hpp>
 
 template<typename E>
 std::string error_to_string(const E& e);
