@@ -1,6 +1,5 @@
 #pragma once
 
-#include "EyeAICore/Operators.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
 
 class YoloModel {
@@ -19,6 +18,8 @@ class YoloModel {
 		float y2 = 0;
 		int cls = 0;
 		float cnf = 0;
+
+		bool operator==(const BoundingBox&) const = default;
 	};
 
 	// Erstellt das Modell

@@ -35,7 +35,6 @@ if (DEFINED CMAKE_ANDROID_ARCH_ABI)
     set(EYE_AI_CORE_ABI ${CMAKE_ANDROID_ARCH_ABI})
 else ()
     message(STATUS "EyeAICore: Not using Android NDK, setting EyeAICore ABI to host arch")
-    add_subdirectory(object_detection)
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
         set(EYE_AI_CORE_ABI "x86_64")
     elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "i386")
@@ -168,6 +167,7 @@ if (EYE_AI_CORE_ENABLE_TESTS)
 	add_executable(EyeAICoreTests
 		"tests/depth_estimation.cpp"
 		"tests/tflite_runtime.cpp"
+		"tests/object_detection.cpp"
 		"tests/stb_image.cpp"
 	)
 	target_include_directories(EyeAICoreTests PRIVATE ${LIBNPY_INCLUDE_DIR} ${STB_INCLUDE_DIR})
