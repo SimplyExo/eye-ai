@@ -91,8 +91,7 @@ class MainActivity : ComponentActivity() {
 				depthPreviewImage!!,
 				performanceText!!,
 				overlay!!,
-				yoloInferenceDuration!!,
-				cameraPreviewView!!
+				yoloInferenceDuration!!
 			)
 
 		permissionManager.requestPermissions()

@@ -31,8 +31,7 @@ class CameraFrameAnalyzer(
 	private var depthView: ImageView,
 	private var performanceText: TextView,
 	private var overlay: OverlayView,
-	private var yoloInferenceDuration: TextView,
-	private var cameraPreviewView: PreviewView
+	private var yoloInferenceDuration: TextView
 ) : ImageAnalysis.Analyzer {
 
 	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
@@ -95,11 +94,8 @@ class CameraFrameAnalyzer(
 					if (boxes != null) {
 						withContext(Dispatchers.Main) {
 							overlay.setResults(boxes)
-							overlay.setCameraSize(
-								Size(
-									cameraPreviewView.width,
-									cameraPreviewView.height
-								)
+							overlay.setCameraResolution(
+								Size(frame.width, frame.height)
 							)
 							yoloInferenceDuration.text = "$inferenceTime ms"
 						}

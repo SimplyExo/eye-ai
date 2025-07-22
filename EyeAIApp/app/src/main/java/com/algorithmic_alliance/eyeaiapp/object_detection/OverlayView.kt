@@ -14,7 +14,7 @@ import com.algorithmic_alliance.eyeaiapp.R
 class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
 	private var results = arrayOf<BoundingBox>()
-	private var cameraSize = Size(720, 1280)
+	private var cameraResolution = Size(720, 1280)
 	private var boxPaint = Paint()
 	private var textBackgroundPaint = Paint()
 	private var textPaint = Paint()
@@ -55,22 +55,37 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 	override fun draw(canvas: Canvas) {
 		super.draw(canvas)
 
-		val xOffset = if (cameraSize.width < width) {
-			(width - cameraSize.width) / 2
+		val viewAspectRatio = width.toFloat() / height.toFloat()
+		val cameraAspectRatio = cameraResolution.width.toFloat() / cameraResolution.height.toFloat()
+
+		val cameraPreviewImageSize = if (viewAspectRatio > cameraAspectRatio) {
+			Size(
+				(height.toFloat() * cameraAspectRatio).toInt(),
+				height
+			)
+		} else {
+			Size(
+				width,
+				(width.toFloat() / cameraAspectRatio).toInt()
+			)
+		}
+
+		val xOffset = if (cameraPreviewImageSize.width < width) {
+			(width - cameraPreviewImageSize.width) / 2
 		} else {
 			0
 		}
-		val yOffset = if (cameraSize.height < height) {
-			(height - cameraSize.height) / 2
+		val yOffset = if (cameraPreviewImageSize.height < height) {
+			(height - cameraPreviewImageSize.height) / 2
 		} else {
 			0
 		}
 
 		results.forEach {
-			val left = it.x1 * cameraSize.width + xOffset
-			val top = it.y1 * cameraSize.height + yOffset
-			val right = it.x2 * cameraSize.width + xOffset
-			val bottom = it.y2 * cameraSize.height + yOffset
+			val left = it.x1 * cameraPreviewImageSize.width + xOffset
+			val top = it.y1 * cameraPreviewImageSize.height + yOffset
+			val right = it.x2 * cameraPreviewImageSize.width + xOffset
+			val bottom = it.y2 * cameraPreviewImageSize.height + yOffset
 
 			canvas.drawRect(left, top, right, bottom, boxPaint)
 			val drawableText = it.clsName
@@ -97,9 +112,9 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 			invalidate()
 	}
 
-	fun setCameraSize(size: Size) {
-		val changed = cameraSize != size
-		cameraSize = size
+	fun setCameraResolution(newCameraResolution: Size) {
+		val changed = cameraResolution != newCameraResolution
+		cameraResolution = newCameraResolution
 		if (changed)
 			invalidate()
 	}
