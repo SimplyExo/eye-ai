@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.object_detection
+package com.algorithmic_alliance.eyeaiapp.UI
 
 import android.content.Context
 import android.graphics.Canvas
@@ -10,8 +10,9 @@ import android.util.Size
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.object_detection.BoundingBox
 
-class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
+class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
 	private var results = arrayOf<BoundingBox>()
 	private var cameraResolution = Size(720, 1280)
@@ -101,7 +102,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 				textBackgroundPaint
 			)
 			canvas.drawText(drawableText, left, top + bounds.height(), textPaint)
-
 		}
 	}
 
@@ -115,6 +115,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 	fun setCameraResolution(newCameraResolution: Size) {
 		val changed = cameraResolution != newCameraResolution
 		cameraResolution = newCameraResolution
+
 		if (changed)
 			invalidate()
 	}
