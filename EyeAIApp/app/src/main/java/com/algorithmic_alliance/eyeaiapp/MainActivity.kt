@@ -39,7 +39,6 @@ class MainActivity : ComponentActivity() {
 	private var performanceText: TextView? = null
 
 	private var overlay: OverlayView? = null
-	private var yoloInferenceDuration: TextView? = null
 	private var speechRecognitionPartialResultText: TextView? = null
 	private var speechRecognitionFinalResultText: TextView? = null
 	private var llmResponseText: TextView? = null
@@ -60,8 +59,6 @@ class MainActivity : ComponentActivity() {
 		performanceText = findViewById(R.id.performance_text)
 
 		overlay = findViewById(R.id.overlay)
-
-		yoloInferenceDuration = findViewById(R.id.yolo_inference_duration)
 
 		ungrantedPermissionsNotice = findViewById(R.id.ungranted_permissions_notice)
 		ungrantedPermissionsNoticeText = findViewById(R.id.ungranted_permissions_notice_text)
@@ -86,7 +83,13 @@ class MainActivity : ComponentActivity() {
 		}
 
 		cameraFrameAnalyzer =
-			CameraFrameAnalyzer(eyeAIApp(), depthPreviewImage!!, performanceText!!, overlay!!, yoloInferenceDuration!!)
+			CameraFrameAnalyzer(
+				eyeAIApp(),
+				depthPreviewImage!!,
+				performanceText!!,
+				overlay!!,
+				cameraPreviewView!!
+			)
 
 		permissionManager.requestPermissions()
 

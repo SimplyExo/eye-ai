@@ -1,6 +1,7 @@
 #include "EyeAICore/YoloModel.hpp"
 #include "EyeAICore/Operators.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include "tl/expected.hpp"
 #include <algorithm>
 #include <cstddef>
@@ -17,6 +18,8 @@ tl::expected<bool, std::string> YoloModel::create(
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback
 ) {
+	PROFILE_OBJECT_FUNCTION()
+
 	// Labels laden
 	this->labels = std::move(coco_labels);
 
@@ -51,6 +54,8 @@ std::span<const int> YoloModel::get_output_shape() {
 
 tl::expected<void, std::string>
 YoloModel::run(std::span<float> input, std::span<float> output) {
+	PROFILE_OBJECT_FUNCTION()
+
 	auto result = runtime->run_inference(
 		input, FloatTensorFormat::ImageRGB255Float, output,
 		FloatTensorFormat::YoloOutput
@@ -66,6 +71,8 @@ YoloModel::run(std::span<float> input, std::span<float> output) {
 
 std::vector<YoloModel::BoundingBox>
 YoloModel::best_box(std::span<float> array) {
+	PROFILE_OBJECT_FUNCTION()
+
 	std::vector<BoundingBox> boundingBoxes;
 
 	const unsigned long total_size = array.size();
@@ -165,6 +172,8 @@ float YoloModel::calculate_iou(
 
 std::vector<YoloModel::BoundingBox>
 YoloModel::apply_nms(std::vector<YoloModel::BoundingBox>& boxes) const {
+	PROFILE_OBJECT_FUNCTION()
+
 	// 1. Sortiere nach cnf absteigend
 	std::vector<BoundingBox> sortedBoxes = boxes;
 	std::ranges::sort(
