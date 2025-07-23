@@ -77,13 +77,22 @@ class EyeAIApp : Application() {
 			if (!it.isEmpty())
 				llm = GoogleAIStudioLLM(it)
 		}
-		
+
 		// Yolo Model erstellen
-		yoloModel = YoloModel(YoloModelInfo("model.tflite",640))
+		yoloModel = YoloModel(YoloModelInfo("model.tflite", 640))
 		yoloModel!!.create(baseContext)
 
 		// Google ML Kit initialisieren
 		ocrModel.create()
+	}
+
+	fun getPreferredCameraResolution(): Size? {
+		val depthResolution = depthModel?.inputDim ?: return null
+		val objectSize = yoloModel?.info?.size ?: return null
+
+		return Size(
+			maxOf(depthResolution.width, objectSize), maxOf(depthResolution.height, objectSize)
+		)
 	}
 
 	fun updateSettings() {

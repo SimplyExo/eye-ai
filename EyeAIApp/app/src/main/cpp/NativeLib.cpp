@@ -287,22 +287,6 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_depthColormap(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbChwFloatArray(
-	JNIEnv* env,
-	jobject /*thiz*/,
-	jobject bitmap,
-	jfloatArray out_float_array
-) {
-
-	NativeFloatArrayScope out_float_array_scope(env, out_float_array);
-
-	if (const auto error =
-			bitmap_to_rgb_chw_float_array(env, bitmap, out_float_array_scope)) {
-		LOG_ERROR("bitmapToRgbChwFloatArray failed: {}", error->to_string());
-	}
-}
-
-extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 	JNIEnv* env,
 	jobject /*thiz*/,
@@ -316,24 +300,6 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 			env, bitmap, out_float_array_scope
 		)) {
 		LOG_ERROR("bitmapToRgbHwc255FloatArray failed: {}", error->to_string());
-	}
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_imageBytesToArgbIntArray(
-	JNIEnv* env,
-	jobject /*thiz*/,
-	jbyteArray image_bytes,
-	jintArray out_int_array
-) {
-
-	NativeByteArrayScope image_byte_array(env, image_bytes);
-	NativeIntArrayScope out_int_array_scope(env, out_int_array);
-
-	if (const auto error = image_bytes_to_argb_int_array(
-			image_byte_array, out_int_array_scope
-		)) {
-		LOG_ERROR("imageBytesToArgbIntArray failed: {}", error->to_string());
 	}
 }
 

@@ -247,7 +247,7 @@ class MainActivity : ComponentActivity() {
 	private fun initCamera() {
 		if (permissionManager.isCameraPermissionGranted()) {
 			ungrantedPermissionsNotice!!.visibility = View.GONE
-			val preferredInputSize = eyeAIApp().depthModel?.inputDim
+			val preferredInputSize = eyeAIApp().getPreferredCameraResolution()
 			if (preferredInputSize != null) {
 				eyeAIApp()
 					.cameraManager
