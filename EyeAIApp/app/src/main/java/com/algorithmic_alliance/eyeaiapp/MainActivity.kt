@@ -65,8 +65,6 @@ class MainActivity : ComponentActivity() {
 		overlayObjectDetection = findViewById(R.id.overlay_object_detection)
 		overlayOcr = findViewById(R.id.overlay_ocr)
 
-		yoloInferenceDuration = findViewById(R.id.yolo_inference_duration)
-
 		ungrantedPermissionsNotice = findViewById(R.id.ungranted_permissions_notice)
 		ungrantedPermissionsNoticeText = findViewById(R.id.ungranted_permissions_notice_text)
 
@@ -90,8 +88,10 @@ class MainActivity : ComponentActivity() {
 		}
 
 		cameraFrameAnalyzer =
-			CameraFrameAnalyzer(eyeAIApp(), depthPreviewImage!!, performanceText!!, overlayObjectDetection!!,
-				overlayOcr!!, yoloInferenceDuration!!)
+			CameraFrameAnalyzer(
+				eyeAIApp(), depthPreviewImage!!, performanceText!!, overlayObjectDetection!!,
+				overlayOcr!!
+			)
 
 		permissionManager.requestPermissions()
 
