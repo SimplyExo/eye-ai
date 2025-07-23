@@ -71,16 +71,6 @@
             android:orientation="vertical"
             android:textAlignment="center">
 
-            <TextView
-                android:id="@+id/yolo_inference_duration"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAlignment="viewEnd"
-                android:layout_margin="20dp"
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                android:text="" />
-
             <Space
                 android:layout_width="0dp"
                 android:layout_height="0dp"

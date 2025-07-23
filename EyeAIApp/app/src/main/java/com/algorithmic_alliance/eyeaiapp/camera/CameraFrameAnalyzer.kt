@@ -31,8 +31,7 @@ class CameraFrameAnalyzer(
 	private var depthView: ImageView,
 	private var performanceText: TextView,
 	private var overlay_od: OverlayViewOD,
-	private var overlay_ocr: OverlayViewOCR,
-	private var yoloInferenceDuration: TextView
+	private var overlay_ocr: OverlayViewOCR
 ) : ImageAnalysis.Analyzer {
 
 	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
@@ -98,7 +97,6 @@ class CameraFrameAnalyzer(
 					// Verarbeiten und Anzeigen der Boxes
 					if (boxes != null) {
 						withContext(Dispatchers.Main) {
-							yoloInferenceDuration.text = "$inferenceTime ms"
 							overlay_od.setResults(boxes)
 							overlay_od.setCameraResolution(
 								Size(frame.width, frame.height)
