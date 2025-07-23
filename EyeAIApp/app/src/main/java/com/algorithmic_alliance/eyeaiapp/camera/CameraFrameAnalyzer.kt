@@ -86,26 +86,28 @@ class CameraFrameAnalyzer(
 		// Objekterkennung
 		CoroutineScope(objectDetectionProcessingExecutor.asCoroutineDispatcher()).launch {
 			while (isActive) {
-				val frame = latestCameraFrame.get()
+				if (eyeAIApp.settings.enableObjectDetection) {
+					val frame = latestCameraFrame.get()
 
-				if (frame != null && eyeAIApp.settings.enableObjectDetection) {
-					NativeLib.newObjectFrame()
+					if (frame != null) {
+						NativeLib.newObjectFrame()
 
-					// Frame analysieren
-					val boxes = eyeAIApp.yoloModel?.runInference(frame);
-					eyeAIApp.aiData.objectDetectionBoxes.set(boxes)
+						// Frame analysieren
+						val boxes = eyeAIApp.yoloModel?.runInference(frame);
+						eyeAIApp.aiData.objectDetectionBoxes.set(boxes)
 
-					// Anzeigen der Boxes
-					if (boxes != null) {
-						withContext(Dispatchers.Main) {
-							overlay_od.setResults(boxes)
-							overlay_od.setCameraResolution(
-								Size(frame.width, frame.height)
-							)
-						}
-					} else {
-						withContext(Dispatchers.Main) {
-							overlay_od.reset()
+						// Anzeigen der Boxes
+						if (boxes != null) {
+							withContext(Dispatchers.Main) {
+								overlay_od.setResults(boxes)
+								overlay_od.setCameraResolution(
+									Size(frame.width, frame.height)
+								)
+							}
+						} else {
+							withContext(Dispatchers.Main) {
+								overlay_od.reset()
+							}
 						}
 					}
 				}
@@ -115,15 +117,16 @@ class CameraFrameAnalyzer(
 		// OCR Texterkennung
 		CoroutineScope(ocrProcessingExecutor.asCoroutineDispatcher()).launch {
 			while (isActive) {
-				val frame = latestCameraFrame.get()
-
-				if (frame != null) {
-					val textBoxes = eyeAIApp.ocrModel.analyzeFrame(frame).toTypedArray()
-					eyeAIApp.aiData.ocrBoxes.set(textBoxes)
-					overlay_ocr.setCameraResolution(
-						Size(frame.width, frame.height)
-					)
-					overlay_ocr.setResults(textBoxes)
+				if (eyeAIApp.settings.enableOCR) {
+					val frame = latestCameraFrame.get()
+					if (frame != null) {
+						val textBoxes = eyeAIApp.ocrModel.analyzeFrame(frame).toTypedArray()
+						eyeAIApp.aiData.ocrBoxes.set(textBoxes)
+						overlay_ocr.setCameraResolution(
+							Size(frame.width, frame.height)
+						)
+						overlay_ocr.setResults(textBoxes)
+					}
 				}
 			}
 		}

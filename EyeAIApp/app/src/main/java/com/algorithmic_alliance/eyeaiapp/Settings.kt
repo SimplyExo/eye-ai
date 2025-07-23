@@ -20,6 +20,9 @@ class Settings(val context: Context) {
 	var enableObjectDetection: Boolean
 		private set
 
+	var enableOCR: Boolean
+		private set
+
 	init {
 		depthModel = sharedPreferences.getString(
 			context.getString(R.string.depth_model_setting),
@@ -43,6 +46,11 @@ class Settings(val context: Context) {
 
 		enableObjectDetection = sharedPreferences.getBoolean(
 			context.getString(R.string.enable_object_detection_setting),
+			true
+		)
+
+		enableOCR = sharedPreferences.getBoolean(
+			context.getString(R.string.enable_ocr_setting),
 			true
 		)
 	}

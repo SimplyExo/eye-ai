@@ -31,4 +31,11 @@
             app:title="Enabled"
             app:defaultValue="true"/>
     </PreferenceCategory>
+
+    <PreferenceCategory app:title="OCR">
+        <CheckBoxPreference
+            app:key="@string/enable_ocr_setting"
+            app:title="Enabled"
+            app:defaultValue="true"/>
+    </PreferenceCategory>
 </PreferenceScreen>

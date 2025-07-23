@@ -42,7 +42,6 @@ class MainActivity : ComponentActivity() {
 	private var overlayObjectDetection: OverlayViewOD? = null
 	private var overlayOcr: OverlayViewOCR? = null
 
-	private var yoloInferenceDuration: TextView? = null
 	private var speechRecognitionPartialResultText: TextView? = null
 	private var speechRecognitionFinalResultText: TextView? = null
 	private var llmResponseText: TextView? = null
