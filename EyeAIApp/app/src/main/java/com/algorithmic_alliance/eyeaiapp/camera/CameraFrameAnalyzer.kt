@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.camera
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.util.Log
 import android.util.Size
 import android.widget.ImageView
 import android.widget.TextView
@@ -53,6 +54,7 @@ class CameraFrameAnalyzer(
 					NativeLib.newDepthFrame()
 
 					val predictionOutput = depthModel.predictDepth(frame)
+					eyeAIApp.aiData.depthEstimationData.set(predictionOutput)
 
 					val inputWidth = frame.width
 					val inputHeight = frame.height
@@ -90,11 +92,10 @@ class CameraFrameAnalyzer(
 					NativeLib.newObjectFrame()
 
 					// Frame analysieren
-					var inferenceTime = System.currentTimeMillis()
 					val boxes = eyeAIApp.yoloModel?.runInference(frame);
-					inferenceTime = System.currentTimeMillis() - inferenceTime
+					eyeAIApp.aiData.objectDetectionBoxes.set(boxes)
 
-					// Verarbeiten und Anzeigen der Boxes
+					// Anzeigen der Boxes
 					if (boxes != null) {
 						withContext(Dispatchers.Main) {
 							overlay_od.setResults(boxes)
@@ -117,11 +118,12 @@ class CameraFrameAnalyzer(
 				val frame = latestCameraFrame.get()
 
 				if (frame != null) {
-					val text_boxes = eyeAIApp.ocrModel.analyzeFrame(frame).toTypedArray()
+					val textBoxes = eyeAIApp.ocrModel.analyzeFrame(frame).toTypedArray()
+					eyeAIApp.aiData.ocrBoxes.set(textBoxes)
 					overlay_ocr.setCameraResolution(
 						Size(frame.width, frame.height)
 					)
-					overlay_ocr.setResults(text_boxes)
+					overlay_ocr.setResults(textBoxes)
 				}
 			}
 		}

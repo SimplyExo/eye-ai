@@ -45,6 +45,8 @@ class EyeAIApp : Application() {
 
 	var ocrModel = GoogleOCR()
 
+	var aiData = AIModelData
+
 	companion object {
 		const val APP_LOG_TAG = "Eye AI"
 
