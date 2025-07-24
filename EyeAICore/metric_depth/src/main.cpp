@@ -1,4 +1,5 @@
 #include "EyeAICore/DepthModel.hpp"
+#include "datasets/diode_dataset.hpp"
 #include "utils.hpp"
 #include <chrono>
 #include <cstdlib>
@@ -6,7 +7,6 @@
 #include <format>
 #include <iostream>
 #include <span>
-#include <unordered_map>
 
 /// max number of threads for evaluation, tested such that the drive is now the
 /// actual bottleneck
@@ -64,9 +64,11 @@ int main(const int argc, const char* argv[]) {
 		println_error_fmt("[TfLite Error] {}", msg);
 	};
 
+	DiodeDataset dataset;
+
 	std::cout << "\n=== Searching Dataset for scans ===\n\n";
 
-	const auto scans = search_for_scans_in_dataset(dataset_directory);
+	const auto diode_scan = dataset.scan(dataset_directory);
 
 	std::cout << "\n=== Evaluating Dataset ===\n\n";
 
@@ -77,84 +79,75 @@ int main(const int argc, const char* argv[]) {
 		evaluation_output_directory / "outdoor";
 	std::filesystem::create_directories(outdoors_directory);
 
-	std::atomic_size_t total_image_count = 0;
 	std::atomic_size_t current_scan_index = 0;
 
 	{
-		ThreadPool<std::unique_ptr<DepthModel>> pool(
+		const auto depth_model_thread_context_generator =
 			[&]() -> std::unique_ptr<DepthModel> {
-				auto model_data_clone = model_data;
+			auto model_data_clone = model_data;
 
-				auto result = DepthModel::create_with_raw_output(
-					std::move(model_data_clone),
-					gpu_delegate_serialization_dir.string(), midas_model_token,
-					tflite_log_warning_callback, tflite_log_error_callback
-				);
+			auto result = DepthModel::create_with_raw_output(
+				std::move(model_data_clone),
+				gpu_delegate_serialization_dir.string(), midas_model_token,
+				tflite_log_warning_callback, tflite_log_error_callback
+			);
 
-				if (result) {
-					return std::move(result.value());
-				}
-				println_error_fmt(
-					"Failed to create depth model, aborting: {}",
-					result.error().to_string()
-				);
-				exit(1);
-			},
-			thread_count
+			if (result) {
+				return std::move(result.value());
+			}
+			println_error_fmt(
+				"Failed to create depth model, aborting: {}",
+				result.error().to_string()
+			);
+			exit(1);
+		};
+
+		ThreadPool<std::unique_ptr<DepthModel>> pool(
+			depth_model_thread_context_generator, thread_count
 		);
 
-		for (const auto& [scan_id, scan_directory] : scans) {
-			const auto scans_size = scans.size();
+		size_t scan_size = diode_scan.size();
+		std::atomic_size_t current_scan_index = 0;
+		for (const auto& data_point : diode_scan) {
+			pool.enqueue([&,
+						  scan_size](std::unique_ptr<DepthModel>& depth_model) {
+				const auto scan_evaluation_start =
+					std::chrono::high_resolution_clock::now();
 
-			pool.enqueue(
-				[&, scans_size](std::unique_ptr<DepthModel>& depth_model) {
-					const DatasetScan dataset_scan =
-						search_for_images_in_scan(scan_directory);
-
-					const auto scan_evaluation_start =
-						std::chrono::high_resolution_clock::now();
-					size_t image_index = 0;
-					for (const auto& [datapoint, paths] : dataset_scan.paths) {
-						image_index++;
-						total_image_count++;
-
-						const auto result_filepath =
-							(datapoint.indoors ? indoors_directory
-											   : outdoors_directory) /
-							std::format(
-								"{}_{}_{}_result.bin", datapoint.scene_id,
-								datapoint.scan_id, datapoint.imgname
-							);
-
-						const auto result =
-							evaluate_set(*depth_model, paths, result_filepath);
-
-						if (!result.has_value()) {
-							println_error_fmt(
-								"   Failed with error: {}, skipping!",
-								result.error()
-							);
-						}
-					}
-
-					const auto scan_evaluation_duration =
-						std::chrono::duration_cast<std::chrono::milliseconds>(
-							std::chrono::high_resolution_clock::now() -
-							scan_evaluation_start
-						);
-
-					const float scan_percentage =
-						static_cast<float>(current_scan_index + 1) /
-						static_cast<float>(scans_size);
-					println_fmt(
-						"=== Scan {} [{}/{} {}%] evaluation took {} ms ===\n",
-						scan_id, current_scan_index + 1, scans_size,
-						static_cast<int>(scan_percentage * 100.f),
-						scan_evaluation_duration.count()
+				const auto result_filepath =
+					data_point->get_evaluation_result_filename(
+						evaluation_output_directory
 					);
-					current_scan_index++;
+
+				auto evaluation_result = evaluate_datapoint(
+					*depth_model, *data_point, result_filepath
+				);
+
+				if (!evaluation_result) {
+					println_error_fmt(
+						"   Failed to evaluate datapoint: {}, skipping!",
+						evaluation_result.error()
+					);
+					return;
 				}
-			);
+
+				const auto scan_evaluation_duration =
+					std::chrono::duration_cast<std::chrono::milliseconds>(
+						std::chrono::high_resolution_clock::now() -
+						scan_evaluation_start
+					);
+
+				const float scan_percentage =
+					static_cast<float>(current_scan_index + 1) /
+					static_cast<float>(scan_size);
+				println_fmt(
+					"=== Scan [{}/{} {}%] evaluation took {} ms ===\n",
+					current_scan_index + 1, scan_size,
+					static_cast<int>(scan_percentage * 100.f),
+					scan_evaluation_duration.count()
+				);
+				current_scan_index++;
+			});
 		}
 	}
 
@@ -165,14 +158,15 @@ int main(const int argc, const char* argv[]) {
 	println_fmt(
 		"==========================\nAll {} images finished! Total time "
 		"taken: {} s",
-		total_image_count.load(), total_duration.count()
+		diode_scan.size(), total_duration.count()
 	);
 
-	if (total_image_count != 771) {
+	const size_t expected_image_count = dataset.expected_image_count();
+	if (diode_scan.size() != expected_image_count) {
 		println_error_fmt(
-			"Warning: Searching the dataset found {} scanned images, but 771 "
+			"Warning: Searching the dataset found {} scanned images, but {} "
 			"were expected!",
-			total_image_count.load()
+			diode_scan.size(), expected_image_count
 		);
 	}
 }

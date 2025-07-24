@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EyeAICore/DepthModel.hpp"
+#include "datasets/dataset.hpp"
 #include <cmath>
 #include <condition_variable>
 #include <cstddef>
@@ -41,38 +42,6 @@ void println_error_fmt(const std::format_string<Args...> fmt, Args&&... args) {
 	std::cerr << formatted << '\n';
 }
 
-struct DataPoint {
-	bool indoors = true;
-	std::string scene_id;
-	std::string scan_id;
-	std::string imgname;
-
-	bool operator==(const DataPoint& other) const = default;
-
-	[[nodiscard]] std::string to_string() const noexcept;
-};
-
-namespace std {
-template<>
-struct hash<DataPoint> {
-	std::size_t operator()(const DataPoint& dp) const noexcept;
-};
-} // namespace std
-
-std::optional<DataPoint> match_image_file(const std::string& filename);
-
-std::optional<DataPoint> match_depth_file(const std::string& filename);
-
-std::optional<DataPoint> match_depth_mask_file(const std::string& filename);
-
-std::optional<std::string> match_scan_directory(const std::string& directory);
-
-struct DatasetPointPaths {
-	std::filesystem::path image_filepath;
-	std::filesystem::path depth_filepath;
-	std::filesystem::path depth_mask_filepath;
-};
-
 struct EvaluateResult {
 	/// [relative0, absolute0, relative1, absolute1]
 	std::vector<float> relative_absolute_pairs;
@@ -87,9 +56,7 @@ tl::expected<EvaluateResult, std::string> evaluate(
 	DepthModel& depth_model,
 	size_t depth_input_width,
 	size_t depth_input_height,
-	std::span<float> image_rgb,
-	std::span<float> metric_depth,
-	std::span<float> depth_mask
+	const RGBDImage& rgbd_image
 );
 
 tl::expected<std::vector<float>, std::string> load_image_file(
@@ -101,22 +68,11 @@ tl::expected<std::vector<float>, std::string> load_image_file(
 tl::expected<std::vector<float>, std::string>
 load_npy_file(const std::filesystem::path& filepath);
 
-tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
+tl::expected<std::chrono::milliseconds, std::string> evaluate_datapoint(
 	DepthModel& depth_model,
-	const DatasetPointPaths& dataset_point_paths,
+	const RGBDDataPoint& datapoint,
 	const std::filesystem::path& evaluation_output_filepath
 );
-
-struct DatasetScan {
-	std::filesystem::path directory;
-	std::unordered_map<DataPoint, DatasetPointPaths> paths;
-};
-
-std::unordered_map<std::string, std::filesystem::path>
-search_for_scans_in_dataset(const std::filesystem::path& dataset_directory);
-
-DatasetScan
-search_for_images_in_scan(const std::filesystem::path& scan_directory);
 
 /// Simple thread pool, with a context for each thread, that can be referenced
 /// by the enqueued tasks

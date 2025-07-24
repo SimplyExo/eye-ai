@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
+def meanOrZero(values):
+    return np.mean(values) if len(values) > 0 else 0
+
 def load_result_file_and_find_coeffs(filepath):
     try:
         data = np.fromfile(filepath, dtype=np.float32)
@@ -17,7 +20,7 @@ def load_result_file_and_find_coeffs(filepath):
         bin_indices = np.digitize(relative_values, bin_edges) - 1
         bin_indices[bin_indices == num_bins] = num_bins - 1
         avg_absolute_values = np.array([
-            absolute_values[bin_indices == i].mean()
+            meanOrZero(absolute_values[bin_indices == i])
             for i in range(num_bins)
         ])
         coeffs = np.polyfit(bin_edges, avg_absolute_values, 4)

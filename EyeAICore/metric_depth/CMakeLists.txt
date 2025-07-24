@@ -4,6 +4,7 @@ add_executable(EvaluateDataset
 	"src/main.cpp"
 	"src/utils.cpp"
 	"src/stb_image.cpp"
+	"src/datasets/diode_dataset.cpp"
 )
 
 target_compile_features(EvaluateDataset PUBLIC cxx_std_20)

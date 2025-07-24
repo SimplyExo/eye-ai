@@ -1,7 +1,7 @@
 #include "utils.hpp"
 #include "EyeAICore/utils/Errors.hpp"
+#include "datasets/dataset.hpp"
 #include <fstream>
-#include <regex>
 
 tl::expected<std::vector<int8_t>, std::string>
 read_binary_file(const std::filesystem::path& filepath) {
@@ -40,69 +40,7 @@ tl::expected<void, std::string> save_evaluation_result_file(
 	return {};
 }
 
-std::string DataPoint::to_string() const noexcept {
-	return std::format(
-		"{} scene {}, scan {}, image {}", indoors ? "indoors" : "outdoor",
-		scene_id, scan_id, imgname
-	);
-}
-
-std::size_t
-std::hash<DataPoint>::operator()(const DataPoint& dp) const noexcept {
-	return std::hash<bool>{}(dp.indoors) ^
-		   std::hash<std::string>{}(dp.scene_id) ^
-		   std::hash<std::string>{}(dp.scan_id) ^
-		   std::hash<std::string>{}(dp.imgname);
-}
-
-std::optional<DataPoint> match_image_file(const std::string& filename) {
-	std::regex pattern(
-		R"((\d+)_(\d+)_(outdoor|indoors)_(\w+)\.png)", std::regex::icase
-	);
-	std::smatch match;
-
-	if (std::regex_match(filename, match, pattern)) {
-		return DataPoint(match[3] == "indoors", match[1], match[2], match[4]);
-	}
-	return std::nullopt;
-}
-
-std::optional<DataPoint> match_depth_file(const std::string& filename) {
-	std::regex pattern(
-		R"((\d+)_(\d+)_(outdoor|indoors)_(\w+)_depth\.npy)", std::regex::icase
-	);
-	std::smatch match;
-
-	if (std::regex_match(filename, match, pattern)) {
-		return DataPoint(match[3] == "indoors", match[1], match[2], match[4]);
-	}
-	return std::nullopt;
-}
-
-std::optional<DataPoint> match_depth_mask_file(const std::string& filename) {
-	std::regex pattern(
-		R"((\d+)_(\d+)_(outdoor|indoors)_(\w+)_depth_mask\.npy)",
-		std::regex::icase
-	);
-	std::smatch match;
-
-	if (std::regex_match(filename, match, pattern)) {
-		return DataPoint(match[3] == "indoors", match[1], match[2], match[4]);
-	}
-	return std::nullopt;
-}
-
-std::optional<std::string> match_scan_directory(const std::string& directory) {
-	std::regex pattern(R"(scan_(\d+))", std::regex::icase);
-	std::smatch match;
-
-	if (std::regex_match(directory, match, pattern)) {
-		return match[1];
-	}
-	return std::nullopt;
-}
-
-std::string format_span(std::span<const int> s) {
+static std::string format_span(std::span<const int> s) {
 	if (s.empty())
 		return "[]";
 	std::string result = "[";
@@ -119,11 +57,9 @@ tl::expected<EvaluateResult, std::string> evaluate(
 	DepthModel& depth_model,
 	size_t depth_input_width,
 	size_t depth_input_height,
-	std::span<float> image_rgb,
-	std::span<float> metric_depth,
-	std::span<float> depth_mask
+	const RGBDImage& rgbd_image
 ) {
-	size_t pixel_count = image_rgb.size() / 3;
+	size_t pixel_count = rgbd_image.rgb.size() / 3;
 	if (pixel_count != depth_input_width * depth_input_height) {
 		return tl::unexpected_fmt(
 			"Invalid image size of {} instead of {}", pixel_count,
@@ -131,28 +67,34 @@ tl::expected<EvaluateResult, std::string> evaluate(
 		);
 	}
 
-	if (metric_depth.size() != DATASET_WIDTH * DATASET_HEIGHT) {
+	if (rgbd_image.metric_depth.size() != DATASET_WIDTH * DATASET_HEIGHT) {
 		return tl::unexpected_fmt(
 			"Invalid metric depth image size of {} instead of {}",
-			metric_depth.size(), DATASET_WIDTH * DATASET_HEIGHT
+			rgbd_image.metric_depth.size(), DATASET_WIDTH * DATASET_HEIGHT
 		);
 	}
-	if (depth_mask.size() != DATASET_WIDTH * DATASET_HEIGHT) {
+	if (rgbd_image.depth_mask &&
+		rgbd_image.depth_mask->size() != DATASET_WIDTH * DATASET_HEIGHT) {
 		return tl::unexpected_fmt(
 			"Invalid depth mask image size of {} instead of {}",
-			depth_mask.size(), DATASET_WIDTH * DATASET_HEIGHT
+			rgbd_image.depth_mask->size(), DATASET_WIDTH * DATASET_HEIGHT
 		);
 	}
 
 	EvaluateResult result;
 	result.relative_absolute_pairs.reserve(pixel_count * 2);
 
+	std::vector<float> image_rgb(rgbd_image.rgb);
 	std::vector<float> depth_estimation(pixel_count);
 
 	if (const auto error =
 			depth_model.run(image_rgb, std::span<float>(depth_estimation))) {
 		return tl::unexpected(error->to_string());
 	}
+
+	const auto skip_image_depth = [&](size_t image_index) -> bool {
+		return rgbd_image.depth_mask && !(*rgbd_image.depth_mask)[image_index];
+	};
 
 	for (size_t y = 0; y < depth_input_height; ++y) {
 		for (size_t x = 0; x < depth_input_width; ++x) {
@@ -166,10 +108,10 @@ tl::expected<EvaluateResult, std::string> evaluate(
 				 DATASET_WIDTH) +
 				(static_cast<size_t>(relative_x * DATASET_WIDTH));
 
-			if (depth_mask[dataset_image_index] == 0.f)
+			if (skip_image_depth(dataset_image_index))
 				continue;
 
-			float absolute = metric_depth[dataset_image_index];
+			float absolute = rgbd_image.metric_depth[dataset_image_index];
 			if (absolute < DATASET_MIN || absolute > DATASET_MAX)
 				continue;
 
@@ -237,9 +179,9 @@ load_npy_file(const std::filesystem::path& filepath) {
 	}
 }
 
-tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
+tl::expected<std::chrono::milliseconds, std::string> evaluate_datapoint(
 	DepthModel& depth_model,
-	const DatasetPointPaths& dataset_point_paths,
+	const RGBDDataPoint& datapoint,
 	const std::filesystem::path& evaluation_output_filepath
 ) {
 	const auto start = std::chrono::high_resolution_clock::now();
@@ -276,38 +218,22 @@ tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
 		);
 	}
 
-	auto image_result = load_image_file(
-		dataset_point_paths.image_filepath, depth_input_width,
-		depth_input_height
-	);
-	if (!image_result.has_value())
-		return tl::unexpected(image_result.error());
+	auto rgbd_image_result =
+		datapoint.load(depth_input_width, depth_input_height);
+	if (!rgbd_image_result)
+		return tl::unexpected(rgbd_image_result.error());
+	RGBDImage& rgbd_image = rgbd_image_result.value();
 
-	std::vector<float>& image = image_result.value();
-	if (image.size() != depth_input_width * depth_input_height * 3) {
+	if (rgbd_image.rgb.size() != depth_input_width * depth_input_height * 3) {
 		return tl::unexpected_fmt(
 			"invalid image size of {} pixels, expected {}x{}={} pixels",
-			image.size() / 3, depth_input_width, depth_input_height,
+			rgbd_image.rgb.size() / 3, depth_input_width, depth_input_height,
 			depth_input_width * depth_input_height * 3
 		);
 	}
 
-	auto depth_result = load_npy_file(dataset_point_paths.depth_filepath);
-	if (!depth_result.has_value())
-		return tl::unexpected(depth_result.error());
-
-	std::vector<float>& depth = depth_result.value();
-
-	auto depth_mask_result =
-		load_npy_file(dataset_point_paths.depth_mask_filepath);
-	if (!depth_mask_result.has_value())
-		return tl::unexpected(depth_mask_result.error());
-
-	std::vector<float>& depth_mask = depth_mask_result.value();
-
 	const auto result = evaluate(
-		depth_model, depth_input_width, depth_input_height, image, depth,
-		depth_mask
+		depth_model, depth_input_width, depth_input_height, rgbd_image
 	);
 	if (!result.has_value())
 		return tl::unexpected(result.error());
@@ -322,98 +248,4 @@ tl::expected<std::chrono::milliseconds, std::string> evaluate_set(
 	return std::chrono::duration_cast<std::chrono::milliseconds>(
 		std::chrono::high_resolution_clock::now() - start
 	);
-}
-
-std::unordered_map<std::string, std::filesystem::path>
-search_for_scans_in_dataset(const std::filesystem::path& dataset_directory) {
-	std::unordered_map<std::string, std::filesystem::path> scan_paths;
-
-	for (const auto& entry :
-		 std::filesystem::recursive_directory_iterator(dataset_directory)) {
-
-		if (entry.is_directory()) {
-			const auto& filepath = entry.path();
-			const auto filename = filepath.filename();
-
-			const std::optional<std::string> scan_id =
-				match_scan_directory(filename);
-
-			if (scan_id)
-				scan_paths[*scan_id] = filepath;
-		}
-	}
-
-	return scan_paths;
-}
-
-DatasetScan
-search_for_images_in_scan(const std::filesystem::path& scan_directory) {
-	std::unordered_map<DataPoint, std::filesystem::path> image_filepaths;
-	std::unordered_map<DataPoint, std::filesystem::path> depth_filepaths;
-	std::unordered_map<DataPoint, std::filesystem::path> depth_mask_filepaths;
-
-	for (const auto& entry :
-		 std::filesystem::directory_iterator(scan_directory)) {
-
-		const auto& filepath = entry.path();
-		const auto filename = filepath.filename();
-		if (!entry.is_regular_file())
-			continue;
-
-		const std::optional<DataPoint> image_data_point =
-			match_image_file(filename);
-		if (image_data_point) {
-			image_filepaths[*image_data_point] = filepath;
-			continue;
-		}
-		const std::optional<DataPoint> depth_data_point =
-			match_depth_file(filename);
-		if (depth_data_point) {
-			depth_filepaths[*depth_data_point] = filepath;
-			continue;
-		}
-
-		const std::optional<DataPoint> depth_mask_data_point =
-			match_depth_mask_file(filename);
-		if (depth_mask_data_point) {
-			depth_mask_filepaths[*depth_mask_data_point] = filepath;
-		} else if (filename.extension() == ".bin") {
-			println_fmt("(Skipping file {})", filepath.string());
-		}
-	}
-
-	std::unordered_map<DataPoint, DatasetPointPaths> dataset_paths;
-	for (const auto& [data_point, image_path] : image_filepaths) {
-		if (depth_filepaths.contains(data_point)) {
-			if (depth_mask_filepaths.contains(data_point)) {
-				dataset_paths[data_point] = DatasetPointPaths(
-					image_path, depth_filepaths.at(data_point),
-					depth_mask_filepaths.at(data_point)
-				);
-			} else {
-				println_fmt(
-					"(Skipping {} with no depth mask)", data_point.to_string()
-				);
-			}
-		} else {
-			println_fmt("(Skipping {} with no depth)", data_point.to_string());
-		}
-	}
-	for (const auto& [depth_info, depth_path] : depth_filepaths) {
-		if (!dataset_paths.contains(depth_info)) {
-			println_fmt(
-				"(Skipping {} with no image or depth_mask)",
-				depth_info.to_string()
-			);
-		}
-	}
-	for (const auto& [depth_info, depth_path] : depth_mask_filepaths) {
-		if (!dataset_paths.contains(depth_info)) {
-			println_fmt(
-				"(Skipping {} with no image or depth)", depth_info.to_string()
-			);
-		}
-	}
-
-	return DatasetScan(scan_directory, dataset_paths);
 }
