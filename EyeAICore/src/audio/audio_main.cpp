@@ -1,3 +1,4 @@
+#include "EyeAICore/audio/AudioData.hpp"
 #include <iostream>
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -25,24 +26,12 @@ int audio_main(){
 
     alListener3f(AL_POSITION, 0.0,0.0,0.0);
 
-    // Audio-Parameter
-    const int sampleRate = 44100;
-    const float frequency = 200.0f; // 200 Hz
-    const float duration = 2.0f;    // Sekunden
-    const int numSamples = static_cast<int>(sampleRate * duration);
-    const float amplitude = 0.5f;   // Lautstärke (0.0–1.0)
-
-    // PCM-Daten erzeugen (Mono, 16-bit)
-    std::vector<short> samples(numSamples);
-    for (int i = 0; i < numSamples; ++i) {
-        float t = static_cast<float>(i) / sampleRate;
-        samples[i] = static_cast<short>(amplitude * 32760 * std::sin(2.0f * PI * frequency * t));
-    }
+    AudioData audioData1(200.0f, 2.0f);
 
     // Buffer erzeugen
     ALuint buffer;
     alGenBuffers(1, &buffer);
-    alBufferData(buffer, AL_FORMAT_MONO16, samples.data(), numSamples * sizeof(short), sampleRate);
+    alBufferData(buffer, AL_FORMAT_MONO16, audioData1.samples.data(), audioData1.numSamples * sizeof(short), audioData1.sampleRate);
 
     // Source erzeugen
     ALuint source;
