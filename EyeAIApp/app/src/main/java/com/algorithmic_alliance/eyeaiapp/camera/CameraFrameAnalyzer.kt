@@ -93,7 +93,7 @@ class CameraFrameAnalyzer(
 						NativeLib.newObjectFrame()
 
 						// Frame analysieren
-						val boxes = eyeAIApp.yoloModel?.runInference(frame);
+						val boxes = eyeAIApp.yoloModel?.runInference(frame)
 						eyeAIApp.aiData.objectDetectionBoxes.set(boxes)
 
 						// Anzeigen der Boxes
@@ -110,6 +110,8 @@ class CameraFrameAnalyzer(
 							}
 						}
 					}
+				} else {
+					overlay_od.reset()
 				}
 			}
 		}
@@ -127,6 +129,8 @@ class CameraFrameAnalyzer(
 						)
 						overlay_ocr.setResults(textBoxes)
 					}
+				} else {
+					overlay_ocr.reset()
 				}
 			}
 		}

@@ -15,6 +15,8 @@ import androidx.camera.view.PreviewView
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
+import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
+import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
