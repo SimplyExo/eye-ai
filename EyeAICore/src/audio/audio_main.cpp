@@ -1,10 +1,12 @@
 #include "EyeAICore/audio/AudioData.hpp"
+#include "EyeAICore/audio/Source.hpp"
 #include <iostream>
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <cstring>
 #include <vector>
 #include <cmath>
+#include <array>
 
 constexpr float PI = 3.14159265f;
 
@@ -27,30 +29,14 @@ int audio_main(){
     alListener3f(AL_POSITION, 0.0,0.0,0.0);
 
     AudioData audioData1(200.0f, 2.0f);
+    std::array<float, 3> position = {-1.0,0.0,0.0};
+    Source source1(audioData1, position);
 
-    // Buffer erzeugen
-    ALuint buffer;
-    alGenBuffers(1, &buffer);
-    alBufferData(buffer, AL_FORMAT_MONO16, audioData1.samples.data(), audioData1.numSamples * sizeof(short), audioData1.sampleRate);
+    AudioData audioData2(200.0f, 2.0f);
+    position = {1.0,0.0,0.0};
+    Source source2(audioData2, position);
+    
 
-    // Source erzeugen
-    ALuint source;
-    alGenSources(1, &source);
-    alSourcei(source, AL_BUFFER, buffer);
-
-    alSource3f(source, AL_POSITION, 5.0,5.0,0.0);
-
-    alSourcePlay(source);
-
-    // Warten, bis Ton abgespielt wurde
-    ALint state;
-    do {
-        alGetSourcei(source, AL_SOURCE_STATE, &state);
-    } while (state == AL_PLAYING);
-
-    // Aufräumen
-    alDeleteSources(1, &source);
-    alDeleteBuffers(1, &buffer);
     alcMakeContextCurrent(nullptr);
     alcDestroyContext(context);
     alcCloseDevice(device);
