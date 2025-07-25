@@ -16,7 +16,9 @@ import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -39,13 +41,17 @@ class CameraFrameAnalyzer(
 	private var objectDetectionProcessingExecutor = Executors.newSingleThreadExecutor()
 	private var ocrProcessingExecutor = Executors.newSingleThreadExecutor()
 
+	private val depthScope = CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher())
+	private val objectScope = CoroutineScope(objectDetectionProcessingExecutor.asCoroutineDispatcher())
+	private val ocrScope = CoroutineScope(ocrProcessingExecutor.asCoroutineDispatcher())
+
 	private var latestCameraFrame = AtomicReference<Bitmap?>(null)
 
 	private lateinit var colorMappedImage: Bitmap
 
-	init {
+	fun start() {
 		// DepthAnalyzer
-		CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher()).launch {
+		depthScope.launch {
 			while (isActive) {
 				val depthModel = eyeAIApp.depthModel
 				val frame = latestCameraFrame.get()
@@ -84,7 +90,7 @@ class CameraFrameAnalyzer(
 		}
 
 		// Objekterkennung
-		CoroutineScope(objectDetectionProcessingExecutor.asCoroutineDispatcher()).launch {
+		objectScope.launch {
 			while (isActive) {
 				if (eyeAIApp.settings.enableObjectDetection) {
 					val frame = latestCameraFrame.get()
@@ -117,7 +123,7 @@ class CameraFrameAnalyzer(
 		}
 
 		// OCR Texterkennung
-		CoroutineScope(ocrProcessingExecutor.asCoroutineDispatcher()).launch {
+		ocrScope.launch {
 			while (isActive) {
 				if (eyeAIApp.settings.enableOCR) {
 					val frame = latestCameraFrame.get()
@@ -135,6 +141,32 @@ class CameraFrameAnalyzer(
 			}
 		}
 	}
+
+	fun shutdown(timeoutMillis: Long = 1000) {
+		depthScope.cancel()
+		objectScope.cancel()
+		ocrScope.cancel()
+
+		try {
+			// Warten auf Beendigung (maximal timeoutMillis)
+			if (!depthProcessingExecutor.awaitTermination(timeoutMillis, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+				depthProcessingExecutor.shutdownNow()
+			}
+			if (!objectDetectionProcessingExecutor.awaitTermination(timeoutMillis, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+				objectDetectionProcessingExecutor.shutdownNow()
+			}
+			if (!ocrProcessingExecutor.awaitTermination(timeoutMillis, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+				ocrProcessingExecutor.shutdownNow()
+			}
+		} catch (e: InterruptedException) {
+			// Im Fehlerfall sofort hart abbrechen
+			depthProcessingExecutor.shutdownNow()
+			objectDetectionProcessingExecutor.shutdownNow()
+			ocrProcessingExecutor.shutdownNow()
+			Thread.currentThread().interrupt() // Thread-Flag setzen
+		}
+	}
+
 
 	@OptIn(ExperimentalGetImage::class)
 	override fun analyze(image: ImageProxy) {

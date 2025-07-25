@@ -11,7 +11,6 @@ import androidx.camera.core.TorchState
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp.Companion.APP_LOG_TAG
 import com.google.common.util.concurrent.ListenableFuture
@@ -26,7 +25,7 @@ class CameraManager {
 	private var cameraProviderListenableFuture: ListenableFuture<ProcessCameraProvider>? = null
 	private var camera: Camera? = null
 	var cameraPreview: Preview? = null
-	private var depthAnalysisView: ImageAnalysis? = null
+	private var analysisView: ImageAnalysis? = null
 
 	fun init(
 		context: Context,
@@ -44,19 +43,14 @@ class CameraManager {
 					val cameraProvider: ProcessCameraProvider =
 						cameraProviderListenableFuture!!.get()
 
-					if (!lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-						camera = null
-					}
-
-					if (cameraPreview != null) cameraProvider.unbind(cameraPreview)
-
-					if (depthAnalysisView != null) cameraProvider.unbind(depthAnalysisView)
+					analysisView?.clearAnalyzer()
+					analysisView = null
 
 					cameraPreview =
 						Preview.Builder().setTargetFrameRate(Range<Int>(60, 120)).build()
 					cameraPreview!!.surfaceProvider = cameraPreviewView!!.surfaceProvider
 
-					depthAnalysisView =
+					analysisView =
 						ImageAnalysis.Builder()
 							.setImageQueueDepth(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 							.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -67,15 +61,16 @@ class CameraManager {
 								)
 							)
 							.build()
-					depthAnalysisView!!.setAnalyzer(
+					analysisView!!.setAnalyzer(
 						Executors.newCachedThreadPool(),
 						cameraFrameAnalyzer
 					)
 
-					camera = cameraProvider.bindToLifecycle(
+					cameraProvider.unbindAll()
+					cameraProvider.bindToLifecycle(
 						lifecycleOwner,
 						mostWideCameraSelector(cameraProvider),
-						depthAnalysisView,
+						analysisView,
 						cameraPreview
 					)
 

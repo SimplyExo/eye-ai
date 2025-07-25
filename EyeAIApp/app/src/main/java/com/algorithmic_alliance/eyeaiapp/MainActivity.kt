@@ -94,14 +94,9 @@ class MainActivity : ComponentActivity() {
 				overlayOcr!!
 			)
 
-		permissionManager.requestPermissions()
-
-		eyeAIApp().onDepthModelLoadedCallback = { initCamera() }
+		cameraFrameAnalyzer?.start()
 
 		updateUngrantedPermissionsNotice()
-
-		if (permissionManager.isCameraPermissionGranted())
-			initCamera()
 
 		if (permissionManager.isMicrophonePermissionGranted()) {
 			eyeAIApp()
@@ -132,10 +127,7 @@ class MainActivity : ComponentActivity() {
 
 		updateFlashlightButtonTint(eyeAIApp().cameraManager.isCameraFlashlightOn())
 
-		val cameraPermissionGranted = permissionManager.isCameraPermissionGranted()
-
-		if (eyeAIApp().cameraManager.cameraPreview == null && cameraPermissionGranted)
-			initCamera()
+		permissionManager.isCameraPermissionGranted()
 
 		val voskModelInitialized = eyeAIApp().voskModel?.isInitialized() == true
 		if (permissionManager.isMicrophonePermissionGranted() && !voskModelInitialized) {
@@ -167,6 +159,7 @@ class MainActivity : ComponentActivity() {
 	override fun onDestroy() {
 		super.onDestroy()
 
+		cameraFrameAnalyzer?.shutdown()
 		eyeAIApp().voskModel?.closeService()
 	}
 
