@@ -48,7 +48,7 @@ clinfo
 
    ```bash
    cmake --preset=debug
-   ./scripts/build_and_run_eval_dataset.sh <dataset_directory> <dataset_evaluation_directory>
+   ./scripts/build_and_run_eval_dataset.sh <diode or sun_rgbd> <dataset_directory> <dataset_evaluation_directory>
    ```
 
 3. (optional) Visualize the evaluation:

@@ -47,11 +47,8 @@ struct EvaluateResult {
 	std::vector<float> relative_absolute_pairs;
 };
 
-constexpr size_t DATASET_WIDTH = 1024;
-constexpr size_t DATASET_HEIGHT = 768;
-constexpr float DATASET_MIN = 0.6f;
-constexpr float DATASET_MAX = 350.f;
-
+/// rgb image of rgbd_image must match depth_input dimensions, depth image of
+/// rgbd_image will be resized to match depth_input dimensions
 tl::expected<EvaluateResult, std::string> evaluate(
 	DepthModel& depth_model,
 	size_t depth_input_width,
@@ -59,10 +56,17 @@ tl::expected<EvaluateResult, std::string> evaluate(
 	const RGBDImage& rgbd_image
 );
 
-tl::expected<std::vector<float>, std::string> load_image_file(
+tl::expected<std::vector<float>, std::string> load_rgb_image_file(
 	const std::filesystem::path& filepath,
 	size_t target_width,
 	size_t target_height
+);
+
+tl::expected<std::vector<uint16_t>, std::string>
+load_16bit_greyscale_image_file(
+	const std::filesystem::path& filepath,
+	size_t& out_width,
+	size_t& out_height
 );
 
 tl::expected<std::vector<float>, std::string>

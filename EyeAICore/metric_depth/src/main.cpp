@@ -1,5 +1,6 @@
 #include "EyeAICore/DepthModel.hpp"
 #include "datasets/diode_dataset.hpp"
+#include "datasets/sun_rgbd_dataset.hpp"
 #include "utils.hpp"
 #include <chrono>
 #include <cstdlib>
@@ -15,10 +16,10 @@ constexpr size_t MAX_THREAD_COUNT = 6;
 int main(const int argc, const char* argv[]) {
 	const auto start = std::chrono::high_resolution_clock::now();
 
-	if (argc != 4) {
+	if (argc != 5) {
 		println_error_fmt(
-			"Usage: EvaluateDataset <midas.tflite> <dataset_directory> "
-			"<evaluation_output_directory>"
+			"Usage: EvaluateDataset <diode or sun_rgbd> <midas.tflite> "
+			"<dataset_directory> <evaluation_output_directory>"
 		);
 		return 1;
 	}
@@ -27,9 +28,10 @@ int main(const int argc, const char* argv[]) {
 
 	const std::filesystem::path temp_dir =
 		std::filesystem::temp_directory_path();
-	const std::filesystem::path midas_model_path = args[1];
-	const std::filesystem::path dataset_directory = args[2];
-	const std::filesystem::path evaluation_output_directory = args[3];
+	const std::string_view dataset_type = args[1];
+	const std::filesystem::path midas_model_path = args[2];
+	const std::filesystem::path dataset_directory = args[3];
+	const std::filesystem::path evaluation_output_directory = args[4];
 
 	const auto midas_model_last_modified =
 		std::filesystem::last_write_time(midas_model_path);
@@ -64,20 +66,21 @@ int main(const int argc, const char* argv[]) {
 		println_error_fmt("[TfLite Error] {}", msg);
 	};
 
-	DiodeDataset dataset;
+	std::unique_ptr<RGBDDataset> dataset;
+	if (dataset_type == "diode")
+		dataset = std::make_unique<DiodeDataset>();
+	else if (dataset_type == "sun_rgbd")
+		dataset = std::make_unique<SUN_RGBD_Dataset>();
+	else {
+		println_error_fmt("unknown dataset type: {}", dataset_type);
+		return 1;
+	}
 
 	std::cout << "\n=== Searching Dataset for scans ===\n\n";
 
-	const auto diode_scan = dataset.scan(dataset_directory);
+	const auto diode_scan = dataset->scan(dataset_directory);
 
 	std::cout << "\n=== Evaluating Dataset ===\n\n";
-
-	std::filesystem::path indoors_directory =
-		evaluation_output_directory / "indoors";
-	std::filesystem::create_directories(indoors_directory);
-	std::filesystem::path outdoors_directory =
-		evaluation_output_directory / "outdoor";
-	std::filesystem::create_directories(outdoors_directory);
 
 	std::atomic_size_t current_scan_index = 0;
 
@@ -161,7 +164,7 @@ int main(const int argc, const char* argv[]) {
 		diode_scan.size(), total_duration.count()
 	);
 
-	const size_t expected_image_count = dataset.expected_image_count();
+	const size_t expected_image_count = dataset->expected_image_count();
 	if (diode_scan.size() != expected_image_count) {
 		println_error_fmt(
 			"Warning: Searching the dataset found {} scanned images, but {} "

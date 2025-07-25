@@ -7,8 +7,14 @@
 #include <vector>
 
 struct RGBDImage {
+	size_t rgb_width;
+	size_t rgb_height;
+
 	/// one float for each channel (3: rgb) per pixel
 	std::vector<float> rgb;
+
+	size_t depth_width;
+	size_t depth_height;
 
 	/// one float per pixel
 	std::vector<float> metric_depth;
@@ -37,7 +43,7 @@ class RGBDDataset {
 	virtual ~RGBDDataset() = default;
 
 	[[nodiscard]] virtual std::vector<std::unique_ptr<RGBDDataPoint>>
-	scan(const std::filesystem::path& dataset_directory) = 0;
+	scan(const std::filesystem::path& dataset_directory) const = 0;
 
 	[[nodiscard]] virtual size_t expected_image_count() const = 0;
 };

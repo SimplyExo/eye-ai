@@ -53,8 +53,11 @@ struct DiodeDataPoint : public RGBDDataPoint {
 
 class DiodeDataset : public RGBDDataset {
   public:
+	constexpr static size_t DEPTH_WIDTH = 1024;
+	constexpr static size_t DEPTH_HEIGHT = 768;
+
 	[[nodiscard]] std::vector<std::unique_ptr<RGBDDataPoint>>
-	scan(const std::filesystem::path& dataset_directory) override;
+	scan(const std::filesystem::path& dataset_directory) const override;
 
 	[[nodiscard]] size_t expected_image_count() const override { return 771; }
 };

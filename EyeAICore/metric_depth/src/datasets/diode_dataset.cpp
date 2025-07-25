@@ -33,25 +33,46 @@ tl::expected<RGBDImage, std::string> DiodeDataPoint::load(
 	size_t depth_input_width,
 	size_t depth_input_height
 ) const {
-	auto image_result =
-		load_image_file(image_filepath, depth_input_width, depth_input_height);
+	auto image_result = load_rgb_image_file(
+		image_filepath, depth_input_width, depth_input_height
+	);
 	if (!image_result)
 		return tl::make_unexpected(image_result.error());
 
 	auto depth_result = load_npy_file(depth_filepath);
 	if (!depth_result)
 		return tl::make_unexpected(depth_result.error());
+	auto& depth = *depth_result;
+	size_t expected_depth_size =
+		DiodeDataset::DEPTH_WIDTH * DiodeDataset::DEPTH_HEIGHT;
+	if (depth.size() != expected_depth_size) {
+		return tl::unexpected(
+			std::format(
+				"Invalid depth size: expected {}, got {}", expected_depth_size,
+				depth.size()
+			)
+		);
+	}
 
 	const auto depth_mask_result = load_npy_file(depth_mask_filepath);
 	if (!depth_mask_result)
 		return tl::make_unexpected(depth_mask_result.error());
+	if (depth_mask_result->size() != expected_depth_size) {
+		return tl::unexpected(
+			std::format(
+				"Invalid depth mask size: expected {}, got {}",
+				expected_depth_size, depth_mask_result->size()
+			)
+		);
+	}
 	std::vector<bool> depth_mask(depth_mask_result->size());
 	for (size_t i = 0; i < depth_mask.size(); ++i) {
 		depth_mask[i] = (*depth_mask_result)[i] != 0.f;
 	}
 
 	return RGBDImage(
-		std::move(*image_result), std::move(*depth_result),
+		depth_input_width, depth_input_height, std::move(*image_result),
+		DiodeDataset::DEPTH_WIDTH, DiodeDataset::DEPTH_HEIGHT, std::move(depth),
 		std::move(depth_mask)
 	);
 }
@@ -226,7 +247,7 @@ search_for_datapoints_in_scan(const std::filesystem::path& scan_directory) {
 }
 
 std::vector<std::unique_ptr<RGBDDataPoint>>
-DiodeDataset::scan(const std::filesystem::path& dataset_directory) {
+DiodeDataset::scan(const std::filesystem::path& dataset_directory) const {
 	std::unordered_map<std::string, std::filesystem::path> scan_paths =
 		search_for_scans_in_dataset(dataset_directory);
 

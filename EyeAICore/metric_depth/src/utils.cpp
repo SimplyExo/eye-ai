@@ -67,20 +67,6 @@ tl::expected<EvaluateResult, std::string> evaluate(
 		);
 	}
 
-	if (rgbd_image.metric_depth.size() != DATASET_WIDTH * DATASET_HEIGHT) {
-		return tl::unexpected_fmt(
-			"Invalid metric depth image size of {} instead of {}",
-			rgbd_image.metric_depth.size(), DATASET_WIDTH * DATASET_HEIGHT
-		);
-	}
-	if (rgbd_image.depth_mask &&
-		rgbd_image.depth_mask->size() != DATASET_WIDTH * DATASET_HEIGHT) {
-		return tl::unexpected_fmt(
-			"Invalid depth mask image size of {} instead of {}",
-			rgbd_image.depth_mask->size(), DATASET_WIDTH * DATASET_HEIGHT
-		);
-	}
-
 	EvaluateResult result;
 	result.relative_absolute_pairs.reserve(pixel_count * 2);
 
@@ -92,28 +78,30 @@ tl::expected<EvaluateResult, std::string> evaluate(
 		return tl::unexpected(error->to_string());
 	}
 
-	const auto skip_image_depth = [&](size_t image_index) -> bool {
+	const auto skip_depth_value = [&](size_t image_index) -> bool {
 		return rgbd_image.depth_mask && !(*rgbd_image.depth_mask)[image_index];
 	};
 
-	for (size_t y = 0; y < depth_input_height; ++y) {
-		for (size_t x = 0; x < depth_input_width; ++x) {
+	for (size_t y = 0; y < depth_input_width; ++y) {
+		for (size_t x = 0; x < depth_input_height; ++x) {
 			size_t input_image_index = (y * depth_input_width) + x;
 			float relative_x =
 				static_cast<float>(x) / static_cast<float>(depth_input_width);
 			float relative_y =
 				static_cast<float>(y) / static_cast<float>(depth_input_height);
-			size_t dataset_image_index =
-				(static_cast<size_t>(relative_y * DATASET_HEIGHT) *
-				 DATASET_WIDTH) +
-				(static_cast<size_t>(relative_x * DATASET_WIDTH));
+			size_t depth_index =
+				(static_cast<size_t>(
+					 relative_y * static_cast<float>(rgbd_image.depth_height)
+				 ) *
+				 rgbd_image.depth_width) +
+				(static_cast<size_t>(
+					relative_x * static_cast<float>(rgbd_image.depth_width)
+				));
 
-			if (skip_image_depth(dataset_image_index))
+			if (skip_depth_value(depth_index))
 				continue;
 
-			float absolute = rgbd_image.metric_depth[dataset_image_index];
-			if (absolute < DATASET_MIN || absolute > DATASET_MAX)
-				continue;
+			float absolute = rgbd_image.metric_depth[depth_index];
 
 			float relative = depth_estimation[input_image_index];
 			result.relative_absolute_pairs.push_back(relative);
@@ -124,7 +112,7 @@ tl::expected<EvaluateResult, std::string> evaluate(
 	return result;
 }
 
-tl::expected<std::vector<float>, std::string> load_image_file(
+tl::expected<std::vector<float>, std::string> load_rgb_image_file(
 	const std::filesystem::path& filepath,
 	size_t target_width,
 	size_t target_height
@@ -155,6 +143,43 @@ tl::expected<std::vector<float>, std::string> load_image_file(
 	stbi_image_free(data);
 
 	return resized_image;
+}
+
+tl::expected<std::vector<uint16_t>, std::string>
+load_16bit_greyscale_image_file(
+	const std::filesystem::path& filepath,
+	size_t& out_width,
+	size_t& out_height
+) {
+	const std::string filepath_str = filepath.string();
+	int width = 0;
+	int height = 0;
+	int channels = STBI_grey;
+	stbi_us* data = stbi_load_16(
+		filepath_str.c_str(), &width, &height, &channels, STBI_grey
+	);
+	if (channels != STBI_grey) {
+		return tl::unexpected_fmt(
+			"invalid channels other than greyscale in image file {}",
+			filepath_str
+		);
+	}
+	if (data == nullptr) {
+		return tl::unexpected_fmt(
+			"failed to load greyscale image file {}", filepath_str
+		);
+	}
+
+	std::vector<uint16_t> image(static_cast<size_t>(width * height));
+	out_width = static_cast<size_t>(width);
+	out_height = static_cast<size_t>(height);
+	std::memcpy(
+		image.data(), data, image.size() * sizeof(decltype(image)::value_type)
+	);
+
+	stbi_image_free(data);
+
+	return image;
 }
 
 tl::expected<std::vector<float>, std::string>
