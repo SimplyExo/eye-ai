@@ -88,14 +88,6 @@ class MainActivity : ComponentActivity() {
 			overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
 		}
 
-		cameraFrameAnalyzer =
-			CameraFrameAnalyzer(
-				eyeAIApp(), depthPreviewImage!!, performanceText!!, overlayObjectDetection!!,
-				overlayOcr!!
-			)
-
-		cameraFrameAnalyzer?.start()
-
 		updateUngrantedPermissionsNotice()
 
 		if (permissionManager.isMicrophonePermissionGranted()) {
@@ -127,7 +119,13 @@ class MainActivity : ComponentActivity() {
 
 		updateFlashlightButtonTint(eyeAIApp().cameraManager.isCameraFlashlightOn())
 
-		permissionManager.isCameraPermissionGranted()
+		cameraFrameAnalyzer =
+			CameraFrameAnalyzer(
+				eyeAIApp(), depthPreviewImage!!, performanceText!!, overlayObjectDetection!!,
+				overlayOcr!!
+			)
+
+		cameraFrameAnalyzer?.start()
 
 		val voskModelInitialized = eyeAIApp().voskModel?.isInitialized() == true
 		if (permissionManager.isMicrophonePermissionGranted() && !voskModelInitialized) {
