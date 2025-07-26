@@ -67,24 +67,29 @@ class EyeAIApp : Application() {
 	override fun onCreate() {
 		super.onCreate()
 
-		settings = Settings(this)
+		val context = this
 
-		switchDepthModel(settings.depthModel)
+		settings = Settings(context)
 
-		if (settings.enableSpeechRecognition)
-			voskModel = VoskModel(this, "model-de")
+		// long blocking loading of ai models on seperate executor/thread
+		CoroutineScope(Dispatchers.IO).launch {
+			switchDepthModel(settings.depthModel)
 
-		settings.googleAiStudioApiKey?.let {
-			if (!it.isEmpty())
-				llm = GoogleAIStudioLLM(it)
+			if (settings.enableSpeechRecognition)
+				voskModel = VoskModel(context, "model-de")
+
+			settings.googleAiStudioApiKey?.let {
+				if (!it.isEmpty())
+					llm = GoogleAIStudioLLM(it)
+			}
+
+			// Yolo Model erstellen
+			yoloModel = YoloModel(YoloModelInfo("model.tflite", 640))
+			yoloModel!!.create(baseContext)
+
+			// Google ML Kit initialisieren
+			ocrModel.create()
 		}
-
-		// Yolo Model erstellen
-		yoloModel = YoloModel(YoloModelInfo("model.tflite", 640))
-		yoloModel!!.create(baseContext)
-
-		// Google ML Kit initialisieren
-		ocrModel.create()
 	}
 
 	fun getPreferredCameraResolution(): Size? {
@@ -138,15 +143,8 @@ class EyeAIApp : Application() {
 			depthModel = findDepthModelInfo(modelName)
 				.createDepthModel(context)
 
-			if (depthModel != null) {
-				withContext(Dispatchers.Main) {
-					onDepthModelLoadedCallback()
-				}
-			} else {
-				Log.e(
-					APP_LOG_TAG,
-					"Failed to init depth model $modelName"
-				)
+			withContext(Dispatchers.Main) {
+				onDepthModelLoadedCallback()
 			}
 		}
 	}
