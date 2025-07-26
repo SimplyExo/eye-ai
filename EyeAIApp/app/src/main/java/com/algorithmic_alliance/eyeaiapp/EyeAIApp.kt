@@ -71,25 +71,22 @@ class EyeAIApp : Application() {
 
 		settings = Settings(context)
 
-		// long blocking loading of ai models on seperate executor/thread
-		CoroutineScope(Dispatchers.IO).launch {
-			switchDepthModel(settings.depthModel)
+		switchDepthModel(settings.depthModel)
 
-			if (settings.enableSpeechRecognition)
-				voskModel = VoskModel(context, "model-de")
+		if (settings.enableSpeechRecognition)
+			voskModel = VoskModel(context, "model-de")
 
-			settings.googleAiStudioApiKey?.let {
-				if (!it.isEmpty())
-					llm = GoogleAIStudioLLM(it)
-			}
-
-			// Yolo Model erstellen
-			yoloModel = YoloModel(YoloModelInfo("model.tflite", 640))
-			yoloModel!!.create(baseContext)
-
-			// Google ML Kit initialisieren
-			ocrModel.create()
+		settings.googleAiStudioApiKey?.let {
+			if (!it.isEmpty())
+				llm = GoogleAIStudioLLM(it)
 		}
+
+		// Yolo Model erstellen
+		yoloModel = YoloModel(YoloModelInfo("model.tflite", 640))
+		yoloModel!!.create(baseContext)
+
+		// Google ML Kit initialisieren
+		ocrModel.create()
 	}
 
 	fun getPreferredCameraResolution(): Size? {

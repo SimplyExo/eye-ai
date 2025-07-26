@@ -239,6 +239,8 @@ class MainActivity : AppCompatActivity() {
 						preferredInputSize,
 						cameraPreviewView
 					)
+			} else {
+				Log.e(EyeAIApp.APP_LOG_TAG, "COULD NOT INIT CAMERA, DEPTH MODEL NOT LOADED YET!")
 			}
 		} else {
 			ungrantedPermissionsNotice!!.visibility = VISIBLE
