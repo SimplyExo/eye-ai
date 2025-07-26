@@ -65,6 +65,14 @@
                 app:implementationMode="performance"
                 app:scaleType="fitCenter" />
 
+            <ImageView
+                android:id="@+id/debug_input_bitmap"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/debug_input_bitmap_image_description" />
+
             <com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
                 android:id="@+id/overlay_object_detection"
                 android:layout_width="match_parent"

@@ -27,7 +27,6 @@ import kotlinx.coroutines.withContext
  * the camera handle and the loaded depth model
  */
 class EyeAIApp : Application() {
-	var cameraManager = CameraManager()
 	lateinit var settings: Settings
 		private set
 	var depthModel: DepthModel? = null
