@@ -20,7 +20,7 @@ class CameraClient(threading.Thread):
         self.window_name = window_name
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind((self.UDP_IP, 0))
+        self.sock.bind(('0.0.0.0', 0))
 
     def connect(self):
         self.is_running = True
