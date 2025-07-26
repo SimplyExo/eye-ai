@@ -11,7 +11,7 @@
 #include "Log.hpp"
 #include "NativeJavaScopes.hpp"
 
-// the global variable is using MutexGuard, so they are thread-safe
+// the global variables are using MutexGuard, so they are thread-safe
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
 namespace {
@@ -19,7 +19,7 @@ MutexGuard<std::unique_ptr<DepthModel>> depth_model{
 	std::unique_ptr<DepthModel>(nullptr)
 };
 
-YoloModel yolo_instance;
+MutexGuard<YoloModel> yolo_instance;
 } // namespace
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
@@ -63,7 +63,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 		env->DeleteLocalRef(str);
 	}
 
-	auto result = yolo_instance.create(
+	auto result = yolo_instance.lock()->create(
 		model_data.to_vector(), labels_vector,
 		gpu_delegate_serialization_dir_string, model_token_string,
 		log_warning_callback, log_error_callback
@@ -110,7 +110,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getOutputShape(
 	JNIEnv* env,
 	jobject /* this */
 ) {
-	auto shape = yolo_instance.get_output_shape();
+	auto shape = yolo_instance.lock()->get_output_shape();
 	jsize length = static_cast<jsize>(shape.size());
 
 	jintArray array = env->NewIntArray(length);
@@ -129,7 +129,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getInputShape(
 	JNIEnv* env,
 	jobject /* this */
 ) {
-	auto shape = yolo_instance.get_input_shape();
+	auto shape = yolo_instance.lock()->get_input_shape();
 	jsize length = static_cast<jsize>(shape.size());
 
 	jintArray array = env->NewIntArray(length);
@@ -157,17 +157,18 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 	std::vector<float> converted_input(input_length);
 	env->GetFloatArrayRegion(input, 0, input_length, converted_input.data());
 
+	auto yolo_instance_scope = yolo_instance.lock();
 	// Allocate output buffer (make sure size matches model output)
 	std::vector<float> object_recognition_output(
-		yolo_instance.num_channel * yolo_instance.num_elements
+		yolo_instance_scope->num_channel * yolo_instance_scope->num_elements
 	); // Replace with actual expected output size
 
 	// Run inference
 	const auto exec =
-		yolo_instance.run(converted_input, object_recognition_output);
+		yolo_instance_scope->run(converted_input, object_recognition_output);
 
 	// Find best boxes
-	auto boxes = yolo_instance.best_box(object_recognition_output);
+	auto boxes = yolo_instance_scope->best_box(object_recognition_output);
 
 	return convertToJsonBoundingBoxString(env, boxes);
 }
@@ -287,22 +288,6 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_depthColormap(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbChwFloatArray(
-	JNIEnv* env,
-	jobject /*thiz*/,
-	jobject bitmap,
-	jfloatArray out_float_array
-) {
-
-	NativeFloatArrayScope out_float_array_scope(env, out_float_array);
-
-	if (const auto error =
-			bitmap_to_rgb_chw_float_array(env, bitmap, out_float_array_scope)) {
-		LOG_ERROR("bitmapToRgbChwFloatArray failed: {}", error->to_string());
-	}
-}
-
-extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 	JNIEnv* env,
 	jobject /*thiz*/,
@@ -316,24 +301,6 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 			env, bitmap, out_float_array_scope
 		)) {
 		LOG_ERROR("bitmapToRgbHwc255FloatArray failed: {}", error->to_string());
-	}
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_imageBytesToArgbIntArray(
-	JNIEnv* env,
-	jobject /*thiz*/,
-	jbyteArray image_bytes,
-	jintArray out_int_array
-) {
-
-	NativeByteArrayScope image_byte_array(env, image_bytes);
-	NativeIntArrayScope out_int_array_scope(env, out_int_array);
-
-	if (const auto error = image_bytes_to_argb_int_array(
-			image_byte_array, out_int_array_scope
-		)) {
-		LOG_ERROR("imageBytesToArgbIntArray failed: {}", error->to_string());
 	}
 }
 

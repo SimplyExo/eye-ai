@@ -73,8 +73,9 @@ tl::expected<EvaluateResult, std::string> evaluate(
 	std::vector<float> image_rgb(rgbd_image.rgb);
 	std::vector<float> depth_estimation(pixel_count);
 
-	if (const auto error =
-			depth_model.run(image_rgb, std::span<float>(depth_estimation))) {
+	if (const auto error = depth_model.run_raw(
+			image_rgb, std::span<float>(depth_estimation)
+		)) {
 		return tl::unexpected(error->to_string());
 	}
 

@@ -44,6 +44,13 @@ class DepthModel {
 	[[nodiscard]] std::optional<TfLiteRunInferenceError>
 	run(std::span<float> input, std::span<float> output);
 
+	/**
+	 * @param input should have 3 * width * height elements.
+	 * @param output should have width * height elements.
+	 */
+	[[nodiscard]] std::optional<TfLiteRunInferenceError>
+	run_raw(std::span<float> input, std::span<float> output);
+
 	[[nodiscard]] std::span<const int> get_input_shape() const;
 
 	[[nodiscard]] std::span<const int> get_output_shape() const;

@@ -15,20 +15,22 @@ static void
 tflite_error_callback(void* user_data_ptr, const char* format, va_list args);
 
 tl::expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>
-TfLiteRuntime::create(
+TfLiteRuntime::create_impl(
 	std::vector<int8_t>&& model_data,
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
-	std::vector<std::unique_ptr<Operator>>&& input_operators,
-	std::vector<std::unique_ptr<Operator>>&& output_operators,
+	FloatTensorFormat model_input_format,
+	FloatTensorFormat model_output_format,
+	std::vector<std::unique_ptr<OperatorBase>>&& input_operators,
+	std::vector<std::unique_ptr<OperatorBase>>&& output_operators,
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback
 ) {
 	PROFILE_DEPTH_SCOPE("Initialize TfLiteRuntime")
 
 	std::unique_ptr<TfLiteRuntime> runtime(new TfLiteRuntime(
-		std::move(model_data), std::move(input_operators),
-		std::move(output_operators),
+		std::move(model_data), model_input_format, model_output_format,
+		std::move(input_operators), std::move(output_operators),
 		TfLiteReporterUserData(log_warning_callback, log_error_callback)
 	));
 
@@ -126,17 +128,41 @@ std::optional<TfLiteInvokeInterpreterError> TfLiteRuntime::invoke() {
 	return TfLiteInvokeInterpreterError{status};
 }
 
-std::optional<TfLiteRunInferenceError>
-TfLiteRuntime::run_inference(std::span<float> input, std::span<float> output) {
+std::optional<TfLiteRunInferenceError> TfLiteRuntime::run_inference(
+	std::span<float> input,
+	FloatTensorFormat input_format,
+	std::span<float> output,
+	FloatTensorFormat expected_output_format
+) {
 	PROFILE_DEPTH_FUNCTION()
+
+	FloatTensorFormat current_input_format = input_format;
 
 	{
 		PROFILE_DEPTH_SCOPE("Preprocessing input using operators")
 
 		for (auto& input_operator : input_operators) {
+			const FloatTensorFormat operator_input_format =
+				input_operator->get_input_format();
+
+			if (current_input_format != operator_input_format) {
+				return InvalidInputFormatForOperator{
+					.provided = current_input_format,
+					.expected = operator_input_format
+				};
+			}
+
 			if (const auto error = input_operator->execute(input))
 				return error;
+
+			current_input_format = input_operator->get_output_format();
 		}
+	}
+
+	if (current_input_format != model_input_format) {
+		return InvalidInputFormatForModel{
+			.provided = current_input_format, .expected = model_input_format
+		};
 	}
 
 	if (const auto load_input_error = load_input(input))
@@ -148,12 +174,33 @@ TfLiteRuntime::run_inference(std::span<float> input, std::span<float> output) {
 	if (const auto read_output_error = read_output(output))
 		return read_output_error;
 
+	FloatTensorFormat current_output_format = model_output_format;
+
 	{
 		PROFILE_DEPTH_SCOPE("Postprocessing output using operators")
 
 		for (auto& output_operator : output_operators) {
+			const FloatTensorFormat operator_input_format =
+				output_operator->get_input_format();
+
+			if (current_output_format != operator_input_format) {
+				return InvalidInputFormatForOperator{
+					.provided = current_input_format,
+					.expected = operator_input_format
+				};
+			}
+
 			if (const auto error = output_operator->execute(output))
 				return error;
+
+			current_output_format = output_operator->get_output_format();
+		}
+
+		if (current_output_format != expected_output_format) {
+			return UnexpectedOperatorOutputFormat{
+				.operator_output = current_output_format,
+				.expected_output = expected_output_format
+			};
 		}
 	}
 
@@ -222,41 +269,6 @@ void tflite_error_callback(
 
 	user_data->log_error_callback(
 		std::format("[TfLiteRuntime Error] {}", formatted_error_msg)
-	);
-}
-
-TfLiteRuntimeBuilder::TfLiteRuntimeBuilder(
-	std::vector<int8_t>&& model_data,
-	std::string_view gpu_delegate_serialization_dir,
-	std::string_view model_token,
-	TfLiteLogWarningCallback log_warning_callback,
-	TfLiteLogErrorCallback log_error_callback
-)
-	: model_data(std::move(model_data)),
-	  gpu_delegate_serialization_dir(gpu_delegate_serialization_dir),
-	  model_token(model_token), log_warning_callback(log_warning_callback),
-	  log_error_callback(log_error_callback) {}
-
-TfLiteRuntimeBuilder& TfLiteRuntimeBuilder::add_input_operator(
-	std::unique_ptr<Operator>&& input_operator
-) {
-	input_operators.push_back(std::move(input_operator));
-	return *this;
-}
-
-TfLiteRuntimeBuilder& TfLiteRuntimeBuilder::add_output_operator(
-	std::unique_ptr<Operator>&& output_operator
-) {
-	output_operators.push_back(std::move(output_operator));
-	return *this;
-}
-
-tl::expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>
-TfLiteRuntimeBuilder::build() {
-	return TfLiteRuntime::create(
-		std::move(model_data), gpu_delegate_serialization_dir, model_token,
-		std::move(input_operators), std::move(output_operators),
-		log_warning_callback, log_error_callback
 	);
 }
 

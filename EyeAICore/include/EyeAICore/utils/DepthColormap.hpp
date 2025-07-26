@@ -9,6 +9,7 @@ struct [[nodiscard]] DepthColorArraySizeMismatch {
 	size_t colormapped_pixels_size;
 
 	[[nodiscard]] std::string to_string() const;
+	bool operator==(const DepthColorArraySizeMismatch& other) const = default;
 };
 
 /// computes the int representation of the inferno colormap of the depth at each

@@ -102,7 +102,6 @@ class OverlayViewOCR(context: Context?, attrs: AttributeSet?) : View(context, at
 				val textWidth = textPaint.measureText(line)
 
 				val textWidthBoxWidthRatio = textWidth / boxWidth
-				Log.i("OCR", textWidthBoxWidthRatio.toString())
 
 				if (textWidthBoxWidthRatio > 1 ||
 					(textWidthBoxWidthRatio < 0.8f && lines.size == 1)) {

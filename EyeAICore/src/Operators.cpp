@@ -4,24 +4,24 @@
 #include <algorithm>
 
 std::optional<OperatorError>
-MinMaxOperator::execute(std::span<float> values) const {
-	PROFILE_DEPTH_SCOPE("MinMaxOperator")
+RelativeDepthPostOperator::execute(std::span<float> input) const {
+	PROFILE_DEPTH_SCOPE("RelativeDepthPostOperator")
 
-	if (values.empty())
+	if (input.empty())
 		return std::nullopt;
 
-	const auto [min_iter, max_iter] = std::ranges::minmax_element(values);
+	const auto [min_iter, max_iter] = std::ranges::minmax_element(input);
 	const float min = *min_iter;
 	const float max = *max_iter;
 
 	const float diff = max - min;
 
 	if (diff > 0.0f) {
-		for (float& value : values) {
+		for (float& value : input) {
 			value = (value - min) / diff;
 		}
 	} else {
-		for (float& value : values) {
+		for (float& value : input) {
 			value = 0.5f;
 		}
 	}
@@ -30,40 +30,50 @@ MinMaxOperator::execute(std::span<float> values) const {
 }
 
 std::optional<OperatorError>
-RgbNormalizeOperator::execute(std::span<float> values) const {
-	PROFILE_DEPTH_SCOPE("RgbNormalizeOperator")
+MiDaSImageOperator::execute(std::span<float> input) const {
+	PROFILE_DEPTH_SCOPE("MiDaSImageOperator")
 
-	if (values.size() % 3 != 0)
-		return OperatorError::fmt(
-			"Invalid values size of {}, it is not a multiple of 3",
-			values.size()
+	if (input.size() % 3 != 0)
+		return OperatorError(
+			std::format(
+				"Invalid values size of {}, it is not a multiple of 3",
+				input.size()
+			)
 		);
 
-	for (size_t i = 0; i < values.size(); i += 3) {
-		values[i + 0] = (values[i + 0] - mean[0]) / stddev[0];
-		values[i + 1] = (values[i + 1] - mean[1]) / stddev[1];
-		values[i + 2] = (values[i + 2] - mean[2]) / stddev[2];
+	for (size_t i = 0; i < input.size(); i += 3) {
+		input[i + 0] = (input[i + 0] - MEAN[0]) / STDDEV[0];
+		input[i + 1] = (input[i + 1] - MEAN[1]) / STDDEV[1];
+		input[i + 2] = (input[i + 2] - MEAN[2]) / STDDEV[2];
 	}
 
 	return std::nullopt;
 }
 
 std::optional<OperatorError>
-RgbNormalizeOperatorYolo::execute(std::span<float> values) const {
-	PROFILE_DEPTH_SCOPE("RgbNormalizeOperatorYolo")
+YoloImageOperator::execute(std::span<float> input) const {
+	PROFILE_DEPTH_SCOPE("YoloImageOperator")
 
-	if (values.size() % 3 != 0)
-		return OperatorError::fmt(
-			"Invalid values size of {}, it is not a multiple of 3",
-			values.size()
-		);
-
-	for (size_t i = 0; i < values.size(); i += 3) {
-		values[i + 0] = values[i + 0] / 255.0f;
-		values[i + 1] = values[i + 1] / 255.0f;
-		values[i + 2] = values[i + 2] / 255.0f;
+	for (float& value : input) {
+		value /= 255.0f;
 	}
 
 	return std::nullopt;
 }
 
+std::string_view format_float_tensor_format(FloatTensorFormat format) {
+	switch (format) {
+	case FloatTensorFormat::ImageRGB255Float:
+		return "ImageRGB255Float";
+	case FloatTensorFormat::MiDaSImageRGBFloat:
+		return "MiDaSImageRGBFloat";
+	case FloatTensorFormat::YoloImageRGBFloat:
+		return "YoloImageRGBFloat";
+	case FloatTensorFormat::RelativeDepth:
+		return "RelativeDepth";
+	case FloatTensorFormat::RawRelativeDepth:
+		return "RawRelativeDepth";
+	case FloatTensorFormat::YoloOutput:
+		return "YoloOutput";
+	}
+}

@@ -7,8 +7,7 @@ import android.media.Image
 import android.util.Log
 import android.util.Size
 import androidx.core.graphics.createBitmap
-import com.algorithmic_alliance.eyeaiapp.object_detection.BoundingBox
-import com.sun.jna.StringArray
+import java.nio.ByteBuffer
 
 /** Kotlin interface with NativeLib c++ code */
 object NativeLib {
@@ -56,11 +55,7 @@ object NativeLib {
 
 	external fun depthColormap(depthValues: FloatArray, colormappedPixels: IntArray)
 
-	external fun bitmapToRgbChwFloatArray(bitmap: Bitmap, outFloatArray: FloatArray)
-
 	external fun bitmapToRgbHwc255FloatArray(bitmap: Bitmap, outFloatArray: FloatArray)
-
-	external fun imageBytesToArgbIntArray(imageBytes: ByteArray, outIntArray: IntArray)
 
 	/** @param input values should be between 0.0f and 1.0f */
 	fun depthColorMap(input: FloatArray, inputImageSize: Size): Bitmap {
@@ -84,14 +79,6 @@ object NativeLib {
 		)
 	}
 
-	fun bitmapToRgbChwFloatArray(bitmap: Bitmap): FloatArray {
-		val floatArray = FloatArray(bitmap.width * bitmap.height * 3)
-
-		bitmapToRgbChwFloatArray(bitmap, floatArray)
-
-		return floatArray
-	}
-
 	fun bitmapToRgbHwc255FloatArray(bitmap: Bitmap): FloatArray {
 		val floatArray = FloatArray(bitmap.width * bitmap.height * 3)
 
@@ -101,26 +88,35 @@ object NativeLib {
 	}
 
 	fun imageToBitmap(image: Image, rotationDegrees: Float): Bitmap {
-		require(image.format == PixelFormat.RGBA_8888)
+		require(image.format == PixelFormat.RGBA_8888) {
+			"Unsupported image format: ${image.format}. Expected RGBA_8888"
+		}
 
-		val pixelBuffer = image.planes[0].buffer
-		val pixelBytes = ByteArray(pixelBuffer.remaining())
-		pixelBuffer.get(pixelBytes)
-		require(pixelBytes.size == image.width * image.height * 4)
+		val plane = image.planes[0]
+		val buffer = plane.buffer
+		val pixelStride = plane.pixelStride
+		val rowStride = plane.rowStride
 
-		val pixels = IntArray(image.width * image.height)
+		val width = image.width
+		val height = image.height
 
-		imageBytesToArgbIntArray(pixelBytes, pixels)
+		val bitmap = createBitmap(width, height)
 
-		return rotateBitmap(
-			Bitmap.createBitmap(
-				pixels,
-				image.width,
-				image.height,
-				Bitmap.Config.ARGB_8888
-			),
-			rotationDegrees
-		)
+		// If there's no padding between rows, we can do a direct copy
+		if (pixelStride == 4 && rowStride == width * 4) {
+			bitmap.copyPixelsFromBuffer(buffer)
+		} else {
+			// Handle cases with padding between rows
+			val rgbaBytes = ByteArray(width * height * 4)
+			for (row in 0 until height) {
+				val startPos = row * rowStride
+				buffer.position(startPos)
+				buffer.get(rgbaBytes, row * width * 4, width * 4)
+			}
+			bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(rgbaBytes))
+		}
+
+		return rotateBitmap(bitmap, rotationDegrees)
 	}
 
 	fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Float): Bitmap =

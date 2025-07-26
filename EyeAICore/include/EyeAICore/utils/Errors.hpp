@@ -14,9 +14,14 @@ unexpected_fmt(const std::format_string<Args...> fmt, Args&&... args) {
 }
 } // namespace tl
 
+template<typename T>
+concept HasEqualTo = requires(const T& a, const T& b) {
+	{ a.operator==(b) } -> std::same_as<bool>;
+};
+
 /// An error is simply a value that can be formatted by calling to_string()
 template<typename E>
-concept Error = requires(E error) { error.to_string(); };
+concept Error = requires(E error) { error.to_string(); } && HasEqualTo<E>;
 
 template<typename... Ts>
 struct Overloads : Ts... {
@@ -63,12 +68,24 @@ struct [[nodiscard]] CombinedError : public std::variant<Ts...> {
 
 		return std::visit(visitor, std::move(*this));
 	}
+
+	constexpr bool operator==(const CombinedError& other) const {
+		return static_cast<const std::variant<Ts...>&>(*this) ==
+			   static_cast<const std::variant<Ts...>&>(other);
+	}
+
+	constexpr bool operator!=(const CombinedError& other) const {
+		return static_cast<const std::variant<Ts...>&>(*this) !=
+			   static_cast<const std::variant<Ts...>&>(other);
+	}
 };
 
 #define COMBINED_ERROR(name, ...)                                              \
 	struct [[nodiscard]] name : public CombinedError<__VA_ARGS__> {            \
 		using CombinedError::CombinedError;                                    \
 		using CombinedError::operator=;                                        \
+		using CombinedError::operator==;                                       \
+		using CombinedError::operator!=;                                       \
 		using CombinedError::swap;                                             \
 		using CombinedError::match;                                            \
 		using CombinedError::to_string;                                        \
