@@ -84,6 +84,7 @@ static void iterator_directory_for_image_dir(
 				println_error_fmt(
 					"no image file found in directory {}", entry.path().string()
 				);
+				return;
 			}
 
 			const auto depth_filepath =
@@ -92,11 +93,13 @@ static void iterator_directory_for_image_dir(
 				println_error_fmt(
 					"no depth file found in directory {}", entry.path().string()
 				);
+				return;
 			}
 
 			std::string id = relative_path.string();
 			std::ranges::replace(id, '/', '_');
 			std::ranges::replace(id, '\\', '_');
+			std::ranges::replace(id, '.', '_');
 			out_datapoints.emplace_back(
 				std::make_unique<SUN_RGBD_DataPoint>(
 					id, *image_filepath, *depth_filepath
