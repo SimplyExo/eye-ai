@@ -1,13 +1,16 @@
 #pragma once
 
 #include <chrono>
+#include <concurrentqueue.h>
 #include <string_view>
-#include <vector>
+
+using moodycamel::ConcurrentQueue;
 
 using profile_clock = std::chrono::high_resolution_clock;
 
 class ProfilingFrame;
 
+/// A RAII object to start and stop a profile scope of a @ref ProfilingFrame
 struct ProfileScope {
 	explicit ProfileScope(std::string_view name, ProfilingFrame& frame);
 	~ProfileScope() noexcept;
@@ -24,18 +27,31 @@ struct ProfileScope {
 	profile_clock::time_point start;
 };
 
+/// A profile scope record represents a instrumented function or scope by @ref
+/// ProfileScope
 struct ProfileScopeRecord {
 	std::string_view name;
 	int scope_depth = 0;
 	profile_clock::time_point start;
-	profile_clock::duration duration;
+	profile_clock::duration duration = profile_clock::duration::zero();
+
+	explicit ProfileScopeRecord() = default;
+	explicit ProfileScopeRecord(
+		std::string_view name,
+		int scope_depth,
+		profile_clock::time_point start,
+		profile_clock::duration duration
+	)
+		: name(name), scope_depth(scope_depth), start(start),
+		  duration(duration) {}
 
 	[[nodiscard]] std::string formatted() const;
 };
 
+/// collection of profile records from different threads (lock-free thread-safe)
 class ProfilingFrame {
   public:
-	explicit ProfilingFrame(std::string_view name) : name(name) {}
+	explicit ProfilingFrame(std::string_view name) noexcept : name(name) {}
 
 	/// returns the scopes depth, should always include calling end_scope after
 	int start_scope() noexcept;
@@ -48,29 +64,26 @@ class ProfilingFrame {
 
   private:
 	std::string_view name;
-	std::vector<ProfileScopeRecord> profile_scopes;
-	int current_frame_scope_depth = 0;
 	profile_clock::time_point start = profile_clock::now();
+	ConcurrentQueue<ProfileScopeRecord> profile_scopes;
+	std::atomic_int current_frame_scope_depth = 0;
 };
 
-/// These four functions return global static variables (needed since NativeLib
-/// is loaded as a shared library, so a simple static variable does not work)
+/**
+ * These four functions return global static variables (needed since NativeLib
+ * is loaded as a shared library, so a simple static variable does not work).
+ * Both ProfilingFrame's are thread-safe
+ */
 
 ProfilingFrame& get_depth_profiling_frame();
-std::string& get_last_depth_profiling_frame_formatted();
+void set_last_depth_profiling_frame_formatted(std::string&& formatted);
+std::string get_last_depth_profiling_frame_formatted();
 ProfilingFrame& get_camera_profiling_frame();
-std::string& get_last_camera_profiling_frame_formatted();
-
-#define COMBINE(x, y) x##y
-#define COMBINE2(x, y) COMBINE(x, y)
-#define PROFILE_DEPTH_SCOPE(name)                                              \
-	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
-		name, get_depth_profiling_frame()                                      \
-	);
-#define PROFILE_CAMERA_SCOPE(name)                                             \
-	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
-		name, get_camera_profiling_frame()                                     \
-	);
+void set_last_camera_profiling_frame_formatted(std::string&& formatted);
+std::string get_last_camera_profiling_frame_formatted();
+ProfilingFrame& get_object_profiling_frame();
+void set_last_object_profiling_frame_formatted(std::string&& formatted);
+std::string get_last_object_profiling_frame_formatted();
 
 #ifndef FUNCTION_NAME
 #ifdef WIN32 // WINDOWS
@@ -80,12 +93,83 @@ std::string& get_last_camera_profiling_frame_formatted();
 #endif
 #endif
 
+#define COMBINE(x, y) x##y
+#define COMBINE2(x, y) COMBINE(x, y)
+
+#if EYE_AI_CORE_ENABLE_TRACY_PROFILER
+
+#include <tracy/Tracy.hpp>
+
+#define PROFILE_DEPTH_SCOPE(name)                                              \
+	ZoneScopedN(name);                                                         \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		name, get_depth_profiling_frame()                                      \
+	);
+
+#define PROFILE_CAMERA_SCOPE(name)                                             \
+	ZoneScopedN(name);                                                         \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		name, get_camera_profiling_frame()                                     \
+	);
+
+#define PROFILE_OBJECT_SCOPE(name)                                             \
+	ZoneScopedN(name);                                                         \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		name, get_object_profiling_frame()                                     \
+	);
+
+#define PROFILE_DEPTH_FUNCTION()                                               \
+	ZoneScopedN(static_cast<const char*>(FUNCTION_NAME()));                    \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		static_cast<const char*>(FUNCTION_NAME()), get_depth_profiling_frame() \
+	);
+
+#define PROFILE_CAMERA_FUNCTION()                                              \
+	ZoneScopedN(static_cast<const char*>(FUNCTION_NAME()));                    \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		static_cast<const char*>(FUNCTION_NAME()),                             \
+		get_camera_profiling_frame()                                           \
+	);
+
+#define PROFILE_OBJECT_FUNCTION()                                              \
+	ZoneScopedN(static_cast<const char*>(FUNCTION_NAME()));                    \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		static_cast<const char*>(FUNCTION_NAME()),                             \
+		get_object_profiling_frame()                                           \
+	);
+
+#else
+
+#define PROFILE_DEPTH_SCOPE(name)                                              \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		name, get_depth_profiling_frame()                                      \
+	);
+
+#define PROFILE_CAMERA_SCOPE(name)                                             \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		name, get_camera_profiling_frame()                                     \
+	);
+
+#define PROFILE_OBJECT_SCOPE(name)                                             \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		name, get_object_profiling_frame()                                     \
+	);
+
 #define PROFILE_DEPTH_FUNCTION()                                               \
 	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
-		FUNCTION_NAME(), get_depth_profiling_frame()                           \
+		static_cast<const char*>(FUNCTION_NAME()), get_depth_profiling_frame() \
 	);
 
 #define PROFILE_CAMERA_FUNCTION()                                              \
 	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
-		FUNCTION_NAME(), get_camera_profiling_frame()                          \
+		static_cast<const char*>(FUNCTION_NAME()),                             \
+		get_camera_profiling_frame()                                           \
 	);
+
+#define PROFILE_OBJECT_FUNCTION()                                              \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
+		static_cast<const char*>(FUNCTION_NAME()),                             \
+		get_object_profiling_frame()                                           \
+	);
+
+#endif

@@ -1,40 +1,43 @@
 #include "EyeAICore/utils/DepthColormap.hpp"
-
-#include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/ImageUtils.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 #include <algorithm>
 
 static int inferno_depth_colormap(float relative_depth);
 
-tl::expected<void, std::string> depth_colormap(
+std::optional<DepthColorArraySizeMismatch> depth_colormap(
 	std::span<const float> depth_values,
 	std::span<int> colormapped_pixels
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
 	if (depth_values.size() != colormapped_pixels.size()) {
-		return tl::unexpected_fmt(
-			"depth_values ({}) does not match colormapped_pixels ({})",
-			depth_values.size(), colormapped_pixels.size()
-		);
+		return DepthColorArraySizeMismatch{
+			.depth_values_size = depth_values.size(),
+			.colormapped_pixels_size = colormapped_pixels.size()
+		};
 	}
 
 	for (size_t i = 0; i < depth_values.size(); i++) {
 		colormapped_pixels[i] = inferno_depth_colormap(depth_values[i]);
 	}
 
-	return {};
+	return std::nullopt;
 }
 
-constexpr size_t INFERNO_COLOR_COUNT = 256;
+std::string DepthColorArraySizeMismatch::to_string() const {
+	return std::format(
+		"depth_values ({}) does not match colormapped_pixels ({})",
+		depth_values_size, colormapped_pixels_size
+	);
+}
 
 /**
  * Inferno Colormap: index is depth (0..255)
- * value based on:
+ * values based on:
  * https://github.com/kennethmoreland-com/kennethmoreland-com.github.io/blob/master/color-advice/inferno/inferno-table-byte-0256.csv
  */
-constexpr std::array<int, INFERNO_COLOR_COUNT> INFERNO_COLORS = {
+constexpr std::array<int, 256> INFERNO_COLORS = {
 	color_rgb(0, 0, 4),		  color_rgb(1, 0, 5),
 	color_rgb(1, 1, 6),		  color_rgb(1, 1, 8),
 	color_rgb(2, 1, 10),	  color_rgb(2, 2, 12),
@@ -168,6 +171,6 @@ constexpr std::array<int, INFERNO_COLOR_COUNT> INFERNO_COLORS = {
 int inferno_depth_colormap(float relative_depth) {
 	relative_depth = std::clamp(relative_depth, 0.0f, 1.0f);
 	auto index =
-		static_cast<size_t>(relative_depth * (INFERNO_COLOR_COUNT - 1));
-	return INFERNO_COLORS[index];
+		static_cast<size_t>(relative_depth * (INFERNO_COLORS.size() - 1));
+	return INFERNO_COLORS.at(index);
 }

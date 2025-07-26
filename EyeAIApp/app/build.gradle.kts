@@ -36,6 +36,16 @@ android {
 			)
 			signingConfig = signingConfigs.getByName("debug")
 		}
+		create("profiling") {
+			initWith(getByName("release"))
+			matchingFallbacks += listOf("release")
+
+			externalNativeBuild {
+				cmake {
+					arguments += "-DEYE_AI_CORE_ENABLE_TRACY_PROFILER=ON"
+				}
+			}
+		}
 	}
 	compileOptions {
 		sourceCompatibility = JavaVersion.VERSION_11
@@ -82,6 +92,9 @@ dependencies {
 	implementation(libs.androidx.preference)
 	implementation(libs.androidx.appcompat)
 
+	//implementation(libs.play.services.mlkit.text.recognition.common)
+	//implementation(libs.play.services.mlkit.text.recognition)
+
 	testImplementation(libs.junit)
 	androidTestImplementation(libs.androidx.junit)
 	androidTestImplementation(libs.androidx.espresso.core)
@@ -89,4 +102,7 @@ dependencies {
 	androidTestImplementation(libs.androidx.ui.test.junit4)
 	debugImplementation(libs.androidx.ui.tooling)
 	debugImplementation(libs.androidx.ui.test.manifest)
+
+	// OCR
+	implementation(libs.text.recognition)
 }

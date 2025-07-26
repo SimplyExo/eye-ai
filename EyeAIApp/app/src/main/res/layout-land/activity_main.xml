@@ -65,22 +65,53 @@
                 app:implementationMode="performance"
                 app:scaleType="fitCenter" />
 
+            <ImageView
+                android:id="@+id/debug_input_bitmap"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/debug_input_bitmap_image_description" />
+
+            <com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
+                android:id="@+id/overlay_object_detection"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
+                android:id="@+id/overlay_ocr"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:textAlignment="center">
 
-                <View
+                <Space
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/speech_recognition_partial_output"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="40dp"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:background="@color/black"
+                    android:textSize="25sp"
+                    android:text=""
+                    android:contentDescription="@string/speech_recognition_partial_result_description" />
 
                 <TextView
                     android:id="@+id/speech_recognition_final_output"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="40dp"
+                    android:layout_marginBottom="20dp"
                     android:textAlignment="center"
                     android:textColor="@color/final_speech_recognition"
                     android:background="@color/black"
@@ -89,17 +120,17 @@
                     android:contentDescription="@string/speech_recognition_final_result_description" />
 
                 <TextView
-                    android:id="@+id/speech_recognition_partial_output"
+                    android:id="@+id/llm_response"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="40dp"
                     android:layout_marginBottom="40dp"
                     android:textAlignment="center"
-                    android:textColor="@color/white"
+                    android:textColor="@color/llm_response"
                     android:background="@color/black"
-                    android:textSize="25sp"
                     android:text=""
-                    android:contentDescription="@string/speech_recognition_partial_result_description" />
+                    android:textSize="25sp"
+                    android:contentDescription="@string/llm_response_description" />
 
             </LinearLayout>
 

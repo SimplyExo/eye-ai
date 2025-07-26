@@ -7,7 +7,16 @@ import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModelInfo
+import com.algorithmic_alliance.eyeaiapp.llm.GoogleAIStudioLLM
+import com.algorithmic_alliance.eyeaiapp.llm.LLM
+import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
+import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
+import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
+import com.google.mlkit.vision.text.internal.TextRecognizerOptionsUtils
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,16 +27,24 @@ import kotlinx.coroutines.withContext
  * the camera handle and the loaded depth model
  */
 class EyeAIApp : Application() {
-	var cameraManager = CameraManager()
 	lateinit var settings: Settings
 		private set
 	var depthModel: DepthModel? = null
 		private set
 	var onDepthModelLoadedCallback: () -> Unit = {}
 
-	/** can be [null] if enableSpeechRecognition is disabled in settings */
+	/* can be [null] if enableSpeechRecognition is disabled in settings */
 	var voskModel: VoskModel? = null
 		private set
+	var llm: LLM? = null
+		private set
+
+	var yoloModel: YoloModel? = null
+		private set
+
+	var ocrModel = GoogleOCR()
+
+	var aiData = AIModelData
 
 	companion object {
 		const val APP_LOG_TAG = "Eye AI"
@@ -38,13 +55,11 @@ class EyeAIApp : Application() {
 			arrayOf(
 				DepthModelInfo(
 					DEFAULT_DEPTH_MODEL_NAME,
-					"midas_v2_1_256x256.tflite",
-					Size(256, 256)
+					"midas_v2_1_256x256.tflite"
 				),
 				DepthModelInfo(
 					"MiDaS V2.1 (quantized)",
-					"midas_v2_1_256x256_quantized.tflite",
-					Size(256, 256)
+					"midas_v2_1_256x256_quantized.tflite"
 				)
 			)
 	}
@@ -52,12 +67,35 @@ class EyeAIApp : Application() {
 	override fun onCreate() {
 		super.onCreate()
 
-		settings = Settings(this)
+		val context = this
+
+		settings = Settings(context)
 
 		switchDepthModel(settings.depthModel)
 
 		if (settings.enableSpeechRecognition)
-			voskModel = VoskModel(this, "model-de")
+			voskModel = VoskModel(context, "model-de")
+
+		settings.googleAiStudioApiKey?.let {
+			if (!it.isEmpty())
+				llm = GoogleAIStudioLLM(it)
+		}
+
+		// Yolo Model erstellen
+		yoloModel = YoloModel(YoloModelInfo("model.tflite", 640))
+		yoloModel!!.create(baseContext)
+
+		// Google ML Kit initialisieren
+		ocrModel.create()
+	}
+
+	fun getPreferredCameraResolution(): Size? {
+		val depthResolution = depthModel?.inputDim ?: return null
+		val objectSize = yoloModel?.info?.size ?: return null
+
+		return Size(
+			maxOf(depthResolution.width, objectSize), maxOf(depthResolution.height, objectSize)
+		)
 	}
 
 	fun updateSettings() {
@@ -79,6 +117,15 @@ class EyeAIApp : Application() {
 			}
 		}
 
+		if (settings.googleAiStudioApiKey != newSettings.googleAiStudioApiKey) {
+			val apiKey = newSettings.googleAiStudioApiKey
+			llm = if (apiKey != null && !apiKey.isEmpty()) {
+				GoogleAIStudioLLM(apiKey)
+			} else {
+				null
+			}
+		}
+
 		settings = newSettings
 	}
 
@@ -93,15 +140,8 @@ class EyeAIApp : Application() {
 			depthModel = findDepthModelInfo(modelName)
 				.createDepthModel(context)
 
-			if (depthModel != null) {
-				withContext(Dispatchers.Main) {
-					onDepthModelLoadedCallback()
-				}
-			} else {
-				Log.e(
-					APP_LOG_TAG,
-					"Failed to init depth model $modelName"
-				)
+			withContext(Dispatchers.Main) {
+				onDepthModelLoadedCallback()
 			}
 		}
 	}

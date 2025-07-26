@@ -2,31 +2,39 @@
 #include "EyeAICore/Operators.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
 
-tl::expected<std::unique_ptr<DepthModel>, std::string> DepthModel::create(
+tl::expected<std::unique_ptr<DepthModel>, TfLiteCreateRuntimeError>
+DepthModel::create(
 	std::vector<int8_t>&& model_data,
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback
 ) {
-	std::vector<std::unique_ptr<Operator>> input_operators;
-	input_operators.emplace_back(std::make_unique<RgbNormalizeOperator>());
-
-	std::vector<std::unique_ptr<Operator>> output_operators;
-	output_operators.emplace_back(std::make_unique<MinMaxOperator>());
-
-	auto runtime = TfLiteRuntime::create(
+	auto runtime_result = TfLiteRuntime::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
-		std::move(input_operators), std::move(output_operators),
-		log_warning_callback, log_error_callback
+		FloatTensorFormat::MiDaSImageRGBFloat,
+		FloatTensorFormat::RawRelativeDepth,
+		OperatorChain{MiDaSImageOperator{}},
+		OperatorChain{RelativeDepthPostOperator{}}, log_warning_callback,
+		log_error_callback
 	);
-	if (!runtime.has_value())
-		return tl::unexpected(runtime.error());
+	if (!runtime_result.has_value())
+		return tl::unexpected(runtime_result.error());
 
-	return std::make_unique<DepthModel>(std::move(runtime.value()));
+	return std::make_unique<DepthModel>(std::move(runtime_result.value()));
 }
 
-tl::expected<void, std::string>
+std::optional<TfLiteRunInferenceError>
 DepthModel::run(std::span<float> input, std::span<float> output) {
-	return runtime->run_inference(input, output);
+	return runtime->run_inference(
+		input, FloatTensorFormat::ImageRGB255Float, output,
+		FloatTensorFormat::RelativeDepth
+	);
+}
+
+std::span<const int> DepthModel::get_input_shape() const {
+	return runtime->get_input_shape();
+}
+std::span<const int> DepthModel::get_output_shape() const {
+	return runtime->get_output_shape();
 }

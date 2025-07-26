@@ -11,52 +11,42 @@ import androidx.camera.core.TorchState
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp.Companion.APP_LOG_TAG
-import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * Helper class that manages opening the camera using Android CameraX API
  * and hooks the [CameraFrameAnalyzer] up to the camera feed
  */
 class CameraManager {
-	private var cameraProviderListenableFuture: ListenableFuture<ProcessCameraProvider>? = null
 	private var camera: Camera? = null
-	var cameraPreview: Preview? = null
-	private var depthAnalysisView: ImageAnalysis? = null
+	var cameraFrameAnalyzer: CameraFrameAnalyzer? = null
+	private var cameraFrameAnalyzerExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
 	fun init(
 		context: Context,
 		preferredImageSize: Size,
 		cameraPreviewView: PreviewView?,
-		cameraFrameAnalyzer: CameraFrameAnalyzer
 	) {
 		val lifecycleOwner = context as LifecycleOwner
 
-		cameraProviderListenableFuture = ProcessCameraProvider.getInstance(context)
+		val cameraProviderListenableFuture = ProcessCameraProvider.getInstance(context)
 
-		cameraProviderListenableFuture?.addListener(
+		cameraProviderListenableFuture.addListener(
 			{
 				try {
 					val cameraProvider: ProcessCameraProvider =
-						cameraProviderListenableFuture!!.get()
+						cameraProviderListenableFuture.get()
 
-					if (!lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-						camera = null
-					}
+					val cameraPreview =
+						Preview.Builder().setTargetFrameRate(Range(60, 120)).build()
 
-					if (cameraPreview != null) cameraProvider.unbind(cameraPreview)
-
-					if (depthAnalysisView != null) cameraProvider.unbind(depthAnalysisView)
-
-					cameraPreview =
-						Preview.Builder().setTargetFrameRate(Range<Int>(60, 120)).build()
-					cameraPreview!!.surfaceProvider = cameraPreviewView!!.surfaceProvider
-
-					depthAnalysisView =
+					val analysisView =
 						ImageAnalysis.Builder()
 							.setImageQueueDepth(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 							.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -67,18 +57,20 @@ class CameraManager {
 								)
 							)
 							.build()
-					depthAnalysisView!!.setAnalyzer(
-						Executors.newCachedThreadPool(),
-						cameraFrameAnalyzer
+					analysisView.setAnalyzer(
+						cameraFrameAnalyzerExecutor,
+						cameraFrameAnalyzer!!
 					)
 
-					camera = cameraProvider.bindToLifecycle(
+					cameraProvider.unbindAll()
+					cameraProvider.bindToLifecycle(
 						lifecycleOwner,
 						mostWideCameraSelector(cameraProvider),
-						depthAnalysisView,
+						analysisView,
 						cameraPreview
 					)
 
+					cameraPreview.surfaceProvider = cameraPreviewView!!.surfaceProvider
 				} catch (e: ExecutionException) {
 					Log.e(APP_LOG_TAG, e.message!!)
 				} catch (e: InterruptedException) {
@@ -87,6 +79,14 @@ class CameraManager {
 			},
 			ContextCompat.getMainExecutor(context)
 		)
+	}
+
+	fun shutdown() {
+		cameraFrameAnalyzer?.shutdown()
+		cameraFrameAnalyzerExecutor.apply {
+			shutdown()
+			awaitTermination(1000, TimeUnit.MILLISECONDS)
+		}
 	}
 
 	private fun hasCameraFlashlight(): Boolean {

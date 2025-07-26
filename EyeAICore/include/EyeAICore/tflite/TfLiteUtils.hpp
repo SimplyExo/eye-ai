@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EyeAICore/Operators.hpp"
+#include "EyeAICore/utils/Errors.hpp"
 #include <memory>
 #include <optional>
 #include <span>
@@ -11,17 +13,27 @@
 #include <tensorflow/lite/c/c_api.h>
 #include <tensorflow/lite/delegates/gpu/delegate.h>
 #endif
-#include <tl/expected.hpp>
 
 std::string_view format_tflite_type(TfLiteType type);
 
+/// @return byte size of type, or nullopt if type has a dynamic size
 std::optional<size_t> get_tflite_type_size(TfLiteType type);
 
 std::string_view format_tflite_status(TfLiteStatus status);
 
-[[nodiscard]] static std::optional<TfLiteAffineQuantization>
+/// @return internal quantization parameters of tensor, or nullopt if
+/// tensor is not quantized
+[[nodiscard]] std::optional<TfLiteAffineQuantization>
 get_tensor_quantization(const TfLiteTensor* tensor);
 
+[[nodiscard]] std::span<const int> get_tensor_shape(const TfLiteTensor* tensor);
+
+/**
+ * @param gpu_delegate_serialization_dir Directory where TfLite saves compiled
+ * GPU delegate kernels
+ * @param model_token unique token to identify the model, should change on model
+ * update
+ */
 [[nodiscard]] std::
 	unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
 	create_gpu_delegate(
@@ -29,12 +41,202 @@ get_tensor_quantization(const TfLiteTensor* tensor);
 		std::string_view model_token
 	);
 
-[[nodiscard]] tl::expected<void, std::string> load_input_tensor_with_floats(
+/// either a input or a output tensor
+class TensorType {
+  public:
+	enum Type : uint8_t { Input, Output } type;
+
+	TensorType() = delete;
+	TensorType(Type type) : type(type) {}
+
+	[[nodiscard]] std::string_view to_string() const;
+	bool operator==(const TensorType& other) const = default;
+};
+
+struct [[nodiscard]] TfLiteNonFloatTensorTypeError {
+	TensorType tensor_type;
+	TfLiteType tensor_element_type;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const TfLiteNonFloatTensorTypeError& other) const = default;
+};
+
+struct [[nodiscard]] TfLiteTensorsNotCreatedError {
+	TensorType tensor_type;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const TfLiteTensorsNotCreatedError& other) const = default;
+};
+
+struct [[nodiscard]] TfLiteTensorElementCountMismatch {
+	TensorType tensor_type;
+	size_t provided_elements;
+	size_t expected_elements;
+
+	[[nodiscard]] std::string to_string() const;
+	bool
+	operator==(const TfLiteTensorElementCountMismatch& other) const = default;
+};
+
+struct [[nodiscard]] TfLiteCopyFromInputTensorError {
+	TfLiteStatus status;
+
+	[[nodiscard]] std::string to_string() const;
+	bool
+	operator==(const TfLiteCopyFromInputTensorError& other) const = default;
+};
+
+COMBINED_ERROR(
+	TfLiteLoadNonQuantizedInputError,
+	TfLiteTensorsNotCreatedError,
+	TfLiteNonFloatTensorTypeError,
+	TfLiteTensorElementCountMismatch,
+	TfLiteCopyFromInputTensorError
+);
+struct [[nodiscard]] InvalidFloat32QuantizationTypeError {
+	TfLiteType quantized_type;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const InvalidFloat32QuantizationTypeError& other) const =
+		default;
+};
+struct [[nodiscard]] QuantizationElementsMismatch {
+	size_t input_elements;
+	size_t quantized_out_elements;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const QuantizationElementsMismatch& other) const = default;
+};
+struct [[nodiscard]] AsymmetricQuantizationError {
+	[[nodiscard]] static std::string to_string();
+	bool operator==(const AsymmetricQuantizationError& other) const = default;
+};
+struct [[nodiscard]] InvalidQuantizedType {
+	TfLiteType quantized_type;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const InvalidQuantizedType& other) const = default;
+};
+COMBINED_ERROR(
+	QuantizeFloatError,
+	InvalidFloat32QuantizationTypeError,
+	QuantizationElementsMismatch,
+	AsymmetricQuantizationError
+);
+COMBINED_ERROR(
+	TfLiteLoadQuantizedInputError,
+	TfLiteTensorsNotCreatedError,
+	TfLiteTensorElementCountMismatch,
+	InvalidQuantizedType,
+	QuantizeFloatError
+);
+COMBINED_ERROR(
+	TfLiteLoadInputError,
+	TfLiteLoadNonQuantizedInputError,
+	TfLiteLoadQuantizedInputError
+);
+
+/// loads input tensor with floats array, supports quantization
+[[nodiscard]] std::optional<TfLiteLoadInputError> load_input_tensor_with_floats(
 	TfLiteTensor* input_tensor,
 	std::span<const float> values
 );
 
-[[nodiscard]] tl::expected<void, std::string> read_floats_from_output_tensor(
+struct [[nodiscard]] TfLiteCopyToOutputTensorError {
+	TfLiteStatus status;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const TfLiteCopyToOutputTensorError& other) const = default;
+};
+
+COMBINED_ERROR(
+	TfLiteReadNonQuantizedOutputError,
+	TfLiteNonFloatTensorTypeError,
+	TfLiteTensorElementCountMismatch,
+	TfLiteCopyToOutputTensorError
+);
+COMBINED_ERROR(
+	DequantizeFloatError,
+	InvalidFloat32QuantizationTypeError,
+	QuantizationElementsMismatch,
+	AsymmetricQuantizationError
+);
+COMBINED_ERROR(
+	TfLiteReadQuantizedOutputError,
+	TfLiteTensorsNotCreatedError,
+	TfLiteTensorElementCountMismatch,
+	DequantizeFloatError
+);
+COMBINED_ERROR(
+	TfLiteReadOutputError,
+	TfLiteReadNonQuantizedOutputError,
+	TfLiteReadQuantizedOutputError
+);
+
+/// reads floats array from output tensor, supports quantization
+[[nodiscard]] std::optional<TfLiteReadOutputError>
+read_floats_from_output_tensor(
 	const TfLiteTensor* output_tensor,
 	std::span<float> output
+);
+
+struct [[nodiscard]] TfLiteCreateInterpreterError {
+	[[nodiscard]] static std::string to_string();
+	bool operator==(const TfLiteCreateInterpreterError& other) const = default;
+};
+
+struct [[nodiscard]] TfLiteAllocateTensorsError {
+	TfLiteStatus status;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const TfLiteAllocateTensorsError& other) const = default;
+};
+
+COMBINED_ERROR(
+	TfLiteCreateRuntimeError,
+	TfLiteCreateInterpreterError,
+	TfLiteAllocateTensorsError
+);
+
+struct [[nodiscard]] TfLiteInvokeInterpreterError {
+	TfLiteStatus status;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const TfLiteInvokeInterpreterError& other) const = default;
+};
+
+struct [[nodiscard]] InvalidInputFormatForOperator {
+	FloatTensorFormat provided;
+	FloatTensorFormat expected;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const InvalidInputFormatForOperator& other) const = default;
+};
+
+struct [[nodiscard]] UnexpectedOperatorOutputFormat {
+	FloatTensorFormat operator_output;
+	FloatTensorFormat expected_output;
+
+	[[nodiscard]] std::string to_string() const;
+	bool
+	operator==(const UnexpectedOperatorOutputFormat& other) const = default;
+};
+
+struct [[nodiscard]] InvalidInputFormatForModel {
+	FloatTensorFormat provided;
+	FloatTensorFormat expected;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const InvalidInputFormatForModel& other) const = default;
+};
+
+COMBINED_ERROR(
+	TfLiteRunInferenceError,
+	OperatorError,
+	TfLiteLoadInputError,
+	TfLiteInvokeInterpreterError,
+	TfLiteReadOutputError,
+	InvalidInputFormatForOperator,
+	UnexpectedOperatorOutputFormat,
+	InvalidInputFormatForModel
 );

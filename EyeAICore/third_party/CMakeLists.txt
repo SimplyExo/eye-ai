@@ -25,8 +25,7 @@ else()
 	set(TFLITE_C_BUILD_SHARED_LIBS OFF)
 	FetchContent_Declare(
 		tensorflow
-		GIT_REPOSITORY https://github.com/tensorflow/tensorflow.git
-		GIT_TAG v2.19.0
+		URL https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.19.0.zip
 	)
 	FetchContent_MakeAvailable(tensorflow)
 	add_subdirectory(
@@ -48,6 +47,56 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tl-expected)
 
+# concurrentqueue
+message(STATUS "Downloading concurrentqueue...")
+FetchContent_Declare(
+	concurrentqueue
+	GIT_REPOSITORY    https://github.com/cameron314/concurrentqueue.git
+	GIT_TAG           v1.0.4
+)
+FetchContent_MakeAvailable(concurrentqueue)
+
+if (EYE_AI_CORE_ENABLE_TESTS)
+	# libnpy
+	message(STATUS "Downloading libnpy...")
+	FetchContent_Declare(
+		libnpy
+		GIT_REPOSITORY https://github.com/llohse/libnpy.git
+		GIT_TAG master
+	)
+	FetchContent_MakeAvailable(libnpy)
+	set(LIBNPY_INCLUDE_DIR "${libnpy_SOURCE_DIR}/include" PARENT_SCOPE)
+
+	# stb (stb_image, stb_image_resize2)
+	message(STATUS "Downloading stb (stb_image, stb_image_resize2)...")
+	FetchContent_Declare(
+		stb
+		GIT_REPOSITORY https://github.com/nothings/stb.git
+		GIT_TAG master
+	)
+	FetchContent_MakeAvailable(stb)
+	set(STB_INCLUDE_DIR ${stb_SOURCE_DIR} PARENT_SCOPE)
+
+	# GTest
+	message(STATUS "Downloading googletest...")
+	FetchContent_Declare(
+	  googletest
+	  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+	)
+	FetchContent_MakeAvailable(googletest)
+endif()
+
+if (EYE_AI_CORE_ENABLE_TRACY_PROFILER)
+	# tracy
+	message(STATUS "Downloading tracy...")
+	option(TRACY_ENABLE "" ON)
+	FetchContent_Declare(
+		tracy
+		URL https://github.com/wolfpld/tracy/archive/refs/tags/v0.12.2.zip
+	)
+	FetchContent_MakeAvailable(tracy)
+endif ()
+
 set(THIRD_PARTY_INCLUDE_DIRS
 	${TFLITE_INCLUDE_DIRS}
 	PARENT_SCOPE
@@ -55,5 +104,6 @@ set(THIRD_PARTY_INCLUDE_DIRS
 set(THIRD_PARTY_LIBS
 	${TFLITE_LIBS}
 	tl::expected
+	concurrentqueue
 	PARENT_SCOPE
 )

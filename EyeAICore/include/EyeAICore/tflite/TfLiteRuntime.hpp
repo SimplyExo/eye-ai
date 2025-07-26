@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EyeAICore/Operators.hpp"
+#include "TfLiteUtils.hpp"
 #if EYE_AI_CORE_USE_PREBUILT_TFLITE
 #include "tflite/c/c_api.h" // IWYU pragma: export
 #include "tflite/delegates/gpu/delegate.h"
@@ -12,19 +13,28 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <tl/expected.hpp>
 
 using TfLiteLogWarningCallback = void (*)(std::string);
 using TfLiteLogErrorCallback = void (*)(std::string);
 
-struct TfLiteErrorReporterUserData {
+/// Callbacks invoked by the tflite runtime, passed around as void* user_data
+struct TfLiteReporterUserData {
 	TfLiteLogWarningCallback log_warning_callback;
 	TfLiteLogErrorCallback log_error_callback;
+
+	explicit TfLiteReporterUserData(
+		TfLiteLogWarningCallback log_warning_callback,
+		TfLiteLogErrorCallback log_error_callback
+	)
+		: log_warning_callback(log_warning_callback),
+		  log_error_callback(log_error_callback) {}
 };
 
-/** Helper class that wraps the tflite c api */
+/// Helper class that wraps the tflite c api
 class TfLiteRuntime {
 	std::vector<int8_t> model_data;
+	FloatTensorFormat model_input_format;
+	FloatTensorFormat model_output_format;
 	std::unique_ptr<TfLiteModel, decltype(&TfLiteModelDelete)> model{
 		nullptr, TfLiteModelDelete
 	};
@@ -38,53 +48,97 @@ class TfLiteRuntime {
 	std::unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
 		gpu_delegate{nullptr, TfLiteGpuDelegateV2Delete};
 
-	TfLiteErrorReporterUserData error_reporter_user_data;
+	TfLiteReporterUserData reporter_user_data;
 
-	std::vector<std::unique_ptr<Operator>> input_operators;
-	std::vector<std::unique_ptr<Operator>> output_operators;
+	std::vector<std::unique_ptr<OperatorBase>> input_operators;
+	std::vector<std::unique_ptr<OperatorBase>> output_operators;
 
   public:
-	[[nodiscard]] static tl::
-		expected<std::unique_ptr<TfLiteRuntime>, std::string>
-		create(
-			std::vector<int8_t>&& model_data,
-			std::string_view gpu_delegate_serialization_dir,
-			std::string_view model_token,
-			std::vector<std::unique_ptr<Operator>>&& input_operators,
-			std::vector<std::unique_ptr<Operator>>&& output_operators,
-			TfLiteLogWarningCallback log_warning_callback,
-			TfLiteLogErrorCallback log_error_callback
+	using CreateResult =
+		tl::expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>;
+
+	/**
+	 * Create a TfLiteRuntime instance, see TfLiteRuntimeBuilder for a builder
+	 * pattern.
+	 */
+	template<typename... InputOps, typename... OutputOps>
+	[[nodiscard]] static CreateResult create(
+		std::vector<int8_t>&& model_data,
+		std::string_view gpu_delegate_serialization_dir,
+		std::string_view model_token,
+		FloatTensorFormat model_input_format,
+		FloatTensorFormat model_output_format,
+		OperatorChain<InputOps...>&& input_operators,
+		OperatorChain<OutputOps...>&& output_operators,
+		TfLiteLogWarningCallback log_warning_callback,
+		TfLiteLogErrorCallback log_error_callback
+	) {
+		return create_impl(
+			std::move(model_data), gpu_delegate_serialization_dir, model_token,
+			model_input_format, model_output_format,
+			std::move(input_operators).to_runtime_base(),
+			std::move(output_operators).to_runtime_base(), log_warning_callback,
+			log_error_callback
 		);
+	}
 
 	~TfLiteRuntime();
+
+	/**
+	 * @brief Run inference on the model, make sure input and output have the
+	 * right amount of elements.
+	 * @param input input will be modified by input operators!
+	 * @param output output will be modified by output operators!
+	 */
+	[[nodiscard]] std::optional<TfLiteRunInferenceError> run_inference(
+		std::span<float> input,
+		FloatTensorFormat input_format,
+		std::span<float> output,
+		FloatTensorFormat expected_output_format
+	);
+
+	[[nodiscard]] std::span<const int> get_input_shape() const;
+
+	[[nodiscard]] std::span<const int> get_output_shape() const;
 
 	TfLiteRuntime(TfLiteRuntime&&) = delete;
 	TfLiteRuntime(const TfLiteRuntime&) = delete;
 	void operator=(TfLiteRuntime&&) = delete;
 	void operator=(const TfLiteRuntime&) = delete;
 
-	/// input is going to be processed by input operators, so it will be
-	/// modified!
-	[[nodiscard]] tl::expected<void, std::string>
-	run_inference(std::span<float> input, std::span<float> output);
-
   private:
+	[[nodiscard]] static CreateResult create_impl(
+		std::vector<int8_t>&& model_data,
+		std::string_view gpu_delegate_serialization_dir,
+		std::string_view model_token,
+		FloatTensorFormat model_input_format,
+		FloatTensorFormat model_output_format,
+		std::vector<std::unique_ptr<OperatorBase>>&& input_operators,
+		std::vector<std::unique_ptr<OperatorBase>>&& output_operators,
+		TfLiteLogWarningCallback log_warning_callback,
+		TfLiteLogErrorCallback log_error_callback
+	);
+
 	explicit TfLiteRuntime(
 		std::vector<int8_t>&& model_data,
-		std::vector<std::unique_ptr<Operator>>&& input_operators,
-		std::vector<std::unique_ptr<Operator>>&& output_operators,
-		TfLiteErrorReporterUserData error_reporter_user_data
+		FloatTensorFormat model_input_format,
+		FloatTensorFormat model_output_format,
+		std::vector<std::unique_ptr<OperatorBase>>&& input_operators,
+		std::vector<std::unique_ptr<OperatorBase>>&& output_operators,
+		TfLiteReporterUserData error_reporter_user_data
 	)
 		: model_data(std::move(model_data)),
+		  model_input_format(model_input_format),
+		  model_output_format(model_output_format),
+		  reporter_user_data(error_reporter_user_data),
 		  input_operators(std::move(input_operators)),
-		  output_operators(std::move(output_operators)),
-		  error_reporter_user_data(error_reporter_user_data) {}
+		  output_operators(std::move(output_operators)) {}
 
-	[[nodiscard]] tl::expected<void, std::string> invoke();
+	[[nodiscard]] std::optional<TfLiteInvokeInterpreterError> invoke();
 
-	[[nodiscard]] tl::expected<void, std::string>
+	[[nodiscard]] std::optional<TfLiteLoadInputError>
 	load_input(std::span<const float> input);
 
-	[[nodiscard]] tl::expected<void, std::string>
+	[[nodiscard]] std::optional<TfLiteReadOutputError>
 	read_output(std::span<float> output);
 };

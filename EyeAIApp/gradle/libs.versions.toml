@@ -15,6 +15,7 @@ material = "1.12.0"
 vosk = "0.3.47"
 preference = "1.2.1"
 appcompat = "1.7.1"
+mlkit-text = "16.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,9 +42,14 @@ androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycl
 androidx-camera-extensions = { group = "androidx.camera", name = "camera-extensions", version.ref = "cameraX" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 # Vosk
+text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "mlkit-text" }
 vosk = { group = "com.alphacephei", name = "vosk-android", version.ref = "vosk" }
 androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+
+# Nicht mehr benötigt
+#play-services-mlkit-text-recognition-common = { group = "com.google.android.gms", name = "play-services-mlkit-text-recognition-common", version.ref = "playServicesMlkitTextRecognitionCommon" }
+#play-services-mlkit-text-recognition = { group = "com.google.android.gms", name = "play-services-mlkit-text-recognition", version.ref = "playServicesMlkitTextRecognition" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
