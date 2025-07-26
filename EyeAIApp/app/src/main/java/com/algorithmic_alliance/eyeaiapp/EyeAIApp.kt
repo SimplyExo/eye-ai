@@ -67,12 +67,14 @@ class EyeAIApp : Application() {
 	override fun onCreate() {
 		super.onCreate()
 
-		settings = Settings(this)
+		val context = this
+
+		settings = Settings(context)
 
 		switchDepthModel(settings.depthModel)
 
 		if (settings.enableSpeechRecognition)
-			voskModel = VoskModel(this, "model-de")
+			voskModel = VoskModel(context, "model-de")
 
 		settings.googleAiStudioApiKey?.let {
 			if (!it.isEmpty())
@@ -138,15 +140,8 @@ class EyeAIApp : Application() {
 			depthModel = findDepthModelInfo(modelName)
 				.createDepthModel(context)
 
-			if (depthModel != null) {
-				withContext(Dispatchers.Main) {
-					onDepthModelLoadedCallback()
-				}
-			} else {
-				Log.e(
-					APP_LOG_TAG,
-					"Failed to init depth model $modelName"
-				)
+			withContext(Dispatchers.Main) {
+				onDepthModelLoadedCallback()
 			}
 		}
 	}

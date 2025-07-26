@@ -146,41 +146,14 @@ class CameraFrameAnalyzer(
 		}
 	}
 
-	fun shutdown(timeoutMillis: Long = 1000) {
+	fun shutdown() {
 		depthScope.cancel()
 		objectScope.cancel()
 		ocrScope.cancel()
 
-		try {
-			// Warten auf Beendigung (maximal timeoutMillis)
-			if (!depthProcessingExecutor.awaitTermination(
-					timeoutMillis,
-					java.util.concurrent.TimeUnit.MILLISECONDS
-				)
-			) {
-				depthProcessingExecutor.shutdownNow()
-			}
-			if (!objectDetectionProcessingExecutor.awaitTermination(
-					timeoutMillis,
-					java.util.concurrent.TimeUnit.MILLISECONDS
-				)
-			) {
-				objectDetectionProcessingExecutor.shutdownNow()
-			}
-			if (!ocrProcessingExecutor.awaitTermination(
-					timeoutMillis,
-					java.util.concurrent.TimeUnit.MILLISECONDS
-				)
-			) {
-				ocrProcessingExecutor.shutdownNow()
-			}
-		} catch (e: InterruptedException) {
-			// Im Fehlerfall sofort hart abbrechen
-			depthProcessingExecutor.shutdownNow()
-			objectDetectionProcessingExecutor.shutdownNow()
-			ocrProcessingExecutor.shutdownNow()
-			Thread.currentThread().interrupt() // Thread-Flag setzen
-		}
+		depthProcessingExecutor.shutdownNow()
+		objectDetectionProcessingExecutor.shutdownNow()
+		ocrProcessingExecutor.shutdownNow()
 	}
 
 

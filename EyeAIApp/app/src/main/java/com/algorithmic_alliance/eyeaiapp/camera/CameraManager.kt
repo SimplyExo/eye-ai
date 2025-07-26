@@ -33,7 +33,6 @@ class CameraManager {
 		preferredImageSize: Size,
 		cameraPreviewView: PreviewView?,
 	) {
-		Log.e(EyeAIApp.APP_LOG_TAG, "CAMERA_MANAGER::INIT")
 		val lifecycleOwner = context as LifecycleOwner
 
 		val cameraProviderListenableFuture = ProcessCameraProvider.getInstance(context)
