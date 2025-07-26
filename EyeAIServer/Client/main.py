@@ -1,15 +1,22 @@
+import sys
+
 import cv2
 
 from CameraClient import CameraClient
 
-client1 = CameraClient('localhost', 3333, 'Client 1')
-client2 = CameraClient('localhost', 3334, 'Client 2')
+if len(sys.argv) < 2:
+    print("FEHLER: Bitte geben Sie die IP-Adresse des Servers ein!\nProgramm wird beendet...")
+    exit(0)
+
+
+client1 = CameraClient(sys.argv[1], 3333, 'Client 1') # Kamera links
+client2 = CameraClient(sys.argv[1], 3334, 'Client 2') # Kamera rechts
 
 try:
     client1.start()
     client2.start()
 
-    print("Clients gestartet")
+    print("Clients wurden gestartet")
 
     while client1.is_running and client2.is_running:
         if client1.frame is not None:

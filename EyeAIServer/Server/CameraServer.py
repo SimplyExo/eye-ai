@@ -27,7 +27,7 @@ class CameraServer:
 
     # Empfänger Thread
     def rx(self):
-        self.server_socket.bind(('', self.port))
+        self.server_socket.bind(('0.0.0.0', self.port))
         print(f"[Camera Nr. {self.index}] Warte auf Client. Port: {self.port}")
 
         while True:
