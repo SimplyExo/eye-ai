@@ -12,12 +12,17 @@ class Settings(val context: Context) {
 	var showProfilingInfo: Boolean
 		private set
 
+	var showDebugInputBitmap: Boolean
+		private set
 	var enableSpeechRecognition: Boolean
 		private set
 
 	var googleAiStudioApiKey: String?
-	
+
 	var enableObjectDetection: Boolean
+		private set
+
+	var enableOCR: Boolean
 		private set
 
 	init {
@@ -28,6 +33,11 @@ class Settings(val context: Context) {
 
 		showProfilingInfo = sharedPreferences.getBoolean(
 			context.getString(R.string.show_profiling_info_setting),
+			false
+		)
+
+		showDebugInputBitmap = sharedPreferences.getBoolean(
+			context.getString(R.string.show_debug_input_bitmap_setting),
 			false
 		)
 
@@ -43,6 +53,11 @@ class Settings(val context: Context) {
 
 		enableObjectDetection = sharedPreferences.getBoolean(
 			context.getString(R.string.enable_object_detection_setting),
+			true
+		)
+
+		enableOCR = sharedPreferences.getBoolean(
+			context.getString(R.string.enable_ocr_setting),
 			true
 		)
 	}

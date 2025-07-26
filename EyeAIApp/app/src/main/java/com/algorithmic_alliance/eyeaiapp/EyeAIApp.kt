@@ -27,7 +27,6 @@ import kotlinx.coroutines.withContext
  * the camera handle and the loaded depth model
  */
 class EyeAIApp : Application() {
-	var cameraManager = CameraManager()
 	lateinit var settings: Settings
 		private set
 	var depthModel: DepthModel? = null
@@ -44,6 +43,8 @@ class EyeAIApp : Application() {
 		private set
 
 	var ocrModel = GoogleOCR()
+
+	var aiData = AIModelData
 
 	companion object {
 		const val APP_LOG_TAG = "Eye AI"
@@ -66,24 +67,35 @@ class EyeAIApp : Application() {
 	override fun onCreate() {
 		super.onCreate()
 
-		settings = Settings(this)
+		val context = this
+
+		settings = Settings(context)
 
 		switchDepthModel(settings.depthModel)
 
 		if (settings.enableSpeechRecognition)
-			voskModel = VoskModel(this, "model-de")
+			voskModel = VoskModel(context, "model-de")
 
 		settings.googleAiStudioApiKey?.let {
 			if (!it.isEmpty())
 				llm = GoogleAIStudioLLM(it)
 		}
-		
+
 		// Yolo Model erstellen
-		yoloModel = YoloModel(YoloModelInfo("model.tflite",640))
+		yoloModel = YoloModel(YoloModelInfo("model.tflite", 640))
 		yoloModel!!.create(baseContext)
 
 		// Google ML Kit initialisieren
 		ocrModel.create()
+	}
+
+	fun getPreferredCameraResolution(): Size? {
+		val depthResolution = depthModel?.inputDim ?: return null
+		val objectSize = yoloModel?.info?.size ?: return null
+
+		return Size(
+			maxOf(depthResolution.width, objectSize), maxOf(depthResolution.height, objectSize)
+		)
 	}
 
 	fun updateSettings() {
@@ -128,15 +140,8 @@ class EyeAIApp : Application() {
 			depthModel = findDepthModelInfo(modelName)
 				.createDepthModel(context)
 
-			if (depthModel != null) {
-				withContext(Dispatchers.Main) {
-					onDepthModelLoadedCallback()
-				}
-			} else {
-				Log.e(
-					APP_LOG_TAG,
-					"Failed to init depth model $modelName"
-				)
+			withContext(Dispatchers.Main) {
+				onDepthModelLoadedCallback()
 			}
 		}
 	}

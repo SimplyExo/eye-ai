@@ -50,6 +50,7 @@ class TensorType {
 	TensorType(Type type) : type(type) {}
 
 	[[nodiscard]] std::string_view to_string() const;
+	bool operator==(const TensorType& other) const = default;
 };
 
 struct [[nodiscard]] TfLiteNonFloatTensorTypeError {
@@ -57,12 +58,14 @@ struct [[nodiscard]] TfLiteNonFloatTensorTypeError {
 	TfLiteType tensor_element_type;
 
 	[[nodiscard]] std::string to_string() const;
+	bool operator==(const TfLiteNonFloatTensorTypeError& other) const = default;
 };
 
 struct [[nodiscard]] TfLiteTensorsNotCreatedError {
 	TensorType tensor_type;
 
 	[[nodiscard]] std::string to_string() const;
+	bool operator==(const TfLiteTensorsNotCreatedError& other) const = default;
 };
 
 struct [[nodiscard]] TfLiteTensorElementCountMismatch {
@@ -71,12 +74,16 @@ struct [[nodiscard]] TfLiteTensorElementCountMismatch {
 	size_t expected_elements;
 
 	[[nodiscard]] std::string to_string() const;
+	bool
+	operator==(const TfLiteTensorElementCountMismatch& other) const = default;
 };
 
 struct [[nodiscard]] TfLiteCopyFromInputTensorError {
 	TfLiteStatus status;
 
 	[[nodiscard]] std::string to_string() const;
+	bool
+	operator==(const TfLiteCopyFromInputTensorError& other) const = default;
 };
 
 COMBINED_ERROR(
@@ -90,20 +97,25 @@ struct [[nodiscard]] InvalidFloat32QuantizationTypeError {
 	TfLiteType quantized_type;
 
 	[[nodiscard]] std::string to_string() const;
+	bool operator==(const InvalidFloat32QuantizationTypeError& other) const =
+		default;
 };
 struct [[nodiscard]] QuantizationElementsMismatch {
 	size_t input_elements;
 	size_t quantized_out_elements;
 
 	[[nodiscard]] std::string to_string() const;
+	bool operator==(const QuantizationElementsMismatch& other) const = default;
 };
 struct [[nodiscard]] AsymmetricQuantizationError {
 	[[nodiscard]] static std::string to_string();
+	bool operator==(const AsymmetricQuantizationError& other) const = default;
 };
 struct [[nodiscard]] InvalidQuantizedType {
 	TfLiteType quantized_type;
 
 	[[nodiscard]] std::string to_string() const;
+	bool operator==(const InvalidQuantizedType& other) const = default;
 };
 COMBINED_ERROR(
 	QuantizeFloatError,
@@ -134,6 +146,7 @@ struct [[nodiscard]] TfLiteCopyToOutputTensorError {
 	TfLiteStatus status;
 
 	[[nodiscard]] std::string to_string() const;
+	bool operator==(const TfLiteCopyToOutputTensorError& other) const = default;
 };
 
 COMBINED_ERROR(
@@ -169,12 +182,14 @@ read_floats_from_output_tensor(
 
 struct [[nodiscard]] TfLiteCreateInterpreterError {
 	[[nodiscard]] static std::string to_string();
+	bool operator==(const TfLiteCreateInterpreterError& other) const = default;
 };
 
 struct [[nodiscard]] TfLiteAllocateTensorsError {
 	TfLiteStatus status;
 
 	[[nodiscard]] std::string to_string() const;
+	bool operator==(const TfLiteAllocateTensorsError& other) const = default;
 };
 
 COMBINED_ERROR(
@@ -187,6 +202,32 @@ struct [[nodiscard]] TfLiteInvokeInterpreterError {
 	TfLiteStatus status;
 
 	[[nodiscard]] std::string to_string() const;
+	bool operator==(const TfLiteInvokeInterpreterError& other) const = default;
+};
+
+struct [[nodiscard]] InvalidInputFormatForOperator {
+	FloatTensorFormat provided;
+	FloatTensorFormat expected;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const InvalidInputFormatForOperator& other) const = default;
+};
+
+struct [[nodiscard]] UnexpectedOperatorOutputFormat {
+	FloatTensorFormat operator_output;
+	FloatTensorFormat expected_output;
+
+	[[nodiscard]] std::string to_string() const;
+	bool
+	operator==(const UnexpectedOperatorOutputFormat& other) const = default;
+};
+
+struct [[nodiscard]] InvalidInputFormatForModel {
+	FloatTensorFormat provided;
+	FloatTensorFormat expected;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const InvalidInputFormatForModel& other) const = default;
 };
 
 COMBINED_ERROR(
@@ -194,5 +235,8 @@ COMBINED_ERROR(
 	OperatorError,
 	TfLiteLoadInputError,
 	TfLiteInvokeInterpreterError,
-	TfLiteReadOutputError
+	TfLiteReadOutputError,
+	InvalidInputFormatForOperator,
+	UnexpectedOperatorOutputFormat,
+	InvalidInputFormatForModel
 );

@@ -37,7 +37,9 @@ TEST(DepthEstimationTest, CorrectOutput) {
 	std::vector<float> output(static_cast<size_t>(width * height));
 
 	const auto run_error = depth_model->run(input, output);
-	EXPECT_EQ(run_error, std::nullopt);
+	if (run_error) {
+		FAIL() << run_error->to_string();
+	}
 
 	// this might fail due to precision errors -> added tolerance
 	EXPECT_THAT(output, Pointwise(FloatNear(tolerance), expected_output.data));
