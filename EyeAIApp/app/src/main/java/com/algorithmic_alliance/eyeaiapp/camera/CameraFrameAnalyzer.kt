@@ -2,7 +2,6 @@ package com.algorithmic_alliance.eyeaiapp.camera
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.util.Log
 import android.util.Size
 import android.widget.ImageView
 import android.widget.TextView
@@ -16,7 +15,6 @@ import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
@@ -24,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
+import androidx.core.view.isVisible
 
 /**
  * Helper class that analyses the camera feed images in realtime
@@ -33,8 +32,9 @@ class CameraFrameAnalyzer(
 	private var eyeAIApp: EyeAIApp,
 	private var depthView: ImageView,
 	private var performanceText: TextView,
-	private var overlay_od: OverlayViewOD,
-	private var overlay_ocr: OverlayViewOCR
+	private var overlayOD: OverlayViewOD,
+	private var overlayOCR: OverlayViewOCR,
+	private var debugInputBitmapPreview: ImageView
 ) : ImageAnalysis.Analyzer {
 
 	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
@@ -42,7 +42,8 @@ class CameraFrameAnalyzer(
 	private var ocrProcessingExecutor = Executors.newSingleThreadExecutor()
 
 	private val depthScope = CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher())
-	private val objectScope = CoroutineScope(objectDetectionProcessingExecutor.asCoroutineDispatcher())
+	private val objectScope =
+		CoroutineScope(objectDetectionProcessingExecutor.asCoroutineDispatcher())
 	private val ocrScope = CoroutineScope(ocrProcessingExecutor.asCoroutineDispatcher())
 
 	private var latestCameraFrame = AtomicReference<Bitmap?>(null)
@@ -72,6 +73,9 @@ class CameraFrameAnalyzer(
 						)
 
 						depthView.setImageBitmap(colorMappedImage)
+
+						if (debugInputBitmapPreview.isVisible)
+							debugInputBitmapPreview.setImageBitmap(frame)
 
 						if (eyeAIApp.settings.showProfilingInfo) {
 							val formattedInputResolution = "${inputWidth}x${inputHeight}"
@@ -105,19 +109,19 @@ class CameraFrameAnalyzer(
 						// Anzeigen der Boxes
 						if (boxes != null) {
 							withContext(Dispatchers.Main) {
-								overlay_od.setResults(boxes)
-								overlay_od.setCameraResolution(
+								overlayOD.setResults(boxes)
+								overlayOD.setCameraResolution(
 									Size(frame.width, frame.height)
 								)
 							}
 						} else {
 							withContext(Dispatchers.Main) {
-								overlay_od.reset()
+								overlayOD.reset()
 							}
 						}
 					}
 				} else {
-					overlay_od.reset()
+					overlayOD.reset()
 				}
 			}
 		}
@@ -130,13 +134,13 @@ class CameraFrameAnalyzer(
 					if (frame != null) {
 						val textBoxes = eyeAIApp.ocrModel.analyzeFrame(frame).toTypedArray()
 						eyeAIApp.aiData.ocrBoxes.set(textBoxes)
-						overlay_ocr.setCameraResolution(
+						overlayOCR.setCameraResolution(
 							Size(frame.width, frame.height)
 						)
-						overlay_ocr.setResults(textBoxes)
+						overlayOCR.setResults(textBoxes)
 					}
 				} else {
-					overlay_ocr.reset()
+					overlayOCR.reset()
 				}
 			}
 		}
@@ -149,13 +153,25 @@ class CameraFrameAnalyzer(
 
 		try {
 			// Warten auf Beendigung (maximal timeoutMillis)
-			if (!depthProcessingExecutor.awaitTermination(timeoutMillis, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+			if (!depthProcessingExecutor.awaitTermination(
+					timeoutMillis,
+					java.util.concurrent.TimeUnit.MILLISECONDS
+				)
+			) {
 				depthProcessingExecutor.shutdownNow()
 			}
-			if (!objectDetectionProcessingExecutor.awaitTermination(timeoutMillis, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+			if (!objectDetectionProcessingExecutor.awaitTermination(
+					timeoutMillis,
+					java.util.concurrent.TimeUnit.MILLISECONDS
+				)
+			) {
 				objectDetectionProcessingExecutor.shutdownNow()
 			}
-			if (!ocrProcessingExecutor.awaitTermination(timeoutMillis, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+			if (!ocrProcessingExecutor.awaitTermination(
+					timeoutMillis,
+					java.util.concurrent.TimeUnit.MILLISECONDS
+				)
+			) {
 				ocrProcessingExecutor.shutdownNow()
 			}
 		} catch (e: InterruptedException) {

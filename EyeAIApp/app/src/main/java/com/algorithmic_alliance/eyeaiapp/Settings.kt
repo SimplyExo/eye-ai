@@ -12,11 +12,13 @@ class Settings(val context: Context) {
 	var showProfilingInfo: Boolean
 		private set
 
+	var showDebugInputBitmap: Boolean
+		private set
 	var enableSpeechRecognition: Boolean
 		private set
 
 	var googleAiStudioApiKey: String?
-	
+
 	var enableObjectDetection: Boolean
 		private set
 
@@ -31,6 +33,11 @@ class Settings(val context: Context) {
 
 		showProfilingInfo = sharedPreferences.getBoolean(
 			context.getString(R.string.show_profiling_info_setting),
+			false
+		)
+
+		showDebugInputBitmap = sharedPreferences.getBoolean(
+			context.getString(R.string.show_debug_input_bitmap_setting),
 			false
 		)
 

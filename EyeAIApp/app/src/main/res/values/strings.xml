@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Eye AI</string>
     <string name="depth_preview_image_description">Depth Preview Image</string>
+    <string name="debug_input_bitmap_image_description">Debug Input Bitmap</string>
     <string name="allow_camera_permission_notice">Allow Camera Permissions!</string>
     <string name="allow_microphone_permission_notice">Allow Microphone Permissions!</string>
     <string name="allow_camera_and_microphone_permission_notice">Allow Camera and Microphone Permissions!</string>
@@ -18,6 +19,7 @@
     <string name="settings_button_description">Settings button</string>
     <string name="depth_model_setting">depth_model</string>
     <string name="show_profiling_info_setting">show_profiling_info</string>
+    <string name="show_debug_input_bitmap_setting">show_debug_input_bitmap</string>
     <string name="enable_speech_recognition_setting">enable_speech_recognition</string>
     <string name="enable_ocr_setting">enable_ocr_setting</string>
     <string name="google_ai_studio_api_key_stetting">google_ai_studio_api_key</string>
