@@ -5,6 +5,12 @@
 #include <AL/alc.h>
 #include <iostream>
 
+/*
+This class generates a OpenAl-soft source, which will play a sound.
+The sound played will be determined by the passed audiodata, and
+the origin of the sound by the passed position in 3d space.
+*/
+
 class Source {
   public:
 	Source(const AudioData& audioData, const std::array<float, 3>& position);

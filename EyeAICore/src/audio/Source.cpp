@@ -4,6 +4,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <array>
+#include <thread>
 
 Source::Source(const AudioData& data,  const std::array<float, 3>& position) : audioData(data){
     this-> x_pos = position[0];

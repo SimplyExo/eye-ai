@@ -1,44 +1,56 @@
 #include "EyeAICore/audio/AudioData.hpp"
+#include "EyeAICore/audio/CalculateSoundOrigin.hpp"
 #include "EyeAICore/audio/Source.hpp"
-#include <iostream>
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <cstring>
-#include <vector>
-#include <cmath>
 #include <array>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+#include <thread>
+#include <vector>
 
-constexpr float PI = 3.14159265f;
+int audio_main() {
+	std::cout << "Inside audio_main.cpp" << std::endl;
 
-int audio_main(){
-    std::cout << "Inside audio_main.cpp" << std::endl;
-    ALCdevice* device;
-    ALCcontext* context;
+	std::array<int, 2> pos = {75, 1};
+	CalculateSoundOrigin().calculateSoundOrigin(pos, 1);
 
-    //Opening the default audio device
-    device = alcOpenDevice(NULL);
-    if(!device){
-        std::cout << "Das Audiogerät konnte nicht geöffnet werden." << std::endl;
-    }
+	ALCdevice* device;
+	ALCcontext* context;
 
-    context = alcCreateContext(device, NULL);
-    if (!alcMakeContextCurrent(context)){
-        std::cout << "Fehler bei Context" << std::endl;
-    }
+	// Opening the default audio device
+	device = alcOpenDevice(NULL);
+	if (!device) {
+		std::cout << "Das Audiogerät konnte nicht geöffnet werden."
+				  << std::endl;
+		return 1;
+	}
 
-    alListener3f(AL_POSITION, 0.0,0.0,0.0);
+	// creating and attatching the context to the device, make the context the
+	// current one
+	context = alcCreateContext(device, NULL);
+	if (!alcMakeContextCurrent(context)) {
+		std::cout << "Fehler bei Context" << std::endl;
+		return 1;
+	}
 
-    AudioData audioData1(200.0f, 2.0f);
-    std::array<float, 3> position = {-1.0,0.0,0.0};
-    Source source1(audioData1, position);
+	// setting position of Listener to (0|0|0)
+	alListener3f(AL_POSITION, 0.0, 0.0, 0.0);
 
-    AudioData audioData2(200.0f, 2.0f);
-    position = {1.0,0.0,0.0};
-    Source source2(audioData2, position);
-    
+	{
+		AudioData audioData1(300.0f, 2.0f);
+		std::array<float, 3> position = {-1.0, 0.0, 0.0};
+		Source source1(audioData1, position);
 
-    alcMakeContextCurrent(nullptr);
-    alcDestroyContext(context);
-    alcCloseDevice(device);
-    return 2;
+		AudioData audioData2(200.0f, 3.0f);
+		std::array<float, 3> position2 = {1.0, 0.0, 0.0};
+		Source source2(audioData2, position2);
+	}
+
+	// cleaning up
+	alcMakeContextCurrent(nullptr);
+	alcDestroyContext(context);
+	alcCloseDevice(device);
+	return 0;
 }
