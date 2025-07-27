@@ -4,6 +4,12 @@ the core implementation of EyeAI in crossplatform c++
 
 ## Building EyeAICore
 
+Optional programs to install:
+
+- clang-tidy: static code analysis
+- ccache: cache compilation results for faster repeated builds
+- doxygen: generate documentation from source code
+
 ```bash
 cmake --preset=release
 cmake --build --preset=release

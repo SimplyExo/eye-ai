@@ -18,14 +18,14 @@ option(EYE_AI_CORE_ENABLE_TRACY_PROFILER "Enable tracy profiler" OFF)
 
 if (EYE_AI_CORE_ENABLE_CLANG_TIDY)
 	find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-	if (CLANG_TIDY_EXE STREQUAL "CLANG_TIDY_EXE-NOTFOUND")
-		message(WARNING "clang-tidy not found, not using clang-tidy for static analysis despite EYE_AI_CORE_ENABLE_CLANG_TIDY begin ON")
-		unset(CLANG_TIDY_EXE)
+	if (${CLANG_TIDY_EXE} STREQUAL "CLANG_TIDY_EXE-NOTFOUND")
+		message(WARNING "clang-tidy not found, not using clang-tidy for static analysis despite EYE_AI_CORE_ENABLE_CLANG_TIDY being ON")
+		unset(CLANG_TIDY_EXE CACHE)
 	endif ()
 endif()
 
-find_program(CCACHE_FOUND ccache)
-if(CCACHE_FOUND)
+find_program(CCACHE_EXE ccache)
+if(NOT (${CCACHE_EXE} STREQUAL "CCACHE_EXE-NOTFOUND"))
 	set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
 	set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 endif()
@@ -94,10 +94,8 @@ else()
     target_compile_definitions(EyeAICore PUBLIC EYE_AI_CORE_USE_PREBUILT_TFLITE=0)
 endif()
 
-if (EYE_AI_CORE_ENABLE_CLANG_TIDY)
-	if (DEFINED CLANG_TIDY_EXE)
-		set_target_properties(EyeAICore PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
-	endif ()
+if (EYE_AI_CORE_ENABLE_CLANG_TIDY AND (DEFINED CLANG_TIDY_EXE))
+	set_target_properties(EyeAICore PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
 endif()
 
 if (EYE_AI_CORE_ENABLE_TRACY_PROFILER)
@@ -108,57 +106,61 @@ else()
 endif()
 
 
+
 if (EYE_AI_CORE_GENERATE_DOCS)
-	find_package(Doxygen REQUIRED)
+	find_package(Doxygen)
 
-	include(FetchContent)
-	message(STATUS "Downloading doxygen-awesome-css...")
-	FetchContent_Declare(
-		doxygen-awesome-css
-		URL "https://github.com/jothepro/doxygen-awesome-css/archive/refs/tags/v2.3.4.zip"
-	)
-	FetchContent_MakeAvailable(doxygen-awesome-css)
-	FetchContent_GetProperties(doxygen-awesome-css SOURCE_DIR AWESOME_CSS_DIR)
+	if (DOXYGEN_FOUND)
+		include(FetchContent)
+		message(STATUS "Downloading doxygen-awesome-css...")
+		FetchContent_Declare(
+			doxygen-awesome-css
+			URL "https://github.com/jothepro/doxygen-awesome-css/archive/refs/tags/v2.3.4.zip"
+		)
+		FetchContent_MakeAvailable(doxygen-awesome-css)
+		FetchContent_GetProperties(doxygen-awesome-css SOURCE_DIR AWESOME_CSS_DIR)
 
-	# Doxyfile configuration
-	set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/docs")
-	set(DOXYGEN_FILE_PATTERNS *.cpp *.hpp *.md)
-	set(DOXYGEN_RECURSIVE YES)
-	set(DOXYGEN_EXTRACT_ALL YES)
-	set(DOXYGEN_QUIET YES)
-	set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
-	set(DOXYGEN_ENABLE_PREPROCESSING YES)
-	set(DOXYGEN_MACRO_EXPANSION YES)
-	set(DOXYGEN_GENERATE_TREEVIEW YES)
-	set(DOXYGEN_DISABLE_INDEX NO)
-	set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-	set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-	set(DOXYGEN_LAYOUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/docs/DoxygenLayout.xml")
-	set(DOXYGEN_HTML_EXTRA_STYLESHEET
-		"${AWESOME_CSS_DIR}/doxygen-awesome.css"
-		"${AWESOME_CSS_DIR}/doxygen-awesome-sidebar-only.css"
-		"${AWESOME_CSS_DIR}/doxygen-awesome-sidebar-only-darkmode-toggle.css"
-		"${CMAKE_CURRENT_SOURCE_DIR}/docs/custom.css"
-	)
-	set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/docs/header.html")
-	set(DOXYGEN_HTML_EXTRA_FILES
-		"${AWESOME_CSS_DIR}/doxygen-awesome-darkmode-toggle.js"
-		"${AWESOME_CSS_DIR}/doxygen-awesome-fragment-copy-button.js"
-	)
-	set(DOXYGEN_HTML_COPY_CLIPBOARD NO)
-	set(DOXYGEN_HAVE_DOT YES)
-	set(DOXYGEN_DOT_IMAGE_FORMAT svg)
-	set(DOXYGEN_DOT_TRANSPARENT YES)
+		# Doxyfile configuration
+		set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/docs")
+		set(DOXYGEN_FILE_PATTERNS *.cpp *.hpp *.md)
+		set(DOXYGEN_RECURSIVE YES)
+		set(DOXYGEN_EXTRACT_ALL YES)
+		set(DOXYGEN_QUIET YES)
+		set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
+		set(DOXYGEN_ENABLE_PREPROCESSING YES)
+		set(DOXYGEN_MACRO_EXPANSION YES)
+		set(DOXYGEN_GENERATE_TREEVIEW YES)
+		set(DOXYGEN_DISABLE_INDEX NO)
+		set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+		set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+		set(DOXYGEN_LAYOUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/docs/DoxygenLayout.xml")
+		set(DOXYGEN_HTML_EXTRA_STYLESHEET
+			"${AWESOME_CSS_DIR}/doxygen-awesome.css"
+			"${AWESOME_CSS_DIR}/doxygen-awesome-sidebar-only.css"
+			"${AWESOME_CSS_DIR}/doxygen-awesome-sidebar-only-darkmode-toggle.css"
+			"${CMAKE_CURRENT_SOURCE_DIR}/docs/custom.css"
+		)
+		set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/docs/header.html")
+		set(DOXYGEN_HTML_EXTRA_FILES
+			"${AWESOME_CSS_DIR}/doxygen-awesome-darkmode-toggle.js"
+			"${AWESOME_CSS_DIR}/doxygen-awesome-fragment-copy-button.js"
+		)
+		set(DOXYGEN_HTML_COPY_CLIPBOARD NO)
+		set(DOXYGEN_HAVE_DOT YES)
+		set(DOXYGEN_DOT_IMAGE_FORMAT svg)
+		set(DOXYGEN_DOT_TRANSPARENT YES)
 
-	doxygen_add_docs(
-		EyeAICoreDoxygenDocs
-		"${CMAKE_CURRENT_SOURCE_DIR}/README.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/docs"
-		"${CMAKE_CURRENT_SOURCE_DIR}/include/EyeAICore"
-		"${CMAKE_CURRENT_SOURCE_DIR}/src"
-		"${CMAKE_CURRENT_SOURCE_DIR}/metric_depth"
-		COMMENT "Generating EyeAICore documentation with Doxygen"
-	)
+		doxygen_add_docs(
+			EyeAICoreDoxygenDocs
+			"${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+			"${CMAKE_CURRENT_SOURCE_DIR}/docs"
+			"${CMAKE_CURRENT_SOURCE_DIR}/include/EyeAICore"
+			"${CMAKE_CURRENT_SOURCE_DIR}/src"
+			COMMENT "Generating EyeAICore documentation with Doxygen"
+		)
+	else()
+		message(WARNING "Did not find Doxygen installation, not generating documentation even though EYE_AI_CORE_GENERATE_DOCS is enabled")
+	endif()
 endif()
 
 if (EYE_AI_CORE_ENABLE_TESTS)
