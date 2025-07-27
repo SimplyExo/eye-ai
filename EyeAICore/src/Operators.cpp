@@ -75,5 +75,8 @@ std::string_view format_float_tensor_format(FloatTensorFormat format) {
 		return "RawRelativeDepth";
 	case FloatTensorFormat::YoloOutput:
 		return "YoloOutput";
+	default: 
+		return "invalid";
 	}
+
 }
