@@ -13,8 +13,8 @@
 int audio_main() {
 	std::cout << "Inside audio_main.cpp" << std::endl;
 
-	std::array<int, 2> pos = {75, 1};
-	CalculateSoundOrigin().calculateSoundOrigin(pos, 1);
+	std::array<int, 2> pos = {60, 1};
+	CalculateSoundOrigin().calculateSoundOrigin(pos, 2.0f);
 
 	ALCdevice* device;
 	ALCcontext* context;

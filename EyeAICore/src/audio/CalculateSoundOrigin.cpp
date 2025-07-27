@@ -11,12 +11,8 @@ std::array<float, 2> CalculateSoundOrigin::calculateSoundOrigin(
 	this->distanceToObject = distanceToObject;
 
 	float pixelAngle = getPixleAngle();
-	std::cout << "pixelAngle: " << pixelAngle << std::endl;
 
 	std::array<float,2> vectorToOrigin = getVectorToOrigin(pixelAngle);
-	std::cout << "vectorToOrigin: " << vectorToOrigin[0]<< ", "<< vectorToOrigin[1] << std::endl;
-	
-	std::cout << "Origin: " << getOrigin(vectorToOrigin)[0]<< ", "<< getOrigin(vectorToOrigin)[1] << std::endl;
 
 	return getOrigin(vectorToOrigin);
 }
