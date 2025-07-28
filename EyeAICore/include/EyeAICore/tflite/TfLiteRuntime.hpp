@@ -30,6 +30,8 @@ struct TfLiteReporterUserData {
 		  log_error_callback(log_error_callback) {}
 };
 
+class ProfilingFrame;
+
 /// Helper class that wraps the tflite c api
 class TfLiteRuntime {
 	std::vector<int8_t> model_data;
@@ -49,6 +51,8 @@ class TfLiteRuntime {
 		gpu_delegate{nullptr, TfLiteGpuDelegateV2Delete};
 
 	TfLiteReporterUserData reporter_user_data;
+
+	ProfilingFrame& profiling_frame;
 
 	std::vector<std::unique_ptr<OperatorBase>> input_operators;
 	std::vector<std::unique_ptr<OperatorBase>> output_operators;
@@ -71,14 +75,15 @@ class TfLiteRuntime {
 		OperatorChain<InputOps...>&& input_operators,
 		OperatorChain<OutputOps...>&& output_operators,
 		TfLiteLogWarningCallback log_warning_callback,
-		TfLiteLogErrorCallback log_error_callback
+		TfLiteLogErrorCallback log_error_callback,
+		ProfilingFrame& profiling_frame
 	) {
 		return create_impl(
 			std::move(model_data), gpu_delegate_serialization_dir, model_token,
 			model_input_format, model_output_format,
 			std::move(input_operators).to_runtime_base(),
 			std::move(output_operators).to_runtime_base(), log_warning_callback,
-			log_error_callback
+			log_error_callback, profiling_frame
 		);
 	}
 
@@ -116,7 +121,8 @@ class TfLiteRuntime {
 		std::vector<std::unique_ptr<OperatorBase>>&& input_operators,
 		std::vector<std::unique_ptr<OperatorBase>>&& output_operators,
 		TfLiteLogWarningCallback log_warning_callback,
-		TfLiteLogErrorCallback log_error_callback
+		TfLiteLogErrorCallback log_error_callback,
+		ProfilingFrame& profiling_frame
 	);
 
 	explicit TfLiteRuntime(
@@ -125,12 +131,14 @@ class TfLiteRuntime {
 		FloatTensorFormat model_output_format,
 		std::vector<std::unique_ptr<OperatorBase>>&& input_operators,
 		std::vector<std::unique_ptr<OperatorBase>>&& output_operators,
-		TfLiteReporterUserData error_reporter_user_data
+		TfLiteReporterUserData error_reporter_user_data,
+		ProfilingFrame& profiling_frame
 	)
 		: model_data(std::move(model_data)),
 		  model_input_format(model_input_format),
 		  model_output_format(model_output_format),
 		  reporter_user_data(error_reporter_user_data),
+		  profiling_frame(profiling_frame),
 		  input_operators(std::move(input_operators)),
 		  output_operators(std::move(output_operators)) {}
 

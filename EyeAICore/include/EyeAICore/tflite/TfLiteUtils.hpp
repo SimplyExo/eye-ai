@@ -14,6 +14,8 @@
 #include <tensorflow/lite/delegates/gpu/delegate.h>
 #endif
 
+class ProfilingFrame;
+
 std::string_view format_tflite_type(TfLiteType type);
 
 /// @return byte size of type, or nullopt if type has a dynamic size
@@ -38,7 +40,8 @@ get_tensor_quantization(const TfLiteTensor* tensor);
 	unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
 	create_gpu_delegate(
 		std::string_view gpu_delegate_serialization_dir,
-		std::string_view model_token
+		std::string_view model_token,
+		ProfilingFrame& profiling_frame
 	);
 
 /// either a input or a output tensor
@@ -139,7 +142,8 @@ COMBINED_ERROR(
 /// loads input tensor with floats array, supports quantization
 [[nodiscard]] std::optional<TfLiteLoadInputError> load_input_tensor_with_floats(
 	TfLiteTensor* input_tensor,
-	std::span<const float> values
+	std::span<const float> values,
+	ProfilingFrame& profiling_frame
 );
 
 struct [[nodiscard]] TfLiteCopyToOutputTensorError {
@@ -177,7 +181,8 @@ COMBINED_ERROR(
 [[nodiscard]] std::optional<TfLiteReadOutputError>
 read_floats_from_output_tensor(
 	const TfLiteTensor* output_tensor,
-	std::span<float> output
+	std::span<float> output,
+	ProfilingFrame& profiling_frame
 );
 
 struct [[nodiscard]] TfLiteCreateInterpreterError {

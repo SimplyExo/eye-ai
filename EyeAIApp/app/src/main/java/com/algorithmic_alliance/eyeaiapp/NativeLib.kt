@@ -9,6 +9,11 @@ import android.util.Size
 import androidx.core.graphics.createBitmap
 import java.nio.ByteBuffer
 
+// see NativeLib.cpp
+enum class ProfilingFrameType(val id: Int) {
+	Depth(0), Object(1)
+}
+
 /** Kotlin interface with NativeLib c++ code */
 object NativeLib {
 	init {
@@ -55,7 +60,7 @@ object NativeLib {
 
 	external fun depthColormap(depthValues: FloatArray, colormappedPixels: IntArray)
 
-	external fun bitmapToRgbHwc255FloatArray(bitmap: Bitmap, outFloatArray: FloatArray)
+	external fun bitmapToRgbHwc255FloatArray(bitmap: Bitmap, outFloatArray: FloatArray, profilingFrameType: Int)
 
 	/** @param input values should be between 0.0f and 1.0f */
 	fun depthColorMap(input: FloatArray, inputImageSize: Size): Bitmap {
@@ -79,10 +84,10 @@ object NativeLib {
 		)
 	}
 
-	fun bitmapToRgbHwc255FloatArray(bitmap: Bitmap): FloatArray {
+	fun bitmapToRgbHwc255FloatArray(bitmap: Bitmap, profilingFrameType: ProfilingFrameType): FloatArray {
 		val floatArray = FloatArray(bitmap.width * bitmap.height * 3)
 
-		bitmapToRgbHwc255FloatArray(bitmap, floatArray)
+		bitmapToRgbHwc255FloatArray(bitmap, floatArray, profilingFrameType.id)
 
 		return floatArray
 	}
