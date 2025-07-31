@@ -1,3 +1,4 @@
+#include <EyeAICore/audio/AudioMain.hpp>
 #include <jni.h>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -20,6 +21,7 @@ MutexGuard<std::unique_ptr<DepthModel>> depth_model{
 };
 
 MutexGuard<YoloModel> yolo_instance;
+MutexGuard<std::unique_ptr<AudioMain>> audio;
 } // namespace
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
@@ -359,6 +361,45 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatObjectFrame(
 		get_last_object_profiling_frame_formatted().c_str()
 	);
 }
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setupAudioDevice(
+	JNIEnv* env,
+	jobject /*this*/
+) {
+	LOG_INFO("Setup Audio Device");
+	/*
+	 auto audio_main = std::make_unique<AudioMain>();
+	audio_main->setupAudioDevice();
+	audio.lock()->swap(audio_main);
+	 */
+	AudioMain spacialAudio;
+	LOG_INFO("1");
+	spacialAudio.setupAudioDevice();
+	LOG_INFO("2");
+	spacialAudio.destroyAudioDevice();
+	LOG_INFO("3");
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroyAudioDevice(
+	JNIEnv* env,
+	jobject /*this*/
+) {
+	(*audio.lock())->destroyAudioDevice();
+	audio.lock()->reset();
+}
+/*
+extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_playSound(
+   JNIEnv* env,
+   jobject obj,
+   jfloat frequency,
+   jfloat duration
+) {
+   (*audio.lock())->playSound(frequency, duration);
+}
+ */
 
 // NOLINTEND(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)

@@ -22,7 +22,5 @@ class AudioData {
 	AudioData(float frequency, float duration);
 
   private:
-	const float PI = 3.14159265f;
-	const float amplitude = 1.0f;
 	std::vector<short> getAudioTone();
 };

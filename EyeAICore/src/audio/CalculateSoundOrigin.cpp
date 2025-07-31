@@ -7,7 +7,7 @@ std::array<float, 2> CalculateSoundOrigin::calculateSoundOrigin(
 	float distanceToObject
 ) {
 	this->pixelXCoordinate = pixelCoordinates[0];
-	this->pixelYCoordinate = pixelCoordinates[1];
+	//this->pixelYCoordinate = pixelCoordinates[1];
 	this->distanceToObject = distanceToObject;
 
 	float pixelAngle = getPixleAngle();

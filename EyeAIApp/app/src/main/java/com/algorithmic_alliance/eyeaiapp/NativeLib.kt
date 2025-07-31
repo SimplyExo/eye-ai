@@ -57,6 +57,12 @@ object NativeLib {
 
 	external fun bitmapToRgbHwc255FloatArray(bitmap: Bitmap, outFloatArray: FloatArray)
 
+	external fun setupAudioDevice()
+
+	external fun destroyAudioDevice()
+
+	//external fun playSound(frequency: Float, duration: Float)
+
 	/** @param input values should be between 0.0f and 1.0f */
 	fun depthColorMap(input: FloatArray, inputImageSize: Size): Bitmap {
 		if (input.size != inputImageSize.width * inputImageSize.height) {

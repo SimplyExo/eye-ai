@@ -23,6 +23,7 @@ android {
 			cmake {
 				targets("NativeLib")
 				abiFilters("arm64-v8a")
+				arguments("-DANDROID_STL=c++_shared")
 			}
 		}
 	}
@@ -55,6 +56,7 @@ android {
 		jvmTarget = "11"
 	}
 	buildFeatures {
+		prefab = true
 		compose = true
 	}
 	externalNativeBuild {
@@ -105,4 +107,6 @@ dependencies {
 
 	// OCR
 	implementation(libs.text.recognition)
+
+	implementation(libs.oboe)
 }

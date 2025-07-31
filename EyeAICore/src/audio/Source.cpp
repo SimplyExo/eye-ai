@@ -30,10 +30,13 @@ void Source::generateSource(){
 
 void Source::playSource(){
     alSourcePlay(source);
+    
     ALint state;
     do {
         alGetSourcei(source, AL_SOURCE_STATE, &state);
     } while (state == AL_PLAYING);
+    
+    
 }
 
 Source::~Source(){

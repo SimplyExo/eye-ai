@@ -97,6 +97,20 @@ if (EYE_AI_CORE_ENABLE_TRACY_PROFILER)
 	FetchContent_MakeAvailable(tracy)
 endif ()
 
+
+FetchContent_Declare(
+  openal-soft
+  GIT_REPOSITORY https://github.com/kcat/openal-soft.git
+  GIT_TAG master 
+)
+
+FetchContent_MakeAvailable(openal-soft)
+
+if(EYE_AI_CORE_FORCE_OBOE)
+	find_package(oboe REQUIRED CONFIG)
+	target_compile_definitions(OpenAL PRIVATE "ALSOFT_DRIVERS=oboe")
+endif()
+
 set(THIRD_PARTY_INCLUDE_DIRS
 	${TFLITE_INCLUDE_DIRS}
 	PARENT_SCOPE
@@ -105,5 +119,7 @@ set(THIRD_PARTY_LIBS
 	${TFLITE_LIBS}
 	tl::expected
 	concurrentqueue
+	OpenAL
 	PARENT_SCOPE
 )
+

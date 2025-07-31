@@ -16,6 +16,8 @@ option(EYE_AI_CORE_ENABLE_TESTS "Enable tests" OFF)
 
 option(EYE_AI_CORE_ENABLE_TRACY_PROFILER "Enable tracy profiler" OFF)
 
+option(EYE_AI_CORE_FORCE_OBOE "Force OpenAL to use oboe backend (for android)" OFF)
+
 if (EYE_AI_CORE_ENABLE_CLANG_TIDY)
 	find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
 	if (CLANG_TIDY_EXE STREQUAL "CLANG_TIDY_EXE-NOTFOUND")
@@ -33,6 +35,7 @@ endif()
 if (DEFINED CMAKE_ANDROID_ARCH_ABI)
     set(EYE_AI_CORE_USE_PREBUILT_TFLITE ON CACHE BOOL "Use prebuilt TFLite library from LiteRT in third_party/litert(-gpu)-1.2.0 (requires EYE_AI_CORE_ABI)" FORCE)
     set(EYE_AI_CORE_ABI ${CMAKE_ANDROID_ARCH_ABI})
+	set(EYE_AI_CORE_FORCE_OBOE "Force OpenAL to use oboe backend (for android)" ON)
 else ()
     message(STATUS "EyeAICore: Not using Android NDK, setting EyeAICore ABI to host arch")
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")

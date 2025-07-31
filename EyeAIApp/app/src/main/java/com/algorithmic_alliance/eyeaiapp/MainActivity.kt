@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp
 
 import android.content.Intent
+import android.media.AudioManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View.GONE
@@ -17,6 +18,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
+import com.algorithmic_alliance.eyeaiapp.audio.SpacialAudio
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,8 +55,13 @@ class MainActivity : AppCompatActivity() {
 
 	private var llmThreadExecutor = Executors.newSingleThreadExecutor()
 
+
+
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+
+
 
 		enableEdgeToEdge()
 		setContentView(R.layout.activity_main)
@@ -99,10 +106,18 @@ class MainActivity : AppCompatActivity() {
 		eyeAIApp().updateSettings()
 
 		updateSpeechRecognitionUIVisibility()
+
+
+		CoroutineScope(Dispatchers.IO).launch{
+			SpacialAudio.setup()
+			SpacialAudio.start()
+		}
 	}
 
 	override fun onResume() {
 		super.onResume()
+
+
 
 		eyeAIApp().updateSettings()
 
@@ -137,6 +152,7 @@ class MainActivity : AppCompatActivity() {
 		super.onDestroy()
 
 		cameraManager.shutdown()
+		SpacialAudio.destroy()
 
 		eyeAIApp().voskModel?.closeService()
 	}

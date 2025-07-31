@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <numbers>
 
 AudioData::AudioData(float frequency, float duration) {
 	this->frequency = frequency;
@@ -12,7 +13,7 @@ AudioData::AudioData(float frequency, float duration) {
 
 std::vector<short> AudioData::getAudioTone() {
 	// constant parameters
-	const float PI = 3.14159265f;
+	const float PI = std::numbers::pi;
 	const int sampleRate = 44100;
 	const int numSamples = static_cast<int>(sampleRate * duration);
 	const float amplitude = 1.0f;

@@ -22,9 +22,9 @@ class CalculateSoundOrigin {
 	float distanceToObject;
 	//coordinates of the pixel: from 1 to Resolution
 	int pixelXCoordinate;
-	int pixelYCoordinate;
+	//int pixelYCoordinate;
 	int pictureXResolution = 100;
-	int pictureYResolution = 100;
+	//int pictureYResolution = 100;
 	float getPixleAngle();
 	std::array<float, 2> getVectorToOrigin(float pixelAngle);
 	std::array<float, 2> getOrigin(std::array<float, 2> directionalVector);
