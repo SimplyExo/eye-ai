@@ -141,22 +141,3 @@ fun getGitCommitHash(): String {
 		commandLine("git", "rev-parse", "--short", "HEAD")
 	}.standardOutput.asText.get().trim()
 }
-
-
-fun getGitBranch(): String {
-	return providers.exec {
-		commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
-	}.standardOutput.asText.get().trim()
-}
-
-fun getGitTag(): String {
-	return providers.exec {
-		commandLine("git", "describe", "--abbrev=0", "--tags")
-	}.standardOutput.asText.get().trim()
-}
-
-fun getGitCommitHash(): String {
-	return providers.exec {
-		commandLine("git", "rev-parse", "--short", "HEAD")
-	}.standardOutput.asText.get().trim()
-}
