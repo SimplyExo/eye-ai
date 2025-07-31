@@ -5,7 +5,7 @@ Erstellen eines Virtual Environments mit allen Dependencies:
 ```
 python3 -m venv venv/
 source venv/bin/activate
-pip3 install opencv-python
+pip3 install opencv-python flask
 ```
 ### Hinweis: Vor Starten der Programme immer erst mit ```source venv/bin/activate``` das Virtual Environment aktivieren!
 
