@@ -12,11 +12,12 @@ Dadurch wird ein Server gestartet, welcher die Webcam des PCs nutzt, um eine Ste
 (es wird dasselbe Bild per HTTP auf zwei verschiedenen Ports an den Client gesendet)
 
 #### 3. Anzeigen des Bildes
-Zum Anzeigen müssen folgende Links im Browser geöffnet werden:
+Zum Anzeigen müssen folgende Links im Browser geöffnet werden:\
+Kamera 1:
 ```
 http://localhost:3333/cam0
 ```
-oder für Kamera 2
+Kamera 2:
 ```
 http://localhost:3334/cam0
 ```
