@@ -65,7 +65,12 @@ std::string ProfilingFrame::finish() {
 
 	std::ranges::sort(
 		profile_scopes_vector,
-		[](const auto& a, const auto& b) -> bool { return a.start < b.start; }
+		[](const auto& a, const auto& b) -> bool {
+			if (a.start == b.start)
+				return a.scope_depth < b.scope_depth;
+
+			return a.start < b.start;
+		}
 	);
 	std::string profile_scopes_formatted;
 	for (const auto& profile_scope : profile_scopes_vector) {

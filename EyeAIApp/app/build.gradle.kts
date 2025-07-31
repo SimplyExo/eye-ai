@@ -26,9 +26,17 @@ android {
 				arguments("-DANDROID_STL=c++_shared")
 			}
 		}
+
+		buildConfigField("String", "BUILD_TIME", "\"${System.currentTimeMillis()}\"")
+		buildConfigField("String", "GIT_BRANCH", "\"${getGitBranch()}\"")
+		buildConfigField("String", "GIT_TAG", "\"${getGitTag()}\"")
+		buildConfigField("String", "GIT_COMMIT", "\"${getGitCommitHash()}\"")
 	}
 
 	buildTypes {
+		debug {
+			buildConfigField("String", "BUILD_VARIANT", "\"Debug\"")
+		}
 		release {
 			isMinifyEnabled = false
 			proguardFiles(
@@ -36,10 +44,14 @@ android {
 				"proguard-rules.pro"
 			)
 			signingConfig = signingConfigs.getByName("debug")
+
+			buildConfigField("String", "BUILD_VARIANT", "\"Release\"")
 		}
 		create("profiling") {
 			initWith(getByName("release"))
 			matchingFallbacks += listOf("release")
+
+			buildConfigField("String", "BUILD_VARIANT", "\"Profiling\"")
 
 			externalNativeBuild {
 				cmake {
@@ -58,6 +70,7 @@ android {
 	buildFeatures {
 		prefab = true
 		compose = true
+		buildConfig = true
 	}
 	externalNativeBuild {
 		cmake {
@@ -107,6 +120,43 @@ dependencies {
 
 	// OCR
 	implementation(libs.text.recognition)
-
 	implementation(libs.oboe)
+}
+
+
+fun getGitBranch(): String {
+	return providers.exec {
+		commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
+	}.standardOutput.asText.get().trim()
+}
+
+fun getGitTag(): String {
+	return providers.exec {
+		commandLine("git", "describe", "--abbrev=0", "--tags")
+	}.standardOutput.asText.get().trim()
+}
+
+fun getGitCommitHash(): String {
+	return providers.exec {
+		commandLine("git", "rev-parse", "--short", "HEAD")
+	}.standardOutput.asText.get().trim()
+}
+
+
+fun getGitBranch(): String {
+	return providers.exec {
+		commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
+	}.standardOutput.asText.get().trim()
+}
+
+fun getGitTag(): String {
+	return providers.exec {
+		commandLine("git", "describe", "--abbrev=0", "--tags")
+	}.standardOutput.asText.get().trim()
+}
+
+fun getGitCommitHash(): String {
+	return providers.exec {
+		commandLine("git", "rev-parse", "--short", "HEAD")
+	}.standardOutput.asText.get().trim()
 }

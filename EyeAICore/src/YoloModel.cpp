@@ -27,7 +27,7 @@ tl::expected<bool, std::string> YoloModel::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
 		FloatTensorFormat::YoloImageRGBFloat, FloatTensorFormat::YoloOutput,
 		OperatorChain{YoloImageOperator{}}, OperatorChain{},
-		log_warning_callback, log_error_callback
+		log_warning_callback, log_error_callback, get_object_profiling_frame()
 	);
 
 	// bei Fehler gebe string aus
@@ -143,10 +143,6 @@ YoloModel::best_box(std::span<float> array) {
 		}
 	}
 
-	if (boundingBoxes.empty()) {
-		return {};
-	}
-
 	// Non-Maximum Suppression anwenden
 	return apply_nms(boundingBoxes);
 }
@@ -173,6 +169,9 @@ float YoloModel::calculate_iou(
 std::vector<YoloModel::BoundingBox>
 YoloModel::apply_nms(std::vector<YoloModel::BoundingBox>& boxes) const {
 	PROFILE_OBJECT_FUNCTION()
+
+	if (boxes.empty())
+		return boxes;
 
 	// 1. Sortiere nach cnf absteigend
 	std::vector<BoundingBox> sortedBoxes = boxes;

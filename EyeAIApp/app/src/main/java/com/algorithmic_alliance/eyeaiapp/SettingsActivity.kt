@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.ListPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 
 class SettingsActivity : AppCompatActivity() {
@@ -29,7 +30,7 @@ class SettingsActivity : AppCompatActivity() {
 
 			findPreference<ListPreference>(getString(R.string.depth_model_setting))?.let { list: ListPreference ->
 				val modelNames =
-					EyeAIApp.DEPTH_MODELS.map { it.name as CharSequence }.toTypedArray()
+					EyeAIApp.DEPTH_MODELS.map { it.name }.toTypedArray()
 
 				list.entries = modelNames
 				list.entryValues = modelNames
@@ -38,6 +39,15 @@ class SettingsActivity : AppCompatActivity() {
 					list.value = EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
 				}
 			}
+
+			findPreference<Preference>(getString(R.string.version_info_settings))?.summary =
+				BuildInfoHelper.getVersionInfo()
+			findPreference<Preference>(getString(R.string.build_time_settings))?.summary =
+				BuildInfoHelper.getFormattedBuildTime()
+			findPreference<Preference>(getString(R.string.git_info_settings))?.summary =
+				BuildInfoHelper.getGitInfo()
+			findPreference<Preference>(getString(R.string.build_variant_settings))?.summary =
+				BuildInfoHelper.getBuildVariant()
 		}
 	}
 }
