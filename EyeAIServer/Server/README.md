@@ -9,7 +9,14 @@ source ../venv/bin/activate
 python3 main.py
 ```
 Dadurch wird ein Server gestartet, welcher die Webcam des PCs nutzt, um eine Stereokamera zu "simulieren" 
-(es wird ein und dasselbe Bild auf zwei verschiedenen Ports an den Client gesendet)
+(es wird dasselbe Bild per HTTP auf zwei verschiedenen Ports an den Client gesendet)
 
-Zur besseren Unterscheidung der beiden Kanäle wird einer von diesen auf einer geringen Framerate (hier 3 FPS)
-übertragen
+#### 3. Anzeigen des Bildes
+Zum Anzeigen müssen folgende Links im Browser geöffnet werden:
+```
+http://localhost:3333/cam0
+```
+oder für Kamera 2
+```
+http://localhost:3334/cam0
+```
