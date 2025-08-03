@@ -13,13 +13,15 @@ Checks: >
   -modernize-use-trailing-return-type,
   -readability-braces-around-statements,
   -readability-uppercase-literal-suffix,
-  -cppcoreguidelines-macro-usage,
-  -cppcoreguidelines-avoid-magic-numbers,
   -readability-magic-numbers,
   -readability-identifier-length,
-  -misc-non-private-member-variables-in-classes
-  -misc-include-cleaner
+  -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -misc-non-private-member-variables-in-classes,
+  -misc-include-cleaner,
   -misc-use-anonymous-namespace
 
-HeaderFilterRegex: ''
+HeaderFilterRegex: 'include[/\\]EyeAICore[/\\].*\.hpp' # matches ".../include/EyeAICore/**.hpp"
 UseColor: true

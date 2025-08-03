@@ -6,12 +6,17 @@
 #include <variant>
 
 namespace tl {
+// when using std::make_format_args, std::forward should not be used
+// NOLINTBEGIN(cppcoreguidelines-missing-std-forward)
+
 /// same as tl::unexpected, but with formatted error using std::format
 template<typename... Args>
 [[nodiscard]] unexpected<std::string>
 unexpected_fmt(const std::format_string<Args...> fmt, Args&&... args) {
 	return unexpected(std::vformat(fmt.get(), std::make_format_args(args...)));
 }
+
+// NOLINTEND(cppcoreguidelines-missing-std-forward)
 } // namespace tl
 
 template<typename T>

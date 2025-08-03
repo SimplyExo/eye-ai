@@ -18,6 +18,7 @@ Checks: >
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
   -misc-non-private-member-variables-in-classes,
   -misc-include-cleaner,
   -misc-use-anonymous-namespace
