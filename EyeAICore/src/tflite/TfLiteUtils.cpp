@@ -6,14 +6,16 @@
 	std::span<const float> values,
 	std::span<std::byte> out_quantized_values,
 	TfLiteType quantized_type,
-	const TfLiteAffineQuantization& quantization
+	const TfLiteAffineQuantization& quantization,
+	ProfilingFrame& profiling_frame
 );
 
 [[nodiscard]] static std::optional<DequantizeFloatError> dequantize_to_floats(
 	std::span<const std::byte> quantized_values,
 	std::span<float> out_values,
 	TfLiteType quantized_type,
-	const TfLiteAffineQuantization& quantization
+	const TfLiteAffineQuantization& quantization,
+	ProfilingFrame& profiling_frame
 );
 
 std::optional<TfLiteAffineQuantization>
@@ -36,9 +38,10 @@ std::span<const int> get_tensor_shape(const TfLiteTensor* tensor) {
 std::unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
 create_gpu_delegate(
 	std::string_view gpu_delegate_serialization_dir,
-	std::string_view model_token
+	std::string_view model_token,
+	ProfilingFrame& profiling_frame
 ) {
-	PROFILE_DEPTH_FUNCTION()
+	PROFILE_FUNCTION(profiling_frame)
 
 	TfLiteGpuDelegateOptionsV2 gpu_delegate_options =
 		TfLiteGpuDelegateOptionsV2Default();
@@ -60,9 +63,10 @@ create_gpu_delegate(
 [[nodiscard]] static std::optional<TfLiteLoadNonQuantizedInputError>
 load_nonquantized_input_tensor_with_floats(
 	TfLiteTensor* input_tensor,
-	std::span<const float> values
+	std::span<const float> values,
+	ProfilingFrame& profiling_frame
 ) {
-	PROFILE_DEPTH_FUNCTION()
+	PROFILE_FUNCTION(profiling_frame)
 
 	if (input_tensor->type != kTfLiteFloat32)
 		return TfLiteNonFloatTensorTypeError{
@@ -97,9 +101,10 @@ load_nonquantized_input_tensor_with_floats(
 load_quantized_input_tensor_with_floats(
 	TfLiteTensor* input_tensor,
 	const TfLiteAffineQuantization& quantization,
-	std::span<const float> values
+	std::span<const float> values,
+	ProfilingFrame& profiling_frame
 ) {
-	PROFILE_DEPTH_FUNCTION()
+	PROFILE_FUNCTION(profiling_frame)
 
 	const auto quantized_type_size = get_tflite_type_size(input_tensor->type);
 
@@ -127,32 +132,32 @@ load_quantized_input_tensor_with_floats(
 	);
 
 	return quantize_floats(
-		values, quantized_span, input_tensor->type, quantization
+		values, quantized_span, input_tensor->type, quantization, profiling_frame
 	);
 }
 
 std::optional<TfLiteLoadInputError> load_input_tensor_with_floats(
 	TfLiteTensor* input_tensor,
-	std::span<const float> values
+	std::span<const float> values,
+	ProfilingFrame& profiling_frame
 ) {
-	PROFILE_DEPTH_FUNCTION()
-
 	const auto quantization = get_tensor_quantization(input_tensor);
 	if (quantization) {
 		return load_quantized_input_tensor_with_floats(
-			input_tensor, *quantization, values
+			input_tensor, *quantization, values, profiling_frame
 		);
 	}
 
-	return load_nonquantized_input_tensor_with_floats(input_tensor, values);
+	return load_nonquantized_input_tensor_with_floats(input_tensor, values, profiling_frame);
 }
 
 static std::optional<TfLiteReadNonQuantizedOutputError>
 read_floats_from_nonquantized_output_tensor(
 	const TfLiteTensor* output_tensor,
-	std::span<float> output
+	std::span<float> output,
+	ProfilingFrame& profiling_frame
 ) {
-	PROFILE_DEPTH_FUNCTION()
+	PROFILE_FUNCTION(profiling_frame)
 
 	if (output_tensor->type != kTfLiteFloat32) {
 		return TfLiteNonFloatTensorTypeError{
@@ -186,9 +191,10 @@ static std::optional<TfLiteReadQuantizedOutputError>
 read_floats_from_quantized_output_tensor(
 	const TfLiteTensor* output_tensor,
 	std::span<float> output,
-	const TfLiteAffineQuantization& quantization
+	const TfLiteAffineQuantization& quantization,
+	ProfilingFrame& profiling_frame
 ) {
-	PROFILE_DEPTH_FUNCTION()
+	PROFILE_FUNCTION(profiling_frame)
 
 	const auto quantized_type_size = get_tflite_type_size(output_tensor->type);
 	if (!quantized_type_size.has_value()) {
@@ -217,33 +223,33 @@ read_floats_from_quantized_output_tensor(
 	);
 
 	return dequantize_to_floats(
-		quantized_output_span, output, output_tensor->type, quantization
+		quantized_output_span, output, output_tensor->type, quantization, profiling_frame
 	);
 }
 
 std::optional<TfLiteReadOutputError> read_floats_from_output_tensor(
 	const TfLiteTensor* output_tensor,
-	std::span<float> output
+	std::span<float> output,
+	ProfilingFrame& profiling_frame
 ) {
-	PROFILE_DEPTH_FUNCTION()
-
 	const auto quantization = get_tensor_quantization(output_tensor);
 	if (quantization) {
 		return read_floats_from_quantized_output_tensor(
-			output_tensor, output, *quantization
+			output_tensor, output, *quantization, profiling_frame
 		);
 	}
 
-	return read_floats_from_nonquantized_output_tensor(output_tensor, output);
+	return read_floats_from_nonquantized_output_tensor(output_tensor, output, profiling_frame);
 }
 
 static std::optional<QuantizeFloatError> quantize_floats(
 	std::span<const float> values,
 	std::span<std::byte> out_quantized_values,
 	TfLiteType quantized_type,
-	const TfLiteAffineQuantization& quantization
+	const TfLiteAffineQuantization& quantization,
+	ProfilingFrame& profiling_frame
 ) {
-	PROFILE_DEPTH_FUNCTION()
+	PROFILE_FUNCTION(profiling_frame)
 
 	if (quantized_type != kTfLiteUInt8)
 		return InvalidFloat32QuantizationTypeError{quantized_type};
@@ -278,9 +284,10 @@ static std::optional<DequantizeFloatError> dequantize_to_floats(
 	std::span<const std::byte> quantized_values,
 	std::span<float> out_values,
 	TfLiteType quantized_type,
-	const TfLiteAffineQuantization& quantization
+	const TfLiteAffineQuantization& quantization,
+	ProfilingFrame& profiling_frame
 ) {
-	PROFILE_DEPTH_FUNCTION()
+	PROFILE_FUNCTION(profiling_frame)
 
 	if (quantized_type != kTfLiteUInt8)
 		return InvalidFloat32QuantizationTypeError{quantized_type};

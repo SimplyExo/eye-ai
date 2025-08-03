@@ -43,4 +43,23 @@
             app:title="Enabled"
             app:defaultValue="true" />
     </PreferenceCategory>
+
+    // this will be populated by SettingsActivity.kt
+    <PreferenceCategory app:title="Build Info">
+        <Preference
+            app:key="version_info"
+            app:title="App Version"/>
+
+        <Preference
+            app:key="build_time"
+            app:title="Build Time"/>
+
+        <Preference
+            app:key="git_info"
+            app:title="Git Information"/>
+
+        <Preference
+            app:key="build_variant"
+            app:title="Build Variant"/>
+    </PreferenceCategory>
 </PreferenceScreen>

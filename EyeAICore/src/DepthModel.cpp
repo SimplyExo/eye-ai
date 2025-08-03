@@ -1,6 +1,7 @@
 #include "EyeAICore/DepthModel.hpp"
 #include "EyeAICore/Operators.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 
 tl::expected<std::unique_ptr<DepthModel>, TfLiteCreateRuntimeError>
 DepthModel::create(
@@ -16,7 +17,7 @@ DepthModel::create(
 		FloatTensorFormat::RawRelativeDepth,
 		OperatorChain{MiDaSImageOperator{}},
 		OperatorChain{RelativeDepthPostOperator{}}, log_warning_callback,
-		log_error_callback
+		log_error_callback, get_depth_profiling_frame()
 	);
 	if (!runtime_result.has_value())
 		return tl::unexpected(runtime_result.error());
@@ -37,7 +38,7 @@ DepthModel::create_with_raw_output(
 		FloatTensorFormat::MiDaSImageRGBFloat,
 		FloatTensorFormat::RawRelativeDepth,
 		OperatorChain{MiDaSImageOperator{}}, OperatorChain{},
-		log_warning_callback, log_error_callback
+		log_warning_callback, log_error_callback, get_depth_profiling_frame()
 	);
 	if (!runtime_result.has_value())
 		return tl::unexpected(runtime_result.error());

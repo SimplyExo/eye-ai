@@ -5,6 +5,8 @@
 #include <optional>
 #include <span>
 
+class ProfilingFrame;
+
 struct [[nodiscard]] BitmapError {
 	std::string error_msg;
 
@@ -28,20 +30,6 @@ check_android_bitmap_result(int result);
 [[nodiscard]] std::optional<BitmapError> bitmap_to_rgb_hwc_255_float_array(
 	JNIEnv* env,
 	jobject bitmap,
-	std::span<float> out_float_array
-);
-
-/// converts pixel from bitmap into float array with (channel, height, width)
-/// shape and 3 rgb-channels each in the range of 0.0f to 1.0f
-/// often the right format for use with onnx models
-[[nodiscard]] std::optional<BitmapError> bitmap_to_rgb_chw_float_array(
-	JNIEnv* env,
-	jobject bitmap,
-	std::span<float> out_float_array
-);
-
-/// image_bytes should have 4 bytes (4 argb channels) for each pixel
-[[nodiscard]] std::optional<BitmapError> image_bytes_to_argb_int_array(
-	std::span<const jbyte> image_bytes,
-	std::span<jint> out_pixels
+	std::span<float> out_float_array,
+	ProfilingFrame& profiling_frame
 );
