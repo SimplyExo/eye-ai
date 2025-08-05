@@ -3,6 +3,7 @@
 #include "EyeAICore/DepthModel.hpp"
 #include "EyeAICore/Operators.hpp"
 #include "EyeAICore/utils/Errors.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include <chrono>
 #include <filesystem>
 #include <format>
@@ -87,7 +88,8 @@ create_test_tflite_runtime(
 	FloatTensorFormat model_input_format,
 	FloatTensorFormat model_output_format,
 	OperatorChain<InputOps...>&& input_operators,
-	OperatorChain<OutputOps...>&& output_operators
+	OperatorChain<OutputOps...>&& output_operators,
+	ProfilingFrame& profiling_frame
 ) {
 	const auto model_last_modified =
 		std::filesystem::last_write_time(model_path);
@@ -108,7 +110,8 @@ create_test_tflite_runtime(
 		model_token, model_input_format, model_output_format,
 		std::move(input_operators), std::move(output_operators),
 		[](const std::string msg) { std::cout << "[WARN]  " << msg << '\n'; },
-		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; }
+		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; },
+		profiling_frame
 	);
 	if (runtime_result)
 		return std::move(runtime_result.value());

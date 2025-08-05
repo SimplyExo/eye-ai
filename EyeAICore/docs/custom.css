@@ -5,11 +5,18 @@ html {
 
 	--top-height: 50px;
 
+	--page-background-color: #fafafa !important;
+	--page-foreground-color: #050505 !important;
+
 	--fragment-background: #e8e9ea;
 	--fragment-foreground: #17272f;
 
 	--side-nav-arrow-opacity: 0.5;
 	--side-nav-arrow-hover-opacity: 1;
+
+	--code-background: #f0f0f0;
+
+	--search-foreground-color: #050505 !important;
 
 	--box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
 }
@@ -22,7 +29,8 @@ html.dark-mode {
 
 	--top-height: 50px;
 
-	--page-background-color: #050505;
+	--page-background-color: #050505 !important;
+	--page-foreground-color: #fafafa !important;
 
 	--side-nav-arrow-opacity: 0.5;
 	--side-nav-arrow-hover-opacity: 1;
@@ -33,12 +41,12 @@ html.dark-mode {
 
 	--code-background: #151515;
 
+	--search-foreground-color: #fafafa !important;
+
 	--box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
 }
 
 .github-corner svg {
-	fill: var(--primary-light-color);
-	color: var(--page-background-color);
 	width: 72px;
 	height: 72px;
 }

@@ -8,6 +8,7 @@ import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import java.io.File
 import androidx.core.graphics.scale
+import com.algorithmic_alliance.eyeaiapp.ProfilingFrameType
 import org.json.*
 
 class YoloModel(var info: YoloModelInfo) {
@@ -40,7 +41,7 @@ class YoloModel(var info: YoloModelInfo) {
 
 	fun runInference(frame: Bitmap): Array<BoundingBox>? {
 		val resizedBitmap = frame.scale(tensorWidth, tensorHeight, false)
-		val input = NativeLib.bitmapToRgbHwc255FloatArray(resizedBitmap)
+		val input = NativeLib.bitmapToRgbHwc255FloatArray(resizedBitmap, ProfilingFrameType.Object)
 
 		val json_string = NativeLib.runYoloOperation(input);
 

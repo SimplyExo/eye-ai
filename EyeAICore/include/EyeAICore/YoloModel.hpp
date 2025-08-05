@@ -4,8 +4,6 @@
 
 class YoloModel {
   public:
-	YoloModel();
-
 	struct BoundingBox {
 		std::string cls_name;
 		float cx = 0; // 0
@@ -22,6 +20,8 @@ class YoloModel {
 		bool operator==(const BoundingBox&) const = default;
 	};
 
+	YoloModel() = default;
+
 	// Erstellt das Modell
 	tl::expected<bool, std::string> create(
 		std::vector<int8_t>&& model_data,
@@ -35,26 +35,26 @@ class YoloModel {
 	tl::expected<void, std::string>
 	run(std::span<float> input, std::span<float> output);
 
-	std::vector<YoloModel::BoundingBox> best_box(std::span<float> array);
+	[[nodiscard]] std::vector<BoundingBox>
+	best_box(std::span<const float> array) const;
 
 	std::span<const int> get_input_shape();
 
 	std::span<const int> get_output_shape();
 
-	int num_channel;
-	int num_elements;
+	size_t num_channel = 0;
+	size_t num_elements = 0;
 
   private:
+	[[nodiscard]] std::optional<BoundingBox>
+	parse_box(std::span<const float> array, size_t box_index) const;
+	std::vector<BoundingBox> apply_nms(std::vector<BoundingBox>& boxes) const;
+	static float
+	calculate_iou(const BoundingBox& box1, const BoundingBox& box2);
+
 	std::unique_ptr<TfLiteRuntime> runtime;
 
 	std::vector<std::string> labels;
-
-	std::vector<YoloModel::BoundingBox>
-	apply_nms(std::vector<YoloModel::BoundingBox>& boxes) const;
-	static float calculate_iou(
-		const YoloModel::BoundingBox& box1,
-		const YoloModel::BoundingBox& box2
-	);
 
 	const float CONFIDENCE_THRESHOLD = 0.5F;
 	const float IOU_THRESHOLD = 0.5F;

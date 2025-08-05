@@ -8,8 +8,6 @@
 #include <string>
 #include <utility>
 
-YoloModel::YoloModel() = default;
-
 tl::expected<bool, std::string> YoloModel::create(
 	std::vector<int8_t>&& model_data,
 	std::vector<std::string> coco_labels,
@@ -27,7 +25,7 @@ tl::expected<bool, std::string> YoloModel::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
 		FloatTensorFormat::YoloImageRGBFloat, FloatTensorFormat::YoloOutput,
 		OperatorChain{YoloImageOperator{}}, OperatorChain{},
-		log_warning_callback, log_error_callback
+		log_warning_callback, log_error_callback, get_object_profiling_frame()
 	);
 
 	// bei Fehler gebe string aus
@@ -70,85 +68,100 @@ YoloModel::run(std::span<float> input, std::span<float> output) {
 }
 
 std::vector<YoloModel::BoundingBox>
-YoloModel::best_box(std::span<float> array) {
+YoloModel::best_box(std::span<const float> array) const {
 	PROFILE_OBJECT_FUNCTION()
 
 	std::vector<BoundingBox> boundingBoxes;
+	const size_t actual_size = num_elements * num_channel;
 
-	const unsigned long total_size = array.size();
-	const unsigned long actual_size = num_elements * num_channel;
-
-	if (total_size < actual_size) {
+	if (array.size() < actual_size) {
 		return {}; // Fehler: zu wenig Daten
 	}
 
-	for (int c = 0; c < num_elements; ++c) {
-		float maxConf = -1.0f;
-		int maxIdx = -1;
-		int j = 4;
-		size_t arrayIdx = c + (num_elements * j);
-
-		while (j < num_channel) {
-			if (arrayIdx >= total_size)
-				break; // Schutz gegen Überlauf
-
-			if (array[arrayIdx] > maxConf) {
-				maxConf = array[arrayIdx];
-				maxIdx = j - 4;
-			}
-
-			++j;
-			arrayIdx += num_elements;
+	for (size_t c = 0; c < num_elements; ++c) {
+		const auto box = parse_box(array, c);
+		if (box.has_value()) {
+			boundingBoxes.push_back(box.value());
 		}
-
-		if (maxConf > CONFIDENCE_THRESHOLD) {
-			// Index prüfen!
-			if (maxIdx < 0 || maxIdx >= static_cast<int>(labels.size()))
-				continue;
-
-			const float cx = array[c];				  // 0
-			const float cy = array[c + num_elements]; // 1
-			const float w = array[c + (num_elements * 2)];
-			const float h = array[c + (num_elements * 3)];
-
-			const float x1 = cx - (w / 2.0f);
-			const float y1 = cy - (h / 2.0f);
-			const float x2 = cx + (w / 2.0f);
-			const float y2 = cy + (h / 2.0f);
-
-			// Bounds check wie in Kotlin
-			if (x1 < 0.0f || x1 > 1.0f)
-				continue;
-			if (y1 < 0.0f || y1 > 1.0f)
-				continue;
-			if (x2 < 0.0f || x2 > 1.0f)
-				continue;
-			if (y2 < 0.0f || y2 > 1.0f)
-				continue;
-
-			BoundingBox box;
-			box.cls_name = labels[maxIdx];
-			box.cls = maxIdx;
-			box.cnf = maxConf;
-			box.cx = cx;
-			box.cy = cy;
-			box.w = w;
-			box.h = h;
-			box.x1 = x1;
-			box.y1 = y1;
-			box.x2 = x2;
-			box.y2 = y2;
-
-			boundingBoxes.push_back(box);
-		}
-	}
-
-	if (boundingBoxes.empty()) {
-		return {};
 	}
 
 	// Non-Maximum Suppression anwenden
 	return apply_nms(boundingBoxes);
+}
+
+std::optional<YoloModel::BoundingBox>
+YoloModel::parse_box(std::span<const float> array, size_t box_index) const {
+	float maxConf = -1.0f;
+	int maxIdx = -1;
+	size_t j = 4;
+	size_t arrayIdx = box_index + (num_elements * j);
+
+	while (j < num_channel) {
+		if (arrayIdx >= array.size())
+			break; // Schutz gegen Überlauf
+
+		if (array[arrayIdx] > maxConf) {
+			maxConf = array[arrayIdx];
+			maxIdx = static_cast<int>(j - 4);
+		}
+
+		++j;
+		arrayIdx += num_elements;
+	}
+
+	for (size_t j = 4; j < num_channel; ++j) {
+		if (arrayIdx >= array.size())
+			break;
+
+		const float conf = array[arrayIdx];
+		if (conf > maxConf) {
+			maxConf = conf;
+			maxIdx = static_cast<int>(j - 4);
+		}
+
+		arrayIdx += num_elements;
+	}
+
+	if (maxConf < CONFIDENCE_THRESHOLD)
+		return std::nullopt;
+
+	// Index prüfen!
+	if (maxIdx < 0 || std::cmp_greater_equal(maxIdx, labels.size()))
+		return std::nullopt;
+
+	const float cx = array[box_index + (num_elements * 0)];
+	const float cy = array[box_index + (num_elements * 1)];
+	const float w = array[box_index + (num_elements * 2)];
+	const float h = array[box_index + (num_elements * 3)];
+
+	const float x1 = cx - (w / 2.0f);
+	const float y1 = cy - (h / 2.0f);
+	const float x2 = cx + (w / 2.0f);
+	const float y2 = cy + (h / 2.0f);
+
+	// Bounds check wie in Kotlin
+	if (x1 < 0.0f || x1 > 1.0f)
+		return std::nullopt;
+	if (y1 < 0.0f || y1 > 1.0f)
+		return std::nullopt;
+	if (x2 < 0.0f || x2 > 1.0f)
+		return std::nullopt;
+	if (y2 < 0.0f || y2 > 1.0f)
+		return std::nullopt;
+
+	return BoundingBox{
+		.cls_name = labels[maxIdx],
+		.cx = cx,
+		.cy = cy,
+		.w = w,
+		.h = h,
+		.x1 = x1,
+		.y1 = y1,
+		.x2 = x2,
+		.y2 = y2,
+		.cls = maxIdx,
+		.cnf = maxConf
+	};
 }
 
 float YoloModel::calculate_iou(
@@ -173,6 +186,9 @@ float YoloModel::calculate_iou(
 std::vector<YoloModel::BoundingBox>
 YoloModel::apply_nms(std::vector<YoloModel::BoundingBox>& boxes) const {
 	PROFILE_OBJECT_FUNCTION()
+
+	if (boxes.empty())
+		return boxes;
 
 	// 1. Sortiere nach cnf absteigend
 	std::vector<BoundingBox> sortedBoxes = boxes;

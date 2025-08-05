@@ -4,6 +4,20 @@ the core implementation of EyeAI in crossplatform c++
 
 ## Building EyeAICore
 
+Requirements:
+
+- C++ compiler that supports all features of C++ 20. (for example: GCC 13+, Clang 14+ or MSVC 19.30+)
+- CMake: version 3.22 or higher
+- Git
+- Python 3
+
+Optional programs to install:
+
+- Ninja: build system (used by the cmake presets, package is often named: ninja-build)
+- clang-tidy: static code analysis (make sure to use at least clang-tidy-15, clang-tidy-14 has known issues with <chrono>)
+- ccache: cache compilation results for faster repeated builds
+- doxygen: generate documentation from source code
+
 ```bash
 cmake --preset=release
 cmake --build --preset=release

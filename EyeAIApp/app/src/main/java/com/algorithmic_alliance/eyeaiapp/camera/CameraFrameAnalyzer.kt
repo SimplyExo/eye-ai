@@ -79,12 +79,10 @@ class CameraFrameAnalyzer(
 
 						if (eyeAIApp.settings.showProfilingInfo) {
 							val formattedInputResolution = "${inputWidth}x${inputHeight}"
-							val modelName = depthModel.name
-							val modelInputSize = depthModel.inputDim
-							val formattedModelInputSize =
-								"${modelInputSize.width}x${modelInputSize.height}"
+							val formattedDepthModelInputSize =
+								"${depthModel.inputDim.width}x${depthModel.inputDim.height}"
 							performanceText.text =
-								"Model: $modelName\nCamera resolution: $formattedInputResolution --> Model input: $formattedModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}\n${NativeLib.formatObjectFrame()}"
+								"Depth model: ${depthModel.name}\nCamera resolution: $formattedInputResolution --> Depth model input: $formattedDepthModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}\n${NativeLib.formatObjectFrame()}"
 						} else {
 							performanceText.text = ""
 						}

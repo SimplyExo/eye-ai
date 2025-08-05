@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.core.graphics.scale
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
+import com.algorithmic_alliance.eyeaiapp.ProfilingFrameType
 
 /** All needed information to create and use a depth model */
 class DepthModelInfo(
@@ -105,7 +106,7 @@ class DepthModel(
 	 */
 	fun predictDepth(input: Bitmap): FloatArray {
 		val scaled = input.scale(inputDim.width, inputDim.height)
-		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled)
+		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled, ProfilingFrameType.Depth)
 		val output = FloatArray(inputDim.width * inputDim.height)
 
 		NativeLib.runDepthModelInference(

@@ -64,8 +64,12 @@ std::string ProfilingFrame::finish() {
 		profile_scopes_vector.push_back(tmp);
 
 	std::ranges::sort(
-		profile_scopes_vector,
-		[](const auto& a, const auto& b) -> bool { return a.start < b.start; }
+		profile_scopes_vector, [](const auto& a, const auto& b) -> bool {
+			if (a.start == b.start)
+				return a.scope_depth < b.scope_depth;
+
+			return a.start < b.start;
+		}
 	);
 	std::string profile_scopes_formatted;
 	for (const auto& profile_scope : profile_scopes_vector) {
@@ -93,14 +97,18 @@ std::string ProfilingFrame::finish() {
 	return formatted;
 }
 
-// All 4 global variables are thread-safe.
+// All 4 global variables are thread-safe. The ProfilingFrame constructor is
+// noexcept
+
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+// NOLINTBEGIN(cert-err58-cpp)
 static auto depth_profiling_frame = ProfilingFrame("Depth");
 static MutexGuard<std::string> last_depth_profiling_frame_formatted;
 static auto camera_profiling_frame = ProfilingFrame("Camera");
 static MutexGuard<std::string> last_camera_profiling_frame_formatted;
 static auto object_profiling_frame = ProfilingFrame("Object Detection");
 static MutexGuard<std::string> last_object_profiling_frame_formatted;
+// NOLINTEND(cert-err58-cpp)
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 void set_last_depth_profiling_frame_formatted(std::string&& formatted) {

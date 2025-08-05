@@ -23,6 +23,20 @@ MutexGuard<YoloModel> yolo_instance;
 } // namespace
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
+/// see NativeLib.kt, must be Int!
+// NOLINTNEXTLINE(performance-enum-size)
+enum class ProfilingFrameType : jint { Depth = 0, Object = 1 };
+
+static ProfilingFrame& get_profiling_frame(ProfilingFrameType type) {
+	switch (type) {
+	default:
+	case ProfilingFrameType::Depth:
+		return get_depth_profiling_frame();
+	case ProfilingFrameType::Object:
+		return get_object_profiling_frame();
+	}
+}
+
 // NOLINTBEGIN(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)
 
@@ -292,13 +306,16 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 	JNIEnv* env,
 	jobject /*thiz*/,
 	jobject bitmap,
-	jfloatArray out_float_array
+	jfloatArray out_float_array,
+	jint profiling_frame_type
 ) {
-
 	NativeFloatArrayScope out_float_array_scope(env, out_float_array);
 
 	if (const auto error = bitmap_to_rgb_hwc_255_float_array(
-			env, bitmap, out_float_array_scope
+			env, bitmap, out_float_array_scope,
+			get_profiling_frame(
+				static_cast<ProfilingFrameType>(profiling_frame_type)
+			)
 		)) {
 		LOG_ERROR("bitmapToRgbHwc255FloatArray failed: {}", error->to_string());
 	}

@@ -5,13 +5,16 @@
 #include "utils.hpp"
 
 TEST(TfLiteRuntimeTests, NoOperatorsFormatMismatch) {
+	ProfilingFrame profiling_frame("Test");
+
 	const std::filesystem::path midas_model_path =
 		"../../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite";
 
 	// no operators to convert input/output formats
 	auto runtime_result = create_test_tflite_runtime(
 		midas_model_path, FloatTensorFormat::MiDaSImageRGBFloat,
-		FloatTensorFormat::RawRelativeDepth, OperatorChain{}, OperatorChain{}
+		FloatTensorFormat::RawRelativeDepth, OperatorChain{}, OperatorChain{},
+		profiling_frame
 	);
 	EXPECT_RESULT_HAS_VALUE(runtime_result);
 	auto& runtime = *runtime_result;
@@ -40,6 +43,8 @@ TEST(TfLiteRuntimeTests, NoOperatorsFormatMismatch) {
 }
 
 TEST(TfLiteRuntimeTests, CorrectOperatorChain) {
+	ProfilingFrame profiling_frame("Test");
+
 	const std::filesystem::path midas_model_path =
 		"../../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite";
 
@@ -47,7 +52,7 @@ TEST(TfLiteRuntimeTests, CorrectOperatorChain) {
 		midas_model_path, FloatTensorFormat::MiDaSImageRGBFloat,
 		FloatTensorFormat::RawRelativeDepth,
 		OperatorChain{MiDaSImageOperator{}},
-		OperatorChain{RelativeDepthPostOperator{}}
+		OperatorChain{RelativeDepthPostOperator{}}, profiling_frame
 	);
 	EXPECT_RESULT_HAS_VALUE(runtime_result);
 	auto& runtime = *runtime_result;

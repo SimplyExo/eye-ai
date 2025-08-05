@@ -135,15 +135,10 @@ class EyeAIApp : Application() {
 		depthModel?.close()
 		depthModel = null
 
-		val context = this as Context
-		CoroutineScope(Dispatchers.IO).launch {
-			depthModel = findDepthModelInfo(modelName)
-				.createDepthModel(context)
+		depthModel = findDepthModelInfo(modelName)
+			.createDepthModel(this)
 
-			withContext(Dispatchers.Main) {
-				onDepthModelLoadedCallback()
-			}
-		}
+		onDepthModelLoadedCallback()
 	}
 
 	private fun findDepthModelInfo(modelName: String): DepthModelInfo {
