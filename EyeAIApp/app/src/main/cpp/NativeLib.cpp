@@ -26,7 +26,8 @@ MutexGuard<std::unique_ptr<AudioMain>> audio;
 } // namespace
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
-// see NativeLib.kt
+/// see NativeLib.kt, must be Int!
+// NOLINTNEXTLINE(performance-enum-size)
 enum class ProfilingFrameType : jint { Depth = 0, Object = 1 };
 
 static ProfilingFrame& get_profiling_frame(ProfilingFrameType type) {

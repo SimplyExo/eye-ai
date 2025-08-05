@@ -1,8 +1,6 @@
 #include "ImageUtils.hpp"
-#include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/ImageUtils.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
-#include "Log.hpp"
 
 std::optional<BitmapError> check_android_bitmap_result(int result) {
 	switch (result) {

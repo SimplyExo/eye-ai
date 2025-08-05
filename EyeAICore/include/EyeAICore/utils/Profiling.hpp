@@ -85,13 +85,7 @@ ProfilingFrame& get_object_profiling_frame();
 void set_last_object_profiling_frame_formatted(std::string&& formatted);
 std::string get_last_object_profiling_frame_formatted();
 
-#ifndef FUNCTION_NAME
-#ifdef WIN32 // WINDOWS
-#define FUNCTION_NAME() __FUNCTION__
-#else //*NIX
-#define FUNCTION_NAME() __func__
-#endif
-#endif
+#define FUNCTION_NAME() (static_cast<const char*>(__func__))
 
 #define COMBINE(x, y) x##y
 #define COMBINE2(x, y) COMBINE(x, y)
@@ -116,9 +110,9 @@ std::string get_last_object_profiling_frame_formatted();
 	PROFILE_SCOPE(name, get_object_profiling_frame())
 
 #define PROFILE_FUNCTION(profiling_frame)                                      \
-	ZoneScopedN(static_cast<const char*>(FUNCTION_NAME()));                    \
+	ZoneScopedN(FUNCTION_NAME());                                              \
 	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
-		static_cast<const char*>(FUNCTION_NAME()), profiling_frame             \
+		FUNCTION_NAME(), profiling_frame                                       \
 	);
 
 #define PROFILE_DEPTH_FUNCTION() PROFILE_FUNCTION(get_depth_profiling_frame())
@@ -130,7 +124,7 @@ std::string get_last_object_profiling_frame_formatted();
 #else
 
 #define PROFILE_SCOPE(name, profiling_frame)                                   \
-	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                 \
+	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
 		name, profiling_frame                                                  \
 	);
 
@@ -145,7 +139,7 @@ std::string get_last_object_profiling_frame_formatted();
 
 #define PROFILE_FUNCTION(profiling_frame)                                      \
 	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
-		static_cast<const char*>(FUNCTION_NAME()), profiling_frame             \
+		FUNCTION_NAME(), profiling_frame                                       \
 	);
 
 #define PROFILE_DEPTH_FUNCTION() PROFILE_FUNCTION(get_depth_profiling_frame())
