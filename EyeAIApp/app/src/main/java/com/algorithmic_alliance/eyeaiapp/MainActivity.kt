@@ -24,6 +24,8 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
+import android.speech.tts.TextToSpeech
+import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
@@ -52,6 +54,10 @@ class MainActivity : AppCompatActivity() {
 	private var lastFinalResultMillis = System.currentTimeMillis()
 
 	private var llmThreadExecutor = Executors.newSingleThreadExecutor()
+	
+	private var textToSpeechInstance = TextToSpeechInstance()
+
+
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -99,6 +105,7 @@ class MainActivity : AppCompatActivity() {
 		eyeAIApp().updateSettings()
 
 		updateSpeechRecognitionUIVisibility()
+
 	}
 
 	override fun onResume() {
@@ -137,6 +144,8 @@ class MainActivity : AppCompatActivity() {
 		super.onDestroy()
 
 		cameraManager.shutdown()
+		textToSpeechInstance.shutdown();
+
 
 		eyeAIApp().voskModel?.closeService()
 	}
@@ -169,6 +178,7 @@ class MainActivity : AppCompatActivity() {
 
 	private fun onPartialSpeechRecognitionResult(partial: String) {
 		speechRecognitionPartialResultText?.apply { text = partial }
+
 	}
 
 	private fun onFinalSpeechRecognitionResult(final: String) {
@@ -194,6 +204,11 @@ class MainActivity : AppCompatActivity() {
 							text =
 								getString(R.string.llm_response, llmResponse)
 						}
+
+						if (!textToSpeechInstance.isSpeaking()){
+							textToSpeechInstance.speak(llmResponse);
+						}
+
 					}
 				}
 			}
