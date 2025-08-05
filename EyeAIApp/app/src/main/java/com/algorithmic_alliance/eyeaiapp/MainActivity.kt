@@ -107,9 +107,8 @@ class MainActivity : AppCompatActivity() {
 
 		updateSpeechRecognitionUIVisibility()
 
-
 		CoroutineScope(Dispatchers.IO).launch{
-			SpacialAudio.setup()
+			SpacialAudio.setup(this@MainActivity)
 			SpacialAudio.start()
 		}
 	}

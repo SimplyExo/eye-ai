@@ -12,9 +12,9 @@ TEST(CalculateSoundOriginTest, CorrectOutput){
     std::array<int,2> input_coordinates = {60, 1};
     float input_distance = 2.0f;
 
-    std::array<float, 2> expected_output = {1.90211f, 0.618034f};
+    std::array<float, 3> expected_output = {1.90211f, 0.618034f, 0.0f};
 
-    std::array<float, 2> output = CalculateSoundOrigin().calculateSoundOrigin(input_coordinates, input_distance);
+    std::array<float, 3> output = CalculateSoundOrigin().calculateSoundOrigin(input_coordinates, input_distance);
 
     EXPECT_THAT(output, Pointwise(FloatNear(tolerance), expected_output));
 }

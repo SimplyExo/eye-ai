@@ -6,7 +6,7 @@
 #include <AL/alc.h>
 #include <iostream>
 
-void AudioMain::setupAudioDevice() {
+AudioMain::AudioMain() {
 	// Opening the default audio device
 	device = alcOpenDevice(nullptr);
 	if (!device) {
@@ -22,21 +22,20 @@ void AudioMain::setupAudioDevice() {
 
 	// setting position of Listener to (0|0|0)
 	alListener3f(AL_POSITION, 0.0, 0.0, 0.0);
-	source = std::make_unique<Source>(AudioData(200.0f, 10.0f), std::array<float,3>{-1.0,0.0,0.0});
+	
 }
-/*
-void AudioMain::playSound(float frequency, float duration) {
+
+void AudioMain::playSound(float frequency, float duration, std::array<float, 3> position) {
 	AudioData audioData1(frequency, duration);
-	std::array<float, 3> position = {-1.0, 0.0, 0.0};
-	Source(audioData1, position);
+	source = std::make_unique<Source>(audioData1, position);
 }
 
-*/
 
-void AudioMain::destroyAudioDevice() {
+AudioMain::~AudioMain() {
 	// cleaning up
 	source.reset();
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
 	alcCloseDevice(device);
 }
+

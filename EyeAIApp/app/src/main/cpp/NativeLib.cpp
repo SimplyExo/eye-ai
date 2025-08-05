@@ -1,4 +1,5 @@
 #include <EyeAICore/audio/AudioMain.hpp>
+#include <EyeAICore/audio/ProcessDepthEstimationData.hpp>
 #include <jni.h>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -26,16 +27,15 @@ MutexGuard<std::unique_ptr<AudioMain>> audio;
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 // see NativeLib.kt
-enum class ProfilingFrameType : jint {
-	Depth = 0,
-	Object = 1
-};
+enum class ProfilingFrameType : jint { Depth = 0, Object = 1 };
 
 static ProfilingFrame& get_profiling_frame(ProfilingFrameType type) {
 	switch (type) {
 	default:
-	case ProfilingFrameType::Depth: return get_depth_profiling_frame();
-	case ProfilingFrameType::Object: return get_object_profiling_frame();
+	case ProfilingFrameType::Depth:
+		return get_depth_profiling_frame();
+	case ProfilingFrameType::Object:
+		return get_object_profiling_frame();
 	}
 }
 
@@ -314,7 +314,10 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 	NativeFloatArrayScope out_float_array_scope(env, out_float_array);
 
 	if (const auto error = bitmap_to_rgb_hwc_255_float_array(
-			env, bitmap, out_float_array_scope, get_profiling_frame(static_cast<ProfilingFrameType>(profiling_frame_type))
+			env, bitmap, out_float_array_scope,
+			get_profiling_frame(
+				static_cast<ProfilingFrameType>(profiling_frame_type)
+			)
 		)) {
 		LOG_ERROR("bitmapToRgbHwc255FloatArray failed: {}", error->to_string());
 	}
@@ -381,18 +384,9 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setupAudioDevice(
 	JNIEnv* env,
 	jobject /*this*/
 ) {
-	LOG_INFO("Setup Audio Device");
-	/*
-	 auto audio_main = std::make_unique<AudioMain>();
+	auto audio_main = std::make_unique<AudioMain>();
 	audio_main->setupAudioDevice();
 	audio.lock()->swap(audio_main);
-	 */
-	AudioMain spacialAudio;
-	LOG_INFO("1");
-	spacialAudio.setupAudioDevice();
-	LOG_INFO("2");
-	spacialAudio.destroyAudioDevice();
-	LOG_INFO("3");
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -403,17 +397,29 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroyAudioDevice(
 	(*audio.lock())->destroyAudioDevice();
 	audio.lock()->reset();
 }
-/*
+
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_playSound(
-   JNIEnv* env,
-   jobject obj,
-   jfloat frequency,
-   jfloat duration
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendDepthEstimationData(
+	JNIEnv* env,
+	jobject /*this*/,
+	jfloatArray array
 ) {
-   (*audio.lock())->playSound(frequency, duration);
+	jsize length = env->GetArrayLength(array);
+	jfloat* rawArray = env->GetFloatArrayElements(array, nullptr);
+
+	// Kopiere in std::vector<float>
+	std::vector<float> data(rawArray, rawArray + length);
+
+	auto data_handler = std::make_unique<ProcessDepthEstimationData>();
+	data_handler->getDepthEstimationData(data);
+	data_handler.reset();
+
+	// Übergib an deine C++-Funktion
+
+
+	// Speicher freigeben
+	env->ReleaseFloatArrayElements(array, rawArray, JNI_ABORT);
 }
- */
 
 // NOLINTEND(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)

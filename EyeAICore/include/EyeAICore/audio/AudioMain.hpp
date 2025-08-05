@@ -7,12 +7,13 @@
 #include <AL/alc.h>
 #include <iostream>
 #include <memory>
+#include <array>
 
 class AudioMain {
   public:
-	void setupAudioDevice();
-	void destroyAudioDevice();
-	//void playSound(float frequency, float duration);
+	AudioMain();
+	~AudioMain();
+	void playSound(float frequency, float duration, std::array<float,3> position);
 
   private:
 	std::unique_ptr<Source> source;
@@ -20,3 +21,4 @@ class AudioMain {
 	ALCcontext* context;
 	
 };
+

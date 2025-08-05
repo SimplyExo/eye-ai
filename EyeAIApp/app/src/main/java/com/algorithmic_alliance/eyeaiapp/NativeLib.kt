@@ -66,6 +66,8 @@ object NativeLib {
 
 	external fun destroyAudioDevice()
 
+	external fun sendDepthEstimationData(array: FloatArray);
+
 	//external fun playSound(frequency: Float, duration: Float)
 
 	/** @param input values should be between 0.0f and 1.0f */

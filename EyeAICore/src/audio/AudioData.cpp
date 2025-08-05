@@ -1,8 +1,8 @@
 #include "EyeAICore/audio/AudioData.hpp"
 #include <cmath>
 #include <iostream>
-#include <vector>
 #include <numbers>
+#include <vector>
 
 AudioData::AudioData(float frequency, float duration) {
 	this->frequency = frequency;

@@ -11,7 +11,7 @@ of the camera and the distance of the object in the pixel
 
 class CalculateSoundOrigin {
   public:
-	std::array<float, 2> calculateSoundOrigin(
+	std::array<float, 3> calculateSoundOrigin(
 		std::array<int, 2> pixelCoordinates,
 		float distanceToObject
 	);
@@ -23,9 +23,9 @@ class CalculateSoundOrigin {
 	//coordinates of the pixel: from 1 to Resolution
 	int pixelXCoordinate;
 	//int pixelYCoordinate;
-	int pictureXResolution = 100;
+	int pictureXResolution = 4;
 	//int pictureYResolution = 100;
 	float getPixleAngle();
-	std::array<float, 2> getVectorToOrigin(float pixelAngle);
-	std::array<float, 2> getOrigin(std::array<float, 2> directionalVector);
+	std::array<float, 3> getVectorToOrigin(float pixelAngle);
+	std::array<float, 3> getOrigin(std::array<float, 3> directionalVector);
 };
