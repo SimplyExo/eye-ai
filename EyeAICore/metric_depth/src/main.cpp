@@ -1,4 +1,5 @@
 #include "EyeAICore/DepthModel.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include "datasets/diode_dataset.hpp"
 #include "datasets/sun_rgbd_dataset.hpp"
 #include "utils.hpp"
@@ -87,6 +88,8 @@ int main(const int argc, const char* argv[]) {
 	{
 		const auto depth_model_thread_context_generator =
 			[&]() -> std::unique_ptr<DepthModel> {
+			PROFILE_DEPTH_SCOPE("Create Depth Model ThreadContextGenerator")
+
 			auto model_data_clone = model_data;
 
 			auto result = DepthModel::create_with_raw_output(
@@ -114,6 +117,8 @@ int main(const int argc, const char* argv[]) {
 		for (const auto& data_point : diode_scan) {
 			pool.enqueue([&,
 						  scan_size](std::unique_ptr<DepthModel>& depth_model) {
+				PROFILE_DEPTH_SCOPE("Evaluate datapoint ThreadPool Task")
+
 				const auto scan_evaluation_start =
 					std::chrono::high_resolution_clock::now();
 

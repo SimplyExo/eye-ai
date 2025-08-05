@@ -1,5 +1,6 @@
 #include "utils.hpp"
 #include "EyeAICore/utils/Errors.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include "datasets/dataset.hpp"
 #include <fstream>
 
@@ -25,6 +26,8 @@ tl::expected<void, std::string> save_evaluation_result_file(
 	const std::filesystem::path& filepath,
 	std::span<const float> relative_absolute_pairs
 ) {
+	PROFILE_DEPTH_FUNCTION()
+
 	std::filesystem::create_directories(filepath.parent_path());
 	std::ofstream file(filepath);
 	if (!file.is_open())
@@ -59,6 +62,8 @@ tl::expected<EvaluateResult, std::string> evaluate(
 	size_t depth_input_height,
 	const RGBDImage& rgbd_image
 ) {
+	PROFILE_DEPTH_FUNCTION()
+
 	size_t pixel_count = rgbd_image.rgb.size() / 3;
 	if (pixel_count != depth_input_width * depth_input_height) {
 		return tl::unexpected_fmt(
@@ -118,6 +123,8 @@ tl::expected<std::vector<float>, std::string> load_rgb_image_file(
 	size_t target_width,
 	size_t target_height
 ) {
+	PROFILE_DEPTH_FUNCTION()
+
 	const std::string filepath_str = filepath.string();
 	int width = 0;
 	int height = 0;
@@ -152,6 +159,8 @@ load_16bit_greyscale_image_file(
 	size_t& out_width,
 	size_t& out_height
 ) {
+	PROFILE_DEPTH_FUNCTION()
+
 	const std::string filepath_str = filepath.string();
 	int width = 0;
 	int height = 0;
@@ -185,6 +194,8 @@ load_16bit_greyscale_image_file(
 
 tl::expected<std::vector<float>, std::string>
 load_npy_file(const std::filesystem::path& filepath) {
+	PROFILE_DEPTH_FUNCTION()
+
 	// first try loading as float
 	try {
 		const auto npy_data = npy::read_npy<float>(filepath);
@@ -210,6 +221,8 @@ tl::expected<std::chrono::milliseconds, std::string> evaluate_datapoint(
 	const RGBDDataPoint& datapoint,
 	const std::filesystem::path& evaluation_output_filepath
 ) {
+	PROFILE_DEPTH_FUNCTION()
+
 	const auto start = std::chrono::high_resolution_clock::now();
 
 	const std::span<const int> input_shape = depth_model.get_input_shape();

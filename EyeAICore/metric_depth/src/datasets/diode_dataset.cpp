@@ -1,5 +1,6 @@
 #include "diode_dataset.hpp"
 #include "../utils.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include "dataset.hpp"
 #include <format>
 #include <optional>
@@ -33,6 +34,8 @@ tl::expected<RGBDImage, std::string> DiodeDataPoint::load(
 	size_t depth_input_width,
 	size_t depth_input_height
 ) const {
+	PROFILE_DEPTH_FUNCTION()
+
 	auto image_result = load_rgb_image_file(
 		image_filepath, depth_input_width, depth_input_height
 	);
@@ -136,6 +139,8 @@ match_scan_directory(const std::string& directory) {
 
 static std::unordered_map<std::string, std::filesystem::path>
 search_for_scans_in_dataset(const std::filesystem::path& dataset_directory) {
+	PROFILE_DEPTH_FUNCTION()
+
 	std::unordered_map<std::string, std::filesystem::path> scan_paths;
 
 	for (const auto& entry :
@@ -158,6 +163,8 @@ search_for_scans_in_dataset(const std::filesystem::path& dataset_directory) {
 
 static std::vector<std::unique_ptr<RGBDDataPoint>>
 search_for_datapoints_in_scan(const std::filesystem::path& scan_directory) {
+	PROFILE_DEPTH_FUNCTION()
+
 	std::unordered_map<DiodeDataPointID, std::filesystem::path> image_filepaths;
 	std::unordered_map<DiodeDataPointID, std::filesystem::path> depth_filepaths;
 	std::unordered_map<DiodeDataPointID, std::filesystem::path>
@@ -248,6 +255,8 @@ search_for_datapoints_in_scan(const std::filesystem::path& scan_directory) {
 
 std::vector<std::unique_ptr<RGBDDataPoint>>
 DiodeDataset::scan(const std::filesystem::path& dataset_directory) const {
+	PROFILE_DEPTH_FUNCTION()
+
 	std::unordered_map<std::string, std::filesystem::path> scan_paths =
 		search_for_scans_in_dataset(dataset_directory);
 

@@ -1,5 +1,6 @@
 #include "sun_rgbd_dataset.hpp"
 #include "../utils.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include <algorithm>
 #include <filesystem>
 #include <format>
@@ -14,6 +15,8 @@ tl::expected<RGBDImage, std::string> SUN_RGBD_DataPoint::load(
 	size_t depth_input_width,
 	size_t depth_input_height
 ) const {
+	PROFILE_DEPTH_FUNCTION()
+
 	auto image_result = load_rgb_image_file(
 		image_filepath, depth_input_width, depth_input_height
 	);
@@ -69,6 +72,8 @@ static void iterator_directory_for_image_dir(
 	const std::filesystem::path& directory,
 	std::vector<std::unique_ptr<RGBDDataPoint>>& out_datapoints
 ) {
+	PROFILE_DEPTH_FUNCTION()
+
 	for (const auto& entry : std::filesystem::directory_iterator(directory)) {
 		if (!entry.is_directory())
 			continue;
@@ -113,6 +118,8 @@ static void iterator_directory_for_image_dir(
 
 std::vector<std::unique_ptr<RGBDDataPoint>>
 SUN_RGBD_Dataset::scan(const std::filesystem::path& dataset_directory) const {
+	PROFILE_DEPTH_FUNCTION()
+
 	std::vector<std::unique_ptr<RGBDDataPoint>> datapoints;
 
 	iterator_directory_for_image_dir(dataset_directory, datapoints);
