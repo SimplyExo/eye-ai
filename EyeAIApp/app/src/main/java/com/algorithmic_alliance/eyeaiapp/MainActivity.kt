@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
 
 	private var llmThreadExecutor = Executors.newSingleThreadExecutor()
 	
-	private var textToSpeechInstance = TextToSpeechInstance()
+	private lateinit var textToSpeechInstance: TextToSpeechInstance
 
 
 
@@ -105,6 +105,8 @@ class MainActivity : AppCompatActivity() {
 		eyeAIApp().updateSettings()
 
 		updateSpeechRecognitionUIVisibility()
+
+		textToSpeechInstance = TextToSpeechInstance(this)
 
 	}
 
@@ -203,11 +205,12 @@ class MainActivity : AppCompatActivity() {
 						llmResponseText?.apply {
 							text =
 								getString(R.string.llm_response, llmResponse)
+								textToSpeechInstance.speak(llmResponse);
 						}
 
-						if (!textToSpeechInstance.isSpeaking()){
-							textToSpeechInstance.speak(llmResponse);
-						}
+
+
+
 
 					}
 				}
