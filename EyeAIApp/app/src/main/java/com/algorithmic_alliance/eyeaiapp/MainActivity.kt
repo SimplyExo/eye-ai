@@ -106,8 +106,7 @@ class MainActivity : AppCompatActivity() {
 
 		updateSpeechRecognitionUIVisibility()
 
-		textToSpeechInstance = TextToSpeechInstance(this)
-
+		textToSpeechInstance = TextToSpeechInstance(this, ::onTTSFinishedSpeaking)
 	}
 
 	override fun onResume() {
@@ -190,12 +189,14 @@ class MainActivity : AppCompatActivity() {
 
 		speechRecognitionFinalResultText?.apply { text = final }
 
-		// pause recognition for 500ms after final speech command to prevent mic picking up the vibration sounds
+		// minimum of 1 second pause between speech commands
 		if (System.currentTimeMillis() - lastFinalResultMillis > 1000) {
-
 			if (eyeAIApp().llm == null) {
 				llmResponseText?.apply { text = getString(R.string.setup_llm_notice) }
 			} else {
+				// wird erst wieder durch [onTTSFinishedSpeaking] gestartet
+				eyeAIApp().voskModel?.stopListening()
+
 				llmResponseText?.apply { text = getString(R.string.llm_responding_notice) }
 
 				CoroutineScope(llmThreadExecutor.asCoroutineDispatcher()).launch {
@@ -205,23 +206,15 @@ class MainActivity : AppCompatActivity() {
 						llmResponseText?.apply {
 							text =
 								getString(R.string.llm_response, llmResponse)
-								textToSpeechInstance.speak(llmResponse);
 						}
 
-
-
-
-
+						textToSpeechInstance.speak(llmResponse)
 					}
 				}
 			}
 
-			eyeAIApp().voskModel?.stopListening()
-
 			// vibrate for 100ms
 			vibrate(eyeAIApp(), 100)
-
-			eyeAIApp().voskModel?.startListening()
 
 			lastFinalResultMillis = System.currentTimeMillis()
 		}
@@ -230,6 +223,17 @@ class MainActivity : AppCompatActivity() {
 	private fun onSpeechRecognitionLoaded() {
 		speechRecognitionFinalResultText?.apply {
 			text = getString(R.string.speech_recognition_ready)
+		}
+	}
+
+	private fun onTTSFinishedSpeaking() {
+		// Muss auf dem Main thread laufen
+		CoroutineScope(Dispatchers.Main).launch {
+			speechRecognitionFinalResultText?.apply {
+				text = getString(R.string.speech_recognition_ready)
+			}
+
+			eyeAIApp().voskModel?.startListening()
 		}
 	}
 
