@@ -18,6 +18,10 @@ class Settings(val context: Context) {
 		private set
 
 	var googleAiStudioApiKey: String?
+		private set
+
+	var customGoogleGenAIStudioEndpoint: String?
+		private set
 
 	var enableObjectDetection: Boolean
 		private set
@@ -48,6 +52,11 @@ class Settings(val context: Context) {
 
 		googleAiStudioApiKey = sharedPreferences.getString(
 			context.getString(R.string.google_ai_studio_api_key_stetting),
+			null
+		)
+
+		customGoogleGenAIStudioEndpoint = sharedPreferences.getString(
+			context.getString(R.string.custom_google_gen_ai_studio_endpoint_setting),
 			null
 		)
 

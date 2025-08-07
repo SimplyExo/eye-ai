@@ -76,9 +76,9 @@ class EyeAIApp : Application() {
 		if (settings.enableSpeechRecognition)
 			voskModel = VoskModel(context, "model-de")
 
-		settings.googleAiStudioApiKey?.let {
-			if (!it.isEmpty())
-				llm = GoogleAIStudioLLM(it)
+		settings.googleAiStudioApiKey?.let { apiKey ->
+			if (!apiKey.isEmpty())
+				llm = GoogleAIStudioLLM(apiKey, settings.customGoogleGenAIStudioEndpoint)
 		}
 
 		// Yolo Model erstellen
@@ -117,10 +117,11 @@ class EyeAIApp : Application() {
 			}
 		}
 
-		if (settings.googleAiStudioApiKey != newSettings.googleAiStudioApiKey) {
+		if (settings.googleAiStudioApiKey != newSettings.googleAiStudioApiKey || settings.customGoogleGenAIStudioEndpoint != newSettings.customGoogleGenAIStudioEndpoint) {
 			val apiKey = newSettings.googleAiStudioApiKey
+			val customEndpoint = newSettings.customGoogleGenAIStudioEndpoint
 			llm = if (apiKey != null && !apiKey.isEmpty()) {
-				GoogleAIStudioLLM(apiKey)
+				GoogleAIStudioLLM(apiKey, customEndpoint)
 			} else {
 				null
 			}

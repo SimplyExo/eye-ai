@@ -29,4 +29,6 @@
     <string name="build_time_settings">build_time</string>
     <string name="git_info_settings">git_info</string>
     <string name="build_variant_settings">build_variant</string>
+    <string name="custom_google_gen_ai_studio_endpoint_setting">custom_google_gen_ai_studio_endpoint</string>
+    <string name="custom_google_gen_ai_studio_endpoint_summary">EyeAI will send all llm requests to\n\'%1$s\'\nwithout checking their ssl certificate to allow for self signed certificates</string>
 </resources>
