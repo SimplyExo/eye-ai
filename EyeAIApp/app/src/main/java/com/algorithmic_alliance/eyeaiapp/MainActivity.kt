@@ -21,10 +21,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
+import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
@@ -53,6 +53,8 @@ class MainActivity : AppCompatActivity() {
 	private var lastFinalResultMillis = System.currentTimeMillis()
 
 	private var llmThreadExecutor = Executors.newSingleThreadExecutor()
+
+	private lateinit var textToSpeechInstance: TextToSpeechInstance
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -100,6 +102,8 @@ class MainActivity : AppCompatActivity() {
 		eyeAIApp().updateSettings()
 
 		updateSpeechRecognitionUIVisibility()
+
+		textToSpeechInstance = TextToSpeechInstance(this, ::onTTSFinishedSpeaking)
 	}
 
 	override fun onResume() {
@@ -138,6 +142,8 @@ class MainActivity : AppCompatActivity() {
 		super.onDestroy()
 
 		cameraManager.shutdown()
+		textToSpeechInstance.shutdown()
+
 
 		eyeAIApp().voskModel?.closeService()
 	}
@@ -167,7 +173,7 @@ class MainActivity : AppCompatActivity() {
 
 	private fun onPartialSpeechRecognitionResult(partial: String) {
 		CoroutineScope(Dispatchers.Main).launch {
-			speechRecognitionPartialResultText?.apply { text = partial }
+			speechRecognitionPartialResultText?.text = partial
 		}
 	}
 
@@ -177,41 +183,50 @@ class MainActivity : AppCompatActivity() {
 		}
 
 		CoroutineScope(Dispatchers.Main).launch {
-			speechRecognitionFinalResultText?.apply { text = final }
+			speechRecognitionFinalResultText?.text = final
 
-			// pause recognition for 500ms after final speech command to prevent mic picking up the vibration sounds
-			if (System.currentTimeMillis() - lastFinalResultMillis > 1000) {
+			// minimum of 1 second pause between speech commands
+			if (System.currentTimeMillis() - lastFinalResultMillis <= 1000)
+				return@launch
 
-				if (eyeAIApp().llm == null) {
-					llmResponseText?.text = getString(R.string.setup_llm_notice)
-				} else {
-					llmResponseText?.text = getString(R.string.llm_responding_notice)
+			lastFinalResultMillis = System.currentTimeMillis()
 
-					val llmResponse = withContext(llmThreadExecutor.asCoroutineDispatcher()) {
-						eyeAIApp().llm!!.generate(final)
-					}
+			if (eyeAIApp().llm == null) {
+				llmResponseText?.text = getString(R.string.setup_llm_notice)
+			} else {
+				llmResponseText?.text = getString(R.string.llm_responding_notice)
 
-					llmResponseText?.text =
-						getString(R.string.llm_response, llmResponse)
-				}
-
+				// wird erst wieder durch [onTTSFinishedSpeaking] gestartet
 				eyeAIApp().voskModel?.stopListening()
 
 				// vibrate for 100ms
 				vibrate(eyeAIApp(), 100)
-				delay(100L)
 
-				eyeAIApp().voskModel?.startListening()
+				val llmResponse = withContext(llmThreadExecutor.asCoroutineDispatcher()) {
+					eyeAIApp().llm!!.generate(final)
+				}
 
-				speechRecognitionFinalResultText?.text = getString(R.string.speech_recognition_ready)
+				textToSpeechInstance.speak(llmResponse)
 
-				lastFinalResultMillis = System.currentTimeMillis()
+				llmResponseText?.text =
+					getString(R.string.llm_response, llmResponse)
 			}
 		}
 	}
 
 	private fun onSpeechRecognitionLoaded() {
 		speechRecognitionFinalResultText?.text = getString(R.string.speech_recognition_ready)
+	}
+
+	private fun onTTSFinishedSpeaking() {
+		// Muss auf dem Main thread laufen
+		CoroutineScope(Dispatchers.Main).launch {
+			speechRecognitionFinalResultText?.apply {
+				text = getString(R.string.speech_recognition_ready)
+			}
+
+			eyeAIApp().voskModel?.startListening()
+		}
 	}
 
 	private fun eyeAIApp(): EyeAIApp {
