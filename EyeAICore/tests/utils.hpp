@@ -4,7 +4,6 @@
 #include "EyeAICore/Operators.hpp"
 #include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
-#include <chrono>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -161,4 +160,22 @@ static void linear_to_srgb(std::span<float> values) {
 		else
 			linear = 1.055f * powf(linear, 1.0f / 2.4f);
 	}
+}
+
+static tl::expected<std::vector<std::string>, std::string>
+read_coco_labels_file(const std::filesystem::path& filepath) {
+	std::vector<std::string> labels;
+	std::ifstream file(filepath);
+	if (!file.is_open()) {
+		return tl::unexpected(
+			std::format("Failed to open file: {}", filepath.string())
+		);
+	}
+
+	std::string line;
+	while (std::getline(file, line)) {
+		labels.push_back(line);
+	}
+	file.close();
+	return labels;
 }
