@@ -23,10 +23,12 @@ class SpacialAudio {
 	int row_length = 4;
 	int coloum_length;
 	AudioMain audio_main;
+	bool isFinished = true;
 
   public:
 	SpacialAudio();
 	~SpacialAudio();
 	void getDepthEstimationData(std::vector<float> data);
 	void processDepthEstimationData();
+	bool getProcessingStatus();
 };

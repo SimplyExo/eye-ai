@@ -1,5 +1,5 @@
 #include <EyeAICore/audio/AudioMain.hpp>
-#include <EyeAICore/audio/ProcessDepthEstimationData.hpp>
+#include <EyeAICore/audio/SpacialAudio.hpp>
 #include <jni.h>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -20,9 +20,12 @@ namespace {
 MutexGuard<std::unique_ptr<DepthModel>> depth_model{
 	std::unique_ptr<DepthModel>(nullptr)
 };
+MutexGuard<std::unique_ptr<SpacialAudio>> spacial_audio{
+	std::unique_ptr<SpacialAudio>(nullptr)
+};
 
 MutexGuard<YoloModel> yolo_instance;
-MutexGuard<std::unique_ptr<AudioMain>> audio;
+
 } // namespace
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
@@ -379,24 +382,39 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatObjectFrame(
 		get_last_object_profiling_frame_formatted().c_str()
 	);
 }
-
-extern "C" JNIEXPORT void JNICALL
+/*
+ *extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setupAudioDevice(
 	JNIEnv* env,
-	jobject /*this*/
+	jobject /this/
 ) {
 	auto audio_main = std::make_unique<AudioMain>();
 	audio_main->setupAudioDevice();
 	audio.lock()->swap(audio_main);
 }
+ */
+
+/*
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroyAudioDevice(
 	JNIEnv* env,
-	jobject /*this*/
+	jobject /this/
 ) {
 	(*audio.lock())->destroyAudioDevice();
 	audio.lock()->reset();
+}
+*/
+
+static SpacialAudio* get_or_create_spacial_audio() {
+	auto spacial_audio_scope = spacial_audio.lock();
+
+	if (*spacial_audio_scope == nullptr) {
+		LOG_INFO("[SpacialAudio] Initializing SpacialAudio instance...");
+		*spacial_audio_scope = std::make_unique<SpacialAudio>();
+	}
+
+	return spacial_audio_scope->get();
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -405,21 +423,43 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendDepthEstimationData(
 	jobject /*this*/,
 	jfloatArray array
 ) {
+	LOG_INFO("[SpacialAudio] Sending depth estimation data...");
 	jsize length = env->GetArrayLength(array);
 	jfloat* rawArray = env->GetFloatArrayElements(array, nullptr);
 
 	// Kopiere in std::vector<float>
 	std::vector<float> data(rawArray, rawArray + length);
 
-	auto data_handler = std::make_unique<ProcessDepthEstimationData>();
-	data_handler->getDepthEstimationData(data);
-	data_handler.reset();
+	SpacialAudio* audio_instance = get_or_create_spacial_audio();
 
-	// Übergib an deine C++-Funktion
-
+	audio_instance->getDepthEstimationData(data);
 
 	// Speicher freigeben
 	env->ReleaseFloatArrayElements(array, rawArray, JNI_ABORT);
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getProcessingStatus(
+	JNIEnv* env,
+	jobject /*this*/
+) {
+	LOG_INFO("[SpacialAudio] Getting sound processing status...");
+	SpacialAudio* audio_instance = get_or_create_spacial_audio();
+	return audio_instance->getProcessingStatus();
+
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroySpacialAudio(
+	JNIEnv* /*env*/,
+	jobject /*this*/
+) {
+	auto spacial_audio_scope = spacial_audio.lock();
+	if (*spacial_audio_scope != nullptr) {
+		LOG_INFO("[SpacialAudio] Destroying SpacialAudio instance...");
+		spacial_audio_scope->reset(nullptr);
+		LOG_INFO("[SpacialAudio] SpacialAudio destroyed!");
+	}
 }
 
 // NOLINTEND(readability-identifier-naming,

@@ -9,6 +9,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 import java.util.logging.Logger
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 
 
 object SpacialAudio {
@@ -20,9 +22,12 @@ object SpacialAudio {
 	fun start() {
 		scope.launch {
 			while (isActive) {
-				val data = eyeAIApp.aiData.depthEstimationData.get()
-				if(data != null){
-					NativeLib.sendDepthEstimationData(data)
+				if(NativeLib.getProcessingStatus()){
+					val data = eyeAIApp.aiData.depthEstimationData.get()
+					if(data != null){
+						NativeLib.sendDepthEstimationData(data)
+					}
+					delay(33)
 				}
 			}
 		}
@@ -30,11 +35,11 @@ object SpacialAudio {
 
 	fun setup(context: Context){
 		eyeAIApp = context.applicationContext as EyeAIApp
-		NativeLib.setupAudioDevice()
+
 	}
 
 	fun destroy() {
-		NativeLib.destroyAudioDevice()
+		NativeLib.destroySpacialAudio()
 	}
 
 }

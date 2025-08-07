@@ -9,10 +9,11 @@ SpacialAudio::SpacialAudio() {}
 
 void SpacialAudio::getDepthEstimationData(std::vector<float> data) {
 	this->depthEstimationData = data;
+	processDepthEstimationData();
 }
 
 void SpacialAudio::processDepthEstimationData() {
-
+	isFinished = false;
 	coloum_length = depthEstimationData.size() / row_length;
 	for (int i = 0; i < row_length; ++i) {
 		// extract the colounm out of the data
@@ -33,7 +34,12 @@ void SpacialAudio::processDepthEstimationData() {
 		std::cout << "x2: " <<sound_origin[1] << "\n";
 		std::cout << "distance: " << nearest_distance << "\n";
 		audio_main.playSound(200.0f, 1.0f, sound_origin);
+		isFinished = true;
 	}
+}
+
+bool SpacialAudio::getProcessingStatus(){
+	return isFinished;
 }
 
 SpacialAudio::~SpacialAudio() {}
