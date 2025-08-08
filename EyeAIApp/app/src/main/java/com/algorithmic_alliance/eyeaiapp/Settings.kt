@@ -3,62 +3,73 @@ package com.algorithmic_alliance.eyeaiapp
 import android.content.Context
 import androidx.preference.PreferenceManager
 
-class Settings(val context: Context) {
-	private var sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-
-	var depthModel: String
-		private set
-
-	var showProfilingInfo: Boolean
-		private set
-
-	var showDebugInputBitmap: Boolean
-		private set
-	var enableSpeechRecognition: Boolean
-		private set
-
-	var googleAiStudioApiKey: String?
-
-	var enableObjectDetection: Boolean
-		private set
-
+data class Settings(
+	var depthModel: String,
+	var showProfilingInfo: Boolean,
+	var showDebugInputBitmap: Boolean,
+	var enableSpeechRecognition: Boolean,
+	var googleAiStudioApiKey: String?,
+	var enableObjectDetection: Boolean,
 	var enableOCR: Boolean
-		private set
+) : Cloneable {
+	companion object {
+		fun load(context: Context): Settings {
+			val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
-	init {
-		depthModel = sharedPreferences.getString(
-			context.getString(R.string.depth_model_setting),
-			EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
-		).toString()
+			val depthModel = sharedPreferences.getString(
+				context.getString(R.string.depth_model_setting),
+				EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
+			).toString()
 
-		showProfilingInfo = sharedPreferences.getBoolean(
-			context.getString(R.string.show_profiling_info_setting),
-			false
-		)
+			val showProfilingInfo = sharedPreferences.getBoolean(
+				context.getString(R.string.show_profiling_info_setting),
+				false
+			)
 
-		showDebugInputBitmap = sharedPreferences.getBoolean(
-			context.getString(R.string.show_debug_input_bitmap_setting),
-			false
-		)
+			val showDebugInputBitmap = sharedPreferences.getBoolean(
+				context.getString(R.string.show_debug_input_bitmap_setting),
+				false
+			)
 
-		enableSpeechRecognition = sharedPreferences.getBoolean(
-			context.getString(R.string.enable_speech_recognition_setting),
-			true
-		)
+			val enableSpeechRecognition = sharedPreferences.getBoolean(
+				context.getString(R.string.enable_speech_recognition_setting),
+				true
+			)
 
-		googleAiStudioApiKey = sharedPreferences.getString(
-			context.getString(R.string.google_ai_studio_api_key_stetting),
-			null
-		)
+			val googleAiStudioApiKey = sharedPreferences.getString(
+				context.getString(R.string.google_ai_studio_api_key_stetting),
+				null
+			)
 
-		enableObjectDetection = sharedPreferences.getBoolean(
-			context.getString(R.string.enable_object_detection_setting),
-			true
-		)
+			val enableObjectDetection = sharedPreferences.getBoolean(
+				context.getString(R.string.enable_object_detection_setting),
+				true
+			)
 
-		enableOCR = sharedPreferences.getBoolean(
-			context.getString(R.string.enable_ocr_setting),
-			true
-		)
+			val enableOCR = sharedPreferences.getBoolean(
+				context.getString(R.string.enable_ocr_setting),
+				true
+			)
+
+			return Settings(
+				depthModel,
+				showProfilingInfo,
+				showDebugInputBitmap,
+				enableSpeechRecognition,
+				googleAiStudioApiKey,
+				enableObjectDetection,
+				enableOCR
+			)
+		}
 	}
+
+	public override fun clone(): Settings = Settings(
+		depthModel,
+		showProfilingInfo,
+		showDebugInputBitmap,
+		enableSpeechRecognition,
+		googleAiStudioApiKey,
+		enableObjectDetection,
+		enableOCR
+	)
 }

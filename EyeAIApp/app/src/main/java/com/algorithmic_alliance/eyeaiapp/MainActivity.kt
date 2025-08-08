@@ -135,7 +135,7 @@ class MainActivity : AppCompatActivity() {
 	override fun onPause() {
 		super.onPause()
 
-		eyeAIApp().voskModel?.stopListening()
+		eyeAIApp().voskModel.stopListening()
 	}
 
 	override fun onDestroy() {
@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
 		textToSpeechInstance.shutdown()
 
 
-		eyeAIApp().voskModel?.closeService()
+		eyeAIApp().voskModel.closeService()
 	}
 
 	private fun onCameraPermissionResult(isGranted: Boolean) {
@@ -159,16 +159,25 @@ class MainActivity : AppCompatActivity() {
 
 	private fun onMicrophonePermissionResult(isGranted: Boolean) {
 		if (isGranted && eyeAIApp().settings.enableSpeechRecognition) {
-			eyeAIApp()
-				.voskModel
-				?.initService(
-					::onPartialSpeechRecognitionResult,
-					::onFinalSpeechRecognitionResult,
-					::onSpeechRecognitionLoaded
-				)
+			eyeAIApp().voskModel.initService(
+				::onPartialSpeechRecognitionResult,
+				::onFinalSpeechRecognitionResult,
+				::onSpeechRecognitionLoaded
+			)
 		} else {
 			Log.w(EyeAIApp.APP_LOG_TAG, "Microphone Permission not granted!")
 		}
+	}
+
+	private fun onVoskModelLoaded() {
+		if (permissionManager.isMicrophonePermissionGranted())
+			return
+
+		eyeAIApp().voskModel!!.initService(
+			::onPartialSpeechRecognitionResult,
+			::onFinalSpeechRecognitionResult,
+			::onSpeechRecognitionLoaded
+		)
 	}
 
 	private fun onPartialSpeechRecognitionResult(partial: String) {
@@ -245,17 +254,12 @@ class MainActivity : AppCompatActivity() {
 				)
 			cameraManager.cameraFrameAnalyzer?.start()
 
-			val preferredInputSize = eyeAIApp().getPreferredCameraResolution()
-			if (preferredInputSize != null) {
-				cameraManager
-					.init(
-						this,
-						preferredInputSize,
-						cameraPreviewView
-					)
-			} else {
-				Log.e(EyeAIApp.APP_LOG_TAG, "COULD NOT INIT CAMERA, DEPTH MODEL NOT LOADED YET!")
-			}
+			cameraManager
+				.init(
+					this,
+					EyeAIApp.PREFERRED_CAMERA_RESOLUTION,
+					cameraPreviewView
+				)
 		} else {
 			ungrantedPermissionsNotice!!.visibility = VISIBLE
 		}

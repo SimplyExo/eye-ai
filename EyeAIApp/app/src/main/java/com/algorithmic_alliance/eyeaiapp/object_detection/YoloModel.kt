@@ -19,31 +19,40 @@ class YoloModel(var info: YoloModelInfo) {
 	private var numChannel = 0
 	private var numElements = 0
 
-	fun create(context: Context)
-	{
+	private var initialized = false
+
+	fun create(context: Context) {
 		// Erstellen einer Yolo-Instanz
 		val modelBytes = info.getAsBytes(context)
 		labels = info.readLinesFromAsset(context, "coco.names")
 
-		NativeLib.initYoloRuntime(modelBytes, labels,
+		NativeLib.initYoloRuntime(
+			modelBytes, labels,
 			createSerializedGpuDelegateCacheDirectory(context).path,
-			getModelToken(context, info.filename))
+			getModelToken(context, info.filename)
+		)
 
 		tensorWidth = NativeLib.getInputShape()[1]
 		tensorHeight = NativeLib.getInputShape()[2]
 		numChannel = NativeLib.getOutputShape()[1]
 		numElements = NativeLib.getOutputShape()[2]
-	}
 
-	fun clear() {
-		// Not implemented yet!
+		initialized = true
 	}
 
 	fun runInference(frame: Bitmap): Array<BoundingBox>? {
+		if (!initialized) {
+			Log.e(
+				"YOLO",
+				"Tried to run YOLO inference on uninitialized yolo model, call create first!"
+			)
+			return null
+		}
+
 		val resizedBitmap = frame.scale(tensorWidth, tensorHeight, false)
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(resizedBitmap, ProfilingFrameType.Object)
 
-		val json_string = NativeLib.runYoloOperation(input);
+		val json_string = NativeLib.runYoloOperation(input)
 
 		// Wenn string leer ist --> Keine Objekte erkannt!
 		if (json_string == "null")
