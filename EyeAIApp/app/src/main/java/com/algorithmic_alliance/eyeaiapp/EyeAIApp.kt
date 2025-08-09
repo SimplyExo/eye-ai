@@ -2,7 +2,6 @@ package com.algorithmic_alliance.eyeaiapp
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModelInfo

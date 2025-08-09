@@ -42,7 +42,8 @@ class CameraFrameAnalyzer(
 	private var objectDetectionProcessingExecutor: ExecutorService? = null
 	private var ocrProcessingExecutor: ExecutorService? = null
 
-	private val depthScope: CoroutineScope = CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher())
+	private val depthScope: CoroutineScope =
+		CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher())
 	private val objectScope: CoroutineScope? = if (eyeAIApp.settings.enableObjectDetection) {
 		objectDetectionProcessingExecutor = Executors.newSingleThreadExecutor()
 		CoroutineScope(objectDetectionProcessingExecutor!!.asCoroutineDispatcher())
@@ -60,7 +61,12 @@ class CameraFrameAnalyzer(
 
 	private lateinit var colorMappedImage: Bitmap
 
+	var started = false
+		private set
+
 	fun start() {
+		started = true
+
 		// DepthAnalyzer
 		depthScope.launch {
 			while (isActive) {
@@ -110,7 +116,7 @@ class CameraFrameAnalyzer(
 					NativeLib.newObjectFrame()
 
 					// Frame analysieren
-					val boxes = eyeAIApp.yoloModel?.runInference(frame)
+					val boxes = eyeAIApp.yoloModel.runInference(frame)
 					eyeAIApp.aiData.objectDetectionBoxes.set(boxes)
 
 					// Anzeigen der Boxes
@@ -153,6 +159,8 @@ class CameraFrameAnalyzer(
 		depthProcessingExecutor.shutdownNow()
 		objectDetectionProcessingExecutor?.shutdownNow()
 		ocrProcessingExecutor?.shutdownNow()
+
+		started = false
 	}
 
 

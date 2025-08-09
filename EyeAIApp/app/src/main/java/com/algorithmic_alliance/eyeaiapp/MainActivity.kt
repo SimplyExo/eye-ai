@@ -124,18 +124,20 @@ class MainActivity : AppCompatActivity() {
 
 		updateFlashlightButtonTint(cameraManager.isCameraFlashlightOn())
 
-		llmResponseText?.apply {
-			text = if (eyeAIApp().llm == null)
-				getString(R.string.setup_llm_notice)
-			else
-				""
-		}
+		llmResponseText?.text = if (eyeAIApp().llm == null)
+			getString(R.string.setup_llm_notice)
+		else
+			""
+
+		cameraManager.resumeAnalyzer()
 	}
 
 	override fun onPause() {
 		super.onPause()
 
 		eyeAIApp().voskModel.stopListening()
+
+		cameraManager.pauseAnalyzer()
 	}
 
 	override fun onDestroy() {
@@ -169,17 +171,6 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
-	private fun onVoskModelLoaded() {
-		if (permissionManager.isMicrophonePermissionGranted())
-			return
-
-		eyeAIApp().voskModel!!.initService(
-			::onPartialSpeechRecognitionResult,
-			::onFinalSpeechRecognitionResult,
-			::onSpeechRecognitionLoaded
-		)
-	}
-
 	private fun onPartialSpeechRecognitionResult(partial: String) {
 		CoroutineScope(Dispatchers.Main).launch {
 			speechRecognitionPartialResultText?.text = partial
@@ -206,7 +197,7 @@ class MainActivity : AppCompatActivity() {
 				llmResponseText?.text = getString(R.string.llm_responding_notice)
 
 				// wird erst wieder durch [onTTSFinishedSpeaking] gestartet
-				eyeAIApp().voskModel?.stopListening()
+				eyeAIApp().voskModel.stopListening()
 
 				// vibrate for 100ms
 				vibrate(eyeAIApp(), 100)
@@ -230,11 +221,9 @@ class MainActivity : AppCompatActivity() {
 	private fun onTTSFinishedSpeaking() {
 		// Muss auf dem Main thread laufen
 		CoroutineScope(Dispatchers.Main).launch {
-			speechRecognitionFinalResultText?.apply {
-				text = getString(R.string.speech_recognition_ready)
-			}
+			speechRecognitionFinalResultText?.text = getString(R.string.speech_recognition_ready)
 
-			eyeAIApp().voskModel?.startListening()
+			eyeAIApp().voskModel.startListening()
 		}
 	}
 
