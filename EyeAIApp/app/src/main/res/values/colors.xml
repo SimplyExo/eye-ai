@@ -7,6 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="red">#F44336</color>
+    <color name="ripple_red">#40FFFFFF</color>
     <color name="final_speech_recognition">#00ff00</color>
     <color name="llm_response">#007DFF</color>
     <color name="flashlight_button_off">#FFFFFFFF</color>
