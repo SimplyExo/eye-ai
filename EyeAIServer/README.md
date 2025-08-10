@@ -10,3 +10,7 @@ pip3 install opencv-python flask
 ### Hinweis: Vor Starten der Programme immer erst mit ```source venv/bin/activate``` das Virtual Environment aktivieren!
 
 Für die Nutzung von jeweils Client bzw. Server: siehe README.md im jeweiligen Ordner!
+
+## API-Docs
+Im Browser den Link ````http://localhost:3333/apidocs```` öffnen
+
