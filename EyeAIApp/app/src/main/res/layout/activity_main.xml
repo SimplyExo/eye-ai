@@ -162,7 +162,7 @@
         </ScrollView>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/stop_llm_button"
+            android:id="@+id/stop_tts_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/stop_square"

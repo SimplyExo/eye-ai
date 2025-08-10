@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity() {
 			updateFlashlightButtonTint(flashlightOn)
 		}
 
-		killLLM = findViewById(R.id.stop_llm_button)
+		killLLM = findViewById(R.id.stop_tts_button)
 		killLLM!!.setOnClickListener {
 		}
 
