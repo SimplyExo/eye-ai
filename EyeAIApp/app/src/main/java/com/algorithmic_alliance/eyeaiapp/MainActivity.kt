@@ -17,7 +17,6 @@ import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
-import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -204,15 +203,20 @@ class MainActivity : AppCompatActivity() {
 				vibrate(eyeAIApp(), 100)
 
 				val llmResponse = withContext(llmThreadExecutor.asCoroutineDispatcher()) {
-					if (eyeAIApp().llm!!.generate(final).contains("texterkennung", true)){
-						eyeAIApp().llm!!.generate("Das ist der zuletzt erkannte Text mit den zusätzlichen Koordinaten: " + eyeAIApp().ocrModel.lastResult + " \nBitte gib nur diesen in einem Format aus, dass es für einen menschen verständlich macht, der die Daten nur hören, nicht lesen kann. Mache anhand der übergebenen x und y Koordinaten des Handybildschirms aus, wo sich der Text in der Kameraperspektive befindet. Formuliere den Text so, als würdest du einer Person erklären, wo diese den erkannten Text sieht. Ein Beispiel wäre: Der Text ... befindet sich links oben von dir aus. Sprich also bitte nicht von einem Bildschirm, sondern sprich diese Person an. Nur in diesem Fall sollst du anschließend nicht Texterkennung wiederholen!")
-					}
-					else{
-						eyeAIApp().llm!!.generate(final)
+					val initialLLMResponse = eyeAIApp().llm!!.generate(final)
+
+					if (initialLLMResponse.contains("texterkennung", true)) {
+						val prompt = eyeAIApp().llm!!.buildOcrPrompt(eyeAIApp().ocrModel.lastResult)
+						val ocrResponse = eyeAIApp().llm!!.generate(prompt)
+						textToSpeechInstance.speak(ocrResponse)
+						ocrResponse
+					} else {
+						textToSpeechInstance.speak(initialLLMResponse)
+						initialLLMResponse
 					}
 				}
 
-				textToSpeechInstance.speak(llmResponse.toString())
+
 
 
 				llmResponseText?.text =
