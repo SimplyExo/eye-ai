@@ -12,7 +12,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp.Companion.APP_LOG_TAG
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
@@ -86,6 +85,18 @@ class CameraManager {
 		cameraFrameAnalyzerExecutor.apply {
 			shutdown()
 			awaitTermination(1000, TimeUnit.MILLISECONDS)
+		}
+	}
+
+	fun pauseAnalyzer() {
+		if (cameraFrameAnalyzer?.started == true) {
+			cameraFrameAnalyzer?.shutdown()
+		}
+	}
+
+	fun resumeAnalyzer() {
+		if (cameraFrameAnalyzer?.started == false) {
+			cameraFrameAnalyzer?.start()
 		}
 	}
 

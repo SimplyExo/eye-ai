@@ -67,11 +67,7 @@ class VoskModel(val context: Context, val modelName: String) {
 	}
 
 	init {
-		LibVosk.setLogLevel(LogLevel.INFO)
-	}
-
-	fun isInitialized(): Boolean {
-		return model != null && speechService != null
+		LibVosk.setLogLevel(LogLevel.DEBUG)
 	}
 
 	fun initService(
@@ -82,8 +78,10 @@ class VoskModel(val context: Context, val modelName: String) {
 		this.onPartialResultCallback = onPartialResult
 		this.onFinalResultCallback = onFinalResult
 
-		if (model != null && speechService != null)
+		if (model != null && speechService != null) {
+			startListening()
 			return
+		}
 
 		StorageService.unpack(
 			context, modelName, "unpacked_vosk_model",
@@ -106,6 +104,7 @@ class VoskModel(val context: Context, val modelName: String) {
 			stop()
 			shutdown()
 		}
+		speechService = null
 	}
 
 	fun startListening() {
@@ -130,7 +129,6 @@ class VoskModel(val context: Context, val modelName: String) {
 
 	fun stopListening() {
 		speechService?.stop()
-		speechService = null
 	}
 
 	/**
