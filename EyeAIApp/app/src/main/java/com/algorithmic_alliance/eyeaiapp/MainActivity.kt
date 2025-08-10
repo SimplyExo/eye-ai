@@ -88,8 +88,9 @@ class MainActivity : AppCompatActivity() {
 			updateFlashlightButtonTint(flashlightOn)
 		}
 
-		killLLM = findViewById(R.id.stop_tts_button)
-		killLLM!!.setOnClickListener {
+		killTTS = findViewById(R.id.stop_tts_button)
+		killTTS!!.setOnClickListener {
+			textToSpeechInstance.stop()
 		}
 
 		speechRecognitionPartialResultText = findViewById(R.id.speech_recognition_partial_output)
