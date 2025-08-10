@@ -1,0 +1,23 @@
+{
+	"systemInstruction": {
+		"parts": [
+			{
+				"text": "System prompt goes here."
+			}
+		]
+	},
+	"contents": [
+		{
+			"parts": [
+				{
+					"text": "User prompt goes here."
+				}
+			]
+		}
+	],
+	"generationConfig": {
+		"thinkingConfig": {
+			"thinkingBudget": 0
+		}
+	}
+}

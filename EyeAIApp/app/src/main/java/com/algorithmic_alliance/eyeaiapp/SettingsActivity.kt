@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -28,7 +29,7 @@ class SettingsActivity : AppCompatActivity() {
 		override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 			setPreferencesFromResource(R.xml.settings_preferences, rootKey)
 
-			findPreference<ListPreference>(getString(R.string.depth_model_setting))?.let { list: ListPreference ->
+			findPreference<ListPreference>(getString(R.string.depth_model_setting))?.let { list ->
 				val modelNames =
 					EyeAIApp.DEPTH_MODELS.map { it.name }.toTypedArray()
 
@@ -40,6 +41,30 @@ class SettingsActivity : AppCompatActivity() {
 				}
 			}
 
+			findPreference<EditTextPreference>(getString(R.string.custom_google_gen_ai_studio_endpoint_setting))?.let { endpointPreference ->
+				updateCustomGoogleGenAIStudioEndpointPreferenceSummary(
+					this,
+					endpointPreference,
+					endpointPreference.text
+				)
+
+				// formats the "Custom Google Gen AI Studio endpoint" summary
+				endpointPreference.onPreferenceChangeListener =
+					Preference.OnPreferenceChangeListener { preference, newValue ->
+						if (preference is EditTextPreference && preference.key == getString(
+								R.string.custom_google_gen_ai_studio_endpoint_setting
+							) && newValue is String?
+						) {
+							updateCustomGoogleGenAIStudioEndpointPreferenceSummary(
+								this,
+								preference,
+								newValue
+							)
+						}
+						true // save the new value
+					}
+			}
+
 			findPreference<Preference>(getString(R.string.version_info_settings))?.summary =
 				BuildInfoHelper.getVersionInfo()
 			findPreference<Preference>(getString(R.string.build_time_settings))?.summary =
@@ -49,5 +74,20 @@ class SettingsActivity : AppCompatActivity() {
 			findPreference<Preference>(getString(R.string.build_variant_settings))?.summary =
 				BuildInfoHelper.getBuildVariant()
 		}
+	}
+}
+
+private fun updateCustomGoogleGenAIStudioEndpointPreferenceSummary(
+	settingsFragment: SettingsActivity.SettingsFragment,
+	preference: EditTextPreference,
+	value: String?
+) {
+	preference.summary = if (value?.isEmpty() ?: true) {
+		""
+	} else {
+		settingsFragment.getString(
+			R.string.custom_google_gen_ai_studio_endpoint_summary,
+			value
+		)
 	}
 }

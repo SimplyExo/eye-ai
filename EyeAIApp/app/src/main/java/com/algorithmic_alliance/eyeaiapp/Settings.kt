@@ -9,6 +9,7 @@ data class Settings(
 	var showDebugInputBitmap: Boolean,
 	var enableSpeechRecognition: Boolean,
 	var googleAiStudioApiKey: String?,
+	var customGoogleGenAIStudioEndpoint: String?,
 	var enableObjectDetection: Boolean,
 	var enableOCR: Boolean
 ) : Cloneable {
@@ -41,6 +42,11 @@ data class Settings(
 				null
 			)
 
+			val customGoogleGenAIStudioEndpoint = sharedPreferences.getString(
+				context.getString(R.string.custom_google_gen_ai_studio_endpoint_setting),
+				null
+			)
+
 			val enableObjectDetection = sharedPreferences.getBoolean(
 				context.getString(R.string.enable_object_detection_setting),
 				true
@@ -57,6 +63,7 @@ data class Settings(
 				showDebugInputBitmap,
 				enableSpeechRecognition,
 				googleAiStudioApiKey,
+				customGoogleGenAIStudioEndpoint,
 				enableObjectDetection,
 				enableOCR
 			)
@@ -69,6 +76,7 @@ data class Settings(
 		showDebugInputBitmap,
 		enableSpeechRecognition,
 		googleAiStudioApiKey,
+		customGoogleGenAIStudioEndpoint,
 		enableObjectDetection,
 		enableOCR
 	)

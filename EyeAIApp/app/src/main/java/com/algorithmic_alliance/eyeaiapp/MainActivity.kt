@@ -124,10 +124,11 @@ class MainActivity : AppCompatActivity() {
 
 		updateFlashlightButtonTint(cameraManager.isCameraFlashlightOn())
 
-		llmResponseText?.text = if (eyeAIApp().llm == null)
-			getString(R.string.setup_llm_notice)
-		else
+		val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
+		llmResponseText?.text = if (isLLMConfigured)
 			""
+		else
+			getString(R.string.setup_llm_notice)
 
 		cameraManager.resumeAnalyzer()
 	}
