@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
 		}
 
 		killLLM = findViewById(R.id.stop_llm_button)
-		flashlightButton!!.setOnClickListener {
+		killLLM!!.setOnClickListener {
 			// Kill LLM
 		}
 
