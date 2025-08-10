@@ -162,6 +162,22 @@
         </ScrollView>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/stop_llm_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/stop_square"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="190dp"
+            android:layout_marginBottom="30dp"
+            android:backgroundTint="@color/red"
+            android:tint="@android:color/white"
+            app:rippleColor="@color/ripple_red"
+            app:borderWidth="0dp" />
+
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/flashlight_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -183,7 +199,9 @@
             android:backgroundTint="@color/white"
             android:contentDescription="@string/settings_button_description"
             android:foregroundTint="@color/white"
-            android:src="@android:drawable/ic_menu_preferences" />
+            android:src="@android:drawable/ic_menu_preferences"
+            app:rippleColor="@android:color/transparent"
+            app:borderWidth="0dp"/>
 
     </RelativeLayout>
 

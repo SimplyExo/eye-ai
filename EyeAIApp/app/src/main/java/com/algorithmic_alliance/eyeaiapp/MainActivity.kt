@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
 	private var ungrantedPermissionsNoticeText: TextView? = null
 	private var allowCameraPermission: Button? = null
 	private var flashlightButton: FloatingActionButton? = null
+	private var killLLM: FloatingActionButton? = null
 
 	private var depthPreviewImage: ImageView? = null
 
@@ -84,6 +85,11 @@ class MainActivity : AppCompatActivity() {
 		flashlightButton!!.setOnClickListener {
 			val flashlightOn = cameraManager.toggleCameraFlashlight()
 			updateFlashlightButtonTint(flashlightOn)
+		}
+
+		killLLM = findViewById(R.id.stop_llm_button)
+		killLLM!!.setOnClickListener {
+			// Kill LLM
 		}
 
 		speechRecognitionPartialResultText = findViewById(R.id.speech_recognition_partial_output)
