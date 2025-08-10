@@ -17,6 +17,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
+import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +38,7 @@ class MainActivity : AppCompatActivity() {
 	private var ungrantedPermissionsNoticeText: TextView? = null
 	private var allowCameraPermission: Button? = null
 	private var flashlightButton: FloatingActionButton? = null
-	private var killLLM: FloatingActionButton? = null
+	private var killTTS: FloatingActionButton? = null
 
 	private var depthPreviewImage: ImageView? = null
 
@@ -89,7 +90,6 @@ class MainActivity : AppCompatActivity() {
 
 		killLLM = findViewById(R.id.stop_llm_button)
 		killLLM!!.setOnClickListener {
-			// Kill LLM
 		}
 
 		speechRecognitionPartialResultText = findViewById(R.id.speech_recognition_partial_output)

@@ -35,6 +35,10 @@ class TextToSpeechInstance(context: Context, val onTTSFinishedSpeaking: () -> Un
 		override fun onError(utteranceId: String?) {
 			onTTSFinishedSpeaking()
 		}
+
+		override fun onStop(utteranceId: String?, interrupted: Boolean) {
+			onTTSFinishedSpeaking()
+		}
 	}
 
 	init {
@@ -52,6 +56,9 @@ class TextToSpeechInstance(context: Context, val onTTSFinishedSpeaking: () -> Un
 		}
 	}
 
+	fun stop() {
+		tts?.stop()
+	}
 	fun shutdown() {
 		tts?.stop()
 		tts?.shutdown()
