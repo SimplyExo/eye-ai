@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Eye AI</string>
+    <string name="app_name">Eye AI (Dev)</string>
     <string name="depth_preview_image_description">Depth Preview Image</string>
     <string name="debug_input_bitmap_image_description">Debug Input Bitmap</string>
     <string name="allow_camera_permission_notice">Allow Camera Permissions!</string>
