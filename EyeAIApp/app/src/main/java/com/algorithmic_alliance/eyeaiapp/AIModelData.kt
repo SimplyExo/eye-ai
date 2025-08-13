@@ -5,7 +5,7 @@ import com.algorithmic_alliance.eyeaiapp.ocr.TextBoundingBox
 import java.util.concurrent.atomic.AtomicReference
 
 object AIModelData {
-	val objectDetectionBoxes = AtomicReference<Array<BoundingBox>>()
-	val ocrBoxes = AtomicReference<Array<TextBoundingBox>>()
+	val objectDetectionBoxes = AtomicReference<Array<BoundingBox>?>()
+	val ocrBoxes = AtomicReference<Array<TextBoundingBox>?>()
 	val depthEstimationData = AtomicReference<FloatArray>()
 }

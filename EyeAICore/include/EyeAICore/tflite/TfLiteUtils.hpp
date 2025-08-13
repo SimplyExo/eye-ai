@@ -35,6 +35,7 @@ get_tensor_quantization(const TfLiteTensor* tensor);
  * GPU delegate kernels
  * @param model_token unique token to identify the model, should change on model
  * update
+ * @param profiling_frame profiling frame used for profiling
  */
 [[nodiscard]] std::
 	unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
