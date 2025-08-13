@@ -129,7 +129,7 @@ if (EYE_AI_CORE_GENERATE_DOCS)
 		# Doxyfile configuration
 		set(DOXYGEN_PROJECT_NAME "eye-ai")
 		set(DOXYGEN_PROJECT_ICON ${EYE_AI_FAVICON_PATH})
-		set(DOXYGEN_PROJECT_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/../EyeAIIcon/eye-ai-logo-50x50-export.webp")
+		set(DOXYGEN_PROJECT_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/../EyeAIIcon/eye-ai-logo-export.webp")
 		set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/docs")
 		set(DOXYGEN_FILE_PATTERNS *.cpp *.hpp *.md *.dox)
 		set(DOXYGEN_RECURSIVE YES)
