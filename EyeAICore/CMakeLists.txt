@@ -124,8 +124,12 @@ if (EYE_AI_CORE_GENERATE_DOCS)
 		FetchContent_MakeAvailable(doxygen-awesome-css)
 		FetchContent_GetProperties(doxygen-awesome-css SOURCE_DIR AWESOME_CSS_DIR)
 
+		set(EYE_AI_FAVICON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../EyeAIIcon/favicon.ico")
+
 		# Doxyfile configuration
 		set(DOXYGEN_PROJECT_NAME "eye-ai")
+		set(DOXYGEN_PROJECT_ICON ${EYE_AI_FAVICON_PATH})
+		set(DOXYGEN_PROJECT_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/../EyeAIIcon/eye-ai-logo-50x50-export.webp")
 		set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/docs")
 		set(DOXYGEN_FILE_PATTERNS *.cpp *.hpp *.md *.dox)
 		set(DOXYGEN_RECURSIVE YES)
@@ -150,6 +154,7 @@ if (EYE_AI_CORE_GENERATE_DOCS)
 		set(DOXYGEN_HTML_EXTRA_FILES
 			"${AWESOME_CSS_DIR}/doxygen-awesome-darkmode-toggle.js"
 			"${AWESOME_CSS_DIR}/doxygen-awesome-fragment-copy-button.js"
+			${EYE_AI_FAVICON_PATH}
 		)
 		set(DOXYGEN_HTML_COPY_CLIPBOARD NO)
 		set(DOXYGEN_HAVE_DOT YES)
