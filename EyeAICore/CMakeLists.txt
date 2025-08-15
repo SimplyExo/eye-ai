@@ -191,6 +191,8 @@ if (EYE_AI_CORE_ENABLE_TESTS)
 		"tests/tflite_runtime.cpp"
 		"tests/object_detection.cpp"
 		"tests/stb_image.cpp"
+		"tests/utils.hpp"
+		"tests/utils.cpp"
 	)
 	target_include_directories(EyeAICoreTests PRIVATE ${LIBNPY_INCLUDE_DIR} ${STB_INCLUDE_DIR})
 	target_link_libraries(EyeAICoreTests EyeAICore GTest::gtest_main GTest::gmock)
