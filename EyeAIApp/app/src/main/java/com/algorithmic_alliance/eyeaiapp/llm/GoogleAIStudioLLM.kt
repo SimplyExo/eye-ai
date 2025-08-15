@@ -17,7 +17,7 @@ class GoogleAIStudioLLM(private val apiKey: String) : LLM {
 		private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/"
 	}
 
-	override suspend fun generate(command: String): String {
+	override fun generate(command: String, structured: Boolean): String {
 		var connection: HttpURLConnection? = null
 		var reader: BufferedReader? = null
 
@@ -30,9 +30,9 @@ class GoogleAIStudioLLM(private val apiKey: String) : LLM {
 			connection.setRequestProperty("Accept", "application/json")
 			connection.doOutput = true
 
-			val requestBody = createRequestBody(command)
+			val requestBody = createRequestBody(command, structured)
 			val outputStream: OutputStream = connection.outputStream
-			outputStream.write(requestBody.toByteArray(Charsets.UTF_8))
+			outputStream.write(requestBody.toString().toByteArray(Charsets.UTF_8))
 			outputStream.close()
 
 			val responseCode = connection.responseCode
@@ -56,8 +56,9 @@ class GoogleAIStudioLLM(private val apiKey: String) : LLM {
 		}
 	}
 
-	private fun createRequestBody(prompt: String): String {
-		return JSONObject().apply {
+	private fun createRequestBody(prompt: String, structured: Boolean): JSONObject {
+
+		val defaultResponseBody = JSONObject().apply {
 			put("systemInstruction", JSONObject().apply {
 				put("parts", JSONArray().apply {
 					put(JSONObject().apply {
@@ -74,12 +75,42 @@ class GoogleAIStudioLLM(private val apiKey: String) : LLM {
 					})
 				})
 			})
-			put("generationConfig", JSONObject().apply {
-				put("thinkingConfig", JSONObject().apply {
-					put("thinkingBudget", 0) // disables thinking mode
+		}
+
+		if (structured) {
+			// Das Schema, das die API zurückgeben soll.
+			val schema = JSONObject().apply {
+				put("type", "OBJECT")
+				put("properties", JSONObject().apply {
+					put("changed_settings", JSONObject().apply {
+						put("type", "ARRAY")
+						put("items", JSONObject().apply {
+							put("type", "OBJECT")
+							put("properties", JSONObject().apply {
+								put("tts_speed", JSONObject().apply {
+									put("type", "NUMBER")
+									put("description", "The new text-to-speech speed, e.g. 1.0, 1.5, or 0.8")
+								})
+								// TODO: define further settings
+							})
+						})
+					})
 				})
+			}
+
+			// Die 'generationConfig' wird jetzt mit den korrekten Parametern erstellt
+			val generationConfig = JSONObject().apply {
+				put("response_mime_type", "application/json") // KORRIGIERT: snake_case ist Standard
+				put("response_schema", schema) // KORRIGIERT: 'response_schema' statt 'responseBody'
+			}
+
+			return defaultResponseBody.put("generationConfig", generationConfig)
+
+		} else {
+			return defaultResponseBody.put("generationConfig", JSONObject().apply {
+				put("temperature", 1.0) // Beispiel für eine normale Konfiguration
 			})
-		}.toString()
+		}
 	}
 
 	private fun parseResponse(responseBody: String): String {
