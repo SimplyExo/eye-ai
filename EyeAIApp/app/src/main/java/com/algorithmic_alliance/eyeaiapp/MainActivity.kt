@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
+import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
@@ -57,6 +58,19 @@ class MainActivity : AppCompatActivity() {
 	private var llmThreadExecutor = Executors.newSingleThreadExecutor()
 
 	private lateinit var textToSpeechInstance: TextToSpeechInstance
+
+	private var lastLlmJsonResponse: String? = null
+
+	private enum class State {
+		IDLE,
+		SETTINGS_MENU,
+		SETTINGS_CHOICE,
+		SETTINGS_ACTION,
+		FINISHED
+	}
+
+	private var currentState: State = State.IDLE
+
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -189,6 +203,8 @@ class MainActivity : AppCompatActivity() {
 			return
 		}
 
+
+
 		CoroutineScope(Dispatchers.Main).launch {
 			speechRecognitionFinalResultText?.text = final
 
@@ -209,25 +225,11 @@ class MainActivity : AppCompatActivity() {
 				// vibrate for 100ms
 				vibrate(eyeAIApp(), 100)
 
-				val llmResponse = withContext(llmThreadExecutor.asCoroutineDispatcher()) {
-					val initialLLMResponse = eyeAIApp().llm!!.generate(final)
 
-					if (initialLLMResponse.contains("texterkennung", true)) {
-						val prompt = eyeAIApp().llm!!.buildOcrPrompt(eyeAIApp().ocrModel.lastResult)
-						val ocrResponse = eyeAIApp().llm!!.generate(prompt)
-						textToSpeechInstance.speak(ocrResponse)
-						ocrResponse
-					} else {
-						textToSpeechInstance.speak(initialLLMResponse)
-						initialLLMResponse
-					}
+				withContext(llmThreadExecutor.asCoroutineDispatcher()){
+					onSpeechResult(final)
 				}
 
-
-
-
-				llmResponseText?.text =
-					getString(R.string.llm_response, llmResponse)
 			}
 		}
 	}
@@ -318,5 +320,165 @@ class MainActivity : AppCompatActivity() {
 				R.color.flashlight_button_off
 			}
 		)
+	}
+
+	private suspend fun onSpeechResult(final: String) {
+		when (currentState) {
+			State.IDLE -> handleIdle(final)
+			State.SETTINGS_MENU -> handleSettingsMenu(final)
+			State.SETTINGS_CHOICE -> handleSettingsChoice(final)
+			State.SETTINGS_ACTION -> handleSettingsAction(final)
+			State.FINISHED -> currentState = State.IDLE // If finished, return to IDLE state
+		}
+	}
+
+	// Handling of the IDLE state
+	private suspend fun handleIdle(final: String) {
+		val initialResponse = eyeAIApp().llm!!.generate(final, false)
+		when {
+			initialResponse.contains("texterkennung", true) -> {
+				val prompt = eyeAIApp().llm!!.buildOcrPrompt(eyeAIApp().ocrModel.lastResult)
+				val ocrResponse = eyeAIApp().llm!!.generate(prompt, false)
+				speakAndHandleUi(ocrResponse)
+			}
+			initialResponse.contains("einstellungen", true) -> {
+				currentState = State.SETTINGS_MENU
+				val settingsResponse = eyeAIApp().llm!!.generate(LLM.SETTINGS_PROMPT, false)
+				speakAndHandleUi(settingsResponse)
+			}
+			else -> speakAndHandleUi(initialResponse)
+		}
+	}
+
+	// Handling of the settings menu
+	private suspend fun handleSettingsMenu(final: String) {
+		currentState = State.SETTINGS_CHOICE
+		// LLM explains options
+		val prompt = "Erkläre kurz die Einstellungsmöglichkeit '$final' und frage, wie die Einstellung geändert werden soll je nach Kontext"
+		// TODO: Create individual responses for each adaption
+		val response = eyeAIApp().llm!!.generate(prompt, false)
+		speakAndHandleUi(response)
+	}
+
+	// LLM executes user command
+	private suspend fun handleSettingsChoice(final: String) {
+
+
+		// 1. Send a prompt to the LLM
+		val prompt = "Führe die folgende Aktion aus: '$final'."
+
+		val jsonResponse = try {
+			eyeAIApp().llm!!.generate(prompt, true) //Generating a structured response
+		} catch (e: Exception) {
+			// Catching invalid JSONs
+
+			textToSpeechInstance.speak("LLM hat kein valides JSON-Format geliefert!")
+			currentState = State.SETTINGS_MENU // Leaving the settings
+			return
+		}
+
+		// 2. Saving the last JSON-response
+		lastLlmJsonResponse = jsonResponse
+
+		// 3. Parsing JSON to create the request
+		var confirmationQuestion = "Soll ich die angeforderte Änderung durchführen?" // Fallback
+		try {
+			val jsonObject = JSONObject(jsonResponse)
+			val changedSettings = jsonObject.optJSONArray("changed_settings")
+			if (changedSettings != null && changedSettings.length() > 0) {
+				val firstChange = changedSettings.getJSONObject(0)
+				if (firstChange.has("tts_speed")) {
+					val newSpeed = firstChange.getDouble("tts_speed")
+					confirmationQuestion = "Verstanden. Soll ich die Sprachgeschwindigkeit auf ${newSpeed} setzen?"
+				}
+				if (firstChange.has("voice"))
+				{
+					//TODO: Implement changing voice of tts agent via speech
+					val agent = firstChange.getString("agent")
+					confirmationQuestion = "Verstanden. Soll ich die Sprachgeschwindigkeit auf ${agent} setzen?"
+				}
+				if (firstChange.has("volume")){
+					//TODO: Implement changing volume via speech
+					val volume = firstChange.getDouble("volume")
+					confirmationQuestion = "Verstanden. Soll ich die Sprachgeschwindigkeit auf ${volume} setzen?"
+				}
+			}
+		} catch (e: Exception) {
+
+			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed", e)
+		}
+
+		// 4. Change state to SETTINGS_ACTION, waiting for confirmation
+		currentState = State.SETTINGS_ACTION
+		speakAndHandleUi(confirmationQuestion)
+	}
+
+	// Handling of settings adaption
+	private suspend fun handleSettingsAction(final: String) {
+
+		//Checking whether the user confirms his action
+		//TODO: Implement LLM for a check, rather than just checking the recognised user response. Use a structured response here!
+		val isConfirmed = final.contains("ja", true) ||
+			final.contains("bestätigen", true) ||
+			final.contains("okay", true) ||
+			final.contains("korrekt", true)
+
+		if (isConfirmed && lastLlmJsonResponse != null) {
+			try {
+				// 1. Parsing the JSONObject
+				val jsonObject = JSONObject(lastLlmJsonResponse!!)
+				val changedSettings = jsonObject.getJSONArray("changed_settings")
+
+				// 2. Changing the settings
+				for (i in 0 until changedSettings.length()) {
+					val setting = changedSettings.getJSONObject(i)
+					if (setting.has("tts_speed")) {
+						//Changing speed
+						val newSpeed = setting.getDouble("tts_speed").toFloat()
+						textToSpeechInstance.setSpeechRate(newSpeed)
+						Log.d(EyeAIApp.APP_LOG_TAG, "TTS-Geschwindigkeit wird auf $newSpeed gesetzt.")
+					}
+					if (setting.has("voice"))
+					{
+						//TODO: Implement changing voice of tts agent via speech
+						val agent = setting.getString("agent")
+						Log.d(EyeAIApp.APP_LOG_TAG, "Stimme wird auf $agent gesetzt.")
+					}
+					if (setting.has("volume")){
+						//TODO: Implement changing volume via speech
+						val volume = setting.getDouble("volume")
+						Log.d(EyeAIApp.APP_LOG_TAG, "Lautstärke wird auf $volume gesetzt.")
+					}
+
+				}
+
+				// 3. Notifying the user that the changes have been applied
+				speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
+
+			} catch (e: Exception) {
+				Log.e(EyeAIApp.APP_LOG_TAG, "Fehler bei der Verarbeitung der JSON-Aktion.", e)
+				speakAndHandleUi("Entschuldigung, beim Anwenden der Einstellung ist ein Fehler aufgetreten.")
+			}
+		} else {
+			// Managing an exit
+			speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen.")
+		}
+
+		// 4. Clearing up
+		lastLlmJsonResponse = null
+		currentState = State.FINISHED
+	}
+
+	/**
+	 * Adapting the UI
+	 * Starting the TTS speech
+	 */
+	private suspend fun speakAndHandleUi(text: String) {
+		// UI-Update using the main-thread
+		withContext(Dispatchers.Main) {
+			llmResponseText?.text = getString(R.string.llm_response, text)
+		}
+		// TTS (using the worker-thread)
+		textToSpeechInstance.speak(text)
 	}
 }

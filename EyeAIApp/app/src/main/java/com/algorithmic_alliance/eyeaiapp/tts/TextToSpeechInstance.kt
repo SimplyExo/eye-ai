@@ -56,6 +56,10 @@ class TextToSpeechInstance(context: Context, val onTTSFinishedSpeaking: () -> Un
 		}
 	}
 
+	fun setSpeechRate(float: Float){
+		tts?.setSpeechRate(float)
+	}
+
 	fun stop() {
 		tts?.stop()
 	}
