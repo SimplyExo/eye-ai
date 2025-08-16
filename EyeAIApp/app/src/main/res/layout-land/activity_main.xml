@@ -66,6 +66,14 @@
                 app:scaleType="fitCenter" />
 
             <ImageView
+                android:id="@+id/media_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:implementationMode="performance"
+                app:scaleType="fitCenter"
+                android:contentDescription="@string/media_view_description" />
+
+            <ImageView
                 android:id="@+id/debug_input_bitmap"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

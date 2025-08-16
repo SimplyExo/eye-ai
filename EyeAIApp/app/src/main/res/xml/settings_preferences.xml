@@ -48,6 +48,26 @@
             app:title="Enabled" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="Input Source">
+        <ListPreference
+            app:key="@string/input_source_setting"
+            app:title="Input Source"
+            app:defaultValue="camera"
+            app:entries="@array/input_source_entries"
+            app:entryValues="@array/input_source_values"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:key="@string/media_path_setting"
+            app:title="Select Media File">
+        </Preference>
+
+        <EditTextPreference
+            app:key="@string/eyeaivision_ip_setting"
+            app:title="EyeAIVision IP">
+        </EditTextPreference>
+    </PreferenceCategory>
+
     // this will be populated by SettingsActivity.kt
     <PreferenceCategory app:title="Build Info">
         <Preference
