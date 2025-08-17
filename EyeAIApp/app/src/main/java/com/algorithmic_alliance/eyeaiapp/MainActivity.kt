@@ -478,14 +478,9 @@ class MainActivity : AppCompatActivity() {
 				}
 				if (firstChange.has("voice"))
 				{
-					//TODO: Implement changing voice of tts agent via speech
-					val agent = firstChange.getString("agent")
-					confirmationQuestion = "Verstanden. Soll ich die Sprachgeschwindigkeit auf ${agent} setzen?"
-				}
-				if (firstChange.has("volume")){
-					//TODO: Implement changing volume via speech
-					val volume = firstChange.getDouble("volume")
-					confirmationQuestion = "Verstanden. Soll ich die Sprachgeschwindigkeit auf ${volume} setzen?"
+
+					val voice = firstChange.getString("voice")
+					confirmationQuestion = "Verstanden. Soll ich die Assistentenstimme auf ${voice} setzen?"
 				}
 			}
 		} catch (e: Exception) {
@@ -497,9 +492,6 @@ class MainActivity : AppCompatActivity() {
 		currentState = State.SETTINGS_ACTION
 		speakAndHandleUi(confirmationQuestion)
 	}
-
-
-
 
 
 	// Handling of settings adaption
@@ -517,12 +509,6 @@ class MainActivity : AppCompatActivity() {
 		}
 
 
-
-
-
-
-
-		//TODO: Implement LLM for a check, rather than just checking the recognised user response. Use a structured response here!
 		val jsonObject = JSONObject(jsonResponse)
 		val changedSettings = jsonObject.getDouble("approval")
 
@@ -545,14 +531,12 @@ class MainActivity : AppCompatActivity() {
 					}
 					if (setting.has("voice"))
 					{
-						//TODO: Implement changing voice of tts agent via speech
-						val agent = setting.getString("agent")
-						Log.d(EyeAIApp.APP_LOG_TAG, "Stimme wird auf $agent gesetzt.")
-					}
-					if (setting.has("volume")){
-						//TODO: Implement changing volume via speech
-						val volume = setting.getDouble("volume")
-						Log.d(EyeAIApp.APP_LOG_TAG, "Lautstärke wird auf $volume gesetzt.")
+
+						val voice = setting.getDouble("voice")
+						Log.d(EyeAIApp.APP_LOG_TAG, "Stimme wird auf $voice gesetzt.")
+						textToSpeechInstance.setVoice(voice)
+
+
 					}
 					if(setting.has("leave")){
 						currentState = State.IDLE

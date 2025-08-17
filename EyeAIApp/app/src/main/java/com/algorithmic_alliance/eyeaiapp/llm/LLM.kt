@@ -31,14 +31,13 @@ interface LLM {
 		const val SETTINGS_PROMPT: String = """
 			Der Nutzer möchte die Einstellungen anpassen. Er hat folgende Möglichkeiten: 
 			1) Sprachgeschwindigkeit der Sprachausgabe anpassen
-			2) Assistentenstimme anpassen
-			3) Lautstärke anpassen
-			4) Er kann die Einstellungen verlassen
+			2) Assistentenstimme anpassen	(dies ermöglicht dem Nutzer nur zu wählen, welche Stimme der TTS Instanz er nutzen möchte, nur dies sollten deine künftigen Erklärungen auch beeinhalten!)
+			3) Er kann die Einstellungen verlassen
 			
 			Erkläre dich einverstanden damit und diktiere ihm diese bitte in dieser Reihenfolge, reihe diese bitte mit erstens, zweitens, drittens und viertens aneinander.
 			Frage ihn dann, welche Option er wählen möchte.
 			Merke dir, das der Nutzer soeben die Einstellungen aufgerufen hat. Nennt der Nutzer im nächsten Befehl eine dieser Optionen, so schreibe nur die Zahl der Option als deine nächste Antwort.
-			Bei "Sprachgeschwindigkeit der Sprachausgabe anpassen" wäre dies also 1, bei Lautstärke anpassen die 3.
+			Bei "Sprachgeschwindigkeit der Sprachausgabe anpassen" wäre dies also 1.
 			In diesem Fall sollst du anschließend nicht Einstellungen wiederholen bzw. sagen!
 		"""
 

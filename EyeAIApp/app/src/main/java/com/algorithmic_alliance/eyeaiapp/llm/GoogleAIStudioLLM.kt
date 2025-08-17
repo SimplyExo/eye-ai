@@ -94,6 +94,14 @@ class GoogleAIStudioLLM(private val apiKey: String) : LLM {
 								// TODO: define further settings
 
 							})
+							put("type", "OBJECT")
+							put("properties", JSONObject().apply {
+								put("voice", JSONObject().apply {
+									put("type", "NUMBER")
+									put("description", "The new voice can either be male or female. If the user suggests it should be male, answer with 0. For female, answer with 1.")
+								})
+								// TODO: define further settings
+							})
 						})
 					})
 					put("approval", JSONObject().apply {
