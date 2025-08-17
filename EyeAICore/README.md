@@ -14,7 +14,7 @@ Requirements:
 Optional programs to install:
 
 - Ninja: build system (used by the cmake presets, package is often named: ninja-build)
-- clang-tidy: static code analysis (make sure to use at least clang-tidy-15, clang-tidy-14 has known issues with <chrono>)
+- clang-tidy: static code analysis (make sure to use at least clang-tidy-15, clang-tidy-14 has known issues with `<chrono>`)
 - ccache: cache compilation results for faster repeated builds
 - doxygen: generate documentation from source code
 

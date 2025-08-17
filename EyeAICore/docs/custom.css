@@ -3,7 +3,7 @@ html {
 	--border-radius-medium: 15px;
 	--border-radius-large: 20px;
 
-	--top-height: 50px;
+	--top-height: 100px !important;
 
 	--page-background-color: #fafafa !important;
 	--page-foreground-color: #050505 !important;
@@ -27,7 +27,7 @@ html.dark-mode {
 	--border-radius-medium: 15px;
 	--border-radius-large: 20px;
 
-	--top-height: 50px;
+	--top-height: 100px !important;
 
 	--page-background-color: #050505 !important;
 	--page-foreground-color: #fafafa !important;
@@ -69,6 +69,10 @@ div.header div.summary {
 /* inline, static, delete, virtual, ... was too small */
 .mlabel {
 	font-size: 11pt !important;
+}
+
+#titlearea {
+	margin-top: 44px !important;
 }
 
 #top {

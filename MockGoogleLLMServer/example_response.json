@@ -1,0 +1,13 @@
+{
+	"candidates": [
+		{
+			"content": {
+				"parts": [
+					{
+						"text": "TESTING ONLY! This is a mock llm response for: User prompt goes here."
+					}
+				]
+			}
+		}
+	]
+}

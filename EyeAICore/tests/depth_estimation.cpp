@@ -27,7 +27,6 @@ TEST(DepthEstimationTest, CorrectOutput) {
 	auto& input = *input_result;
 	EXPECT_EQ(input.size(), 3 * width * height);
 
-	linear_to_srgb(input);
 	for (float& value : input) {
 		value = std::clamp(value * 255.f, 0.f, 255.f);
 	}
@@ -37,9 +36,7 @@ TEST(DepthEstimationTest, CorrectOutput) {
 	std::vector<float> output(static_cast<size_t>(width * height));
 
 	const auto run_error = depth_model->run(input, output);
-	if (run_error) {
-		FAIL() << run_error->to_string();
-	}
+	EXPECT_NO_OPTIONAL_ERROR(run_error);
 
 	// this might fail due to precision errors -> added tolerance
 	EXPECT_THAT(output, Pointwise(FloatNear(tolerance), expected_output.data));
@@ -49,7 +46,7 @@ TEST(DepthEstimationTest, CorrectOutput) {
 
 	npy::write_npy(
 		"../tests/00022_00193_outdoor_010_030_expected.npy",
-		npy::npy_data{.data = output, .shape = {height, width}}
+		npy::npy_data{.data = output, .shape = {(size_t)height, (size_t)width}}
 	);
 
 	*/
