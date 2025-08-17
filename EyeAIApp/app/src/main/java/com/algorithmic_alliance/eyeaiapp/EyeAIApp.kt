@@ -82,7 +82,7 @@ class EyeAIApp : Application() {
 
 			settings.googleAiStudioApiKey?.let { apiKey ->
 				if (!apiKey.isEmpty())
-					llm = GoogleAIStudioLLM(apiKey, settings.customGoogleGenAIStudioEndpoint)
+					llm = GoogleAIStudioLLM(apiKey)
 			}
 
 			// Yolo Model erstellen
@@ -116,7 +116,7 @@ class EyeAIApp : Application() {
 				val apiKey = settings.googleAiStudioApiKey
 				val customEndpoint = settings.customGoogleGenAIStudioEndpoint
 				llm = if (apiKey != null && !apiKey.isEmpty()) {
-					GoogleAIStudioLLM(apiKey, customEndpoint)
+					GoogleAIStudioLLM(apiKey)
 				} else {
 					null
 				}

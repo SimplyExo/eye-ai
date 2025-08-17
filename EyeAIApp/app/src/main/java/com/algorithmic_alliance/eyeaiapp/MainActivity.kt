@@ -1,6 +1,8 @@
 package com.algorithmic_alliance.eyeaiapp
 
 import android.content.Intent
+import android.graphics.Bitmap.createBitmap
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View.GONE
@@ -11,13 +13,20 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.core.graphics.createBitmap
+import androidx.core.net.toUri
+import androidx.core.view.isVisible
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
+import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +40,7 @@ import org.json.JSONObject
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	private var permissionManager =
 		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult)
 
@@ -44,6 +54,7 @@ class MainActivity : AppCompatActivity() {
 	private var depthPreviewImage: ImageView? = null
 
 	private var debugInputBitmapPreview: ImageView? = null
+	private var mediaImageView: ImageView? = null
 
 	private var performanceText: TextView? = null
 
@@ -73,7 +84,10 @@ class MainActivity : AppCompatActivity() {
 
 	private var currentState: State = State.IDLE
 
+	private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
+	private var mediaPlayer: MediaPlayer? = null
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
@@ -83,6 +97,8 @@ class MainActivity : AppCompatActivity() {
 		cameraPreviewView = findViewById(R.id.camera_view)
 
 		depthPreviewImage = findViewById(R.id.depth_preview_image)
+
+		mediaImageView = findViewById(R.id.media_view)
 
 		debugInputBitmapPreview = findViewById(R.id.debug_input_bitmap)
 
@@ -129,6 +145,7 @@ class MainActivity : AppCompatActivity() {
 		textToSpeechInstance = TextToSpeechInstance(this, ::onTTSFinishedSpeaking)
 	}
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onResume() {
 		super.onResume()
 
@@ -155,22 +172,30 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onPause() {
 		super.onPause()
 
-		eyeAIApp().voskModel?.stopListening()
+		eyeAIApp().voskModel.stopListening()
+
+		cameraManager.pauseAnalyzer()
+		mediaFrameAnalyzer?.shutdown()
+		mediaPlayer?.shutdown()
 	}
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onDestroy() {
 		super.onDestroy()
 
 		cameraManager.shutdown()
 		textToSpeechInstance.shutdown()
+		mediaFrameAnalyzer?.shutdown()
+		mediaPlayer?.shutdown()
 
-
-		eyeAIApp().voskModel?.closeService()
+		eyeAIApp().voskModel.closeService()
 	}
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	private fun onCameraPermissionResult(isGranted: Boolean) {
 		if (isGranted) {
 			ungrantedPermissionsNotice!!.visibility = GONE
@@ -184,7 +209,7 @@ class MainActivity : AppCompatActivity() {
 		if (isGranted && eyeAIApp().settings.enableSpeechRecognition) {
 			eyeAIApp()
 				.voskModel
-				?.initService(
+				.initService(
 					::onPartialSpeechRecognitionResult,
 					::onFinalSpeechRecognitionResult,
 					::onSpeechRecognitionLoaded
@@ -200,31 +225,82 @@ class MainActivity : AppCompatActivity() {
 		return application as EyeAIApp
 	}
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	private fun initCamera() {
-		if (permissionManager.isCameraPermissionGranted()) {
-			ungrantedPermissionsNotice!!.visibility = GONE
+		if (eyeAIApp().settings.inputSource == getString(R.string.input_is_camera)) {
+			mediaImageView!!.isVisible = false
+			if (permissionManager.isCameraPermissionGranted()) {
+				ungrantedPermissionsNotice!!.visibility = GONE
 
-			cameraManager.cameraFrameAnalyzer?.shutdown()
-			cameraManager.cameraFrameAnalyzer =
-				CameraFrameAnalyzer(
-					eyeAIApp(), depthPreviewImage!!, performanceText!!, overlayObjectDetection!!,
-					overlayOcr!!, debugInputBitmapPreview!!
-				)
-			cameraManager.cameraFrameAnalyzer?.start()
+				cameraManager.cameraFrameAnalyzer?.shutdown()
+				cameraManager.cameraFrameAnalyzer =
+					CameraFrameAnalyzer(
+						eyeAIApp(),
+						depthPreviewImage!!,
+						performanceText!!,
+						overlayObjectDetection!!,
+						overlayOcr!!,
+						debugInputBitmapPreview!!,
+						mediaImageView!!
+					)
+				cameraManager.cameraFrameAnalyzer?.start()
 
-			val preferredInputSize = eyeAIApp().getPreferredCameraResolution()
-			if (preferredInputSize != null) {
 				cameraManager
 					.init(
 						this,
-						preferredInputSize,
+						EyeAIApp.PREFERRED_CAMERA_RESOLUTION,
 						cameraPreviewView
 					)
 			} else {
-				Log.e(EyeAIApp.APP_LOG_TAG, "COULD NOT INIT CAMERA, DEPTH MODEL NOT LOADED YET!")
+				ungrantedPermissionsNotice!!.visibility = VISIBLE
 			}
-		} else {
-			ungrantedPermissionsNotice!!.visibility = VISIBLE
+		} else if (eyeAIApp().settings.inputSource == getString(R.string.input_is_media)) {
+			if (eyeAIApp().settings.mediaSource!!.isNotEmpty()) {
+				mediaImageView!!.isVisible = true
+				ProcessCameraProvider.getInstance(this).get().unbindAll()
+				overlayObjectDetection!!.reset()
+				overlayOcr!!.reset()
+				depthPreviewImage!!.setImageBitmap(createBitmap(256,256))
+
+				mediaPlayer?.shutdown()
+				mediaPlayer = MediaPlayer(this, eyeAIApp().settings.mediaSource!!.toUri(), mediaImageView!!)
+
+				mediaFrameAnalyzer?.shutdown()
+
+				mediaFrameAnalyzer =
+					CameraFrameAnalyzer(
+						eyeAIApp(),
+						depthPreviewImage!!,
+						performanceText!!,
+						overlayObjectDetection!!,
+						overlayOcr!!,
+						debugInputBitmapPreview!!,
+						mediaImageView!!
+					)
+
+				mediaFrameAnalyzer?.start()
+			} else {
+				val builder = AlertDialog.Builder(this)
+				builder.setMessage("No media file has been selected. Please select one in the settings menu")
+					.setPositiveButton("Open settings") { dialog, id ->
+						startActivity(Intent(this, SettingsActivity::class.java))
+						overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+					}
+				builder.create().show()
+			}
+
+		} else if (eyeAIApp().settings.inputSource == getString(R.string.input_is_eyeaivision)) {
+			if (eyeAIApp().settings.eyeAIVisionIP!!.isNotEmpty()) {
+				// HTTP Logic
+			} else {
+				val builder = AlertDialog.Builder(this)
+				builder.setMessage("No IP address has been entered. Please enter one in the settings menu")
+					.setPositiveButton("Open settings") { dialog, id ->
+						startActivity(Intent(this, SettingsActivity::class.java))
+						overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+					}
+				builder.create().show()
+			}
 		}
 	}
 
@@ -239,6 +315,7 @@ class MainActivity : AppCompatActivity() {
 		speechRecognitionFinalResultText?.visibility = visibility
 	}
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	private fun updateUngrantedPermissionsNotice() {
 		val cameraGranted = permissionManager.isCameraPermissionGranted()
 		val microphoneGranted = permissionManager.isMicrophonePermissionGranted()
@@ -301,7 +378,7 @@ class MainActivity : AppCompatActivity() {
 				llmResponseText?.text = getString(R.string.llm_responding_notice)
 
 				// start after onTTSFinished speaking
-				eyeAIApp().voskModel?.stopListening()
+				eyeAIApp().voskModel.stopListening()
 
 				// vibrate for 100ms
 				vibrate(eyeAIApp(), 100)
@@ -326,7 +403,7 @@ class MainActivity : AppCompatActivity() {
 				text = getString(R.string.speech_recognition_ready)
 			}
 
-			eyeAIApp().voskModel?.startListening()
+			eyeAIApp().voskModel.startListening()
 		}
 	}
 
