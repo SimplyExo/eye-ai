@@ -78,7 +78,7 @@ class GoogleAIStudioLLM(private val apiKey: String) : LLM {
 		}
 
 		if (structured) {
-
+			// API returns
 			val schema = JSONObject().apply {
 				put("type", "OBJECT")
 				put("properties", JSONObject().apply {
@@ -92,28 +92,23 @@ class GoogleAIStudioLLM(private val apiKey: String) : LLM {
 									put("description", "The new text-to-speech speed, e.g. 1.0, 1.5, or 0.8")
 								})
 								// TODO: define further settings
-
 							})
 						})
-					})
-					put("approval", JSONObject().apply {
-						put("type", "NUMBER")
-						put("description", "Whether the user approves the change or doesn't. Answer with either 1 or 0. '1' for approval, '0' for disagreement.")
 					})
 				})
 			}
 
-
+			
 			val generationConfig = JSONObject().apply {
-				put("response_mime_type", "application/json")
-				put("response_schema", schema)
+				put("response_mime_type", "application/json") 
+				put("response_schema", schema) // 'response_schema' instead of 'responseBody'
 			}
 
 			return defaultResponseBody.put("generationConfig", generationConfig)
 
 		} else {
 			return defaultResponseBody.put("generationConfig", JSONObject().apply {
-				put("temperature", 1.0)
+				put("temperature", 1.0) // Removing soon, see TODO
 			})
 		}
 	}
