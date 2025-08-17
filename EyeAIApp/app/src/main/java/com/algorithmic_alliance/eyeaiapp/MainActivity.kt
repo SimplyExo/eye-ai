@@ -65,8 +65,10 @@ class MainActivity : AppCompatActivity() {
 		IDLE,
 		SETTINGS_MENU,
 		SETTINGS_CHOICE,
+
+
 		SETTINGS_ACTION,
-		FINISHED
+
 	}
 
 	private var currentState: State = State.IDLE
@@ -192,62 +194,7 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
-	private fun onPartialSpeechRecognitionResult(partial: String) {
-		CoroutineScope(Dispatchers.Main).launch {
-			speechRecognitionPartialResultText?.text = partial
-		}
-	}
 
-	private fun onFinalSpeechRecognitionResult(final: String) {
-		if (final.isEmpty()) {
-			return
-		}
-
-
-
-		CoroutineScope(Dispatchers.Main).launch {
-			speechRecognitionFinalResultText?.text = final
-
-			// minimum of 1 second pause between speech commands
-			if (System.currentTimeMillis() - lastFinalResultMillis <= 1000)
-				return@launch
-
-			lastFinalResultMillis = System.currentTimeMillis()
-
-			if (eyeAIApp().llm == null) {
-				llmResponseText?.text = getString(R.string.setup_llm_notice)
-			} else {
-				llmResponseText?.text = getString(R.string.llm_responding_notice)
-
-				// wird erst wieder durch [onTTSFinishedSpeaking] gestartet
-				eyeAIApp().voskModel?.stopListening()
-
-				// vibrate for 100ms
-				vibrate(eyeAIApp(), 100)
-
-
-				withContext(llmThreadExecutor.asCoroutineDispatcher()){
-					onSpeechResult(final)
-				}
-
-			}
-		}
-	}
-
-	private fun onSpeechRecognitionLoaded() {
-		speechRecognitionFinalResultText?.text = getString(R.string.speech_recognition_ready)
-	}
-
-	private fun onTTSFinishedSpeaking() {
-		// Muss auf dem Main thread laufen
-		CoroutineScope(Dispatchers.Main).launch {
-			speechRecognitionFinalResultText?.apply {
-				text = getString(R.string.speech_recognition_ready)
-			}
-
-			eyeAIApp().voskModel?.startListening()
-		}
-	}
 
 	private fun eyeAIApp(): EyeAIApp {
 		return application as EyeAIApp
@@ -322,13 +269,74 @@ class MainActivity : AppCompatActivity() {
 		)
 	}
 
+
+
+	/*All TTS methods start here*/
+
+	private fun onPartialSpeechRecognitionResult(partial: String) {
+		CoroutineScope(Dispatchers.Main).launch {
+			speechRecognitionPartialResultText?.text = partial
+		}
+	}
+
+	private fun onFinalSpeechRecognitionResult(final: String) {
+		if (final.isEmpty()) {
+			return
+		}
+
+
+
+		CoroutineScope(Dispatchers.Main).launch {
+			speechRecognitionFinalResultText?.text = final
+
+			// minimum of 1 second pause between speech commands
+			if (System.currentTimeMillis() - lastFinalResultMillis <= 1000)
+				return@launch
+
+			lastFinalResultMillis = System.currentTimeMillis()
+
+			if (eyeAIApp().llm == null) {
+				llmResponseText?.text = getString(R.string.setup_llm_notice)
+			} else {
+				llmResponseText?.text = getString(R.string.llm_responding_notice)
+
+				// start after onTTSFinished speaking
+				eyeAIApp().voskModel?.stopListening()
+
+				// vibrate for 100ms
+				vibrate(eyeAIApp(), 100)
+
+
+				withContext(llmThreadExecutor.asCoroutineDispatcher()){
+					onSpeechResult(final)
+				}
+
+			}
+		}
+	}
+
+	private fun onSpeechRecognitionLoaded() {
+		speechRecognitionFinalResultText?.text = getString(R.string.speech_recognition_ready)
+	}
+
+	private fun onTTSFinishedSpeaking() {
+		// Muss auf dem Main thread laufen
+		CoroutineScope(Dispatchers.Main).launch {
+			speechRecognitionFinalResultText?.apply {
+				text = getString(R.string.speech_recognition_ready)
+			}
+
+			eyeAIApp().voskModel?.startListening()
+		}
+	}
+
+
 	private suspend fun onSpeechResult(final: String) {
 		when (currentState) {
 			State.IDLE -> handleIdle(final)
 			State.SETTINGS_MENU -> handleSettingsMenu(final)
 			State.SETTINGS_CHOICE -> handleSettingsChoice(final)
 			State.SETTINGS_ACTION -> handleSettingsAction(final)
-			State.FINISHED -> currentState = State.IDLE // If finished, return to IDLE state
 		}
 	}
 
@@ -413,17 +421,37 @@ class MainActivity : AppCompatActivity() {
 		speakAndHandleUi(confirmationQuestion)
 	}
 
+
+
+
+
 	// Handling of settings adaption
 	private suspend fun handleSettingsAction(final: String) {
 
-		//Checking whether the user confirms his action
-		//TODO: Implement LLM for a check, rather than just checking the recognised user response. Use a structured response here!
-		val isConfirmed = final.contains("ja", true) ||
-			final.contains("bestätigen", true) ||
-			final.contains("okay", true) ||
-			final.contains("korrekt", true)
+		val jsonResponse = try {
+			eyeAIApp().llm!!.generate("Würdest du sagen der Nutzer hat diesen Command bestätigt? Die Antwort des Nutzers war $final" +
+				"Antworte bitte mit einer JSON-Antwort in approval.", true) //Generating a structured response
+		} catch (e: Exception) {
+			// Catching invalid JSONs
 
-		if (isConfirmed && lastLlmJsonResponse != null) {
+			textToSpeechInstance.speak("LLM hat kein valides JSON-Format geliefert!")
+			currentState = State.SETTINGS_MENU // Leaving the settings
+			return
+		}
+
+
+
+
+
+
+
+		//TODO: Implement LLM for a check, rather than just checking the recognised user response. Use a structured response here!
+		val jsonObject = JSONObject(jsonResponse)
+		val changedSettings = jsonObject.getDouble("approval")
+
+
+		//Checking whether the user confirms his action
+		if (changedSettings.toInt() == 1 && lastLlmJsonResponse != null) {
 			try {
 				// 1. Parsing the JSONObject
 				val jsonObject = JSONObject(lastLlmJsonResponse!!)
@@ -449,6 +477,9 @@ class MainActivity : AppCompatActivity() {
 						val volume = setting.getDouble("volume")
 						Log.d(EyeAIApp.APP_LOG_TAG, "Lautstärke wird auf $volume gesetzt.")
 					}
+					if(setting.has("leave")){
+						currentState = State.IDLE
+					}
 
 				}
 
@@ -466,7 +497,7 @@ class MainActivity : AppCompatActivity() {
 
 		// 4. Clearing up
 		lastLlmJsonResponse = null
-		currentState = State.FINISHED
+		currentState = State.IDLE
 	}
 
 	/**
