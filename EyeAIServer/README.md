@@ -1,4 +1,4 @@
-\page EyeAIServer EyeAIServer
+# EyeAIServer
 
 Dies ist ein für Testzwecke erstelltes Programm zum emulieren einer EyeAI-Datenbrille. Ein zugehöriger Beispielclient liegt im Verzeichnis "Client" bei
 ## Nutzung
