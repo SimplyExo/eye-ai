@@ -124,9 +124,14 @@ if (EYE_AI_CORE_GENERATE_DOCS)
 		FetchContent_MakeAvailable(doxygen-awesome-css)
 		FetchContent_GetProperties(doxygen-awesome-css SOURCE_DIR AWESOME_CSS_DIR)
 
+		set(EYE_AI_FAVICON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../EyeAIIcon/favicon.ico")
+
 		# Doxyfile configuration
+		set(DOXYGEN_PROJECT_NAME "eye-ai")
+		set(DOXYGEN_PROJECT_ICON ${EYE_AI_FAVICON_PATH})
+		set(DOXYGEN_PROJECT_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/../EyeAIIcon/eye-ai-logo-export.webp")
 		set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/docs")
-		set(DOXYGEN_FILE_PATTERNS *.cpp *.hpp *.md)
+		set(DOXYGEN_FILE_PATTERNS *.cpp *.hpp *.md *.dox)
 		set(DOXYGEN_RECURSIVE YES)
 		set(DOXYGEN_EXTRACT_ALL YES)
 		set(DOXYGEN_QUIET YES)
@@ -136,7 +141,8 @@ if (EYE_AI_CORE_GENERATE_DOCS)
 		set(DOXYGEN_GENERATE_TREEVIEW YES)
 		set(DOXYGEN_DISABLE_INDEX NO)
 		set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-		set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+		set(DOXYGEN_MARKDOWN_SUPPORT YES)
+		set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_CURRENT_SOURCE_DIR}/../README.md")
 		set(DOXYGEN_LAYOUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/docs/DoxygenLayout.xml")
 		set(DOXYGEN_HTML_EXTRA_STYLESHEET
 			"${AWESOME_CSS_DIR}/doxygen-awesome.css"
@@ -148,18 +154,27 @@ if (EYE_AI_CORE_GENERATE_DOCS)
 		set(DOXYGEN_HTML_EXTRA_FILES
 			"${AWESOME_CSS_DIR}/doxygen-awesome-darkmode-toggle.js"
 			"${AWESOME_CSS_DIR}/doxygen-awesome-fragment-copy-button.js"
+			${EYE_AI_FAVICON_PATH}
 		)
 		set(DOXYGEN_HTML_COPY_CLIPBOARD NO)
 		set(DOXYGEN_HAVE_DOT YES)
 		set(DOXYGEN_DOT_IMAGE_FORMAT svg)
 		set(DOXYGEN_DOT_TRANSPARENT YES)
+		set(DOXYGEN_TOC_INCLUDE_HEADINGS 0) # disables including of headings
 
 		doxygen_add_docs(
 			EyeAICoreDoxygenDocs
+			"${CMAKE_CURRENT_SOURCE_DIR}/../README.md"
+			"${CMAKE_CURRENT_SOURCE_DIR}/../Beschreibung.md"
 			"${CMAKE_CURRENT_SOURCE_DIR}/README.md"
 			"${CMAKE_CURRENT_SOURCE_DIR}/docs"
 			"${CMAKE_CURRENT_SOURCE_DIR}/include/EyeAICore"
 			"${CMAKE_CURRENT_SOURCE_DIR}/src"
+			"${CMAKE_CURRENT_SOURCE_DIR}/../EyeAIApp/README.md"
+			"${CMAKE_CURRENT_SOURCE_DIR}/../EyeAIServer/README.md"
+			"${CMAKE_CURRENT_SOURCE_DIR}/../EyeAIServer/Client/README.md"
+			"${CMAKE_CURRENT_SOURCE_DIR}/../EyeAIServer/Server/README.md"
+			"${CMAKE_CURRENT_SOURCE_DIR}/../EyeAIApp/app/src/main/assets/README.md"
 			COMMENT "Generating EyeAICore documentation with Doxygen"
 		)
 	else()
@@ -176,6 +191,8 @@ if (EYE_AI_CORE_ENABLE_TESTS)
 		"tests/tflite_runtime.cpp"
 		"tests/object_detection.cpp"
 		"tests/stb_image.cpp"
+		"tests/utils.hpp"
+		"tests/utils.cpp"
 	)
 	target_include_directories(EyeAICoreTests PRIVATE ${LIBNPY_INCLUDE_DIR} ${STB_INCLUDE_DIR})
 	target_link_libraries(EyeAICoreTests EyeAICore GTest::gtest_main GTest::gmock)
