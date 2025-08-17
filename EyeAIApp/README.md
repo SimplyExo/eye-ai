@@ -1,17 +1,10 @@
-\page EyeAIApp EyeAIApp
+# EyeAI app
 
 Android app running MiDaS and DepthAnything depth estimation models
 
 ## Demo (old)
 
-\htmlonly
-
-<video controls width="450">
-  <source src="https://raw.githubusercontent.com/SimplyExo/eye-ai/main/EyeAIApp/Demo.mp4" type="video/mp4" >
-  </source>
-</video>
-
-\endhtmlonly
+https://github.com/user-attachments/assets/19394a55-3e10-4b0d-a7e5-96c03b27d440
 
 ## Features
 
@@ -19,4 +12,4 @@ Android app running MiDaS and DepthAnything depth estimation models
 - Quantization support (for now, only for tflite models)
 - Speech recognition using Vosk model
 
-\see \subpage AIModelSources for complete list of all models
+see [README.md](app/src/main/assets/README.md) for complete list of all models

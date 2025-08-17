@@ -93,9 +93,7 @@ class TfLiteRuntime {
 	 * @brief Run inference on the model, make sure input and output have the
 	 * right amount of elements.
 	 * @param input input will be modified by input operators!
-	 * @param input_format format of \p input
 	 * @param output output will be modified by output operators!
-	 * @param expected_output_format the expected format \p output should be in
 	 */
 	[[nodiscard]] std::optional<TfLiteRunInferenceError> run_inference(
 		std::span<float> input,

@@ -3,104 +3,62 @@ package com.algorithmic_alliance.eyeaiapp
 import android.content.Context
 import androidx.preference.PreferenceManager
 
-data class Settings(
-	var depthModel: String,
-	var showProfilingInfo: Boolean,
-	var showDebugInputBitmap: Boolean,
-	var enableSpeechRecognition: Boolean,
-	var googleAiStudioApiKey: String?,
-	var customGoogleGenAIStudioEndpoint: String?,
-	var enableObjectDetection: Boolean,
-	var enableOCR: Boolean,
-	val inputSource: String?,
-	val mediaSource: String?,
-	val eyeAIVisionIP: String?
-) : Cloneable {
-	companion object {
-		fun load(context: Context): Settings {
-			val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+class Settings(val context: Context) {
+	private var sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
-			val depthModel = sharedPreferences.getString(
-				context.getString(R.string.depth_model_setting),
-				EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
-			).toString()
+	var depthModel: String
+		private set
 
-			val showProfilingInfo = sharedPreferences.getBoolean(
-				context.getString(R.string.show_profiling_info_setting),
-				false
-			)
+	var showProfilingInfo: Boolean
+		private set
 
-			val showDebugInputBitmap = sharedPreferences.getBoolean(
-				context.getString(R.string.show_debug_input_bitmap_setting),
-				false
-			)
+	var showDebugInputBitmap: Boolean
+		private set
+	var enableSpeechRecognition: Boolean
+		private set
 
-			val enableSpeechRecognition = sharedPreferences.getBoolean(
-				context.getString(R.string.enable_speech_recognition_setting),
-				true
-			)
+	var googleAiStudioApiKey: String?
 
-			val googleAiStudioApiKey = sharedPreferences.getString(
-				context.getString(R.string.google_ai_studio_api_key_stetting),
-				null
-			)
+	var enableObjectDetection: Boolean
+		private set
 
-			val customGoogleGenAIStudioEndpoint = sharedPreferences.getString(
-				context.getString(R.string.custom_google_gen_ai_studio_endpoint_setting),
-				null
-			)
+	var enableOCR: Boolean
+		private set
 
-			val enableObjectDetection = sharedPreferences.getBoolean(
-				context.getString(R.string.enable_object_detection_setting),
-				true
-			)
+	init {
+		depthModel = sharedPreferences.getString(
+			context.getString(R.string.depth_model_setting),
+			EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
+		).toString()
 
-			val enableOCR = sharedPreferences.getBoolean(
-				context.getString(R.string.enable_ocr_setting),
-				true
-			)
+		showProfilingInfo = sharedPreferences.getBoolean(
+			context.getString(R.string.show_profiling_info_setting),
+			false
+		)
 
-			val inputSource = sharedPreferences.getString(
-				context.getString(R.string.input_source_setting),
-				context.getString(R.string.input_is_camera)
-			)
+		showDebugInputBitmap = sharedPreferences.getBoolean(
+			context.getString(R.string.show_debug_input_bitmap_setting),
+			false
+		)
 
-			val mediaSource = sharedPreferences.getString(
-				context.getString(R.string.media_path_setting),
-				""
-			)
+		enableSpeechRecognition = sharedPreferences.getBoolean(
+			context.getString(R.string.enable_speech_recognition_setting),
+			true
+		)
 
-			val eyeAIVisionIP = sharedPreferences.getString(context.getString(R.string.eyeaivision_ip_setting),
-				""
-			)
+		googleAiStudioApiKey = sharedPreferences.getString(
+			context.getString(R.string.google_ai_studio_api_key_stetting),
+			null
+		)
 
-			return Settings(
-				depthModel,
-				showProfilingInfo,
-				showDebugInputBitmap,
-				enableSpeechRecognition,
-				googleAiStudioApiKey,
-				customGoogleGenAIStudioEndpoint,
-				enableObjectDetection,
-				enableOCR,
-				inputSource,
-				mediaSource,
-				eyeAIVisionIP
-			)
-		}
+		enableObjectDetection = sharedPreferences.getBoolean(
+			context.getString(R.string.enable_object_detection_setting),
+			true
+		)
+
+		enableOCR = sharedPreferences.getBoolean(
+			context.getString(R.string.enable_ocr_setting),
+			true
+		)
 	}
-
-	public override fun clone(): Settings = Settings(
-		depthModel,
-		showProfilingInfo,
-		showDebugInputBitmap,
-		enableSpeechRecognition,
-		googleAiStudioApiKey,
-		customGoogleGenAIStudioEndpoint,
-		enableObjectDetection,
-		enableOCR,
-		inputSource,
-		mediaSource,
-		eyeAIVisionIP
-	)
 }

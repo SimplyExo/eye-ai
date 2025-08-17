@@ -2,7 +2,9 @@ package com.algorithmic_alliance.eyeaiapp
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import android.util.Size
+import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.DepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.GoogleAIStudioLLM
@@ -11,10 +13,14 @@ import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
+import com.google.mlkit.vision.text.internal.TextRecognizerOptionsUtils
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.concurrent.Executors
+import kotlinx.coroutines.withContext
 
 /**
  * App class that holds everything that should persist when switching to another app, for example
@@ -23,27 +29,20 @@ import java.util.concurrent.Executors
 class EyeAIApp : Application() {
 	lateinit var settings: Settings
 		private set
-
-	private var loadAIModelExecutor = Executors.newSingleThreadExecutor()
-
 	var depthModel: DepthModel? = null
 		private set
+	var onDepthModelLoadedCallback: () -> Unit = {}
 
-	/* will not load the model or listen if enableSpeechRecognition is disabled in settings, needs to be started manually inside MainActivity */
-	lateinit var voskModel: VoskModel
+	/* can be [null] if enableSpeechRecognition is disabled in settings */
+	var voskModel: VoskModel? = null
 		private set
-
-	/* can be [null] if googleAiStudioApiKey is not set in settings */
 	var llm: LLM? = null
 		private set
 
-	/* will not be fully created if enableObjectDetection is disabled in settings */
-	var yoloModel: YoloModel = YoloModel(YoloModelInfo("model.tflite", 640))
+	var yoloModel: YoloModel? = null
 		private set
 
-	/* will not be fully initialized when enableOCR is disabled in settings */
 	var ocrModel = GoogleOCR()
-		private set
 
 	var aiData = AIModelData
 
@@ -63,8 +62,6 @@ class EyeAIApp : Application() {
 					"midas_v2_1_256x256_quantized.tflite"
 				)
 			)
-
-		val PREFERRED_CAMERA_RESOLUTION = Size(640, 640)
 	}
 
 	override fun onCreate() {
@@ -72,68 +69,64 @@ class EyeAIApp : Application() {
 
 		val context = this
 
-		settings = Settings.load(context)
+		settings = Settings(context)
 
-		// does not load model or start listening
-		voskModel = VoskModel(context, "model-de")
+		switchDepthModel(settings.depthModel)
 
-		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
-			switchDepthModel(settings.depthModel)
+		if (settings.enableSpeechRecognition)
+			voskModel = VoskModel(context, "model-de")
 
-			settings.googleAiStudioApiKey?.let { apiKey ->
-				if (!apiKey.isEmpty())
-					llm = GoogleAIStudioLLM(apiKey, settings.customGoogleGenAIStudioEndpoint)
-			}
-
-			// Yolo Model erstellen
-			if (settings.enableObjectDetection) {
-				yoloModel.create(baseContext)
-			}
-
-			// Google ML Kit initialisieren
-			if (settings.enableOCR)
-				ocrModel.create()
+		settings.googleAiStudioApiKey?.let {
+			if (!it.isEmpty())
+				llm = GoogleAIStudioLLM(it)
 		}
+
+		// Yolo Model erstellen
+		yoloModel = YoloModel(YoloModelInfo("model.tflite", 640))
+		yoloModel!!.create(baseContext)
+
+		// Google ML Kit initialisieren
+		ocrModel.create()
+	}
+
+	fun getPreferredCameraResolution(): Size? {
+		val depthResolution = depthModel?.inputDim ?: return null
+		val objectSize = yoloModel?.info?.size ?: return null
+
+		return Size(
+			maxOf(depthResolution.width, objectSize), maxOf(depthResolution.height, objectSize)
+		)
 	}
 
 	fun updateSettings() {
-		val context = this as Context
-		val oldSettings = settings.clone()
-		settings = Settings.load(context)
+		val newSettings = Settings(this)
 
-		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
-			if (oldSettings.depthModel != settings.depthModel) {
-				switchDepthModel(settings.depthModel)
-			}
+		if (settings.depthModel != newSettings.depthModel) {
+			switchDepthModel(newSettings.depthModel)
+		}
 
-			if (oldSettings.enableSpeechRecognition != settings.enableSpeechRecognition) {
-				if (!settings.enableSpeechRecognition) {
-					voskModel.closeService()
-				}
-			}
-
-			if (oldSettings.googleAiStudioApiKey != settings.googleAiStudioApiKey || oldSettings.customGoogleGenAIStudioEndpoint != settings.customGoogleGenAIStudioEndpoint) {
-				val apiKey = settings.googleAiStudioApiKey
-				val customEndpoint = settings.customGoogleGenAIStudioEndpoint
-				llm = if (apiKey != null && !apiKey.isEmpty()) {
-					GoogleAIStudioLLM(apiKey, customEndpoint)
+		if (settings.enableSpeechRecognition != newSettings.enableSpeechRecognition) {
+			val context = this as Context
+			CoroutineScope(Dispatchers.IO).launch {
+				if (newSettings.enableSpeechRecognition) {
+					voskModel = VoskModel(context, "model-de")
 				} else {
-					null
-				}
-			}
-
-			if (oldSettings.enableObjectDetection != settings.enableObjectDetection) {
-				if (settings.enableObjectDetection) {
-					yoloModel.create(baseContext)
-				}
-			}
-
-			if (oldSettings.enableOCR != settings.enableOCR) {
-				if (settings.enableOCR) {
-					ocrModel.create()
+					voskModel?.closeService()
+					voskModel = null
 				}
 			}
 		}
+
+		if (settings.googleAiStudioApiKey != newSettings.googleAiStudioApiKey) {
+			val apiKey = newSettings.googleAiStudioApiKey
+			llm = if (apiKey != null && !apiKey.isEmpty()) {
+				GoogleAIStudioLLM(apiKey)
+			} else {
+				null
+			}
+		}
+
+		settings = newSettings
 	}
 
 	private fun switchDepthModel(modelName: String) {
@@ -144,6 +137,8 @@ class EyeAIApp : Application() {
 
 		depthModel = findDepthModelInfo(modelName)
 			.createDepthModel(this)
+
+		onDepthModelLoadedCallback()
 	}
 
 	private fun findDepthModelInfo(modelName: String): DepthModelInfo {

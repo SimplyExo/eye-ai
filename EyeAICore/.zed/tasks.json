@@ -1,7 +1,7 @@
 [
 	{
 		"label": "Run Tests",
-		"command": "cmake --build --preset=release --target EyeAICoreTests && ctest --preset=default",
+		"command": "cmake --build --preset=debug && ctest --preset=default",
 		"use_new_terminal": false,
 		"allow_concurrent_runs": false,
 		"reveal": "always",

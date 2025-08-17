@@ -1,8 +1,7 @@
 <resources>
-    <string name="app_name">Eye AI (Dev)</string>
+    <string name="app_name">Eye AI</string>
     <string name="depth_preview_image_description">Depth Preview Image</string>
     <string name="debug_input_bitmap_image_description">Debug Input Bitmap</string>
-    <string name="media_view_description">Media View</string>
     <string name="allow_camera_permission_notice">Allow Camera Permissions!</string>
     <string name="allow_microphone_permission_notice">Allow Microphone Permissions!</string>
     <string name="allow_camera_and_microphone_permission_notice">Allow Camera and Microphone Permissions!</string>
@@ -23,12 +22,6 @@
     <string name="show_debug_input_bitmap_setting">show_debug_input_bitmap</string>
     <string name="enable_speech_recognition_setting">enable_speech_recognition</string>
     <string name="enable_ocr_setting">enable_ocr_setting</string>
-    <string name="input_source_setting">input_source_setting</string>
-    <string name="input_is_camera">camera</string>
-    <string name="input_is_media">media</string>
-    <string name="media_path_setting">media_path_setting</string>
-    <string name="eyeaivision_ip_setting">eyeaivision_ip_setting</string>
-    <string name="input_is_eyeaivision">eyeaivision</string>
     <string name="google_ai_studio_api_key_stetting">google_ai_studio_api_key</string>
     <string name="enable_object_detection_setting">enable_object_detection</string>
     <string name="speech_recognition_ready">Speech Recognition Ready!</string>
@@ -36,6 +29,4 @@
     <string name="build_time_settings">build_time</string>
     <string name="git_info_settings">git_info</string>
     <string name="build_variant_settings">build_variant</string>
-    <string name="custom_google_gen_ai_studio_endpoint_setting">custom_google_gen_ai_studio_endpoint</string>
-    <string name="custom_google_gen_ai_studio_endpoint_summary">EyeAI will send all llm requests to\n\'%1$s\'\nwithout checking their ssl certificate to allow for self signed certificates</string>
 </resources>

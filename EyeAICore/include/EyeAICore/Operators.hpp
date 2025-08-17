@@ -11,7 +11,8 @@
 enum class FloatTensorFormat : std::uint8_t {
 	/// 3 floats for r, g, b, all in range [0.f, 255.f]
 	ImageRGB255Float,
-	/// 3 floats for r, g, b, each in the range [-1.f, 1.f]
+	/// 3 floats for r, g, b, with mean of {123.675f, 116.28f, 103.53f} and
+	/// standard deviation of {58.395f, 57.12f, 57.375f}
 	MiDaSImageRGBFloat,
 	/// 3 floats for r, g, b, all in range [0.f, 1.f]
 	YoloImageRGBFloat,

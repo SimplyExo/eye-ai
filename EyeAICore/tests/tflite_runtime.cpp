@@ -71,7 +71,9 @@ TEST(TfLiteRuntimeTests, CorrectOperatorChain) {
 		input, FloatTensorFormat::ImageRGB255Float, output,
 		FloatTensorFormat::RelativeDepth
 	);
-	EXPECT_NO_OPTIONAL_ERROR(run_error);
+	if (run_error) {
+		FAIL() << run_error->to_string();
+	}
 }
 
 // OperatorChain{MiDaSImageOperator{}, MiDaSImageOperator{}} should throw a
