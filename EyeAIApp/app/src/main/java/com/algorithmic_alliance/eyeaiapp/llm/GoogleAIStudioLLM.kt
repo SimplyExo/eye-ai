@@ -78,7 +78,7 @@ class GoogleAIStudioLLM(private val apiKey: String) : LLM {
 		}
 
 		if (structured) {
-			// Das Schema, das die API zurückgeben soll.
+			// API returns
 			val schema = JSONObject().apply {
 				put("type", "OBJECT")
 				put("properties", JSONObject().apply {
@@ -98,17 +98,17 @@ class GoogleAIStudioLLM(private val apiKey: String) : LLM {
 				})
 			}
 
-			// Die 'generationConfig' wird jetzt mit den korrekten Parametern erstellt
+			
 			val generationConfig = JSONObject().apply {
-				put("response_mime_type", "application/json") // KORRIGIERT: snake_case ist Standard
-				put("response_schema", schema) // KORRIGIERT: 'response_schema' statt 'responseBody'
+				put("response_mime_type", "application/json") 
+				put("response_schema", schema) // 'response_schema' instead of 'responseBody'
 			}
 
 			return defaultResponseBody.put("generationConfig", generationConfig)
 
 		} else {
 			return defaultResponseBody.put("generationConfig", JSONObject().apply {
-				put("temperature", 1.0) // Beispiel für eine normale Konfiguration
+				put("temperature", 1.0) // Removing soon, see TODO
 			})
 		}
 	}
