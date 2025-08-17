@@ -164,12 +164,11 @@ class MainActivity : AppCompatActivity() {
 
 		updateFlashlightButtonTint(cameraManager.isCameraFlashlightOn())
 
-		llmResponseText?.apply {
-			text = if (eyeAIApp().llm == null)
-				getString(R.string.setup_llm_notice)
-			else
-				""
-		}
+		val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
+		llmResponseText?.text = if (isLLMConfigured)
+			""
+		else
+			getString(R.string.setup_llm_notice)
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -220,7 +219,6 @@ class MainActivity : AppCompatActivity() {
 	}
 
 
-
 	private fun eyeAIApp(): EyeAIApp {
 		return application as EyeAIApp
 	}
@@ -260,10 +258,11 @@ class MainActivity : AppCompatActivity() {
 				ProcessCameraProvider.getInstance(this).get().unbindAll()
 				overlayObjectDetection!!.reset()
 				overlayOcr!!.reset()
-				depthPreviewImage!!.setImageBitmap(createBitmap(256,256))
+				depthPreviewImage!!.setImageBitmap(createBitmap(256, 256))
 
 				mediaPlayer?.shutdown()
-				mediaPlayer = MediaPlayer(this, eyeAIApp().settings.mediaSource!!.toUri(), mediaImageView!!)
+				mediaPlayer =
+					MediaPlayer(this, eyeAIApp().settings.mediaSource!!.toUri(), mediaImageView!!)
 
 				mediaFrameAnalyzer?.shutdown()
 
@@ -347,7 +346,6 @@ class MainActivity : AppCompatActivity() {
 	}
 
 
-
 	/*All TTS methods start here*/
 
 	private fun onPartialSpeechRecognitionResult(partial: String) {
@@ -384,7 +382,7 @@ class MainActivity : AppCompatActivity() {
 				vibrate(eyeAIApp(), 100)
 
 
-				withContext(llmThreadExecutor.asCoroutineDispatcher()){
+				withContext(llmThreadExecutor.asCoroutineDispatcher()) {
 					onSpeechResult(final)
 				}
 
@@ -426,11 +424,13 @@ class MainActivity : AppCompatActivity() {
 				val ocrResponse = eyeAIApp().llm!!.generate(prompt, false)
 				speakAndHandleUi(ocrResponse)
 			}
+
 			initialResponse.contains("einstellungen", true) -> {
 				currentState = State.SETTINGS_MENU
 				val settingsResponse = eyeAIApp().llm!!.generate(LLM.SETTINGS_PROMPT, false)
 				speakAndHandleUi(settingsResponse)
 			}
+
 			else -> speakAndHandleUi(initialResponse)
 		}
 	}
@@ -439,7 +439,8 @@ class MainActivity : AppCompatActivity() {
 	private suspend fun handleSettingsMenu(final: String) {
 		currentState = State.SETTINGS_CHOICE
 		// LLM explains options
-		val prompt = "Erkläre kurz die Einstellungsmöglichkeit '$final' und frage, wie die Einstellung geändert werden soll je nach Kontext"
+		val prompt =
+			"Erkläre kurz die Einstellungsmöglichkeit '$final' und frage, wie die Einstellung geändert werden soll je nach Kontext"
 		// TODO: Create individual responses for each adaption
 		val response = eyeAIApp().llm!!.generate(prompt, false)
 		speakAndHandleUi(response)
@@ -474,13 +475,14 @@ class MainActivity : AppCompatActivity() {
 				val firstChange = changedSettings.getJSONObject(0)
 				if (firstChange.has("tts_speed")) {
 					val newSpeed = firstChange.getDouble("tts_speed")
-					confirmationQuestion = "Verstanden. Soll ich die Sprachgeschwindigkeit auf ${newSpeed} setzen?"
+					confirmationQuestion =
+						"Verstanden. Soll ich die Sprachgeschwindigkeit auf ${newSpeed} setzen?"
 				}
-				if (firstChange.has("voice"))
-				{
+				if (firstChange.has("voice")) {
 
 					val voice = firstChange.getString("voice")
-					confirmationQuestion = "Verstanden. Soll ich die Assistentenstimme auf ${voice} setzen?"
+					confirmationQuestion =
+						"Verstanden. Soll ich die Assistentenstimme auf ${voice} setzen?"
 				}
 			}
 		} catch (e: Exception) {
@@ -498,8 +500,10 @@ class MainActivity : AppCompatActivity() {
 	private suspend fun handleSettingsAction(final: String) {
 
 		val jsonResponse = try {
-			eyeAIApp().llm!!.generate("Würdest du sagen der Nutzer hat diesen Command bestätigt? Die Antwort des Nutzers war $final" +
-				"Antworte bitte mit einer JSON-Antwort in approval.", true) //Generating a structured response
+			eyeAIApp().llm!!.generate(
+				"Würdest du sagen der Nutzer hat diesen Command bestätigt? Die Antwort des Nutzers war $final" +
+					"Antworte bitte mit einer JSON-Antwort in approval.", true
+			) //Generating a structured response
 		} catch (e: Exception) {
 			// Catching invalid JSONs
 
@@ -527,10 +531,12 @@ class MainActivity : AppCompatActivity() {
 						//Changing speed
 						val newSpeed = setting.getDouble("tts_speed").toFloat()
 						textToSpeechInstance.setSpeechRate(newSpeed)
-						Log.d(EyeAIApp.APP_LOG_TAG, "TTS-Geschwindigkeit wird auf $newSpeed gesetzt.")
+						Log.d(
+							EyeAIApp.APP_LOG_TAG,
+							"TTS-Geschwindigkeit wird auf $newSpeed gesetzt."
+						)
 					}
-					if (setting.has("voice"))
-					{
+					if (setting.has("voice")) {
 
 						val voice = setting.getDouble("voice")
 						Log.d(EyeAIApp.APP_LOG_TAG, "Stimme wird auf $voice gesetzt.")
@@ -538,7 +544,7 @@ class MainActivity : AppCompatActivity() {
 
 
 					}
-					if(setting.has("leave")){
+					if (setting.has("leave")) {
 						currentState = State.IDLE
 					}
 
