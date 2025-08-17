@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EyeAICore/Eigen/Dense"
+#include "Eigen/Dense"
 
 namespace byte_track
 {

@@ -4,6 +4,14 @@ project(EyeAICore)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+include(FetchContent)
+
+FetchContent_Declare(
+	eigen
+	GIT_REPOSITORY https://gitlab.com/libeigen/eigen/
+	GIT_TAG 3.4.0
+)
+
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
 	cmake_policy(SET CMP0135 NEW)
 endif()
@@ -60,18 +68,7 @@ endif()
 
 add_subdirectory(third_party)
 
-# ByteTrack Sources
-file(GLOB_RECURSE BYTE_TRACK_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/src/ByteTrack/*.cpp
-)
-
-add_library(ByteTrack STATIC ${BYTE_TRACK_SOURCES})
-
-# ByteTrack Include-Verzeichnisse
-target_include_directories(ByteTrack PUBLIC
-	${CMAKE_CURRENT_SOURCE_DIR}/include
-	${CMAKE_CURRENT_SOURCE_DIR}/src       # optional, damit "ByteTrack/..." funktioniert
-)
+FetchContent_MakeAvailable(eigen)
 
 file(GLOB_RECURSE EYE_AI_CORE_SOURCE_FILES
  "${CMAKE_CURRENT_SOURCE_DIR}/include/EyeAICore/*.hpp"
@@ -102,16 +99,9 @@ target_include_directories(EyeAICore
 target_link_libraries(
  EyeAICore
  PUBLIC
+ Eigen3::Eigen
  ${THIRD_PARTY_LIBS}
 )
-
-target_link_libraries(
-	EyeAICore
-	PUBLIC
-	${THIRD_PARTY_LIBS}
-	ByteTrack
-)
-
 
 if(EYE_AI_CORE_USE_PREBUILT_TFLITE)
     target_compile_definitions(EyeAICore PUBLIC EYE_AI_CORE_USE_PREBUILT_TFLITE=1)
