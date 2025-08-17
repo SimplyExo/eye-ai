@@ -346,13 +346,20 @@ class MainActivity : AppCompatActivity() {
 	}
 
 
+<<<<<<< Updated upstream
 	/*All TTS methods start here*/
+=======
+
+
+>>>>>>> Stashed changes
 
 	private fun onPartialSpeechRecognitionResult(partial: String) {
 		CoroutineScope(Dispatchers.Main).launch {
 			speechRecognitionPartialResultText?.text = partial
 		}
 	}
+
+	/*All TTS methods start here*/
 
 	private fun onFinalSpeechRecognitionResult(final: String) {
 		if (final.isEmpty()) {
@@ -437,13 +444,14 @@ class MainActivity : AppCompatActivity() {
 
 	// Handling of the settings menu
 	private suspend fun handleSettingsMenu(final: String) {
-		currentState = State.SETTINGS_CHOICE
+
 		// LLM explains options
 		val prompt =
 			"Erkläre kurz die Einstellungsmöglichkeit '$final' und frage, wie die Einstellung geändert werden soll je nach Kontext"
 		// TODO: Create individual responses for each adaption
 		val response = eyeAIApp().llm!!.generate(prompt, false)
 		speakAndHandleUi(response)
+		currentState = State.SETTINGS_CHOICE
 	}
 
 	// LLM executes user command
@@ -488,11 +496,13 @@ class MainActivity : AppCompatActivity() {
 		} catch (e: Exception) {
 
 			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed", e)
+			textToSpeechInstance.speak("fehler")
 		}
 
 		// 4. Change state to SETTINGS_ACTION, waiting for confirmation
-		currentState = State.SETTINGS_ACTION
+
 		speakAndHandleUi(confirmationQuestion)
+		currentState = State.SETTINGS_ACTION
 	}
 
 
@@ -531,15 +541,19 @@ class MainActivity : AppCompatActivity() {
 						//Changing speed
 						val newSpeed = setting.getDouble("tts_speed").toFloat()
 						textToSpeechInstance.setSpeechRate(newSpeed)
+<<<<<<< Updated upstream
 						Log.d(
 							EyeAIApp.APP_LOG_TAG,
 							"TTS-Geschwindigkeit wird auf $newSpeed gesetzt."
 						)
+=======
+						Log.d("TTS", "TTS-Geschwindigkeit wird auf $newSpeed gesetzt.")
+>>>>>>> Stashed changes
 					}
 					if (setting.has("voice")) {
 
 						val voice = setting.getDouble("voice")
-						Log.d(EyeAIApp.APP_LOG_TAG, "Stimme wird auf $voice gesetzt.")
+						Log.d("TTS", "Stimme wird auf $voice gesetzt.")
 						textToSpeechInstance.setVoice(voice)
 
 

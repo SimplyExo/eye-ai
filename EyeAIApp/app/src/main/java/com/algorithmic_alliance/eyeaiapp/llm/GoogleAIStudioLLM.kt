@@ -111,7 +111,8 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 						put("type", "ARRAY")
 						put("items", JSONObject().apply {
 							put("type", "OBJECT")
-							put("properties", JSONObject().apply {
+							put("properties", JSONObject().apply { // <-- Nur EIN properties-Block
+								// Eigenschaft für die Sprachgeschwindigkeit
 								put("tts_speed", JSONObject().apply {
 									put("type", "NUMBER")
 									put(
@@ -119,19 +120,23 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 										"The new text-to-speech speed, e.g. 1.0, 1.5, or 0.8"
 									)
 								})
-								// TODO: define further settings
-
-							})
-							put("type", "OBJECT")
-							put("properties", JSONObject().apply {
+								// Eigenschaft für die Stimme
 								put("voice", JSONObject().apply {
 									put("type", "NUMBER")
+<<<<<<< Updated upstream
 									put(
 										"description",
 										"The new voice can either be male or female. If the user suggests it should be male, answer with 0. For female, answer with 1."
 									)
+=======
+									put("description", "The new voice. If the user suggests it should be male, answer with 1. For female, answer with 0.")
 								})
-								// TODO: define further settings
+								// Eigenschaft, um die Einstellungen zu verlassen (wird in handleSettingsAction verwendet)
+								put("leave", JSONObject().apply {
+									put("type", "BOOLEAN")
+									put("description", "Set to true if the user wants to leave the settings menu.")
+>>>>>>> Stashed changes
+								})
 							})
 						})
 					})

@@ -31,7 +31,7 @@ interface LLM {
 		const val SETTINGS_PROMPT: String = """
 			Der Nutzer möchte die Einstellungen anpassen. Er hat folgende Möglichkeiten: 
 			1) Sprachgeschwindigkeit der Sprachausgabe anpassen
-			2) Assistentenstimme anpassen	(dies ermöglicht dem Nutzer nur zu wählen, welche Stimme der TTS Instanz er nutzen möchte, nur dies sollten deine künftigen Erklärungen auch beeinhalten!)
+			2) Assistentenagenten anpassen	(dies ermöglicht dem Nutzer nur zu wählen, welche Stimme der TTS Instanz er nutzen möchte, nur dies sollten deine künftigen Erklärungen auch beeinhalten!)
 			3) Er kann die Einstellungen verlassen
 			
 			Erkläre dich einverstanden damit und diktiere ihm diese bitte in dieser Reihenfolge, reihe diese bitte mit erstens, zweitens, drittens und viertens aneinander.
