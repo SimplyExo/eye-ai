@@ -123,19 +123,18 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 								// Eigenschaft für die Stimme
 								put("voice", JSONObject().apply {
 									put("type", "NUMBER")
-<<<<<<< Updated upstream
 									put(
 										"description",
 										"The new voice can either be male or female. If the user suggests it should be male, answer with 0. For female, answer with 1."
 									)
-=======
-									put("description", "The new voice. If the user suggests it should be male, answer with 1. For female, answer with 0.")
 								})
 								// Eigenschaft, um die Einstellungen zu verlassen (wird in handleSettingsAction verwendet)
 								put("leave", JSONObject().apply {
 									put("type", "BOOLEAN")
-									put("description", "Set to true if the user wants to leave the settings menu.")
->>>>>>> Stashed changes
+									put(
+										"description",
+										"Set to true if the user wants to leave the settings menu."
+									)
 								})
 							})
 						})

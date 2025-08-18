@@ -345,14 +345,6 @@ class MainActivity : AppCompatActivity() {
 		)
 	}
 
-
-<<<<<<< Updated upstream
-	/*All TTS methods start here*/
-=======
-
-
->>>>>>> Stashed changes
-
 	private fun onPartialSpeechRecognitionResult(partial: String) {
 		CoroutineScope(Dispatchers.Main).launch {
 			speechRecognitionPartialResultText?.text = partial
@@ -541,14 +533,7 @@ class MainActivity : AppCompatActivity() {
 						//Changing speed
 						val newSpeed = setting.getDouble("tts_speed").toFloat()
 						textToSpeechInstance.setSpeechRate(newSpeed)
-<<<<<<< Updated upstream
-						Log.d(
-							EyeAIApp.APP_LOG_TAG,
-							"TTS-Geschwindigkeit wird auf $newSpeed gesetzt."
-						)
-=======
 						Log.d("TTS", "TTS-Geschwindigkeit wird auf $newSpeed gesetzt.")
->>>>>>> Stashed changes
 					}
 					if (setting.has("voice")) {
 
