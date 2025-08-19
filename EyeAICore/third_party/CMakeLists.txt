@@ -57,6 +57,26 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(concurrentqueue)
 
+# eigen
+message(STATUS "Downloading eigen...")
+FetchContent_Declare(
+	eigen
+	GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+	GIT_TAG 3.4.0
+	GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(eigen)
+
+# bytetrack
+message(STATUS "Downloading bytetrack...")
+FetchContent_Declare(
+	bytetrack
+	GIT_REPOSITORY https://github.com/Vertical-Beach/ByteTrack-cpp
+	GIT_TAG main
+	GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(bytetrack)
+
 if (EYE_AI_CORE_ENABLE_TESTS)
 	# libnpy
 	message(STATUS "Downloading libnpy...")
@@ -106,5 +126,7 @@ set(THIRD_PARTY_LIBS
 	${TFLITE_LIBS}
 	tl::expected
 	concurrentqueue
+	Eigen3::Eigen
+	bytetrack
 	PARENT_SCOPE
 )

@@ -4,14 +4,6 @@ project(EyeAICore)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include(FetchContent)
-
-FetchContent_Declare(
-	eigen
-	GIT_REPOSITORY https://gitlab.com/libeigen/eigen/
-	GIT_TAG 3.4.0
-)
-
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
 	cmake_policy(SET CMP0135 NEW)
 endif()
@@ -68,8 +60,6 @@ endif()
 
 add_subdirectory(third_party)
 
-FetchContent_MakeAvailable(eigen)
-
 file(GLOB_RECURSE EYE_AI_CORE_SOURCE_FILES
  "${CMAKE_CURRENT_SOURCE_DIR}/include/EyeAICore/*.hpp"
  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
@@ -99,7 +89,6 @@ target_include_directories(EyeAICore
 target_link_libraries(
  EyeAICore
  PUBLIC
- Eigen3::Eigen
  ${THIRD_PARTY_LIBS}
 )
 
