@@ -47,7 +47,41 @@ create_test_depth_model() {
 	return tl::unexpected(depth_model_result.error().to_string());
 }
 
-tl::expected<std::vector<float>, std::string> load_image_file(
+tl::expected<std::unique_ptr<TfLiteRuntime>, std::string>
+create_test_tflite_runtime(
+	const std::filesystem::path& model_path,
+	FloatTensorFormat model_input_format,
+	FloatTensorFormat model_output_format,
+	ProfilingFrame& profiling_frame
+) {
+	const auto model_last_modified =
+		std::filesystem::last_write_time(model_path);
+	const std::string model_token = std::format(
+		"{}_{}", model_path.filename().string(), model_last_modified
+	);
+
+	auto model_data_result = read_model_data(model_path);
+	if (!model_data_result)
+		return tl::unexpected(model_data_result.error());
+
+	const auto gpu_serialization_path =
+		std::filesystem::temp_directory_path() / "EyeAICore/gpu_delegate_cache";
+	std::filesystem::create_directories(gpu_serialization_path);
+
+	auto runtime_result = TfLiteRuntime::create(
+		std::move(*model_data_result), gpu_serialization_path.string(),
+		model_token, model_input_format, model_output_format,
+		[](const std::string msg) { std::cout << "[WARN]  " << msg << '\n'; },
+		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; },
+		profiling_frame
+	);
+	if (runtime_result)
+		return std::move(runtime_result.value());
+	return tl::unexpected(runtime_result.error().to_string());
+}
+
+tl::expected<FloatTensorBuffer<FloatTensorFormat::ImageRGB>, std::string>
+load_image_file(
 	const std::filesystem::path& filepath,
 	size_t target_width,
 	size_t target_height
@@ -89,7 +123,20 @@ tl::expected<std::vector<float>, std::string> load_image_file(
 
 	stbi_image_free(data_ptr);
 
-	return resized_image;
+	return FloatTensorBuffer<FloatTensorFormat::ImageRGB>(
+		std::move(resized_image)
+	);
+}
+
+FloatTensorBuffer<FloatTensorFormat::ImageRGB255>
+image_rgb_255_operator(FloatTensorBuffer<FloatTensorFormat::ImageRGB>& input) {
+	auto values = input.data();
+
+	for (float& value : values) {
+		value = std::clamp(value * 255.f, 0.f, 255.f);
+	}
+
+	return input.convert_format<FloatTensorFormat::ImageRGB255>();
 }
 
 tl::expected<std::vector<std::string>, std::string>

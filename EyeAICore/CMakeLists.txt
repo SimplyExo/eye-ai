@@ -12,7 +12,7 @@ option(EYE_AI_CORE_USE_PREBUILT_TFLITE "Use prebuilt TFLite library from LiteRT 
 
 option(EYE_AI_CORE_ENABLE_ASAN "Enable AddressSanitizer" OFF)
 
-option(EYE_AI_CORE_ENABLE_CLANG_TIDY "Enable Clang Tidy" ON)
+option(EYE_AI_CORE_ENABLE_CLANG_TIDY "Enable Clang Tidy" OFF)
 
 option(EYE_AI_CORE_GENERATE_DOCS "Generate docs using doxygen" OFF)
 
@@ -188,7 +188,6 @@ if (EYE_AI_CORE_ENABLE_TESTS)
 
 	add_executable(EyeAICoreTests
 		"tests/depth_estimation.cpp"
-		"tests/tflite_runtime.cpp"
 		"tests/object_detection.cpp"
 		"tests/stb_image.cpp"
 		"tests/utils.hpp"

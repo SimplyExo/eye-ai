@@ -163,28 +163,21 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 	jobject /* this */,
 	jfloatArray input
 ) {
+	NativeFloatArrayScope input_scope(env, input);
 
-	// Get input array length safely
-	jsize input_length = env->GetArrayLength(input);
+	FloatTensorBuffer<FloatTensorFormat::ImageRGB255> input_tensor{
+		std::span<float>(input_scope)
+	};
 
-	// Allocate buffer for input
-	std::vector<float> converted_input(input_length);
-	env->GetFloatArrayRegion(input, 0, input_length, converted_input.data());
-
-	auto yolo_instance_scope = yolo_instance.lock();
-	// Allocate output buffer (make sure size matches model output)
-	std::vector<float> object_recognition_output(
-		yolo_instance_scope->num_channel * yolo_instance_scope->num_elements
-	); // Replace with actual expected output size
-
-	// Run inference
-	const auto exec =
-		yolo_instance_scope->run(converted_input, object_recognition_output);
-
-	// Find best boxes
-	auto boxes = yolo_instance_scope->best_box(object_recognition_output);
-
-	return convertToJsonBoundingBoxString(env, boxes);
+	const auto result = yolo_instance.lock()->run(input_tensor);
+	if (result)
+		return convertToJsonBoundingBoxString(env, *result);
+	else {
+		LOG_ERROR("YoloModel failed to run: {}", result.error());
+		return convertToJsonBoundingBoxString(
+			env, std::vector<YoloModel::BoundingBox>{}
+		);
+	}
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -248,11 +241,27 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthModelInference(
 	NativeFloatArrayScope input_array(env, input);
 	NativeFloatArrayScope output_array(env, output);
 
-	if (const auto error =
-			(*depth_model_scope)->run(input_array, output_array)) {
+	FloatTensorBuffer<FloatTensorFormat::ImageRGB255> input_tensor{
+		std::span<float>(input_array)
+	};
+
+	auto result = (*depth_model_scope)->run(input_tensor);
+
+	if (result) {
+		auto depth_output = result->data();
+		if (depth_output.size() == output_array.size()) {
+			std::ranges::copy(depth_output, output_array.begin());
+		} else {
+			LOG_ERROR(
+				"DepthModel: invalid output float array size of {} does not "
+				"match the expected size of {} from the model",
+				output_array.size(), depth_output.size()
+			);
+		}
+	} else {
 		LOG_ERROR(
 			"[TfLiteRuntime] Failed to run depth model inference: {}",
-			error->to_string()
+			result.error().to_string()
 		);
 	}
 }

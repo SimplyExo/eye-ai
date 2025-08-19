@@ -1,3 +1,4 @@
+#include "EyeAICore/TensorBuffer.hpp"
 #include "npy.hpp"
 #include "utils.hpp"
 #include <tl/expected.hpp>
@@ -25,18 +26,16 @@ TEST(DepthEstimationTest, CorrectOutput) {
 	auto input_result = load_image_file(test_image_path, width, height);
 	EXPECT_RESULT_HAS_VALUE(input_result);
 	auto& input = *input_result;
-	EXPECT_EQ(input.size(), 3 * width * height);
+	EXPECT_EQ(input.data().size(), 3 * width * height);
 
-	for (float& value : input) {
-		value = std::clamp(value * 255.f, 0.f, 255.f);
-	}
+	FloatTensorBuffer<FloatTensorFormat::ImageRGB255> input_tensor =
+		image_rgb_255_operator(input);
 
 	const auto expected_output = npy::read_npy<float>(expected_rel_depth_path);
 
-	std::vector<float> output(static_cast<size_t>(width * height));
-
-	const auto run_error = depth_model->run(input, output);
-	EXPECT_NO_OPTIONAL_ERROR(run_error);
+	const auto run_result = depth_model->run(input_tensor);
+	EXPECT_RESULT_HAS_VALUE(run_result);
+	const auto& output = run_result->data();
 
 	// this might fail due to precision errors -> added tolerance
 	EXPECT_THAT(output, Pointwise(FloatNear(tolerance), expected_output.data));

@@ -1,5 +1,4 @@
 #include "EyeAICore/tflite/TfLiteUtils.hpp"
-#include "EyeAICore/Operators.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 
 [[nodiscard]] static std::optional<QuantizeFloatError> quantize_floats(
@@ -132,7 +131,8 @@ load_quantized_input_tensor_with_floats(
 	);
 
 	return quantize_floats(
-		values, quantized_span, input_tensor->type, quantization, profiling_frame
+		values, quantized_span, input_tensor->type, quantization,
+		profiling_frame
 	);
 }
 
@@ -148,7 +148,9 @@ std::optional<TfLiteLoadInputError> load_input_tensor_with_floats(
 		);
 	}
 
-	return load_nonquantized_input_tensor_with_floats(input_tensor, values, profiling_frame);
+	return load_nonquantized_input_tensor_with_floats(
+		input_tensor, values, profiling_frame
+	);
 }
 
 static std::optional<TfLiteReadNonQuantizedOutputError>
@@ -223,7 +225,8 @@ read_floats_from_quantized_output_tensor(
 	);
 
 	return dequantize_to_floats(
-		quantized_output_span, output, output_tensor->type, quantization, profiling_frame
+		quantized_output_span, output, output_tensor->type, quantization,
+		profiling_frame
 	);
 }
 
@@ -239,7 +242,9 @@ std::optional<TfLiteReadOutputError> read_floats_from_output_tensor(
 		);
 	}
 
-	return read_floats_from_nonquantized_output_tensor(output_tensor, output, profiling_frame);
+	return read_floats_from_nonquantized_output_tensor(
+		output_tensor, output, profiling_frame
+	);
 }
 
 static std::optional<QuantizeFloatError> quantize_floats(
@@ -386,26 +391,17 @@ std::string TfLiteCopyToOutputTensorError::to_string() const {
 	);
 }
 
-std::string InvalidInputFormatForOperator::to_string() const {
+std::string InvalidInputFormatForModel::to_string() const {
 	return std::format(
-		"invalid format of {} for operator that expected {}",
+		"invalid input format of {} for model that expected {}",
 		format_float_tensor_format(provided),
 		format_float_tensor_format(expected)
 	);
 }
 
-std::string UnexpectedOperatorOutputFormat::to_string() const {
+std::string InvalidOutputFormatForModel::to_string() const {
 	return std::format(
-		"unexpected operator output format of {}, {} was needed from "
-		"TfLiteRuntime",
-		format_float_tensor_format(operator_output),
-		format_float_tensor_format(expected_output)
-	);
-}
-
-std::string InvalidInputFormatForModel::to_string() const {
-	return std::format(
-		"invalid input format of {} for model that expected {}",
+		"invalid output format of {} for model that expected {}",
 		format_float_tensor_format(provided),
 		format_float_tensor_format(expected)
 	);

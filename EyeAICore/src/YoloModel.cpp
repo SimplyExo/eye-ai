@@ -23,8 +23,7 @@ tl::expected<bool, std::string> YoloModel::create(
 
 	auto new_runtime = TfLiteRuntime::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
-		FloatTensorFormat::YoloImageRGBFloat, FloatTensorFormat::YoloOutput,
-		OperatorChain{YoloImageOperator{}}, OperatorChain{},
+		FloatTensorFormat::YoloImageRGB, FloatTensorFormat::YoloOutput,
 		log_warning_callback, log_error_callback, get_object_profiling_frame()
 	);
 
@@ -50,21 +49,22 @@ std::span<const int> YoloModel::get_output_shape() {
 	return runtime->get_output_shape();
 }
 
-tl::expected<void, std::string>
-YoloModel::run(std::span<float> input, std::span<float> output) {
+tl::expected<std::vector<YoloModel::BoundingBox>, std::string>
+YoloModel::run(FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& input) {
 	PROFILE_OBJECT_FUNCTION()
 
-	auto result = runtime->run_inference(
-		input, FloatTensorFormat::ImageRGB255Float, output,
-		FloatTensorFormat::YoloOutput
+	auto preprocessed_input = yolo_image_operator(input);
+
+	auto result = runtime->run_inference<
+		FloatTensorFormat::YoloImageRGB, FloatTensorFormat::YoloOutput>(
+		preprocessed_input
 	);
 
-	if (result.has_value()) {
-		// TODO: Better Error Message
-		return tl::make_unexpected("Inference failed: ");
+	if (!result) {
+		return tl::unexpected(result.error().to_string());
 	}
 
-	return {};
+	return best_box(result->data());
 }
 
 std::vector<YoloModel::BoundingBox>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EyeAICore/TensorBuffer.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
 
 /// A utility class for running depth estimation models like MiDaS.
@@ -31,8 +32,10 @@ class DepthModel {
 	 * @param input should have 3 * width * height elements.
 	 * @param output should have width * height elements.
 	 */
-	[[nodiscard]] std::optional<TfLiteRunInferenceError>
-	run(std::span<float> input, std::span<float> output);
+	[[nodiscard]] tl::expected<
+		FloatTensorBuffer<FloatTensorFormat::RelativeDepth>,
+		TfLiteRunInferenceError>
+	run(FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& input);
 
 	[[nodiscard]] std::span<const int> get_input_shape() const;
 
