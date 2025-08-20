@@ -1,3 +1,6 @@
+# places EyeAICoreTests executable into ./build/EyeAICoreTests where ctest can find it
+set(CMAKE_CURRENT_BINARY_DIR ${CMAKE_BINARY_DIR})
+
 enable_testing()
 include(GoogleTest)
 
@@ -8,6 +11,6 @@ add_executable(EyeAICoreTests
 	"utils.hpp"
 	"utils.cpp"
 )
-target_include_directories(EyeAICoreTests PRIVATE ${LIBNPY_INCLUDE_DIR})
+target_include_directories(EyeAICoreTests PRIVATE ${STB_INCLUDE_DIR} ${LIBNPY_INCLUDE_DIR})
 target_link_libraries(EyeAICoreTests EyeAICore GTest::gtest_main GTest::gmock)
 gtest_discover_tests(EyeAICoreTests)
