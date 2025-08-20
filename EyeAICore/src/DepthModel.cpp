@@ -22,9 +22,7 @@ DepthModel::create(
 	return std::make_unique<DepthModel>(std::move(runtime_result.value()));
 }
 
-tl::expected<
-	FloatTensorBuffer<FloatTensorFormat::RelativeDepth>,
-	TfLiteRunInferenceError>
+DepthModel::RunResult
 DepthModel::run(FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& input) {
 	auto preprocessed_input = midas_image_operator(input);
 
