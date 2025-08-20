@@ -11,7 +11,10 @@ data class Settings(
 	var googleAiStudioApiKey: String?,
 	var customGoogleGenAIStudioEndpoint: String?,
 	var enableObjectDetection: Boolean,
-	var enableOCR: Boolean
+	var enableOCR: Boolean,
+	val inputSource: String?,
+	val mediaSource: String?,
+	val eyeAIVisionIP: String?
 ) : Cloneable {
 	companion object {
 		fun load(context: Context): Settings {
@@ -57,6 +60,20 @@ data class Settings(
 				true
 			)
 
+			val inputSource = sharedPreferences.getString(
+				context.getString(R.string.input_source_setting),
+				context.getString(R.string.input_is_camera)
+			)
+
+			val mediaSource = sharedPreferences.getString(
+				context.getString(R.string.media_path_setting),
+				""
+			)
+
+			val eyeAIVisionIP = sharedPreferences.getString(context.getString(R.string.eyeaivision_ip_setting),
+				""
+			)
+
 			return Settings(
 				depthModel,
 				showProfilingInfo,
@@ -65,7 +82,10 @@ data class Settings(
 				googleAiStudioApiKey,
 				customGoogleGenAIStudioEndpoint,
 				enableObjectDetection,
-				enableOCR
+				enableOCR,
+				inputSource,
+				mediaSource,
+				eyeAIVisionIP
 			)
 		}
 	}
@@ -78,6 +98,9 @@ data class Settings(
 		googleAiStudioApiKey,
 		customGoogleGenAIStudioEndpoint,
 		enableObjectDetection,
-		enableOCR
+		enableOCR,
+		inputSource,
+		mediaSource,
+		eyeAIVisionIP
 	)
 }

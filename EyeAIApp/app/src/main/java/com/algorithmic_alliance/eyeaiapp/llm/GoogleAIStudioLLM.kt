@@ -8,6 +8,7 @@ import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStream
+import java.net.HttpURLConnection
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.HostnameVerifier
@@ -26,10 +27,13 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 		private const val GOOGLE_GEN_AI_ENDPOINT = "https://generativelanguage.googleapis.com"
 	}
 
-	private val endpoint =
-		customEndpoint ?: GOOGLE_GEN_AI_ENDPOINT
+	private val endpoint = if (customEndpoint == null || customEndpoint.isEmpty()) {
+		GOOGLE_GEN_AI_ENDPOINT
+	} else {
+		customEndpoint
+	}
 
-	override suspend fun generate(prompt: String): String {
+	override fun generate(command: String, structured: Boolean): String {
 		var connection: HttpsURLConnection? = null
 		var reader: BufferedReader? = null
 
@@ -42,7 +46,6 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 			connection.setRequestProperty("Accept", "application/json")
 			connection.doOutput = true
 
-
 			if (customEndpoint != null) {
 				// TODO: do not allow this when adding a production build variant!
 				Log.w(
@@ -53,13 +56,13 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 				connection.sslSocketFactory = createTrustAllSslSocketFactory()
 			}
 
-			val requestBody = createRequestBody(prompt)
+			val requestBody = createRequestBody(command, structured)
 			val outputStream: OutputStream = connection.outputStream
-			outputStream.write(requestBody.toByteArray(Charsets.UTF_8))
+			outputStream.write(requestBody.toString().toByteArray(Charsets.UTF_8))
 			outputStream.close()
 
 			val responseCode = connection.responseCode
-			if (responseCode != HttpsURLConnection.HTTP_OK) {
+			if (responseCode != HttpURLConnection.HTTP_OK) {
 				val errorStream = connection.errorStream
 				reader = BufferedReader(InputStreamReader(errorStream))
 				val errorResponse = reader.readText()
@@ -80,8 +83,8 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 		}
 	}
 
-	private fun createRequestBody(prompt: String): String {
-		return JSONObject().apply {
+	private fun createRequestBody(prompt: String, structured: Boolean): JSONObject {
+		val defaultResponseBody = JSONObject().apply {
 			put("systemInstruction", JSONObject().apply {
 				put("parts", JSONArray().apply {
 					put(JSONObject().apply {
@@ -98,12 +101,66 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 					})
 				})
 			})
-			put("generationConfig", JSONObject().apply {
-				put("thinkingConfig", JSONObject().apply {
-					put("thinkingBudget", 0) // disables thinking mode
+		}
+
+		if (structured) {
+			val schema = JSONObject().apply {
+				put("type", "OBJECT")
+				put("properties", JSONObject().apply {
+					put("changed_settings", JSONObject().apply {
+						put("type", "ARRAY")
+						put("items", JSONObject().apply {
+							put("type", "OBJECT")
+							put("properties", JSONObject().apply { // <-- Nur EIN properties-Block
+								// Eigenschaft für die Sprachgeschwindigkeit
+								put("tts_speed", JSONObject().apply {
+									put("type", "NUMBER")
+									put(
+										"description",
+										"The new text-to-speech speed, e.g. 1.0, 1.5, or 0.8"
+									)
+								})
+								// Eigenschaft für die Stimme
+								put("voice", JSONObject().apply {
+									put("type", "NUMBER")
+									put(
+										"description",
+										"The new voice can either be male or female. If the user suggests it should be male, answer with 0. For female, answer with 1."
+									)
+								})
+								// Eigenschaft, um die Einstellungen zu verlassen (wird in handleSettingsAction verwendet)
+								put("leave", JSONObject().apply {
+									put("type", "BOOLEAN")
+									put(
+										"description",
+										"Set to true if the user wants to leave the settings menu."
+									)
+								})
+							})
+						})
+					})
+					put("approval", JSONObject().apply {
+						put("type", "NUMBER")
+						put(
+							"description",
+							"Whether the user approves the change or doesn't. Answer with either 1 or 0. '1' for approval, '0' for disagreement."
+						)
+					})
 				})
+			}
+
+
+			val generationConfig = JSONObject().apply {
+				put("response_mime_type", "application/json")
+				put("response_schema", schema)
+			}
+
+			return defaultResponseBody.put("generationConfig", generationConfig)
+		} else {
+			return defaultResponseBody.put("generationConfig", JSONObject().apply {
+				put("temperature", 1.0)
 			})
-		}.toString()
+		}
 	}
 
 	private fun parseResponse(responseBody: String): String {
@@ -123,6 +180,7 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 		return parts.getJSONObject(0).getString("text")
 	}
 }
+
 
 /// SHOULD ONLY BE USED WHEN USING THE MOCK GOOGLE GEN AI STUDIO ENDPOINT, AS IT USES A SELF SIGNED CERTIFICATE, NEVER ANYWHERE ELSE!
 @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")

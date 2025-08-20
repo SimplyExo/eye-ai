@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EyeAICore/TensorBuffer.hpp"
 #include "EyeAICore/tflite/TfLiteRuntime.hpp"
 
 class YoloModel {
@@ -32,8 +33,8 @@ class YoloModel {
 		TfLiteLogErrorCallback log_error_callback
 	);
 
-	tl::expected<void, std::string>
-	run(std::span<float> input, std::span<float> output);
+	tl::expected<std::vector<BoundingBox>, std::string>
+	run(FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& input);
 
 	[[nodiscard]] std::vector<BoundingBox>
 	best_box(std::span<const float> array) const;

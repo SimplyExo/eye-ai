@@ -10,8 +10,15 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
+object OCRManager {
+	val googleOCR = GoogleOCR().apply { create() }
+}
 class GoogleOCR {
 	private var ocrModel: TextRecognizer? = null
+
+	// Hier speichern wir den erkannten Text + Position als String
+	var lastResult: String = ""
+		private set
 
 	fun create() {
 		if (ocrModel == null)
@@ -29,6 +36,7 @@ class GoogleOCR {
 			ocrModel?.process(converted)
 				?.addOnSuccessListener { visionText ->
 					val tbb = ArrayList<TextBoundingBox>()
+					val sb = StringBuilder()
 
 					for (box in visionText.textBlocks) {
 						val bounding = box.boundingBox!!
@@ -40,8 +48,16 @@ class GoogleOCR {
 						val x2 = bounding.right.toFloat() / frame.width.toFloat()
 						val y2 = bounding.bottom.toFloat() / frame.height.toFloat()
 
+						// Liste für Overlay
 						tbb.add(TextBoundingBox(box.text, width, height, x1, y1, x2, y2, bounding))
+
+						// String-Ausgabe aufbauen
+						sb.append("Text: \"${box.text}\" ")
+						sb.append("(x1=$x1, y1=$y1, x2=$x2, y2=$y2, w=$width, h=$height)\n")
 					}
+
+					// Speichere den String global abrufbar
+					lastResult = sb.toString().trim()
 
 					continuation.resume(tbb)
 				}

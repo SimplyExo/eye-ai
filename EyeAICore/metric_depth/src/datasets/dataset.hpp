@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EyeAICore/TensorBuffer.hpp"
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -11,7 +12,7 @@ struct RGBDImage {
 	size_t rgb_height;
 
 	/// one float for each channel (3: rgb) per pixel
-	std::vector<float> rgb;
+	FloatTensorBuffer<FloatTensorFormat::ImageRGB255> rgb;
 
 	size_t depth_width;
 	size_t depth_height;

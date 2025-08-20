@@ -1,8 +1,8 @@
 #pragma once
 
 #include "EyeAICore/DepthModel.hpp"
+#include "EyeAICore/TensorBuffer.hpp"
 #include "datasets/dataset.hpp"
-#include <cmath>
 #include <condition_variable>
 #include <cstddef>
 #include <cstdlib>
@@ -56,11 +56,15 @@ tl::expected<EvaluateResult, std::string> evaluate(
 	const RGBDImage& rgbd_image
 );
 
-tl::expected<std::vector<float>, std::string> load_rgb_image_file(
+tl::expected<FloatTensorBuffer<FloatTensorFormat::ImageRGB>, std::string>
+load_rgb_image_file(
 	const std::filesystem::path& filepath,
 	size_t target_width,
 	size_t target_height
 );
+
+FloatTensorBuffer<FloatTensorFormat::ImageRGB255>
+image_rgb_255_operator(FloatTensorBuffer<FloatTensorFormat::ImageRGB>& input);
 
 tl::expected<std::vector<uint16_t>, std::string>
 load_16bit_greyscale_image_file(

@@ -92,7 +92,7 @@ int main(const int argc, const char* argv[]) {
 
 			auto model_data_clone = model_data;
 
-			auto result = DepthModel::create_with_raw_output(
+			auto result = DepthModel::create(
 				std::move(model_data_clone),
 				gpu_delegate_serialization_dir.string(), midas_model_token,
 				tflite_log_warning_callback, tflite_log_error_callback

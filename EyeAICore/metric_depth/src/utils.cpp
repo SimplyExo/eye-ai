@@ -64,7 +64,7 @@ tl::expected<EvaluateResult, std::string> evaluate(
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
-	size_t pixel_count = rgbd_image.rgb.size() / 3;
+	size_t pixel_count = rgbd_image.rgb.data().size() / 3;
 	if (pixel_count != depth_input_width * depth_input_height) {
 		return tl::unexpected_fmt(
 			"Invalid image size of {} instead of {}", pixel_count,
@@ -75,14 +75,13 @@ tl::expected<EvaluateResult, std::string> evaluate(
 	EvaluateResult result;
 	result.relative_absolute_pairs.reserve(pixel_count * 2);
 
-	std::vector<float> image_rgb(rgbd_image.rgb);
-	std::vector<float> depth_estimation(pixel_count);
+	auto image_rgb{rgbd_image.rgb};
 
-	if (const auto error = depth_model.run_raw(
-			image_rgb, std::span<float>(depth_estimation)
-		)) {
-		return tl::unexpected(error->to_string());
+	auto depth_estimation_result = depth_model.run_raw(image_rgb);
+	if (!depth_estimation_result) {
+		return tl::unexpected(depth_estimation_result.error().to_string());
 	}
+	std::span<float> depth_estimation = depth_estimation_result->data();
 
 	const auto skip_depth_value = [&](size_t image_index) -> bool {
 		return rgbd_image.depth_mask && !(*rgbd_image.depth_mask)[image_index];
@@ -118,7 +117,8 @@ tl::expected<EvaluateResult, std::string> evaluate(
 	return result;
 }
 
-tl::expected<std::vector<float>, std::string> load_rgb_image_file(
+tl::expected<FloatTensorBuffer<FloatTensorFormat::ImageRGB>, std::string>
+load_rgb_image_file(
 	const std::filesystem::path& filepath,
 	size_t target_width,
 	size_t target_height
@@ -150,7 +150,20 @@ tl::expected<std::vector<float>, std::string> load_rgb_image_file(
 
 	stbi_image_free(data);
 
-	return resized_image;
+	return FloatTensorBuffer<FloatTensorFormat::ImageRGB>(
+		std::move(resized_image)
+	);
+}
+
+FloatTensorBuffer<FloatTensorFormat::ImageRGB255>
+image_rgb_255_operator(FloatTensorBuffer<FloatTensorFormat::ImageRGB>& input) {
+	auto values = input.data();
+
+	for (float& value : values) {
+		value = std::clamp(value * 255.f, 0.f, 255.f);
+	}
+
+	return input.convert_format<FloatTensorFormat::ImageRGB255>();
 }
 
 tl::expected<std::vector<uint16_t>, std::string>
@@ -263,11 +276,12 @@ tl::expected<std::chrono::milliseconds, std::string> evaluate_datapoint(
 		return tl::unexpected(rgbd_image_result.error());
 	RGBDImage& rgbd_image = rgbd_image_result.value();
 
-	if (rgbd_image.rgb.size() != depth_input_width * depth_input_height * 3) {
+	if (rgbd_image.rgb.data().size() !=
+		depth_input_width * depth_input_height * 3) {
 		return tl::unexpected_fmt(
 			"invalid image size of {} pixels, expected {}x{}={} pixels",
-			rgbd_image.rgb.size() / 3, depth_input_width, depth_input_height,
-			depth_input_width * depth_input_height * 3
+			rgbd_image.rgb.data().size() / 3, depth_input_width,
+			depth_input_height, depth_input_width * depth_input_height * 3
 		);
 	}
 

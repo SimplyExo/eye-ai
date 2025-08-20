@@ -22,6 +22,7 @@ tl::expected<RGBDImage, std::string> SUN_RGBD_DataPoint::load(
 	);
 	if (!image_result)
 		return tl::make_unexpected(image_result.error());
+	auto image = image_rgb_255_operator(*image_result);
 
 	size_t depth_width = 0;
 	size_t depth_height = 0;
@@ -49,9 +50,8 @@ tl::expected<RGBDImage, std::string> SUN_RGBD_DataPoint::load(
 	}
 
 	return RGBDImage(
-		depth_input_width, depth_input_height, std::move(*image_result),
-		depth_width, depth_height, std::move(metric_depth),
-		std::move(depth_mask)
+		depth_input_width, depth_input_height, std::move(image), depth_width,
+		depth_height, std::move(metric_depth), std::move(depth_mask)
 	);
 }
 

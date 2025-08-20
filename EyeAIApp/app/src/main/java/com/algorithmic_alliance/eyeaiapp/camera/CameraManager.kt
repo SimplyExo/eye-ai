@@ -5,6 +5,7 @@ import android.util.Log
 import android.util.Range
 import android.util.Size
 import androidx.camera.core.Camera
+import androidx.camera.core.CameraProvider
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.core.TorchState

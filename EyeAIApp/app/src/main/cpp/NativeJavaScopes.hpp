@@ -23,6 +23,12 @@ struct NativeFloatArrayScope {
 	}
 
 	[[nodiscard]] size_t size() const { return native_array.size(); }
+	[[nodiscard]] std::span<jfloat>::iterator begin() const {
+		return native_array.begin();
+	}
+	[[nodiscard]] std::span<jfloat>::iterator end() const {
+		return native_array.end();
+	}
 
   private:
 	jfloatArray array = nullptr;

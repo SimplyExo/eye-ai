@@ -41,6 +41,7 @@ tl::expected<RGBDImage, std::string> DiodeDataPoint::load(
 	);
 	if (!image_result)
 		return tl::make_unexpected(image_result.error());
+	auto image = image_rgb_255_operator(*image_result);
 
 	auto depth_result = load_npy_file(depth_filepath);
 	if (!depth_result)
@@ -74,7 +75,7 @@ tl::expected<RGBDImage, std::string> DiodeDataPoint::load(
 	}
 
 	return RGBDImage(
-		depth_input_width, depth_input_height, std::move(*image_result),
+		depth_input_width, depth_input_height, std::move(image),
 		DiodeDataset::DEPTH_WIDTH, DiodeDataset::DEPTH_HEIGHT, std::move(depth),
 		std::move(depth_mask)
 	);
