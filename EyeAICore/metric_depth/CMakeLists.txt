@@ -1,13 +1,11 @@
 project(metric_depth)
 
-add_executable(EvaluateDataset
-	"src/main.cpp"
-	"src/utils.cpp"
-	"src/stb_image.cpp"
-	"src/datasets/diode_dataset.cpp"
-	"src/datasets/sun_rgbd_dataset.cpp"
+add_executable(PrepareDataset
+	"prepare_dataset/main.cpp"
+	"prepare_dataset/utils.cpp"
+	"prepare_dataset/stb_image.cpp"
+	"prepare_dataset/datasets/diode_dataset.cpp"
+	"prepare_dataset/datasets/sun_rgbd_dataset.cpp"
 )
-
-target_compile_features(EvaluateDataset PUBLIC cxx_std_20)
-
-target_link_libraries(EvaluateDataset PRIVATE EyeAICore)
+target_compile_features(PrepareDataset PUBLIC cxx_std_20)
+target_link_libraries(PrepareDataset PRIVATE EyeAICore)

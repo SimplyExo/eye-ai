@@ -9,12 +9,12 @@
 		"hide": "never"
 	},
 	{
-		"label": "Run EvaluateDataset on DIODE",
-		"command": "$ZED_WORKTREE_ROOT/metric_depth/scripts/build_and_run_eval_dataset.sh",
+		"label": "Prepare DIODE dataset",
+		"command": "$ZED_WORKTREE_ROOT/metric_depth/scripts/build_and_run_prepare_dataset.sh",
 		"args": [
 			"diode",
 			"~/Downloads/DIODE/diode_testing_dataset/",
-			"~/Downloads/DIODE/diode_testing_dataset_evaluation/"
+			"~/Downloads/DIODE/prepared_diode_testing_dataset/"
 		],
 		"use_new_terminal": false,
 		"allow_concurrent_runs": false,
@@ -23,12 +23,12 @@
 		"hide": "never"
 	},
 	{
-		"label": "Run EvaluateDataset on SUNRGBD",
-		"command": "$ZED_WORKTREE_ROOT/metric_depth/scripts/build_and_run_eval_dataset.sh",
+		"label": "Prepare SUNRGBD dataset",
+		"command": "$ZED_WORKTREE_ROOT/metric_depth/scripts/build_and_run_prepare_dataset.sh",
 		"args": [
 			"sun_rgbd",
 			"~/Downloads/SUNRGBD/",
-			"~/Downloads/SUNRGBD_evaluation/"
+			"~/Downloads/prepared_SUNRGBD/"
 		],
 		"use_new_terminal": false,
 		"allow_concurrent_runs": false,

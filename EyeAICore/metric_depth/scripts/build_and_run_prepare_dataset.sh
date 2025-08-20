@@ -12,8 +12,8 @@ scripts_directory="$(dirname "$0")"
 
 echo "Building..."
 
-cmake --build "$scripts_directory/../../build" -j8 --target EvaluateDataset
+cmake --build "$scripts_directory/../../build" -j8 --target PrepareDataset
 
 echo "Running..."
 midas_model_filepath="$scripts_directory/../../../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite"
-"$scripts_directory/../../build/metric_depth/EvaluateDataset" "$1" "$midas_model_filepath" "$2" "$3"
+"$scripts_directory/../../build/metric_depth/PrepareDataset" "$1" "$midas_model_filepath" "$2" "$3"
