@@ -1,6 +1,5 @@
 package com.algorithmic_alliance.eyeaiapp.llm
 
-import android.content.Context
 import android.util.Log
 import android.widget.TextView
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
@@ -43,7 +42,7 @@ class StateMachine (private val eyeAIApp: EyeAIApp, private val textToSpeechInst
 	suspend fun handleSettingsMenu(final: String): StateUpdate {
 
 		// LLM explains options
-		val prompt = "Erkläre kurz die Einstellungsmöglichkeit '$final' und frage, wie die Einstellung geändert werden soll je nach Kontext"
+		val prompt = "Erkläre kurz die Einstellungsmöglichkeit '$final' und frage, wie die Einstellung geändert werden soll je nach Kontext."
 		// TODO: Create individual responses for each adaption
 		val response = eyeAIApp.llm!!.generate(prompt, false)
 		speakAndHandleUi(response)
@@ -59,7 +58,7 @@ class StateMachine (private val eyeAIApp: EyeAIApp, private val textToSpeechInst
 
 		val jsonResponse = try {
 			eyeAIApp.llm!!.generate(prompt, true) //Generating a structured response
-		} catch (e: Exception) {
+		} catch (_: Exception) {
 			// Catching invalid JSONs
 
 			textToSpeechInstance.speak("LLM hat kein valides JSON-Format geliefert!")
@@ -79,13 +78,17 @@ class StateMachine (private val eyeAIApp: EyeAIApp, private val textToSpeechInst
 				val firstChange = changedSettings.getJSONObject(0)
 				if (firstChange.has("tts_speed")) {
 					val newSpeed = firstChange.getDouble("tts_speed")
-					confirmationQuestion = "Verstanden. Soll ich die Sprachgeschwindigkeit auf ${newSpeed} setzen?"
+					confirmationQuestion = "Verstanden. Soll ich die Sprachgeschwindigkeit auf $newSpeed setzen?"
 				}
 				if (firstChange.has("voice"))
 				{
 
 					val voice = firstChange.getString("voice")
-					confirmationQuestion = "Verstanden. Soll ich die Assistentenstimme auf ${voice} setzen?"
+					confirmationQuestion = "Verstanden. Soll ich die Assistentenstimme auf $voice setzen?"
+				}
+				if (firstChange.has("leave"))
+				{
+					confirmationQuestion = "Möchten Sie die Einstellungen wirklich verlassen?"
 				}
 			}
 		} catch (e: Exception) {
@@ -105,7 +108,7 @@ class StateMachine (private val eyeAIApp: EyeAIApp, private val textToSpeechInst
 		val jsonResponse = try {
 			eyeAIApp.llm!!.generate("Würdest du sagen der Nutzer hat diesen Command bestätigt? Die Antwort des Nutzers war $final" +
 				"Antworte bitte mit einer JSON-Antwort in approval.", true) //Generating a structured response
-		} catch (e: Exception) {
+		} catch (_: Exception) {
 			// Catching invalid JSONs
 
 			textToSpeechInstance.speak("LLM hat kein valides JSON-Format geliefert!")
@@ -133,6 +136,7 @@ class StateMachine (private val eyeAIApp: EyeAIApp, private val textToSpeechInst
 						val newSpeed = setting.getDouble("tts_speed").toFloat()
 						textToSpeechInstance.setSpeechRate(newSpeed)
 						Log.d(EyeAIApp.APP_LOG_TAG, "TTS-Geschwindigkeit wird auf $newSpeed gesetzt.")
+						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
 					if (setting.has("voice"))
 					{
@@ -140,17 +144,17 @@ class StateMachine (private val eyeAIApp: EyeAIApp, private val textToSpeechInst
 						val voice = setting.getDouble("voice")
 						Log.d(EyeAIApp.APP_LOG_TAG, "Stimme wird auf $voice gesetzt.")
 						textToSpeechInstance.setVoice(voice)
-
+						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 
 					}
 					if(setting.has("leave")){
-					 //TODO: Add leaving
+					    speakAndHandleUi("Die Einstellungen wurden verlassen")
 					}
 
 				}
 
 				// 3. Notifying the user that the changes have been applied
-				speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
+
 
 			} catch (e: Exception) {
 				Log.e(EyeAIApp.APP_LOG_TAG, "Fehler bei der Verarbeitung der JSON-Aktion.", e)
