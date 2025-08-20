@@ -349,7 +349,6 @@ class MainActivity : AppCompatActivity() {
 
 	/*All TTS methods start here*/
 
-
 	private fun onPartialSpeechRecognitionResult(partial: String) {
 		CoroutineScope(Dispatchers.Main).launch {
 			speechRecognitionPartialResultText?.text = partial
@@ -419,8 +418,7 @@ class MainActivity : AppCompatActivity() {
 			State.SETTINGS_CHOICE -> stateMachine.handleSettingsChoice(final)
 			State.SETTINGS_ACTION -> stateMachine.handleSettingsAction(final)
 		}
-
-		currentState = update.newState
+	currentState = update.newState
 		lastLlmJsonResponse = update.newJson
 	}
 }
