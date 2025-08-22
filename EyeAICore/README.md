@@ -2,7 +2,24 @@
 
 the core implementation of EyeAI in crossplatform c++
 
-## Building EyeAICore
+## Building EyeAICore from source using Docker container
+
+Build docker image:
+
+```bash
+cd .. # Dockerfile is located at the root, since it copies MiDaS from EyeAIApp
+docker build -t eye-ai .
+```
+
+Now you have a docker image that contains a build of EyeAICore from source.
+
+To run the docker image in a container:
+
+```bash
+docker run -it eye-ai
+```
+
+## Building EyeAICore from source locally
 
 Requirements:
 

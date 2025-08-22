@@ -19,39 +19,3 @@ Möglichkeit der Ausgabe der Objekte im aktuellen Sichtfeld des Nutzers auf dess
 
 Gesichtserkennung von bekannten Personen?
 Nachtsicht?
-
-## Requirements for building EyeAICore from source
-
-- python3 (needed for xnnpack to generate it's microkernels)
-
-## Building EyeAICore from source
-
-> [!NOTE]
-> Be careful with the thread count when building (specified by the -j flag), or it might just OOM your system :/
-
-```bash
-cd EyeAICore
-cmake -B build
-cmake --build build -j8
-```
-
-## Building EyeAICore from source using Docker container
-
-Build docker image:
-
-```bash
-docker build -t eye-ai .
-```
-
-Now you have a docker image that contains a build of EyeAICore from source.
-
-To run the Dataset Evaluation program, run the docker image in container:
-
-```bash
-docker run -it eye-ai
-```
-
-(when inside the container)
-```bash
-./EyeAICore/metric_depth/scripts/build_and_run_eval_dataset.sh <dataset_directory> <evaluation_dataset_directory>
-```
