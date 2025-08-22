@@ -5,7 +5,6 @@
 - numpy
 - matplotlib
 - pandas
-- jenkspy
 
 ### How to enable OpenCL (GPU) support on Linux (optional):
 
@@ -28,13 +27,13 @@ clinfo
 ```
 
 > [!NOTE]
-> The NVIDIA OpenCL driver will not load correctly when AddressSanitizer is enabled in cmake (`cmake -B build -DENABLE_ASAN=ON`).
+> The NVIDIA OpenCL driver will not load correctly when AddressSanitizer is enabled in cmake (`cmake -B build -DEYE_AI_CORE_ENABLE_ASAN=ON`).
 >
 > An error `clGetPlatformIDs returned -1001` will occur, and we will fallback into CPU only mode (super slow!).
 >
 > To use TFLite GPU delegate using OpenCL with ASAN enabled, you need to set this environment variable when running the program:
 >
-> `ASAN_OPTIONS=protect_shadow_gap=0 ./build/metric_depth/EvaluateDataset ...`
+> `ASAN_OPTIONS=protect_shadow_gap=0 ./build/metric_depth/PrepareDataset ...`
 >
 > See this stackoverflow post for further information: <https://stackoverflow.com/questions/55750700/opencl-usable-when-compiling-host-application-with-address-sanitizer>
 

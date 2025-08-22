@@ -2,8 +2,8 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, regularizers
 
 # ===== CONFIG =====
-IMG_SIZE = (256, 256)  # smaller for speed
-N_COEFFS = 5
+IMG_SIZE = (256, 256)	# smaller for speed
+N_COEFFS = 5			# 4 degree polynomial
 L2_REG = 1e-4
 
 # ===== DUMMY DATASET PLACEHOLDER =====
