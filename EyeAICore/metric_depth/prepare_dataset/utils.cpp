@@ -55,9 +55,9 @@ tl::expected<PreparedImage, std::string> prepare(
 		);
 	}
 
-	/// [rel0, abs0, rel1, abs1, ...]
-	std::vector<float> relative_absolute_pairs;
-	relative_absolute_pairs.reserve(pixel_count * 2);
+	/// relative, absolute pairs
+	std::vector<std::pair<float, float>> relative_absolute_pairs;
+	relative_absolute_pairs.reserve(pixel_count);
 
 	/// create deep copy of rgbd_image.rgb, image_rgb will be modified!
 	auto image_rgb_span = rgbd_image.rgb.data();
@@ -98,8 +98,7 @@ tl::expected<PreparedImage, std::string> prepare(
 			float absolute = rgbd_image.metric_depth[depth_index];
 
 			float relative = depth_estimation_values[input_image_index];
-			relative_absolute_pairs.push_back(relative);
-			relative_absolute_pairs.push_back(absolute);
+			relative_absolute_pairs.emplace_back(relative, absolute);
 		}
 	}
 
@@ -210,8 +209,37 @@ tl::expected<std::chrono::milliseconds, std::string> prepare_datapoint(
 
 /// does the same as np.polyfit
 FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthCoefficientOutput>
-find_coeffs(std::span<const float> relative_absolute_pairs) {
-	long n = (long)relative_absolute_pairs.size() / 2;
+find_coeffs(std::span<std::pair<float, float>> relative_absolute_pairs) {
+	// sort pairs by relative depth, ascending
+	std::ranges::sort(
+		relative_absolute_pairs,
+		[](const auto& a, const auto& b) { return a.first < b.first; }
+	);
+
+	// take the average of relative_absolute_pairs bins, reduces noise
+	constexpr static size_t AVG_BIN_COUNT = 10;
+	std::vector<float> avg_relatives(
+		relative_absolute_pairs.size() / AVG_BIN_COUNT, 0.f
+	);
+	std::vector<float> avg_absolutes(avg_relatives.size(), 0.f);
+	for (size_t i = 0; i < avg_relatives.size(); ++i) {
+		size_t pair_offset = i * AVG_BIN_COUNT;
+		size_t pairs_left_count = relative_absolute_pairs.size() - pair_offset;
+		size_t avg_bin_count = std::min(AVG_BIN_COUNT, pairs_left_count);
+
+		float relative_sum = 0.f;
+		float absolute_sum = 0.f;
+		for (size_t j = 0; j < avg_bin_count; ++j) {
+			const auto& [relative, absolute] =
+				relative_absolute_pairs[pair_offset + j];
+			relative_sum += relative;
+			absolute_sum += absolute;
+		}
+		avg_relatives[i] = relative_sum / (float)avg_bin_count;
+		avg_absolutes[i] = absolute_sum / (float)avg_bin_count;
+	}
+
+	long n = (long)avg_relatives.size();
 	Eigen::MatrixXf X(n, Rel2AbsDepthModel::COEFFS_COUNT);
 	Eigen::VectorXf Y(n);
 
@@ -220,10 +248,10 @@ find_coeffs(std::span<const float> relative_absolute_pairs) {
 		float xi = 1.0;
 		for (long j = 0; j <= Rel2AbsDepthModel::POLYNOMIAL_DEGREE; j++) {
 			X(i, j) = xi;
-			float x = relative_absolute_pairs[i * 2];
+			float x = avg_relatives[i];
 			xi *= x;
 		}
-		float y = relative_absolute_pairs[(i * 2) + 1];
+		float y = avg_absolutes[i];
 		Y(i) = y;
 	}
 

@@ -59,7 +59,7 @@ tl::expected<std::chrono::milliseconds, std::string> prepare_datapoint(
 );
 
 FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthCoefficientOutput>
-find_coeffs(std::span<const float> relative_absolute_pairs);
+find_coeffs(std::span<std::pair<float, float>> relative_absolute_pairs);
 
 tl::expected<FloatTensorBuffer<FloatTensorFormat::ImageRGB255>, std::string>
 load_rgb_image_file(
