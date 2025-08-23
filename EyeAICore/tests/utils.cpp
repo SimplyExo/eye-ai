@@ -51,7 +51,7 @@ create_test_depth_model() {
 tl::expected<std::unique_ptr<Rel2AbsDepthModel>, std::string>
 create_test_rel2abs_depth_model() {
 	const std::filesystem::path rel2abs_depth_model_path =
-		"../metric_depth/rel2abs_training/rgbd_poly_regressor.tflite";
+		"../metric_depth/rel2abs_training/rel2abs_model.tflite";
 	const auto rel2abs_depth_model_last_modified =
 		std::filesystem::last_write_time(rel2abs_depth_model_path);
 	const std::string rel2abs_depth_model_token = std::format(

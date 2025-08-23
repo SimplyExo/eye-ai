@@ -1,5 +1,6 @@
 #include "EyeAICore/Operators.hpp"
 #include "EyeAICore/MetricDepthModel.hpp"
+#include "EyeAICore/Rel2AbsDepthModel.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 
 #include <algorithm>
@@ -40,9 +41,9 @@ FloatTensorBuffer<FloatTensorFormat::MetricDepth> rel2abs_operator(
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
-	assert(coeffs.size() == 5);
+	assert(coeffs.data().size() == Rel2AbsDepthModel::COEFFS_COUNT);
 	auto coeffs_values = coeffs.data();
-	std::array<float, 5> rel2abs_coeffs{
+	std::array<float, Rel2AbsDepthModel::COEFFS_COUNT> rel2abs_coeffs{
 		coeffs_values[0], coeffs_values[1], coeffs_values[2], coeffs_values[3],
 		coeffs_values[4]
 	};

@@ -49,47 +49,13 @@ MetricDepthModel::RunResult MetricDepthModel::run(
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
-	auto input_values = input.data();
-
-	const size_t input_pixel_count = input_values.size() / 3;
-
-	std::vector<float> rel2abs_input(input_pixel_count * 4);
-
-	// copy image channels ([0.f, 255.f] to [-1.f, 1.f])
-	{
-		PROFILE_DEPTH_SCOPE("Loading Rel2Abs input image")
-
-		for (size_t i = 0; i < input_pixel_count; ++i) {
-			rel2abs_input[(i * 4) + 0] =
-				(input_values[(i * 3) + 0] / 127.5f) - 1.f;
-			rel2abs_input[(i * 4) + 1] =
-				(input_values[(i * 3) + 1] / 127.5f) - 1.f;
-			rel2abs_input[(i * 4) + 2] =
-				(input_values[(i * 3) + 2] / 127.5f) - 1.f;
-		}
-	}
-
 	auto relative_depth_result = depth_model->run_raw(input);
 	if (!relative_depth_result)
 		return tl::unexpected(relative_depth_result.error());
 	auto& relative_depth = *relative_depth_result;
 
-	// copy raw relative depth into 4th channel ([0.f, 1500.f] to [-1.f, 1.f])
-	{
-		PROFILE_DEPTH_SCOPE("Load raw relative depth into Rel2Abs")
-
-		auto relative_depth_values = relative_depth.data();
-
-		for (size_t i = 0; i < input_pixel_count; ++i) {
-			const float remapped_raw_rel_depth =
-				(relative_depth_values[i] / 750.f) - 1.f;
-			rel2abs_input[(i * 4) + 3] =
-				std::clamp(remapped_raw_rel_depth, -1.f, 1.f);
-		}
-	}
-
 	FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthInput>
-		rel2abs_input_tensor{std::move(rel2abs_input)};
+		rel2abs_input_tensor = rel2abs_input_operator(input, relative_depth);
 
 	auto rel2abs_coeffs_result = rel2abs_depth_model->run(rel2abs_input_tensor);
 	if (!rel2abs_coeffs_result) {

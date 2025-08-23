@@ -8,4 +8,4 @@ add_executable(PrepareDataset
 	"prepare_dataset/datasets/sun_rgbd_dataset.cpp"
 )
 target_compile_features(PrepareDataset PUBLIC cxx_std_20)
-target_link_libraries(PrepareDataset PRIVATE EyeAICore)
+target_link_libraries(PrepareDataset PRIVATE EyeAICore Eigen3::Eigen)

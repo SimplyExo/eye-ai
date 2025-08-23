@@ -7,11 +7,11 @@
 		"adapter": "CodeLLDB",
 		"request": "launch",
 		"label": "EyeAICoreTests",
-		"program": "./build/EyeAICoreTests",
+		"program": "./build/tests/EyeAICoreTests",
 		"cwd": "$ZED_WORKTREE_ROOT/build",
 		"build": {
 			"command": "cmake",
-			"args": ["--build", "--preset=debug"]
+			"args": ["--build", "--preset=debug", "--target=EyeAICoreTests"]
 		}
 	}
 ]

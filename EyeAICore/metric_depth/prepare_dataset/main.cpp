@@ -32,7 +32,7 @@ int main(const int argc, const char* argv[]) {
 	const std::string_view dataset_type = args[1];
 	const std::filesystem::path midas_model_path = args[2];
 	const std::filesystem::path dataset_directory = args[3];
-	const std::filesystem::path evaluation_output_directory = args[4];
+	const std::filesystem::path prepared_output_directory = args[4];
 
 	const auto midas_model_last_modified =
 		std::filesystem::last_write_time(midas_model_path);
@@ -81,7 +81,9 @@ int main(const int argc, const char* argv[]) {
 
 	const auto diode_scan = dataset->scan(dataset_directory);
 
-	std::cout << "\n=== Evaluating Dataset ===\n\n";
+	std::cout << "\n=== Preparing Dataset ===\n\n";
+
+	std::filesystem::create_directories(prepared_output_directory);
 
 	std::atomic_size_t current_scan_index = 0;
 
@@ -122,13 +124,9 @@ int main(const int argc, const char* argv[]) {
 				const auto scan_evaluation_start =
 					std::chrono::high_resolution_clock::now();
 
-				const auto result_filepath =
-					data_point->get_evaluation_result_filename(
-						evaluation_output_directory
-					);
-
-				auto evaluation_result = evaluate_datapoint(
-					*depth_model, *data_point, result_filepath
+				auto evaluation_result = prepare_datapoint(
+					*depth_model, *data_point, prepared_output_directory,
+					current_scan_index.load()
 				);
 
 				if (!evaluation_result) {

@@ -5,12 +5,6 @@
 #include <filesystem>
 #include <format>
 
-std::filesystem::path SUN_RGBD_DataPoint::get_evaluation_result_filename(
-	const std::filesystem::path& evaluation_output_directory
-) const {
-	return evaluation_output_directory / std::format("{}.bin", full_id);
-}
-
 tl::expected<RGBDImage, std::string> SUN_RGBD_DataPoint::load(
 	size_t depth_input_width,
 	size_t depth_input_height
@@ -22,7 +16,7 @@ tl::expected<RGBDImage, std::string> SUN_RGBD_DataPoint::load(
 	);
 	if (!image_result)
 		return tl::make_unexpected(image_result.error());
-	auto image = image_rgb_255_operator(*image_result);
+	auto& image = *image_result;
 
 	size_t depth_width = 0;
 	size_t depth_height = 0;

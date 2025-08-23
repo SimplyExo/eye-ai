@@ -16,10 +16,6 @@ struct SUN_RGBD_DataPoint : public RGBDDataPoint {
 		: full_id(std::move(id)), image_filepath(std::move(image_filepath)),
 		  depth_filepath(std::move(depth_filepath)) {}
 
-	[[nodiscard]] std::filesystem::path get_evaluation_result_filename(
-		const std::filesystem::path& evaluation_output_directory
-	) const override;
-
 	[[nodiscard]] tl::expected<RGBDImage, std::string>
 	load(size_t depth_input_width, size_t depth_input_height) const override;
 };

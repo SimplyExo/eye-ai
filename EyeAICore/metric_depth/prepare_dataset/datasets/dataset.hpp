@@ -29,14 +29,10 @@ struct RGBDImage {
 struct RGBDDataPoint {
 	virtual ~RGBDDataPoint() = default;
 
-	bool operator==(const RGBDDataPoint& other) const = default;
-
-	[[nodiscard]] virtual std::filesystem::path get_evaluation_result_filename(
-		const std::filesystem::path& evaluation_output_directory
-	) const = 0;
-
 	[[nodiscard]] virtual tl::expected<RGBDImage, std::string>
 	load(size_t depth_input_width, size_t depth_input_height) const = 0;
+
+	bool operator==(const RGBDDataPoint& other) const = default;
 };
 
 class RGBDDataset {

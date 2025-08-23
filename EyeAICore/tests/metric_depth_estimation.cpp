@@ -34,7 +34,9 @@ TEST(MetricDepthEstimationTest, TestMetricDepthEstimation) {
 /// implemented correctly
 TEST(MetricDepthEstimationTest, TestPolynomial) {
 	const static size_t COUNT = 10'000;
-	const std::array<float, 5> coeffs{1.f, 2.f, 3.f, 4.f, 5.f};
+	const std::array<float, Rel2AbsDepthModel::COEFFS_COUNT> coeffs{
+		1.f, 2.f, 3.f, 4.f, 5.f
+	};
 
 	// f(x) = a4 * x⁴ + a3 * x³ + a2 * x² + a1 * x + a0
 	auto naive_polynomial_4 = [](float x, const std::array<float, 5>& coeffs) {

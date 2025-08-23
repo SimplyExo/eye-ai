@@ -16,13 +16,6 @@ std::size_t std::hash<DiodeDataPointID>::operator()(
 		   std::hash<std::string>{}(dp.imgname);
 }
 
-std::filesystem::path DiodeDataPointID::get_evaluation_result_filename(
-	const std::filesystem::path& evaluation_output_directory
-) const {
-	return evaluation_output_directory / (indoors ? "indoors" : "outdoor") /
-		   std::format("{}_{}_{}_result.bin", scene_id, scan_id, imgname);
-}
-
 std::string DiodeDataPointID::to_string() const noexcept {
 	return std::format(
 		"{} scene {}, scan {}, image {}", indoors ? "indoors" : "outdoor",
@@ -41,7 +34,7 @@ tl::expected<RGBDImage, std::string> DiodeDataPoint::load(
 	);
 	if (!image_result)
 		return tl::make_unexpected(image_result.error());
-	auto image = image_rgb_255_operator(*image_result);
+	auto& image = *image_result;
 
 	auto depth_result = load_npy_file(depth_filepath);
 	if (!depth_result)

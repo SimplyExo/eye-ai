@@ -77,6 +77,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(concurrentqueue)
 
+# eigen
+message(STATUS "Downloading eigen...")
+FetchContent_Declare(
+	eigen
+	GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+	GIT_TAG 3.4.0
+	GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(eigen)
+
 if (EYE_AI_CORE_ENABLE_TESTS)
 	# libnpy
 	message(STATUS "Downloading libnpy...")

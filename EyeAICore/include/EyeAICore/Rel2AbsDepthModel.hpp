@@ -7,6 +7,9 @@
 
 class Rel2AbsDepthModel {
   public:
+	constexpr static size_t POLYNOMIAL_DEGREE = 4;
+	constexpr static size_t COEFFS_COUNT = POLYNOMIAL_DEGREE + 1;
+
 	using CreateResult = tl::
 		expected<std::unique_ptr<Rel2AbsDepthModel>, TfLiteCreateRuntimeError>;
 
@@ -32,3 +35,8 @@ class Rel2AbsDepthModel {
   private:
 	std::unique_ptr<TfLiteRuntime> runtime;
 };
+
+FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthInput> rel2abs_input_operator(
+	const FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& rgb,
+	const FloatTensorBuffer<FloatTensorFormat::RawRelativeDepth>& depth
+);

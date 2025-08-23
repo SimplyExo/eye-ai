@@ -52,7 +52,7 @@ converter = tf.lite.TFLiteConverter.from_keras_model(model)
 converter.optimizations = [tf.lite.Optimize.DEFAULT]
 tflite_model = converter.convert()
 
-with open("rgbd_poly_regressor.tflite", "wb") as f:
+with open("rel2abs_model.tflite", "wb") as f:
     f.write(tflite_model)
 
-print("Exported rgbd_poly_regressor.tflite")
+print("Exported rel2abs_model.tflite")

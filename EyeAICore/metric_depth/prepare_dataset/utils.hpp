@@ -21,11 +21,6 @@
 [[nodiscard]] tl::expected<std::vector<int8_t>, std::string>
 read_binary_file(const std::filesystem::path& filepath);
 
-[[nodiscard]] tl::expected<void, std::string> save_evaluation_result_file(
-	const std::filesystem::path& filepath,
-	std::span<const float> relative_absolute_pairs
-);
-
 template<typename... Args>
 void println_fmt(const std::format_string<Args...> fmt, Args&&... args) {
 	const std::string formatted =
@@ -42,29 +37,36 @@ void println_error_fmt(const std::format_string<Args...> fmt, Args&&... args) {
 	std::cerr << formatted << '\n';
 }
 
-struct EvaluateResult {
-	/// [relative0, absolute0, relative1, absolute1]
-	std::vector<float> relative_absolute_pairs;
+struct PreparedImage {
+	FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthInput> rgbd;
+	FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthCoefficientOutput> coeffs;
 };
 
 /// rgb image of rgbd_image must match depth_input dimensions, depth image of
 /// rgbd_image will be resized to match depth_input dimensions
-tl::expected<EvaluateResult, std::string> evaluate(
+tl::expected<PreparedImage, std::string> prepare(
 	DepthModel& depth_model,
 	size_t depth_input_width,
 	size_t depth_input_height,
 	const RGBDImage& rgbd_image
 );
 
-tl::expected<FloatTensorBuffer<FloatTensorFormat::ImageRGB>, std::string>
+tl::expected<std::chrono::milliseconds, std::string> prepare_datapoint(
+	DepthModel& depth_model,
+	const RGBDDataPoint& datapoint,
+	const std::filesystem::path& prepared_output_directory,
+	size_t datapoint_index
+);
+
+FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthCoefficientOutput>
+find_coeffs(std::span<const float> relative_absolute_pairs);
+
+tl::expected<FloatTensorBuffer<FloatTensorFormat::ImageRGB255>, std::string>
 load_rgb_image_file(
 	const std::filesystem::path& filepath,
 	size_t target_width,
 	size_t target_height
 );
-
-FloatTensorBuffer<FloatTensorFormat::ImageRGB255>
-image_rgb_255_operator(FloatTensorBuffer<FloatTensorFormat::ImageRGB>& input);
 
 tl::expected<std::vector<uint16_t>, std::string>
 load_16bit_greyscale_image_file(
@@ -75,12 +77,6 @@ load_16bit_greyscale_image_file(
 
 tl::expected<std::vector<float>, std::string>
 load_npy_file(const std::filesystem::path& filepath);
-
-tl::expected<std::chrono::milliseconds, std::string> evaluate_datapoint(
-	DepthModel& depth_model,
-	const RGBDDataPoint& datapoint,
-	const std::filesystem::path& evaluation_output_filepath
-);
 
 /// Simple thread pool, with a context for each thread, that can be referenced
 /// by the enqueued tasks
