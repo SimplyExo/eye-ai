@@ -36,6 +36,9 @@ android {
 	buildTypes {
 		debug {
 			buildConfigField("String", "BUILD_VARIANT", "\"Debug\"")
+
+			applicationIdSuffix = ".dev"
+			versionNameSuffix = "-dev"
 		}
 		release {
 			isMinifyEnabled = false
@@ -46,6 +49,9 @@ android {
 			signingConfig = signingConfigs.getByName("debug")
 
 			buildConfigField("String", "BUILD_VARIANT", "\"Release\"")
+
+			applicationIdSuffix = ".dev"
+			versionNameSuffix = "-dev"
 		}
 		create("profiling") {
 			initWith(getByName("release"))
@@ -53,11 +59,26 @@ android {
 
 			buildConfigField("String", "BUILD_VARIANT", "\"Profiling\"")
 
+			applicationIdSuffix = ".dev"
+			versionNameSuffix = "-dev"
+
 			externalNativeBuild {
 				cmake {
 					arguments += "-DEYE_AI_CORE_ENABLE_TRACY_PROFILER=ON"
 				}
 			}
+		}
+
+		create("production") {
+			initWith(getByName("release"))
+			matchingFallbacks += listOf("release")
+
+			buildConfigField("String", "BUILD_VARIANT", "\"Production\"")
+
+			applicationIdSuffix = ""
+			versionNameSuffix = ""
+
+			// TODO: signingConfig
 		}
 	}
 	compileOptions {

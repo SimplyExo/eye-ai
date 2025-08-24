@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EyeAICore/Operators.hpp"
+#include "EyeAICore/TensorBuffer.hpp"
 #include "EyeAICore/utils/Errors.hpp"
 #include <memory>
 #include <optional>
@@ -35,6 +35,7 @@ get_tensor_quantization(const TfLiteTensor* tensor);
  * GPU delegate kernels
  * @param model_token unique token to identify the model, should change on model
  * update
+ * @param profiling_frame profiling frame used for profiling
  */
 [[nodiscard]] std::
 	unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
@@ -210,23 +211,6 @@ struct [[nodiscard]] TfLiteInvokeInterpreterError {
 	bool operator==(const TfLiteInvokeInterpreterError& other) const = default;
 };
 
-struct [[nodiscard]] InvalidInputFormatForOperator {
-	FloatTensorFormat provided;
-	FloatTensorFormat expected;
-
-	[[nodiscard]] std::string to_string() const;
-	bool operator==(const InvalidInputFormatForOperator& other) const = default;
-};
-
-struct [[nodiscard]] UnexpectedOperatorOutputFormat {
-	FloatTensorFormat operator_output;
-	FloatTensorFormat expected_output;
-
-	[[nodiscard]] std::string to_string() const;
-	bool
-	operator==(const UnexpectedOperatorOutputFormat& other) const = default;
-};
-
 struct [[nodiscard]] InvalidInputFormatForModel {
 	FloatTensorFormat provided;
 	FloatTensorFormat expected;
@@ -235,13 +219,19 @@ struct [[nodiscard]] InvalidInputFormatForModel {
 	bool operator==(const InvalidInputFormatForModel& other) const = default;
 };
 
+struct [[nodiscard]] InvalidOutputFormatForModel {
+	FloatTensorFormat provided;
+	FloatTensorFormat expected;
+
+	[[nodiscard]] std::string to_string() const;
+	bool operator==(const InvalidOutputFormatForModel& other) const = default;
+};
+
 COMBINED_ERROR(
 	TfLiteRunInferenceError,
-	OperatorError,
 	TfLiteLoadInputError,
 	TfLiteInvokeInterpreterError,
 	TfLiteReadOutputError,
-	InvalidInputFormatForOperator,
-	UnexpectedOperatorOutputFormat,
-	InvalidInputFormatForModel
+	InvalidInputFormatForModel,
+	InvalidOutputFormatForModel
 );

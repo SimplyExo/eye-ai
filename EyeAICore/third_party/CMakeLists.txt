@@ -1,5 +1,4 @@
 include(FetchContent)
-set(FETCHCONTENT_QUIET FALSE)
 
 # tensorflow-lite
 if(NOT DEFINED EYE_AI_CORE_USE_PREBUILT_TFLITE)

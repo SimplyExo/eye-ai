@@ -66,6 +66,14 @@
                 app:scaleType="fitCenter" />
 
             <ImageView
+                android:id="@+id/media_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:implementationMode="performance"
+                app:scaleType="fitCenter"
+                android:contentDescription="@string/media_view_description" />
+
+            <ImageView
                 android:id="@+id/debug_input_bitmap"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -171,6 +179,22 @@
                     android:textSize="11sp" />
 
             </ScrollView>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/stop_tts_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/stop_square"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="190dp"
+                android:layout_marginBottom="30dp"
+                android:backgroundTint="@color/red"
+                android:tint="@android:color/white"
+                app:rippleColor="@color/ripple_red"
+                app:borderWidth="0dp" />
+
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/flashlight_button"
