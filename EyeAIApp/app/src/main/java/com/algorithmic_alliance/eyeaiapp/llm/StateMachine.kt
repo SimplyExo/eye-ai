@@ -18,6 +18,11 @@ class StateMachine(
 	private val llmResponseText: TextView?
 ) {
 
+	//Enum class for requested functions
+	enum class RequestedFunction {
+		TEXT_RECOGNITION, SETTINGS, NONE
+	}
+
 	//private parser
 	private val jsonParser = JsonParser()
 
@@ -35,9 +40,13 @@ class StateMachine(
 				StateUpdate(State.IDLE, null)
 			}
 			RequestedFunction.SETTINGS -> {
-				val settingsResponse = generateLlmResponse(LLM.SETTINGS_PROMPT, false) ?: ""
-				speakAndHandleUi(settingsResponse)
-				StateUpdate(State.SETTINGS_MENU, null)
+				//Avoiding delays by using snippets to answer as generating an individual response comes with loosing time and is less specific.
+				//We still rely on the structured detection above (jsonResponse) to decide that we are in settings.
+				//Speak the hardcoded settings menu text and set state to SETTINGS_MENU
+				speakAndHandleUi(LLM.SNIPPET_SETTINGS)
+				//store last structured json so later confirmations can use it if needed
+				lastLlmJsonResponse = jsonResponse
+				StateUpdate(State.SETTINGS_MENU, lastLlmJsonResponse)
 			}
 			RequestedFunction.NONE -> {
 				//fallback if no function was named, handling a regular question
@@ -48,16 +57,50 @@ class StateMachine(
 		}
 	}
 
-	//handling the user choice
+	//handling the user choice while in SETTINGS_MENU
 	suspend fun handleSettingsMenu(final: String): StateUpdate {
-		val intentPrompt = "Der Nutzer befindet sich im Einstellungsmenü und sagt: '$final'. Prüfe, ob der Nutzer die Einstellungen verlassen möchte."
+		val intentPrompt =
+			"Der Nutzer befindet sich im Einstellungsmenü und sagt: '$final'. Prüfe, ob der Nutzer die Einstellungen verlassen möchte oder welche Einstellung er meint (tts_speed / voice / leave)."
 		val jsonResponse = generateLlmResponse(intentPrompt, true)
 
-		if (jsonResponse != null && jsonParser.wantsToLeave(jsonResponse)) { //since the user wants to leave the settings immediately, an explanation would be unnecessary
+		if (jsonResponse != null && jsonParser.wantsToLeave(jsonResponse)) { //user wants to leave
 			speakAndHandleUi("Möchten Sie die Einstellungen wirklich verlassen?")
+			// keep the structured response so later steps can act on it
+			lastLlmJsonResponse = jsonResponse
 			return StateUpdate(State.SETTINGS_ACTION, jsonResponse)
 		} else {
-			val explanationPrompt = "Erkläre kurz die Einstellungsmöglichkeit '$final' und frage, wie die Einstellung geändert werden soll je nach Kontext."
+			try {
+				if (jsonResponse != null) {
+					val jsonObj = JSONObject(jsonResponse)
+					val changedSettings = jsonObj.optJSONArray("changed_settings")
+					if (changedSettings != null && changedSettings.length() > 0) {
+						val firstChange = changedSettings.getJSONObject(0)
+						//handling a request to change the tts speed
+						if (firstChange.has("tts_speed")) {
+							lastLlmJsonResponse = jsonResponse
+							speakAndHandleUi(LLM.SNIPPET_TTS_SPEED) //using a snippet in order to avoid delays
+							return StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
+						}
+						//handling a request to change the voice
+						if (firstChange.has("voice")) {
+							lastLlmJsonResponse = jsonResponse
+							speakAndHandleUi(LLM.SNIPPET_VOICE) //using a snippet in order to avoid delays
+							return StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
+						}
+						if (firstChange.has("leave")) {
+							lastLlmJsonResponse = jsonResponse
+							speakAndHandleUi("Möchten Sie die Einstellungen wirklich verlassen?")
+							return StateUpdate(State.SETTINGS_ACTION, lastLlmJsonResponse)
+						}
+					}
+				}
+			} catch (e: JSONException) {
+				Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in handleSettingsMenu", e)
+			}
+
+			// Fallback: falls keine konkrete changed_settings erkannt wurde, hole eine normale Erklärung per LLM (wie bisher)
+			val explanationPrompt =
+				"Erkläre kurz die Einstellungsmöglichkeit '$final' und frage, wie die Einstellung geändert werden soll je nach Kontext."
 			val response = generateLlmResponse(explanationPrompt, false) ?: "Ich habe das leider nicht verstanden."
 			speakAndHandleUi(response)
 			return StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
@@ -78,7 +121,8 @@ class StateMachine(
 
 	//handling the requests
 	suspend fun handleSettingsAction(final: String): StateUpdate {
-		val prompt = "Würdest du sagen der Nutzer hat diesen Command bestätigt? Die Antwort des Nutzers war $final. Antworte bitte mit einer JSON-Antwort in approval."
+		val prompt =
+			"Würdest du sagen der Nutzer hat diesen Command bestätigt? Die Antwort des Nutzers war $final. Antworte bitte mit einer JSON-Antwort in approval."
 		val jsonResponse = generateLlmResponse(prompt, true) ?: return StateUpdate(State.IDLE, lastLlmJsonResponse)
 
 		if (jsonParser.isApproved(jsonResponse) && lastLlmJsonResponse != null) { //checking for user approval
@@ -97,12 +141,18 @@ class StateMachine(
 	private suspend fun generateLlmResponse(prompt: String, structured: Boolean): String? {
 		val promptPreview = if (prompt.length > 300) prompt.take(300) + "..." else prompt
 		val start = System.nanoTime()
-		Log.d(EyeAIApp.APP_LOG_TAG, "LLM generate START (structured=$structured) promptPreview='${promptPreview}' at ${System.currentTimeMillis()}")
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"LLM generate START (structured=$structured) promptPreview='${promptPreview}' at ${System.currentTimeMillis()}"
+		)
 
 		return try {
 			val result = eyeAIApp.llm!!.generate(prompt, structured)
 			val dur = elapsedMs(start)
-			Log.d(EyeAIApp.APP_LOG_TAG, "LLM generate END (structured=$structured) duration=${dur} ms resultPreview='${result.take(300)}'")
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"LLM generate END (structured=$structured) duration=${dur} ms resultPreview='${result.take(300)}'"
+			)
 			result
 		} catch (e: Exception) {
 			val dur = elapsedMs(start)
@@ -115,6 +165,7 @@ class StateMachine(
 			null
 		}
 	}
+
 	private suspend fun speakAndHandleUi(text: String) {
 		withContext(Dispatchers.Main) {
 			llmResponseText?.text = eyeAIApp.getString(R.string.llm_response, text)
@@ -122,7 +173,10 @@ class StateMachine(
 		val ttsEnqueueStart = System.nanoTime()
 		Log.d(EyeAIApp.APP_LOG_TAG, "TTS speak() ENQUEUE at ${System.currentTimeMillis()} (textPreview='${text.take(200)}')")
 		textToSpeechInstance.speak(text) // <-- sicherstellen, dass speak nicht blockiert
-		Log.d(EyeAIApp.APP_LOG_TAG, "TTS speak() returned to caller after ${elapsedMs(ttsEnqueueStart)} ms (speak enqueued or returned)")
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"TTS speak() returned to caller after ${elapsedMs(ttsEnqueueStart)} ms (speak enqueued or returned)"
+		)
 	}
 
 
@@ -172,7 +226,8 @@ class StateMachine(
 						}
 						firstChange.has("voice") -> {
 							val voice = firstChange.getString("voice")
-							return "Verstanden. Soll ich die Assistentenstimme auf $voice setzen?"
+							return if (voice.equals("1")) "Verstanden. Soll die Assistenstimme nun männlich sein?"
+							else "Verstanden. Soll die Assistenstimme nun weiblich sein?"
 						}
 						firstChange.has("leave") -> return "Möchten Sie die Einstellungen wirklich verlassen?"
 					}
@@ -224,7 +279,4 @@ class StateMachine(
 	}
 }
 
-//Enum class for requested functions
-enum class RequestedFunction {
-	TEXT_RECOGNITION, SETTINGS, NONE
-}
+
