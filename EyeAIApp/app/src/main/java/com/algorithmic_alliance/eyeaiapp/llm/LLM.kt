@@ -21,11 +21,6 @@ interface LLM {
 	
 		2. Einstellungen:
 		Wenn der Nutzer die Einstellungen der Text-zu-Sprache-Instanz anpassen möchte, wie beispielsweise die Lautstärke oder aber die Sprechgeschwindigkeit, so wird dieses Tool verwendet.
-	
-
-		Um ein Tool zu verwenden, musst du den Namen des Tools am Ende deiner Antwort nennen.
-		Nur der Name des Tools, nichts Weiteres!
-		Solltest du das Tool zuletzt genutzt haben und die Werte schon erhalten haben, so wiederhole in deiner Antwort nicht mehr den Namen des Tools!
 		"""
 
 		const val SETTINGS_PROMPT: String = """
@@ -36,9 +31,8 @@ interface LLM {
 			
 			Erkläre dich einverstanden damit und diktiere ihm diese bitte in dieser Reihenfolge, reihe diese bitte mit erstens, zweitens, drittens und viertens aneinander.
 			Frage ihn dann, welche Option er wählen möchte.
-			Merke dir, das der Nutzer soeben die Einstellungen aufgerufen hat. Nennt der Nutzer im nächsten Befehl eine dieser Optionen, so schreibe nur die Zahl der Option als deine nächste Antwort.
 			Bei "Sprachgeschwindigkeit der Sprachausgabe anpassen" wäre dies also 1.
-			In diesem Fall sollst du anschließend nicht Einstellungen wiederholen bzw. sagen!
+			
 		"""
 
 	}

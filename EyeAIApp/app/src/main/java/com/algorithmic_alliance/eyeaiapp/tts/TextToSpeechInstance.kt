@@ -5,7 +5,9 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
 import android.util.Log
+import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import java.util.Locale
+import kotlin.random.Random
 
 class TextToSpeechInstance(context: Context, val onTTSFinishedSpeaking: () -> Unit) {
 	var tts: TextToSpeech? = null
@@ -30,14 +32,14 @@ class TextToSpeechInstance(context: Context, val onTTSFinishedSpeaking: () -> Un
 		}
 	}
 
-	fun setVoice(number: Double){
+	fun setVoice(number: Int){
 
 		loadAvailableGermanVoices()
 
-		if (germanFemaleVoice != null && number.toInt() == 1) {
+		if (germanFemaleVoice != null && number == 1) {
 			tts?.voice = germanFemaleVoice
 		}
-		if (germanMaleVoice != null && number.toInt() == 0) {
+		if (germanMaleVoice != null && number == 0) {
 			tts?.voice = germanMaleVoice
 		}
 
@@ -70,10 +72,14 @@ class TextToSpeechInstance(context: Context, val onTTSFinishedSpeaking: () -> Un
 
 
 	private var utteranceProgressListener = object : UtteranceProgressListener() {
-		override fun onStart(utteranceId: String?) {}
+		override fun onStart(utteranceId: String?) {
+			Log.d(EyeAIApp.APP_LOG_TAG, "TTS onStart utteranceId=$utteranceId at ${System.currentTimeMillis()}")
+		}
 
 		override fun onDone(utteranceId: String?) {
+			Log.d(EyeAIApp.APP_LOG_TAG, "TTS onDone utteranceId=$utteranceId at ${System.currentTimeMillis()}")
 			onTTSFinishedSpeaking()
+
 		}
 
 		override fun onError(utteranceId: String?) {
@@ -93,17 +99,16 @@ class TextToSpeechInstance(context: Context, val onTTSFinishedSpeaking: () -> Un
 
 
 	fun speak(text: String) {
+		val utteranceId = "utt_${System.currentTimeMillis()}_${Random.nextInt(10000)}"
+
 		if (isInitialized) {
 			tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "tts1")
+			Log.d(EyeAIApp.APP_LOG_TAG, "TextToSpeech.speak() called with utteranceId=$utteranceId")
 		} else {
 			Log.e("TTS", "TextToSpeech ist nicht initialisiert.")
 		}
 	}
 
-	fun getVoices(){
-		Log.e("VOICES", tts?.voices.toString())
-
-	}
 
 	fun setSpeechRate(float: Float){
 		tts?.setSpeechRate(float)
