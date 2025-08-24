@@ -34,9 +34,30 @@ class StateMachine(
 
 		return when (jsonParser.parseRequestedFunction(jsonResponse)) {
 			RequestedFunction.TEXT_RECOGNITION -> {
-				val prompt = eyeAIApp.llm!!.buildOcrPrompt(eyeAIApp.ocrModel.lastResult)
-				val ocrResponse = generateLlmResponse(prompt, false) ?: ""
-				speakAndHandleUi(ocrResponse)
+				//catching empty OCR result to avoid calling LLM with empty prompt
+				val ocrLast = eyeAIApp.ocrModel.lastResult?.trim()
+				if (ocrLast.isNullOrEmpty()) {
+					Log.d(EyeAIApp.APP_LOG_TAG, "No OCR text available — skipping LLM OCR flow.")
+					speakAndHandleUi("Entschuldigung, es wurde kein Text erkannt.")
+					return StateUpdate(State.IDLE, null)
+				}
+
+				// Build prompt from the OCR result, not empty
+				val prompt = eyeAIApp.llm!!.buildOcrPrompt(ocrLast)
+				// If prompt is empty for any reason, avoid calling LLM
+				if (prompt.trim().isEmpty()) {
+					Log.w(EyeAIApp.APP_LOG_TAG, "OCR prompt is empty — skipping LLM call.")
+					speakAndHandleUi("Entschuldigung, ich konnte keinen sinnvollen Text erkennen.")
+					return StateUpdate(State.IDLE, null)
+				}
+
+				val ocrResponse = generateLlmResponse(prompt, false)
+				if (ocrResponse.isNullOrBlank()) {
+					Log.w(EyeAIApp.APP_LOG_TAG, "OCR LLM returned null/empty response.")
+					speakAndHandleUi("Entschuldigung, ich konnte keine passende Antwort zum erkannten Text generieren.")
+				} else {
+					speakAndHandleUi(ocrResponse)
+				}
 				StateUpdate(State.IDLE, null)
 			}
 			RequestedFunction.SETTINGS -> {
@@ -98,7 +119,7 @@ class StateMachine(
 				Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in handleSettingsMenu", e)
 			}
 
-			// Fallback: falls keine konkrete changed_settings erkannt wurde, hole eine normale Erklärung per LLM (wie bisher)
+
 			val explanationPrompt =
 				"Erkläre kurz die Einstellungsmöglichkeit '$final' und frage, wie die Einstellung geändert werden soll je nach Kontext."
 			val response = generateLlmResponse(explanationPrompt, false) ?: "Ich habe das leider nicht verstanden."
@@ -139,7 +160,13 @@ class StateMachine(
 
 	//generate the LlmResponse
 	private suspend fun generateLlmResponse(prompt: String, structured: Boolean): String? {
-		val promptPreview = if (prompt.length > 300) prompt.take(300) + "..." else prompt
+		val promptTrimmed = prompt.trim()
+		if (promptTrimmed.isEmpty()) {
+			Log.w(EyeAIApp.APP_LOG_TAG, "generateLlmResponse: empty prompt - skipping LLM call (structured=$structured)")
+			return null
+		}
+
+		val promptPreview = if (promptTrimmed.length > 300) promptTrimmed.take(300) + "..." else promptTrimmed
 		val start = System.nanoTime()
 		Log.d(
 			EyeAIApp.APP_LOG_TAG,
@@ -147,7 +174,7 @@ class StateMachine(
 		)
 
 		return try {
-			val result = eyeAIApp.llm!!.generate(prompt, structured)
+			val result = eyeAIApp.llm!!.generate(promptTrimmed, structured)
 			val dur = elapsedMs(start)
 			Log.d(
 				EyeAIApp.APP_LOG_TAG,
@@ -167,12 +194,19 @@ class StateMachine(
 	}
 
 	private suspend fun speakAndHandleUi(text: String) {
+		val toSpeak = text.trim()
+		// avoid speaking empty strings
+		if (toSpeak.isEmpty()) {
+			Log.w(EyeAIApp.APP_LOG_TAG, "speakAndHandleUi: empty text, skipping TTS")
+			return
+		}
+
 		withContext(Dispatchers.Main) {
-			llmResponseText?.text = eyeAIApp.getString(R.string.llm_response, text)
+			llmResponseText?.text = eyeAIApp.getString(R.string.llm_response, toSpeak)
 		}
 		val ttsEnqueueStart = System.nanoTime()
-		Log.d(EyeAIApp.APP_LOG_TAG, "TTS speak() ENQUEUE at ${System.currentTimeMillis()} (textPreview='${text.take(200)}')")
-		textToSpeechInstance.speak(text) // <-- sicherstellen, dass speak nicht blockiert
+		Log.d(EyeAIApp.APP_LOG_TAG, "TTS speak() ENQUEUE at ${System.currentTimeMillis()} (textPreview='${toSpeak.take(200)}')")
+		textToSpeechInstance.speak(toSpeak)
 		Log.d(
 			EyeAIApp.APP_LOG_TAG,
 			"TTS speak() returned to caller after ${elapsedMs(ttsEnqueueStart)} ms (speak enqueued or returned)"
@@ -278,5 +312,3 @@ class StateMachine(
 		}
 	}
 }
-
-
