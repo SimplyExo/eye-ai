@@ -1,9 +1,5 @@
 package com.algorithmic_alliance.eyeaiapp.llm
 
-import com.algorithmic_alliance.eyeaiapp.EyeAIApp
-import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
-import com.algorithmic_alliance.eyeaiapp.ocr.OCRManager
-
 interface LLM {
 	companion object {
 		const val SYSTEM_PROMPT: String =
@@ -21,26 +17,22 @@ interface LLM {
 	
 		2. Einstellungen:
 		Wenn der Nutzer die Einstellungen der Text-zu-Sprache-Instanz anpassen möchte, wie beispielsweise die Lautstärke oder aber die Sprechgeschwindigkeit, so wird dieses Tool verwendet.
-	
-
-		Um ein Tool zu verwenden, musst du den Namen des Tools am Ende deiner Antwort nennen.
-		Nur der Name des Tools, nichts Weiteres!
-		Solltest du das Tool zuletzt genutzt haben und die Werte schon erhalten haben, so wiederhole in deiner Antwort nicht mehr den Namen des Tools!
 		"""
 
-		const val SETTINGS_PROMPT: String = """
-			Der Nutzer möchte die Einstellungen anpassen. Er hat folgende Möglichkeiten: 
-			1) Sprachgeschwindigkeit der Sprachausgabe anpassen
-			2) Assistentenagenten anpassen	(dies ermöglicht dem Nutzer nur zu wählen, welche Stimme der TTS Instanz er nutzen möchte, nur dies sollten deine künftigen Erklärungen auch beeinhalten!)
-			3) Er kann die Einstellungen verlassen
-			
-			Erkläre dich einverstanden damit und diktiere ihm diese bitte in dieser Reihenfolge, reihe diese bitte mit erstens, zweitens, drittens und viertens aneinander.
-			Frage ihn dann, welche Option er wählen möchte.
-			Merke dir, das der Nutzer soeben die Einstellungen aufgerufen hat. Nennt der Nutzer im nächsten Befehl eine dieser Optionen, so schreibe nur die Zahl der Option als deine nächste Antwort.
-			Bei "Sprachgeschwindigkeit der Sprachausgabe anpassen" wäre dies also 1.
-			In diesem Fall sollst du anschließend nicht Einstellungen wiederholen bzw. sagen!
-		"""
 
+		const val SNIPPET_SETTINGS: String = """Sehr gerne, ich kann Ihnen dabei helfen, die Einstellungen anzupassen. 
+
+		Es besteht die Möglichkeit die Sprechgeschwindigkeit der Sprachausgabe anzupassen. Auch ist es möglich die Stimme des Assitentenagenten zu ändern oder aber die Einstellungen zu verlassen. 
+
+		Welche dieser Optionen möchten Sie wählen?"""
+
+		const val SNIPPET_TTS_SPEED: String = """Mit dieser Option können Sie die Sprechgeschwindigkeit der Sprachausgabe anzupassen.
+        Der standartmäßige Wert der Geschwindigkeit liegt bei 1.0.
+        Möchten Sie die Geschwindigkeit erhöhen, verringern oder auf einen bestimmten Wert setzen?
+        """
+
+		const val SNIPPET_VOICE: String = """Mit dieser Einstellung können Sie die Stimme des Assistentenagenten zwischen männlich und weiblich variieren. Möchten Sie die männliche oder die weibliche Assistentenstimme nutzen?
+        """
 	}
 
 

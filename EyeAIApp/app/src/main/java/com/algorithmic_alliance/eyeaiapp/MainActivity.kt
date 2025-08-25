@@ -373,6 +373,8 @@ class MainActivity : AppCompatActivity() {
 			return
 		}
 
+		val receiveTs = System.nanoTime()
+		Log.d(EyeAIApp.APP_LOG_TAG, "SR final RECEIVED at ${System.currentTimeMillis()} (ms), text='${final.take(200)}'")
 
 
 		CoroutineScope(Dispatchers.Main).launch {
@@ -395,9 +397,13 @@ class MainActivity : AppCompatActivity() {
 				// vibrate for 100ms
 				vibrate(eyeAIApp(), 100)
 
+				Log.d(EyeAIApp.APP_LOG_TAG, "Dispatching to LLM worker at ${System.currentTimeMillis()} (ms); latency since SR receive = ${elapsedMs(receiveTs)} ms")
 
 				withContext(llmThreadExecutor.asCoroutineDispatcher()) {
+					val workerStart = System.nanoTime()
+					Log.d(EyeAIApp.APP_LOG_TAG, "LLM worker START processing at ${System.currentTimeMillis()} (ms)")
 					onSpeechResult(final)
+					Log.d(EyeAIApp.APP_LOG_TAG, "LLM worker FINISHED processing at ${System.currentTimeMillis()} (ms); duration=${elapsedMs(workerStart)} ms")
 				}
 
 			}
@@ -409,8 +415,9 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun onTTSFinishedSpeaking() {
-		// Muss auf dem Main thread laufen
+		//Main thread needed
 		CoroutineScope(Dispatchers.Main).launch {
+			Log.d(EyeAIApp.APP_LOG_TAG, "onTTSFinishedSpeaking() called at ${System.currentTimeMillis()}")
 			speechRecognitionFinalResultText?.apply {
 				text = getString(R.string.speech_recognition_ready)
 			}
@@ -432,4 +439,6 @@ class MainActivity : AppCompatActivity() {
 	currentState = update.newState
 		lastLlmJsonResponse = update.newJson
 	}
+
+	fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
 }
