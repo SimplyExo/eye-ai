@@ -1,7 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp
 
 import android.content.Intent
-import android.graphics.Bitmap.createBitmap
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -25,7 +24,6 @@ import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
-import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -36,7 +34,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
-import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()

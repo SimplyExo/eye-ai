@@ -24,13 +24,20 @@ class TextToSpeechInstance(context: Context, val onTTSFinishedSpeaking: () -> Un
 			val result = tts?.setLanguage(Locale.GERMAN)
 			when (result) {
 				TextToSpeech.SUCCESS -> Log.d("TTS", "Initialisierung erfolgreich. Ready to speak!")
-				TextToSpeech.LANG_MISSING_DATA, TextToSpeech.LANG_NOT_SUPPORTED -> Log.e("TTS", "Sprache nicht unterstützt oder Daten fehlen.")
-				else -> Log.e("TTS", "Konnte TTS Sprache nicht auf Deutsch stellen! Errorcode: $result")
+				TextToSpeech.LANG_MISSING_DATA, TextToSpeech.LANG_NOT_SUPPORTED -> Log.e(
+					"TTS",
+					"Sprache nicht unterstützt oder Daten fehlen."
+				)
+
+				else -> Log.e(
+					"TTS",
+					"Konnte TTS Sprache nicht auf Deutsch stellen! Errorcode: $result"
+				)
 			}
 		} else {
 			Log.e("TTS", "Initialisierung fehlgeschlagen. Fehler: $status")
 		}
-	}
+	}  
 
 	fun setVoice(number: Int){
 
@@ -61,8 +68,8 @@ class TextToSpeechInstance(context: Context, val onTTSFinishedSpeaking: () -> Un
 			}
 
 			// Logging
-			Log.d("TTS", "Gefundene weibliche Stimme: ${germanFemaleVoice?.name}")
-			Log.d("TTS", "Gefundene männliche Stimme: ${germanMaleVoice?.name}")
+			Log.d("TTS", "Gefundene weibliche Stimme: $germanFemaleVoice")
+			Log.d("TTS", "Gefundene männliche Stimme: $germanMaleVoice")
 			Log.d("TTS", tts?.voices.toString())
 
 		} catch (e: Exception) {
