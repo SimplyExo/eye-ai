@@ -23,7 +23,8 @@ import javax.net.ssl.X509TrustManager
  */
 class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: String?) : LLM {
 	companion object {
-		const val MODEL_NAME: String = "gemini-1.5-flash-latest" // Using a recent stable model
+		const val MODEL_NAME: String =
+			"gemini-2.5-flash"
 		private const val GOOGLE_GEN_AI_ENDPOINT = "https://generativelanguage.googleapis.com"
 	}
 
@@ -55,8 +56,11 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 			connection.setRequestProperty("Accept", "application/json")
 			connection.doOutput = true
 
-			if (customEndpoint != null) {
-				Log.w(EyeAIApp.APP_LOG_TAG, "Custom endpoint: disabling hostname/cert checks for dev-only")
+			if (customEndpoint != null && !customEndpoint.isEmpty()) {
+				Log.w(
+					EyeAIApp.APP_LOG_TAG,
+					"Custom endpoint: disabling hostname/cert checks for dev-only"
+				)
 				connection.hostnameVerifier = HostnameVerifier { _, _ -> true }
 				connection.sslSocketFactory = createTrustAllSslSocketFactory()
 			}
@@ -64,10 +68,14 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 			val requestBody = createRequestBody(command, structured)
 			val writeStart = System.nanoTime()
 			val outputStream: OutputStream = connection.outputStream
-			outputStream.write(requestBody.toString().toByteArray(Charsets.UTF_8))
+			val requestBodyString = requestBody.toString()
+			outputStream.write(requestBodyString.toByteArray(Charsets.UTF_8))
 			outputStream.close()
 			val writeMs = elapsedMs(writeStart)
-			Log.d(EyeAIApp.APP_LOG_TAG, "Wrote request body in $writeMs ms (size=${requestBody.toString().length} chars)")
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"Wrote request body in $writeMs ms (size=${requestBodyString.length} chars)"
+			)
 
 			val responseCodeStart = System.nanoTime()
 			val responseCode = connection.responseCode
@@ -86,7 +94,10 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 			reader = BufferedReader(InputStreamReader(connection.inputStream))
 			val response = reader.readText()
 			val readMs = elapsedMs(readStart)
-			Log.d(EyeAIApp.APP_LOG_TAG, "Read response in $readMs ms (size=${response.length} chars)")
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"Read response in $readMs ms (size=${response.length} chars)"
+			)
 
 			val parseStart = System.nanoTime()
 			val parsed = parseResponse(response)
@@ -134,7 +145,10 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 					// Feld zur Klassifizierung der Absicht im Einstellungsmenü
 					put("setting_intent", JSONObject().apply {
 						put("type", "STRING")
-						put("description", "Identifiziert die spezifische Absicht des Nutzers innerhalb des Einstellungsmenüs. Muss einer der folgenden Werte sein: 'tts_speed', 'voice', 'leave' oder 'none'.")
+						put(
+							"description",
+							"Identifiziert die spezifische Absicht des Nutzers innerhalb des Einstellungsmenüs. Muss einer der folgenden Werte sein: 'tts_speed', 'voice', 'leave' oder 'none'."
+						)
 						put("enum", JSONArray().apply {
 							put("tts_speed")
 							put("voice")
@@ -146,15 +160,24 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 					// Feld für die erste Entscheidung (IDLE-State)
 					put("requested_functions", JSONObject().apply {
 						put("type", "OBJECT")
-						put("description", "Identifies which core function the user wants to trigger.")
+						put(
+							"description",
+							"Identifies which core function the user wants to trigger."
+						)
 						put("properties", JSONObject().apply {
 							put("einstellungen", JSONObject().apply {
 								put("type", "BOOLEAN")
-								put("description", "Set to true if the user wants to open or modify settings.")
+								put(
+									"description",
+									"Set to true if the user wants to open or modify settings."
+								)
 							})
 							put("texterkennung", JSONObject().apply {
 								put("type", "BOOLEAN")
-								put("description", "Set to true if the user wants to use the text recognition (OCR) feature.")
+								put(
+									"description",
+									"Set to true if the user wants to use the text recognition (OCR) feature."
+								)
 							})
 						})
 					})
@@ -167,15 +190,24 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 							put("properties", JSONObject().apply {
 								put("tts_speed", JSONObject().apply {
 									put("type", "NUMBER")
-									put("description", "The new text-to-speech speed, e.g. 1.0, 1.5, or 0.8")
+									put(
+										"description",
+										"The new text-to-speech speed, e.g. 1.0, 1.5, or 0.8"
+									)
 								})
 								put("voice", JSONObject().apply {
 									put("type", "NUMBER")
-									put("description", "The new voice. If the user suggests it should be female, answer with 0. If male, answer with 1.")
+									put(
+										"description",
+										"The new voice. If the user suggests it should be female, answer with 0. If male, answer with 1."
+									)
 								})
 								put("leave", JSONObject().apply {
 									put("type", "BOOLEAN")
-									put("description", "Set to true if the user wants to leave the settings menu.")
+									put(
+										"description",
+										"Set to true if the user wants to leave the settings menu."
+									)
 								})
 							})
 						})
@@ -184,7 +216,10 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 					// Feld für die Bestätigung
 					put("approval", JSONObject().apply {
 						put("type", "NUMBER")
-						put("description", "Whether the user approves the change or doesn't. Answer with either 1 or 0. '1' for approval, '0' for disagreement.")
+						put(
+							"description",
+							"Whether the user approves the change or doesn't. Answer with either 1 or 0. '1' for approval, '0' for disagreement."
+						)
 					})
 				})
 			}
@@ -233,8 +268,18 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 private fun createTrustAllSslSocketFactory(): SSLSocketFactory {
 	val trustAllCerts = arrayOf<TrustManager>(
 		object : X509TrustManager {
-			override fun checkClientTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
-			override fun checkServerTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
+			override fun checkClientTrusted(
+				chain: Array<java.security.cert.X509Certificate>,
+				authType: String
+			) {
+			}
+
+			override fun checkServerTrusted(
+				chain: Array<java.security.cert.X509Certificate>,
+				authType: String
+			) {
+			}
+
 			override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> = arrayOf()
 		}
 	)
