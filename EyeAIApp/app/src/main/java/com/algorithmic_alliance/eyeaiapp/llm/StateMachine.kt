@@ -8,6 +8,7 @@ import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -18,33 +19,35 @@ class StateMachine(
 	private val llmResponseText: TextView?
 ) {
 
-	//Enum class for requested functions
+	// Enum class for the initial function request
 	enum class RequestedFunction {
 		TEXT_RECOGNITION, SETTINGS, NONE
 	}
 
-	//private parser
+	// Enum class for intents within the settings menu
+	enum class SettingIntent {
+		TTS_SPEED, VOICE, LEAVE, NONE
+	}
+
+	// private parser
 	private val jsonParser = JsonParser()
 
-	fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
+	private fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
 
-	//handling Idle
+	// Handling Idle state
 	suspend fun handleIdle(final: String): StateUpdate {
 		val jsonResponse = generateLlmResponse(final, true) ?: return StateUpdate(State.IDLE, null)
 
 		return when (jsonParser.parseRequestedFunction(jsonResponse)) {
 			RequestedFunction.TEXT_RECOGNITION -> {
-				//catching empty OCR result to avoid calling LLM with empty prompt
-				val ocrLast = eyeAIApp.ocrModel.lastResult?.trim()
-				if (ocrLast.isNullOrEmpty()) {
+				val ocrLast = eyeAIApp.ocrModel.lastResult.trim()
+				if (ocrLast.isEmpty()) {
 					Log.d(EyeAIApp.APP_LOG_TAG, "No OCR text available — skipping LLM OCR flow.")
 					speakAndHandleUi("Entschuldigung, es wurde kein Text erkannt.")
 					return StateUpdate(State.IDLE, null)
 				}
 
-				// Build prompt from the OCR result, not empty
 				val prompt = eyeAIApp.llm!!.buildOcrPrompt(ocrLast)
-				// If prompt is empty for any reason, avoid calling LLM
 				if (prompt.trim().isEmpty()) {
 					Log.w(EyeAIApp.APP_LOG_TAG, "OCR prompt is empty — skipping LLM call.")
 					speakAndHandleUi("Entschuldigung, ich konnte keinen sinnvollen Text erkennen.")
@@ -61,16 +64,11 @@ class StateMachine(
 				StateUpdate(State.IDLE, null)
 			}
 			RequestedFunction.SETTINGS -> {
-				//Avoiding delays by using snippets to answer as generating an individual response comes with loosing time and is less specific.
-				//We still rely on the structured detection above (jsonResponse) to decide that we are in settings.
-				//Speak the hardcoded settings menu text and set state to SETTINGS_MENU
 				speakAndHandleUi(LLM.SNIPPET_SETTINGS)
-				//store last structured json so later confirmations can use it if needed
 				lastLlmJsonResponse = jsonResponse
 				StateUpdate(State.SETTINGS_MENU, lastLlmJsonResponse)
 			}
 			RequestedFunction.NONE -> {
-				//fallback if no function was named, handling a regular question
 				val fallbackResponse = generateLlmResponse(final, false) ?: jsonResponse
 				speakAndHandleUi(fallbackResponse)
 				StateUpdate(State.IDLE, null)
@@ -78,57 +76,61 @@ class StateMachine(
 		}
 	}
 
-	//handling the user choice while in SETTINGS_MENU
+	// Handling the user choice while in SETTINGS_MENU
 	suspend fun handleSettingsMenu(final: String): StateUpdate {
-		val intentPrompt =
-			"Der Nutzer befindet sich im Einstellungsmenü und sagt: '$final'. Prüfe, ob der Nutzer die Einstellungen verlassen möchte oder welche Einstellung er meint (tts_speed / voice / leave)."
-		val jsonResponse = generateLlmResponse(intentPrompt, true)
+		// The prompt was adapted to be more precise than before, allowing the LLM to classify the cases more easily
+		val intentPrompt = """Der Nutzer ist im Einstellungsmenü und sagt: '$final'.
+        Klassifiziere die Absicht des Nutzers in eine der folgenden Kategorien und gib sie im Feld 'setting_intent' zurück:
+        - 'tts_speed': Wenn der Nutzer die Sprechgeschwindigkeit ändern will (z.B. "schneller sprechen").
+        - 'voice': Wenn der Nutzer die Stimme des Assistenten ändern will (z.B. "Stimme ändern", "andere Stimme", "Assistentenagenten anpassen").
+        - 'leave': Wenn der Nutzer die Einstellungen verlassen will.
+        - 'none': Wenn keine der obigen Absichten klar erkennbar ist.
 
-		if (jsonResponse != null && jsonParser.wantsToLeave(jsonResponse)) { //user wants to leave
-			speakAndHandleUi("Möchten Sie die Einstellungen wirklich verlassen?")
-			// keep the structured response so later steps can act on it
-			lastLlmJsonResponse = jsonResponse
-			return StateUpdate(State.SETTINGS_ACTION, jsonResponse)
-		} else {
-			try {
-				if (jsonResponse != null) {
-					val jsonObj = JSONObject(jsonResponse)
-					val changedSettings = jsonObj.optJSONArray("changed_settings")
-					if (changedSettings != null && changedSettings.length() > 0) {
-						val firstChange = changedSettings.getJSONObject(0)
-						//handling a request to change the tts speed
-						if (firstChange.has("tts_speed")) {
-							lastLlmJsonResponse = jsonResponse
-							speakAndHandleUi(LLM.SNIPPET_TTS_SPEED) //using a snippet in order to avoid delays
-							return StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
-						}
-						//handling a request to change the voice
-						if (firstChange.has("voice")) {
-							lastLlmJsonResponse = jsonResponse
-							speakAndHandleUi(LLM.SNIPPET_VOICE) //using a snippet in order to avoid delays
-							return StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
-						}
-						if (firstChange.has("leave")) {
-							lastLlmJsonResponse = jsonResponse
-							speakAndHandleUi("Möchten Sie die Einstellungen wirklich verlassen?")
-							return StateUpdate(State.SETTINGS_ACTION, lastLlmJsonResponse)
-						}
-					}
-				}
-			} catch (e: JSONException) {
-				Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in handleSettingsMenu", e)
+        Antworte NUR mit dem JSON-Objekt.
+        Beispiel für die Eingabe "ich will eine andere Stimme": {"setting_intent": "voice"}
+        Beispiel für die Eingabe "verlassen": {"setting_intent": "leave"}
+        """
+		val jsonResponse = generateLlmResponse(intentPrompt, true) ?: return StateUpdate(State.SETTINGS_MENU, null)
+
+		// The logic should now be clean, deterministic, and based solely on the LLM's classification.
+		// The LLM classifies the users request by using structured responses
+		return when (jsonParser.parseSettingIntent(jsonResponse)) {
+			SettingIntent.TTS_SPEED -> {
+				lastLlmJsonResponse = jsonResponse
+				speakAndHandleUi(LLM.SNIPPET_TTS_SPEED)
+				StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
 			}
+			SettingIntent.VOICE -> {
+				lastLlmJsonResponse = jsonResponse
+				speakAndHandleUi(LLM.SNIPPET_VOICE)
+				StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
+			}
+			SettingIntent.LEAVE -> {
+				// Fixed bug, better JSON-Parsing
+				val syntheticLeave = JSONObject().apply {
+					put("changed_settings", JSONArray().apply {
+						put(JSONObject().apply {
+							put("leave", true)
+						})
+					})
+				}
+				lastLlmJsonResponse = syntheticLeave.toString()
 
-
-			val explanationPrompt =
-				"Erkläre kurz die Einstellungsmöglichkeit '$final' und frage, wie die Einstellung geändert werden soll je nach Kontext."
-			val response = generateLlmResponse(explanationPrompt, false) ?: "Ich habe das leider nicht verstanden."
-			speakAndHandleUi(response)
-			return StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
+				// Ask for confirmation
+				speakAndHandleUi("Möchten Sie die Einstellungen wirklich verlassen?")
+				StateUpdate(State.SETTINGS_ACTION, lastLlmJsonResponse)
+			}
+			SettingIntent.NONE -> {
+				// Fallback
+				val response = "Ich habe das leider nicht verstanden. Sie können die Sprechgeschwindigkeit anpassen, die Stimme ändern oder die Einstellungen verlassen."
+				speakAndHandleUi(response)
+				StateUpdate(State.SETTINGS_MENU, lastLlmJsonResponse) // Stay in the menu
+			}
 		}
 	}
 
 
+	// Handling the setting value choice
 	suspend fun handleSettingsChoice(final: String): StateUpdate {
 		val prompt = "Führe die folgende Aktion aus: '$final'."
 		val jsonResponse = generateLlmResponse(prompt, true) ?: return StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
@@ -140,13 +142,13 @@ class StateMachine(
 		return StateUpdate(State.SETTINGS_ACTION, jsonResponse)
 	}
 
-	//handling the requests
+	// Handling the confirmation for a setting change
 	suspend fun handleSettingsAction(final: String): StateUpdate {
 		val prompt =
 			"Würdest du sagen der Nutzer hat diesen Command bestätigt? Die Antwort des Nutzers war $final. Antworte bitte mit einer JSON-Antwort in approval."
 		val jsonResponse = generateLlmResponse(prompt, true) ?: return StateUpdate(State.IDLE, lastLlmJsonResponse)
 
-		if (jsonParser.isApproved(jsonResponse) && lastLlmJsonResponse != null) { //checking for user approval
+		if (jsonParser.isApproved(jsonResponse) && lastLlmJsonResponse != null) {
 			val success = jsonParser.applySettings(lastLlmJsonResponse!!)
 			if (!success) {
 				speakAndHandleUi("Entschuldigung, beim Anwenden der Einstellung ist ein Fehler aufgetreten.")
@@ -157,8 +159,7 @@ class StateMachine(
 		return StateUpdate(State.IDLE, null)
 	}
 
-
-	//generate the LlmResponse
+	// Generates the LLM response
 	private suspend fun generateLlmResponse(prompt: String, structured: Boolean): String? {
 		val promptTrimmed = prompt.trim()
 		if (promptTrimmed.isEmpty()) {
@@ -184,18 +185,16 @@ class StateMachine(
 		} catch (e: Exception) {
 			val dur = elapsedMs(start)
 			Log.e(EyeAIApp.APP_LOG_TAG, "LLM generate EXCEPTION after $dur ms", e)
-			if (structured) {
-				speakAndHandleUi("Entschuldigung, die strukturierte Anfrage ist fehlgeschlagen.")
-			} else {
-				speakAndHandleUi("Entschuldigung, bei der Anfrage ist ein Fehler aufgetreten.")
-			}
+			val errorMsg = if (structured) "Entschuldigung, die strukturierte Anfrage ist fehlgeschlagen."
+			else "Entschuldigung, bei der Anfrage ist ein Fehler aufgetreten."
+			speakAndHandleUi(errorMsg)
 			null
 		}
 	}
 
+	// Speaks the given text and updates the UI
 	private suspend fun speakAndHandleUi(text: String) {
 		val toSpeak = text.trim()
-		// avoid speaking empty strings
 		if (toSpeak.isEmpty()) {
 			Log.w(EyeAIApp.APP_LOG_TAG, "speakAndHandleUi: empty text, skipping TTS")
 			return
@@ -213,12 +212,25 @@ class StateMachine(
 		)
 	}
 
-
 	// =================================================================================
 	//  Using an extra private inner class in order to avoid Json-Parsing in the main functions
 	// =================================================================================
-
 	private inner class JsonParser {
+
+		fun parseSettingIntent(jsonString: String): SettingIntent {
+			return try {
+				when (JSONObject(jsonString).optString("setting_intent", "none")) {
+					"tts_speed" -> SettingIntent.TTS_SPEED
+					"voice" -> SettingIntent.VOICE
+					"leave" -> SettingIntent.LEAVE
+					else -> SettingIntent.NONE
+				}
+			} catch (e: JSONException) {
+				Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseSettingIntent", e)
+				SettingIntent.NONE
+			}
+		}
+
 		fun parseRequestedFunction(jsonString: String): RequestedFunction {
 			return try {
 				val requestedFunctions = JSONObject(jsonString).optJSONObject("requested_functions")
@@ -233,21 +245,6 @@ class StateMachine(
 			}
 		}
 
-		fun wantsToLeave(jsonString: String): Boolean {
-			return try {
-				val changedSettings = JSONObject(jsonString).optJSONArray("changed_settings")
-				if (changedSettings != null && changedSettings.length() > 0) {
-					changedSettings.getJSONObject(0).optBoolean("leave", false)
-				} else {
-					false
-				}
-			} catch (e: JSONException) {
-				Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in wantsToLeave", e)
-				false
-			}
-		}
-
-
 		fun createConfirmationQuestion(jsonString: String): String {
 			try {
 				val changedSettings = JSONObject(jsonString).optJSONArray("changed_settings")
@@ -260,7 +257,7 @@ class StateMachine(
 						}
 						firstChange.has("voice") -> {
 							val voice = firstChange.getString("voice")
-							return if (voice.equals("1")) "Verstanden. Soll die Assistenstimme nun männlich sein?"
+							return if (voice == "1") "Verstanden. Soll die Assistenstimme nun männlich sein?"
 							else "Verstanden. Soll die Assistenstimme nun weiblich sein?"
 						}
 						firstChange.has("leave") -> return "Möchten Sie die Einstellungen wirklich verlassen?"
@@ -269,8 +266,10 @@ class StateMachine(
 			} catch (e: JSONException) {
 				Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in createConfirmationQuestion", e)
 			}
-			return "Soll ich die angeforderte Änderung durchführen?" //fallback
+			return "Soll ich die angeforderte Änderung durchführen?" // Fallback
 		}
+
+
 
 		fun isApproved(jsonString: String): Boolean {
 			return try {
