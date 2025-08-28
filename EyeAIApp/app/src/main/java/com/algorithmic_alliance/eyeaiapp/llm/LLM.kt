@@ -21,22 +21,23 @@ interface LLM {
 		"""
 
 
-		const val SNIPPET_SETTINGS: String = """Sehr gerne, ich kann Ihnen dabei helfen, die Einstellungen anzupassen. 
+		const val SNIPPET_SETTINGS: String =
+			"""Sehr gerne, ich kann Ihnen dabei helfen, die Einstellungen anzupassen. 
 
 		Es besteht die Möglichkeit die Sprechgeschwindigkeit der Sprachausgabe anzupassen. Auch ist es möglich die Stimme des Assitentenagenten zu ändern oder aber die Einstellungen zu verlassen. 
 
 		Welche dieser Optionen möchten Sie wählen?"""
 
-		const val SNIPPET_TTS_SPEED: String = """Mit dieser Option können Sie die Sprechgeschwindigkeit der Sprachausgabe anzupassen.
+		const val SNIPPET_TTS_SPEED: String =
+			"""Mit dieser Option können Sie die Sprechgeschwindigkeit der Sprachausgabe anzupassen.
         Der standartmäßige Wert der Geschwindigkeit liegt bei 1.0.
         Möchten Sie die Geschwindigkeit erhöhen, verringern oder auf einen bestimmten Wert setzen?
         """
 
-		const val SNIPPET_VOICE: String = """Mit dieser Einstellung können Sie die Stimme des Assistentenagenten zwischen männlich und weiblich variieren. Möchten Sie die männliche oder die weibliche Assistentenstimme nutzen?
+		const val SNIPPET_VOICE: String =
+			"""Mit dieser Einstellung können Sie die Stimme des Assistentenagenten zwischen männlich und weiblich variieren. Möchten Sie die männliche oder die weibliche Assistentenstimme nutzen?
         """
 	}
-
-
 
 
 	fun buildOcrPrompt(input: String): String {
@@ -47,7 +48,8 @@ interface LLM {
 			" Mache anhand der übergebenen x- und y-Koordinaten des Handybildschirms aus, wo sich der Text in der Kameraperspektive befindet. " +
 			" Formuliere den Text so, als würdest du einer Person erklären, wo diese den erkannten Text sieht." +
 			" Ein Beispiel wäre: Der Text ... befindet sich links oben von dir aus. Sprich also bitte nicht von einem Bildschirm, sondern sprich diese Person an." +
-			" In diesem Fall sollst du anschließend nicht Texterkennung wiederholen bzw. sagen!"
+			" In diesem Fall sollst du anschließend nicht Texterkennung wiederholen bzw. sagen!" +
+			" Du solltest niemals in JSON oder einem ähnlichem anderem Format antworten. Antworte so, dass eine blinde Person dich verstehen kann."
 	}
 
 
