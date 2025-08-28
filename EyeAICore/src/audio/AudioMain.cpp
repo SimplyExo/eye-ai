@@ -1,5 +1,4 @@
 #include "EyeAICore/audio/AudioMain.hpp"
-#include "EyeAICore/audio/AudioData.hpp"
 #include "EyeAICore/audio/AudioSourceData.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -19,7 +18,7 @@ AudioMain::AudioMain() {
 	buffers.resize(NUMBER_OF_SOURCES, std::vector<ALuint>(BUFFERS_PER_SOURCE));
 	sources.resize(NUMBER_OF_SOURCES);
 	audio_sources_data.resize(
-		NUMBER_OF_SOURCES, AudioSourceData{200.0f, 0.0f, 0.0f, 0.0f}
+		NUMBER_OF_SOURCES, AudioSourceData{25.0f, 1.0f, 0.0f,0.0f,0.0f}
 	);
 
 	// Setting up the OpenAL configuration
@@ -53,9 +52,7 @@ void AudioMain::startAudioLoop(std::atomic<bool>& running) {
 		for (int i = 0; i < NUMBER_OF_SOURCES; i++) {
 			// Retrieving the source and it's AudioSourceData
 			auto& source = sources[i];
-			AudioData audio_data(
-				audio_sources_data[i].frequency, BUFFER_DURATION
-			);
+
 			/*
 			Checking if a buffer has been fully played.
 			If so, it will be filled up again.
@@ -67,8 +64,8 @@ void AudioMain::startAudioLoop(std::atomic<bool>& running) {
 				ALuint buf;
 				alSourceUnqueueBuffers(source, 1, &buf);
 				alBufferData(
-					buf, AL_FORMAT_MONO16, audio_data.samples.data(),
-					audio_data.numSamples * sizeof(short), audio_data.sampleRate
+					buf, AL_FORMAT_MONO16, audio_sources_data[i].samples.data(),
+					audio_sources_data[i].number_of_samples * sizeof(short), audio_sources_data[i].sample_rate
 				);
 				alSourceQueueBuffers(source, 1, &buf);
 				// Updating the source's position
@@ -114,15 +111,15 @@ void AudioMain::setupSources() {
 		// Extracting the AudioSourceData for the source, and creating according
 		// AudioData
 		AudioSourceData source_data = audio_sources_data[i];
-		AudioData audio_data(source_data.frequency, BUFFER_DURATION);
+	
 
 		// Generating each buffer, filling it up and queuing it to the source
 		alGenBuffers(BUFFERS_PER_SOURCE, buffers[i].data());
 		for (auto buf : buffers[i]) {
 			alBufferData(
-				buf, AL_FORMAT_MONO16, audio_data.samples.data(),
-				audio_data.numSamples * sizeof(short), audio_data.sampleRate
-			);
+					buf, AL_FORMAT_MONO16, audio_sources_data[i].samples.data(),
+					audio_sources_data[i].number_of_samples * sizeof(short), audio_sources_data[i].sample_rate
+				);
 			alSourceQueueBuffers(sources[i], 1, &buf);
 		}
 		// Setting the right position for the source

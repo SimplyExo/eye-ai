@@ -1,4 +1,3 @@
-#include "EyeAICore/audio/AudioData.hpp"
 #include "EyeAICore/audio/SpacialAudio.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -16,6 +15,8 @@ int main() {
 	std::cout << "Inside Main.cpp" << std::endl;
 
 	SpacialAudio spacialAudio;
+
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	
 	/*
 	ALCdevice* device;
@@ -65,7 +66,7 @@ int main() {
 	
 	return 0;
 }
-
+/*
 void audio_loop(std::vector<ALuint>& sources) {
 	std::cout << "Inside audio_loop" << "\n";
 	AudioData audioData(200.0f, 1.0f);
@@ -84,10 +85,7 @@ void audio_loop(std::vector<ALuint>& sources) {
 			std::cout << "Buffers queued: " << queued << "\n";
 
 			if (processed > 0) {
-				/*
-				Hier checken, ob es neue Daten für die DepthEstimation gibt,
-				wenn ja diese nehmen, wenn nein 0Hz ausgeben
-				*/
+				
 				ALuint buf;
 				alSourceUnqueueBuffers(source, 1, &buf);
 				alBufferData(
@@ -111,3 +109,4 @@ void audio_loop(std::vector<ALuint>& sources) {
 		audio_frame++;
 	}
 }
+*/

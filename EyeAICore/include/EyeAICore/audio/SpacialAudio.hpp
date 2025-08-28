@@ -8,7 +8,7 @@ SpacialAudio handles everything necessary for the spacial audio:
 */
 
 #include "EyeAICore/audio/AudioMain.hpp"
-#include "EyeAICore/audio/Source.hpp"
+
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <thread>
@@ -35,6 +35,8 @@ class SpacialAudio {
 	bool isFinished = true;
 	AudioMain audio_main;
 	const int NUMBER_OF_SOURCES = 16;
+	const float BUFFER_LENGTH = 1;
+	const int SAMPLE_RATE = 44100;
 	
 
   public:

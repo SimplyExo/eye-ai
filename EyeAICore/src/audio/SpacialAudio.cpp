@@ -3,12 +3,12 @@
 #include "EyeAICore/audio/AudioSourceData.hpp"
 #include "EyeAICore/audio/CalculateSoundOrigin.hpp"
 #include <algorithm>
-#include <iostream>
 #include <thread>
 #include <vector>
 
 SpacialAudio::SpacialAudio() {
-	audio_thread = std::thread([this]() { audio_main.startAudioLoop(running); });
+	audio_thread =
+		std::thread([this]() { audio_main.startAudioLoop(running); });
 }
 
 void SpacialAudio::getDepthEstimationData(std::vector<float> data) {
@@ -45,7 +45,8 @@ void SpacialAudio::processDepthEstimationData() {
 		}
 
 		float nearest_distance =
-			*std::min_element(column.begin(), column.end()) * 10; //TODO: die *10 sind nur für Testzwecke
+			*std::min_element(column.begin(), column.end()) *
+			10; // TODO: die *10 sind nur für Testzwecke
 
 		/*
 		Retrieving sound origin, by passing coordinates in Frame and nearest
@@ -58,7 +59,7 @@ void SpacialAudio::processDepthEstimationData() {
 			);
 
 		new_audio_source_data.push_back(AudioSourceData{
-			200.0f, sound_origin[0], sound_origin[1], sound_origin[2]
+			200.0f, BUFFER_LENGTH,sound_origin[0], sound_origin[1], sound_origin[2]
 		});
 	}
 	audio_main.changeAudioData(new_audio_source_data);
@@ -68,8 +69,8 @@ void SpacialAudio::processDepthEstimationData() {
 bool SpacialAudio::getProcessingStatus() { return isFinished; }
 
 SpacialAudio::~SpacialAudio() {
-	running = false;  
-    if (audio_thread.joinable()) {
-        audio_thread.join(); 
-    }
+	running = false;
+	if (audio_thread.joinable()) {
+		audio_thread.join();
+	}
 }

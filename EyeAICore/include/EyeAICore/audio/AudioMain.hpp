@@ -9,7 +9,6 @@ Once AudioLoop start, continues playback is ensured,
 by refilling empty buffers with new data
 */
 
-#include "EyeAICore/audio/AudioData.hpp"
 #include "EyeAICore/audio/AudioSourceData.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
