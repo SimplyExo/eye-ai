@@ -1,10 +1,9 @@
 #pragma once
 
 #include <array>
-#include <iostream>
 
 /*
-This class convertes a pixel of the depth estimation
+This class converts a pixel of the depth estimation
 data into a position in 3d space, depending on the FOV
 of the camera and the distance of the object in the pixel
 */
@@ -17,15 +16,15 @@ class CalculateSoundOrigin {
 	);
 
   private:
-  	//FOV of the camer to ONE side
+  	//FOV of the camera to ONE side
 	float maxAngle = 90;
 	float distanceToObject;
 	//coordinates of the pixel: from 1 to Resolution
 	int pixelXCoordinate;
 	//int pixelYCoordinate;
-	int pictureXResolution = 4;
+	int pictureXResolution = 256;
 	//int pictureYResolution = 100;
-	float getPixleAngle();
+	float getPixelAngle();
 	std::array<float, 3> getVectorToOrigin(float pixelAngle);
 	std::array<float, 3> getOrigin(std::array<float, 3> directionalVector);
 };

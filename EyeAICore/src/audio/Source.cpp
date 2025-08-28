@@ -10,8 +10,6 @@ Source::Source(const AudioData& data,  const std::array<float, 3>& position) : a
     this-> z_pos = position[2];
     generateBuffer();
     generateSource();
-    playSource();
-
 }
 
 void Source::generateBuffer(){

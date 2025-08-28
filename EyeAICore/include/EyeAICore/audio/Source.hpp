@@ -1,5 +1,8 @@
 #pragma once
 
+/*
+Neben-Instanz, kontrolliert Sources
+*/
 #include "AudioData.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -28,5 +31,6 @@ class Source {
 
 	void generateBuffer();
 	void generateSource();
+	void fillBuffer();
 	void playSource();
 };

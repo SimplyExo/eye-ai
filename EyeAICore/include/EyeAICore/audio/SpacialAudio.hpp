@@ -1,7 +1,17 @@
 #pragma once
+
+/*
+SpacialAudio handles everything necessary for the spacial audio:
+- retreving the depthEstimationData
+- converting depthEstimationData into audio source position
+- managing AudioMain instance
+*/
+
 #include "EyeAICore/audio/AudioMain.hpp"
+#include "EyeAICore/audio/Source.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
+#include <thread>
 #include <vector>
 
 class SpacialAudio {
@@ -20,10 +30,12 @@ class SpacialAudio {
 		2.34, //2
 		0.93, //3
 	};
-	int row_length = 4;
-	int coloum_length;
-	AudioMain audio_main;
+	int row_length = 265;
+	int column_length = 265;
 	bool isFinished = true;
+	AudioMain audio_main;
+	const int NUMBER_OF_SOURCES = 16;
+	
 
   public:
 	SpacialAudio();
@@ -31,4 +43,8 @@ class SpacialAudio {
 	void getDepthEstimationData(std::vector<float> data);
 	void processDepthEstimationData();
 	bool getProcessingStatus();
+
+	std::thread audio_thread;
+	std::atomic<bool> running{true};
+
 };

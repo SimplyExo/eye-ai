@@ -10,7 +10,7 @@ std::array<float, 3> CalculateSoundOrigin::calculateSoundOrigin(
 	//this->pixelYCoordinate = pixelCoordinates[1];
 	this->distanceToObject = distanceToObject;
 
-	float pixelAngle = getPixleAngle();
+	float pixelAngle = getPixelAngle();
 
 	std::array<float,3> vectorToOrigin = getVectorToOrigin(pixelAngle);
 
@@ -22,7 +22,7 @@ Calculates the angle that the pixel has, relative to the POV of the camera
 The angle can be negativ (right side of the camera), or positive (left side
 of the camera).
 */
-float CalculateSoundOrigin::getPixleAngle(){
+float CalculateSoundOrigin::getPixelAngle(){
 	/*
 	adjust the x-coordinate of the pixel, so that there are positiv and
 	negative values, depending whether the pixel is to the left or right
