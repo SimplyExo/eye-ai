@@ -1,6 +1,6 @@
 import sys
 import tensorflow as tf
-from tensorflow.keras import layers, models, regularizers, optimizers
+from tensorflow.keras import layers, optimizers
 from dataset import load_dataset, IMG_SIZE, N_COEFFS
 
 LEARNING_RATE = 1e-4
@@ -109,7 +109,7 @@ def build_rel2abs_scaled_model():
 	# Output
 	scaled_coeffs_output = layers.Dense(N_COEFFS, activation=None, name="scaled_coeffs_output")(fused)
 
-	model = models.Model(inputs=inputs, outputs=scaled_coeffs_output)
+	model = tf.keras.models.Model(inputs=inputs, outputs=scaled_coeffs_output)
 	return model
 
 def unscale_rel2abs_model(scaled_model, coeff_scaling_factors):
