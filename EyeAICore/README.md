@@ -77,3 +77,5 @@ cmake --build --preset=generate_docs
 ```
 
 the generated doxygen docs will be in `build/docs`
+
+\see \subpage MetricDepth
