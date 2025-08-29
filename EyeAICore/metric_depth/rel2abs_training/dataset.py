@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import tensorflow as tf
 
@@ -24,8 +25,10 @@ def load_dataset(root_dataset_path, batch_size=32):
 		coeff_scaling_factors: np.ndarray
 	"""
 
-	# TODO: count _rgbd.npy files instead
-	ds_rgbd_image_count = 10330
+	ds_rgbd_image_count = len([
+		file for file in os.listdir(root_dataset_path)
+		if file.endswith("_rgbd.npy")
+	])
 
 	train_count = int(ds_rgbd_image_count * TRAIN_VAL_RATIO)
 
