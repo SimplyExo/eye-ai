@@ -7,6 +7,7 @@ include(GoogleTest)
 add_executable(EyeAICoreTests
 	"depth_estimation.cpp"
 	"object_detection.cpp"
+	"metric_depth_estimation.cpp"
 	"stb_image.cpp"
 	"utils.hpp"
 	"utils.cpp"

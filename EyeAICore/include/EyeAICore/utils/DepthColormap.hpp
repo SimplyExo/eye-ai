@@ -14,7 +14,7 @@ struct [[nodiscard]] DepthColorArraySizeMismatch {
 
 /// computes the int representation of the inferno colormap of the depth at each
 /// pixel
-[[nodiscard]] std::optional<DepthColorArraySizeMismatch> depth_colormap(
+[[nodiscard]] std::optional<DepthColorArraySizeMismatch> metric_depth_colormap(
 	std::span<const float> depth_values,
 	std::span<int> colormapped_pixels
 );

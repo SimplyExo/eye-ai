@@ -83,6 +83,15 @@ enum class FloatTensorFormat : std::uint8_t {
 	RelativeDepth,
 	/// 1 float per pixel for relative depth, all values possible
 	RawRelativeDepth,
+	/// 4 floats per pixel (RGBD) where RGB is in range [-1.f, 1.f] (colorspace:
+	/// sRGB) and D is the raw relative depth remapped from [0.f, 1500.f] to
+	/// [-1.f, 1.f] (and clamped!)
+	Rel2AbsDepthInput,
+	/// simple float array of the coefficients of the polynomial relative to
+	/// absolute function produced by the RelToAbs model
+	Rel2AbsDepthCoefficientOutput,
+	/// 1 float per pixel for metric depth in meters
+	MetricDepth,
 	/// special yolo output of detected objects and their confidence
 	YoloOutput
 };

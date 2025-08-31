@@ -20,6 +20,7 @@ if(EYE_AI_CORE_USE_PREBUILT_TFLITE)
 else()
 	message(STATUS "Downloading tensorflow...")
 	set(ABSL_PROPAGATE_CXX_STD ON)
+	set(TFLITE_ENABLE_RUY ON)
 	set(TFLITE_ENABLE_GPU ON)
 	set(TFLITE_ENABLE_XNNPACK ON)
 	set(TFLITE_C_BUILD_SHARED_LIBS OFF)
@@ -47,6 +48,26 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tl-expected)
 
+# libnpy
+message(STATUS "Downloading libnpy...")
+FetchContent_Declare(
+	libnpy
+	GIT_REPOSITORY https://github.com/llohse/libnpy.git
+	GIT_TAG master
+)
+FetchContent_MakeAvailable(libnpy)
+set(LIBNPY_INCLUDE_DIR "${libnpy_SOURCE_DIR}/include")
+
+# stb (stb_image, stb_image_resize2)
+message(STATUS "Downloading stb (stb_image, stb_image_resize2)...")
+FetchContent_Declare(
+	stb
+	GIT_REPOSITORY https://github.com/nothings/stb.git
+	GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+set(STB_INCLUDE_DIR ${stb_SOURCE_DIR})
+
 # concurrentqueue
 message(STATUS "Downloading concurrentqueue...")
 FetchContent_Declare(
@@ -55,6 +76,16 @@ FetchContent_Declare(
 	GIT_TAG           v1.0.4
 )
 FetchContent_MakeAvailable(concurrentqueue)
+
+# eigen
+message(STATUS "Downloading eigen...")
+FetchContent_Declare(
+	eigen
+	GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+	GIT_TAG 3.4.0
+	GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(eigen)
 
 if (EYE_AI_CORE_ENABLE_TESTS)
 	# libnpy
@@ -113,6 +144,8 @@ endif()
 
 set(THIRD_PARTY_INCLUDE_DIRS
 	${TFLITE_INCLUDE_DIRS}
+	${LIBNPY_INCLUDE_DIR}
+	${STB_INCLUDE_DIR}
 	PARENT_SCOPE
 )
 set(THIRD_PARTY_LIBS

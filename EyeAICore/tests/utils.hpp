@@ -1,9 +1,10 @@
 #pragma once
 
 #include "EyeAICore/DepthModel.hpp"
+#include "EyeAICore/MetricDepthModel.hpp"
+#include "EyeAICore/Rel2AbsDepthModel.hpp"
 #include "EyeAICore/TensorBuffer.hpp"
 #include "EyeAICore/utils/Errors.hpp"
-#include "EyeAICore/utils/Profiling.hpp"
 #include <filesystem>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -52,13 +53,11 @@ read_model_data(const std::filesystem::path& filepath);
 tl::expected<std::unique_ptr<DepthModel>, std::string>
 create_test_depth_model();
 
-tl::expected<std::unique_ptr<TfLiteRuntime>, std::string>
-create_test_tflite_runtime(
-	const std::filesystem::path& model_path,
-	FloatTensorFormat model_input_format,
-	FloatTensorFormat model_output_format,
-	ProfilingFrame& profiling_frame
-);
+tl::expected<std::unique_ptr<Rel2AbsDepthModel>, std::string>
+create_test_rel2abs_depth_model();
+
+tl::expected<std::unique_ptr<MetricDepthModel>, std::string>
+create_test_metric_depth_model();
 
 tl::expected<FloatTensorBuffer<FloatTensorFormat::ImageRGB>, std::string>
 load_image_file(

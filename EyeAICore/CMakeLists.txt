@@ -113,7 +113,7 @@ else()
 	target_compile_definitions(EyeAICore PUBLIC EYE_AI_CORE_ENABLE_TRACY_PROFILER=0)
 endif()
 
-
+add_subdirectory(metric_depth)
 
 if (EYE_AI_CORE_GENERATE_DOCS)
 	add_subdirectory(docs)

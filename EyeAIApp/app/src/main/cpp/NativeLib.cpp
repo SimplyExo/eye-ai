@@ -5,6 +5,8 @@
 #include <nlohmann/json.hpp>
 
 #include "EyeAICore/DepthModel.hpp"
+#include "EyeAICore/Rel2AbsDepthModel.hpp"
+#include "EyeAICore/MetricDepthModel.hpp"
 #include "EyeAICore/YoloModel.hpp"
 #include "EyeAICore/utils/DepthColormap.hpp"
 #include "EyeAICore/utils/MutexGuard.hpp"
@@ -17,8 +19,8 @@
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
 namespace {
-MutexGuard<std::unique_ptr<DepthModel>> depth_model{
-	std::unique_ptr<DepthModel>(nullptr)
+MutexGuard<std::unique_ptr<MetricDepthModel>> metric_depth_model{
+	std::unique_ptr<MetricDepthModel>(nullptr)
 };
 MutexGuard<std::unique_ptr<SpacialAudio>> spatial_audio{
 	std::unique_ptr<SpacialAudio>(nullptr)
@@ -126,7 +128,7 @@ static jstring convertToJsonBoundingBoxString(
 }
 
 extern "C" JNIEXPORT jintArray
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getOutputShape(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getYoloOutputShape(
 	JNIEnv* env,
 	jobject /* this */
 ) {
@@ -145,7 +147,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getOutputShape(
 }
 
 extern "C" JNIEXPORT jintArray
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getInputShape(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getYoloInputShape(
 	JNIEnv* env,
 	jobject /* this */
 ) {
@@ -187,19 +189,24 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthModel(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 	JNIEnv* env,
 	jobject /*thiz*/,
-	jbyteArray model,
+	jbyteArray relative_depth_model,
+	jbyteArray rel2abs_depth_model,
 	jstring gpu_delegate_serialization_dir,
-	jstring model_token
+	jstring relative_depth_model_token,
+	jstring rel2abs_depth_model_token
 ) {
-
-	NativeByteArrayScope model_data(env, model);
 	const NativeStringScope gpu_delegate_serialization_dir_string(
 		env, gpu_delegate_serialization_dir
 	);
-	const NativeStringScope model_token_string(env, model_token);
+
+	NativeByteArrayScope relative_depth_model_data(env, relative_depth_model);
+	const NativeStringScope relative_depth_model_token_string(env, relative_depth_model_token);
+
+	NativeByteArrayScope rel2abs_depth_model_data(env, rel2abs_depth_model);
+	const NativeStringScope rel2abs_depth_model_token_string(env, rel2abs_depth_model_token);
 
 	const auto log_warning_callback = [](std::string msg) {
 		LOG_WARN("[TfLiteRuntime] {}", msg);
@@ -209,12 +216,12 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthModel(
 		LOG_ERROR("[TfLiteRuntime] {}", msg);
 	};
 
-	auto result = DepthModel::create(
-		model_data.to_vector(), gpu_delegate_serialization_dir_string,
-		model_token_string, log_warning_callback, log_error_callback
+	auto result = MetricDepthModel::create(
+		relative_depth_model_data.to_vector(), rel2abs_depth_model_data.to_vector(), gpu_delegate_serialization_dir_string,
+		relative_depth_model_token_string, rel2abs_depth_model_token_string, log_warning_callback, log_error_callback
 	);
 	if (result) {
-		depth_model.lock()->swap(*result);
+		metric_depth_model.lock()->swap(*result);
 	} else
 		LOG_ERROR(
 			"[TfLiteRuntime] Failed to create depth model: {}",
@@ -223,21 +230,21 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initDepthModel(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_shutdownDepthModel(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_shutdownMetricDepthModel(
 	JNIEnv* /*env*/,
 	jobject /*thiz*/
 ) {
-	depth_model.lock()->reset(nullptr);
+	metric_depth_model.lock()->reset(nullptr);
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthModelInference(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runMetricDepthModelInference(
 	JNIEnv* env,
 	jobject /*thiz*/,
 	jfloatArray input,
 	jfloatArray output
 ) {
-	auto depth_model_scope = depth_model.lock();
+	auto depth_model_scope = metric_depth_model.lock();
 
 	if (*depth_model_scope == nullptr) {
 		LOG_ERROR("depth model not initialized!");
@@ -273,28 +280,28 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runDepthModelInference(
 }
 
 extern "C" JNIEXPORT jintArray JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getDepthModelInputShape(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getMetricDepthModelInputShape(
 	JNIEnv* env,
 	jobject /*thiz*/
 ) {
-	std::span<const int> input_shape = (*depth_model.lock())->get_input_shape();
+	std::span<const int> input_shape = (*metric_depth_model.lock())->get_input_shape();
 
 	return create_jni_int_array(env, input_shape);
 }
 
 extern "C" JNIEXPORT jintArray JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getDepthModelOutputShape(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getMetricDepthModelOutputShape(
 	JNIEnv* env,
 	jobject /*thiz*/
 ) {
 	std::span<const int> output_shape =
-		(*depth_model.lock())->get_output_shape();
+		(*metric_depth_model.lock())->get_output_shape();
 
 	return create_jni_int_array(env, output_shape);
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_depthColormap(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_metricDepthColormap(
 	JNIEnv* env,
 	jobject /*thiz*/,
 	jfloatArray depth_values,
@@ -305,7 +312,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_depthColormap(
 
 	if (depth_value_array.size() == colormapped_pixel_array.size()) {
 		if (const auto error =
-				depth_colormap(depth_value_array, colormapped_pixel_array))
+				metric_depth_colormap(depth_value_array, colormapped_pixel_array))
 			LOG_ERROR("depthColormap failed: {}", error->to_string());
 	} else {
 		LOG_ERROR(

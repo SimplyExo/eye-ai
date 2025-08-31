@@ -30,9 +30,9 @@ object NativeLib {
 
 	external fun runYoloOperation(input: FloatArray): String
 
-	external fun getInputShape(): IntArray
+	external fun getYoloInputShape(): IntArray
 
-	external fun getOutputShape(): IntArray
+	external fun getYoloOutputShape(): IntArray
 
 	external fun newDepthFrame()
 	external fun formatDepthFrame(): String
@@ -41,24 +41,26 @@ object NativeLib {
 	external fun newObjectFrame()
 	external fun formatObjectFrame(): String
 
-	external fun initDepthModel(
-		model: ByteArray,
+	external fun initMetricDepthModel(
+		relativeDepthModel: ByteArray,
+		rel2absDepthModel: ByteArray,
 		gpuDelegateSerializationDir: String,
-		modelToken: String
+		relativeDepthModelToken: String,
+		rel2absDepthModelToken: String
 	)
 
-	external fun shutdownDepthModel()
+	external fun shutdownMetricDepthModel()
 
-	external fun runDepthModelInference(
+	external fun runMetricDepthModelInference(
 		input: FloatArray,
 		output: FloatArray
 	)
 
-	external fun getDepthModelInputShape(): IntArray
+	external fun getMetricDepthModelInputShape(): IntArray
 
-	external fun getDepthModelOutputShape(): IntArray
+	external fun getMetricDepthModelOutputShape(): IntArray
 
-	external fun depthColormap(depthValues: FloatArray, colormappedPixels: IntArray)
+	external fun metricDepthColormap(depthValues: FloatArray, colormappedPixels: IntArray)
 
 	external fun bitmapToRgbHwc255FloatArray(bitmap: Bitmap, outFloatArray: FloatArray, profilingFrameType: Int)
 
@@ -73,7 +75,7 @@ object NativeLib {
 	//external fun playSound(frequency: Float, duration: Float)
 
 	/** @param input values should be between 0.0f and 1.0f */
-	fun depthColorMap(input: FloatArray, inputImageSize: Size): Bitmap {
+	fun metricDepthColormap(input: FloatArray, inputImageSize: Size): Bitmap {
 		if (input.size != inputImageSize.width * inputImageSize.height) {
 			Log.e(
 				EyeAIApp.APP_LOG_TAG,
@@ -84,7 +86,7 @@ object NativeLib {
 
 		val colormappedPixels = IntArray(input.size)
 
-		depthColormap(input, colormappedPixels)
+		metricDepthColormap(input, colormappedPixels)
 
 		return Bitmap.createBitmap(
 			colormappedPixels,

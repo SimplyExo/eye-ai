@@ -38,6 +38,18 @@ DepthModel::run(FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& input) {
 	return postprocessed_output;
 }
 
+DepthModel::RunRawResult
+DepthModel::run_raw(FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& input) {
+	auto preprocessed_input = midas_image_operator(input);
+
+	auto run_raw_result = runtime->run_inference<
+		FloatTensorFormat::MiDaSImageRGB, FloatTensorFormat::RawRelativeDepth>(
+		preprocessed_input
+	);
+
+	return run_raw_result;
+}
+
 std::span<const int> DepthModel::get_input_shape() const {
 	return runtime->get_input_shape();
 }
