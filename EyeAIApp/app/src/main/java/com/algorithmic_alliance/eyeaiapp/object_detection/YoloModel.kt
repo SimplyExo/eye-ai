@@ -32,10 +32,12 @@ class YoloModel(var info: YoloModelInfo) {
 			getModelToken(context, info.filename)
 		)
 
-		tensorWidth = NativeLib.getInputShape()[1]
-		tensorHeight = NativeLib.getInputShape()[2]
-		numChannel = NativeLib.getOutputShape()[1]
-		numElements = NativeLib.getOutputShape()[2]
+		val inputShape = NativeLib.getYoloInputShape()
+		tensorWidth = inputShape[1]
+		tensorHeight = inputShape[2]
+		val outputShape = NativeLib.getYoloOutputShape()
+		numChannel = outputShape[1]
+		numElements = outputShape[2]
 
 		initialized = true
 	}

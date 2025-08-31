@@ -36,6 +36,14 @@ class DepthModel {
 	[[nodiscard]] RunResult
 	run(FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& input);
 
+	using RunRawResult = tl::expected<
+		FloatTensorBuffer<FloatTensorFormat::RawRelativeDepth>,
+		TfLiteRunInferenceError>;
+
+	/// @param input should have 3 * width * height elements.
+	[[nodiscard]] RunRawResult
+	run_raw(FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& input);
+
 	[[nodiscard]] std::span<const int> get_input_shape() const;
 
 	[[nodiscard]] std::span<const int> get_output_shape() const;

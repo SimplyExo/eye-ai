@@ -3,8 +3,8 @@ package com.algorithmic_alliance.eyeaiapp
 import android.app.Application
 import android.content.Context
 import android.util.Size
-import com.algorithmic_alliance.eyeaiapp.depth.DepthModel
-import com.algorithmic_alliance.eyeaiapp.depth.DepthModelInfo
+import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
+import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
@@ -26,7 +26,7 @@ class EyeAIApp : Application() {
 
 	private var loadAIModelExecutor = Executors.newSingleThreadExecutor()
 
-	var depthModel: DepthModel? = null
+	var metricDepthModel: MetricDepthModel? = null
 		private set
 
 	/* will not load the model or listen if enableSpeechRecognition is disabled in settings, needs to be started manually inside MainActivity */
@@ -54,13 +54,15 @@ class EyeAIApp : Application() {
 
 		val DEPTH_MODELS =
 			arrayOf(
-				DepthModelInfo(
+				MetricDepthModelInfo(
 					DEFAULT_DEPTH_MODEL_NAME,
-					"midas_v2_1_256x256.tflite"
+					"midas_v2_1_256x256.tflite",
+					"rel2abs_model.tflite"
 				),
-				DepthModelInfo(
+				MetricDepthModelInfo(
 					"MiDaS V2.1 (quantized)",
-					"midas_v2_1_256x256_quantized.tflite"
+					"midas_v2_1_256x256_quantized.tflite",
+					"rel2abs_model.tflite"
 				)
 			)
 
@@ -137,16 +139,16 @@ class EyeAIApp : Application() {
 	}
 
 	private fun switchDepthModel(modelName: String) {
-		if (depthModel?.name == modelName) return
+		if (metricDepthModel?.name == modelName) return
 
-		depthModel?.close()
-		depthModel = null
+		metricDepthModel?.close()
+		metricDepthModel = null
 
-		depthModel = findDepthModelInfo(modelName)
+		metricDepthModel = findDepthModelInfo(modelName)
 			.createDepthModel(this)
 	}
 
-	private fun findDepthModelInfo(modelName: String): DepthModelInfo {
+	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {
 		return DEPTH_MODELS.find { it.name == modelName }
 			?: (DEPTH_MODELS.find { it.name == DEFAULT_DEPTH_MODEL_NAME } ?: DEPTH_MODELS[0])
 	}
