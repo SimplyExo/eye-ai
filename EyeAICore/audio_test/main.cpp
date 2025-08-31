@@ -1,4 +1,4 @@
-#include "EyeAICore/audio/SpacialAudio.hpp"
+#include "EyeAICore/audio/SpatialAudio.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <chrono>

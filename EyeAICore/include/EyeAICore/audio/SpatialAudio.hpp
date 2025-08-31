@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-SpacialAudio handles everything necessary for the spacial audio:
+SpatialAudio handles everything necessary for the spatial audio:
 - retreving the depthEstimationData
 - converting depthEstimationData into audio source position
 - managing AudioMain instance
@@ -15,7 +15,7 @@ SpacialAudio handles everything necessary for the spacial audio:
 #include <vector>
 #include <span>
 
-class SpacialAudio {
+class SpatialAudio {
   private:
 	std::array<float, 256 * 256> depthEstimationData = {0};
 	int row_length = 265;
@@ -27,8 +27,8 @@ class SpacialAudio {
 	//const int SAMPLE_RATE = 44100;
 
   public:
-	SpacialAudio();
-	~SpacialAudio();
+	SpatialAudio();
+	~SpatialAudio();
 	void getDepthEstimationData(std::span<float, 256 * 256> data);
 	void processDepthEstimationData();
 	bool getProcessingStatus();

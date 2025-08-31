@@ -68,7 +68,7 @@ object NativeLib {
 
 	external fun sendDepthEstimationData(array: FloatArray);
 	external fun getProcessingStatus (): Boolean
-	external fun destroySpacialAudio()
+	external fun destroySpatialAudio()
 
 	//external fun playSound(frequency: Float, duration: Float)
 

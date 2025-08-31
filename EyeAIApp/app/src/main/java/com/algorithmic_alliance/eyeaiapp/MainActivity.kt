@@ -2,7 +2,6 @@ package com.algorithmic_alliance.eyeaiapp
 
 import android.content.Intent
 import android.os.Build
-import android.media.AudioManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View.GONE
@@ -27,7 +26,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.llm.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
-import com.algorithmic_alliance.eyeaiapp.audio.SpacialAudio
+import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -146,8 +145,8 @@ class MainActivity : AppCompatActivity() {
 		textToSpeechInstance = TextToSpeechInstance(this, ::onTTSFinishedSpeaking)
 
 		CoroutineScope(Dispatchers.IO).launch{
-			SpacialAudio.setup(this@MainActivity)
-			SpacialAudio.start()
+			SpatialAudio.setup(this@MainActivity)
+			SpatialAudio.start()
 		}
 	}
 
@@ -198,7 +197,7 @@ class MainActivity : AppCompatActivity() {
 		textToSpeechInstance.shutdown()
 		mediaFrameAnalyzer?.shutdown()
 		mediaPlayer?.shutdown()
-		SpacialAudio.destroy()
+		SpatialAudio.destroy()
 
 		eyeAIApp().voskModel.closeService()
 	}

@@ -10,11 +10,11 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 import java.util.logging.Logger
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
 
 
-object SpacialAudio {
-	private var logger = Logger.getLogger("SpacialAudio")
+object SpatialAudio {
+	private var logger = Logger.getLogger("Spat" +
+		"ialAudio")
 	private var executor = Executors.newSingleThreadExecutor()
 	private var scope = CoroutineScope(executor.asCoroutineDispatcher())
 	private lateinit var eyeAIApp: EyeAIApp;
@@ -27,7 +27,7 @@ object SpacialAudio {
 					if(data != null){
 						NativeLib.sendDepthEstimationData(data)
 					}
-					delay(33)
+					delay(50)
 				}
 			}
 		}
@@ -39,7 +39,7 @@ object SpacialAudio {
 	}
 
 	fun destroy() {
-		NativeLib.destroySpacialAudio()
+		NativeLib.destroySpatialAudio()
 	}
 
 }

@@ -20,7 +20,7 @@ namespace {
 MutexGuard<std::unique_ptr<DepthModel>> depth_model{
 	std::unique_ptr<DepthModel>(nullptr)
 };
-MutexGuard<std::unique_ptr<SpacialAudio>> spacial_audio{
+MutexGuard<std::unique_ptr<SpacialAudio>> spatial_audio{
 	std::unique_ptr<SpacialAudio>(nullptr)
 };
 
@@ -415,15 +415,15 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroyAudioDevice(
 }
 */
 
-static SpacialAudio& get_or_create_spacial_audio() {
-	auto spacial_audio_scope = spacial_audio.lock();
+static SpacialAudio& get_or_create_spatial_audio() {
+	auto spatial_audio_scope = spatial_audio.lock();
 
-	if (*spacial_audio_scope == nullptr) {
-		LOG_INFO("[SpacialAudio] Initializing SpacialAudio instance...");
-		*spacial_audio_scope = std::make_unique<SpacialAudio>();
+	if (*spatial_audio_scope == nullptr) {
+		LOG_INFO("[SpatialAudio] Initializing SpatialAudio instance...");
+		*spatial_audio_scope = std::make_unique<SpacialAudio>();
 	}
 
-	return *(*spacial_audio_scope);
+	return *(*spatial_audio_scope);
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -432,7 +432,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendDepthEstimationData(
 	jobject /*this*/,
 	jfloatArray array
 ) {
-	LOG_INFO("[SpacialAudio] Sending depth estimation data...");
+	LOG_INFO("[SpatialAudio] Sending depth estimation data...");
 	jsize length = env->GetArrayLength(array);
 	jfloat* rawArray = env->GetFloatArrayElements(array, nullptr);
 
@@ -440,7 +440,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendDepthEstimationData(
 
 	assert(data.size() == (256 * 256));
 
-	get_or_create_spacial_audio().getDepthEstimationData(static_cast<std::span<float, 256 * 256>>(data));
+	get_or_create_spatial_audio().getDepthEstimationData(static_cast<std::span<float, 256 * 256>>(data));
 
 	// Speicher freigeben
 	env->ReleaseFloatArrayElements(array, rawArray, JNI_ABORT);
@@ -451,20 +451,20 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getProcessingStatus(
 	JNIEnv* env,
 	jobject /*this*/
 ) {
-	LOG_INFO("[SpacialAudio] Getting sound processing status...");
-	return get_or_create_spacial_audio().getProcessingStatus();
+	LOG_INFO("[SpatialAudio] Getting sound processing status...");
+	return get_or_create_spatial_audio().getProcessingStatus();
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroySpacialAudio(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroySpatialAudio(
 	JNIEnv* /*env*/,
 	jobject /*this*/
 ) {
-	auto spacial_audio_scope = spacial_audio.lock();
-	if (*spacial_audio_scope != nullptr) {
-		LOG_INFO("[SpacialAudio] Destroying SpacialAudio instance...");
-		spacial_audio_scope->reset(nullptr);
-		LOG_INFO("[SpacialAudio] SpacialAudio destroyed!");
+	auto spatial_audio_scope = spatial_audio.lock();
+	if (*spatial_audio_scope != nullptr) {
+		LOG_INFO("[SpatialAudio] Destroying SpatialAudio instance...");
+		spatial_audio_scope->reset(nullptr);
+		LOG_INFO("[SpatialAudio] SpatialAudio destroyed!");
 	}
 }
 

@@ -1,4 +1,4 @@
-#include "EyeAICore/audio/SpacialAudio.hpp"
+#include "EyeAICore/audio/SpatialAudio.hpp"
 #include "EyeAICore/audio/AudioMain.hpp"
 #include "EyeAICore/audio/AudioSourceData.hpp"
 #include "EyeAICore/audio/CalculateSoundOrigin.hpp"
@@ -8,17 +8,17 @@
 #include <iostream>
 #include <span>
 
-SpacialAudio::SpacialAudio() {
+SpatialAudio::SpatialAudio() {
 	audio_thread =
 		std::thread([this]() { audio_main.startAudioLoop(running); });
 }
 
-void SpacialAudio::getDepthEstimationData(std::span<float, 256 * 256> data) {
+void SpatialAudio::getDepthEstimationData(std::span<float, 256 * 256> data) {
 	std::ranges::copy(data, this->depthEstimationData.begin());
 	processDepthEstimationData();
 }
 
-void SpacialAudio::processDepthEstimationData() {
+void SpatialAudio::processDepthEstimationData() {
 	/*
 	Processes the depth-estimation data:
 	- dividing data into columns
@@ -67,9 +67,9 @@ void SpacialAudio::processDepthEstimationData() {
 	isFinished = true;
 }
 
-bool SpacialAudio::getProcessingStatus() { return isFinished; }
+bool SpatialAudio::getProcessingStatus() { return isFinished; }
 
-SpacialAudio::~SpacialAudio() {
+SpatialAudio::~SpatialAudio() {
 	running = false;
 	if (audio_thread.joinable()) {
 		audio_thread.join();
