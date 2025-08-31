@@ -30,6 +30,10 @@ class MetricDepthModel {
 	[[nodiscard]] RunResult
 	run(FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& input);
 
+	[[nodiscard]] std::span<const int> get_input_shape() const;
+
+	[[nodiscard]] std::span<const int> get_output_shape() const;
+
 	MetricDepthModel(
 		std::unique_ptr<DepthModel>&& depth_model,
 		std::unique_ptr<Rel2AbsDepthModel>&& rel2abs_depth_model

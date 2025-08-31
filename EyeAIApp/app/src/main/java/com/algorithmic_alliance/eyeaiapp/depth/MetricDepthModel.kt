@@ -13,57 +13,63 @@ import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.ProfilingFrameType
 
 /** All needed information to create and use a depth model */
-class DepthModelInfo(
+class MetricDepthModelInfo(
 	val name: String,
-	val fileName: String,
+	val relativeDepthFileName: String,
+	val rel2absDepthFileName: String
 ) {
 	/** @return null if model type is not supported */
-	fun createDepthModel(context: Context): DepthModel {
-		return DepthModel(
+	fun createDepthModel(context: Context): MetricDepthModel {
+		return MetricDepthModel(
 			context,
 			name,
-			fileName
+			relativeDepthFileName,
+			rel2absDepthFileName
 		)
 	}
 }
 
-class DepthModel(
+class MetricDepthModel(
 	context: Context,
 	val name: String,
-	val fileName: String
+	val relativeDepthFileName: String,
+	val rel2absDepthFileName: String
 ) : AutoCloseable {
 	val inputDim: Size
 
 	init {
-		val modelData = context.assets.open(fileName).readBytes()
+		val relativeDepthModelData = context.assets.open(relativeDepthFileName).readBytes()
+		val rel2absDepthModelData = context.assets.open(rel2absDepthFileName).readBytes()
 
 		val gpuDelegateCacheDirectory =
 			createSerializedGpuDelegateCacheDirectory(context)
-		val modelToken = getModelToken(context, fileName)
+		val relativeDepthModelToken = getModelToken(context, relativeDepthFileName)
+		val rel2absDepthModelToken = getModelToken(context, rel2absDepthFileName)
 
 		// cleanup old cached gpu delegate files
 		if (gpuDelegateCacheDirectory.exists()) {
 			for (file in gpuDelegateCacheDirectory.listFiles()!!) {
-				if (!file.name.contains(modelToken)) {
-					try {
-						Log.i(
-							EyeAIApp.APP_LOG_TAG,
-							"Deleting old gpu delegate cache file: ${file.name}"
-						)
-						file.delete()
-					} catch (_: SecurityException) {
-					}
+				if (file.name.contains(relativeDepthModelToken) || file.name.contains(rel2absDepthModelToken))
+					continue
+
+				try {
+					Log.i(
+						EyeAIApp.APP_LOG_TAG,
+						"Deleting old gpu delegate cache file: ${file.name}"
+					)
+					file.delete()
+				} catch (_: SecurityException) {
 				}
 			}
 		}
 
-		NativeLib.initDepthModel(
-			modelData,
+		NativeLib.initMetricDepthModel(
+			relativeDepthModelData, rel2absDepthModelData,
 			gpuDelegateCacheDirectory.path,
-			modelToken
+			relativeDepthModelToken, rel2absDepthModelToken
 		)
 
-		val inputShape = NativeLib.getDepthModelInputShape()
+		val inputShape = NativeLib.getMetricDepthModelInputShape()
 		inputDim = if (inputShape.size == 4) {
 			if (inputShape[0] != 1) {
 				Log.e(
@@ -86,7 +92,7 @@ class DepthModel(
 			Size(256, 256)
 		}
 
-		val outputShape = NativeLib.getDepthModelOutputShape()
+		val outputShape = NativeLib.getMetricDepthModelOutputShape()
 		val expectedOutputShape = intArrayOf(1, inputDim.height, inputDim.width, 1)
 		if (!outputShape.contentEquals(expectedOutputShape)) {
 			Log.e(
@@ -97,7 +103,7 @@ class DepthModel(
 	}
 
 	override fun close() {
-		NativeLib.shutdownDepthModel()
+		NativeLib.shutdownMetricDepthModel()
 	}
 
 	/**
@@ -109,7 +115,7 @@ class DepthModel(
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled, ProfilingFrameType.Depth)
 		val output = FloatArray(inputDim.width * inputDim.height)
 
-		NativeLib.runDepthModelInference(
+		NativeLib.runMetricDepthModelInference(
 			input,
 			output,
 		)

@@ -64,3 +64,11 @@ MetricDepthModel::RunResult MetricDepthModel::run(
 
 	return rel2abs_operator(relative_depth, *rel2abs_coeffs_result);
 }
+
+std::span<const int> MetricDepthModel::get_input_shape() const {
+	return depth_model->get_input_shape();
+}
+
+std::span<const int> MetricDepthModel::get_output_shape() const {
+	return depth_model->get_output_shape();
+}
