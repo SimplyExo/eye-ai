@@ -415,7 +415,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroyAudioDevice(
 }
 */
 
-static SpacialAudio* get_or_create_spacial_audio() {
+static SpacialAudio& get_or_create_spacial_audio() {
 	auto spacial_audio_scope = spacial_audio.lock();
 
 	if (*spacial_audio_scope == nullptr) {
@@ -423,7 +423,7 @@ static SpacialAudio* get_or_create_spacial_audio() {
 		*spacial_audio_scope = std::make_unique<SpacialAudio>();
 	}
 
-	return spacial_audio_scope->get();
+	return *(*spacial_audio_scope);
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -436,12 +436,11 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendDepthEstimationData(
 	jsize length = env->GetArrayLength(array);
 	jfloat* rawArray = env->GetFloatArrayElements(array, nullptr);
 
-	// Kopiere in std::vector<float>
-	std::vector<float> data(rawArray, rawArray + length);
+	NativeFloatArrayScope data(env, array);
 
-	SpacialAudio* audio_instance = get_or_create_spacial_audio();
+	assert(data.size() == (256 * 256));
 
-	audio_instance->getDepthEstimationData(data);
+	get_or_create_spacial_audio().getDepthEstimationData(static_cast<std::span<float, 256 * 256>>(data));
 
 	// Speicher freigeben
 	env->ReleaseFloatArrayElements(array, rawArray, JNI_ABORT);
@@ -453,9 +452,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getProcessingStatus(
 	jobject /*this*/
 ) {
 	LOG_INFO("[SpacialAudio] Getting sound processing status...");
-	SpacialAudio* audio_instance = get_or_create_spacial_audio();
-	return audio_instance->getProcessingStatus();
-
+	return get_or_create_spacial_audio().getProcessingStatus();
 }
 
 extern "C" JNIEXPORT void JNICALL

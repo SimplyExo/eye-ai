@@ -1,6 +1,7 @@
 #include "EyeAICore/audio/AudioSourceData.hpp"
 #include <cmath>
 #include <vector>
+#include <numbers>
 
 std::vector<short>
 createAudioData(float frequency, float duration, int sample_rate) {

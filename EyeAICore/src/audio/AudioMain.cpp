@@ -25,11 +25,14 @@ AudioMain::AudioMain() {
 	device = alcOpenDevice(nullptr);
 	if (!device) {
 		std::cout << "Das Audiogerät konnte nicht geöffnet werden.\n";
+		return;
 	}
 	context = alcCreateContext(device, nullptr);
 	if (!alcMakeContextCurrent(context)) {
 		std::cout << "Fehler bei Context.\n";
+		return;
 	}
+	audio_device_initialized = true;
 
 	// Setting the listener to his default position of (0|0|0)
 	alListener3f(AL_POSITION, 0.0, 0.0, 0.0);
@@ -45,6 +48,8 @@ void AudioMain::startAudioLoop(std::atomic<bool>& running) {
 	- Restart stopped sources
 	Therefore ensuring continues playback
 	*/
+
+	if(!audio_device_initialized) return;
 
 	setupSources();
 

@@ -5,14 +5,16 @@
 #include <algorithm>
 #include <thread>
 #include <vector>
+#include <iostream>
+#include <span>
 
 SpacialAudio::SpacialAudio() {
 	audio_thread =
 		std::thread([this]() { audio_main.startAudioLoop(running); });
 }
 
-void SpacialAudio::getDepthEstimationData(std::vector<float> data) {
-	this->depthEstimationData = data;
+void SpacialAudio::getDepthEstimationData(std::span<float, 256 * 256> data) {
+	std::ranges::copy(data, this->depthEstimationData.begin());
 	processDepthEstimationData();
 }
 
@@ -45,8 +47,7 @@ void SpacialAudio::processDepthEstimationData() {
 		}
 
 		float nearest_distance =
-			*std::min_element(column.begin(), column.end()) *
-			10; // TODO: die *10 sind nur für Testzwecke
+			*std::min_element(column.begin(), column.end()); 
 
 		/*
 		Retrieving sound origin, by passing coordinates in Frame and nearest

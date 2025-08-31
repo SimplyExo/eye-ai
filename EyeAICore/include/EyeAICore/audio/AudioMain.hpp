@@ -23,6 +23,7 @@ class AudioMain {
 	void changeAudioData(std::vector<AudioSourceData> new_audio_source_data);
 
   private:
+	bool audio_device_initialized = false;
 	const float BUFFER_DURATION = 1; //in seconds
 	const int NUMBER_OF_SOURCES = 16;
 	const int BUFFERS_PER_SOURCE = 3;
@@ -33,6 +34,7 @@ class AudioMain {
 
 	ALCdevice* device;
 	ALCcontext* context;
+
 	void setupSources();
 };
 

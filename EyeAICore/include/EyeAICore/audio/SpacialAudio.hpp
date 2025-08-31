@@ -13,40 +13,26 @@ SpacialAudio handles everything necessary for the spacial audio:
 #include <AL/alc.h>
 #include <thread>
 #include <vector>
+#include <span>
 
 class SpacialAudio {
   private:
-	std::vector<float> depthEstimationData = {
-		1, //0
-		0.5, //1
-		1.23, //2
-		2.0, //3
-		0.75, //0
-		3.4, //1
-		2.3, //2
-		1.89, //3
-		0.78, //0
-		1.23, //1
-		2.34, //2
-		0.93, //3
-	};
+	std::array<float, 256 * 256> depthEstimationData = {0};
 	int row_length = 265;
 	int column_length = 265;
 	bool isFinished = true;
 	AudioMain audio_main;
 	const int NUMBER_OF_SOURCES = 16;
 	const float BUFFER_LENGTH = 1;
-	const int SAMPLE_RATE = 44100;
-	
+	//const int SAMPLE_RATE = 44100;
 
   public:
 	SpacialAudio();
 	~SpacialAudio();
-	void getDepthEstimationData(std::vector<float> data);
+	void getDepthEstimationData(std::span<float, 256 * 256> data);
 	void processDepthEstimationData();
 	bool getProcessingStatus();
 
 	std::thread audio_thread;
 	std::atomic<bool> running{true};
-
 };
