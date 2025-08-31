@@ -10,10 +10,10 @@ import java.io.InputStreamReader
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.HostnameVerifier
-import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
@@ -23,60 +23,94 @@ import javax.net.ssl.X509TrustManager
  */
 class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: String?) : LLM {
 	companion object {
-		const val MODEL_NAME: String = "gemini-2.5-flash-preview-05-20"
+		const val MODEL_NAME: String =
+			"gemini-2.5-flash"
 		private const val GOOGLE_GEN_AI_ENDPOINT = "https://generativelanguage.googleapis.com"
 	}
 
-	private val endpoint = if (customEndpoint == null || customEndpoint.isEmpty()) {
+	private val endpoint = if (customEndpoint.isNullOrEmpty()) {
 		GOOGLE_GEN_AI_ENDPOINT
 	} else {
 		customEndpoint
 	}
 
+	private fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
+
 	override fun generate(command: String, structured: Boolean): String {
 		var connection: HttpsURLConnection? = null
 		var reader: BufferedReader? = null
+		val totalStart = System.nanoTime()
 
 		try {
-			val url = URL("$endpoint/v1beta/models/$MODEL_NAME:generateContent?key=$apiKey")
+			val urlStr = "$endpoint/v1beta/models/$MODEL_NAME:generateContent?key=$apiKey"
+			Log.d(EyeAIApp.APP_LOG_TAG, "HTTP POST to $urlStr (structured=$structured)")
 
+			val url = URL(urlStr)
+			val connOpenStart = System.nanoTime()
 			connection = url.openConnection() as HttpsURLConnection
+			val connOpenMs = elapsedMs(connOpenStart)
+			Log.d(EyeAIApp.APP_LOG_TAG, "Connection opened in $connOpenMs ms")
+
 			connection.requestMethod = "POST"
 			connection.setRequestProperty("Content-Type", "application/json; charset=utf-8")
 			connection.setRequestProperty("Accept", "application/json")
 			connection.doOutput = true
 
-			if (customEndpoint != null) {
-				// TODO: do not allow this when adding a production build variant!
+			if (customEndpoint != null && !customEndpoint.isEmpty()) {
 				Log.w(
 					EyeAIApp.APP_LOG_TAG,
-					"Disabling certificate verification since we are using a custom google ai studio endpoint that points to the MockGoogleLLMServer to allow self signed certificates"
+					"Custom endpoint: disabling hostname/cert checks for dev-only"
 				)
 				connection.hostnameVerifier = HostnameVerifier { _, _ -> true }
 				connection.sslSocketFactory = createTrustAllSslSocketFactory()
 			}
 
 			val requestBody = createRequestBody(command, structured)
+			val writeStart = System.nanoTime()
 			val outputStream: OutputStream = connection.outputStream
-			outputStream.write(requestBody.toString().toByteArray(Charsets.UTF_8))
+			val requestBodyString = requestBody.toString()
+			outputStream.write(requestBodyString.toByteArray(Charsets.UTF_8))
 			outputStream.close()
+			val writeMs = elapsedMs(writeStart)
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"Wrote request body in $writeMs ms (size=${requestBodyString.length} chars)"
+			)
 
+			val responseCodeStart = System.nanoTime()
 			val responseCode = connection.responseCode
+			val responseCodeMs = elapsedMs(responseCodeStart)
+			Log.d(EyeAIApp.APP_LOG_TAG, "Got responseCode=$responseCode after $responseCodeMs ms")
+
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				val errorStream = connection.errorStream
 				reader = BufferedReader(InputStreamReader(errorStream))
 				val errorResponse = reader.readText()
+				Log.e(EyeAIApp.APP_LOG_TAG, "HTTP error body: ${errorResponse.take(1000)}")
 				throw RuntimeException("API request failed: $responseCode - $errorResponse")
 			}
 
+			val readStart = System.nanoTime()
 			reader = BufferedReader(InputStreamReader(connection.inputStream))
 			val response = reader.readText()
+			val readMs = elapsedMs(readStart)
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"Read response in $readMs ms (size=${response.length} chars)"
+			)
 
-			return parseResponse(response)
+			val parseStart = System.nanoTime()
+			val parsed = parseResponse(response)
+			val parseMs = elapsedMs(parseStart)
+			Log.d(EyeAIApp.APP_LOG_TAG, "Parsed response in $parseMs ms")
+
+			Log.d(EyeAIApp.APP_LOG_TAG, "Total LLM HTTP roundtrip: ${elapsedMs(totalStart)} ms")
+			return parsed
 		} catch (e: Exception) {
-			val errorMsg = "Error in LLM generate: ${e.message}"
+			val dur = elapsedMs(totalStart)
+			val errorMsg = "Error in LLM generate after $dur ms: ${e.message}"
 			Log.e(EyeAIApp.APP_LOG_TAG, errorMsg, e)
-			return errorMsg
+			return "Fehler bei der Anfrage: ${e.message}"
 		} finally {
 			reader?.close()
 			connection?.disconnect()
@@ -107,12 +141,53 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 			val schema = JSONObject().apply {
 				put("type", "OBJECT")
 				put("properties", JSONObject().apply {
+
+					// Feld zur Klassifizierung der Absicht im Einstellungsmenü
+					put("setting_intent", JSONObject().apply {
+						put("type", "STRING")
+						put(
+							"description",
+							"Identifiziert die spezifische Absicht des Nutzers innerhalb des Einstellungsmenüs. Muss einer der folgenden Werte sein: 'tts_speed', 'voice', 'leave' oder 'none'."
+						)
+						put("enum", JSONArray().apply {
+							put("tts_speed")
+							put("voice")
+							put("leave")
+							put("none")
+						})
+					})
+
+					// Feld für die erste Entscheidung (IDLE-State)
+					put("requested_functions", JSONObject().apply {
+						put("type", "OBJECT")
+						put(
+							"description",
+							"Identifies which core function the user wants to trigger."
+						)
+						put("properties", JSONObject().apply {
+							put("einstellungen", JSONObject().apply {
+								put("type", "BOOLEAN")
+								put(
+									"description",
+									"Set to true if the user wants to open or modify settings."
+								)
+							})
+							put("texterkennung", JSONObject().apply {
+								put("type", "BOOLEAN")
+								put(
+									"description",
+									"Set to true if the user wants to use the text recognition (OCR) feature."
+								)
+							})
+						})
+					})
+
+					// Feld für die konkrete Einstellungsänderung
 					put("changed_settings", JSONObject().apply {
 						put("type", "ARRAY")
 						put("items", JSONObject().apply {
 							put("type", "OBJECT")
-							put("properties", JSONObject().apply { // <-- Nur EIN properties-Block
-								// Eigenschaft für die Sprachgeschwindigkeit
+							put("properties", JSONObject().apply {
 								put("tts_speed", JSONObject().apply {
 									put("type", "NUMBER")
 									put(
@@ -120,15 +195,13 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 										"The new text-to-speech speed, e.g. 1.0, 1.5, or 0.8"
 									)
 								})
-								// Eigenschaft für die Stimme
 								put("voice", JSONObject().apply {
 									put("type", "NUMBER")
 									put(
 										"description",
-										"The new voice can either be male or female. If the user suggests it should be male, answer with 0. For female, answer with 1."
+										"The new voice. If the user suggests it should be female, answer with 0. If male, answer with 1."
 									)
 								})
-								// Eigenschaft, um die Einstellungen zu verlassen (wird in handleSettingsAction verwendet)
 								put("leave", JSONObject().apply {
 									put("type", "BOOLEAN")
 									put(
@@ -139,6 +212,8 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 							})
 						})
 					})
+
+					// Feld für die Bestätigung
 					put("approval", JSONObject().apply {
 						put("type", "NUMBER")
 						put(
@@ -148,7 +223,6 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 					})
 				})
 			}
-
 
 			val generationConfig = JSONObject().apply {
 				put("response_mime_type", "application/json")
@@ -164,27 +238,34 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 	}
 
 	private fun parseResponse(responseBody: String): String {
-		val jsonResponse = JSONObject(responseBody)
-		val candidates = jsonResponse.getJSONArray("candidates")
-		if (candidates.length() == 0) {
-			throw RuntimeException("No candidates in response")
-		}
+		try {
+			val jsonResponse = JSONObject(responseBody)
+			val candidates = jsonResponse.getJSONArray("candidates")
+			if (candidates.length() == 0) {
+				Log.w(EyeAIApp.APP_LOG_TAG, "No candidates in LLM response.")
+				return "" // Return empty string if no candidates
+			}
 
-		val firstCandidate = candidates.getJSONObject(0)
-		val content = firstCandidate.getJSONObject("content")
-		val parts = content.getJSONArray("parts")
-		if (parts.length() == 0) {
-			throw RuntimeException("No parts in candidate content")
-		}
+			val firstCandidate = candidates.getJSONObject(0)
+			val content = firstCandidate.getJSONObject("content")
+			val parts = content.getJSONArray("parts")
+			if (parts.length() == 0) {
+				Log.w(EyeAIApp.APP_LOG_TAG, "No parts in candidate content.")
+				return "" // Return empty string if no parts
+			}
 
-		return parts.getJSONObject(0).getString("text")
+			return parts.getJSONObject(0).getString("text")
+		} catch (e: org.json.JSONException) {
+			Log.e(EyeAIApp.APP_LOG_TAG, "Failed to parse LLM JSON response", e)
+			// If parsing fails, the raw body might be a plain error message from the API
+			return responseBody
+		}
 	}
 }
 
-
-/// SHOULD ONLY BE USED WHEN USING THE MOCK GOOGLE GEN AI STUDIO ENDPOINT, AS IT USES A SELF SIGNED CERTIFICATE, NEVER ANYWHERE ELSE!
+/// SHOULD ONLY BE USED WHEN USING A MOCK ENDPOINT WITH A SELF-SIGNED CERTIFICATE!
 @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
-fun createTrustAllSslSocketFactory(): SSLSocketFactory {
+private fun createTrustAllSslSocketFactory(): SSLSocketFactory {
 	val trustAllCerts = arrayOf<TrustManager>(
 		object : X509TrustManager {
 			override fun checkClientTrusted(
