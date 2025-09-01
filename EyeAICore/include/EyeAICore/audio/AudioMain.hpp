@@ -25,7 +25,7 @@ class AudioMain {
   private:
 	bool audio_device_initialized = false;
 	const float BUFFER_DURATION = 1; //in seconds
-	const int NUMBER_OF_SOURCES = 16;
+	const int NUMBER_OF_SOURCES = 8;
 	const int BUFFERS_PER_SOURCE = 3;
 
 	std::vector<ALuint> sources;

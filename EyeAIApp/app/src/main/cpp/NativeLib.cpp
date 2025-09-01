@@ -1,5 +1,5 @@
 #include <EyeAICore/audio/AudioMain.hpp>
-#include <EyeAICore/audio/SpacialAudio.hpp>
+#include <EyeAICore/audio/SpatialAudio.hpp>
 #include <jni.h>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -22,8 +22,8 @@ namespace {
 MutexGuard<std::unique_ptr<MetricDepthModel>> metric_depth_model{
 	std::unique_ptr<MetricDepthModel>(nullptr)
 };
-MutexGuard<std::unique_ptr<SpacialAudio>> spatial_audio{
-	std::unique_ptr<SpacialAudio>(nullptr)
+MutexGuard<std::unique_ptr<SpatialAudio>> spatial_audio{
+	std::unique_ptr<SpatialAudio>(nullptr)
 };
 
 MutexGuard<YoloModel> yolo_instance;
@@ -422,12 +422,12 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroyAudioDevice(
 }
 */
 
-static SpacialAudio& get_or_create_spatial_audio() {
+static SpatialAudio& get_or_create_spatial_audio() {
 	auto spatial_audio_scope = spatial_audio.lock();
 
 	if (*spatial_audio_scope == nullptr) {
 		LOG_INFO("[SpatialAudio] Initializing SpatialAudio instance...");
-		*spatial_audio_scope = std::make_unique<SpacialAudio>();
+		*spatial_audio_scope = std::make_unique<SpatialAudio>();
 	}
 
 	return *(*spatial_audio_scope);

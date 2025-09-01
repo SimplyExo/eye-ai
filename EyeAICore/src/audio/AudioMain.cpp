@@ -5,6 +5,7 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include "/home/lars/Documents/Progamming/Eye-Ai/eye-ai/EyeAIApp/app/src/main/cpp/Log.hpp"
 
 AudioMain::AudioMain() {
 	/*
@@ -18,7 +19,7 @@ AudioMain::AudioMain() {
 	buffers.resize(NUMBER_OF_SOURCES, std::vector<ALuint>(BUFFERS_PER_SOURCE));
 	sources.resize(NUMBER_OF_SOURCES);
 	audio_sources_data.resize(
-		NUMBER_OF_SOURCES, AudioSourceData{25.0f, 1.0f, 0.0f,0.0f,0.0f}
+		NUMBER_OF_SOURCES, AudioSourceData{200.0f, 1.0f, 0.0f,0.0f,0.0f}
 	);
 
 	// Setting up the OpenAL configuration
@@ -27,12 +28,15 @@ AudioMain::AudioMain() {
 		std::cout << "Das Audiogerät konnte nicht geöffnet werden.\n";
 		return;
 	}
+
 	context = alcCreateContext(device, nullptr);
 	if (!alcMakeContextCurrent(context)) {
 		std::cout << "Fehler bei Context.\n";
 		return;
 	}
 	audio_device_initialized = true;
+
+	alDistanceModel(AL_LINEAR_DISTANCE);
 
 	// Setting the listener to his default position of (0|0|0)
 	alListener3f(AL_POSITION, 0.0, 0.0, 0.0);
@@ -82,6 +86,10 @@ void AudioMain::startAudioLoop(std::atomic<bool>& running) {
 				processed--;
 			}
 
+			alSourcef(source, AL_MAX_DISTANCE, 1.0f);
+			alSourcef(source, AL_ROLLOFF_FACTOR, 1.0f);
+			alSourcef(source, AL_REFERENCE_DISTANCE, 0.0f);
+
 			// Restart the source if it has stopped
 			ALint state = AL_PAUSED;
 			alGetSourcei(source, AL_SOURCE_STATE, &state);
@@ -108,6 +116,12 @@ void AudioMain::setupSources() {
 	*/
 
 	alGenSources(NUMBER_OF_SOURCES, sources.data());
+
+	for(auto source : sources){
+		alSourcef(source, AL_MAX_DISTANCE, 1.0f);
+		alSourcef(source, AL_ROLLOFF_FACTOR, 1.0f);
+		alSourcef(source, AL_REFERENCE_DISTANCE, 0.0f);
+	}
 
 	/*
 	This loop handles the buffers and position of each source
