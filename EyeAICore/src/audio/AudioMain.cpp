@@ -1,11 +1,19 @@
 #include "EyeAICore/audio/AudioMain.hpp"
+#include "/home/lars/Documents/Progamming/Eye-Ai/eye-ai/EyeAIApp/app/src/main/cpp/Log.hpp"
 #include "EyeAICore/audio/AudioSourceData.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <iostream>
+#include <string>
 #include <thread>
 #include <vector>
-#include "/home/lars/Documents/Progamming/Eye-Ai/eye-ai/EyeAIApp/app/src/main/cpp/Log.hpp"
+
+#define ALC_HRTF_SOFT 0x1992
+
+typedef ALCboolean(ALC_APIENTRY* LPALCRESETDEVICESOFT)(
+	ALCdevice*,
+	const ALCint*
+);
 
 AudioMain::AudioMain() {
 	/*
@@ -13,20 +21,37 @@ AudioMain::AudioMain() {
 	- Prepares vectors in which the sources, buffers and AudioSourceData
 	  is stored
 	- Creates OpenAl device and context, for audio playback
+	- Enabling HRTF (head-related transfer function) if possible
 	*/
 
 	// Preparing the vectors
 	buffers.resize(NUMBER_OF_SOURCES, std::vector<ALuint>(BUFFERS_PER_SOURCE));
 	sources.resize(NUMBER_OF_SOURCES);
 	audio_sources_data.resize(
-		NUMBER_OF_SOURCES, AudioSourceData{200.0f, 1.0f, 0.0f,0.0f,0.0f}
+		NUMBER_OF_SOURCES, AudioSourceData{200.0f, 1.0f, 0.0f, 0.0f, 0.0f}
 	);
 
-	// Setting up the OpenAL configuration
-	device = alcOpenDevice(nullptr);
+	// Setting up the OpenAL device configuration
+	device = alcOpenDevice(NULL);
 	if (!device) {
 		std::cout << "Das Audiogerät konnte nicht geöffnet werden.\n";
 		return;
+	}
+
+	// Checking for HRTF support
+	if (alcIsExtensionPresent(device, "ALC_SOFT_HRTF") == ALC_TRUE) {
+		LOG_INFO("[AudioMain] HRTF present, activating ...");
+
+		// Retrieving necessary function
+		LPALCRESETDEVICESOFT alcResetDeviceSOFT = (LPALCRESETDEVICESOFT)
+			alcGetProcAddress(device, "alcResetDeviceSOFT");
+
+		// Setting up Attributes for HRTF
+		ALCint attribs[] = {ALC_HRTF_SOFT, ALC_TRUE, 0};
+		alcResetDeviceSOFT(device, attribs);
+		
+	} else {
+		LOG_INFO("[AudioMain] HRTF not present");
 	}
 
 	context = alcCreateContext(device, nullptr);
@@ -34,6 +59,7 @@ AudioMain::AudioMain() {
 		std::cout << "Fehler bei Context.\n";
 		return;
 	}
+
 	audio_device_initialized = true;
 
 	alDistanceModel(AL_LINEAR_DISTANCE);
@@ -53,7 +79,8 @@ void AudioMain::startAudioLoop(std::atomic<bool>& running) {
 	Therefore ensuring continues playback
 	*/
 
-	if(!audio_device_initialized) return;
+	if (!audio_device_initialized)
+		return;
 
 	setupSources();
 
@@ -74,7 +101,8 @@ void AudioMain::startAudioLoop(std::atomic<bool>& running) {
 				alSourceUnqueueBuffers(source, 1, &buf);
 				alBufferData(
 					buf, AL_FORMAT_MONO16, audio_sources_data[i].samples.data(),
-					audio_sources_data[i].number_of_samples * sizeof(short), audio_sources_data[i].sample_rate
+					audio_sources_data[i].number_of_samples * sizeof(short),
+					audio_sources_data[i].sample_rate
 				);
 				alSourceQueueBuffers(source, 1, &buf);
 				// Updating the source's position
@@ -96,7 +124,6 @@ void AudioMain::startAudioLoop(std::atomic<bool>& running) {
 			if (state == AL_STOPPED) {
 				alSourcePlay(source);
 			}
-			
 		}
 
 		// To reduce program-load, the loop pauses
@@ -117,7 +144,7 @@ void AudioMain::setupSources() {
 
 	alGenSources(NUMBER_OF_SOURCES, sources.data());
 
-	for(auto source : sources){
+	for (auto source : sources) {
 		alSourcef(source, AL_MAX_DISTANCE, 1.0f);
 		alSourcef(source, AL_ROLLOFF_FACTOR, 1.0f);
 		alSourcef(source, AL_REFERENCE_DISTANCE, 0.0f);
@@ -130,15 +157,15 @@ void AudioMain::setupSources() {
 		// Extracting the AudioSourceData for the source, and creating according
 		// AudioData
 		AudioSourceData source_data = audio_sources_data[i];
-	
 
 		// Generating each buffer, filling it up and queuing it to the source
 		alGenBuffers(BUFFERS_PER_SOURCE, buffers[i].data());
 		for (auto buf : buffers[i]) {
 			alBufferData(
-					buf, AL_FORMAT_MONO16, audio_sources_data[i].samples.data(),
-					audio_sources_data[i].number_of_samples * sizeof(short), audio_sources_data[i].sample_rate
-				);
+				buf, AL_FORMAT_MONO16, audio_sources_data[i].samples.data(),
+				audio_sources_data[i].number_of_samples * sizeof(short),
+				audio_sources_data[i].sample_rate
+			);
 			alSourceQueueBuffers(sources[i], 1, &buf);
 		}
 		// Setting the right position for the source
@@ -150,7 +177,9 @@ void AudioMain::setupSources() {
 	}
 }
 
-void AudioMain::changeAudioData(std::vector<AudioSourceData> new_audio_source_data) {
+void AudioMain::changeAudioData(
+	std::vector<AudioSourceData> new_audio_source_data
+) {
 	this->audio_sources_data = new_audio_source_data;
 }
 

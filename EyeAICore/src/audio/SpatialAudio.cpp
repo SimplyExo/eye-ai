@@ -64,7 +64,7 @@ void SpatialAudio::processDepthEstimationData() {
 				std::array<int, 2>{i + 1, 0}, nearest_distance
 			);
 			//float actual_distance = sqrt(sound_origin[0] * sound_origin[0] * sound_origin[1] * sound_origin[1]);
-		//LOG_INFO("[ProcessDepthEstimationData] Distance to source {}: {}", i, actual_distance)
+
 		new_audio_source_data.push_back(AudioSourceData{
 			200.0f, BUFFER_LENGTH,sound_origin[0], sound_origin[1], sound_origin[2]
 		});

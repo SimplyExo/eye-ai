@@ -14,7 +14,7 @@ sound at a specific location
 struct AudioSourceData {
     float frequency;
     float duration;
-    static constexpr int sample_rate = 44100;
+    static constexpr int sample_rate = 48000;
     int number_of_samples;
     float x1_position;
     float x2_position;

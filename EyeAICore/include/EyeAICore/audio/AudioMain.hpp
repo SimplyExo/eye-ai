@@ -36,5 +36,7 @@ class AudioMain {
 	ALCcontext* context;
 
 	void setupSources();
+
+	void listAllExtensions();
 };
 

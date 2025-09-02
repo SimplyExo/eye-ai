@@ -25,7 +25,7 @@ class SpatialAudio {
 	AudioMain audio_main;
 	const int NUMBER_OF_SOURCES = 8;
 	const float BUFFER_LENGTH = 1;
-	//const int SAMPLE_RATE = 44100;
+	//const int SAMPLE_RATE = 48000;
 
   public:
 	SpatialAudio();
