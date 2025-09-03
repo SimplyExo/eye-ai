@@ -16,6 +16,10 @@ SpatialAudio handles everything necessary for the spatial audio:
 #include <span>
 #include <array>
 
+using SpatialAudioLogErrorCallback = void (*)(std::string);
+using SpatialAudioLogInfoCallback = void (*)(std::string);
+
+
 class SpatialAudio {
   private:
 	std::array<float, 256 * 256> depthEstimationData = {0};
@@ -23,9 +27,7 @@ class SpatialAudio {
 	int column_length = 256;
 	bool isFinished = true;
 	AudioMain audio_main;
-	const int NUMBER_OF_SOURCES = 8;
-	const float BUFFER_LENGTH = 1;
-	//const int SAMPLE_RATE = 48000;
+	AudioSettings audio_settings;
 
   public:
 	SpatialAudio();
@@ -36,4 +38,7 @@ class SpatialAudio {
 
 	std::thread audio_thread;
 	std::atomic<bool> running{true};
+
+	void setSpatialAudioLogErrorCallback(SpatialAudioLogErrorCallback callback);
+	void setSpatialAudioLogInfoCallback(SpatialAudioLogErrorCallback callback);
 };

@@ -10,6 +10,7 @@ by refilling empty buffers with new data
 */
 
 #include "EyeAICore/audio/AudioSourceData.hpp"
+#include "EyeAICore/audio/AudioSettings.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <atomic>
@@ -24,9 +25,7 @@ class AudioMain {
 
   private:
 	bool audio_device_initialized = false;
-	const float BUFFER_DURATION = 1; //in seconds
-	const int NUMBER_OF_SOURCES = 8;
-	const int BUFFERS_PER_SOURCE = 3;
+	AudioSettings audio_settings;
 
 	std::vector<ALuint> sources;
 	std::vector<std::vector<ALuint>> buffers;

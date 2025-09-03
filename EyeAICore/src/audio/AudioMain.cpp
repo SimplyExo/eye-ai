@@ -1,6 +1,6 @@
 #include "EyeAICore/audio/AudioMain.hpp"
-#include "/home/lars/Documents/Progamming/Eye-Ai/eye-ai/EyeAIApp/app/src/main/cpp/Log.hpp"
 #include "EyeAICore/audio/AudioSourceData.hpp"
+#include "EyeAICore/audio/SpatialAudio.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <iostream>
@@ -16,6 +16,8 @@ typedef ALCboolean(ALC_APIENTRY* LPALCRESETDEVICESOFT)(
 );
 
 AudioMain::AudioMain() {
+
+
 	/*
 	Initialises audio playback:
 	- Prepares vectors in which the sources, buffers and AudioSourceData
@@ -25,10 +27,10 @@ AudioMain::AudioMain() {
 	*/
 
 	// Preparing the vectors
-	buffers.resize(NUMBER_OF_SOURCES, std::vector<ALuint>(BUFFERS_PER_SOURCE));
-	sources.resize(NUMBER_OF_SOURCES);
+	buffers.resize(audio_settings.NUMBER_OF_SOURCES, std::vector<ALuint>(audio_settings.BUFFERS_PER_SOURCE));
+	sources.resize(audio_settings.NUMBER_OF_SOURCES);
 	audio_sources_data.resize(
-		NUMBER_OF_SOURCES, AudioSourceData{200.0f, 1.0f, 0.0f, 0.0f, 0.0f}
+		audio_settings.NUMBER_OF_SOURCES, AudioSourceData{200.0f, 1.0f,audio_settings.SAMPLE_RATE, 0.0f, 0.0f, 0.0f}
 	);
 
 	// Setting up the OpenAL device configuration
@@ -40,8 +42,8 @@ AudioMain::AudioMain() {
 
 	// Checking for HRTF support
 	if (alcIsExtensionPresent(device, "ALC_SOFT_HRTF") == ALC_TRUE) {
-		LOG_INFO("[AudioMain] HRTF present, activating ...");
-
+		//LOG_INFO("[AudioMain] HRTF present, activating ...");
+		
 		// Retrieving necessary function
 		LPALCRESETDEVICESOFT alcResetDeviceSOFT = (LPALCRESETDEVICESOFT)
 			alcGetProcAddress(device, "alcResetDeviceSOFT");
@@ -51,7 +53,7 @@ AudioMain::AudioMain() {
 		alcResetDeviceSOFT(device, attribs);
 		
 	} else {
-		LOG_INFO("[AudioMain] HRTF not present");
+		//LOG_INFO("[AudioMain] HRTF not present");
 	}
 
 	context = alcCreateContext(device, nullptr);
@@ -85,7 +87,7 @@ void AudioMain::startAudioLoop(std::atomic<bool>& running) {
 	setupSources();
 
 	while (running) {
-		for (int i = 0; i < NUMBER_OF_SOURCES; i++) {
+		for (int i = 0; i < audio_settings.NUMBER_OF_SOURCES; i++) {
 			// Retrieving the source and it's AudioSourceData
 			auto& source = sources[i];
 
@@ -142,7 +144,7 @@ void AudioMain::setupSources() {
 	  AudioSourceData specifications
 	*/
 
-	alGenSources(NUMBER_OF_SOURCES, sources.data());
+	alGenSources(audio_settings.NUMBER_OF_SOURCES, sources.data());
 
 	for (auto source : sources) {
 		alSourcef(source, AL_MAX_DISTANCE, 1.0f);
@@ -153,13 +155,13 @@ void AudioMain::setupSources() {
 	/*
 	This loop handles the buffers and position of each source
 	*/
-	for (int i = 0; i < NUMBER_OF_SOURCES; ++i) {
+	for (int i = 0; i < audio_settings.NUMBER_OF_SOURCES; ++i) {
 		// Extracting the AudioSourceData for the source, and creating according
 		// AudioData
 		AudioSourceData source_data = audio_sources_data[i];
 
 		// Generating each buffer, filling it up and queuing it to the source
-		alGenBuffers(BUFFERS_PER_SOURCE, buffers[i].data());
+		alGenBuffers(audio_settings.BUFFERS_PER_SOURCE, buffers[i].data());
 		for (auto buf : buffers[i]) {
 			alBufferData(
 				buf, AL_FORMAT_MONO16, audio_sources_data[i].samples.data(),
@@ -189,9 +191,9 @@ AudioMain::~AudioMain() {
 	- deletes sources and buffers
 	- properly ends context and device
 	*/
-	alDeleteSources(NUMBER_OF_SOURCES, sources.data());
+	alDeleteSources(audio_settings.NUMBER_OF_SOURCES, sources.data());
 	for (auto buff : buffers) {
-		alDeleteBuffers(BUFFERS_PER_SOURCE, buff.data());
+		alDeleteBuffers(audio_settings.BUFFERS_PER_SOURCE, buff.data());
 	}
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
