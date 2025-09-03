@@ -397,30 +397,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatObjectFrame(
 	return env->NewStringUTF(
 		get_last_object_profiling_frame_formatted().c_str()
 	);
-}
-/*
- *extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setupAudioDevice(
-	JNIEnv* env,
-	jobject /this/
-) {
-	auto audio_main = std::make_unique<AudioMain>();
-	audio_main->setupAudioDevice();
-	audio.lock()->swap(audio_main);
-}
- */
 
-/*
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroyAudioDevice(
-	JNIEnv* env,
-	jobject /this/
-) {
-	(*audio.lock())->destroyAudioDevice();
-	audio.lock()->reset();
 }
-*/
 
 static SpatialAudio& get_or_create_spatial_audio() {
 	auto spatial_audio_scope = spatial_audio.lock();
@@ -428,6 +406,16 @@ static SpatialAudio& get_or_create_spatial_audio() {
 	if (*spatial_audio_scope == nullptr) {
 		LOG_INFO("[SpatialAudio] Initializing SpatialAudio instance...");
 		*spatial_audio_scope = std::make_unique<SpatialAudio>();
+
+		const auto log_error_callback = [](std::string msg) {
+			LOG_WARN("[SpatialAudio] {}", msg);
+		};
+
+		const auto log_info_callback = [](std::string msg) {
+			LOG_INFO("[SpatialAudio] {}", msg);
+		};
+		setSpatialAudioLogErrorCallback(log_error_callback);
+		setSpatialAudioLogErrorCallback(log_info_callback);
 	}
 
 	return *(*spatial_audio_scope);

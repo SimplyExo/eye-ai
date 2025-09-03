@@ -4,5 +4,12 @@
         "span": "cpp",
         "array": "cpp",
         "thread": "cpp"
-    }
+    },
+    "cSpell.words": [
+        "HRTF",
+        "LPALCRESETDEVICESOFT",
+        "ROLLOFF",
+        "Sourcef",
+        "Sourcei"
+    ]
 }

@@ -19,12 +19,12 @@ std::array<float, 3> CalculateSoundOrigin::calculateSoundOrigin(
 
 /*
 Calculates the angle that the pixel has, relative to the POV of the camera
-The angle can be negativ (right side of the camera), or positive (left side
+The angle can be negative (right side of the camera), or positive (left side
 of the camera).
 */
 float CalculateSoundOrigin::getPixelAngle(){
 	/*
-	adjust the x-coordinate of the pixel, so that there are positiv and
+	adjust the x-coordinate of the pixel, so that there are positive and
 	negative values, depending whether the pixel is to the left or right
 	of the middle
 	*/
@@ -41,7 +41,7 @@ float CalculateSoundOrigin::getPixelAngle(){
 /*
 Calculates the direction from the camera to the origin.
 It does this by ignoring the distance, and assuming the origin
-is on a 1m circle around the camer, it's position only depending 
+is on a 1m circle around the camera, it's position only depending 
 on the angle from the camera
 */
 std::array<float, 3> CalculateSoundOrigin::getVectorToOrigin(float pixelAngle){
@@ -56,7 +56,7 @@ std::array<float, 3> CalculateSoundOrigin::getVectorToOrigin(float pixelAngle){
 }
 
 /*
-Calculates the origin of the Sound, by multipliying the 
+Calculates the origin of the Sound, by multiplying the 
 directional vector to the sound with the distance of the 
 pixel from the camera
 */
