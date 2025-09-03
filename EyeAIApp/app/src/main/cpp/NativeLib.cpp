@@ -5,8 +5,8 @@
 #include <nlohmann/json.hpp>
 
 #include "EyeAICore/DepthModel.hpp"
-#include "EyeAICore/Rel2AbsDepthModel.hpp"
 #include "EyeAICore/MetricDepthModel.hpp"
+#include "EyeAICore/Rel2AbsDepthModel.hpp"
 #include "EyeAICore/YoloModel.hpp"
 #include "EyeAICore/utils/DepthColormap.hpp"
 #include "EyeAICore/utils/MutexGuard.hpp"
@@ -203,10 +203,14 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 	);
 
 	NativeByteArrayScope relative_depth_model_data(env, relative_depth_model);
-	const NativeStringScope relative_depth_model_token_string(env, relative_depth_model_token);
+	const NativeStringScope relative_depth_model_token_string(
+		env, relative_depth_model_token
+	);
 
 	NativeByteArrayScope rel2abs_depth_model_data(env, rel2abs_depth_model);
-	const NativeStringScope rel2abs_depth_model_token_string(env, rel2abs_depth_model_token);
+	const NativeStringScope rel2abs_depth_model_token_string(
+		env, rel2abs_depth_model_token
+	);
 
 	const auto log_warning_callback = [](std::string msg) {
 		LOG_WARN("[TfLiteRuntime] {}", msg);
@@ -217,8 +221,11 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 	};
 
 	auto result = MetricDepthModel::create(
-		relative_depth_model_data.to_vector(), rel2abs_depth_model_data.to_vector(), gpu_delegate_serialization_dir_string,
-		relative_depth_model_token_string, rel2abs_depth_model_token_string, log_warning_callback, log_error_callback
+		relative_depth_model_data.to_vector(),
+		rel2abs_depth_model_data.to_vector(),
+		gpu_delegate_serialization_dir_string,
+		relative_depth_model_token_string, rel2abs_depth_model_token_string,
+		log_warning_callback, log_error_callback
 	);
 	if (result) {
 		metric_depth_model.lock()->swap(*result);
@@ -284,7 +291,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getMetricDepthModelInputShape(
 	JNIEnv* env,
 	jobject /*thiz*/
 ) {
-	std::span<const int> input_shape = (*metric_depth_model.lock())->get_input_shape();
+	std::span<const int> input_shape =
+		(*metric_depth_model.lock())->get_input_shape();
 
 	return create_jni_int_array(env, input_shape);
 }
@@ -311,8 +319,9 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_metricDepthColormap(
 	NativeIntArrayScope colormapped_pixel_array(env, colormapped_pixels);
 
 	if (depth_value_array.size() == colormapped_pixel_array.size()) {
-		if (const auto error =
-				metric_depth_colormap(depth_value_array, colormapped_pixel_array))
+		if (const auto error = metric_depth_colormap(
+				depth_value_array, colormapped_pixel_array
+			))
 			LOG_ERROR("depthColormap failed: {}", error->to_string());
 	} else {
 		LOG_ERROR(
@@ -397,7 +406,17 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatObjectFrame(
 	return env->NewStringUTF(
 		get_last_object_profiling_frame_formatted().c_str()
 	);
+}
 
+extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_updateAudioSettings(
+	JNIEnv* env,
+	jobject /*this*/,
+	jint number_of_sources,
+	jfloat frequency
+) {
+	LOG_INFO("[SpatialAudio] Updating audio settings...");
+	audio_settings = AudioSettings(number_of_sources, frequency);
 }
 
 static SpatialAudio& get_or_create_spatial_audio() {
@@ -435,7 +454,9 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendDepthEstimationData(
 
 	assert(data.size() == (256 * 256));
 
-	get_or_create_spatial_audio().getDepthEstimationData(static_cast<std::span<float, 256 * 256>>(data));
+	get_or_create_spatial_audio().getDepthEstimationData(
+		static_cast<std::span<float, 256 * 256>>(data)
+	);
 
 	// Speicher freigeben
 	env->ReleaseFloatArrayElements(array, rawArray, JNI_ABORT);
