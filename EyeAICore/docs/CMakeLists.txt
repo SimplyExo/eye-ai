@@ -63,6 +63,7 @@ if (DOXYGEN_FOUND)
 		"${EYE_AI_CORE_DIR}/docs"
 		"${EYE_AI_CORE_DIR}/include/EyeAICore"
 		"${EYE_AI_CORE_DIR}/src"
+		"${EYE_AI_CORE_DIR}/metric_depth/README.md"
 		"${EYE_AI_CORE_DIR}/../EyeAIApp/README.md"
 		"${EYE_AI_CORE_DIR}/../EyeAIServer/README.md"
 		"${EYE_AI_CORE_DIR}/../EyeAIServer/Client/README.md"

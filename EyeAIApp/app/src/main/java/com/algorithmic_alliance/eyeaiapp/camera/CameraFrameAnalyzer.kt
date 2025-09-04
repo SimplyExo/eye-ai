@@ -3,7 +3,6 @@ package com.algorithmic_alliance.eyeaiapp.camera
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.media.Image
 import android.util.Size
 import android.widget.ImageView
 import android.widget.TextView
@@ -11,7 +10,6 @@ import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import androidx.core.graphics.createBitmap
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
@@ -26,7 +24,6 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import androidx.core.view.isVisible
-import com.algorithmic_alliance.eyeaiapp.Settings
 import java.util.concurrent.ExecutorService
 
 /**
@@ -75,21 +72,21 @@ class CameraFrameAnalyzer(
 		// DepthAnalyzer
 		depthScope.launch {
 			while (isActive) {
-				val depthModel = eyeAIApp.depthModel
+				val metricDepthModel = eyeAIApp.metricDepthModel
 				val frame = getFrame()
 
-				if (frame != null && depthModel != null) {
+				if (frame != null && metricDepthModel != null) {
 					NativeLib.newDepthFrame()
 
-					val predictionOutput = depthModel.predictDepth(frame)
+					val predictionOutput = metricDepthModel.predictDepth(frame)
 					eyeAIApp.aiData.depthEstimationData.set(predictionOutput)
 
 					val inputWidth = frame.width
 					val inputHeight = frame.height
 
-					colorMappedImage = NativeLib.depthColorMap(
+					colorMappedImage = NativeLib.metricDepthColormap(
 						predictionOutput,
-						depthModel.inputDim
+						metricDepthModel.inputDim
 					)
 
 					withContext(Dispatchers.Main) {
@@ -101,9 +98,9 @@ class CameraFrameAnalyzer(
 						if (eyeAIApp.settings.showProfilingInfo) {
 							val formattedInputResolution = "${inputWidth}x${inputHeight}"
 							val formattedDepthModelInputSize =
-								"${depthModel.inputDim.width}x${depthModel.inputDim.height}"
+								"${metricDepthModel.inputDim.width}x${metricDepthModel.inputDim.height}"
 							performanceText.text =
-								"Depth model: ${depthModel.name}\nCamera resolution: $formattedInputResolution --> Depth model input: $formattedDepthModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}\n${NativeLib.formatObjectFrame()}"
+								"Metric Depth model: ${metricDepthModel.name}\nCamera resolution: $formattedInputResolution --> Depth model input: $formattedDepthModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}\n${NativeLib.formatObjectFrame()}"
 						} else {
 							performanceText.text = ""
 						}
