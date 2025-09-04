@@ -33,6 +33,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 
 class MainActivity : AppCompatActivity() {
@@ -70,14 +71,15 @@ class MainActivity : AppCompatActivity() {
 
 	private var lastLlmJsonResponse: String? = null
 
+	private var currentStateMachine: StateMachine? = null
+
+	private val voskStarting = AtomicBoolean(false)
+
 	enum class State {
 		IDLE,
 		SETTINGS_MENU,
 		SETTINGS_CHOICE,
-
-
 		SETTINGS_ACTION,
-
 	}
 
 	private var currentState: State = State.IDLE
@@ -140,7 +142,64 @@ class MainActivity : AppCompatActivity() {
 
 		updateSpeechRecognitionUIVisibility()
 
-		textToSpeechInstance = TextToSpeechInstance(this, ::onTTSFinishedSpeaking)
+		textToSpeechInstance = TextToSpeechInstance(this) {
+			// starting vosk if no stream is active
+			CoroutineScope(Dispatchers.Main).launch {
+				try {
+					//Announcing that the global callback has been fired.
+					Log.d(EyeAIApp.APP_LOG_TAG, "GLOBAL TTS CALLBACK: Fired.")
+					//checking whether a stream is ongoing
+					val isStreaming = currentStateMachine?.isStreaming() ?: false
+					if (isStreaming) {
+						Log.d(
+							EyeAIApp.APP_LOG_TAG,
+							"GLOBAL TTS CALLBACK: Streaming is active — NOT starting Vosk."
+						)
+						return@launch
+					}
+
+					Log.d(
+						EyeAIApp.APP_LOG_TAG,
+						"GLOBAL TTS CALLBACK: TextToSpeechInstance already waited for silence -> attempting to start Vosk."
+					)
+
+					//avoiding prallel starts
+					if (voskStarting.compareAndSet(false, true)) {
+						try {
+							eyeAIApp().voskModel.startListening()
+							Log.d(
+								EyeAIApp.APP_LOG_TAG,
+								"GLOBAL TTS CALLBACK: Vosk startListening() invoked."
+							)
+						} catch (e: Exception) {
+							Log.e(
+								EyeAIApp.APP_LOG_TAG,
+								"GLOBAL TTS CALLBACK: Failed to start Vosk.",
+								e
+							)
+						} finally {
+							voskStarting.set(false)
+						}
+					} else {
+						Log.d(
+							EyeAIApp.APP_LOG_TAG,
+							"GLOBAL TTS CALLBACK: Vosk is already starting; skipping duplicate start."
+						)
+					}
+				} catch (e: Exception) {
+					Log.e(EyeAIApp.APP_LOG_TAG, "Exception in global TTS finished handler", e)
+					if (voskStarting.compareAndSet(false, true)) {
+						try {
+							eyeAIApp().voskModel.startListening()
+						} catch (_: Exception) {
+						} finally {
+							voskStarting.set(false)
+						}
+					}
+				}
+			}
+		}
+
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -360,15 +419,18 @@ class MainActivity : AppCompatActivity() {
 		}
 
 		val receiveTs = System.nanoTime()
-		Log.d(EyeAIApp.APP_LOG_TAG, "SR final RECEIVED at ${System.currentTimeMillis()} (ms), text='${final.take(200)}'")
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"SR final RECEIVED at ${System.currentTimeMillis()} (ms), text='${final.take(200)}'"
+		)
 
 
 		CoroutineScope(Dispatchers.Main).launch {
 			speechRecognitionFinalResultText?.text = final
 
-			// minimum of 1 second pause between speech commands
-			if (System.currentTimeMillis() - lastFinalResultMillis <= 1000)
-				return@launch
+			// minimum of 1 second pause between speech commands, testing without
+			//if (System.currentTimeMillis() - lastFinalResultMillis <= 1000)
+			//	return@launch
 
 			lastFinalResultMillis = System.currentTimeMillis()
 
@@ -377,19 +439,34 @@ class MainActivity : AppCompatActivity() {
 			} else {
 				llmResponseText?.text = getString(R.string.llm_responding_notice)
 
-				// start after onTTSFinished speaking
+				//start after onTTSFinished speaking
+				//Logging when Vosk is stopped.
+				Log.d(EyeAIApp.APP_LOG_TAG, "Stopping Vosk to process command.")
 				eyeAIApp().voskModel.stopListening()
 
 				// vibrate for 100ms
 				vibrate(eyeAIApp(), 100)
 
-				Log.d(EyeAIApp.APP_LOG_TAG, "Dispatching to LLM worker at ${System.currentTimeMillis()} (ms); latency since SR receive = ${elapsedMs(receiveTs)} ms")
+				Log.d(
+					EyeAIApp.APP_LOG_TAG,
+					"Dispatching to LLM worker at ${System.currentTimeMillis()} (ms); latency since SR receive = ${
+						elapsedMs(receiveTs)
+					} ms"
+				)
 
 				withContext(llmThreadExecutor.asCoroutineDispatcher()) {
 					val workerStart = System.nanoTime()
-					Log.d(EyeAIApp.APP_LOG_TAG, "LLM worker START processing at ${System.currentTimeMillis()} (ms)")
+					Log.d(
+						EyeAIApp.APP_LOG_TAG,
+						"LLM worker START processing at ${System.currentTimeMillis()} (ms)"
+					)
 					onSpeechResult(final)
-					Log.d(EyeAIApp.APP_LOG_TAG, "LLM worker FINISHED processing at ${System.currentTimeMillis()} (ms); duration=${elapsedMs(workerStart)} ms")
+					Log.d(
+						EyeAIApp.APP_LOG_TAG,
+						"LLM worker FINISHED processing at ${System.currentTimeMillis()} (ms); duration=${
+							elapsedMs(workerStart)
+						} ms"
+					)
 				}
 
 			}
@@ -400,31 +477,43 @@ class MainActivity : AppCompatActivity() {
 		speechRecognitionFinalResultText?.text = getString(R.string.speech_recognition_ready)
 	}
 
-	private fun onTTSFinishedSpeaking() {
-		//Main thread needed
-		CoroutineScope(Dispatchers.Main).launch {
-			Log.d(EyeAIApp.APP_LOG_TAG, "onTTSFinishedSpeaking() called at ${System.currentTimeMillis()}")
-			speechRecognitionFinalResultText?.apply {
-				text = getString(R.string.speech_recognition_ready)
-			}
-
-			eyeAIApp().voskModel.startListening()
-		}
-	}
-
 
 	private suspend fun onSpeechResult(final: String) {
-		val stateMachine =
-			StateMachine(eyeAIApp(), textToSpeechInstance, lastLlmJsonResponse, llmResponseText)
+		Log.d(EyeAIApp.APP_LOG_TAG, "onSpeechResult: Creating new StateMachine for input: '$final'")
+
+		val stateMachine = StateMachine(
+			eyeAIApp(),
+			textToSpeechInstance,
+			lastLlmJsonResponse,
+			llmResponseText
+		) {
+
+			CoroutineScope(Dispatchers.Main).launch {
+				Log.d(
+					EyeAIApp.APP_LOG_TAG,
+					"onStreamingComplete CALLBACK: Fired, but logic is now handled by the global callback."
+				)
+			}
+		}
+
+
+		currentStateMachine = stateMachine
+
 		val update = when (currentState) {
 			State.IDLE -> stateMachine.handleIdle(final)
 			State.SETTINGS_MENU -> stateMachine.handleSettingsMenu(final)
 			State.SETTINGS_CHOICE -> stateMachine.handleSettingsChoice(final)
 			State.SETTINGS_ACTION -> stateMachine.handleSettingsAction(final)
 		}
-	currentState = update.newState
+
+		//Logging the state transition.
+		Log.d(EyeAIApp.APP_LOG_TAG, "State transition: $currentState -> ${update.newState}")
+		currentState = update.newState
 		lastLlmJsonResponse = update.newJson
 	}
 
+
+
 	fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
+
 }
