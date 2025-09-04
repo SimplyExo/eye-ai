@@ -30,7 +30,7 @@ interface LLM {
 
 		const val SNIPPET_TTS_SPEED: String =
 			"""Mit dieser Option können Sie die Sprechgeschwindigkeit der Sprachausgabe anzupassen.
-        Der standartmäßige Wert der Geschwindigkeit liegt bei 1.0.
+        Der standartmäßige Wert der Geschwindigkeit liegt bei 1,0.
         Möchten Sie die Geschwindigkeit erhöhen, verringern oder auf einen bestimmten Wert setzen?
         """
 
