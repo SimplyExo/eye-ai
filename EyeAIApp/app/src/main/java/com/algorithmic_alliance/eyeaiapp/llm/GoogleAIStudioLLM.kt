@@ -22,7 +22,7 @@ import javax.net.ssl.X509TrustManager
 
 class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: String?) : LLM {
 	companion object {
-		const val MODEL_NAME: String = "gemini-2.5-flash"
+		const val MODEL_NAME: String = "gemini-2.5-flash-lite"
 		private const val GOOGLE_GEN_AI_ENDPOINT = "https://generativelanguage.googleapis.com"
 	}
 

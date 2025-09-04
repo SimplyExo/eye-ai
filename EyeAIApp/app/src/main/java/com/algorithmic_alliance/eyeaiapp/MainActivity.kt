@@ -428,9 +428,9 @@ class MainActivity : AppCompatActivity() {
 		CoroutineScope(Dispatchers.Main).launch {
 			speechRecognitionFinalResultText?.text = final
 
-			// minimum of 1 second pause between speech commands, testing without
-			//if (System.currentTimeMillis() - lastFinalResultMillis <= 1000)
-			//	return@launch
+			// minimum of 1 second pause between speech commands
+			if (System.currentTimeMillis() - lastFinalResultMillis <= 1000)
+				return@launch
 
 			lastFinalResultMillis = System.currentTimeMillis()
 
