@@ -42,16 +42,29 @@ struct PreparedImage {
 	FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthCoefficientOutput> coeffs;
 };
 
+constexpr static size_t RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT = 1000;
+constexpr static float RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_WIDTH =
+	1500.0f / (float)RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT;
+constexpr static size_t RAW_RELATIVE_DEPTH_SAMPLE_COUNT = 100;
+
+struct PreparationResult {
+	std::chrono::milliseconds duration;
+	std::array<size_t, RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT>
+		raw_relative_depth_value_distribution;
+};
+
 /// rgb image of rgbd_image must match depth_input dimensions, depth image of
 /// rgbd_image will be resized to match depth_input dimensions
 tl::expected<PreparedImage, std::string> prepare(
 	DepthModel& depth_model,
 	size_t depth_input_width,
 	size_t depth_input_height,
-	const RGBDImage& rgbd_image
+	const RGBDImage& rgbd_image,
+	std::array<size_t, RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT>&
+		out_raw_relative_depth_value_distribution
 );
 
-tl::expected<std::chrono::milliseconds, std::string> prepare_datapoint(
+tl::expected<PreparationResult, std::string> prepare_datapoint(
 	DepthModel& depth_model,
 	const RGBDDataPoint& datapoint,
 	const std::filesystem::path& prepared_output_directory,
@@ -60,6 +73,12 @@ tl::expected<std::chrono::milliseconds, std::string> prepare_datapoint(
 
 FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthCoefficientOutput>
 find_coeffs(std::span<std::pair<float, float>> relative_absolute_pairs);
+
+std::array<float, RAW_RELATIVE_DEPTH_SAMPLE_COUNT>
+generate_raw_relative_depth_samples(
+	std::span<const size_t, RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT>
+		raw_relative_depth_value_distribution
+);
 
 tl::expected<FloatTensorBuffer<FloatTensorFormat::ImageRGB255>, std::string>
 load_rgb_image_file(

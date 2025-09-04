@@ -46,7 +46,7 @@ FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthInput> rel2abs_input_operator(
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
-	size_t input_pixel_count = rgb.data().size() / 3;
+	const size_t input_pixel_count = rgb.data().size() / 3;
 
 	std::vector<float> rel2abs_input(input_pixel_count * 4);
 
