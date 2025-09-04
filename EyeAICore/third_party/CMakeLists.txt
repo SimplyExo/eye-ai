@@ -137,6 +137,14 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(openal-soft)
 
+FetchContent_Declare(
+  libsndfile
+  GIT_REPOSITORY https://github.com/libsndfile/libsndfile.git
+  GIT_TAG master 
+)
+
+FetchContent_MakeAvailable(libsndfile)
+
 if(EYE_AI_CORE_FORCE_OBOE)
 	find_package(oboe REQUIRED CONFIG)
 	target_compile_definitions(OpenAL PRIVATE "ALSOFT_DRIVERS=oboe")
@@ -153,6 +161,7 @@ set(THIRD_PARTY_LIBS
 	tl::expected
 	concurrentqueue
 	OpenAL
+	SndFile::sndfile
 	PARENT_SCOPE
 )
 

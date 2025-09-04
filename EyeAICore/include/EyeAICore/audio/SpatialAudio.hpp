@@ -8,6 +8,7 @@ SpatialAudio handles everything necessary for the spatial audio:
 */
 
 #include "EyeAICore/audio/AudioMain.hpp"
+#include "EyeAICore/audio/AudioSettings.hpp"
 
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -15,9 +16,6 @@ SpatialAudio handles everything necessary for the spatial audio:
 #include <vector>
 #include <span>
 #include <array>
-
-using SpatialAudioLogErrorCallback = void (*)(std::string);
-using SpatialAudioLogInfoCallback = void (*)(std::string);
 
 
 class SpatialAudio {
@@ -27,10 +25,10 @@ class SpatialAudio {
 	int column_length = 256;
 	bool isFinished = true;
 	AudioMain audio_main;
-	AudioSettings audio_settings;
+	const AudioSettings& audio_settings;
 
   public:
-	SpatialAudio();
+	SpatialAudio(const AudioSettings& audio_settings);
 	~SpatialAudio();
 	void getDepthEstimationData(std::span<float, 256 * 256> data);
 	void processDepthEstimationData();
@@ -38,7 +36,4 @@ class SpatialAudio {
 
 	std::thread audio_thread;
 	std::atomic<bool> running{true};
-
-	void setSpatialAudioLogErrorCallback(SpatialAudioLogErrorCallback callback);
-	void setSpatialAudioLogInfoCallback(SpatialAudioLogErrorCallback callback);
 };

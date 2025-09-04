@@ -18,14 +18,14 @@ by refilling empty buffers with new data
 
 class AudioMain {
   public:
-	AudioMain();
+	AudioMain(const AudioSettings& audio_settings);
 	~AudioMain();
 	void startAudioLoop(std::atomic<bool>& running);
 	void changeAudioData(std::vector<AudioSourceData> new_audio_source_data);
 
   private:
 	bool audio_device_initialized = false;
-	AudioSettings audio_settings;
+	const AudioSettings& audio_settings;
 
 	std::vector<ALuint> sources;
 	std::vector<std::vector<ALuint>> buffers;

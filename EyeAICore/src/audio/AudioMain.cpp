@@ -1,4 +1,5 @@
 #include "EyeAICore/audio/AudioMain.hpp"
+#include "EyeAICore/audio/AudioSettings.hpp"
 #include "EyeAICore/audio/AudioSourceData.hpp"
 #include "EyeAICore/audio/SpatialAudio.hpp"
 #include <AL/al.h>
@@ -15,9 +16,7 @@ typedef ALCboolean(ALC_APIENTRY* LPALCRESETDEVICESOFT)(
 	const ALCint*
 );
 
-AudioMain::AudioMain() {
-
-
+AudioMain::AudioMain(const AudioSettings& audio_settings) : audio_settings(audio_settings) {
 	/*
 	Initialises audio playback:
 	- Prepares vectors in which the sources, buffers and AudioSourceData
@@ -42,7 +41,7 @@ AudioMain::AudioMain() {
 
 	// Checking for HRTF support
 	if (alcIsExtensionPresent(device, "ALC_SOFT_HRTF") == ALC_TRUE) {
-		//LOG_INFO("[AudioMain] HRTF present, activating ...");
+		audio_settings.logInfoCallback("[AudioMain] HRTF present, activating ...");
 		
 		// Retrieving necessary function
 		LPALCRESETDEVICESOFT alcResetDeviceSOFT = (LPALCRESETDEVICESOFT)
@@ -53,7 +52,7 @@ AudioMain::AudioMain() {
 		alcResetDeviceSOFT(device, attribs);
 		
 	} else {
-		//LOG_INFO("[AudioMain] HRTF not present");
+		audio_settings.logInfoCallback("[AudioMain] HRTF not present");
 	}
 
 	context = alcCreateContext(device, nullptr);

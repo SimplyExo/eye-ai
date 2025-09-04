@@ -1,26 +1,18 @@
 #include "EyeAICore/audio/SpatialAudio.hpp"
 #include "EyeAICore/audio/AudioMain.hpp"
+#include "EyeAICore/audio/AudioSettings.hpp"
 #include "EyeAICore/audio/AudioSourceData.hpp"
 #include "EyeAICore/audio/CalculateSoundOrigin.hpp"
 #include <algorithm>
-#include <thread>
-#include <vector>
+#include <cmath>
 #include <iostream>
 #include <span>
-#include <cmath>
+#include <thread>
+#include <vector>
 
-static SpatialAudioLogErrorCallback logErrorCallback = nullptr;
-static SpatialAudioLogInfoCallback logInfoCallback = nullptr;
+SpatialAudio::SpatialAudio(const AudioSettings& audio_settings)
+	: audio_main(audio_settings), audio_settings(audio_settings) {
 
-void setSpatialAudioLogErrorCallback(SpatialAudioLogErrorCallback callback){
-	logErrorCallback = callback;
-}
-
-void setSpatialAudioLogInfoCallback(SpatialAudioLogInfoCallback callback){
-	logInfoCallback = callback;
-}
-
-SpatialAudio::SpatialAudio() {
 	audio_thread =
 		std::thread([this]() { audio_main.startAudioLoop(running); });
 }
@@ -45,10 +37,14 @@ void SpatialAudio::processDepthEstimationData() {
 	std::vector<AudioSourceData> new_audio_source_data;
 	isFinished = false;
 	column_length = depthEstimationData.size() / row_length;
-	int step_size = row_length / audio_settings.NUMBER_OF_SOURCES; // NUMBER_OF_SOURCES = 2^x!
+	int step_size =
+		row_length /
+		audio_settings.NUMBER_OF_SOURCES; // NUMBER_OF_SOURCES = 2^x!
 
-	//LOG_INFO("[ProcessDepthEstimationData] Started processing...");
-	logErrorCallback("[ProcessDepthEstimationData] Started processing...");
+	// LOG_INFO("[ProcessDepthEstimationData] Started processing...");
+	audio_settings.logInfoCallback(
+		"[ProcessDepthEstimationData] Started processing..."
+	);
 
 	for (int i = 0; i < row_length; i += step_size) {
 		/*
@@ -62,9 +58,10 @@ void SpatialAudio::processDepthEstimationData() {
 		}
 
 		float nearest_distance =
-			*std::min_element(column.begin(), column.end()); 
+			*std::min_element(column.begin(), column.end());
 
-		//LOG_INFO("[ProcessDepthEstimationData] Nearest Distance for Source {}: {}", i, nearest_distance);
+		// LOG_INFO("[ProcessDepthEstimationData] Nearest Distance for Source
+		// {}: {}", i, nearest_distance);
 		/*
 		Retrieving sound origin, by passing coordinates in Frame and nearest
 		distance to the CalculateSoundOrigin::calculateSoundOrigin()
@@ -74,15 +71,20 @@ void SpatialAudio::processDepthEstimationData() {
 			CalculateSoundOrigin().calculateSoundOrigin(
 				std::array<int, 2>{i + 1, 0}, nearest_distance
 			);
-			//float actual_distance = sqrt(sound_origin[0] * sound_origin[0] * sound_origin[1] * sound_origin[1]);
+		// float actual_distance = sqrt(sound_origin[0] * sound_origin[0] *
+		// sound_origin[1] * sound_origin[1]);
 
-		new_audio_source_data.push_back(AudioSourceData{
-			200.0f, audio_settings.BUFFER_DURATION,audio_settings.SAMPLE_RATE,sound_origin[0], sound_origin[1], sound_origin[2]
-		});
+		new_audio_source_data.push_back(
+			AudioSourceData{
+				200.0f, audio_settings.BUFFER_DURATION,
+				audio_settings.SAMPLE_RATE, sound_origin[0], sound_origin[1],
+				sound_origin[2]
+			}
+		);
 	}
 	audio_main.changeAudioData(new_audio_source_data);
 	isFinished = true;
-	//LOG_INFO("[ProcessDepthEstimationData] Finished processing...");
+	// LOG_INFO("[ProcessDepthEstimationData] Finished processing...");
 }
 
 bool SpatialAudio::getProcessingStatus() { return isFinished; }

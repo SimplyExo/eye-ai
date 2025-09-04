@@ -64,11 +64,8 @@ object NativeLib {
 
 	external fun bitmapToRgbHwc255FloatArray(bitmap: Bitmap, outFloatArray: FloatArray, profilingFrameType: Int)
 
-	//external fun setupAudioDevice()
-
-	//external fun destroyAudioDevice()
-
-	external fun sendDepthEstimationData(array: FloatArray);
+	external fun setAudioSettings(numberOfSources: Int, frequency: Float)
+	external fun sendDepthEstimationData(array: FloatArray)
 	external fun getProcessingStatus (): Boolean
 	external fun destroySpatialAudio()
 

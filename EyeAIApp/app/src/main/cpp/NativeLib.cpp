@@ -1,3 +1,4 @@
+#include "EyeAICore/audio/AudioSettings.hpp"
 #include <EyeAICore/audio/AudioMain.hpp>
 #include <EyeAICore/audio/SpatialAudio.hpp>
 #include <jni.h>
@@ -18,6 +19,10 @@
 // the global variables are using MutexGuard, so they are thread-safe
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
+// Logging functions for spatial audio
+void spatial_audio_log_error_callback(std::string msg);
+void spatial_audio_log_info_callback(std::string msg);
+
 namespace {
 MutexGuard<std::unique_ptr<MetricDepthModel>> metric_depth_model{
 	std::unique_ptr<MetricDepthModel>(nullptr)
@@ -27,6 +32,12 @@ MutexGuard<std::unique_ptr<SpatialAudio>> spatial_audio{
 };
 
 MutexGuard<YoloModel> yolo_instance;
+
+MutexGuard<AudioSettings> audio_settings =
+	MutexGuard<AudioSettings>(AudioSettings(
+		spatial_audio_log_error_callback,
+		spatial_audio_log_info_callback
+	));
 
 } // namespace
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
@@ -409,32 +420,36 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatObjectFrame(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_updateAudioSettings(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setAudioSettings(
 	JNIEnv* env,
 	jobject /*this*/,
 	jint number_of_sources,
 	jfloat frequency
 ) {
 	LOG_INFO("[SpatialAudio] Updating audio settings...");
-	audio_settings = AudioSettings(number_of_sources, frequency);
+
+	auto audio_setting_scope = audio_settings.lock();
+	LOG_INFO("[SpatialAudio] Setting audio settings...");
+
+	audio_setting_scope->FREQUENCY = frequency;
+	audio_setting_scope->NUMBER_OF_SOURCES = number_of_sources;
 }
+
+void spatial_audio_log_error_callback(std::string msg) {
+	LOG_ERROR("[SpatialAudio] {}", msg);
+};
+
+void spatial_audio_log_info_callback(std::string msg) {
+	LOG_INFO("[SpatialAudio] {}", msg);
+};
 
 static SpatialAudio& get_or_create_spatial_audio() {
 	auto spatial_audio_scope = spatial_audio.lock();
+	auto audio_setting_scope = audio_settings.lock();
 
 	if (*spatial_audio_scope == nullptr) {
 		LOG_INFO("[SpatialAudio] Initializing SpatialAudio instance...");
-		*spatial_audio_scope = std::make_unique<SpatialAudio>();
-
-		const auto log_error_callback = [](std::string msg) {
-			LOG_WARN("[SpatialAudio] {}", msg);
-		};
-
-		const auto log_info_callback = [](std::string msg) {
-			LOG_INFO("[SpatialAudio] {}", msg);
-		};
-		setSpatialAudioLogErrorCallback(log_error_callback);
-		setSpatialAudioLogErrorCallback(log_info_callback);
+		*spatial_audio_scope = std::make_unique<SpatialAudio>(*audio_setting_scope);
 	}
 
 	return *(*spatial_audio_scope);

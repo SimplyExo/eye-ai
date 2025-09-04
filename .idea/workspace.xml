@@ -5,8 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0374e125-8ff6-4f94-a2dc-b5f0b8e3b832" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/EyeAIApp/app/src/main/assets/coco_labels.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EyeAIApp/app/src/main/java/com/algorithmic_alliance/eyeaiapp/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAIApp/app/src/main/java/com/algorithmic_alliance/eyeaiapp/MainActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAIApp/app/src/main/cpp/NativeLib.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAIApp/app/src/main/cpp/NativeLib.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAIApp/app/src/main/java/com/algorithmic_alliance/eyeaiapp/NativeLib.kt" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAIApp/app/src/main/java/com/algorithmic_alliance/eyeaiapp/NativeLib.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAIApp/app/src/main/java/com/algorithmic_alliance/eyeaiapp/audio/SpatialAudio.kt" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAIApp/app/src/main/java/com/algorithmic_alliance/eyeaiapp/audio/SpatialAudio.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAIApp/gradle/libs.versions.toml" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAIApp/gradle/libs.versions.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAIApp/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAIApp/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAICore/.vscode/settings.json" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAICore/.vscode/settings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAICore/audio_test/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAICore/audio_test/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAICore/audio_test/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAICore/audio_test/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAICore/include/EyeAICore/audio/AudioSettings.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAICore/include/EyeAICore/audio/AudioSettings.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAICore/include/EyeAICore/audio/SpatialAudio.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAICore/include/EyeAICore/audio/SpatialAudio.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAICore/src/audio/SpatialAudio.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAICore/src/audio/SpatialAudio.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EyeAICore/third_party/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/EyeAICore/third_party/CMakeLists.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,9 +61,9 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "feat/audio",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/robert/Dokumente/GitHub/eye-ai/EyeAIApp"
+    "last_opened_file_path": "/home/lars/Documents/Progamming/Eye-Ai/eye-ai"
   }
 }]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />

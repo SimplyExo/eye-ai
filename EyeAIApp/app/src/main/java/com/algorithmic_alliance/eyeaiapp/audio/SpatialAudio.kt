@@ -13,8 +13,6 @@ import kotlinx.coroutines.*
 
 
 object SpatialAudio {
-	private var logger = Logger.getLogger("Spat" +
-		"ialAudio")
 	private var executor = Executors.newSingleThreadExecutor()
 	private var scope = CoroutineScope(executor.asCoroutineDispatcher())
 	private lateinit var eyeAIApp: EyeAIApp;
@@ -35,6 +33,7 @@ object SpatialAudio {
 
 	fun setup(context: Context){
 		eyeAIApp = context.applicationContext as EyeAIApp
+		NativeLib.setAudioSettings(8, 150.0f)
 
 	}
 
