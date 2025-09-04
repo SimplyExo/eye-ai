@@ -10,7 +10,7 @@ from flasgger import Swagger
 from flask import Flask, Response, request
 
 from Camera import Camera
-from Server.ButtonThread import ButtonThread
+from ButtonThread import ButtonThread
 
 
 class EyeAIServer:
