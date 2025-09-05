@@ -23,6 +23,7 @@ def load_dataset(root_dataset_path, batch_size=32):
 		train_ds: tf.data.Dataset
 		val_ds: tf.data.Dataset
 		coeff_scaling_factors: np.ndarray
+		raw_relative_depth_samples: np.ndarray
 	"""
 
 	ds_rgbd_image_count = len([
@@ -55,6 +56,8 @@ def load_dataset(root_dataset_path, batch_size=32):
 
 	coeffs_scaling_factor_a = coeff_scaling_factors[:, 0]
 	coeffs_scaling_factor_b = coeff_scaling_factors[:, 1]
+
+	raw_relative_depth_samples = np.load(os.path.join(root_dataset_path, 'raw_relative_depth_samples.npy'))
 
 	def map_fn(idx):
 		rgbd = tf.numpy_function(
@@ -99,4 +102,4 @@ def load_dataset(root_dataset_path, batch_size=32):
 			.prefetch(tf.data.AUTOTUNE)
 	)
 
-	return train_ds, val_ds, coeff_scaling_factors
+	return train_ds, val_ds, coeff_scaling_factors, raw_relative_depth_samples

@@ -59,7 +59,6 @@ class TfLiteRuntime {
 		tl::expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>;
 
 	/// Create a TfLiteRuntime instance
-	template<typename... InputOps, typename... OutputOps>
 	[[nodiscard]] static CreateResult create(
 		std::vector<int8_t>&& model_data,
 		std::string_view gpu_delegate_serialization_dir,
@@ -69,13 +68,7 @@ class TfLiteRuntime {
 		TfLiteLogWarningCallback log_warning_callback,
 		TfLiteLogErrorCallback log_error_callback,
 		ProfilingFrame& profiling_frame
-	) {
-		return create_impl(
-			std::move(model_data), gpu_delegate_serialization_dir, model_token,
-			model_input_format, model_output_format, log_warning_callback,
-			log_error_callback, profiling_frame
-		);
-	}
+	);
 
 	~TfLiteRuntime();
 
@@ -135,17 +128,6 @@ class TfLiteRuntime {
 	void operator=(const TfLiteRuntime&) = delete;
 
   private:
-	[[nodiscard]] static CreateResult create_impl(
-		std::vector<int8_t>&& model_data,
-		std::string_view gpu_delegate_serialization_dir,
-		std::string_view model_token,
-		FloatTensorFormat model_input_format,
-		FloatTensorFormat model_output_format,
-		TfLiteLogWarningCallback log_warning_callback,
-		TfLiteLogErrorCallback log_error_callback,
-		ProfilingFrame& profiling_frame
-	);
-
 	explicit TfLiteRuntime(
 		std::vector<int8_t>&& model_data,
 		FloatTensorFormat model_input_format,
