@@ -402,6 +402,11 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 			val schema = JSONObject().apply {
 				put("type", "OBJECT")
 				put("properties", JSONObject().apply {
+					// new option to avoid another generation request
+					put("interaction_text", JSONObject().apply {
+						put("type", "STRING")
+					})
+
 					put("setting_intent", JSONObject().apply {
 						put("type", "STRING")
 						put("enum", JSONArray().apply {
@@ -438,7 +443,7 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 			return defaultResponseBody.put("generationConfig", generationConfig)
 		} else {
 			return defaultResponseBody.put("generationConfig", JSONObject().apply {
-
+				// unstrukturierte Antwort (z.B. für stream)
 			})
 		}
 	}

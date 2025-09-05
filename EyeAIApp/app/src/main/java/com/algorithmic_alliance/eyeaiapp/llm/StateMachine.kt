@@ -74,9 +74,17 @@ class StateMachine(
 				StateUpdate(State.SETTINGS_MENU, lastLlmJsonResponse)
 			}
 			RequestedFunction.NONE -> {
-				val fallbackResponse = generateLlmResponse(final, false) ?: jsonResponse
-				speakAndHandleUi(fallbackResponse)
-				StateUpdate(State.IDLE, null)
+				val direct = jsonParser.parseInteractionText(jsonResponse)
+				if (!direct.isNullOrBlank()) {
+					// used to avoid double calling, uses text of JSON-Field "interaction_text" if possible
+					speakAndHandleUi(direct)
+					StateUpdate(State.IDLE, null)
+				} else {
+					// Fallback
+					val fallbackResponse = generateLlmResponse(final, false) ?: jsonResponse
+					speakAndHandleUi(fallbackResponse)
+					StateUpdate(State.IDLE, null)
+				}
 			}
 		}
 	}
@@ -313,6 +321,23 @@ class StateMachine(
 
   //Parsing only.
 	private inner class JsonParser {
+
+	  fun parseInteractionText(jsonString: String): String? {
+		  return try {
+			  val obj = JSONObject(jsonString)
+			  val txt = obj.optString("interaction_text", "").trim()
+			  if (txt.isNotEmpty()) return txt
+
+			  // Fallback: vielleicht hat die LLM-Antwort das Feld "text" direkt oder "message"
+			  val direct = obj.optString("text", "").trim()
+			  if (direct.isNotEmpty()) return direct
+
+			  null
+		  } catch (e: JSONException) {
+			  Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseInteractionText", e)
+			  null
+		  }
+	  }
 		fun parseSettingIntent(jsonString: String): SettingIntent {
 			return try {
 				when (JSONObject(jsonString).optString("setting_intent", "none")) {
