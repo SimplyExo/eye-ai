@@ -12,12 +12,13 @@ def print_pred_expected(index, predicted, expected):
 	diff_percentage = abs(diff) / expected
 	print(f"[{index}] {predicted:+.5E} | {expected:+.5E} | {diff:+.5E} | {diff_percentage * 100:.2f}%")
 
-def run_rel2abs(rel2abs_model_path, rgbd_images, expected_coeffs):
+def run_rel2abs(rel2abs_model_path, rgbd_images, expected_coeffs, raw_relative_depth_samples):
 	"""
 	Arguments:
 		rel2abs_model_path (str): Path to the TFLite model file.
 		rgbd_images (numpy.ndarray): Array of RGB-D images.
 		expected_coeffs (numpy.ndarray): Array of expected coefficients.
+		raw_relative_depth_samples (numpy.ndarray): Array of raw relative depth samples.
 	"""
 
 	print("Loading model...")
@@ -59,8 +60,7 @@ def run_rel2abs(rel2abs_model_path, rgbd_images, expected_coeffs):
 
 		print_pred_expected_header(4)
 
-		for j in range(15):
-			sample_relative = j * 100 + 100
+		for sample_relative in raw_relative_depth_samples:
 			pred_abs = pred_func(sample_relative)
 			expected_abs = expected_func(sample_relative)
 			if expected_abs >= 0:
@@ -71,16 +71,18 @@ def run_rel2abs(rel2abs_model_path, rgbd_images, expected_coeffs):
 		print("")
 
 if __name__ == "__main__":
-	if len(sys.argv) < 2:
-		print("Usage: python run.py <rgbd_image_paths...>")
+	if len(sys.argv) < 3:
+		print("Usage: python run.py <raw_relative_depth_samples.npy> <rgbd_image_paths...>")
 		sys.exit(1)
 
 	print("Loading images...")
 
 	input_rgbd_images = []
 	expected_coeffs = []
-	for i in range(len(sys.argv) - 1):
-		input_rgbd_images.append(np.load(sys.argv[i + 1]))
-		expected_coeffs.append(np.load(sys.argv[i + 1].replace("rgbd", "coeffs")))
+	for i in range(len(sys.argv) - 2):
+		input_rgbd_images.append(np.load(sys.argv[i + 2]))
+		expected_coeffs.append(np.load(sys.argv[i + 2].replace("rgbd", "coeffs")))
 
-	run_rel2abs("rel2abs_model.tflite", input_rgbd_images, expected_coeffs)
+	raw_relative_depth_samples = np.load(sys.argv[1])
+
+	run_rel2abs("rel2abs_model.tflite", input_rgbd_images, expected_coeffs, raw_relative_depth_samples)

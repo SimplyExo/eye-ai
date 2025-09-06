@@ -118,7 +118,7 @@ tl::expected<PreparedImage, std::string> prepare(
 	auto coeffs = find_coeffs(relative_absolute_pairs);
 	auto rgbd = rel2abs_input_operator(rgbd_image.rgb, depth_estimation);
 
-	return PreparedImage(rgbd, coeffs);
+	return PreparedImage(rgbd, coeffs, relative_absolute_pairs);
 }
 
 tl::expected<PreparationResult, std::string> prepare_datapoint(
@@ -187,13 +187,13 @@ tl::expected<PreparationResult, std::string> prepare_datapoint(
 	);
 	if (!result.has_value())
 		return tl::unexpected(result.error());
-	const auto& prepared_rgbd_image = result.value();
+	const auto& prepared_image = result.value();
 
 	try {
 		const auto rgbd_output_filepath =
 			prepared_output_directory /
 			std::format("{}_rgbd.npy", datapoint_index);
-		const auto rgbd_data = prepared_rgbd_image.rgbd.data();
+		const auto rgbd_data = prepared_image.rgbd.data();
 		assert(rgbd_data.size() == depth_input_width * depth_input_height * 4);
 		npy::write_npy(
 			rgbd_output_filepath,
@@ -205,12 +205,25 @@ tl::expected<PreparationResult, std::string> prepare_datapoint(
 		const auto coeffs_output_filepath =
 			prepared_output_directory /
 			std::format("{}_coeffs.npy", datapoint_index);
-		const auto coeffs_data = prepared_rgbd_image.coeffs.data();
+		const auto coeffs_data = prepared_image.coeffs.data();
 		assert(coeffs_data.size() == Rel2AbsDepthModel::COEFFS_COUNT);
 		npy::write_npy(
 			coeffs_output_filepath,
 			npy::npy_data_ptr<float>{
 				.data_ptr = coeffs_data.data(), .shape = {coeffs_data.size()}
+			}
+		);
+		const auto rel_abs_pairs_output_filepath =
+			prepared_output_directory /
+			std::format("{}_rel_abs_pairs.npy", datapoint_index);
+		npy::write_npy(
+			rel_abs_pairs_output_filepath,
+			npy::npy_data_ptr<float>{
+				.data_ptr =
+					&prepared_image.relative_absolute_depth_pairs.data()->first,
+				.shape = {
+					prepared_image.relative_absolute_depth_pairs.size() * 2
+				}
 			}
 		);
 	} catch (const std::exception& e) {

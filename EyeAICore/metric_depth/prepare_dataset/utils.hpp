@@ -40,6 +40,7 @@ void println_error_fmt(const std::format_string<Args...> fmt, Args&&... args) {
 struct PreparedImage {
 	FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthInput> rgbd;
 	FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthCoefficientOutput> coeffs;
+	std::vector<std::pair<float, float>> relative_absolute_depth_pairs;
 };
 
 constexpr static size_t RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT = 1000;
