@@ -1,4 +1,4 @@
-#include "EyeAICore/audio/AudioSettings.hpp"
+#include "EyeAICore/audio/SpatialAudioSettings.hpp"
 #include <EyeAICore/audio/AudioMain.hpp>
 #include <EyeAICore/audio/SpatialAudio.hpp>
 #include <jni.h>
@@ -33,8 +33,10 @@ MutexGuard<std::unique_ptr<SpatialAudio>> spatial_audio{
 
 MutexGuard<YoloModel> yolo_instance;
 
-MutexGuard<AudioSettings> audio_settings =
-	MutexGuard<AudioSettings>(AudioSettings(
+MutexGuard<std::vector<YoloModel::BoundingBox>> last_detected_objects;
+
+MutexGuard<SpatialAudioSettings> spatial_audio_settings =
+	MutexGuard<SpatialAudioSettings>(SpatialAudioSettings(
 		spatial_audio_log_error_callback,
 		spatial_audio_log_info_callback
 	));
@@ -189,9 +191,12 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 	};
 
 	const auto result = yolo_instance.lock()->run(input_tensor);
-	if (result)
+	if (result) {
+		LOG_INFO("[SpatialAudio] Setting last_detected_objects");
+		*last_detected_objects.lock() = *result;
+		LOG_INFO("[SpatialAudio] Set last_detected_objects");
 		return convertToJsonBoundingBoxString(env, *result);
-	else {
+	} else {
 		LOG_ERROR("YoloModel failed to run: {}", result.error());
 		return convertToJsonBoundingBoxString(
 			env, std::vector<YoloModel::BoundingBox>{}
@@ -420,6 +425,58 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatObjectFrame(
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setupAudioSettings(
+	JNIEnv* env,
+	jobject /*this*/,
+	jbyteArray coco_labels_audio,
+	jbyteArray coco_labels_data
+) {
+	LOG_INFO("[SpatialAudio] Setting up AudioSettings ... ");
+	jbyte* coco_labels_audio_ptr =
+		env->GetByteArrayElements(coco_labels_audio, nullptr);
+	if (coco_labels_audio_ptr == nullptr) {
+		LOG_ERROR("[SpatialAudio] Failed to get coco_labels_audio elements.");
+		return;
+	}
+	jsize coco_labels_audio_size = env->GetArrayLength(coco_labels_audio);
+
+	std::vector<std::byte> coco_labels_audio_vector(coco_labels_audio_size);
+	std::memcpy(
+		coco_labels_audio_vector.data(), coco_labels_audio_ptr,
+		coco_labels_audio_size
+	);
+
+
+	jbyte* coco_labels_data_ptr =
+		env->GetByteArrayElements(coco_labels_data, nullptr);
+	if (coco_labels_data_ptr == nullptr) {
+		LOG_ERROR("[SpatialAudio] Failed to get coco_labels_data elements.");
+		env->ReleaseByteArrayElements(coco_labels_audio, coco_labels_audio_ptr, JNI_ABORT); // Freigeben bei Fehler
+		return;
+	}
+	jsize coco_labels_data_size = env->GetArrayLength(coco_labels_data);
+
+	std::vector<std::byte> coco_labels_data_vector(coco_labels_data_size);
+	std::memcpy(
+		coco_labels_data_vector.data(), coco_labels_data_ptr,
+		coco_labels_data_size
+	);
+	auto audio_setting_scope = spatial_audio_settings.lock();
+
+	audio_setting_scope->coco_labels_audio =
+		std::move(coco_labels_audio_vector);
+	audio_setting_scope->coco_labels_data =
+		std::move(coco_labels_data_vector);
+
+	env->ReleaseByteArrayElements(
+		coco_labels_audio, coco_labels_audio_ptr, JNI_ABORT
+	);
+	env->ReleaseByteArrayElements(
+		coco_labels_data, coco_labels_data_ptr, JNI_ABORT
+	);
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setAudioSettings(
 	JNIEnv* env,
 	jobject /*this*/,
@@ -428,8 +485,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setAudioSettings(
 ) {
 	LOG_INFO("[SpatialAudio] Updating audio settings...");
 
-	auto audio_setting_scope = audio_settings.lock();
-	LOG_INFO("[SpatialAudio] Setting audio settings...");
+	auto audio_setting_scope = spatial_audio_settings.lock();
 
 	audio_setting_scope->FREQUENCY = frequency;
 	audio_setting_scope->NUMBER_OF_SOURCES = number_of_sources;
@@ -445,36 +501,41 @@ void spatial_audio_log_info_callback(std::string msg) {
 
 static SpatialAudio& get_or_create_spatial_audio() {
 	auto spatial_audio_scope = spatial_audio.lock();
-	auto audio_setting_scope = audio_settings.lock();
+	auto audio_setting_scope = spatial_audio_settings.lock();
 
 	if (*spatial_audio_scope == nullptr) {
 		LOG_INFO("[SpatialAudio] Initializing SpatialAudio instance...");
-		*spatial_audio_scope = std::make_unique<SpatialAudio>(*audio_setting_scope);
+		*spatial_audio_scope =
+			std::make_unique<SpatialAudio>(*audio_setting_scope);
 	}
 
 	return *(*spatial_audio_scope);
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendDepthEstimationData(
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendAIData(
 	JNIEnv* env,
 	jobject /*this*/,
-	jfloatArray array
+	jfloatArray depth_data_array
 ) {
-	LOG_INFO("[SpatialAudio] Sending depth estimation data...");
-	jsize length = env->GetArrayLength(array);
-	jfloat* rawArray = env->GetFloatArrayElements(array, nullptr);
-
-	NativeFloatArrayScope data(env, array);
-
-	assert(data.size() == (256 * 256));
-
-	get_or_create_spatial_audio().getDepthEstimationData(
-		static_cast<std::span<float, 256 * 256>>(data)
+	LOG_INFO(
+		"[SpatialAudio] Sending depth estimation depth_estimation_data..."
 	);
+	jfloat* rawArray = env->GetFloatArrayElements(depth_data_array, nullptr);
+
+	NativeFloatArrayScope depth_estimation_data(env, depth_data_array);
+
+	assert(depth_estimation_data.size() == (256 * 256));
+	std::vector<YoloModel::BoundingBox> object_detection_data =
+		*last_detected_objects.lock();
+	get_or_create_spatial_audio().getAIData(
+		static_cast<std::span<float, 256 * 256>>(depth_estimation_data),
+		object_detection_data
+	);
+	LOG_INFO("[SpatialAudio] Send Ai Data");
 
 	// Speicher freigeben
-	env->ReleaseFloatArrayElements(array, rawArray, JNI_ABORT);
+	env->ReleaseFloatArrayElements(depth_data_array, rawArray, JNI_ABORT);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL

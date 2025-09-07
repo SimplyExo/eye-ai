@@ -62,11 +62,16 @@ object NativeLib {
 
 	external fun metricDepthColormap(depthValues: FloatArray, colormappedPixels: IntArray)
 
-	external fun bitmapToRgbHwc255FloatArray(bitmap: Bitmap, outFloatArray: FloatArray, profilingFrameType: Int)
+	external fun bitmapToRgbHwc255FloatArray(
+		bitmap: Bitmap,
+		outFloatArray: FloatArray,
+		profilingFrameType: Int
+	)
 
+	external fun setupAudioSettings(cocoLabelsAudio: ByteArray, cocoLabelsData: ByteArray)
 	external fun setAudioSettings(numberOfSources: Int, frequency: Float)
-	external fun sendDepthEstimationData(array: FloatArray)
-	external fun getProcessingStatus (): Boolean
+	external fun sendAIData(array: FloatArray)
+	external fun getProcessingStatus(): Boolean
 	external fun destroySpatialAudio()
 
 	//external fun playSound(frequency: Float, duration: Float)
@@ -93,7 +98,10 @@ object NativeLib {
 		)
 	}
 
-	fun bitmapToRgbHwc255FloatArray(bitmap: Bitmap, profilingFrameType: ProfilingFrameType): FloatArray {
+	fun bitmapToRgbHwc255FloatArray(
+		bitmap: Bitmap,
+		profilingFrameType: ProfilingFrameType
+	): FloatArray {
 		val floatArray = FloatArray(bitmap.width * bitmap.height * 3)
 
 		bitmapToRgbHwc255FloatArray(bitmap, floatArray, profilingFrameType.id)

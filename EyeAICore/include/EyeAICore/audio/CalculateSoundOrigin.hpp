@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EyeAICore/audio/SpatialAudio.hpp"
+#include "EyeAICore/audio/SpatialAudioSettings.hpp"
 #include <array>
 
 /*
@@ -12,7 +14,7 @@ class CalculateSoundOrigin {
   public:
 	std::array<float, 3> calculateSoundOrigin(
 		std::array<int, 2> pixelCoordinates,
-		float distanceToObject
+		float distanceToObject, int pictureXResolution
 	);
 
   private:
@@ -22,8 +24,8 @@ class CalculateSoundOrigin {
 	//coordinates of the pixel: from 1 to Resolution
 	int pixelXCoordinate;
 	//int pixelYCoordinate;
-	int pictureXResolution = 256;
-	//int pictureYResolution = 100;
+	int pictureXResolution;
+	//int pictureYResolution;
 	float getPixelAngle();
 	std::array<float, 3> getVectorToOrigin(float pixelAngle);
 	std::array<float, 3> getOrigin(std::array<float, 3> directionalVector);

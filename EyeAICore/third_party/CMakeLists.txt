@@ -145,6 +145,18 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(libsndfile)
 
+if (NOT TARGET nlohmann_json)
+    message(STATUS "Fetching nlohmann_json via FetchContent...")
+    FetchContent_Declare(
+        nlohmann_json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG v3.11.2
+    )
+    FetchContent_MakeAvailable(nlohmann_json)
+else()
+    message(STATUS "nlohmann_json already provided (Prefab/Gradle)")
+endif()
+
 if(EYE_AI_CORE_FORCE_OBOE)
 	find_package(oboe REQUIRED CONFIG)
 	target_compile_definitions(OpenAL PRIVATE "ALSOFT_DRIVERS=oboe")
@@ -162,6 +174,7 @@ set(THIRD_PARTY_LIBS
 	concurrentqueue
 	OpenAL
 	SndFile::sndfile
+	nlohmann_json::nlohmann_json
 	PARENT_SCOPE
 )
 

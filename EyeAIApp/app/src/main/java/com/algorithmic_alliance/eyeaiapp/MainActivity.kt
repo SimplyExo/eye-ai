@@ -235,6 +235,11 @@ class MainActivity : AppCompatActivity() {
 			""
 		else
 			getString(R.string.setup_llm_notice)
+
+		CoroutineScope(Dispatchers.IO).launch{
+			SpatialAudio.setup(this@MainActivity)
+			SpatialAudio.start()
+		}
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -246,6 +251,7 @@ class MainActivity : AppCompatActivity() {
 		cameraManager.pauseAnalyzer()
 		mediaFrameAnalyzer?.shutdown()
 		mediaPlayer?.shutdown()
+		SpatialAudio.destroy()
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)

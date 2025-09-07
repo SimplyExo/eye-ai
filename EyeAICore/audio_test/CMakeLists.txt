@@ -8,3 +8,7 @@ target_link_libraries(AudioTest PRIVATE EyeAICore)
 
 
 target_link_libraries(AudioTest PRIVATE OpenAL)
+
+target_link_libraries(AudioTest PRIVATE SndFile::sndfile)
+
+target_link_libraries(AudioTest PRIVATE nlohmann_json::nlohmann_json)

@@ -3,9 +3,14 @@
 #include <AL/alc.h>
 #include <chrono>
 #include <cstddef>
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <thread>
 #include <vector>
+#include <sndfile.hh>
+#include <nlohmann/json.hpp>
+#include <unordered_map>
 
 #define ALC_HRTF_SOFT 0x1992
 
@@ -13,7 +18,7 @@ int frame_number = 0;
 int audio_frame = 0;
 int main() {
 	std::cout << "Inside Main.cpp1" << std::endl;
-	/*
+
 	ALCcontext* context;
 	ALCdevice* device;
 
@@ -33,21 +38,6 @@ int main() {
 	context = alcCreateContext(device, NULL);
 	alcMakeContextCurrent(context);
 
-	AudioSourceData data{200.0f, 5.0f, 0.0f, 0.0f, 0.0f};
-
-	ALuint buffer;
-	ALuint source;
-
-	alGenBuffers(1, &buffer);
-	alBufferData(
-		buffer, AL_FORMAT_MONO16, data.samples.data(),
-		data.number_of_samples * sizeof(short), data.sample_rate
-	);
-
-	alGenSources(1, &source);
-	alSourcei(source, AL_BUFFER, buffer);
-	alSourcePlay(source);
-
 	ALCint hrtf_state;
 	alcGetIntegerv(device, ALC_HRTF_SOFT, 1, &hrtf_state);
 
@@ -56,50 +46,61 @@ int main() {
 	} else {
 		std::cout << "HRTF is not active\n";
 	}
-	*/
 
-	SpatialAudio spatialAudio;
-
-	std::this_thread::sleep_for(std::chrono::seconds(5));
-
-	/*
-	ALCdevice* device;
-	ALCcontext* context;
-
-	// Opening the default audio device
-	device = alcOpenDevice(nullptr);
-	if (!device) {
-		std::cout << "Das Audiogerät konnte nicht geöffnet werden.\n";
-	}
-
-	// creating and attatching the context to the device, make the context the
-	// current one
-	context = alcCreateContext(device, nullptr);
-	if (!alcMakeContextCurrent(context)) {
-		std::cout << "Fehler bei Context.\n";
-	}
+	std::cout << "-------------------------------------" << std::endl;
 
 	ALuint source;
 	ALuint buffer;
 
-	alGenSources(1, &source);
+	
+
+	SndfileHandle file;
+	
+	file = SndfileHandle("../../../EyeAIApp/app/src/main/assets/coco_labels.wav");
+
+	if(file.error()){
+		std::cout << "Error: "<< file.strError() << std::endl;
+	}
+
+	std::cout << "Sample rate: " << file.samplerate() << "\n";
+	std::cout << "Format " << file.format() << "\n"; 
+	std::cout << "Channels: " << file.channels() << "\n";
+
+	std::vector<short> file_buffer(file.frames());
+
+	int SAMPLE_RATE  = file.samplerate() / 1000;
+	std::vector<short> sound_buffer(SAMPLE_RATE * (95140 - 94610)); 
+	
+
+	file.read(file_buffer.data(), file_buffer.size());
+
+
+	std::ifstream f("../../../EyeAIApp/app/src/main/assets/coco_labels_data.json");
+
+	nlohmann::json datas = nlohmann::json::parse(f);
+	std::unordered_map<std::string,std::array<int, 2>> label_data;
+	for(const auto& data: datas){
+		label_data[data["text"]] = {data["start"], data["end"]};
+	}
+
+	std::cout << label_data.at("chair")[0] << std::endl;
+	std::cout << label_data.at("chair")[1] << std::endl;
+	std::copy(file_buffer.begin() + (SAMPLE_RATE * 94610), file_buffer.begin() + (SAMPLE_RATE * 95140), sound_buffer.begin());
+
+	
+
 	alGenBuffers(1, &buffer);
+	alGenSources(1, &source);
 
-	AudioSourceData audio_data{200.0f, 5.0f, 0.0f,0.0f,0.0f};
+	std::cout << file_buffer.data() << std::endl;
 
-	alBufferData(buffer,AL_FORMAT_MONO16 ,audio_data.samples.data(),
-	audio_data.number_of_samples * sizeof(short), audio_data.sample_rate);
-
-	alDistanceModel(AL_LINEAR_DISTANCE);
+	alBufferData(buffer, AL_FORMAT_MONO16, sound_buffer.data(), sound_buffer.size() * sizeof(short) , file.samplerate());
 
 	alSourcei(source, AL_BUFFER, buffer);
-	alSource3f(source, AL_POSITION, 1.5f,1.5f,0.0f);
-	alSourcei(source, AL_REFERENCE_DISTANCE, 0.0f);
-	alSourcei(source, AL_MAX_DISTANCE, 3.0f);
+
 	alSourcePlay(source);
+	// SpatialAudio spatialAudio;
+	std::this_thread::sleep_for(std::chrono::seconds(35));
 
-
-	std::this_thread::sleep_for(std::chrono::seconds(5));
-	*/
 	return 0;
 }

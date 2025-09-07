@@ -1,4 +1,4 @@
-#include "EyeAICore/audio/AudioSourceData.hpp"
+#include "EyeAICore/audio/DepthAudioSourceData.hpp"
 #include <cmath>
 #include <vector>
 #include <numbers>
