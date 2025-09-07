@@ -98,8 +98,13 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 	Therefore ensuring continues playback
 	*/
 
-	if (!audio_device_initialized)
+	audio_settings.logInfoCallback("[DepthAudioLoop] Starting depth audio loop...");
+
+	if (!audio_device_initialized){
+		audio_settings.logInfoCallback("[DepthAudioLoop] Audio device not initialized. Aborting ...");
 		return;
+	}
+		
 
 	setupSources();
 
@@ -136,7 +141,7 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 				processed--;
 			}
 
-			alSourcef(source, AL_MAX_DISTANCE, 1.0f);
+			alSourcef(source, AL_MAX_DISTANCE, 1.5f);
 			alSourcef(source, AL_ROLLOFF_FACTOR, 1.0f);
 			alSourcef(source, AL_REFERENCE_DISTANCE, 0.0f);
 

@@ -5,12 +5,9 @@
 #include "EyeAICore/audio/DepthAudioSourceData.hpp"
 #include "EyeAICore/audio/ObjectAudioSourceData.hpp"
 #include "EyeAICore/audio/SpatialAudioSettings.hpp"
-#include "sndfile.h"
 #include <algorithm>
 #include <cmath>
 #include <format>
-#include <fstream>
-#include <iostream>
 #include <nlohmann/json.hpp>
 #include <span>
 #include <thread>
@@ -19,8 +16,8 @@
 SpatialAudio::SpatialAudio(const SpatialAudioSettings& audio_settings)
 	: audio_main(audio_settings), audio_settings(audio_settings) {
 		readObjectLabelData();
-	//depth_audio_thread =
-	//	std::thread([this]() { audio_main.startDepthAudioLoop(depth_audio_running); });
+	depth_audio_thread =
+		std::thread([this]() { audio_main.startDepthAudioLoop(depth_audio_running); });
 
 	object_audio_thread = std::thread([this]() { audio_main.startObjectAudioLoop(object_audio_running); });
 }
@@ -146,7 +143,6 @@ void SpatialAudio::readObjectLabelData() {
 	
 	std::string json_string(reinterpret_cast<const char*>(audio_settings.coco_labels_data.data()), audio_settings.coco_labels_data.size());
 	nlohmann::json json_object_data;
-	audio_settings.logInfoCallback(std::format("[ReadingObjectLabelData] json_string: {}", json_string));
 	try {
 		json_object_data = nlohmann::json::parse(json_string);
 	} catch (const nlohmann::json::parse_error& e) {
@@ -154,7 +150,6 @@ void SpatialAudio::readObjectLabelData() {
 			"[ReadingObjectLabelData] Could not parse JSON Data from Object Label data file"
 		);
 	}
-	audio_settings.logInfoCallback("[ReadingObjectLabelData] Test");
 	for (auto const& data : json_object_data) {
 		object_label_data[data["text"]] = {data["start"], data["end"]};
 		//audio_settings.logInfoCallback(std::format("[ReadingObjectLabelData] Text: {} Begin: {}, End: {}",(std::string) data["text"], (std::string) data["start"], (std::string) data["end"]));
