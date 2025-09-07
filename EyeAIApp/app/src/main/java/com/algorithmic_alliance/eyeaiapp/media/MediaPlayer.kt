@@ -79,7 +79,7 @@ class MediaPlayer(
 	fun shutdown() {
 		scope.cancel()
 		executor.shutdownNow()
-		retriever!!.release()
+		retriever?.release()
 	}
 
 		fun Bitmap?.toARGB8888(): Bitmap? {
