@@ -1,3 +1,4 @@
+import os
 import sys
 import tensorflow as tf
 from tensorflow.keras import layers, optimizers
@@ -6,12 +7,7 @@ from dataset import load_dataset, IMG_SIZE, N_COEFFS
 LEARNING_RATE = 1e-4
 EPOCHS = 25
 
-# how many sample points between 0 and 1500 should be used for custom loss function
-LOSS_SAMPLE_COUNT = 100
-# sample values (raw relative depth)
-RELATIVE_DEPTH_SAMPLES = tf.constant(tf.cast(tf.linspace(0, 1500, LOSS_SAMPLE_COUNT), tf.float32), dtype=tf.float32)
-
-def sample_true_and_pred(scaled_y_true, scaled_y_pred, coeff_scaling_factors):
+def sample_true_and_pred(scaled_y_true, scaled_y_pred, coeff_scaling_factors, raw_relative_depth_samples):
 	"""
 	Calculate sample metric output values based on the predicted and true coefficients
 
@@ -20,6 +16,7 @@ def sample_true_and_pred(scaled_y_true, scaled_y_pred, coeff_scaling_factors):
 
 	a = tf.constant(coeff_scaling_factors[:,0], dtype=tf.float32)
 	b = tf.constant(coeff_scaling_factors[:,1], dtype=tf.float32)
+	raw_relative_depth_samples = tf.constant(raw_relative_depth_samples, dtype=tf.float32)
 
 	unscaled_y_true= (scaled_y_true - b) / a
 	unscaled_y_pred= (scaled_y_pred - b) / a
@@ -28,7 +25,7 @@ def sample_true_and_pred(scaled_y_true, scaled_y_pred, coeff_scaling_factors):
 	powers = tf.range(tf.shape(unscaled_y_true)[1], dtype=tf.float32)  # [N_COEFFS]
 
 	# [batch, m, N_COEFFS]
-	x_powers = tf.pow(tf.expand_dims(RELATIVE_DEPTH_SAMPLES, -1), powers)
+	x_powers = tf.pow(tf.expand_dims(raw_relative_depth_samples, -1), powers)
 
 	# Evaluate polynomials
 	y_true_eval = tf.matmul(x_powers, unscaled_y_true, transpose_b=True)  # shape [m, batch]
@@ -40,7 +37,7 @@ def sample_true_and_pred(scaled_y_true, scaled_y_pred, coeff_scaling_factors):
 	return y_true_eval, y_pred_eval
 
 
-def custom_loss_fn(coeff_scaling_factors):
+def custom_loss_fn(coeff_scaling_factors, raw_relative_depth_samples):
 	def custom_loss(y_true, y_pred):
 		"""
 		Custom loss function that calculates the loss of sample points generated using the coeffs predicted,
@@ -49,19 +46,19 @@ def custom_loss_fn(coeff_scaling_factors):
 		such that treating every coeff equally is not optimal.
 		"""
 
-		y_true_eval, y_pred_eval = sample_true_and_pred(y_true, y_pred, coeff_scaling_factors)
+		y_true_eval, y_pred_eval = sample_true_and_pred(y_true, y_pred, coeff_scaling_factors, raw_relative_depth_samples)
 
 		return tf.reduce_mean(tf.square(y_true_eval - y_pred_eval))  # MSE
 
 	return custom_loss
 
-def custom_mae_fn(coeff_scaling_factors):
+def custom_mae_fn(coeff_scaling_factors, raw_relative_depth_samples):
 	def custom_mae(y_true, y_pred):
 		"""
 		Just for displaying the same kind of metric as the actual training (which uses custom_loss)
 		"""
 
-		y_true_eval, y_pred_eval = sample_true_and_pred(y_true, y_pred, coeff_scaling_factors)
+		y_true_eval, y_pred_eval = sample_true_and_pred(y_true, y_pred, coeff_scaling_factors, raw_relative_depth_samples)
 
 		return tf.reduce_mean(tf.abs(y_true_eval - y_pred_eval))	# MAE
 
@@ -143,13 +140,13 @@ if __name__ == "__main__":
 
 	dataset_root_path = sys.argv[1]
 
-	train_ds, val_ds, coeff_scaling_factors = load_dataset(dataset_root_path)
+	train_ds, val_ds, coeff_scaling_factors, raw_relative_depth_samples = load_dataset(dataset_root_path)
 
 	scaled_rel2abs_model = build_rel2abs_scaled_model()
 	scaled_rel2abs_model.compile(
 		optimizer=optimizers.Adam(LEARNING_RATE),
-		loss=custom_loss_fn(coeff_scaling_factors),
-		metrics=['mae', custom_mae_fn(coeff_scaling_factors)]
+		loss=custom_loss_fn(coeff_scaling_factors, raw_relative_depth_samples),
+		metrics=['mae', custom_mae_fn(coeff_scaling_factors, raw_relative_depth_samples)]
 	)
 
 	early_stopping_callback = tf.keras.callbacks.EarlyStopping(
@@ -158,8 +155,9 @@ if __name__ == "__main__":
 		restore_best_weights=True,
 		verbose=1
 	)
+	checkpoint_filepath = "_scaled_rel2abs_model_checkpoint.keras"
 	save_checkpoints_callback = tf.keras.callbacks.ModelCheckpoint(
-		filepath="_scaled_rel2abs_model_checkpoint.keras",
+		filepath=checkpoint_filepath,
 		save_best_only=True,
 		monitor='val_loss',
 		verbose=1
@@ -178,9 +176,12 @@ if __name__ == "__main__":
 		callbacks=[early_stopping_callback, save_checkpoints_callback, reduce_lr_callback]
 	)
 
-	scaled_rel2abs_model.save("_scaled_rel2abs_model.keras")
-
 	# Adds unscaling op to the end to output the final coeffs directly
 	rel2abs_model = unscale_rel2abs_model(scaled_rel2abs_model, coeff_scaling_factors)
 
-	export_as_tflite_model(rel2abs_model, "rel2abs_model.tflite")
+	try:
+		export_as_tflite_model(rel2abs_model, "rel2abs_model.tflite")
+	except Exception as e:
+		print(f"Error exporting model to TFLite: {e}")
+	finally:
+		os.remove(checkpoint_filepath)

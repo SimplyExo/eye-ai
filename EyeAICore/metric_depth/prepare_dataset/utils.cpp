@@ -7,6 +7,7 @@
 #include <Eigen/Dense>
 #include <algorithm>
 #include <fstream>
+#include <random>
 
 tl::expected<std::vector<int8_t>, std::string>
 read_binary_file(const std::filesystem::path& filepath) {
@@ -43,7 +44,9 @@ tl::expected<PreparedImage, std::string> prepare(
 	DepthModel& depth_model,
 	size_t depth_input_width,
 	size_t depth_input_height,
-	const RGBDImage& rgbd_image
+	const RGBDImage& rgbd_image,
+	std::array<size_t, RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT>&
+		out_raw_relative_depth_value_distribution
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
@@ -99,16 +102,26 @@ tl::expected<PreparedImage, std::string> prepare(
 
 			float relative = depth_estimation_values[input_image_index];
 			relative_absolute_pairs.emplace_back(relative, absolute);
+
+			auto dist_bin_index = static_cast<size_t>(
+				std::clamp(relative, 0.f, 1500.f) /
+				RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_WIDTH
+			);
+			dist_bin_index = std::min(
+				dist_bin_index,
+				out_raw_relative_depth_value_distribution.size() - 1
+			);
+			out_raw_relative_depth_value_distribution.at(dist_bin_index)++;
 		}
 	}
 
 	auto coeffs = find_coeffs(relative_absolute_pairs);
 	auto rgbd = rel2abs_input_operator(rgbd_image.rgb, depth_estimation);
 
-	return PreparedImage(rgbd, coeffs);
+	return PreparedImage(rgbd, coeffs, relative_absolute_pairs);
 }
 
-tl::expected<std::chrono::milliseconds, std::string> prepare_datapoint(
+tl::expected<PreparationResult, std::string> prepare_datapoint(
 	DepthModel& depth_model,
 	const RGBDDataPoint& datapoint,
 	const std::filesystem::path& prepared_output_directory,
@@ -165,17 +178,22 @@ tl::expected<std::chrono::milliseconds, std::string> prepare_datapoint(
 		);
 	}
 
-	const auto result =
-		prepare(depth_model, depth_input_width, depth_input_height, rgbd_image);
+	std::array<size_t, RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT>
+		raw_relative_depth_value_distribution{};
+
+	const auto result = prepare(
+		depth_model, depth_input_width, depth_input_height, rgbd_image,
+		raw_relative_depth_value_distribution
+	);
 	if (!result.has_value())
 		return tl::unexpected(result.error());
-	const auto& prepared_rgbd_image = result.value();
+	const auto& prepared_image = result.value();
 
 	try {
 		const auto rgbd_output_filepath =
 			prepared_output_directory /
 			std::format("{}_rgbd.npy", datapoint_index);
-		const auto rgbd_data = prepared_rgbd_image.rgbd.data();
+		const auto rgbd_data = prepared_image.rgbd.data();
 		assert(rgbd_data.size() == depth_input_width * depth_input_height * 4);
 		npy::write_npy(
 			rgbd_output_filepath,
@@ -187,12 +205,25 @@ tl::expected<std::chrono::milliseconds, std::string> prepare_datapoint(
 		const auto coeffs_output_filepath =
 			prepared_output_directory /
 			std::format("{}_coeffs.npy", datapoint_index);
-		const auto coeffs_data = prepared_rgbd_image.coeffs.data();
+		const auto coeffs_data = prepared_image.coeffs.data();
 		assert(coeffs_data.size() == Rel2AbsDepthModel::COEFFS_COUNT);
 		npy::write_npy(
 			coeffs_output_filepath,
 			npy::npy_data_ptr<float>{
 				.data_ptr = coeffs_data.data(), .shape = {coeffs_data.size()}
+			}
+		);
+		const auto rel_abs_pairs_output_filepath =
+			prepared_output_directory /
+			std::format("{}_rel_abs_pairs.npy", datapoint_index);
+		npy::write_npy(
+			rel_abs_pairs_output_filepath,
+			npy::npy_data_ptr<float>{
+				.data_ptr =
+					&prepared_image.relative_absolute_depth_pairs.data()->first,
+				.shape = {
+					prepared_image.relative_absolute_depth_pairs.size() * 2
+				}
 			}
 		);
 	} catch (const std::exception& e) {
@@ -202,9 +233,10 @@ tl::expected<std::chrono::milliseconds, std::string> prepare_datapoint(
 		);
 	}
 
-	return std::chrono::duration_cast<std::chrono::milliseconds>(
+	const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
 		std::chrono::high_resolution_clock::now() - start
 	);
+	return PreparationResult(duration, raw_relative_depth_value_distribution);
 }
 
 /// does the same as np.polyfit
@@ -263,6 +295,45 @@ find_coeffs(std::span<std::pair<float, float>> relative_absolute_pairs) {
 	return FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthCoefficientOutput>{
 		std::vector<float>(coeffs_span.begin(), coeffs_span.end())
 	};
+}
+
+std::array<float, RAW_RELATIVE_DEPTH_SAMPLE_COUNT>
+generate_raw_relative_depth_samples(
+	std::span<const size_t, RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT>
+		raw_relative_depth_value_distribution
+) {
+	size_t total_original_samples = std::accumulate(
+		raw_relative_depth_value_distribution.begin(),
+		raw_relative_depth_value_distribution.end(), size_t(0)
+	);
+	std::array<float, RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT>
+		probabilities{};
+	for (size_t i = 0; i < RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT;
+		 ++i) {
+		probabilities.at(i) = (float)raw_relative_depth_value_distribution[i] /
+							  (float)total_original_samples;
+	}
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::discrete_distribution<size_t> bin_distribution(
+		probabilities.begin(), probabilities.end()
+	);
+	std::uniform_real_distribution<float> value_distribution(
+		0.0f, RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_WIDTH
+	);
+
+	std::array<float, RAW_RELATIVE_DEPTH_SAMPLE_COUNT> samples{};
+
+	for (float& sample_value : samples) {
+		size_t bin_idx = bin_distribution(gen);
+
+		sample_value =
+			((float)bin_idx * RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_WIDTH) +
+			value_distribution(gen);
+	}
+
+	return samples;
 }
 
 tl::expected<FloatTensorBuffer<FloatTensorFormat::ImageRGB255>, std::string>

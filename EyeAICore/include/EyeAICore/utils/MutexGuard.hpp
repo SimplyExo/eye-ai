@@ -51,7 +51,7 @@ class MutexGuard {
 	struct ConstScopedAccess {
 		explicit ConstScopedAccess(const T& value, std::mutex& mutex)
 			: value(value), lock(mutex) {}
-		~ConstScopedAccess() = delete;
+		~ConstScopedAccess() = default;
 
 		ConstScopedAccess(ConstScopedAccess&&) noexcept = default;
 		ConstScopedAccess(const ConstScopedAccess&) = delete;
@@ -73,7 +73,9 @@ class MutexGuard {
 
 	/// @return RAII object that locks the mutex and provides access to the
 	/// value
-	ConstScopedAccess lock() const { return ConstScopedAccess(value, mutex); }
+	ConstScopedAccess const_lock() const {
+		return ConstScopedAccess(value, mutex);
+	}
 
   private:
 	T value;

@@ -1,13 +1,16 @@
 #include "EyeAICore/DepthModel.hpp"
+#include "EyeAICore/utils/MutexGuard.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 #include "datasets/diode_dataset.hpp"
 #include "datasets/sun_rgbd_dataset.hpp"
+#include "npy.hpp"
 #include "utils.hpp"
 #include <chrono>
 #include <cstdlib>
 #include <filesystem>
 #include <format>
 #include <iostream>
+#include <ranges>
 #include <span>
 
 /// max number of threads for evaluation, tested such that the drive is now the
@@ -85,6 +88,10 @@ int main(const int argc, const char* argv[]) {
 
 	std::filesystem::create_directories(prepared_output_directory);
 
+	MutexGuard<
+		std::array<size_t, RAW_RELATIVE_DEPTH_VALUE_DISTRIBUTION_BIN_COUNT>>
+		raw_relative_depth_value_distribution{};
+
 	std::atomic_size_t current_scan_index = 0;
 
 	{
@@ -121,27 +128,33 @@ int main(const int argc, const char* argv[]) {
 						  scan_size](std::unique_ptr<DepthModel>& depth_model) {
 				PROFILE_DEPTH_SCOPE("Evaluate datapoint ThreadPool Task")
 
-				const auto scan_evaluation_start =
-					std::chrono::high_resolution_clock::now();
-
-				auto evaluation_result = prepare_datapoint(
+				auto preparation_result = prepare_datapoint(
 					*depth_model, *data_point, prepared_output_directory,
 					current_scan_index.load()
 				);
 
-				if (!evaluation_result) {
+				if (!preparation_result) {
 					println_error_fmt(
 						"   Failed to evaluate datapoint: {}, skipping!",
-						evaluation_result.error()
+						preparation_result.error()
 					);
 					return;
 				}
 
-				const auto scan_evaluation_duration =
-					std::chrono::duration_cast<std::chrono::milliseconds>(
-						std::chrono::high_resolution_clock::now() -
-						scan_evaluation_start
-					);
+				// Accumulate raw relative depth value distribution
+				{
+					auto raw_relative_depth_value_distribution_scope =
+						raw_relative_depth_value_distribution.lock();
+
+					for (size_t i = 0;
+						 i <
+						 raw_relative_depth_value_distribution_scope->size();
+						 ++i) {
+						(*raw_relative_depth_value_distribution_scope).at(i) +=
+							preparation_result
+								->raw_relative_depth_value_distribution.at(i);
+					}
+				}
 
 				const float scan_percentage =
 					static_cast<float>(current_scan_index + 1) /
@@ -150,11 +163,28 @@ int main(const int argc, const char* argv[]) {
 					"=== Scan [{}/{} {}%] evaluation took {} ms ===\n",
 					current_scan_index + 1, scan_size,
 					static_cast<int>(scan_percentage * 100.f),
-					scan_evaluation_duration.count()
+					preparation_result->duration.count()
 				);
 				current_scan_index++;
 			});
 		}
+	}
+
+	// Save raw relative depth biased samples
+	{
+		auto raw_relative_depth_samples = generate_raw_relative_depth_samples(
+			*(raw_relative_depth_value_distribution.const_lock())
+		);
+
+		std::ranges::sort(raw_relative_depth_samples);
+
+		npy::write_npy(
+			prepared_output_directory / "raw_relative_depth_samples.npy",
+			npy::npy_data_ptr<float>(
+				raw_relative_depth_samples.data(),
+				{raw_relative_depth_samples.size()}
+			)
+		);
 	}
 
 	const auto total_duration =

@@ -6,8 +6,14 @@ Converting relative depth estimation to absolute(/metric) depth using SUNRGB-D (
 
 Installing python requirements for training the Rel2Abs model:
 
+It is recommended to use python 3.11!
+
 ```bash
-pip install -r ./rel2abs_training/requirements.txt
+cd rel2abs_training
+python -m venv venv
+source ./venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
 Preparing the dataset:

@@ -1,3 +1,6 @@
+--extra-index-url https://pypi.ngc.nvidia.com
 numpy
-tensorflow
+tensorflow[and-cuda]
 types-tensorflow
+nvidia-cudnn-cu12
+tensorrt-cu12

@@ -15,7 +15,7 @@ static void
 tflite_error_callback(void* user_data_ptr, const char* format, va_list args);
 
 tl::expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>
-TfLiteRuntime::create_impl(
+TfLiteRuntime::create(
 	std::vector<int8_t>&& model_data,
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
