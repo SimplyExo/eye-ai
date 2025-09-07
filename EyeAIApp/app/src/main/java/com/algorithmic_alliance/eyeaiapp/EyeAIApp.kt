@@ -103,6 +103,14 @@ class EyeAIApp : Application() {
 		val oldSettings = settings.clone()
 		settings = Settings.load(context)
 
+		if(oldSettings.depthAudioPlayback != settings.depthAudioPlayback){
+			NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+		}
+
+		if(oldSettings.objectAudioPlayback != settings.objectAudioPlayback){
+			NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		}
+
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			if (oldSettings.depthModel != settings.depthModel) {
 				switchDepthModel(settings.depthModel)

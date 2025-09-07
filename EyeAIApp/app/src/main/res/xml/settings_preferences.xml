@@ -24,6 +24,17 @@
             app:title="Enabled" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="Audio Playback">
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="@string/depth_playback_setting"
+            app:title="Enable Depth Playback" />
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="@string/object_playback_setting"
+            app:title="Enabled Object Playback" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="LLM">
         <EditTextPreference
             app:key="@string/google_ai_studio_api_key_stetting"

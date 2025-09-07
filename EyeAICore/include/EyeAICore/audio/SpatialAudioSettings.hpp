@@ -18,6 +18,8 @@ class SpatialAudioSettings {
 	constexpr static int picture_y_resolution = 256;
 	std::vector<std::byte> coco_labels_audio;
 	std::vector<std::byte> coco_labels_data;
+	bool depth_audio_paused = false;
+	bool object_audio_paused = false;
 	int NUMBER_OF_SOURCES;
 	float FREQUENCY;
 

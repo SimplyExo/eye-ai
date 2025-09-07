@@ -71,6 +71,8 @@ object NativeLib {
 	external fun setupAudioSettings(cocoLabelsAudio: ByteArray, cocoLabelsData: ByteArray)
 	external fun setAudioSettings(numberOfSources: Int, frequency: Float)
 	external fun sendAIData(array: FloatArray)
+	external fun setDepthAudioPaused(paused: Boolean)
+	external fun setObjectAudioPaused(paused: Boolean)
 	external fun getProcessingStatus(): Boolean
 	external fun destroySpatialAudio()
 

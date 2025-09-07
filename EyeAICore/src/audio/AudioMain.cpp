@@ -1,8 +1,8 @@
 #include "EyeAICore/audio/AudioMain.hpp"
-#include "EyeAICore/audio/SpatialAudioSettings.hpp"
+#include "EyeAICore/audio/ByteArrayParser.hpp"
 #include "EyeAICore/audio/DepthAudioSourceData.hpp"
 #include "EyeAICore/audio/ObjectAudioSourceData.hpp"
-#include "EyeAICore/audio/ByteArrayParser.hpp"
+#include "EyeAICore/audio/SpatialAudioSettings.hpp"
 #include "sndfile.h"
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -71,7 +71,6 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 		audio_settings.logInfoCallback("[AudioMain] HRTF not present");
 	}
 	*/
-	
 
 	context = alcCreateContext(device, nullptr);
 	if (!alcMakeContextCurrent(context)) {
@@ -98,17 +97,24 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 	Therefore ensuring continues playback
 	*/
 
-	audio_settings.logInfoCallback("[DepthAudioLoop] Starting depth audio loop...");
+	audio_settings.logInfoCallback(
+		"[DepthAudioLoop] Starting depth audio loop..."
+	);
 
-	if (!audio_device_initialized){
-		audio_settings.logInfoCallback("[DepthAudioLoop] Audio device not initialized. Aborting ...");
+	if (!audio_device_initialized) {
+		audio_settings.logInfoCallback(
+			"[DepthAudioLoop] Audio device not initialized. Aborting ..."
+		);
 		return;
 	}
-		
 
 	setupSources();
 
 	while (running) {
+		if (audio_settings.depth_audio_paused) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			continue;
+		}
 		for (int i = 0; i < audio_settings.NUMBER_OF_SOURCES; i++) {
 			// Retrieving the source and it's AudioSourceData
 			auto& source = sources[i];
@@ -170,9 +176,16 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 	alGenBuffers(1, &buffer);
 	std::vector<ObjectAudioSourceData> object_audio_sources_data_copy;
 	while (running) {
-		 object_audio_sources_data_copy = object_audio_sources_data;
+		if (audio_settings.object_audio_paused) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			continue;
+		}
+		object_audio_sources_data_copy = object_audio_sources_data;
 		for (auto audio_data : object_audio_sources_data_copy) {
-			sound_buffer.resize(MODIFIED_SAMPLE_RATE * (audio_data.sound_end - audio_data.sound_begin));
+			sound_buffer.resize(
+				MODIFIED_SAMPLE_RATE *
+				(audio_data.sound_end - audio_data.sound_begin)
+			);
 			std::copy(
 				audio_labels_file_buffer.begin() +
 					(MODIFIED_SAMPLE_RATE * audio_data.sound_begin),
@@ -181,13 +194,16 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 				sound_buffer.begin()
 			);
 
-			alBufferData(buffer, AL_FORMAT_MONO16, sound_buffer.data(), sound_buffer.size() * sizeof(short), AUDIO_FILE_SAMPLE_RATE);
+			alBufferData(
+				buffer, AL_FORMAT_MONO16, sound_buffer.data(),
+				sound_buffer.size() * sizeof(short), AUDIO_FILE_SAMPLE_RATE
+			);
 			alSourcei(source, AL_BUFFER, buffer);
-			
+
 			alSourcePlay(source);
 
 			ALint source_state = AL_PLAYING;
-			while(source_state == AL_PLAYING){
+			while (source_state == AL_PLAYING) {
 				alGetSourcei(source, AL_SOURCE_STATE, &source_state);
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
@@ -200,7 +216,6 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 
 	alDeleteBuffers(1, &buffer);
 	alDeleteSources(1, &source);
-
 }
 
 void AudioMain::setupSources() {
@@ -253,45 +268,51 @@ void AudioMain::setupSources() {
 void AudioMain::loadAudioLabelsFile() {
 	audio_settings.logInfoCallback("[LoadAudioLabelsFile] Started loading ...");
 
-    MemoryData mem {
-        audio_settings.coco_labels_audio.data(),
-        static_cast<sf_count_t>(audio_settings.coco_labels_audio.size()),
-        0
-    };
+	MemoryData mem{
+		audio_settings.coco_labels_audio.data(),
+		static_cast<sf_count_t>(audio_settings.coco_labels_audio.size()), 0
+	};
 
-    SF_VIRTUAL_IO vio;
-    vio.get_filelen = vio_get_filelen;
-    vio.seek        = vio_seek;
-    vio.read        = vio_read;
-    vio.write       = vio_write;
-    vio.tell        = vio_tell;
+	SF_VIRTUAL_IO vio;
+	vio.get_filelen = vio_get_filelen;
+	vio.seek = vio_seek;
+	vio.read = vio_read;
+	vio.write = vio_write;
+	vio.tell = vio_tell;
 
-    SF_INFO info{};
-    SNDFILE* snd = sf_open_virtual(&vio, SFM_READ, &info, &mem);
-    if (!snd) {
-        std::cerr << "sf_open_virtual fehlgeschlagen: "
-                  << sf_strerror(nullptr) << "\n";
-        return;
-    }
+	SF_INFO info{};
+	SNDFILE* snd = sf_open_virtual(&vio, SFM_READ, &info, &mem);
+	if (!snd) {
+		std::cerr << "sf_open_virtual fehlgeschlagen: " << sf_strerror(nullptr)
+				  << "\n";
+		return;
+	}
 
-    // --- Audioinfos auslesen ---
-    AUDIO_FILE_SAMPLE_RATE = info.samplerate;
-    audio_settings.logInfoCallback(std::format("File sample rate: {}", info.samplerate));
-    audio_settings.logInfoCallback(std::format("Format: {}", info.format));
-    audio_settings.logInfoCallback(std::format("Channels: {}", info.channels));
+	// --- Audioinfos auslesen ---
+	AUDIO_FILE_SAMPLE_RATE = info.samplerate;
+	audio_settings.logInfoCallback(
+		std::format("File sample rate: {}", info.samplerate)
+	);
+	audio_settings.logInfoCallback(std::format("Format: {}", info.format));
+	audio_settings.logInfoCallback(std::format("Channels: {}", info.channels));
 
-    // --- Daten einlesen ---
-    audio_labels_file_buffer.resize(info.frames * info.channels);
-    sf_count_t read_frames = sf_readf_short(snd, audio_labels_file_buffer.data(), info.frames);
+	// --- Daten einlesen ---
+	audio_labels_file_buffer.resize(info.frames * info.channels);
+	sf_count_t read_frames =
+		sf_readf_short(snd, audio_labels_file_buffer.data(), info.frames);
 
-    if (read_frames <= 0) {
-        audio_settings.logErrorCallback("[LoadAudioLabelsFile] Could not load file into memory");
-    }
+	if (read_frames <= 0) {
+		audio_settings.logErrorCallback(
+			"[LoadAudioLabelsFile] Could not load file into memory"
+		);
+	}
 
-    // --- Aufräumen ---
-    sf_close(snd);
+	// --- Aufräumen ---
+	sf_close(snd);
 
-    audio_settings.logInfoCallback("[LoadAudioLabelsFile] Finished loading ...");
+	audio_settings.logInfoCallback(
+		"[LoadAudioLabelsFile] Finished loading ..."
+	);
 }
 
 void AudioMain::changeDepthAudioData(

@@ -513,6 +513,34 @@ static SpatialAudio& get_or_create_spatial_audio() {
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setDepthAudioPaused(
+	JNIEnv* env,
+	jobject /*this*/,
+	jboolean paused
+) {
+	LOG_INFO("[SpatialAudio] Setting depth audio playback. Paused: {}", paused);
+
+	auto audio_setting_scope = spatial_audio_settings.lock();
+
+	audio_setting_scope->depth_audio_paused = paused;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setObjectAudioPaused(
+	JNIEnv* env,
+	jobject /*this*/,
+	jboolean paused
+) {
+	LOG_INFO("[SpatialAudio] Setting object audio playback. Paused: {}", paused);
+
+	auto audio_setting_scope = spatial_audio_settings.lock();
+
+	audio_setting_scope->object_audio_paused = paused;
+}
+
+
+
+extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendAIData(
 	JNIEnv* env,
 	jobject /*this*/,

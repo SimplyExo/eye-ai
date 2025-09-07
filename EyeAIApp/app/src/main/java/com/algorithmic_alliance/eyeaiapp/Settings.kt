@@ -14,7 +14,10 @@ data class Settings(
 	var enableOCR: Boolean,
 	val inputSource: String?,
 	val mediaSource: String?,
-	val eyeAIVisionIP: String?
+	val eyeAIVisionIP: String?,
+	var depthAudioPlayback: Boolean,
+	var objectAudioPlayback: Boolean,
+
 ) : Cloneable {
 	companion object {
 		fun load(context: Context): Settings {
@@ -74,6 +77,16 @@ data class Settings(
 				""
 			)
 
+			val depthAudioPlayback = sharedPreferences.getBoolean(
+				context.getString(R.string.depth_playback_setting),
+				true
+			)
+
+			val objectAudioPlayback = sharedPreferences.getBoolean(
+				context.getString(R.string.object_playback_setting),
+				true
+			)
+
 			return Settings(
 				depthModel,
 				showProfilingInfo,
@@ -85,8 +98,12 @@ data class Settings(
 				enableOCR,
 				inputSource,
 				mediaSource,
-				eyeAIVisionIP
+				eyeAIVisionIP,
+				depthAudioPlayback,
+				objectAudioPlayback,
 			)
+
+
 		}
 	}
 
@@ -101,6 +118,8 @@ data class Settings(
 		enableOCR,
 		inputSource,
 		mediaSource,
-		eyeAIVisionIP
+		eyeAIVisionIP,
+		depthAudioPlayback,
+		objectAudioPlayback,
 	)
 }
