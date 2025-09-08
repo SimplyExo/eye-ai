@@ -18,7 +18,7 @@ class EyeAIServer:
     def __init__(self, cam: Camera, port: int, fps: int, use_https: bool = False, cert_path: str = None, key_path: str = None):
         super().__init__()
         self.div_content = ""
-        self.address = None     # Aktuell verbundener Client
+        self.address = None     # current client
         self.cam = cam
         self.port = port
         self.fps = fps
@@ -28,7 +28,7 @@ class EyeAIServer:
 
         self.app = Flask(__name__)
 
-        # Flasgger OpenAPI Template mit Versionsangabe, Titel, etc.
+        # Flasgger OpenAPI template
         template = {
             "swagger": "2.0",
             "info": {
@@ -53,7 +53,7 @@ class EyeAIServer:
     def start(self):
         @self.app.route("/")
         def index():
-            # Angepasst für HTTPS URLs wenn aktiviert
+            
             protocol = "https" if self.use_https else "http"
             return f"""
             <body style="background: black;">
@@ -103,14 +103,14 @@ class EyeAIServer:
             self.fps = int(request.args.get('fps'))
             return f"Framerate set to {self.fps} fps"
 
-        # WICHTIG: use_reloader=False, sonst startet Flask doppelt im Thread!
+        
         if self.use_https and self.cert_path and self.key_path:
-            # HTTPS mit self-signed certificate
+            # HTTPS with self-signed certificate
             print(f"[SERVER] Starte HTTPS Server auf Port {self.port}")
             print(f"[SERVER] Verwende Zertifikat: {self.cert_path}")
             print(f"[SERVER] Verwende Key: {self.key_path}")
             
-            # SSL Context erstellen
+            # SSL context
             context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             context.load_cert_chain(self.cert_path, self.key_path)
             
@@ -123,7 +123,7 @@ class EyeAIServer:
                 ssl_context=context
             ))
         else:
-            # HTTP ohne SSL
+            # HTTP without ssl
             print(f"[SERVER] Starte HTTP Server auf Port {self.port}")
             thread = Thread(target=lambda: self.app.run(
                 host='0.0.0.0', 
@@ -147,7 +147,7 @@ class EyeAIServer:
         self.server_socket.bind(('0.0.0.0', 8080))
         self.server_socket.listen(1)
 
-        # Nur ein Client darf sich verbinden, daher kein Multithreading!
+        # only one client supported
         while True:
             connection, address = self.server_socket.accept()
 
@@ -157,5 +157,5 @@ class EyeAIServer:
                     connection.send(b'\xff')
                     time.sleep(0.1)
 
-            except:  # Wenn Client sich trennt
+            except:  
                 print(f"[BUTTON] Client {address} getrennt!")

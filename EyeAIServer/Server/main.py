@@ -7,12 +7,12 @@ def main():
     camera_thread = Camera("Kamera", 640, 640)
     camera_thread.start()
 
-    # HTTPS Konfiguration
-    use_https = True  # Auf True setzen für HTTPS
-    cert_path = "cert.pem"  # Pfad zum Zertifikat
-    key_path = "key.pem"   # Pfad zum Private Key
+  
+    use_https = True  # for https
+    cert_path = "cert.pem"  # path to certificate
+    key_path = "key.pem"   # path to private key
     
-    # Prüfe ob Zertifikate existieren
+    
     if use_https:
         if not os.path.exists(cert_path):
             print(f"[ERROR] Zertifikat nicht gefunden: {cert_path}")
@@ -23,10 +23,10 @@ def main():
             print("[INFO] Wechsle zu HTTP...")
             use_https = False
     
-    # Server starten (Port 3333 für HTTPS oder HTTP)
+    
     c1 = EyeAIServer(
         camera_thread, 
-        3333,  # Du kannst auch 443 für Standard HTTPS verwenden
+        3333,  
         30,
         use_https=use_https,
         cert_path=cert_path if use_https else None,
@@ -43,7 +43,7 @@ def main():
         print("[INFO] Browser werden eine Sicherheitswarnung anzeigen.")
         print("[INFO] Die Android App sollte mit trustAllCertificates=true funktionieren.\n")
     
-    # Server läuft im Hintergrund, main Thread am Leben halten
+    
     try:
         while True:
             import time
