@@ -56,6 +56,11 @@ void SpatialAudio::processDepthEstimationData() {
 	not always all columns are used
 	*/
 
+	if (audio_settings.depth_audio_paused) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		return;
+	}
+
 	std::vector<DepthAudioSourceData> new_audio_source_data;
 	int column_length =
 		depthEstimationData.size() / audio_settings.picture_x_resolution;
@@ -113,6 +118,11 @@ void SpatialAudio::processObjectDetectionData() {
 	- retrieving objects data
 	- saving the data in the vector
 	*/
+
+	if (audio_settings.object_audio_paused) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		return;
+	}
 
 	LOG_INFO("[ProcessObjectDetectionData] Started processing...");
 	std::vector<ObjectAudioSourceData> new_audio_source_data;
