@@ -81,6 +81,7 @@ class EyeAIApp : Application() {
 
 		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
 

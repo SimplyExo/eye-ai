@@ -132,10 +132,9 @@ void SpatialAudio::processObjectDetectionData() {
 		so they need to be converted
 		*/
 		int x_coord =
-			(int)object.cx * (audio_settings.picture_x_resolution - 1);
+			(int)(object.cx * (audio_settings.picture_x_resolution - 1));
 		int y_coord =
-			(int)object.cy * (audio_settings.picture_y_resolution - 1);
-
+			(int)(object.cy * (audio_settings.picture_y_resolution - 1));
 		int label_sound_start = object_label_data[object.cls_name][0];
 		int label_sound_end = object_label_data[object.cls_name][1];
 
