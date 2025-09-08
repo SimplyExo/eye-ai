@@ -1,7 +1,5 @@
 #pragma once
 
-#include "EyeAICore/audio/SpatialAudio.hpp"
-#include "EyeAICore/audio/SpatialAudioSettings.hpp"
 #include <array>
 
 /*

@@ -13,13 +13,19 @@
 #include <thread>
 #include <vector>
 
+#define LOG_INFO(msg) audio_settings.logInfoCallback(msg)
+#define LOG_ERROR(msg) audio_settings.logErrorCallback(msg)
+
 SpatialAudio::SpatialAudio(const SpatialAudioSettings& audio_settings)
 	: audio_main(audio_settings), audio_settings(audio_settings) {
-		readObjectLabelData();
-	depth_audio_thread =
-		std::thread([this]() { audio_main.startDepthAudioLoop(depth_audio_running); });
+	readObjectLabelData();
+	depth_audio_thread = std::thread([this]() {
+		audio_main.startDepthAudioLoop(depth_audio_running);
+	});
 
-	object_audio_thread = std::thread([this]() { audio_main.startObjectAudioLoop(object_audio_running); });
+	object_audio_thread = std::thread([this]() {
+		audio_main.startObjectAudioLoop(object_audio_running);
+	});
 }
 
 void SpatialAudio::getAIData(
@@ -31,14 +37,14 @@ void SpatialAudio::getAIData(
 	this->objectDetectionData.resize(object_detection_data.size());
 	std::ranges::copy(object_detection_data, this->objectDetectionData.begin());
 
-	isFinished = false;
+	processingFinished = false;
 	processDepthEstimationData();
 	processObjectDetectionData();
-	isFinished = true;
+	processingFinished = true;
 }
 
 void SpatialAudio::processDepthEstimationData() {
-	
+
 	/*
 	Processes the depth-estimation data:
 	- dividing data into columns
@@ -51,16 +57,15 @@ void SpatialAudio::processDepthEstimationData() {
 	*/
 
 	std::vector<DepthAudioSourceData> new_audio_source_data;
-	column_length = depthEstimationData.size() / row_length;
+	int column_length =
+		depthEstimationData.size() / audio_settings.picture_x_resolution;
 	int step_size =
-		row_length /
+		audio_settings.picture_x_resolution /
 		audio_settings.NUMBER_OF_SOURCES; // NUMBER_OF_SOURCES = 2^x!
 
-	audio_settings.logInfoCallback(
-		"[ProcessDepthEstimationData] Started processing..."
-	);
+	LOG_INFO("[ProcessDepthEstimationData] Started processing...");
 
-	for (int i = 0; i < row_length; i += step_size) {
+	for (int i = 0; i < audio_settings.picture_x_resolution; i += step_size) {
 		/*
 		Because the data doesn't come in a 2d form, it is
 		necessary to extract all elements of a column first.
@@ -68,7 +73,9 @@ void SpatialAudio::processDepthEstimationData() {
 		*/
 		std::vector<float> column;
 		for (int j = 0; j < column_length; ++j) {
-			column.push_back(depthEstimationData.at(i + (j * row_length)));
+			column.push_back(depthEstimationData.at(
+				i + (j * audio_settings.picture_x_resolution)
+			));
 		}
 
 		float nearest_distance =
@@ -96,26 +103,33 @@ void SpatialAudio::processDepthEstimationData() {
 		);
 	}
 	audio_main.changeDepthAudioData(new_audio_source_data);
-	audio_settings.logInfoCallback(
-		"[ProcessDepthEstimationData] Finished processing..."
-	);
+	LOG_INFO("[ProcessDepthEstimationData] Finished processing...");
 }
 
 void SpatialAudio::processObjectDetectionData() {
+	/*
+	Processing object detection data:
+	- going through all recognized objects
+	- retrieving objects data
+	- saving the data in the vector
+	*/
 
-	audio_settings.logInfoCallback(
-		"[ProcessObjectDetectionData] Started processing..."
-	);
+	LOG_INFO("[ProcessObjectDetectionData] Started processing...");
 	std::vector<ObjectAudioSourceData> new_audio_source_data;
 	for (auto object : objectDetectionData) {
-		int x_coord = (int)object.cx * (audio_settings.picture_x_resolution - 1);
-		int y_coord = (int)object.cy * (audio_settings.picture_y_resolution - 1);
+		/*
+		object coordinates are represented by values between 0 and 1
+		so they need to be converted
+		*/
+		int x_coord =
+			(int)object.cx * (audio_settings.picture_x_resolution - 1);
+		int y_coord =
+			(int)object.cy * (audio_settings.picture_y_resolution - 1);
+
 		int label_sound_start = object_label_data[object.cls_name][0];
 		int label_sound_end = object_label_data[object.cls_name][1];
-		audio_settings.logInfoCallback(std::format("[ProcessObjectDetectionData] Object {}", object.cls_name));
-		audio_settings.logInfoCallback(std::format("[ProcessObjectDetectionData] Sound begin for Object {}: {}",object.cls_name, label_sound_start));
-		audio_settings.logInfoCallback(std::format("[ProcessObjectDetectionData] Sound end for Object {}: {}",object.cls_name, label_sound_end));
 
+		// retrieving distance
 		float distance = depthEstimationData.at(
 			x_coord + (y_coord * audio_settings.picture_x_resolution)
 		);
@@ -133,31 +147,37 @@ void SpatialAudio::processObjectDetectionData() {
 		);
 	}
 	audio_main.changeObjectAudioData(new_audio_source_data);
-	audio_settings.logInfoCallback(
-		"[ProcessObjectDetectionData] Finished processing..."
-	);
+	LOG_INFO("[ProcessObjectDetectionData] Finished processing...");
 }
 
 void SpatialAudio::readObjectLabelData() {
-	audio_settings.logInfoCallback("[ReadingObjectLabelData] Reading Object Label data...");
-	
-	std::string json_string(reinterpret_cast<const char*>(audio_settings.coco_labels_data.data()), audio_settings.coco_labels_data.size());
+	/*
+	Reading the json file where the information about objects is stored:
+	- name of object
+	- start and end of the sound for the object in the big .wav file
+	*/
+	LOG_INFO("[ReadingObjectLabelData] Reading Object Label data...");
+
+	std::string json_string(
+		reinterpret_cast<const char*>(audio_settings.coco_labels_data.data()),
+		audio_settings.coco_labels_data.size()
+	);
 	nlohmann::json json_object_data;
 	try {
 		json_object_data = nlohmann::json::parse(json_string);
 	} catch (const nlohmann::json::parse_error& e) {
-		audio_settings.logErrorCallback(
-			"[ReadingObjectLabelData] Could not parse JSON Data from Object Label data file"
+		LOG_ERROR(
+			"[ReadingObjectLabelData] Could not parse JSON Data from Object "
+			"Label data file"
 		);
 	}
 	for (auto const& data : json_object_data) {
 		object_label_data[data["text"]] = {data["start"], data["end"]};
-		//audio_settings.logInfoCallback(std::format("[ReadingObjectLabelData] Text: {} Begin: {}, End: {}",(std::string) data["text"], (std::string) data["start"], (std::string) data["end"]));
 	}
-	audio_settings.logInfoCallback("[ReadingObjectLabelData] Finished reading Object Label data...");
+	LOG_INFO("[ReadingObjectLabelData] Finished reading Object Label data...");
 }
 
-bool SpatialAudio::getProcessingStatus() { return isFinished; }
+bool SpatialAudio::getProcessingStatus() { return processingFinished; }
 
 SpatialAudio::~SpatialAudio() {
 	depth_audio_running = false;

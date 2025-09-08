@@ -1,8 +1,15 @@
 #pragma once
+
 #include <sndfile.hh>
-#include <vector>
 #include <cstddef>
 #include <cstring>
+
+/*
+Handles the conversion of the bytearray, representing
+the .wav file where the audio labels are stored, to
+a state, where it can be processed by the libsndfile
+library
+*/
 
 struct MemoryData {
     const std::byte* data;
