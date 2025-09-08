@@ -92,7 +92,6 @@ class MainActivity : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 
 
-
 		enableEdgeToEdge()
 		setContentView(R.layout.activity_main)
 
@@ -203,7 +202,7 @@ class MainActivity : AppCompatActivity() {
 		}
 
 
-		CoroutineScope(Dispatchers.IO).launch{
+		CoroutineScope(Dispatchers.IO).launch {
 			SpatialAudio.setup(this@MainActivity)
 			SpatialAudio.start()
 		}
@@ -212,8 +211,6 @@ class MainActivity : AppCompatActivity() {
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onResume() {
 		super.onResume()
-
-
 
 		eyeAIApp().updateSettings()
 
@@ -236,10 +233,12 @@ class MainActivity : AppCompatActivity() {
 		else
 			getString(R.string.setup_llm_notice)
 
-		CoroutineScope(Dispatchers.IO).launch{
-			SpatialAudio.setup(this@MainActivity)
-			SpatialAudio.start()
-		}
+		// re-enabling the audio playback in accordance to the settings
+		val settings = Settings.load(this@MainActivity);
+		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+
+
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -251,13 +250,15 @@ class MainActivity : AppCompatActivity() {
 		cameraManager.pauseAnalyzer()
 		mediaFrameAnalyzer?.shutdown()
 		mediaPlayer?.shutdown()
-		SpatialAudio.destroy()
+
+		// stopping audio playback
+		NativeLib.setObjectAudioPaused(true);
+		NativeLib.setDepthAudioPaused(true);
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onDestroy() {
 		super.onDestroy()
-
 		cameraManager.shutdown()
 		textToSpeechInstance.shutdown()
 		mediaFrameAnalyzer?.shutdown()
@@ -527,7 +528,6 @@ class MainActivity : AppCompatActivity() {
 		currentState = update.newState
 		lastLlmJsonResponse = update.newJson
 	}
-
 
 
 	fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000

@@ -171,7 +171,7 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 	- waiting until sound is played
 	*/
 
-	LOG_INFO("Starting object audio loop");
+	LOG_INFO("[ObjectAudioLoop] Starting object audio loop");
 
 	// loading the wav file
 	loadAudioLabelsFile();
@@ -331,7 +331,7 @@ void AudioMain::loadAudioLabelsFile() {
 
 	// reading audio file information
 	AUDIO_FILE_SAMPLE_RATE = info.samplerate;
-	LOG_INFO(std::format("File sample rate: {}", info.samplerate));
+	LOG_INFO(std::format("[LoadAudioLabelsFile] File sample rate: {}", info.samplerate));
 	LOG_INFO(std::format("[LoadAudioLabelsFile] Format: {}", info.format));
 	LOG_INFO(std::format("[LoadAudioLabelsFile] Channels: {}", info.channels));
 
