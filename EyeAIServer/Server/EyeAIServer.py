@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 from threading import Thread
+import ssl
 
 import cv2
 import json
@@ -14,13 +15,16 @@ from ButtonThread import ButtonThread
 
 
 class EyeAIServer:
-    def __init__(self, cam: Camera, port: int, fps: int):
+    def __init__(self, cam: Camera, port: int, fps: int, use_https: bool = False, cert_path: str = None, key_path: str = None):
         super().__init__()
         self.div_content = ""
         self.address = None     # Aktuell verbundener Client
         self.cam = cam
         self.port = port
         self.fps = fps
+        self.use_https = use_https
+        self.cert_path = cert_path
+        self.key_path = key_path
 
         self.app = Flask(__name__)
 
@@ -49,11 +53,16 @@ class EyeAIServer:
     def start(self):
         @self.app.route("/")
         def index():
+            # Angepasst für HTTPS URLs wenn aktiviert
+            protocol = "https" if self.use_https else "http"
             return f"""
             <body style="background: black;">
                 <div style="width: 240px; margin: 0px auto;">
                     <img src="/cam0" />
                     <img src="/cam1" />
+                </div>
+                <div style="color: white; text-align: center; margin-top: 20px;">
+                    Server läuft auf {protocol.upper()} Port {self.port}
                 </div>
             </body>
             """
@@ -95,7 +104,35 @@ class EyeAIServer:
             return f"Framerate set to {self.fps} fps"
 
         # WICHTIG: use_reloader=False, sonst startet Flask doppelt im Thread!
-        thread = Thread(target=lambda: self.app.run(host='0.0.0.0', port=self.port, threaded=True, debug=False, use_reloader=False))
+        if self.use_https and self.cert_path and self.key_path:
+            # HTTPS mit self-signed certificate
+            print(f"[SERVER] Starte HTTPS Server auf Port {self.port}")
+            print(f"[SERVER] Verwende Zertifikat: {self.cert_path}")
+            print(f"[SERVER] Verwende Key: {self.key_path}")
+            
+            # SSL Context erstellen
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.load_cert_chain(self.cert_path, self.key_path)
+            
+            thread = Thread(target=lambda: self.app.run(
+                host='0.0.0.0', 
+                port=self.port, 
+                threaded=True, 
+                debug=False, 
+                use_reloader=False,
+                ssl_context=context
+            ))
+        else:
+            # HTTP ohne SSL
+            print(f"[SERVER] Starte HTTP Server auf Port {self.port}")
+            thread = Thread(target=lambda: self.app.run(
+                host='0.0.0.0', 
+                port=self.port, 
+                threaded=True, 
+                debug=False, 
+                use_reloader=False
+            ))
+            
         thread.daemon = True
         thread.start()
 
