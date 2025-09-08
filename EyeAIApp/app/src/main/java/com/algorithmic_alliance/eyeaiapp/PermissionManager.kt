@@ -18,22 +18,30 @@ class PermissionManager(
 ) {
 	private val requestPermissionsLauncher =
 		activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-			onCameraPermissionResult(permissions.getOrDefault(Manifest.permission.CAMERA, false))
-			onMicrophonePermissionResult(
-				permissions.getOrDefault(
-					Manifest.permission.RECORD_AUDIO,
-					false
+			if (permissions.containsKey(Manifest.permission.CAMERA)) {
+				onCameraPermissionResult(
+					permissions.getOrDefault(
+						Manifest.permission.CAMERA,
+						false
+					)
 				)
-			)
+			}
+			if (permissions.containsKey(Manifest.permission.RECORD_AUDIO)) {
+				onMicrophonePermissionResult(
+					permissions.getOrDefault(
+						Manifest.permission.RECORD_AUDIO,
+						false
+					)
+				)
+			}
 		}
 
-	fun requestPermissions() {
-		requestPermissionsLauncher.launch(
-			arrayOf(
-				Manifest.permission.CAMERA,
-				Manifest.permission.RECORD_AUDIO
-			)
-		)
+	fun requestCameraPermission() {
+		requestPermissionsLauncher.launch(arrayOf(Manifest.permission.CAMERA))
+	}
+
+	fun requestMicrophonePermission() {
+		requestPermissionsLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO))
 	}
 
 	fun isCameraPermissionGranted(): Boolean {

@@ -224,7 +224,9 @@ class MainActivity : AppCompatActivity() {
 
 		updateSpeechRecognitionUIVisibility()
 
-		permissionManager.requestPermissions()
+		permissionManager.requestCameraPermission()
+		if (eyeAIApp().settings.enableSpeechRecognition)
+			permissionManager.requestMicrophonePermission()
 		updateUngrantedPermissionsNotice()
 
 		debugInputBitmapPreview?.visibility = if (eyeAIApp().settings.showDebugInputBitmap) {
@@ -375,9 +377,9 @@ class MainActivity : AppCompatActivity() {
 
 				bitmapFlow = MutableSharedFlow<Bitmap>(replay = 1)
 
-				mjpegBitmapReader = MjpegBitmapReader(url = eyeAIApp().settings.eyeAIVisionIP.toString(),
-					onFrame = {
-						bitmap ->
+				mjpegBitmapReader = MjpegBitmapReader(
+					url = eyeAIApp().settings.eyeAIVisionIP.toString(),
+					onFrame = { bitmap ->
 
 						bitmapFlow?.tryEmit(bitmap)
 
@@ -389,7 +391,12 @@ class MainActivity : AppCompatActivity() {
 				mjpegBitmapReader?.start()
 
 				mediaPlayer?.shutdown()
-				mediaPlayer = MediaPlayer(context =  this, uri = null, targetImageView = mediaImageView!!, bitmapFlow = bitmapFlow)
+				mediaPlayer = MediaPlayer(
+					context = this,
+					uri = null,
+					targetImageView = mediaImageView!!,
+					bitmapFlow = bitmapFlow
+				)
 
 				mediaFrameAnalyzer?.shutdown()
 				mediaFrameAnalyzer = CameraFrameAnalyzer(
@@ -490,7 +497,9 @@ class MainActivity : AppCompatActivity() {
 			lastFinalResultMillis = System.currentTimeMillis()
 
 			if (eyeAIApp().llm == null) {
-				llmResponseText?.text = getString(R.string.setup_llm_notice)
+				if (eyeAIApp().settings.enableSpeechRecognition) {
+					llmResponseText?.text = getString(R.string.setup_llm_notice)
+				}
 			} else {
 				llmResponseText?.text = getString(R.string.llm_responding_notice)
 
