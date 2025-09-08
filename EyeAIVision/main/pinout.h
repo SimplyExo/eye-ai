@@ -1,4 +1,7 @@
+#pragma once
+
 #include <driver/touch_pad.h>
+#include "driver/gpio.h"
 
 /* Hardware Config */
 #define RED_LED_GPIO    13

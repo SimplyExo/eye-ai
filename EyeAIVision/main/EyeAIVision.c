@@ -15,7 +15,7 @@ void init_hw()
     gpio_set_direction(GREEN_LED_GPIO, GPIO_MODE_OUTPUT);
     gpio_set_direction(FLASHLIGHT, GPIO_MODE_OUTPUT);
 
-    gpio_set_level(RED_LED_GPIO, 0);
+    gpio_set_level(RED_LED_GPIO, 1);
     gpio_set_level(GREEN_LED_GPIO, 0);
     gpio_set_level(FLASHLIGHT, 0);
 
@@ -25,21 +25,10 @@ void init_hw()
     touch_pad_filter_start(10);
 }
 
-static void touch_button_task(void * pvParameters)
-{
-    uint16_t value = 0;
-    while (1) {
-        touch_pad_read_raw_data(TOUCH_PAD_GPIO14_CHANNEL, &value);
-        gpio_set_level(GREEN_LED_GPIO, (value < TOUCH_THRESHOLD) ? 1 : 0);
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
-}
-
 void app_main(void)
 {
     init_hw();
     init_camera();
-    xTaskCreate(touch_button_task, "touch_button_task", 4096, NULL, 1, NULL);
 
     init_sta();
     startCameraServer();

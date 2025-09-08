@@ -12,19 +12,18 @@ void event_handler(void* arg, esp_event_base_t event_base,
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
-        //if (s_retry_num < 10) {
+        gpio_set_level(GREEN_LED_GPIO, 0); // Erst LED ausschalten, dann andere einschalten, damit Last an Widerstand (verbunden an GND) nicht zu hoch wird
+        gpio_set_level(RED_LED_GPIO, 1);
         esp_wifi_connect();
-        //s_retry_num++;
+
         ESP_LOGI(TAG_WIFI, "retry to connect to the AP");
-        /*} else {
-            xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-        }*/
         ESP_LOGI(TAG_WIFI,"connect to the AP fail");
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         ESP_LOGI(TAG_WIFI, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
-        //s_retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+        gpio_set_level(RED_LED_GPIO, 0);
+        gpio_set_level(GREEN_LED_GPIO, 1);
     }
 }
 

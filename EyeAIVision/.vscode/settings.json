@@ -10,7 +10,9 @@
         "spi_slave.h": "c",
         "math.h": "c",
         "pinout.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "string.h": "c",
+        "nvs_flash.h": "c"
     },
     "idf.espIdfPath": "/home/thomas/esp/v5.5/esp-idf",
     "idf.toolsPath": "/home/thomas/.espressif",
