@@ -115,6 +115,7 @@ dependencies {
 	implementation(libs.androidx.ui.tooling.preview)
 	implementation(libs.androidx.material3)
 	implementation(libs.androidx.preference.ktx)
+	implementation("com.google.android.material:material:1.13.0")
 
 	// Camera
 	implementation(libs.androidx.camera.camera2)
@@ -127,6 +128,7 @@ dependencies {
 	implementation(libs.vosk)
 	implementation(libs.androidx.preference)
 	implementation(libs.androidx.appcompat)
+	implementation(libs.androidx.activity)
 
 	//implementation(libs.play.services.mlkit.text.recognition.common)
 	//implementation(libs.play.services.mlkit.text.recognition)

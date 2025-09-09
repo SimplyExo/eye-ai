@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_marginVertical="25dp"
+    android:layout_marginHorizontal="20dp"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context=".TutorialScreen">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:cardCornerRadius="250dp"
+        android:layout_gravity="center">
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@mipmap/ic_launcher_round"
+            android:scaleType="centerCrop" />
+    </androidx.cardview.widget.CardView>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="150dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:orientation="vertical"
+        android:background="@drawable/info_box">
+
+        <ImageView
+            android:id="@+id/tutorial_screen_explanation_icon"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
+            android:layout_gravity="center"
+            android:src="@drawable/photo_camera_24px" />
+
+        <TextView
+            android:id="@+id/tutorial_screen_explanation_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tutorial_camera_permission_explanation"
+            android:textSize="18sp"
+            android:textAlignment="center" />
+
+    </LinearLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/tutorial_screen_skip_btn"
+            android:visibility="gone"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="25dp"
+            android:backgroundTint="#696969"
+            android:paddingHorizontal="40dp"
+            android:paddingVertical="15dp"
+            android:text="@string/tutorial_skip_text"
+            android:textSize="18sp"
+            android:textColor="@android:color/primary_text_dark"
+            tools:visibility="visible" />
+
+        <Button
+            android:id="@+id/tutorial_screen_accept_btn"
+            android:backgroundTint="@color/default_blue"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="25dp"
+            android:textSize="18sp"
+            android:paddingHorizontal="40dp"
+            android:paddingVertical="15dp"
+            android:text="@string/tutorial_accept_text"
+            android:textColor="@android:color/primary_text_dark" />
+
+    </LinearLayout>
+
+</LinearLayout>

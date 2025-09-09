@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -20,6 +21,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
@@ -27,6 +29,7 @@ import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.llm.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
+import com.algorithmic_alliance.eyeaiapp.media.MjpegBitmapReader
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +39,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
@@ -83,6 +87,10 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private var currentState: State = State.IDLE
+
+	private var mjpegBitmapReader: MjpegBitmapReader? = null
+	private var bitmapFlow: MutableSharedFlow<Bitmap>? = null
+
 
 	private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
 	private var mediaPlayer: MediaPlayer? = null
@@ -216,7 +224,9 @@ class MainActivity : AppCompatActivity() {
 
 		updateSpeechRecognitionUIVisibility()
 
-		permissionManager.requestPermissions()
+		permissionManager.requestCameraPermission()
+		if (eyeAIApp().settings.enableSpeechRecognition)
+			permissionManager.requestMicrophonePermission()
 		updateUngrantedPermissionsNotice()
 
 		debugInputBitmapPreview?.visibility = if (eyeAIApp().settings.showDebugInputBitmap) {
@@ -363,8 +373,43 @@ class MainActivity : AppCompatActivity() {
 			}
 
 		} else if (eyeAIApp().settings.inputSource == getString(R.string.input_is_eyeaivision)) {
-			if (eyeAIApp().settings.eyeAIVisionIP!!.isNotEmpty()) {
-				// HTTP Logic
+			if (!eyeAIApp().settings.eyeAIVisionIP!!.isEmpty()) {
+
+				bitmapFlow = MutableSharedFlow<Bitmap>(replay = 1)
+
+				mjpegBitmapReader = MjpegBitmapReader(
+					url = eyeAIApp().settings.eyeAIVisionIP.toString(),
+					onFrame = { bitmap ->
+
+						bitmapFlow?.tryEmit(bitmap)
+
+					},
+					deliverOnMainThread = false,
+					parentScope = lifecycleScope
+				)
+
+				mjpegBitmapReader?.start()
+
+				mediaPlayer?.shutdown()
+				mediaPlayer = MediaPlayer(
+					context = this,
+					uri = null,
+					targetImageView = mediaImageView!!,
+					bitmapFlow = bitmapFlow
+				)
+
+				mediaFrameAnalyzer?.shutdown()
+				mediaFrameAnalyzer = CameraFrameAnalyzer(
+					eyeAIApp(),
+					depthPreviewImage!!,
+					performanceText!!,
+					overlayObjectDetection!!,
+					overlayOcr!!,
+					debugInputBitmapPreview!!,
+					mediaImageView!!
+				)
+				mediaFrameAnalyzer?.start()
+
 			} else {
 				val builder = AlertDialog.Builder(this)
 				builder.setMessage("No IP address has been entered. Please enter one in the settings menu")
@@ -452,7 +497,9 @@ class MainActivity : AppCompatActivity() {
 			lastFinalResultMillis = System.currentTimeMillis()
 
 			if (eyeAIApp().llm == null) {
-				llmResponseText?.text = getString(R.string.setup_llm_notice)
+				if (eyeAIApp().settings.enableSpeechRecognition) {
+					llmResponseText?.text = getString(R.string.setup_llm_notice)
+				}
 			} else {
 				llmResponseText?.text = getString(R.string.llm_responding_notice)
 
