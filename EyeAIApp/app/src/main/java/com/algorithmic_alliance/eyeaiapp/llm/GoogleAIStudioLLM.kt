@@ -407,6 +407,11 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 						put("type", "STRING")
 					})
 
+					put("object_query", JSONObject().apply {
+						put("type", "STRING")
+						put("description", "Das spezifische Objekt, nach dem der bei der Objekterkennung fragt Nutzer fragt. Z.B. 'Stuhl' oder 'Tisch'. IMMER SETZEN WENN OBJEKTERKENNUNG = TRUE!!!")
+					})
+
 					put("setting_intent", JSONObject().apply {
 						put("type", "STRING")
 						put("enum", JSONArray().apply {
@@ -418,6 +423,8 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 						put("properties", JSONObject().apply {
 							put("einstellungen", JSONObject().apply { put("type", "BOOLEAN") })
 							put("texterkennung", JSONObject().apply { put("type", "BOOLEAN") })
+							// new object-detection
+							put("objekterkennung", JSONObject().apply { put("type", "BOOLEAN") })
 						})
 					})
 					put("changed_settings", JSONObject().apply {
@@ -433,6 +440,14 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 					})
 					put("approval", JSONObject().apply { put("type", "NUMBER") })
 				})
+
+				put("required", JSONArray().apply {
+					put("requested_functions")
+					put("object_query")
+					put("interaction_text")
+					put("setting_intent")
+				})
+
 			}
 
 			val generationConfig = JSONObject().apply {
@@ -443,7 +458,7 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 			return defaultResponseBody.put("generationConfig", generationConfig)
 		} else {
 			return defaultResponseBody.put("generationConfig", JSONObject().apply {
-				// unstrukturierte Antwort (z.B. für stream)
+
 			})
 		}
 	}

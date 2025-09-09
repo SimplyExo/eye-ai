@@ -2,10 +2,15 @@ package com.algorithmic_alliance.eyeaiapp.llm
 
 import android.util.Log
 import android.widget.TextView
+import com.algorithmic_alliance.eyeaiapp.AIModelData
+import com.algorithmic_alliance.eyeaiapp.AIModelData.depthEstimationData
+import com.algorithmic_alliance.eyeaiapp.AIModelData.objectDetectionBoxes
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.MainActivity.State
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.llm.LLM.Companion.knownObjectLabels
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
+import com.google.android.gms.common.api.Response
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,12 +29,21 @@ class StateMachine(
 ) {
 
 	enum class RequestedFunction {
-		TEXT_RECOGNITION, SETTINGS, NONE
+		TEXT_RECOGNITION, SETTINGS, NONE, OBJECT_DETECTION
 	}
 
 	enum class SettingIntent {
 		TTS_SPEED, VOICE, LEAVE, NONE
 	}
+
+	data class DetectedObject(
+		val label: String,
+		val distance: Float,
+		val height: Float,
+		val width: Float,
+		val x: Float,
+		val y: Float
+	)
 
 	private val jsonParser = JsonParser()
 	private val sentenceBuffer = StringBuilder()
@@ -49,7 +63,20 @@ class StateMachine(
 		val jsonResponse = generateLlmResponse(final, true) ?: return StateUpdate(State.IDLE, null)
 		Log.d(EyeAIApp.APP_LOG_TAG, "handleIdle called with: '$final', parsed function: ${jsonParser.parseRequestedFunction(jsonResponse)}")
 
+		Log.d(EyeAIApp.APP_LOG_TAG, "=== LLM RESPONSE DEBUG ===")
+		Log.d(EyeAIApp.APP_LOG_TAG, "User input: '$final'")
+		Log.d(EyeAIApp.APP_LOG_TAG, "LLM JSON response: $jsonResponse")
+		Log.d(EyeAIApp.APP_LOG_TAG, "Parsed function: ${jsonParser.parseRequestedFunction(jsonResponse)}")
+		Log.d(EyeAIApp.APP_LOG_TAG, "Parsed object query: '${jsonParser.parseObjectQuery(jsonResponse)}'")
+		Log.d(EyeAIApp.APP_LOG_TAG, "========================")
+
 		return when (jsonParser.parseRequestedFunction(jsonResponse)) {
+			RequestedFunction.OBJECT_DETECTION -> {
+				// Objekterkennung tatsächlich ausführen
+				handleObjectDetection(jsonResponse)
+				StateUpdate(State.IDLE, null)
+			}
+
 			RequestedFunction.TEXT_RECOGNITION -> {
 				val ocrLast = eyeAIApp.ocrModel.lastResult.trim()
 				if (ocrLast.isEmpty()) {
@@ -103,6 +130,7 @@ class StateMachine(
 		val jsonResponse = generateLlmResponse(intentPrompt, true) ?: return StateUpdate(State.SETTINGS_MENU, null)
 
 		return when (jsonParser.parseSettingIntent(jsonResponse)) {
+
 			SettingIntent.TTS_SPEED -> {
 				lastLlmJsonResponse = jsonResponse
 				speakAndHandleUi(LLM.SNIPPET_TTS_SPEED)
@@ -162,6 +190,100 @@ class StateMachine(
 			speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen.")
 		}
 		return StateUpdate(State.IDLE, null)
+	}
+
+	private suspend fun handleObjectDetection(jsonResponse: String) {
+		val specificQuery = jsonParser.parseObjectQuery(jsonResponse)?.lowercase()?.trim()
+
+		//needs a specific object -> avoiding multiple requests and boilerplate code
+		if (specificQuery.isNullOrEmpty()) {
+			Log.w(EyeAIApp.APP_LOG_TAG, "Objekterkennung ohne spezifische Anfrage aufgerufen")
+			speakAndHandleUi("Bitte nennen Sie ein spezifisches Objekt, nach dem Sie suchen möchten, zum Beispiel: 'Wo ist der Stuhl?'")
+			return
+		}
+
+		val objectDetectionBoxes = objectDetectionBoxes.get()
+		val depthEstimationData = depthEstimationData.get()
+
+		Log.d(EyeAIApp.APP_LOG_TAG, "Searching for: '$specificQuery'")
+		Log.d(EyeAIApp.APP_LOG_TAG, "Available objects: ${objectDetectionBoxes?.size}")
+		Log.d(EyeAIApp.APP_LOG_TAG, "depth data: ${depthEstimationData?.size}")
+
+
+		if (objectDetectionBoxes.isNullOrEmpty()) {
+			speakAndHandleUi("Entschuldigung, ich konnte gerade keine Objekte erkennen.")
+			return
+		}
+
+		if (depthEstimationData.isEmpty()) {
+			speakAndHandleUi("Entschuldigung, die Tiefenerkennung ist derzeit nicht verfügbar.")
+			return
+		}
+
+		val depthWidth = 256
+		val depthHeight = 256
+
+		if (depthEstimationData.size != depthWidth * depthHeight) {
+			speakAndHandleUi("Entschuldigung, die Tiefendaten haben eine unerwartete Größe.")
+			return
+		}
+
+		// List of all objects with depth
+		val detectedObjects = objectDetectionBoxes.mapNotNull { box ->
+			val label = box.clsName
+			if (label in knownObjectLabels) {
+				// Evaluating coordinates for getting the depth
+				val depthX = (box.cx * (depthWidth - 1)).toInt().coerceIn(0, depthWidth - 1)
+				val depthY = (box.cy * (depthHeight - 1)).toInt().coerceIn(0, depthHeight - 1)
+				val depthIndex = depthY * depthWidth + depthX
+
+				Log.d(EyeAIApp.APP_LOG_TAG, "Objekt '$label': Box(${box.cx}, ${box.cy}) -> Depth[$depthX, $depthY] = Index $depthIndex")
+
+				val distance = if (depthIndex < depthEstimationData.size) {
+					depthEstimationData[depthIndex]
+				} else {
+					Log.w(EyeAIApp.APP_LOG_TAG, "Depth-Index out of bounds")
+					-1f
+				}
+
+				DetectedObject(label, distance, box.h, box.w, box.cx, box.cy)
+			} else null
+		}
+
+		if (detectedObjects.isEmpty()) {
+			speakAndHandleUi("Ich konnte leider keine bekannten Objekte erkennen.")
+			return
+		}
+
+		//Specific object search
+		val foundObject = detectedObjects.find { obj ->
+			val objLabel = obj.label.lowercase()
+			objLabel == specificQuery ||
+				objLabel.contains(specificQuery) ||
+				specificQuery.contains(objLabel)
+		}
+
+		if (foundObject != null) {
+			Log.d(EyeAIApp.APP_LOG_TAG, "object found: ${foundObject.label} at ${foundObject.distance}m")
+
+			//Generating a prompt for the specific object
+			val prompt = eyeAIApp.llm!!.buildObjectDetectionPrompt(
+				label = foundObject.label,
+				height = foundObject.height,
+				width = foundObject.width,
+				x = foundObject.x,
+				y = foundObject.y,
+				distance = foundObject.distance
+			)
+
+			//Streaming the response
+			generateAndStreamLlmResponse(prompt)
+		} else {
+			//Object not found
+			val availableObjects = detectedObjects.map { it.label }.distinct().take(5).joinToString(", ")
+			Log.d(EyeAIApp.APP_LOG_TAG, "Object '$specificQuery' not found. Available objects: $availableObjects")
+			speakAndHandleUi("Entschuldigung, das Objekt '$specificQuery' konnte ich nicht finden. Ich sehe aber folgende Objekte: $availableObjects. Versuchen Sie es mit einem dieser Objekte.")
+		}
 	}
 
 	private suspend fun generateLlmResponse(prompt: String, structured: Boolean): String? {
@@ -319,25 +441,25 @@ class StateMachine(
 		}
 	}
 
-  //Parsing only.
+	//Parsing only.
 	private inner class JsonParser {
 
-	  fun parseInteractionText(jsonString: String): String? {
-		  return try {
-			  val obj = JSONObject(jsonString)
-			  val txt = obj.optString("interaction_text", "").trim()
-			  if (txt.isNotEmpty()) return txt
+		fun parseInteractionText(jsonString: String): String? {
+			return try {
+				val obj = JSONObject(jsonString)
+				val txt = obj.optString("interaction_text", "").trim()
+				if (txt.isNotEmpty()) return txt
 
-			  // Fallback: vielleicht hat die LLM-Antwort das Feld "text" direkt oder "message"
-			  val direct = obj.optString("text", "").trim()
-			  if (direct.isNotEmpty()) return direct
+				// Fallback: vielleicht hat die LLM-Antwort das Feld "text" direkt oder "message"
+				val direct = obj.optString("text", "").trim()
+				if (direct.isNotEmpty()) return direct
 
-			  null
-		  } catch (e: JSONException) {
-			  Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseInteractionText", e)
-			  null
-		  }
-	  }
+				null
+			} catch (e: JSONException) {
+				Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseInteractionText", e)
+				null
+			}
+		}
 		fun parseSettingIntent(jsonString: String): SettingIntent {
 			return try {
 				when (JSONObject(jsonString).optString("setting_intent", "none")) {
@@ -358,11 +480,22 @@ class StateMachine(
 				when {
 					requestedFunctions?.optBoolean("texterkennung", false) == true -> RequestedFunction.TEXT_RECOGNITION
 					requestedFunctions?.optBoolean("einstellungen", false) == true -> RequestedFunction.SETTINGS
+					requestedFunctions?.optBoolean("objekterkennung", false) == true -> RequestedFunction.OBJECT_DETECTION
 					else -> RequestedFunction.NONE
 				}
 			} catch (e: JSONException) {
 				Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseRequestedFunction", e)
 				RequestedFunction.NONE
+			}
+		}
+
+		fun parseObjectQuery(jsonString: String): String? {
+			return try {
+				val query = JSONObject(jsonString).optString("object_query", null)
+				if (query.isNullOrBlank()) null else query
+			} catch (e: JSONException) {
+				Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseObjectQuery", e)
+				null
 			}
 		}
 
