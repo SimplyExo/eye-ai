@@ -135,6 +135,10 @@ void SpatialAudio::processObjectDetectionData() {
 			(int)(object.cx * (audio_settings.picture_x_resolution - 1));
 		int y_coord =
 			(int)(object.cy * (audio_settings.picture_y_resolution - 1));
+		if(!object_label_data.contains(object.cls_name)){
+			LOG_ERROR(std::format("Could not find object {} in the object_label_data. Skipping to next one ...", object.cls_name));
+			continue;
+		}
 		int label_sound_start = object_label_data[object.cls_name][0];
 		int label_sound_end = object_label_data[object.cls_name][1];
 
@@ -150,6 +154,7 @@ void SpatialAudio::processObjectDetectionData() {
 			);
 		new_audio_source_data.push_back(
 			ObjectAudioSourceData{
+				object.cls_name,
 				label_sound_start, label_sound_end, sound_origin[0],
 				sound_origin[1], sound_origin[2]
 			}
@@ -182,6 +187,9 @@ void SpatialAudio::readObjectLabelData() {
 	}
 	for (auto const& data : json_object_data) {
 		object_label_data[data["text"]] = {data["start"], data["end"]};
+	}
+	for(const auto& [key, value] : object_label_data){
+		LOG_INFO(std::format("[ReadingObjectLabelData] {}: Begin {}, End {}",key, value[0], value[1]));
 	}
 	LOG_INFO("[ReadingObjectLabelData] Finished reading Object Label data...");
 }
