@@ -50,4 +50,6 @@ Every camera frame is processed offline locally on your device,
     This is completely optional.</string>
     <string name="tutorial_accept_text">Accept</string>
     <string name="tutorial_skip_text">Skip</string>
+    <string name="debugging_settings_category">debugging_settings_category</string>
+    <string name="build_info_settings_category">build_info_settings_category</string>
 </resources>
