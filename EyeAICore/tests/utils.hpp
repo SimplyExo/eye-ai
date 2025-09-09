@@ -1,11 +1,11 @@
 #pragma once
 
 #include "EyeAICore/DepthModel.hpp"
-#include "EyeAICore/Operators.hpp"
+#include "EyeAICore/MetricDepthModel.hpp"
+#include "EyeAICore/Rel2AbsDepthModel.hpp"
+#include "EyeAICore/TensorBuffer.hpp"
 #include "EyeAICore/utils/Errors.hpp"
-#include "EyeAICore/utils/Profiling.hpp"
 #include <filesystem>
-#include <format>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
@@ -53,48 +53,21 @@ read_model_data(const std::filesystem::path& filepath);
 tl::expected<std::unique_ptr<DepthModel>, std::string>
 create_test_depth_model();
 
-template<typename... InputOps, typename... OutputOps>
-static tl::expected<std::unique_ptr<TfLiteRuntime>, std::string>
-create_test_tflite_runtime(
-	const std::filesystem::path& model_path,
-	FloatTensorFormat model_input_format,
-	FloatTensorFormat model_output_format,
-	OperatorChain<InputOps...>&& input_operators,
-	OperatorChain<OutputOps...>&& output_operators,
-	ProfilingFrame& profiling_frame
-) {
-	const auto model_last_modified =
-		std::filesystem::last_write_time(model_path);
-	const std::string model_token = std::format(
-		"{}_{}", model_path.filename().string(), model_last_modified
-	);
+tl::expected<std::unique_ptr<Rel2AbsDepthModel>, std::string>
+create_test_rel2abs_depth_model();
 
-	auto model_data_result = read_model_data(model_path);
-	if (!model_data_result)
-		return tl::unexpected(model_data_result.error());
+tl::expected<std::unique_ptr<MetricDepthModel>, std::string>
+create_test_metric_depth_model();
 
-	const auto gpu_serialization_path =
-		std::filesystem::temp_directory_path() / "EyeAICore/gpu_delegate_cache";
-	std::filesystem::create_directories(gpu_serialization_path);
-
-	auto runtime_result = TfLiteRuntime::create(
-		std::move(*model_data_result), gpu_serialization_path.string(),
-		model_token, model_input_format, model_output_format,
-		std::move(input_operators), std::move(output_operators),
-		[](const std::string msg) { std::cout << "[WARN]  " << msg << '\n'; },
-		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; },
-		profiling_frame
-	);
-	if (runtime_result)
-		return std::move(runtime_result.value());
-	return tl::unexpected(runtime_result.error().to_string());
-}
-
-tl::expected<std::vector<float>, std::string> load_image_file(
+tl::expected<FloatTensorBuffer<FloatTensorFormat::ImageRGB>, std::string>
+load_image_file(
 	const std::filesystem::path& filepath,
 	size_t target_width,
 	size_t target_height
 );
+
+FloatTensorBuffer<FloatTensorFormat::ImageRGB255>
+image_rgb_255_operator(FloatTensorBuffer<FloatTensorFormat::ImageRGB>& input);
 
 tl::expected<std::vector<std::string>, std::string>
 read_coco_labels_file(const std::filesystem::path& filepath);

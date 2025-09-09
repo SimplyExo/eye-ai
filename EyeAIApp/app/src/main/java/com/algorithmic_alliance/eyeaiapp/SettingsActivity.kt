@@ -3,11 +3,11 @@ package com.algorithmic_alliance.eyeaiapp
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 
 class SettingsActivity : AppCompatActivity() {
@@ -34,6 +34,14 @@ class SettingsActivity : AppCompatActivity() {
 
 		override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 			setPreferencesFromResource(R.xml.settings_preferences, rootKey)
+
+			val showDevelopmentSettings = BuildConfig.BUILD_VARIANT != "Production"
+
+			findPreference<PreferenceCategory>(getString(R.string.debugging_settings_category))
+				?.isVisible = showDevelopmentSettings
+
+			findPreference<PreferenceCategory>(getString(R.string.build_info_settings_category))
+				?.isVisible = showDevelopmentSettings
 
 			// Depth Model selector
 			findPreference<ListPreference>(getString(R.string.depth_model_setting))?.let { list ->

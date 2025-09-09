@@ -15,14 +15,12 @@ static void
 tflite_error_callback(void* user_data_ptr, const char* format, va_list args);
 
 tl::expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>
-TfLiteRuntime::create_impl(
+TfLiteRuntime::create(
 	std::vector<int8_t>&& model_data,
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
 	FloatTensorFormat model_input_format,
 	FloatTensorFormat model_output_format,
-	std::vector<std::unique_ptr<OperatorBase>>&& input_operators,
-	std::vector<std::unique_ptr<OperatorBase>>&& output_operators,
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback,
 	ProfilingFrame& profiling_frame
@@ -31,7 +29,6 @@ TfLiteRuntime::create_impl(
 
 	std::unique_ptr<TfLiteRuntime> runtime(new TfLiteRuntime(
 		std::move(model_data), model_input_format, model_output_format,
-		std::move(input_operators), std::move(output_operators),
 		TfLiteReporterUserData(log_warning_callback, log_error_callback),
 		profiling_frame
 	));
@@ -64,8 +61,9 @@ TfLiteRuntime::create_impl(
 			),
 			TfLiteInterpreterOptionsDelete
 		};
-	runtime->gpu_delegate =
-		create_gpu_delegate(gpu_delegate_serialization_dir, model_token, profiling_frame);
+	runtime->gpu_delegate = create_gpu_delegate(
+		gpu_delegate_serialization_dir, model_token, profiling_frame
+	);
 	TfLiteInterpreterOptionsAddDelegate(
 		interpreter_options_with_gpu_delegate.get(), runtime->gpu_delegate.get()
 	);
@@ -130,42 +128,9 @@ std::optional<TfLiteInvokeInterpreterError> TfLiteRuntime::invoke() {
 	return TfLiteInvokeInterpreterError{status};
 }
 
-std::optional<TfLiteRunInferenceError> TfLiteRuntime::run_inference(
-	std::span<float> input,
-	FloatTensorFormat input_format,
-	std::span<float> output,
-	FloatTensorFormat expected_output_format
-) {
+std::optional<TfLiteRunInferenceError>
+TfLiteRuntime::run_inference(std::span<float> input, std::span<float> output) {
 	PROFILE_FUNCTION(profiling_frame)
-
-	FloatTensorFormat current_input_format = input_format;
-
-	{
-		PROFILE_SCOPE("Preprocessing input using operators", profiling_frame)
-
-		for (auto& input_operator : input_operators) {
-			const FloatTensorFormat operator_input_format =
-				input_operator->get_input_format();
-
-			if (current_input_format != operator_input_format) {
-				return InvalidInputFormatForOperator{
-					.provided = current_input_format,
-					.expected = operator_input_format
-				};
-			}
-
-			if (const auto error = input_operator->execute(input))
-				return error;
-
-			current_input_format = input_operator->get_output_format();
-		}
-	}
-
-	if (current_input_format != model_input_format) {
-		return InvalidInputFormatForModel{
-			.provided = current_input_format, .expected = model_input_format
-		};
-	}
 
 	if (const auto load_input_error = load_input(input))
 		return load_input_error;
@@ -175,36 +140,6 @@ std::optional<TfLiteRunInferenceError> TfLiteRuntime::run_inference(
 
 	if (const auto read_output_error = read_output(output))
 		return read_output_error;
-
-	FloatTensorFormat current_output_format = model_output_format;
-
-	{
-		PROFILE_SCOPE("Postprocessing output using operators", profiling_frame)
-
-		for (auto& output_operator : output_operators) {
-			const FloatTensorFormat operator_input_format =
-				output_operator->get_input_format();
-
-			if (current_output_format != operator_input_format) {
-				return InvalidInputFormatForOperator{
-					.provided = current_input_format,
-					.expected = operator_input_format
-				};
-			}
-
-			if (const auto error = output_operator->execute(output))
-				return error;
-
-			current_output_format = output_operator->get_output_format();
-		}
-
-		if (current_output_format != expected_output_format) {
-			return UnexpectedOperatorOutputFormat{
-				.operator_output = current_output_format,
-				.expected_output = expected_output_format
-			};
-		}
-	}
 
 	return std::nullopt;
 }
@@ -240,7 +175,9 @@ TfLiteRuntime::read_output(std::span<float> output) {
 	const TfLiteTensor* output_tensor =
 		TfLiteInterpreterGetOutputTensor(interpreter.get(), 0);
 
-	return read_floats_from_output_tensor(output_tensor, output, profiling_frame);
+	return read_floats_from_output_tensor(
+		output_tensor, output, profiling_frame
+	);
 }
 
 void tflite_error_callback(

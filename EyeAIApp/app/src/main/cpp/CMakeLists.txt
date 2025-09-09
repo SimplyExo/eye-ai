@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(NativeLib)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+option(EYE_AI_CORE_FORCE_OBOE "Force OpenAL to use oboe backend (for android)" ON)
 
 # configure clang-tidy if installed
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
@@ -38,6 +39,9 @@ target_include_directories(NativeLib PRIVATE
 	"${CMAKE_SYSROOT}/usr/include/${ANDROID_TOOLCHAIN_NAME}"
 )
 
+find_package(oboe REQUIRED CONFIG)
+
+
 target_link_libraries(
 	NativeLib
 	android
@@ -45,4 +49,5 @@ target_link_libraries(
 	jnigraphics
 	EyeAICore
 	nlohmann_json::nlohmann_json
+	oboe::oboe
 )

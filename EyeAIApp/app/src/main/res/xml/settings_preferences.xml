@@ -1,5 +1,5 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
-    <PreferenceCategory app:title="General">
+    <PreferenceCategory app:key="@string/debugging_settings_category" app:title="Debugging" app:isPreferenceVisible="false">
         <CheckBoxPreference
             app:key="@string/show_profiling_info_setting"
             app:title="Show Profiling Information" />
@@ -22,6 +22,17 @@
             app:defaultValue="true"
             app:key="@string/enable_speech_recognition_setting"
             app:title="Enabled" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Audio Playback">
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="@string/depth_playback_setting"
+            app:title="Enable Depth Playback" />
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="@string/object_playback_setting"
+            app:title="Enabled Object Playback" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="LLM">
@@ -69,7 +80,7 @@
     </PreferenceCategory>
 
     // this will be populated by SettingsActivity.kt
-    <PreferenceCategory app:title="Build Info">
+    <PreferenceCategory app:key="@string/build_info_settings_category" app:title="Build Info" app:isPreferenceVisible="false">
         <Preference
             app:key="version_info"
             app:title="App Version" />

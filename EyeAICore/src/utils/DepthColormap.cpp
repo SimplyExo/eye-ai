@@ -3,9 +3,10 @@
 #include "EyeAICore/utils/Profiling.hpp"
 #include <algorithm>
 
-static int inferno_depth_colormap(float relative_depth);
+/// @param percentage between 0.f and 1.f
+static int inferno_colormap(float percentage);
 
-std::optional<DepthColorArraySizeMismatch> depth_colormap(
+std::optional<DepthColorArraySizeMismatch> metric_depth_colormap(
 	std::span<const float> depth_values,
 	std::span<int> colormapped_pixels
 ) {
@@ -19,7 +20,10 @@ std::optional<DepthColorArraySizeMismatch> depth_colormap(
 	}
 
 	for (size_t i = 0; i < depth_values.size(); i++) {
-		colormapped_pixels[i] = inferno_depth_colormap(depth_values[i]);
+		// TODO: maybe use logarithmic scale
+		constexpr static float MAX_METRIC_DISTANCE = 6.f;
+		colormapped_pixels[i] =
+			inferno_colormap(depth_values[i] / MAX_METRIC_DISTANCE);
 	}
 
 	return std::nullopt;
@@ -168,9 +172,8 @@ constexpr std::array<int, 256> INFERNO_COLORS = {
 	color_rgb(250, 253, 161), color_rgb(252, 255, 164)
 };
 
-int inferno_depth_colormap(float relative_depth) {
-	relative_depth = std::clamp(relative_depth, 0.0f, 1.0f);
-	auto index =
-		static_cast<size_t>(relative_depth * (INFERNO_COLORS.size() - 1));
+int inferno_colormap(float percentage) {
+	percentage = std::clamp(percentage, 0.0f, 1.0f);
+	auto index = static_cast<size_t>(percentage * (INFERNO_COLORS.size() - 1));
 	return INFERNO_COLORS.at(index);
 }

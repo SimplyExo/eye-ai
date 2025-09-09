@@ -2,8 +2,6 @@
 #include "utils.hpp"
 #include <filesystem>
 #include <iostream>
-#include <ostream>
-#include <span>
 #include <string>
 
 constexpr const char* YOLO_MODEL_TOKEN = "ijustmadethistokenup_yolo";
@@ -48,21 +46,17 @@ TEST(ObjectDetection, CorrectOutput) {
 
 	std::cout << "Runtime erstellt!\n";
 
-	std::vector<float> object_recognition_output(OUTPUT_BUFFER_SIZE);
 	auto input_image_result =
 		load_image_file("../tests/cat.jpg", INPUT_WIDTH, INPUT_HEIGHT);
 	EXPECT_RESULT_HAS_VALUE(input_image_result);
 	auto& input_image = *input_image_result;
-	for (float& value : input_image) {
-		value = std::clamp(value * 255.f, 0.f, 255.f);
-	}
+	auto input_image_tensor = image_rgb_255_operator(input_image);
 
-	const auto run_result =
-		yolo_instance.run(input_image, object_recognition_output);
+	const auto run_result = yolo_instance.run(input_image_tensor);
 
 	EXPECT_RESULT_HAS_VALUE(run_result);
 
-	const auto boxes = yolo_instance.best_box(object_recognition_output);
+	const auto& boxes = *run_result;
 
 	EXPECT_EQ(boxes.size(), 1);
 	const auto contains_label = [&boxes](std::string_view label) {

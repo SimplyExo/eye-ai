@@ -13,11 +13,8 @@ DepthModel::create(
 ) {
 	auto runtime_result = TfLiteRuntime::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
-		FloatTensorFormat::MiDaSImageRGBFloat,
-		FloatTensorFormat::RawRelativeDepth,
-		OperatorChain{MiDaSImageOperator{}},
-		OperatorChain{RelativeDepthPostOperator{}}, log_warning_callback,
-		log_error_callback, get_depth_profiling_frame()
+		FloatTensorFormat::MiDaSImageRGB, FloatTensorFormat::RawRelativeDepth,
+		log_warning_callback, log_error_callback, get_depth_profiling_frame()
 	);
 	if (!runtime_result.has_value())
 		return tl::unexpected(runtime_result.error());
@@ -25,12 +22,32 @@ DepthModel::create(
 	return std::make_unique<DepthModel>(std::move(runtime_result.value()));
 }
 
-std::optional<TfLiteRunInferenceError>
-DepthModel::run(std::span<float> input, std::span<float> output) {
-	return runtime->run_inference(
-		input, FloatTensorFormat::ImageRGB255Float, output,
-		FloatTensorFormat::RelativeDepth
+DepthModel::RunResult
+DepthModel::run(FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& input) {
+	auto preprocessed_input = midas_image_operator(input);
+
+	auto run_result = runtime->run_inference<
+		FloatTensorFormat::MiDaSImageRGB, FloatTensorFormat::RawRelativeDepth>(
+		preprocessed_input
 	);
+	if (!run_result) {
+		return tl::unexpected(run_result.error());
+	}
+
+	auto postprocessed_output = raw_relative_depth_post_operator(*run_result);
+	return postprocessed_output;
+}
+
+DepthModel::RunRawResult
+DepthModel::run_raw(FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& input) {
+	auto preprocessed_input = midas_image_operator(input);
+
+	auto run_raw_result = runtime->run_inference<
+		FloatTensorFormat::MiDaSImageRGB, FloatTensorFormat::RawRelativeDepth>(
+		preprocessed_input
+	);
+
+	return run_raw_result;
 }
 
 std::span<const int> DepthModel::get_input_shape() const {

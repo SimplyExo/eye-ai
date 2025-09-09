@@ -1,5 +1,4 @@
 include(FetchContent)
-set(FETCHCONTENT_QUIET FALSE)
 
 # tensorflow-lite
 if(NOT DEFINED EYE_AI_CORE_USE_PREBUILT_TFLITE)
@@ -21,6 +20,7 @@ if(EYE_AI_CORE_USE_PREBUILT_TFLITE)
 else()
 	message(STATUS "Downloading tensorflow...")
 	set(ABSL_PROPAGATE_CXX_STD ON)
+	set(TFLITE_ENABLE_RUY ON)
 	set(TFLITE_ENABLE_GPU ON)
 	set(TFLITE_ENABLE_XNNPACK ON)
 	set(TFLITE_C_BUILD_SHARED_LIBS OFF)
@@ -47,6 +47,26 @@ FetchContent_Declare(
 	GIT_TAG v1.1.0
 )
 FetchContent_MakeAvailable(tl-expected)
+
+# libnpy
+message(STATUS "Downloading libnpy...")
+FetchContent_Declare(
+	libnpy
+	GIT_REPOSITORY https://github.com/llohse/libnpy.git
+	GIT_TAG master
+)
+FetchContent_MakeAvailable(libnpy)
+set(LIBNPY_INCLUDE_DIR "${libnpy_SOURCE_DIR}/include")
+
+# stb (stb_image, stb_image_resize2)
+message(STATUS "Downloading stb (stb_image, stb_image_resize2)...")
+FetchContent_Declare(
+	stb
+	GIT_REPOSITORY https://github.com/nothings/stb.git
+	GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+set(STB_INCLUDE_DIR ${stb_SOURCE_DIR})
 
 # concurrentqueue
 message(STATUS "Downloading concurrentqueue...")
@@ -118,8 +138,44 @@ if (EYE_AI_CORE_ENABLE_TRACY_PROFILER)
 	FetchContent_MakeAvailable(tracy)
 endif ()
 
+
+FetchContent_Declare(
+  openal-soft
+  GIT_REPOSITORY https://github.com/kcat/openal-soft.git
+  GIT_TAG master 
+)
+
+FetchContent_MakeAvailable(openal-soft)
+
+FetchContent_Declare(
+  libsndfile
+  GIT_REPOSITORY https://github.com/libsndfile/libsndfile.git
+  GIT_TAG master 
+)
+
+FetchContent_MakeAvailable(libsndfile)
+
+if (NOT TARGET nlohmann_json)
+    message(STATUS "Fetching nlohmann_json via FetchContent...")
+    FetchContent_Declare(
+        nlohmann_json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG v3.11.2
+    )
+    FetchContent_MakeAvailable(nlohmann_json)
+else()
+    message(STATUS "nlohmann_json already provided (Prefab/Gradle)")
+endif()
+
+if(EYE_AI_CORE_FORCE_OBOE)
+	find_package(oboe REQUIRED CONFIG)
+	target_compile_definitions(OpenAL PRIVATE "ALSOFT_DRIVERS=oboe")
+endif()
+
 set(THIRD_PARTY_INCLUDE_DIRS
 	${TFLITE_INCLUDE_DIRS}
+	${LIBNPY_INCLUDE_DIR}
+	${STB_INCLUDE_DIR}
 	PARENT_SCOPE
 )
 set(THIRD_PARTY_LIBS
@@ -128,5 +184,9 @@ set(THIRD_PARTY_LIBS
 	concurrentqueue
 	Eigen3::Eigen
 	bytetrack
+	OpenAL
+	SndFile::sndfile
+	nlohmann_json::nlohmann_json
 	PARENT_SCOPE
 )
+
