@@ -10,7 +10,7 @@ object BuildInfoHelper {
 			val timestamp: Long = BuildConfig.BUILD_TIME.toLong()
 			val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 			dateFormat.format(Date(timestamp))
-		} catch (e: Exception) {
+		} catch (_: Exception) {
 			"Unknown build time"
 		}
 	}

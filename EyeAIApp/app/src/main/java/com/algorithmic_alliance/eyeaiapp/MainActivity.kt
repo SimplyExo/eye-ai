@@ -26,7 +26,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
-import com.algorithmic_alliance.eyeaiapp.llm.StateMachine
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.media.MjpegBitmapReader
@@ -372,7 +372,7 @@ class MainActivity : AppCompatActivity() {
 		} else if (eyeAIApp().settings.inputSource == getString(R.string.input_is_eyeaivision)) {
 			if (!eyeAIApp().settings.eyeAIVisionIP!!.isEmpty()) {
 
-				bitmapFlow = MutableSharedFlow<Bitmap>(replay = 1)
+				bitmapFlow = MutableSharedFlow(replay = 1)
 
 				mjpegBitmapReader = MjpegBitmapReader(url = eyeAIApp().settings.eyeAIVisionIP.toString(),
 					onFrame = {
@@ -539,7 +539,8 @@ class MainActivity : AppCompatActivity() {
 			eyeAIApp(),
 			textToSpeechInstance,
 			lastLlmJsonResponse,
-			llmResponseText
+			llmResponseText,
+			cameraManager.cameraFrameAnalyzer ?: mediaFrameAnalyzer
 		) {
 
 			CoroutineScope(Dispatchers.Main).launch {

@@ -254,14 +254,14 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 							}
 						}
 
-						// Stream beendet - explizites Completion-Signal
+						
 						Log.d(EyeAIApp.APP_LOG_TAG, "Stream finished naturally - calling completion")
 						safeCallComplete()
 					}
 				} catch (e: Exception) {
 					Log.w(EyeAIApp.APP_LOG_TAG, "Failed to parse buffered final event on EOF", e)
 					if (!hasCalledComplete) {
-						safeCallComplete() // Trotz Parsing-Fehler als beendet markieren
+						safeCallComplete()
 					}
 				}
 
@@ -286,7 +286,7 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 			val trimmed = rawJsonCandidate.trim()
 			val root: Any = try {
 				if (trimmed.startsWith("[")) JSONArray(trimmed) else JSONObject(trimmed)
-			} catch (e: JSONException) {
+			} catch (_: JSONException) {
 				val firstObj = rawJsonCandidate.indexOf('{')
 				val lastObj = rawJsonCandidate.lastIndexOf('}')
 				if (firstObj != -1 && lastObj != -1 && lastObj > firstObj) {
