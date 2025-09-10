@@ -17,7 +17,7 @@ tflite_error_callback(void* user_data_ptr, const char* format, va_list args);
 tl::expected<std::unique_ptr<TfLiteRuntime>, TfLiteCreateRuntimeError>
 TfLiteRuntime::create(
 	std::vector<int8_t>&& model_data,
-	std::string_view gpu_delegate_serialization_dir,
+	std::string_view delegate_serialization_dir,
 	std::string_view model_token,
 	FloatTensorFormat model_input_format,
 	FloatTensorFormat model_output_format,
@@ -61,11 +61,18 @@ TfLiteRuntime::create(
 			),
 			TfLiteInterpreterOptionsDelete
 		};
-	runtime->gpu_delegate = create_gpu_delegate(
-		gpu_delegate_serialization_dir, model_token, profiling_frame
-	);
+	runtime->hardware_delegate = create_qnn_npu_delegate(delegate_serialization_dir, model_token);
+	if (runtime->hardware_delegate == nullptr) {
+		log_warning_callback("No QNN NPU delegate was created!");
+		runtime->hardware_delegate = create_gpu_delegate(
+			delegate_serialization_dir, model_token, profiling_frame
+		);
+	}
+	else {
+		log_warning_callback("QNN NPU delegate was created!");
+	}
 	TfLiteInterpreterOptionsAddDelegate(
-		interpreter_options_with_gpu_delegate.get(), runtime->gpu_delegate.get()
+		interpreter_options_with_gpu_delegate.get(), runtime->hardware_delegate.get()
 	);
 
 	// first try to create interpreter with gpu delegate
@@ -93,7 +100,7 @@ TfLiteRuntime::create(
 		}
 		runtime->interpreter_options =
 			std::move(interpreter_options_without_gpu_delegate);
-		runtime->gpu_delegate.reset();
+		runtime->hardware_delegate.reset();
 	} else {
 		runtime->interpreter_options =
 			std::move(interpreter_options_with_gpu_delegate);
@@ -114,7 +121,7 @@ TfLiteRuntime::~TfLiteRuntime() {
 	PROFILE_SCOPE("Shutdown TfLiteRuntime", profiling_frame)
 
 	interpreter.reset();
-	gpu_delegate.reset();
+	hardware_delegate.reset();
 	interpreter_options.reset();
 	model.reset();
 }

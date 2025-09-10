@@ -12,10 +12,13 @@ if(EYE_AI_CORE_USE_PREBUILT_TFLITE)
 		"${CMAKE_CURRENT_SOURCE_DIR}/litert-1.2.0/include"
 		"${CMAKE_CURRENT_SOURCE_DIR}/litert-1.2.0/include/external/org_tensorflow"
 		"${CMAKE_CURRENT_SOURCE_DIR}/litert-gpu-1.2.0/include"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/include"
 	)
 	set(TFLITE_LIBS
 		"${CMAKE_CURRENT_SOURCE_DIR}/litert-1.2.0/lib/${EYE_AI_CORE_ABI}/libtensorflowlite_jni.so"
 		"${CMAKE_CURRENT_SOURCE_DIR}/litert-gpu-1.2.0/lib/${EYE_AI_CORE_ABI}/libtensorflowlite_gpu_jni.so"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnTFLiteDelegate.so"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libqnn_delegate_jni.so"
 	)
 else()
 	message(STATUS "Downloading tensorflow...")
@@ -132,7 +135,7 @@ endif ()
 FetchContent_Declare(
   openal-soft
   GIT_REPOSITORY https://github.com/kcat/openal-soft.git
-  GIT_TAG master 
+  GIT_TAG master
 )
 
 FetchContent_MakeAvailable(openal-soft)
@@ -140,7 +143,7 @@ FetchContent_MakeAvailable(openal-soft)
 FetchContent_Declare(
   libsndfile
   GIT_REPOSITORY https://github.com/libsndfile/libsndfile.git
-  GIT_TAG master 
+  GIT_TAG master
 )
 
 FetchContent_MakeAvailable(libsndfile)
