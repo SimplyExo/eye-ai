@@ -5,6 +5,7 @@
 #include "EyeAICore/audio/DepthAudioSourceData.hpp"
 #include "EyeAICore/audio/ObjectAudioSourceData.hpp"
 #include "EyeAICore/audio/SpatialAudioSettings.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include <algorithm>
 #include <cmath>
 #include <format>
@@ -32,19 +33,23 @@ void SpatialAudio::getAIData(
 	std::span<float, 256 * 256> depth_estimation_data,
 	std::vector<YoloModel::BoundingBox> object_detection_data
 ) {
+	PROFILE_AUDIO_FUNCTION()
+
 	std::ranges::copy(depth_estimation_data, this->depthEstimationData.begin());
 	this->objectDetectionData.clear();
 	this->objectDetectionData.resize(object_detection_data.size());
 	std::ranges::copy(object_detection_data, this->objectDetectionData.begin());
 
 	processingFinished = false;
-	processDepthEstimationData();
-	processObjectDetectionData();
+	if(!audio_settings.depth_audio_paused)
+		processDepthEstimationData();
+	if(!audio_settings.object_audio_paused)
+		processObjectDetectionData();
 	processingFinished = true;
 }
 
 void SpatialAudio::processDepthEstimationData() {
-
+	PROFILE_AUDIO_FUNCTION()
 	/*
 	Processes the depth-estimation data:
 	- dividing data into columns
@@ -55,11 +60,6 @@ void SpatialAudio::processDepthEstimationData() {
 	Note: depending on the value of NUMBER_OF_SOURCES,
 	not always all columns are used
 	*/
-
-	if (audio_settings.depth_audio_paused) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		return;
-	}
 
 	std::vector<DepthAudioSourceData> new_audio_source_data;
 	int column_length =
@@ -112,17 +112,13 @@ void SpatialAudio::processDepthEstimationData() {
 }
 
 void SpatialAudio::processObjectDetectionData() {
+	PROFILE_AUDIO_FUNCTION()
 	/*
 	Processing object detection data:
 	- going through all recognized objects
 	- retrieving objects data
 	- saving the data in the vector
 	*/
-
-	if (audio_settings.object_audio_paused) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		return;
-	}
 
 	LOG_INFO("[ProcessObjectDetectionData] Started processing...");
 	std::vector<ObjectAudioSourceData> new_audio_source_data;

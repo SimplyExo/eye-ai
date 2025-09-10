@@ -3,6 +3,7 @@
 #include "EyeAICore/audio/DepthAudioSourceData.hpp"
 #include "EyeAICore/audio/ObjectAudioSourceData.hpp"
 #include "EyeAICore/audio/SpatialAudioSettings.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include "sndfile.h"
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -199,6 +200,7 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 		}
 
 		{
+			PROFILE_AUDIO_FUNCTION()
 			LOG_INFO("[ChangeObjectAudioData] Player got lock...");
 			std::lock_guard<std::mutex> lock(object_mutex);
 			if (object_audio_sources_data.size() == 0) {
@@ -415,12 +417,12 @@ void AudioMain::changeDepthAudioData(
 void AudioMain::changeObjectAudioData(
 	std::vector<ObjectAudioSourceData> new_audio_source_data
 ) {
+	PROFILE_AUDIO_FUNCTION()
 	std::lock_guard<std::mutex> lock(object_mutex);
-	LOG_INFO("[ChangeObjectAudioData]--------------------------");
 	LOG_INFO("[ChangeObjectAudioData] Got lock...");
 
 	for (auto new_object : new_audio_source_data) {
-
+		/*
 		LOG_INFO(
 			std::format(
 				"[ChangeObjectAudioData] Queue size: {}",
@@ -449,6 +451,8 @@ void AudioMain::changeObjectAudioData(
 		LOG_INFO(
 			std::format("[ChangeObjectAudioData] Seen objects: {}", objects_str)
 		);
+		*/
+		
 		if (!seen_objects.contains(new_object.name) &&
 			object_audio_sources_data.size() < 20) {
 			LOG_INFO(
@@ -469,7 +473,6 @@ void AudioMain::changeObjectAudioData(
 		}
 	}
 	LOG_INFO("[ChangeObjectAudioData] Released lock...");
-	LOG_INFO("[ChangeObjectAudioData]--------------------------");
 }
 
 AudioMain::~AudioMain() {
