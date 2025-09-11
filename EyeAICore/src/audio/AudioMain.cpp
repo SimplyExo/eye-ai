@@ -206,8 +206,10 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 			LOG_INFO("[ChangeObjectAudioData] Player got lock...");
 			std::lock_guard<std::mutex> lock(object_mutex);
 			if (object_audio_sources_data.size() == 0) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(5));
 				continue;
 			}
+
 
 			object_data = object_audio_sources_data.front();
 			object_audio_sources_data.pop();
