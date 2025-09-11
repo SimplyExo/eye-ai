@@ -2,12 +2,14 @@
 
 #include <iostream>
 #include <utility>
+
 /*
 Struct of all the data a source needs to play a specific object
 at a specific location
 */
 
 struct ObjectAudioSourceData {
+	int object_id;
 	std::string name;
 	// time where the sound in the .wav file begins and where it ends (in ms)
 	int sound_begin; 
@@ -17,6 +19,7 @@ struct ObjectAudioSourceData {
 	float x3_position;
 
 	ObjectAudioSourceData(
+		int object_id = -1,
 		std::string name = "",
 		int sound_begin = 0,
 		int sound_end = 0,
@@ -24,6 +27,6 @@ struct ObjectAudioSourceData {
 		float x2 = 0.0f,
 		float x3 = 0.0f
 	)
-		: name(std::move(name)),sound_begin(sound_begin), sound_end(sound_end), x1_position(x1),
+		: object_id(object_id), name(std::move(name)),sound_begin(sound_begin), sound_end(sound_end), x1_position(x1),
 		  x2_position(x2), x3_position(x3) {}
 };

@@ -59,7 +59,7 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 		LOG_INFO("[AudioMain] Could not open audio device.");
 		return;
 	}
-	/*
+	
 	// Checking for HRTF support
 	if (alcIsExtensionPresent(device, "ALC_SOFT_HRTF") == ALC_TRUE) {
 		LOG_INFO(
@@ -77,7 +77,7 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 	} else {
 		LOG_INFO("[AudioMain] HRTF not present");
 	}
-	*/
+	
 
 	context = alcCreateContext(device, nullptr);
 	if (!alcMakeContextCurrent(context)) {
@@ -206,33 +206,8 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 			LOG_INFO("[ChangeObjectAudioData] Player got lock...");
 			std::lock_guard<std::mutex> lock(object_mutex);
 			if (object_audio_sources_data.size() == 0) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(5));
 				continue;
 			}
-
-			std::queue<ObjectAudioSourceData> temp_queue =
-				object_audio_sources_data;
-			std::ostringstream oss;
-
-			oss << "[ChangeObjectAudioData] Player Audio Queue (" << temp_queue.size()
-				<< " items): ";
-			while (!temp_queue.empty()) {
-				oss << temp_queue.front().name << " ";
-				temp_queue.pop();
-			}
-
-			LOG_INFO(oss.str());
-
-			std::string objects_str = "";
-			for (const auto& obj_name : seen_objects) {
-				objects_str += obj_name + " ";
-			}
-
-			LOG_INFO(
-				std::format(
-					"[ChangeObjectAudioData] Player Seen objects: {}", objects_str
-				)
-			);
 
 			object_data = object_audio_sources_data.front();
 			object_audio_sources_data.pop();
@@ -291,7 +266,7 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 		{
 			LOG_INFO("[ChangeObjectAudioData] Play got lock for releasing seen object...");
 			std::lock_guard<std::mutex> lock(object_mutex);
-			seen_objects.erase(object_data.name);
+			seen_objects.erase(object_data.object_id);
 			LOG_INFO("[ChangeObjectAudioData] Play released lock for releasing seen object...");
 		}
 	}
@@ -425,56 +400,13 @@ void AudioMain::changeObjectAudioData(
 	std::lock_guard<std::mutex> lock(object_mutex);
 	LOG_INFO("[ChangeObjectAudioData] Got lock...");
 
-	for (auto new_object : new_audio_source_data) {
-		/*
-		LOG_INFO(
-			std::format(
-				"[ChangeObjectAudioData] Queue size: {}",
-				object_audio_sources_data.size()
-			)
-		);
-
-		std::queue<ObjectAudioSourceData> temp_queue =
-			object_audio_sources_data;
-		std::ostringstream oss;
-
-		oss << "[ChangeObjectAudioData] Audio Queue (" << temp_queue.size()
-			<< " items): ";
-		while (!temp_queue.empty()) {
-			oss << temp_queue.front().name << " ";
-			temp_queue.pop();
-		}
-
-		LOG_INFO(oss.str());
-
-		std::string objects_str = "Seen objects: ";
-		for (const auto& obj_name : seen_objects) {
-			objects_str += obj_name + " ";
-		}
-
-		LOG_INFO(
-			std::format("[ChangeObjectAudioData] Seen objects: {}", objects_str)
-		);
-		*/
-		
-		if (!seen_objects.contains(new_object.name) &&
+	for (const auto& new_object : new_audio_source_data) {
+		auto [it, inserted] = seen_objects.emplace(new_object.object_id);
+		if (inserted &&
 			object_audio_sources_data.size() < 20) {
-			LOG_INFO(
-				std::format(
-					"[ChangeObjectAudioData] New object added: {}",
-					new_object.name
-				)
-			);
+			
 			object_audio_sources_data.push(new_object);
-			seen_objects.insert(new_object.name);
-		} else {
-			LOG_INFO(
-				std::format(
-					"[ChangeObjectAudioData] Did not add object: {}",
-					new_object.name
-				)
-			);
-		}
+		} 
 	}
 	LOG_INFO("[ChangeObjectAudioData] Released lock...");
 }

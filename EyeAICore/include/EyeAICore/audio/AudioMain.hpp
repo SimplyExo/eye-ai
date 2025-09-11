@@ -51,7 +51,7 @@ class AudioMain {
 
 	// for playing object detection data
 	std::queue<ObjectAudioSourceData> object_audio_sources_data;
-	std::unordered_set<std::string> seen_objects;
+	std::unordered_set<int> seen_objects;
 	std::vector<short> audio_labels_file_buffer;
 	std::mutex object_mutex;
 	int AUDIO_FILE_SAMPLE_RATE;
