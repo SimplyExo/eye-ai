@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EyeAICore/YoloModel.hpp"
+#include "EyeAICore/ObjectTracker.hpp"
 #include "EyeAICore/audio/AudioMain.hpp"
 #include "EyeAICore/audio/SpatialAudioSettings.hpp"
 #include <AL/al.h>
@@ -27,7 +28,7 @@ class SpatialAudio {
 
 	void getAIData(
 		std::span<float, 256 * 256> depth_estimation_data,
-		std::vector<YoloModel::BoundingBox> object_detection_data
+		std::vector<ObjectTracker::TrackedBoundingBox> object_detection_data
 	);
 	void processDepthEstimationData();
 	void processObjectDetectionData();
@@ -42,7 +43,7 @@ class SpatialAudio {
   private:
 	// the ai data
 	std::array<float, 256 * 256> depthEstimationData = {0};
-	std::vector<YoloModel::BoundingBox> objectDetectionData;
+	std::vector<ObjectTracker::TrackedBoundingBox> objectDetectionData;
 
 	bool processingFinished = true;
 	AudioMain audio_main;

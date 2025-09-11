@@ -88,10 +88,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(eigen)
 
 # bytetrack
-message(STATUS "Downloading bytetrack...")
+message(STATUS "Downloading bytetrack (forked)...")
 FetchContent_Declare(
 	bytetrack
-	GIT_REPOSITORY https://github.com/Vertical-Beach/ByteTrack-cpp
+	GIT_REPOSITORY https://github.com/Peanutt42/ByteTrack-cpp.git
 	GIT_TAG main
 	GIT_SHALLOW ON
 )
@@ -142,7 +142,7 @@ endif ()
 FetchContent_Declare(
   openal-soft
   GIT_REPOSITORY https://github.com/kcat/openal-soft.git
-  GIT_TAG master 
+  GIT_TAG master
 )
 
 FetchContent_MakeAvailable(openal-soft)
@@ -150,7 +150,7 @@ FetchContent_MakeAvailable(openal-soft)
 FetchContent_Declare(
   libsndfile
   GIT_REPOSITORY https://github.com/libsndfile/libsndfile.git
-  GIT_TAG master 
+  GIT_TAG master
 )
 
 FetchContent_MakeAvailable(libsndfile)
