@@ -87,6 +87,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
+# bytetrack
+message(STATUS "Downloading bytetrack (forked)...")
+FetchContent_Declare(
+	bytetrack
+	GIT_REPOSITORY https://github.com/Peanutt42/ByteTrack-cpp.git
+	GIT_TAG main
+	GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(bytetrack)
+
 if (EYE_AI_CORE_ENABLE_TESTS)
 	# libnpy
 	message(STATUS "Downloading libnpy...")
@@ -132,7 +142,7 @@ endif ()
 FetchContent_Declare(
   openal-soft
   GIT_REPOSITORY https://github.com/kcat/openal-soft.git
-  GIT_TAG master 
+  GIT_TAG master
 )
 
 FetchContent_MakeAvailable(openal-soft)
@@ -140,7 +150,7 @@ FetchContent_MakeAvailable(openal-soft)
 FetchContent_Declare(
   libsndfile
   GIT_REPOSITORY https://github.com/libsndfile/libsndfile.git
-  GIT_TAG master 
+  GIT_TAG master
 )
 
 FetchContent_MakeAvailable(libsndfile)
@@ -172,6 +182,8 @@ set(THIRD_PARTY_LIBS
 	${TFLITE_LIBS}
 	tl::expected
 	concurrentqueue
+	Eigen3::Eigen
+	bytetrack
 	OpenAL
 	SndFile::sndfile
 	nlohmann_json::nlohmann_json

@@ -89,7 +89,7 @@ class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, att
 			val bottom = it.y2 * cameraPreviewImageSize.height + yOffset
 
 			canvas.drawRect(left, top, right, bottom, boxPaint)
-			val drawableText = it.clsName
+			val drawableText = "${it.clsName} - ${it.trackingId}"
 
 			textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
 			val textWidth = bounds.width()
