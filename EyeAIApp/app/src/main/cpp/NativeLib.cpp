@@ -547,7 +547,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendAIData(
 	jfloatArray depth_data_array
 ) {
 	LOG_INFO(
-		"[SpatialAudio] Sending ai data..."
+		"[SpatialAudio] [SendAIData] Sending ai data..."
 	);
 	jfloat* rawArray = env->GetFloatArrayElements(depth_data_array, nullptr);
 
@@ -556,11 +556,15 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendAIData(
 	assert(depth_estimation_data.size() == (256 * 256));
 	std::vector<YoloModel::BoundingBox> object_detection_data =
 		*last_detected_objects.lock();
+
+	for(auto object: object_detection_data){
+		LOG_INFO("[SpatialAudio] [SendAIData] Object {}", object.cls_name);
+	}
 	get_or_create_spatial_audio().getAIData(
 		static_cast<std::span<float, 256 * 256>>(depth_estimation_data),
 		object_detection_data
 	);
-	LOG_INFO("[SpatialAudio] Send ai Data");
+	LOG_INFO("[SpatialAudio] [SendAIData] Send ai Data");
 
 	// Speicher freigeben
 	env->ReleaseFloatArrayElements(depth_data_array, rawArray, JNI_ABORT);

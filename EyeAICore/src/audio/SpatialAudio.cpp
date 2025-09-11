@@ -120,6 +120,7 @@ int column_length = SpatialAudioSettings::picture_y_resolution;	Processing objec
 	LOG_INFO("[ProcessObjectDetectionData] Started processing...");
 	std::vector<ObjectAudioSourceData> new_audio_source_data;
 	for (auto object : objectDetectionData) {
+		std::string object_name = trim(toLower(object.cls_name));
 		/*
 		object coordinates are represented by values between 0 and 1
 		so they need to be converted
@@ -128,12 +129,13 @@ int column_length = SpatialAudioSettings::picture_y_resolution;	Processing objec
 			(int)(object.cx * (audio_settings.picture_x_resolution - 1));
 		int y_coord =
 			(int)(object.cy * (audio_settings.picture_y_resolution - 1));
-		if(!object_label_data.contains(object.cls_name)){
-			LOG_ERROR(std::format("Could not find object {} in the object_label_data. Skipping to next one ...", object.cls_name));
+	
+		if(!object_label_data.contains(object_name)){
+			LOG_ERROR(std::format("[ProcessObjectDetectionData] Could not find object {} in the object_label_data. Skipping to next one ...",object_name));
 			continue;
 		}
-		int label_sound_start = object_label_data[object.cls_name][0];
-		int label_sound_end = object_label_data[object.cls_name][1];
+		int label_sound_start = object_label_data[object_name][0];
+		int label_sound_end = object_label_data[object_name][1];
 
 		// retrieving distance
 		float distance = depthEstimationData.at(
@@ -147,7 +149,7 @@ int column_length = SpatialAudioSettings::picture_y_resolution;	Processing objec
 			);
 		new_audio_source_data.push_back(
 			ObjectAudioSourceData{
-				object.cls_name,
+				object_name,
 				label_sound_start, label_sound_end, sound_origin[0],
 				sound_origin[1], sound_origin[2]
 			}
@@ -179,12 +181,33 @@ void SpatialAudio::readObjectLabelData() {
 		);
 	}
 	for (auto const& data : json_object_data) {
-		object_label_data[data["text"]] = {data["start"], data["end"]};
+		object_label_data[toLower(data["text"])] = {data["start"], data["end"]};
 	}
 	for(const auto& [key, value] : object_label_data){
 		LOG_INFO(std::format("[ReadingObjectLabelData] {}: Begin {}, End {}",key, value[0], value[1]));
 	}
 	LOG_INFO("[ReadingObjectLabelData] Finished reading Object Label data...");
+}
+
+std::string SpatialAudio::toLower(const std::string& s) {
+    std::string result = s;
+    std::transform(result.begin(), result.end(), result.begin(),
+                   [](unsigned char c){ return std::tolower(c); });
+    return result;
+}
+
+std::string SpatialAudio::trim(const std::string& str) {
+    size_t start = 0;
+    while (start < str.size() && std::isspace(static_cast<unsigned char>(str[start]))) {
+        ++start;
+    }
+
+    size_t end = str.size();
+    while (end > start && std::isspace(static_cast<unsigned char>(str[end - 1]))) {
+        --end;
+    }
+
+    return str.substr(start, end - start);
 }
 
 bool SpatialAudio::getProcessingStatus() { return processingFinished; }

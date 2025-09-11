@@ -53,4 +53,6 @@ class SpatialAudio {
 	// handling the data of the objects
 	void readObjectLabelData();
 	std::unordered_map<std::string, std::array<int, 2>> object_label_data;
+	std::string toLower(const std::string& s);
+	std::string trim(const std::string& str);
 };
