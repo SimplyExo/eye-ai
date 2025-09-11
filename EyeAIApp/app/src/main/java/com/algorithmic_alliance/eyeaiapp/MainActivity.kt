@@ -1,7 +1,10 @@
 package com.algorithmic_alliance.eyeaiapp
 
+import android.bluetooth.BluetoothAdapter
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Bitmap
+import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -25,6 +28,7 @@ import androidx.lifecycle.lifecycleScope
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
+import com.algorithmic_alliance.eyeaiapp.audio.AudioDeviceManager
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.llm.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
@@ -94,6 +98,8 @@ class MainActivity : AppCompatActivity() {
 
 	private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
 	private var mediaPlayer: MediaPlayer? = null
+
+	private lateinit var audioDeviceManager : AudioDeviceManager
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -214,6 +220,9 @@ class MainActivity : AppCompatActivity() {
 			SpatialAudio.setup(this@MainActivity)
 			SpatialAudio.start()
 		}
+
+		audioDeviceManager = AudioDeviceManager(this@MainActivity)
+		audioDeviceManager.register()
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -274,6 +283,7 @@ class MainActivity : AppCompatActivity() {
 		mediaFrameAnalyzer?.shutdown()
 		mediaPlayer?.shutdown()
 		SpatialAudio.destroy()
+		unregisterReceiver(audioDeviceManager)
 
 		eyeAIApp().voskModel.closeService()
 	}

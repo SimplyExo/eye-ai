@@ -581,6 +581,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroySpatialAudio(
 	jobject /*this*/
 ) {
 	auto spatial_audio_scope = spatial_audio.lock();
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 	if (*spatial_audio_scope != nullptr) {
 		LOG_INFO("[SpatialAudio] Destroying SpatialAudio instance...");
 		spatial_audio_scope->reset(nullptr);
