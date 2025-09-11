@@ -411,6 +411,7 @@ void AudioMain::loadAudioLabelsFile() {
 void AudioMain::changeDepthAudioData(
 	std::vector<DepthAudioSourceData> new_audio_source_data
 ) {
+	PROFILE_AUDIO_FUNCTION()	
 	this->depth_audio_sources_data = new_audio_source_data;
 }
 

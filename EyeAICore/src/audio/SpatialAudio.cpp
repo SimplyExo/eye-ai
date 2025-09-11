@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <format>
+#include <limits>
 #include <nlohmann/json.hpp>
 #include <span>
 #include <thread>
@@ -61,30 +62,27 @@ void SpatialAudio::processDepthEstimationData() {
 	not always all columns are used
 	*/
 
-	std::vector<DepthAudioSourceData> new_audio_source_data;
-	int column_length =
-		depthEstimationData.size() / audio_settings.picture_x_resolution;
+	
 	int step_size =
-		audio_settings.picture_x_resolution /
+		SpatialAudioSettings::picture_x_resolution /
 		audio_settings.NUMBER_OF_SOURCES; // NUMBER_OF_SOURCES = 2^x!
+	CalculateSoundOrigin calculateSoundOrigin;
+	std::vector<DepthAudioSourceData> new_audio_source_data;
+	new_audio_source_data.reserve(SpatialAudioSettings::picture_x_resolution / step_size);
 
 	LOG_INFO("[ProcessDepthEstimationData] Started processing...");
 
-	for (int i = 0; i < audio_settings.picture_x_resolution; i += step_size) {
+	for (int i = 0; i < SpatialAudioSettings::picture_x_resolution; i += step_size) {
 		/*
 		Because the data doesn't come in a 2d form, it is
 		necessary to extract all elements of a column first.
 		i + (j * row_length) represents all elements of a column.
 		*/
-		std::vector<float> column;
-		for (int j = 0; j < column_length; ++j) {
-			column.push_back(depthEstimationData.at(
-				i + (j * audio_settings.picture_x_resolution)
-			));
+		float nearest_distance = std::numeric_limits<float>::max();
+		for (int j = 0; j < SpatialAudioSettings::picture_y_resolution; ++j) {
+			float current_value = depthEstimationData[i + (j * SpatialAudioSettings::picture_x_resolution)];
+			nearest_distance = std::min(current_value, nearest_distance);
 		}
-
-		float nearest_distance =
-			*std::min_element(column.begin(), column.end());
 
 		/*
 		Retrieving sound origin, by passing coordinates in Frame and nearest
@@ -92,19 +90,18 @@ void SpatialAudio::processDepthEstimationData() {
 		function, which retruns the origin as a vector of coordinates
 		*/
 		std::array<float, 3> sound_origin =
-			CalculateSoundOrigin().calculateSoundOrigin(
+			calculateSoundOrigin.calculateSoundOrigin(
 				std::array<int, 2>{i + 1, 0}, nearest_distance,
-				audio_settings.picture_x_resolution
+				SpatialAudioSettings::picture_x_resolution
 			);
 		// float actual_distance = sqrt(sound_origin[0] * sound_origin[0] *
 		// sound_origin[1] * sound_origin[1]);
 
-		new_audio_source_data.push_back(
-			DepthAudioSourceData{
-				200.0f, audio_settings.BUFFER_DURATION,
-				audio_settings.SAMPLE_RATE, sound_origin[0], sound_origin[1],
+		new_audio_source_data.emplace_back(
+				200.0f, SpatialAudioSettings::BUFFER_DURATION,
+				SpatialAudioSettings::SAMPLE_RATE, sound_origin[0], sound_origin[1],
 				sound_origin[2]
-			}
+			
 		);
 	}
 	audio_main.changeDepthAudioData(new_audio_source_data);
@@ -114,7 +111,7 @@ void SpatialAudio::processDepthEstimationData() {
 void SpatialAudio::processObjectDetectionData() {
 	PROFILE_AUDIO_FUNCTION()
 	/*
-	Processing object detection data:
+int column_length = SpatialAudioSettings::picture_y_resolution;	Processing object detection data:
 	- going through all recognized objects
 	- retrieving objects data
 	- saving the data in the vector
