@@ -9,7 +9,7 @@ createAudioData(float frequency, float duration, int sample_rate) {
 	const float PI = std::numbers::pi;
 	const int numSamples =
 		static_cast<int>(static_cast<double>(sample_rate) * duration);
-	const float amplitude = 1.0f;
+	const float amplitude = 0.97f;
 
 	/*
 	generating the PCM-Data:

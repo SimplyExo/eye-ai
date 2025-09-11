@@ -11,7 +11,7 @@ std::array<float, 3> CalculateSoundOrigin::calculateSoundOrigin(
 	//this->pixelYCoordinate = pixelCoordinates[1];
 	this->distanceToObject = distanceToObject;
 
-	float pixelAngle = getPixelAngle();
+	this->pixelAngle = getPixelAngle();
 
 	std::array<float,3> vectorToOrigin = getVectorToOrigin(pixelAngle);
 

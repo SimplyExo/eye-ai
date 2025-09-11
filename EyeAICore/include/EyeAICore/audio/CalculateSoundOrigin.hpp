@@ -14,6 +14,7 @@ class CalculateSoundOrigin {
 		std::array<int, 2> pixelCoordinates,
 		float distanceToObject, int pictureXResolution
 	);
+	float pixelAngle;
 
   private:
   	//FOV of the camera to ONE side
@@ -25,6 +26,7 @@ class CalculateSoundOrigin {
 	int pictureXResolution;
 	//int pictureYResolution;
 	float getPixelAngle();
+	
 	std::array<float, 3> getVectorToOrigin(float pixelAngle);
 	std::array<float, 3> getOrigin(std::array<float, 3> directionalVector);
 };

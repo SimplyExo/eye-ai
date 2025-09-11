@@ -190,6 +190,8 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 	alGenSources(1, &source);
 	alGenBuffers(1, &buffer);
 
+	alSourcef(source, AL_GAIN, 0.5f);
+
 	ObjectAudioSourceData object_data;
 
 	while (running) {
@@ -318,6 +320,7 @@ void AudioMain::setupDepthAudioSources() {
 		alSourcef(source, AL_MAX_DISTANCE, 1.0f);
 		alSourcef(source, AL_ROLLOFF_FACTOR, 1.0f);
 		alSourcef(source, AL_REFERENCE_DISTANCE, 0.0f);
+		alSourcef(source, AL_GAIN, 0.5f);
 	}
 
 	/*
