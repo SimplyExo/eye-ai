@@ -1,4 +1,5 @@
 #include "EyeAICore/audio/SpatialAudioSettings.hpp"
+#include <EyeAICore/ObjectTracker.hpp>
 #include <EyeAICore/audio/AudioMain.hpp>
 #include <EyeAICore/audio/SpatialAudio.hpp>
 #include <jni.h>
@@ -31,9 +32,11 @@ MutexGuard<std::unique_ptr<SpatialAudio>> spatial_audio{
 	std::unique_ptr<SpatialAudio>(nullptr)
 };
 
+MutexGuard<std::unique_ptr<ObjectTracker>> object_tracker;
+
 MutexGuard<YoloModel> yolo_instance;
 
-MutexGuard<std::vector<YoloModel::BoundingBox>> last_detected_objects;
+MutexGuard<std::vector<ObjectTracker::TrackedBoundingBox>> last_tracked_objects;
 
 MutexGuard<SpatialAudioSettings> spatial_audio_settings =
 	MutexGuard<SpatialAudioSettings>(SpatialAudioSettings(
@@ -98,6 +101,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 		env->DeleteLocalRef(str);
 	}
 
+	*object_tracker.lock() = std::make_unique<ObjectTracker>(labels_vector);
+
 	auto result = yolo_instance.lock()->create(
 		model_data.to_vector(), labels_vector,
 		gpu_delegate_serialization_dir_string, model_token_string,
@@ -115,29 +120,38 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	return true;
 }
 
-static jstring convertToJsonBoundingBoxString(
+static jstring convertTrackedBoundingBoxesToJsonString(
 	JNIEnv* env,
-	const std::vector<YoloModel::BoundingBox>& boxes
+	const std::vector<ObjectTracker::TrackedBoundingBox>& tracked_boxes
 ) {
 	nlohmann::json j;
 
-	for (size_t i = 0; i < boxes.size(); ++i) {
-		const YoloModel::BoundingBox& b = boxes[i];
+	for (size_t i = 0; i < tracked_boxes.size(); ++i) {
+		const ObjectTracker::TrackedBoundingBox& tracked_bounding_box = tracked_boxes[i];
+		const YoloModel::BoundingBox& bbox = tracked_bounding_box.bounding_box;
 
-		j["bounding_boxes"][i]["clsName"] = b.cls_name;
-		j["bounding_boxes"][i]["cx"] = b.cx;
-		j["bounding_boxes"][i]["cy"] = b.cy;
-		j["bounding_boxes"][i]["w"] = b.w;
-		j["bounding_boxes"][i]["h"] = b.h;
-		j["bounding_boxes"][i]["x1"] = b.x1;
-		j["bounding_boxes"][i]["y1"] = b.y1;
-		j["bounding_boxes"][i]["x2"] = b.x2;
-		j["bounding_boxes"][i]["y2"] = b.y2;
-		j["bounding_boxes"][i]["cls"] = b.cls;
-		j["bounding_boxes"][i]["cnf"] = b.cnf;
+		j["bounding_boxes"][i]["clsName"] = bbox.cls_name;
+		j["bounding_boxes"][i]["cx"] = bbox.cx;
+		j["bounding_boxes"][i]["cy"] = bbox.cy;
+		j["bounding_boxes"][i]["w"] = bbox.w;
+		j["bounding_boxes"][i]["h"] = bbox.h;
+		j["bounding_boxes"][i]["x1"] = bbox.x1;
+		j["bounding_boxes"][i]["y1"] = bbox.y1;
+		j["bounding_boxes"][i]["x2"] = bbox.x2;
+		j["bounding_boxes"][i]["y2"] = bbox.y2;
+		j["bounding_boxes"][i]["cls"] = bbox.cls;
+		j["bounding_boxes"][i]["cnf"] = bbox.cnf;
+		j["bounding_boxes"][i]["trackingId"] = tracked_bounding_box.tracking_id;
 	}
 
-	return env->NewStringUTF(j.dump().c_str());
+	try {
+		std::string json_string = j.dump();
+		return env->NewStringUTF(json_string.c_str());
+	}
+	catch (const std::exception& e) {
+		LOG_ERROR("Failed to serialize json string of tracked objects: {}", e.what());
+		return env->NewStringUTF("{ \"bounding_boxes\": [] }");
+	}
 }
 
 extern "C" JNIEXPORT jintArray
@@ -193,13 +207,14 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 	const auto result = yolo_instance.lock()->run(input_tensor);
 	if (result) {
 		LOG_INFO("[SpatialAudio] Setting last_detected_objects");
-		*last_detected_objects.lock() = *result;
+		const auto tracked_objects = (*object_tracker.lock())->update(*result);
+		*last_tracked_objects.lock() = tracked_objects;
 		LOG_INFO("[SpatialAudio] Set last_detected_objects");
-		return convertToJsonBoundingBoxString(env, *result);
+		return convertTrackedBoundingBoxesToJsonString(env, tracked_objects);
 	} else {
 		LOG_ERROR("YoloModel failed to run: {}", result.error());
-		return convertToJsonBoundingBoxString(
-			env, std::vector<YoloModel::BoundingBox>{}
+		return convertTrackedBoundingBoxesToJsonString(
+			env, std::vector<ObjectTracker::TrackedBoundingBox>{}
 		);
 	}
 }
@@ -554,12 +569,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendAIData(
 	NativeFloatArrayScope depth_estimation_data(env, depth_data_array);
 
 	assert(depth_estimation_data.size() == (256 * 256));
-	std::vector<YoloModel::BoundingBox> object_detection_data =
-		*last_detected_objects.lock();
-
-	for(auto object: object_detection_data){
-		LOG_INFO("[SpatialAudio] [SendAIData] Object {}", object.cls_name);
-	}
+	std::vector<ObjectTracker::TrackedBoundingBox> object_detection_data =
+		*last_tracked_objects.lock();
 	get_or_create_spatial_audio().getAIData(
 		static_cast<std::span<float, 256 * 256>>(depth_estimation_data),
 		object_detection_data

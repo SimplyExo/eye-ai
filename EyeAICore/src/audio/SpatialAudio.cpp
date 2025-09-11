@@ -32,14 +32,12 @@ SpatialAudio::SpatialAudio(const SpatialAudioSettings& audio_settings)
 
 void SpatialAudio::getAIData(
 	std::span<float, 256 * 256> depth_estimation_data,
-	std::vector<YoloModel::BoundingBox> object_detection_data
+	std::vector<ObjectTracker::TrackedBoundingBox> object_detection_data
 ) {
 	PROFILE_AUDIO_FUNCTION()
 
 	std::ranges::copy(depth_estimation_data, this->depthEstimationData.begin());
-	this->objectDetectionData.clear();
-	this->objectDetectionData.resize(object_detection_data.size());
-	std::ranges::copy(object_detection_data, this->objectDetectionData.begin());
+	this->objectDetectionData = std::move(object_detection_data);
 
 	processingFinished = false;
 	if(!audio_settings.depth_audio_paused)
@@ -120,14 +118,20 @@ int column_length = SpatialAudioSettings::picture_y_resolution;	Processing objec
 	LOG_INFO("[ProcessObjectDetectionData] Started processing...");
 	std::vector<ObjectAudioSourceData> new_audio_source_data;
 	for (auto object : objectDetectionData) {
+<<<<<<< HEAD
 		std::string object_name = trim(toLower(object.cls_name));
+=======
+		const auto& box = object.bounding_box;
+
+>>>>>>> main
 		/*
 		object coordinates are represented by values between 0 and 1
 		so they need to be converted
 		*/
 		int x_coord =
-			(int)(object.cx * (audio_settings.picture_x_resolution - 1));
+			(int)(box.cx * (audio_settings.picture_x_resolution - 1));
 		int y_coord =
+<<<<<<< HEAD
 			(int)(object.cy * (audio_settings.picture_y_resolution - 1));
 	
 		if(!object_label_data.contains(object_name)){
@@ -136,6 +140,11 @@ int column_length = SpatialAudioSettings::picture_y_resolution;	Processing objec
 		}
 		int label_sound_start = object_label_data[object_name][0];
 		int label_sound_end = object_label_data[object_name][1];
+=======
+			(int)(box.cy * (audio_settings.picture_y_resolution - 1));
+		int label_sound_start = object_label_data[box.cls_name][0];
+		int label_sound_end = object_label_data[box.cls_name][1];
+>>>>>>> main
 
 		// retrieving distance
 		float distance = depthEstimationData.at(
