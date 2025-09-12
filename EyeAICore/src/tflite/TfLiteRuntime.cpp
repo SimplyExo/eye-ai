@@ -23,7 +23,8 @@ TfLiteRuntime::create(
 	FloatTensorFormat model_output_format,
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback,
-	ProfilingFrame& profiling_frame
+	ProfilingFrame& profiling_frame,
+	bool config
 ) {
 	PROFILE_SCOPE("Initialize TfLiteRuntime", profiling_frame)
 
@@ -61,7 +62,7 @@ TfLiteRuntime::create(
 			),
 			TfLiteInterpreterOptionsDelete
 		};
-	runtime->hardware_delegate = create_qnn_npu_delegate(delegate_serialization_dir, model_token);
+	runtime->hardware_delegate = create_qnn_npu_delegate(delegate_serialization_dir, model_token, config);
 	if (runtime->hardware_delegate == nullptr) {
 		log_warning_callback("No QNN NPU delegate was created!");
 		runtime->hardware_delegate = create_gpu_delegate(

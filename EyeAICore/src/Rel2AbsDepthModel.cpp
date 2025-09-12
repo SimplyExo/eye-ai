@@ -15,7 +15,8 @@ Rel2AbsDepthModel::CreateResult Rel2AbsDepthModel::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
 		FloatTensorFormat::Rel2AbsDepthInput,
 		FloatTensorFormat::Rel2AbsDepthCoefficientOutput, log_warning_callback,
-		log_error_callback, get_depth_profiling_frame()
+		log_error_callback, get_depth_profiling_frame(),
+		true
 	);
 
 	if (!runtime)

@@ -49,7 +49,8 @@ get_tensor_quantization(const TfLiteTensor* tensor);
 [[nodiscard]] std::unique_ptr<TfLiteDelegate, void (*)(TfLiteDelegate*)>
 create_qnn_npu_delegate(
 	std::string_view delegate_serialization_dir,
-	std::string_view model_token
+	std::string_view model_token,
+	bool config
 );
 
 /// either a input or a output tensor

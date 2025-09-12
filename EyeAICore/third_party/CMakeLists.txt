@@ -19,6 +19,10 @@ if(EYE_AI_CORE_USE_PREBUILT_TFLITE)
 		"${CMAKE_CURRENT_SOURCE_DIR}/litert-gpu-1.2.0/lib/${EYE_AI_CORE_ABI}/libtensorflowlite_gpu_jni.so"
 		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnTFLiteDelegate.so"
 		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libqnn_delegate_jni.so"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnHtp.so"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnHtpV79Stub.so"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnHtpPrepare.so"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnSystem.so"
 	)
 else()
 	message(STATUS "Downloading tensorflow...")
