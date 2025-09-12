@@ -19,7 +19,7 @@ if (DOXYGEN_FOUND)
 	set(EYE_AI_FAVICON_PATH "${EYE_AI_CORE_DIR}/../EyeAIIcon/favicon.ico")
 
 	# Doxyfile configuration
-	set(DOXYGEN_PROJECT_NAME "eye-ai")
+	set(DOXYGEN_PROJECT_NAME "EyeAI")
 	set(DOXYGEN_PROJECT_ICON ${EYE_AI_FAVICON_PATH})
 	set(DOXYGEN_PROJECT_LOGO "${EYE_AI_CORE_DIR}/../EyeAIIcon/eye-ai-logo-export.webp")
 	set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/docs")
