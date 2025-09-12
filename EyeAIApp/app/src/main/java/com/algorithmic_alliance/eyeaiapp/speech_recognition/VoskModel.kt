@@ -81,7 +81,6 @@ class VoskModel(val context: Context, val modelName: String) {
 			{ loadedModel ->
 				this.model = loadedModel
 				Log.d(EyeAIApp.APP_LOG_TAG, "[VoskModel] model unpacked")
-				startListening()
 				onModelLoaded()
 			},
 			{ exception ->

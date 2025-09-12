@@ -22,6 +22,8 @@ import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.algorithmic_alliance.eyeaiapp.NativeLib.setDepthAudioPaused
+import com.algorithmic_alliance.eyeaiapp.NativeLib.setObjectAudioPaused
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
@@ -53,7 +55,17 @@ class MainActivity : AppCompatActivity() {
 	private var ungrantedPermissionsNoticeText: TextView? = null
 	private var allowCameraPermission: Button? = null
 	private var flashlightButton: FloatingActionButton? = null
-	private var killTTS: FloatingActionButton? = null
+	private var startStopVosk: FloatingActionButton? = null
+
+	private var startStopVoskClickCount = 0
+
+
+	private val voskStarting = AtomicBoolean(false)
+
+	private val voskUserStart = AtomicBoolean(false)
+
+	private val voskUserStopped = AtomicBoolean(false)
+
 
 	private var depthPreviewImage: ImageView? = null
 
@@ -77,7 +89,6 @@ class MainActivity : AppCompatActivity() {
 
 	private var currentStateMachine: StateMachine? = null
 
-	private val voskStarting = AtomicBoolean(false)
 
 	enum class State {
 		IDLE,
@@ -130,9 +141,38 @@ class MainActivity : AppCompatActivity() {
 			updateFlashlightButtonTint(flashlightOn)
 		}
 
-		killTTS = findViewById(R.id.stop_tts_button)
-		killTTS!!.setOnClickListener {
-			textToSpeechInstance.stop()
+		startStopVosk = findViewById(R.id.stop_tts_button)
+		startStopVosk!!.setOnClickListener {
+			startStopVoskClickCount++
+
+			when(startStopVoskClickCount){
+				1 -> {
+					setObjectAudioPaused(true);
+					setDepthAudioPaused(true);
+					voskUserStart.set(true)
+
+					eyeAIApp().voskModel.startListening()
+					Log.d(EyeAIApp.APP_LOG_TAG, "User started Vosk Model")
+
+					updateVoskStatusText()
+
+				}
+
+				2 -> {
+					setObjectAudioPaused(false)
+					setDepthAudioPaused(false)
+					voskUserStart.set(false)
+					eyeAIApp().voskModel.stopListening()
+					Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
+
+					updateVoskStatusText()
+
+					startStopVoskClickCount = 0
+				}
+
+
+			}
+
 		}
 
 		speechRecognitionPartialResultText = findViewById(R.id.speech_recognition_partial_output)
@@ -158,7 +198,14 @@ class MainActivity : AppCompatActivity() {
 				try {
 					//Announcing that the global callback has been fired.
 					Log.d(EyeAIApp.APP_LOG_TAG, "GLOBAL TTS CALLBACK: Fired.")
+
+					if(!voskUserStart.get()){
+						Log.d(EyeAIApp.APP_LOG_TAG,"User hasn't started Vosk yet - skipping")
+						return@launch
+					}
+
 					//checking whether a stream is ongoing
+
 					val isStreaming = currentStateMachine?.isStreaming() ?: false
 					if (isStreaming) {
 						Log.d(
@@ -198,7 +245,7 @@ class MainActivity : AppCompatActivity() {
 					}
 				} catch (e: Exception) {
 					Log.e(EyeAIApp.APP_LOG_TAG, "Exception in global TTS finished handler", e)
-					if (voskStarting.compareAndSet(false, true)) {
+					if (voskUserStart.get() && voskStarting.compareAndSet(false, true)) {
 						try {
 							eyeAIApp().voskModel.startListening()
 						} catch (_: Exception) {
@@ -244,6 +291,9 @@ class MainActivity : AppCompatActivity() {
 		else
 			getString(R.string.setup_llm_notice)
 
+
+		updateVoskStatusText()
+
 		CoroutineScope(Dispatchers.IO).launch{
 			SpatialAudio.setup(this@MainActivity)
 			SpatialAudio.start()
@@ -285,6 +335,7 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	private fun onMicrophonePermissionResult(isGranted: Boolean) {
 		if (isGranted && eyeAIApp().settings.enableSpeechRecognition) {
 			eyeAIApp()
@@ -527,9 +578,25 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	private fun onSpeechRecognitionLoaded() {
-		speechRecognitionFinalResultText?.text = getString(R.string.speech_recognition_ready)
+		updateVoskStatusText()
 	}
+
+	@RequiresApi(Build.VERSION_CODES.P)
+	private fun updateVoskStatusText() {
+		speechRecognitionFinalResultText?.text = when {
+			!permissionManager.isMicrophonePermissionGranted() ->
+				"Mikrofon-Berechtigung erforderlich"
+			!eyeAIApp().settings.enableSpeechRecognition ->
+				"Spracherkennung deaktiviert"
+			voskUserStart.get() ->
+				getString(R.string.speech_recognition_ready)
+			else ->
+				"Vosk bereit - Button klicken zum Starten"
+		}
+	}
+
 
 
 	private suspend fun onSpeechResult(final: String) {
