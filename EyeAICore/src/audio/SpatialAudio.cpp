@@ -62,7 +62,7 @@ void SpatialAudio::processDepthEstimationData() {
 
 	int step_size =
 		SpatialAudioSettings::picture_x_resolution /
-		audio_settings.NUMBER_OF_SOURCES; // NUMBER_OF_SOURCES = 2^x!
+		(audio_settings.NUMBER_OF_SOURCES - 1); // NUMBER_OF_SOURCES - 1 == 2^x!
 	CalculateSoundOrigin calculateSoundOrigin;
 	std::vector<DepthAudioSourceData> new_audio_source_data;
 	new_audio_source_data.reserve(
@@ -73,6 +73,8 @@ void SpatialAudio::processDepthEstimationData() {
 
 	for (int i = 0; i < SpatialAudioSettings::picture_x_resolution;
 		 i += step_size) {
+
+		LOG_INFO(std::format("[ProcessDepthEstimationData] Source {}", i));
 		/*
 		Because the data doesn't come in a 2d form, it is
 		necessary to extract all elements of a column first.
@@ -97,14 +99,14 @@ void SpatialAudio::processDepthEstimationData() {
 			);
 		// float actual_distance = sqrt(sound_origin[0] * sound_origin[0] *
 		// sound_origin[1] * sound_origin[1]);
-		//float frequency =
-			//300 - (100 * (std::fabs(calculateSoundOrigin.pixelAngle) / 90));
+		// float frequency =
+		// 300 - (100 * (std::fabs(calculateSoundOrigin.pixelAngle) / 90));
 		new_audio_source_data.emplace_back(
 			200, SpatialAudioSettings::BUFFER_DURATION,
 			SpatialAudioSettings::SAMPLE_RATE, sound_origin[0], sound_origin[1],
 			sound_origin[2]
-
 		);
+		i == 0 ? i-- : i;
 	}
 	audio_main.changeDepthAudioData(new_audio_source_data);
 	LOG_INFO("[ProcessDepthEstimationData] Finished processing...");

@@ -49,7 +49,7 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 	depth_audio_sources_data.resize(
 		audio_settings.NUMBER_OF_SOURCES,
 		DepthAudioSourceData{
-			0.0f, 1.0f, audio_settings.SAMPLE_RATE, 0.0f, 0.0f, 0.0f
+			0.0f, 0.33f, audio_settings.SAMPLE_RATE, 0.0f, 0.0f, 0.0f
 		}
 	);
 
