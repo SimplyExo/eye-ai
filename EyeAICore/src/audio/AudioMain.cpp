@@ -59,12 +59,10 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 		LOG_INFO("[AudioMain] Could not open audio device.");
 		return;
 	}
-	
+
 	// Checking for HRTF support
 	if (alcIsExtensionPresent(device, "ALC_SOFT_HRTF") == ALC_TRUE) {
-		LOG_INFO(
-			"[AudioMain] HRTF present, activating ..."
-		);
+		LOG_INFO("[AudioMain] HRTF present, activating ...");
 
 		// Retrieving necessary function
 		LPALCRESETDEVICESOFT alcResetDeviceSOFT = (LPALCRESETDEVICESOFT)
@@ -77,7 +75,6 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 	} else {
 		LOG_INFO("[AudioMain] HRTF not present");
 	}
-	
 
 	context = alcCreateContext(device, nullptr);
 	if (!alcMakeContextCurrent(context)) {
@@ -193,6 +190,7 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 	alSourcef(source, AL_GAIN, 0.5f);
 
 	ObjectAudioSourceData object_data;
+	bool empty_queue = true;
 
 	while (running) {
 
@@ -205,15 +203,21 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 			PROFILE_AUDIO_FUNCTION()
 			LOG_INFO("[ChangeObjectAudioData] Player got lock...");
 			std::lock_guard<std::mutex> lock(object_mutex);
-			if (object_audio_sources_data.size() == 0) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(5));
-				continue;
+
+			empty_queue = object_audio_sources_data.empty();
+
+			if (!empty_queue) {
+				object_data = object_audio_sources_data.front();
+				object_audio_sources_data.pop();
 			}
 
-
-			object_data = object_audio_sources_data.front();
-			object_audio_sources_data.pop();
 			LOG_INFO("[ChangeObjectAudioData] Player released lock...");
+		}
+
+		// extracted logic, so that the lock is freed
+		if (empty_queue) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(250));
+			continue;
 		}
 
 		// preparing the sound to be played, by loading the right portion of
@@ -229,8 +233,18 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 				(MODIFIED_SAMPLE_RATE * object_data.sound_end),
 			sound_buffer.begin()
 		);
-		LOG_INFO(std::format("[ChangeObjectAudioData] Sound begin of {}: {}", object_data.name, object_data.sound_begin));
-		LOG_INFO(std::format("[ChangeObjectAudioData] Sound end of {}: {}", object_data.name, object_data.sound_end));
+		LOG_INFO(
+			std::format(
+				"[ChangeObjectAudioData] Sound begin of {}: {}",
+				object_data.name, object_data.sound_begin
+			)
+		);
+		LOG_INFO(
+			std::format(
+				"[ChangeObjectAudioData] Sound end of {}: {}", object_data.name,
+				object_data.sound_end
+			)
+		);
 
 		// playing the right sound
 		alBufferData(
@@ -266,10 +280,16 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 		alSourcei(source, AL_BUFFER, AL_NONE);
 		sound_buffer.clear();
 		{
-			LOG_INFO("[ChangeObjectAudioData] Play got lock for releasing seen object...");
+			LOG_INFO(
+				"[ChangeObjectAudioData] Play got lock for releasing seen "
+				"object..."
+			);
 			std::lock_guard<std::mutex> lock(object_mutex);
 			seen_objects.erase(object_data.object_id);
-			LOG_INFO("[ChangeObjectAudioData] Play released lock for releasing seen object...");
+			LOG_INFO(
+				"[ChangeObjectAudioData] Play released lock for releasing seen "
+				"object..."
+			);
 		}
 	}
 
@@ -391,7 +411,7 @@ void AudioMain::loadAudioLabelsFile() {
 void AudioMain::changeDepthAudioData(
 	std::vector<DepthAudioSourceData> new_audio_source_data
 ) {
-	PROFILE_AUDIO_FUNCTION()	
+	PROFILE_AUDIO_FUNCTION()
 	this->depth_audio_sources_data = new_audio_source_data;
 }
 
@@ -404,11 +424,10 @@ void AudioMain::changeObjectAudioData(
 
 	for (const auto& new_object : new_audio_source_data) {
 		auto [it, inserted] = seen_objects.emplace(new_object.object_id);
-		if (inserted &&
-			object_audio_sources_data.size() < 20) {
-			
+		if (inserted && object_audio_sources_data.size() < 20) {
+
 			object_audio_sources_data.push(new_object);
-		} 
+		}
 	}
 	LOG_INFO("[ChangeObjectAudioData] Released lock...");
 }
