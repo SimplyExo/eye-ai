@@ -69,7 +69,7 @@ std::unique_ptr<TfLiteDelegate, void (*)(TfLiteDelegate*)>
 create_qnn_npu_delegate(
 	[[maybe_unused]] std::string_view delegate_serialization_dir,
 	[[maybe_unused]] std::string_view model_token,
-	bool config
+	NpuConfiguration config
 ) {
 #if EYE_AI_CORE_USE_PREBUILT_TFLITE
 	const auto htp_fp16_status = TfLiteQnnDelegateHasCapability(
@@ -95,17 +95,33 @@ create_qnn_npu_delegate(
 	options.graph_priority = TfLiteQnnDelegateGraphPriority::kQnnPriorityHigh;
 	options.backend_type = TfLiteQnnDelegateBackendType::kHtpBackend;
 
-	if(config) {
+	switch(config) {
+	case NpuConfiguration::MiDaS:
 		options.htp_options.precision = TfLiteQnnDelegateHtpPrecision::kHtpFp16;
 		options.htp_options.useConvHmx = false;
 		options.htp_options.performance_mode =
 			TfLiteQnnDelegateHtpPerformanceMode::kHtpBurst;
-	}
-	else{
+
+		break;
+
+	case NpuConfiguration::rel2abs:
+		options.htp_options.precision = TfLiteQnnDelegateHtpPrecision::kHtpFp16;
+		options.htp_options.useConvHmx = false;
+		options.htp_options.performance_mode =
+			TfLiteQnnDelegateHtpPerformanceMode::kHtpBurst;
+		return {nullptr, null_delegate_delete};
+		break;
+
+	case NpuConfiguration::Yolo:
 		options.htp_options.precision = TfLiteQnnDelegateHtpPrecision::kHtpQuantized;
 		options.htp_options.useConvHmx = true;
 		options.htp_options.performance_mode = kHtpSustainedHighPerformance;
+
+		break;
 	}
+
+
+
 	options.skel_library_dir = "/data/local/tmp/qnn_delegate";
 	return {TfLiteQnnDelegateCreate(&options), TfLiteQnnDelegateDelete};
 #else

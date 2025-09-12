@@ -15,7 +15,7 @@ DepthModel::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
 		FloatTensorFormat::MiDaSImageRGB, FloatTensorFormat::RawRelativeDepth,
 		log_warning_callback, log_error_callback, get_depth_profiling_frame(),
-		true
+		NpuConfiguration::MiDaS
 	);
 	if (!runtime_result.has_value())
 		return tl::unexpected(runtime_result.error());

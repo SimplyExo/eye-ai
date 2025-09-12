@@ -24,7 +24,7 @@ TfLiteRuntime::create(
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback,
 	ProfilingFrame& profiling_frame,
-	bool config
+	NpuConfiguration config
 ) {
 	PROFILE_SCOPE("Initialize TfLiteRuntime", profiling_frame)
 

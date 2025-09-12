@@ -45,12 +45,20 @@ get_tensor_quantization(const TfLiteTensor* tensor);
 		ProfilingFrame& profiling_frame
 	);
 
+enum class NpuConfiguration {
+	MiDaS,
+	rel2abs,
+	Yolo
+};
+
 /// @return nullptr if platform does not support qnn delegate right now
 [[nodiscard]] std::unique_ptr<TfLiteDelegate, void (*)(TfLiteDelegate*)>
+
+
 create_qnn_npu_delegate(
 	std::string_view delegate_serialization_dir,
 	std::string_view model_token,
-	bool config
+	NpuConfiguration config
 );
 
 /// either a input or a output tensor

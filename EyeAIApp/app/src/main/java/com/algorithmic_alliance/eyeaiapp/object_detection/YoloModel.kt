@@ -44,10 +44,10 @@ class YoloModel(var info: YoloModelInfo) {
 
 	fun runInference(frame: Bitmap): Array<BoundingBox>? {
 		if (!initialized) {
-			Log.e(
+			/*Log.e(
 				"YOLO",
 				"Tried to run YOLO inference on uninitialized yolo model, call create first!"
-			)
+			)*/
 			return null
 		}
 

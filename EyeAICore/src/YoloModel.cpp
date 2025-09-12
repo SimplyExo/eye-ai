@@ -25,7 +25,7 @@ tl::expected<bool, std::string> YoloModel::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
 		FloatTensorFormat::YoloImageRGB, FloatTensorFormat::YoloOutput,
 		log_warning_callback, log_error_callback, get_object_profiling_frame(),
-		false
+		NpuConfiguration::Yolo
 	);
 
 	// bei Fehler gebe string aus

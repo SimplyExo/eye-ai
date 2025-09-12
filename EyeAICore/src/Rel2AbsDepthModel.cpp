@@ -16,7 +16,7 @@ Rel2AbsDepthModel::CreateResult Rel2AbsDepthModel::create(
 		FloatTensorFormat::Rel2AbsDepthInput,
 		FloatTensorFormat::Rel2AbsDepthCoefficientOutput, log_warning_callback,
 		log_error_callback, get_depth_profiling_frame(),
-		true
+		NpuConfiguration::rel2abs
 	);
 
 	if (!runtime)
