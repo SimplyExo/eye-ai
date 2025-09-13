@@ -8,7 +8,6 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.concurrent.Executors
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
@@ -19,7 +18,7 @@ import javax.net.ssl.X509TrustManager
 /**
  * MJPEG Reader
  *
- * @param url to stream the MJPEG input-source from
+ * @param ip to stream the MJPEG input-source from
  * @param onFrame callback for every bitmap
  * @param deliverOnMainThread if true, on Frame is running on the Main-Thread
  * @param parentScope determines whether a parentScope is used or not, here it is useful as we want the garbage-collector to clean up all unused bitmaps, hence we use a lifecycleScope
@@ -107,7 +106,7 @@ class MjpegBitmapReader(
 
 			val read = try {
 				input.read(tmp)
-			} catch (t: Throwable) {
+			} catch (_: Throwable) {
 
 				break
 			}

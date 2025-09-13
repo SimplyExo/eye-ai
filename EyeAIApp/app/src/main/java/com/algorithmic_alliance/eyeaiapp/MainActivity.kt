@@ -32,7 +32,6 @@ import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
-import com.algorithmic_alliance.eyeaiapp.media.MjpegBitmapReader
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,16 +57,12 @@ class MainActivity : AppCompatActivity() {
 	private var flashlightButton: FloatingActionButton? = null
 	private var startStopVosk: FloatingActionButton? = null
 
-	private var startStopVoskClickCount = 0
-
 	private lateinit var eyeAIVision: EyeAIVision
 	private var bitmapFlow: MutableSharedFlow<Bitmap>? = null
 
 	private val voskStarting = AtomicBoolean(false)
 
 	private val voskUserStart = AtomicBoolean(false)
-
-	private val voskUserStopped = AtomicBoolean(false)
 
 
 	private var depthPreviewImage: ImageView? = null
@@ -141,34 +136,12 @@ class MainActivity : AppCompatActivity() {
 
 		startStopVosk = findViewById(R.id.stop_tts_button)
 		startStopVosk!!.setOnClickListener {
-			startStopVoskClickCount++
 
-			when(startStopVoskClickCount){
-				1 -> {
-					setObjectAudioPaused(true);
-					setDepthAudioPaused(true);
-					voskUserStart.set(true)
-
-					eyeAIApp().voskModel.startListening()
-					Log.d(EyeAIApp.APP_LOG_TAG, "User started Vosk Model")
-
-					updateVoskStatusText()
-
-				}
-
-				2 -> {
-					setObjectAudioPaused(false)
-					setDepthAudioPaused(false)
-					voskUserStart.set(false)
-					eyeAIApp().voskModel.stopListening()
-					Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
-
-					updateVoskStatusText()
-
-					startStopVoskClickCount = 0
-				}
-
-
+			if (voskUserStart.get()){
+				stopVoskListening()
+			}
+			else{
+				startVoskListening()
 			}
 
 		}
@@ -290,9 +263,9 @@ class MainActivity : AppCompatActivity() {
 			getString(R.string.setup_llm_notice)
 
 		// re-enabling the audio playback in accordance to the settings
-		val settings = Settings.load(this@MainActivity);
-		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
-		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+		val settings = Settings.load(this@MainActivity)
+		setObjectAudioPaused(!settings.objectAudioPlayback)
+		setDepthAudioPaused(!settings.depthAudioPlayback)
 
 
 	}
@@ -308,8 +281,8 @@ class MainActivity : AppCompatActivity() {
 		mediaPlayer?.shutdown()
 
 		// stopping audio playback
-		NativeLib.setObjectAudioPaused(true);
-		NativeLib.setDepthAudioPaused(true);
+		setObjectAudioPaused(true)
+		setDepthAudioPaused(true)
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -428,27 +401,21 @@ class MainActivity : AppCompatActivity() {
 					onSingleClick = {
 						Log.i("CLICK", "SINGLE")
 
-						setObjectAudioPaused(true);
-						setDepthAudioPaused(true);
-						voskUserStart.set(true)
 
-						eyeAIApp().voskModel.startListening()
-						Log.d(EyeAIApp.APP_LOG_TAG, "User started Vosk Model")
+						if (!voskUserStart.get()) {
+							startVoskListening()
+						}
 
-						updateVoskStatusText()
+
 					},
 					onDoubleClick = {
 						Log.i("CLICK", "DOUBLE")
 
-						setObjectAudioPaused(false)
-						setDepthAudioPaused(false)
-						voskUserStart.set(false)
-						eyeAIApp().voskModel.stopListening()
-						Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
+						if(voskUserStart.get()) {
+							stopVoskListening()
+						}
 
-						updateVoskStatusText()
 
-						startStopVoskClickCount = 0
 					},
 					lifecycleScope = lifecycleScope,
 					bitmapFlow = bitmapFlow
@@ -655,6 +622,30 @@ class MainActivity : AppCompatActivity() {
 		Log.d(EyeAIApp.APP_LOG_TAG, "State transition: $currentState -> ${update.newState}")
 		currentState = update.newState
 		lastLlmJsonResponse = update.newJson
+	}
+
+	@RequiresApi(Build.VERSION_CODES.P)
+	private fun startVoskListening() {
+		if (voskUserStart.get()) return // Check whether already started
+
+		setObjectAudioPaused(true)
+		setDepthAudioPaused(true)
+		voskUserStart.set(true)
+		eyeAIApp().voskModel.startListening()
+		Log.d(EyeAIApp.APP_LOG_TAG, "User started Vosk Model")
+		updateVoskStatusText()
+	}
+
+	@RequiresApi(Build.VERSION_CODES.P)
+	private fun stopVoskListening() {
+		if (!voskUserStart.get()) return // Check whether already stopped
+
+		setObjectAudioPaused(false)
+		setDepthAudioPaused(false)
+		voskUserStart.set(false)
+		eyeAIApp().voskModel.stopListening()
+		Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
+		updateVoskStatusText()
 	}
 
 
