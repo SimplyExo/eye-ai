@@ -1,5 +1,6 @@
 #include "pinout.h"
 #include "http_server.h"
+#include "tcp_server.h"
 #include "wifi_ap.h"
 
 void init_hw()
@@ -39,6 +40,7 @@ void app_main(void)
 
     init_camera();
     init_sta("EyeAI", "123456789");
+    start_tcp_server();
     startHTTPServer();
     
     // STA-Mode wird nach HTTP request mit Andmeldedaten gestartet!

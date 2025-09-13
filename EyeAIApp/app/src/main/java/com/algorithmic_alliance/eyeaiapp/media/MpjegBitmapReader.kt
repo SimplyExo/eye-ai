@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.Executors
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
@@ -24,7 +25,7 @@ import javax.net.ssl.X509TrustManager
  * @param parentScope determines whether a parentScope is used or not, here it is useful as we want the garbage-collector to clean up all unused bitmaps, hence we use a lifecycleScope
  */
 class MjpegBitmapReader(
-	private val url: String,
+	private val ip: String,
 	private val onFrame: (Bitmap) -> Unit,
 	private val deliverOnMainThread: Boolean = false,
 	parentScope: CoroutineScope? = null
@@ -67,7 +68,7 @@ class MjpegBitmapReader(
 	}
 
 	private suspend fun fetchLoop() = withContext(Dispatchers.IO) {
-		val urlObj = URL(url)
+		val urlObj = URL("http://$ip/cam0")
 		val connRaw = urlObj.openConnection() ?: throw IllegalStateException("Cannot open connection")
 		val conn = (connRaw as? HttpURLConnection) ?: throw IllegalStateException("Not an HTTP connection")
 		connection = conn

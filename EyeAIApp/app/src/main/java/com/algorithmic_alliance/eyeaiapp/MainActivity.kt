@@ -31,6 +31,7 @@ import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
+import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.algorithmic_alliance.eyeaiapp.media.MjpegBitmapReader
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
@@ -59,6 +60,8 @@ class MainActivity : AppCompatActivity() {
 
 	private var startStopVoskClickCount = 0
 
+	private lateinit var eyeAIVision: EyeAIVision
+	private var bitmapFlow: MutableSharedFlow<Bitmap>? = null
 
 	private val voskStarting = AtomicBoolean(false)
 
@@ -98,10 +101,6 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private var currentState: State = State.IDLE
-
-	private var mjpegBitmapReader: MjpegBitmapReader? = null
-	private var bitmapFlow: MutableSharedFlow<Bitmap>? = null
-
 
 	private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
 	private var mediaPlayer: MediaPlayer? = null
@@ -422,21 +421,38 @@ class MainActivity : AppCompatActivity() {
 
 		} else if (eyeAIApp().settings.inputSource == getString(R.string.input_is_eyeaivision)) {
 			if (!eyeAIApp().settings.eyeAIVisionIP!!.isEmpty()) {
-
 				bitmapFlow = MutableSharedFlow(replay = 1)
 
-				mjpegBitmapReader = MjpegBitmapReader(
-					url = eyeAIApp().settings.eyeAIVisionIP.toString(),
-					onFrame = { bitmap ->
+				eyeAIVision = EyeAIVision(
+					ip = eyeAIApp().settings.eyeAIVisionIP.toString(),
+					onSingleClick = {
+						Log.i("CLICK", "SINGLE")
 
-						bitmapFlow?.tryEmit(bitmap)
+						setObjectAudioPaused(true);
+						setDepthAudioPaused(true);
+						voskUserStart.set(true)
 
+						eyeAIApp().voskModel.startListening()
+						Log.d(EyeAIApp.APP_LOG_TAG, "User started Vosk Model")
+
+						updateVoskStatusText()
 					},
-					deliverOnMainThread = false,
-					parentScope = lifecycleScope
-				)
+					onDoubleClick = {
+						Log.i("CLICK", "DOUBLE")
 
-				mjpegBitmapReader?.start()
+						setObjectAudioPaused(false)
+						setDepthAudioPaused(false)
+						voskUserStart.set(false)
+						eyeAIApp().voskModel.stopListening()
+						Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
+
+						updateVoskStatusText()
+
+						startStopVoskClickCount = 0
+					},
+					lifecycleScope = lifecycleScope,
+					bitmapFlow = bitmapFlow
+				)
 
 				mediaPlayer?.shutdown()
 				mediaPlayer = MediaPlayer(
