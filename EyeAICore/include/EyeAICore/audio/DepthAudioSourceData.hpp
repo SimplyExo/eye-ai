@@ -3,15 +3,14 @@
 #include <vector>
 
 /*
-Function creating the actual data the source plays
-*/
-std::vector<short>
-createAudioData(float frequency, float duration, int sample_rate);
-
-/*
 Struct of all the data a source needs to play a specific
 sound at a specific location
 */
+
+// Function creating the the samples the source plays
+std::vector<short>
+createAudioData(float frequency, float duration, int sample_rate);
+
 struct DepthAudioSourceData {
 	float frequency;
 	float duration;

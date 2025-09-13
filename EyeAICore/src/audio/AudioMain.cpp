@@ -9,7 +9,6 @@
 #include <atomic>
 #include <chrono>
 #include <format>
-#include <fstream>
 #include <iostream>
 #include <sndfile.hh>
 #include <string>
@@ -17,6 +16,8 @@
 #include <vector>
 
 #define ALC_HRTF_SOFT 0x1992
+#define LOG_INFO(msg) audio_settings.logInfoCallback(msg)
+#define LOG_ERROR(msg) audio_settings.logErrorCallback(msg)
 
 typedef ALCboolean(ALC_APIENTRY* LPALCRESETDEVICESOFT)(
 	ALCdevice*,
@@ -31,6 +32,7 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 	  is stored
 	- Creates OpenAl device and context, for audio playback
 	- Enabling HRTF (head-related transfer function) if possible
+	- setting OpenAl distance model
 	*/
 
 	// Preparing the vectors
@@ -42,20 +44,20 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 	depth_audio_sources_data.resize(
 		audio_settings.NUMBER_OF_SOURCES,
 		DepthAudioSourceData{
-			200.0f, 1.0f, audio_settings.SAMPLE_RATE, 0.0f, 0.0f, 0.0f
+			0.0f, 1.0f, audio_settings.SAMPLE_RATE, 0.0f, 0.0f, 0.0f
 		}
 	);
 
 	// Setting up the OpenAL device configuration
 	device = alcOpenDevice(NULL);
 	if (!device) {
-		std::cout << "Das Audiogerät konnte nicht geöffnet werden.\n";
+		LOG_INFO("[AudioMain] Could not open audio device.");
 		return;
 	}
 	/*
 	// Checking for HRTF support
 	if (alcIsExtensionPresent(device, "ALC_SOFT_HRTF") == ALC_TRUE) {
-		audio_settings.logInfoCallback(
+		LOG_INFO(
 			"[AudioMain] HRTF present, activating ..."
 		);
 
@@ -68,13 +70,13 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 		alcResetDeviceSOFT(device, attribs);
 
 	} else {
-		audio_settings.logInfoCallback("[AudioMain] HRTF not present");
+		LOG_INFO("[AudioMain] HRTF not present");
 	}
 	*/
 
 	context = alcCreateContext(device, nullptr);
 	if (!alcMakeContextCurrent(context)) {
-		std::cout << "Fehler bei Context.\n";
+		LOG_ERROR("[AudioMain] Could not open context");
 		return;
 	}
 
@@ -97,18 +99,14 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 	Therefore ensuring continues playback
 	*/
 
-	audio_settings.logInfoCallback(
-		"[DepthAudioLoop] Starting depth audio loop..."
-	);
+	LOG_INFO("[DepthAudioLoop] Starting depth audio loop...");
 
 	if (!audio_device_initialized) {
-		audio_settings.logInfoCallback(
-			"[DepthAudioLoop] Audio device not initialized. Aborting ..."
-		);
+		LOG_INFO("[DepthAudioLoop] Audio device not initialized. Aborting ...");
 		return;
 	}
 
-	setupSources();
+	setupDepthAudioSources();
 
 	while (running) {
 		if (audio_settings.depth_audio_paused) {
@@ -165,23 +163,44 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 }
 
 void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
+	/*
+	Going through all recognized objects:
+	- creating a copy of the data
+	- loading the right sound for the object
+	- calculation position of object
+	- waiting until sound is played
+	*/
+
+	LOG_INFO("[ObjectAudioLoop] Starting object audio loop");
+
+	// loading the wav file
 	loadAudioLabelsFile();
 
 	ALuint source;
 	ALuint buffer;
 	std::vector<short> sound_buffer;
-	int MODIFIED_SAMPLE_RATE = AUDIO_FILE_SAMPLE_RATE / 1000; // adapt to ms
+	// adapting the sample rate to ms for easier use
+	int MODIFIED_SAMPLE_RATE = AUDIO_FILE_SAMPLE_RATE / 1000;
 
 	alGenSources(1, &source);
 	alGenBuffers(1, &buffer);
+	// a copy of the objects, so that they don't change while going
+	// through the loop
 	std::vector<ObjectAudioSourceData> object_audio_sources_data_copy;
+
 	while (running) {
+
 		if (audio_settings.object_audio_paused) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			continue;
 		}
+
 		object_audio_sources_data_copy = object_audio_sources_data;
+
 		for (auto audio_data : object_audio_sources_data_copy) {
+
+			// preparing the sound to be played, by loading the right portion of
+			// the file containing all sounds
 			sound_buffer.resize(
 				MODIFIED_SAMPLE_RATE *
 				(audio_data.sound_end - audio_data.sound_begin)
@@ -194,19 +213,26 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 				sound_buffer.begin()
 			);
 
+			// playing the right sound
 			alBufferData(
 				buffer, AL_FORMAT_MONO16, sound_buffer.data(),
 				sound_buffer.size() * sizeof(short), AUDIO_FILE_SAMPLE_RATE
 			);
 			alSourcei(source, AL_BUFFER, buffer);
-
+			alSource3f(
+				source, AL_POSITION, audio_data.x1_position,
+				audio_data.x2_position, audio_data.x3_position
+			);
 			alSourcePlay(source);
 
+			// waiting until the sound is played, so that no sounds overlap
 			ALint source_state = AL_PLAYING;
 			while (source_state == AL_PLAYING) {
 				alGetSourcei(source, AL_SOURCE_STATE, &source_state);
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
+
+			// preparing for next object
 			alSourceStop(source);
 			alSourcei(source, AL_BUFFER, AL_NONE);
 			sound_buffer.clear();
@@ -214,11 +240,12 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 		}
 	}
 
+	// cleaning up
 	alDeleteBuffers(1, &buffer);
 	alDeleteSources(1, &source);
 }
 
-void AudioMain::setupSources() {
+void AudioMain::setupDepthAudioSources() {
 	/*
 	Preparing the sources and buffers for playback:
 	- Generating the sources
@@ -228,6 +255,8 @@ void AudioMain::setupSources() {
 	- Setting the right position for the source, according to the
 	  AudioSourceData specifications
 	*/
+
+	LOG_INFO("[SetupDepthAudioSources] Setting up depth audio sources ...");
 
 	alGenSources(audio_settings.NUMBER_OF_SOURCES, sources.data());
 
@@ -266,11 +295,19 @@ void AudioMain::setupSources() {
 }
 
 void AudioMain::loadAudioLabelsFile() {
-	audio_settings.logInfoCallback("[LoadAudioLabelsFile] Started loading ...");
+	/*
+	Loading the sounds for the objects:
+	- making the std::vector<std::byte> readble
+	  for libsndfile
+	- loading the samples into a vector
+	*/
+	LOG_INFO("[LoadAudioLabelsFile] Started loading ...");
 
 	MemoryData mem{
-		audio_settings.coco_labels_audio.data(),
-		static_cast<sf_count_t>(audio_settings.coco_labels_audio.size()), 0
+		.data = audio_settings.coco_labels_audio.data(),
+		.size =
+			static_cast<sf_count_t>(audio_settings.coco_labels_audio.size()),
+		.pos = 0
 	};
 
 	SF_VIRTUAL_IO vio;
@@ -283,36 +320,34 @@ void AudioMain::loadAudioLabelsFile() {
 	SF_INFO info{};
 	SNDFILE* snd = sf_open_virtual(&vio, SFM_READ, &info, &mem);
 	if (!snd) {
-		std::cerr << "sf_open_virtual fehlgeschlagen: " << sf_strerror(nullptr)
-				  << "\n";
+		LOG_ERROR(
+			std::format(
+				"[LoadAudioLabelsFile] sf_open_virtual failed: {}",
+				sf_strerror(nullptr)
+			)
+		);
 		return;
 	}
 
-	// --- Audioinfos auslesen ---
+	// reading audio file information
 	AUDIO_FILE_SAMPLE_RATE = info.samplerate;
-	audio_settings.logInfoCallback(
-		std::format("File sample rate: {}", info.samplerate)
-	);
-	audio_settings.logInfoCallback(std::format("Format: {}", info.format));
-	audio_settings.logInfoCallback(std::format("Channels: {}", info.channels));
+	LOG_INFO(std::format("[LoadAudioLabelsFile] File sample rate: {}", info.samplerate));
+	LOG_INFO(std::format("[LoadAudioLabelsFile] Format: {}", info.format));
+	LOG_INFO(std::format("[LoadAudioLabelsFile] Channels: {}", info.channels));
 
-	// --- Daten einlesen ---
+	// reading the data
 	audio_labels_file_buffer.resize(info.frames * info.channels);
 	sf_count_t read_frames =
 		sf_readf_short(snd, audio_labels_file_buffer.data(), info.frames);
 
 	if (read_frames <= 0) {
-		audio_settings.logErrorCallback(
-			"[LoadAudioLabelsFile] Could not load file into memory"
-		);
+		LOG_ERROR("[LoadAudioLabelsFile] Could not load file into memory");
 	}
 
-	// --- Aufräumen ---
+	// cleaning up
 	sf_close(snd);
 
-	audio_settings.logInfoCallback(
-		"[LoadAudioLabelsFile] Finished loading ..."
-	);
+	LOG_INFO("[LoadAudioLabelsFile] Finished loading ...");
 }
 
 void AudioMain::changeDepthAudioData(

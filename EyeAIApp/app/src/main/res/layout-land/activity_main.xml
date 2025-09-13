@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_weight="0"
-            android:background="@drawable/rounded_button"
+            android:backgroundTint="@color/default_blue"
             android:text="@string/allow"
             android:textColor="@color/white"
             android:textSize="18sp">

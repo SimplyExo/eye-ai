@@ -1,11 +1,17 @@
 #pragma once
 
+/*
+Struct of all the data a source needs to play a specific object
+at a specific location
+*/
+
 struct ObjectAudioSourceData {
-	int sound_begin; // in ms
-	int sound_end;	 // in ms
+	// time where the sound in the .wav file begins and where it ends (in ms)
+	int sound_begin; 
+	int sound_end;	 
 	float x1_position;
 	float x2_position;
-	float x3_position;	
+	float x3_position;
 
 	ObjectAudioSourceData(
 		int sound_begin,

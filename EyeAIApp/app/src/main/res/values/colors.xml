@@ -13,4 +13,5 @@
     <color name="llm_response">#007DFF</color>
     <color name="flashlight_button_off">#FFFFFFFF</color>
     <color name="flashlight_button_on">#FFFF00</color>
+    <color name="default_blue">#7A90C8</color>
 </resources>

@@ -1,26 +1,28 @@
 #pragma once
-/*
-AudioMain handles the audio playback:
-- Creates the audio device
-- Creates NUMBER_OF_SOURCES sources
-- Creates BUFFERS_PER_SOURCE buffers per source
-- Handles the AudioSourceData for each source
-Once AudioLoop start, continues playback is ensured,
-by refilling empty buffers with new data
-*/
 
-#include "EyeAICore/audio/SpatialAudioSettings.hpp"
 #include "EyeAICore/audio/DepthAudioSourceData.hpp"
 #include "EyeAICore/audio/ObjectAudioSourceData.hpp"
+#include "EyeAICore/audio/SpatialAudioSettings.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <atomic>
 #include <vector>
 
+/*
+AudioMain handles the audio playback:
+- managing the playback of the
+  depth estimation data
+- managing the playback of the objects
+  recognized by the object detection
+Once these loops start, continues playback
+is ensured
+*/
+
 class AudioMain {
   public:
 	AudioMain(const SpatialAudioSettings& audio_settings);
 	~AudioMain();
+
 	// Functions for playing depth estimation data
 	void startDepthAudioLoop(std::atomic<bool>& running);
 	void changeDepthAudioData(
@@ -34,8 +36,10 @@ class AudioMain {
 	);
 
   private:
-	bool audio_device_initialized = false;
+    // global settings for spatial audio
 	const SpatialAudioSettings& audio_settings;
+
+	bool audio_device_initialized = false;
 
 	// for playing depth estimation data
 	std::vector<ALuint> sources;
@@ -46,11 +50,10 @@ class AudioMain {
 	std::vector<ObjectAudioSourceData> object_audio_sources_data;
 	std::vector<short> audio_labels_file_buffer;
 	int AUDIO_FILE_SAMPLE_RATE;
-	
 
 	ALCdevice* device;
 	ALCcontext* context;
 
-	void setupSources();
+	void setupDepthAudioSources();
 	void loadAudioLabelsFile();
 };

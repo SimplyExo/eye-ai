@@ -79,6 +79,9 @@ class EyeAIApp : Application() {
 		// does not load model or start listening
 		voskModel = VoskModel(context, "model-de")
 
+		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
 
