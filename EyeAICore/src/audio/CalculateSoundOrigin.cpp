@@ -70,8 +70,8 @@ std::array<float, 3> CalculateSoundOrigin::getOrigin(std::array<float, 3> direct
 	float x1_position; // x1 meaning in front of the camera
 	float x2_position; // x2 meaning to the side of the camera
 
-	x1_position = directionalVector[0] * distanceToObject;
-	x2_position = directionalVector[1] * distanceToObject;
+	x1_position = directionalVector[0] * (distanceToObject + 1);
+	x2_position = directionalVector[1] * (distanceToObject + 1);
 
 	return std::array<float, 3> {x1_position, x2_position,0};
 }

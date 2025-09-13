@@ -49,7 +49,7 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 	depth_audio_sources_data.resize(
 		audio_settings.NUMBER_OF_SOURCES,
 		DepthAudioSourceData{
-			0.0f, 0.33f, audio_settings.SAMPLE_RATE, 0.0f, 0.0f, 0.0f
+			0.0f, audio_settings.BUFFER_DURATION, audio_settings.SAMPLE_RATE, 0.0f, 0.0f, 0.0f
 		}
 	);
 
@@ -84,7 +84,7 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 
 	audio_device_initialized = true;
 
-	alDistanceModel(AL_LINEAR_DISTANCE);
+	alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
 
 	// Setting the listener to his default position of (0|0|0)
 	alListener3f(AL_POSITION, 0.0, 0.0, 0.0);
@@ -147,9 +147,9 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 				processed--;
 			}
 
-			alSourcef(source, AL_MAX_DISTANCE, 1.5f);
+			alSourcef(source, AL_MAX_DISTANCE, 2.5f);
 			alSourcef(source, AL_ROLLOFF_FACTOR, 1.0f);
-			alSourcef(source, AL_REFERENCE_DISTANCE, 0.0f);
+			alSourcef(source, AL_REFERENCE_DISTANCE, 1.0f);
 
 			// Restart the source if it has stopped
 			ALint state = AL_PAUSED;
@@ -160,7 +160,7 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 		}
 
 		// To reduce program-load, the loop pauses
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(2));
 	}
 }
 
