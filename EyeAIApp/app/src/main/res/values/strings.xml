@@ -40,4 +40,16 @@
     <string name="custom_google_gen_ai_studio_endpoint_summary">EyeAI will send all llm requests to\n\'%1$s\'\nwithout checking their ssl certificate to allow for self signed certificates</string>
     <string name="object_playback_setting">object_playback_setting</string>
     <string name="depth_playback_setting">depth_playback_setting</string>
+    <string name="tutorial_completed_setting">tutorial_completed_setting</string>
+    <string name="tutorial_camera_permission_explanation">For EyeAI to analyze your surroundings,
+        it needs access to your camera while using the app.
+Every camera frame is processed offline locally on your device,
+        and is completely deleted in milliseconds after analysis.</string>
+    <string name="tutorial_microphone_permission_explanation">For a easier interface for controlling EyeAI,
+    it is recommended to give EyeAI access to your microphone in order to simply give voice commands.
+    This is completely optional.</string>
+    <string name="tutorial_accept_text">Accept</string>
+    <string name="tutorial_skip_text">Skip</string>
+    <string name="debugging_settings_category">debugging_settings_category</string>
+    <string name="build_info_settings_category">build_info_settings_category</string>
 </resources>

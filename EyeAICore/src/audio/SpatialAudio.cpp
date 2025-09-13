@@ -30,12 +30,10 @@ SpatialAudio::SpatialAudio(const SpatialAudioSettings& audio_settings)
 
 void SpatialAudio::getAIData(
 	std::span<float, 256 * 256> depth_estimation_data,
-	std::vector<YoloModel::BoundingBox> object_detection_data
+	std::vector<ObjectTracker::TrackedBoundingBox> object_detection_data
 ) {
 	std::ranges::copy(depth_estimation_data, this->depthEstimationData.begin());
-	this->objectDetectionData.clear();
-	this->objectDetectionData.resize(object_detection_data.size());
-	std::ranges::copy(object_detection_data, this->objectDetectionData.begin());
+	this->objectDetectionData = std::move(object_detection_data);
 
 	processingFinished = false;
 	processDepthEstimationData();
@@ -127,17 +125,18 @@ void SpatialAudio::processObjectDetectionData() {
 	LOG_INFO("[ProcessObjectDetectionData] Started processing...");
 	std::vector<ObjectAudioSourceData> new_audio_source_data;
 	for (auto object : objectDetectionData) {
+		const auto& box = object.bounding_box;
+
 		/*
 		object coordinates are represented by values between 0 and 1
 		so they need to be converted
 		*/
 		int x_coord =
-			(int)object.cx * (audio_settings.picture_x_resolution - 1);
+			(int)(box.cx * (audio_settings.picture_x_resolution - 1));
 		int y_coord =
-			(int)object.cy * (audio_settings.picture_y_resolution - 1);
-
-		int label_sound_start = object_label_data[object.cls_name][0];
-		int label_sound_end = object_label_data[object.cls_name][1];
+			(int)(box.cy * (audio_settings.picture_y_resolution - 1));
+		int label_sound_start = object_label_data[box.cls_name][0];
+		int label_sound_end = object_label_data[box.cls_name][1];
 
 		// retrieving distance
 		float distance = depthEstimationData.at(

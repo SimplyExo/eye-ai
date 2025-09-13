@@ -111,7 +111,6 @@ class MainActivity : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 
 
-
 		enableEdgeToEdge()
 		setContentView(R.layout.activity_main)
 
@@ -258,7 +257,7 @@ class MainActivity : AppCompatActivity() {
 		}
 
 
-		CoroutineScope(Dispatchers.IO).launch{
+		CoroutineScope(Dispatchers.IO).launch {
 			SpatialAudio.setup(this@MainActivity)
 			SpatialAudio.start()
 		}
@@ -268,13 +267,13 @@ class MainActivity : AppCompatActivity() {
 	override fun onResume() {
 		super.onResume()
 
-
-
 		eyeAIApp().updateSettings()
 
 		updateSpeechRecognitionUIVisibility()
 
-		permissionManager.requestPermissions()
+		permissionManager.requestCameraPermission()
+		if (eyeAIApp().settings.enableSpeechRecognition)
+			permissionManager.requestMicrophonePermission()
 		updateUngrantedPermissionsNotice()
 
 		debugInputBitmapPreview?.visibility = if (eyeAIApp().settings.showDebugInputBitmap) {
@@ -291,13 +290,12 @@ class MainActivity : AppCompatActivity() {
 		else
 			getString(R.string.setup_llm_notice)
 
+		// re-enabling the audio playback in accordance to the settings
+		val settings = Settings.load(this@MainActivity);
+		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 
-		updateVoskStatusText()
 
-		CoroutineScope(Dispatchers.IO).launch{
-			SpatialAudio.setup(this@MainActivity)
-			SpatialAudio.start()
-		}
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -309,13 +307,15 @@ class MainActivity : AppCompatActivity() {
 		cameraManager.pauseAnalyzer()
 		mediaFrameAnalyzer?.shutdown()
 		mediaPlayer?.shutdown()
-		SpatialAudio.destroy()
+
+		// stopping audio playback
+		NativeLib.setObjectAudioPaused(true);
+		NativeLib.setDepthAudioPaused(true);
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onDestroy() {
 		super.onDestroy()
-
 		cameraManager.shutdown()
 		textToSpeechInstance.shutdown()
 		mediaFrameAnalyzer?.shutdown()
@@ -425,9 +425,9 @@ class MainActivity : AppCompatActivity() {
 
 				bitmapFlow = MutableSharedFlow(replay = 1)
 
-				mjpegBitmapReader = MjpegBitmapReader(url = eyeAIApp().settings.eyeAIVisionIP.toString(),
-					onFrame = {
-						bitmap ->
+				mjpegBitmapReader = MjpegBitmapReader(
+					url = eyeAIApp().settings.eyeAIVisionIP.toString(),
+					onFrame = { bitmap ->
 
 						bitmapFlow?.tryEmit(bitmap)
 
@@ -439,7 +439,12 @@ class MainActivity : AppCompatActivity() {
 				mjpegBitmapReader?.start()
 
 				mediaPlayer?.shutdown()
-				mediaPlayer = MediaPlayer(context =  this, uri = null, targetImageView = mediaImageView!!, bitmapFlow = bitmapFlow)
+				mediaPlayer = MediaPlayer(
+					context = this,
+					uri = null,
+					targetImageView = mediaImageView!!,
+					bitmapFlow = bitmapFlow
+				)
 
 				mediaFrameAnalyzer?.shutdown()
 				mediaFrameAnalyzer = CameraFrameAnalyzer(
@@ -540,7 +545,9 @@ class MainActivity : AppCompatActivity() {
 			lastFinalResultMillis = System.currentTimeMillis()
 
 			if (eyeAIApp().llm == null) {
-				llmResponseText?.text = getString(R.string.setup_llm_notice)
+				if (eyeAIApp().settings.enableSpeechRecognition) {
+					llmResponseText?.text = getString(R.string.setup_llm_notice)
+				}
 			} else {
 				llmResponseText?.text = getString(R.string.llm_responding_notice)
 
@@ -633,7 +640,6 @@ class MainActivity : AppCompatActivity() {
 		currentState = update.newState
 		lastLlmJsonResponse = update.newJson
 	}
-
 
 
 	fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
