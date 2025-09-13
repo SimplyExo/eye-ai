@@ -18,13 +18,14 @@ MetricDepthModel::CreateResult MetricDepthModel::create(
 	std::string_view depth_model_token,
 	std::string_view rel2abs_depth_model_token,
 	TfLiteLogWarningCallback log_warning_callback,
-	TfLiteLogErrorCallback log_error_callback
+	TfLiteLogErrorCallback log_error_callback,
+	bool enable_npu
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
 	auto depth_model_result = DepthModel::create(
 		std::move(depth_model_data), gpu_delegate_serialization_dir,
-		depth_model_token, log_warning_callback, log_error_callback
+		depth_model_token, log_warning_callback, log_error_callback, enable_npu
 	);
 	if (!depth_model_result) {
 		return tl::unexpected(depth_model_result.error());
@@ -32,7 +33,8 @@ MetricDepthModel::CreateResult MetricDepthModel::create(
 
 	auto rel2abs_depth_model_result = Rel2AbsDepthModel::create(
 		std::move(rel2abs_depth_model_data), gpu_delegate_serialization_dir,
-		rel2abs_depth_model_token, log_warning_callback, log_error_callback
+		rel2abs_depth_model_token, log_warning_callback, log_error_callback,
+		enable_npu
 	);
 	if (!rel2abs_depth_model_result) {
 		return tl::unexpected(rel2abs_depth_model_result.error());

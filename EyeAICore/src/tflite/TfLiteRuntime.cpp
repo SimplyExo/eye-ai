@@ -24,7 +24,8 @@ TfLiteRuntime::create(
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback,
 	ProfilingFrame& profiling_frame,
-	NpuConfiguration config
+	bool enable_npu,
+	NpuConfiguration npu_config
 ) {
 	PROFILE_SCOPE("Initialize TfLiteRuntime", profiling_frame)
 
@@ -62,27 +63,35 @@ TfLiteRuntime::create(
 			),
 			TfLiteInterpreterOptionsDelete
 		};
-	runtime->npu_delegate = create_qnn_npu_delegate(delegate_serialization_dir, model_token, config);
-	if (runtime->npu_delegate == nullptr) {
-		log_warning_callback("No QNN NPU delegate was created!");
-	}
-	else {
-		log_warning_callback("QNN NPU delegate was created!");
-		TfLiteInterpreterOptionsAddDelegate(
-			interpreter_options_with_gpu_and_npu_delegate.get(), runtime->npu_delegate.get()
+
+	if (enable_npu) {
+		runtime->npu_delegate = create_qnn_npu_delegate(
+			delegate_serialization_dir, model_token, npu_config
 		);
+		if (runtime->npu_delegate == nullptr) {
+			log_warning_callback("No QNN NPU delegate was created!");
+		} else {
+			log_warning_callback("QNN NPU delegate was created!");
+			TfLiteInterpreterOptionsAddDelegate(
+				interpreter_options_with_gpu_and_npu_delegate.get(),
+				runtime->npu_delegate.get()
+			);
+		}
 	}
+
 	runtime->gpu_delegate = create_gpu_delegate(
 		delegate_serialization_dir, model_token, profiling_frame
 	);
 	TfLiteInterpreterOptionsAddDelegate(
-		interpreter_options_with_gpu_and_npu_delegate.get(), runtime->gpu_delegate.get()
+		interpreter_options_with_gpu_and_npu_delegate.get(),
+		runtime->gpu_delegate.get()
 	);
 
 	// first try to create interpreter with gpu delegate
 	runtime->interpreter = {
 		TfLiteInterpreterCreate(
-			runtime->model.get(), interpreter_options_with_gpu_and_npu_delegate.get()
+			runtime->model.get(),
+			interpreter_options_with_gpu_and_npu_delegate.get()
 		),
 		TfLiteInterpreterDelete
 	};
@@ -90,7 +99,8 @@ TfLiteRuntime::create(
 	if (runtime->interpreter == nullptr) {
 		// trying to create interpreter again, just without gpu delegate
 		log_warning_callback(
-			"GPU or NPU Delegate is not supported, falling back to CPU only mode"
+			"GPU or NPU Delegate is not supported, falling back to CPU only "
+			"mode"
 		);
 		runtime->interpreter = {
 			TfLiteInterpreterCreate(

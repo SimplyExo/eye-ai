@@ -52,4 +52,6 @@ Every camera frame is processed offline locally on your device,
     <string name="tutorial_skip_text">Skip</string>
     <string name="debugging_settings_category">debugging_settings_category</string>
     <string name="build_info_settings_category">build_info_settings_category</string>
+    <string name="enable_npu_delegate_setting">enable_npu_delegate_setting</string>
+    <string name="enable_npu_summary">Only enable on device with supported Qualcomm NPU. If not supported, performance will be worse!</string>
 </resources>

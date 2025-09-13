@@ -71,7 +71,8 @@ class TfLiteRuntime {
 		TfLiteLogWarningCallback log_warning_callback,
 		TfLiteLogErrorCallback log_error_callback,
 		ProfilingFrame& profiling_frame,
-		NpuConfiguration config
+		bool enable_npu,
+		NpuConfiguration npu_config
 	);
 
 	~TfLiteRuntime();
