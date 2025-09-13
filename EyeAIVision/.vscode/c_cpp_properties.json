@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "ESP-IDF",
+            "compileCommands": [
+                "${workspaceFolder}/build/compile_commands.json"
+            ],
+            "includePath": [
+                "${default}",
+                "/home/thomas/esp/v5.5/esp-idf/components/driver/touch_sensor/include",
+                "/home/thomas/esp/v5.5/esp-idf/components/esp_driver_spi/include",
+                "/home/thomas/esp/v5.5/esp-idf/components/esp_common/include",
+                "/home/thomas/esp/v5.5/esp-idf/components/esp_driver_gpio/include"
+            ]
+        }
+    ],
+    "version": 4
+}

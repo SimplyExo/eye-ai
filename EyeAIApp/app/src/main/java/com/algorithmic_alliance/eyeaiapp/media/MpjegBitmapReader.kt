@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp.media
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -18,13 +19,13 @@ import javax.net.ssl.X509TrustManager
 /**
  * MJPEG Reader
  *
- * @param url to stream the MJPEG input-source from
+ * @param ip to stream the MJPEG input-source from
  * @param onFrame callback for every bitmap
  * @param deliverOnMainThread if true, on Frame is running on the Main-Thread
  * @param parentScope determines whether a parentScope is used or not, here it is useful as we want the garbage-collector to clean up all unused bitmaps, hence we use a lifecycleScope
  */
 class MjpegBitmapReader(
-	private val url: String,
+	private val ip: String,
 	private val onFrame: (Bitmap) -> Unit,
 	private val deliverOnMainThread: Boolean = false,
 	parentScope: CoroutineScope? = null
@@ -67,7 +68,7 @@ class MjpegBitmapReader(
 	}
 
 	private suspend fun fetchLoop() = withContext(Dispatchers.IO) {
-		val urlObj = URL(url)
+		val urlObj = URL("http://$ip/cam0")
 		val connRaw = urlObj.openConnection() ?: throw IllegalStateException("Cannot open connection")
 		val conn = (connRaw as? HttpURLConnection) ?: throw IllegalStateException("Not an HTTP connection")
 		connection = conn
@@ -106,7 +107,7 @@ class MjpegBitmapReader(
 
 			val read = try {
 				input.read(tmp)
-			} catch (t: Throwable) {
+			} catch (_: Throwable) {
 
 				break
 			}
@@ -128,10 +129,20 @@ class MjpegBitmapReader(
 				}
 
 				bmp?.let { bitmap ->
+					// Bitmap um 180° drehen
+					val matrix = Matrix()
+					matrix.postRotate(180f)
+					val rotatedBitmap = try {
+						Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+					} catch (t: Throwable) {
+						t.printStackTrace()
+						bitmap // Fallback auf originale Bitmap falls Rotation fehlschlägt
+					}
+
 					if (deliverOnMainThread) {
-						withContext(Dispatchers.Main) { onFrame(bitmap) }
+						withContext(Dispatchers.Main) { onFrame(rotatedBitmap) }
 					} else {
-						onFrame(bitmap)
+						onFrame(rotatedBitmap)
 					}
 				}
 

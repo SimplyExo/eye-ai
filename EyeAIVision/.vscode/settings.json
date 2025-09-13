@@ -1,0 +1,24 @@
+{
+    "files.associations": {
+        "http_server.h": "c",
+        "wifi_sta.h": "c",
+        "camera.h": "c",
+        "esp_camera.h": "c",
+        "esp_http_server.h": "c",
+        "tcp_server.h": "c",
+        "param.h": "c",
+        "spi_slave.h": "c",
+        "math.h": "c",
+        "pinout.h": "c",
+        "freertos.h": "c",
+        "string.h": "c",
+        "nvs_flash.h": "c",
+        "wifi_ap.h": "c"
+    },
+    "idf.espIdfPath": "/home/thomas/esp/v5.5/esp-idf",
+    "idf.toolsPath": "/home/thomas/.espressif",
+    "idf.pythonInstallPath": "/usr/bin/python3",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+    "idf.port": "/dev/ttyUSB0",
+    "idf.flashType": "UART"
+}

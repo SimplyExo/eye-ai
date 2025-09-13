@@ -73,7 +73,8 @@ class YoloModel(var info: YoloModelInfo) {
 				b.getDouble("cx").toFloat(), b.getDouble("cy").toFloat(),
 				b.getDouble("w").toFloat(), b.getDouble("h").toFloat(),
 				b.getDouble("cnf").toFloat(), b.getInt("cls"),
-				b.getString("clsName")
+				b.getString("clsName"),
+				b.getInt("trackingId")
 			)
 
 			bestBoxes.add(boundingBox)

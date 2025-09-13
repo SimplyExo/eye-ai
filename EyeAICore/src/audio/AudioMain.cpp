@@ -3,16 +3,21 @@
 #include "EyeAICore/audio/DepthAudioSourceData.hpp"
 #include "EyeAICore/audio/ObjectAudioSourceData.hpp"
 #include "EyeAICore/audio/SpatialAudioSettings.hpp"
+#include "EyeAICore/utils/Profiling.hpp"
 #include "sndfile.h"
 #include <AL/al.h>
 #include <AL/alc.h>
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <format>
 #include <iostream>
+#include <iterator>
+#include <mutex>
 #include <sndfile.hh>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 #define ALC_HRTF_SOFT 0x1992
@@ -44,7 +49,7 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 	depth_audio_sources_data.resize(
 		audio_settings.NUMBER_OF_SOURCES,
 		DepthAudioSourceData{
-			0.0f, 1.0f, audio_settings.SAMPLE_RATE, 0.0f, 0.0f, 0.0f
+			0.0f, audio_settings.BUFFER_DURATION, audio_settings.SAMPLE_RATE, 0.0f, 0.0f, 0.0f
 		}
 	);
 
@@ -54,12 +59,10 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 		LOG_INFO("[AudioMain] Could not open audio device.");
 		return;
 	}
-	/*
+
 	// Checking for HRTF support
 	if (alcIsExtensionPresent(device, "ALC_SOFT_HRTF") == ALC_TRUE) {
-		LOG_INFO(
-			"[AudioMain] HRTF present, activating ..."
-		);
+		LOG_INFO("[AudioMain] HRTF present, activating ...");
 
 		// Retrieving necessary function
 		LPALCRESETDEVICESOFT alcResetDeviceSOFT = (LPALCRESETDEVICESOFT)
@@ -72,7 +75,6 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 	} else {
 		LOG_INFO("[AudioMain] HRTF not present");
 	}
-	*/
 
 	context = alcCreateContext(device, nullptr);
 	if (!alcMakeContextCurrent(context)) {
@@ -82,7 +84,7 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 
 	audio_device_initialized = true;
 
-	alDistanceModel(AL_LINEAR_DISTANCE);
+	alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
 
 	// Setting the listener to his default position of (0|0|0)
 	alListener3f(AL_POSITION, 0.0, 0.0, 0.0);
@@ -145,9 +147,9 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 				processed--;
 			}
 
-			alSourcef(source, AL_MAX_DISTANCE, 1.5f);
+			alSourcef(source, AL_MAX_DISTANCE, 2.5f);
 			alSourcef(source, AL_ROLLOFF_FACTOR, 1.0f);
-			alSourcef(source, AL_REFERENCE_DISTANCE, 0.0f);
+			alSourcef(source, AL_REFERENCE_DISTANCE, 1.0f);
 
 			// Restart the source if it has stopped
 			ALint state = AL_PAUSED;
@@ -158,7 +160,7 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 		}
 
 		// To reduce program-load, the loop pauses
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(2));
 	}
 }
 
@@ -184,9 +186,11 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 
 	alGenSources(1, &source);
 	alGenBuffers(1, &buffer);
-	// a copy of the objects, so that they don't change while going
-	// through the loop
-	std::vector<ObjectAudioSourceData> object_audio_sources_data_copy;
+
+	alSourcef(source, AL_GAIN, 0.5f);
+
+	ObjectAudioSourceData object_data;
+	bool empty_queue = true;
 
 	while (running) {
 
@@ -195,48 +199,97 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 			continue;
 		}
 
-		object_audio_sources_data_copy = object_audio_sources_data;
+		{
+			PROFILE_AUDIO_FUNCTION()
+			LOG_INFO("[ChangeObjectAudioData] Player got lock...");
+			std::lock_guard<std::mutex> lock(object_mutex);
 
-		for (auto audio_data : object_audio_sources_data_copy) {
+			empty_queue = object_audio_sources_data.empty();
 
-			// preparing the sound to be played, by loading the right portion of
-			// the file containing all sounds
-			sound_buffer.resize(
-				MODIFIED_SAMPLE_RATE *
-				(audio_data.sound_end - audio_data.sound_begin)
-			);
-			std::copy(
-				audio_labels_file_buffer.begin() +
-					(MODIFIED_SAMPLE_RATE * audio_data.sound_begin),
-				audio_labels_file_buffer.begin() +
-					(MODIFIED_SAMPLE_RATE * audio_data.sound_end),
-				sound_buffer.begin()
-			);
-
-			// playing the right sound
-			alBufferData(
-				buffer, AL_FORMAT_MONO16, sound_buffer.data(),
-				sound_buffer.size() * sizeof(short), AUDIO_FILE_SAMPLE_RATE
-			);
-			alSourcei(source, AL_BUFFER, buffer);
-			alSource3f(
-				source, AL_POSITION, audio_data.x1_position,
-				audio_data.x2_position, audio_data.x3_position
-			);
-			alSourcePlay(source);
-
-			// waiting until the sound is played, so that no sounds overlap
-			ALint source_state = AL_PLAYING;
-			while (source_state == AL_PLAYING) {
-				alGetSourcei(source, AL_SOURCE_STATE, &source_state);
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			if (!empty_queue) {
+				object_data = object_audio_sources_data.front();
+				object_audio_sources_data.pop();
 			}
 
-			// preparing for next object
-			alSourceStop(source);
-			alSourcei(source, AL_BUFFER, AL_NONE);
-			sound_buffer.clear();
-			object_audio_sources_data_copy.clear();
+			LOG_INFO("[ChangeObjectAudioData] Player released lock...");
+		}
+
+		// extracted logic, so that the lock is freed
+		if (empty_queue) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(250));
+			continue;
+		}
+
+		// preparing the sound to be played, by loading the right portion of
+		// the file containing all sounds
+		sound_buffer.resize(
+			MODIFIED_SAMPLE_RATE *
+			(object_data.sound_end - object_data.sound_begin)
+		);
+		std::copy(
+			audio_labels_file_buffer.begin() +
+				(MODIFIED_SAMPLE_RATE * object_data.sound_begin),
+			audio_labels_file_buffer.begin() +
+				(MODIFIED_SAMPLE_RATE * object_data.sound_end),
+			sound_buffer.begin()
+		);
+		LOG_INFO(
+			std::format(
+				"[ChangeObjectAudioData] Sound begin of {}: {}",
+				object_data.name, object_data.sound_begin
+			)
+		);
+		LOG_INFO(
+			std::format(
+				"[ChangeObjectAudioData] Sound end of {}: {}", object_data.name,
+				object_data.sound_end
+			)
+		);
+
+		// playing the right sound
+		alBufferData(
+			buffer, AL_FORMAT_MONO16, sound_buffer.data(),
+			sound_buffer.size() * sizeof(short), AUDIO_FILE_SAMPLE_RATE
+		);
+		alSourcei(source, AL_BUFFER, buffer);
+		alSource3f(
+			source, AL_POSITION, object_data.x1_position,
+			object_data.x2_position, object_data.x3_position
+		);
+		alSourcePlay(source);
+
+		LOG_INFO(
+			std::format(
+				"[ChangeObjectAudioData] Playing object: {}", object_data.name
+			)
+		);
+		// waiting until the sound is played, so that no sounds overlap
+		ALint source_state = AL_PLAYING;
+		while (source_state == AL_PLAYING) {
+			alGetSourcei(source, AL_SOURCE_STATE, &source_state);
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
+		LOG_INFO(
+			std::format(
+				"[ChangeObjectAudioData] Played object: {}", object_data.name
+			)
+		);
+
+		// preparing for next object
+		alSourceStop(source);
+		alSourcei(source, AL_BUFFER, AL_NONE);
+		sound_buffer.clear();
+		{
+			LOG_INFO(
+				"[ChangeObjectAudioData] Play got lock for releasing seen "
+				"object..."
+			);
+			std::lock_guard<std::mutex> lock(object_mutex);
+			seen_objects.erase(object_data.object_id);
+			LOG_INFO(
+				"[ChangeObjectAudioData] Play released lock for releasing seen "
+				"object..."
+			);
 		}
 	}
 
@@ -264,6 +317,7 @@ void AudioMain::setupDepthAudioSources() {
 		alSourcef(source, AL_MAX_DISTANCE, 1.0f);
 		alSourcef(source, AL_ROLLOFF_FACTOR, 1.0f);
 		alSourcef(source, AL_REFERENCE_DISTANCE, 0.0f);
+		alSourcef(source, AL_GAIN, 0.5f);
 	}
 
 	/*
@@ -331,7 +385,11 @@ void AudioMain::loadAudioLabelsFile() {
 
 	// reading audio file information
 	AUDIO_FILE_SAMPLE_RATE = info.samplerate;
-	LOG_INFO(std::format("[LoadAudioLabelsFile] File sample rate: {}", info.samplerate));
+	LOG_INFO(
+		std::format(
+			"[LoadAudioLabelsFile] File sample rate: {}", info.samplerate
+		)
+	);
 	LOG_INFO(std::format("[LoadAudioLabelsFile] Format: {}", info.format));
 	LOG_INFO(std::format("[LoadAudioLabelsFile] Channels: {}", info.channels));
 
@@ -353,13 +411,25 @@ void AudioMain::loadAudioLabelsFile() {
 void AudioMain::changeDepthAudioData(
 	std::vector<DepthAudioSourceData> new_audio_source_data
 ) {
+	PROFILE_AUDIO_FUNCTION()
 	this->depth_audio_sources_data = new_audio_source_data;
 }
 
 void AudioMain::changeObjectAudioData(
 	std::vector<ObjectAudioSourceData> new_audio_source_data
 ) {
-	this->object_audio_sources_data = new_audio_source_data;
+	PROFILE_AUDIO_FUNCTION()
+	std::lock_guard<std::mutex> lock(object_mutex);
+	LOG_INFO("[ChangeObjectAudioData] Got lock...");
+
+	for (const auto& new_object : new_audio_source_data) {
+		auto [it, inserted] = seen_objects.emplace(new_object.object_id);
+		if (inserted && object_audio_sources_data.size() < 20) {
+
+			object_audio_sources_data.push(new_object);
+		}
+	}
+	LOG_INFO("[ChangeObjectAudioData] Released lock...");
 }
 
 AudioMain::~AudioMain() {

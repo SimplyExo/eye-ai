@@ -84,6 +84,9 @@ std::string get_last_camera_profiling_frame_formatted();
 ProfilingFrame& get_object_profiling_frame();
 void set_last_object_profiling_frame_formatted(std::string&& formatted);
 std::string get_last_object_profiling_frame_formatted();
+ProfilingFrame& get_audio_profiling_frame();
+void set_last_audio_profiling_frame_formatted(std::string&& formatted);
+std::string get_last_audio_profiling_frame_formatted();
 
 #define FUNCTION_NAME() (static_cast<const char*>(__func__))
 
@@ -109,6 +112,9 @@ std::string get_last_object_profiling_frame_formatted();
 #define PROFILE_OBJECT_SCOPE(name)                                             \
 	PROFILE_SCOPE(name, get_object_profiling_frame())
 
+#define PROFILE_AUDIO_SCOPE(name)                                             \
+	PROFILE_SCOPE(name, get_audio_profiling_frame())
+
 #define PROFILE_FUNCTION(profiling_frame)                                      \
 	ZoneScopedN(FUNCTION_NAME());                                              \
 	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
@@ -120,6 +126,8 @@ std::string get_last_object_profiling_frame_formatted();
 #define PROFILE_CAMERA_FUNCTION() PROFILE_FUNCTION(get_camera_profiling_frame())
 
 #define PROFILE_OBJECT_FUNCTION() PROFILE_FUNCTION(get_object_profiling_frame())
+
+#define PROFILE_AUDIO_FUNCTION() PROFILE_FUNCTION(get_audio_profiling_frame())
 
 #else
 
@@ -137,6 +145,9 @@ std::string get_last_object_profiling_frame_formatted();
 #define PROFILE_OBJECT_SCOPE(name)                                             \
 	PROFILE_SCOPE(name, get_object_profiling_frame())
 
+#define PROFILE_AUDIO_SCOPE(name)                                             \
+	PROFILE_SCOPE(name, get_audio_profiling_frame())
+
 #define PROFILE_FUNCTION(profiling_frame)                                      \
 	const ProfileScope COMBINE2(__profile_scope_, __LINE__)(                   \
 		FUNCTION_NAME(), profiling_frame                                       \
@@ -147,5 +158,7 @@ std::string get_last_object_profiling_frame_formatted();
 #define PROFILE_CAMERA_FUNCTION() PROFILE_FUNCTION(get_camera_profiling_frame())
 
 #define PROFILE_OBJECT_FUNCTION() PROFILE_FUNCTION(get_object_profiling_frame())
+
+#define PROFILE_AUDIO_FUNCTION() PROFILE_FUNCTION(get_audio_profiling_frame())
 
 #endif
