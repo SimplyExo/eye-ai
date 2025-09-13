@@ -10,8 +10,10 @@ class YoloModelInfo(var filename: String, var size: Int) {
 		}
 	}
 
-	fun readLinesFromAsset(context: Context, filename: String): Array<String> {
-		context.assets.open(filename).bufferedReader().use { reader ->
+	fun readLinesFromAsset(context: Context): Array<String> {
+		val splitUp = filename.split(".")
+		val annotations = splitUp.take(splitUp.size-1).joinToString(".") + "names"
+		context.assets.open(annotations).bufferedReader().use { reader ->
 			return reader.readLines().toTypedArray()
 		}
 	}

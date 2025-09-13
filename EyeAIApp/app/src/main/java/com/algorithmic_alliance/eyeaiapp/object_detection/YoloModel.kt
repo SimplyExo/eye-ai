@@ -24,7 +24,7 @@ class YoloModel(var info: YoloModelInfo) {
 	fun create(context: Context) {
 		// Erstellen einer Yolo-Instanz
 		val modelBytes = info.getAsBytes(context)
-		labels = info.readLinesFromAsset(context, "coco.names")
+		labels = info.readLinesFromAsset(context)
 
 		NativeLib.initYoloRuntime(
 			modelBytes, labels,
