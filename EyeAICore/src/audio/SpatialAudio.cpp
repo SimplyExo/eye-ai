@@ -69,12 +69,10 @@ void SpatialAudio::processDepthEstimationData() {
 		SpatialAudioSettings::picture_x_resolution / step_size
 	);
 
-	LOG_INFO("[ProcessDepthEstimationData] Started processing...");
 
 	for (int i = 0; i < SpatialAudioSettings::picture_x_resolution;
 		 i += step_size) {
 
-		LOG_INFO(std::format("[ProcessDepthEstimationData] Source {}", i));
 		/*
 		Because the data doesn't come in a 2d form, it is
 		necessary to extract all elements of a column first.
@@ -109,7 +107,6 @@ void SpatialAudio::processDepthEstimationData() {
 		i == 0 ? i-- : i;
 	}
 	audio_main.changeDepthAudioData(new_audio_source_data);
-	LOG_INFO("[ProcessDepthEstimationData] Finished processing...");
 }
 
 void SpatialAudio::processObjectDetectionData() {
@@ -121,8 +118,6 @@ object detection data:
 	- retrieving objects data
 	- saving the data in the vector
 	*/
-
-	LOG_INFO("[ProcessObjectDetectionData] Started processing...");
 	std::vector<ObjectAudioSourceData> new_audio_source_data;
 	for (auto object : objectDetectionData) {
 
@@ -169,7 +164,6 @@ object detection data:
 		);
 	}
 	audio_main.changeObjectAudioData(new_audio_source_data);
-	LOG_INFO("[ProcessObjectDetectionData] Finished processing...");
 }
 
 void SpatialAudio::readObjectLabelData() {

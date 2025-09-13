@@ -561,9 +561,6 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendAIData(
 	jobject /*this*/,
 	jfloatArray depth_data_array
 ) {
-	LOG_INFO(
-		"[SpatialAudio] [SendAIData] Sending ai data..."
-	);
 	jfloat* rawArray = env->GetFloatArrayElements(depth_data_array, nullptr);
 
 	NativeFloatArrayScope depth_estimation_data(env, depth_data_array);
@@ -575,7 +572,6 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendAIData(
 		static_cast<std::span<float, 256 * 256>>(depth_estimation_data),
 		object_detection_data
 	);
-	LOG_INFO("[SpatialAudio] [SendAIData] Send ai Data");
 
 	// Speicher freigeben
 	env->ReleaseFloatArrayElements(depth_data_array, rawArray, JNI_ABORT);
@@ -586,7 +582,6 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getProcessingStatus(
 	JNIEnv* env,
 	jobject /*this*/
 ) {
-	LOG_INFO("[SpatialAudio] Getting sound processing status...");
 	return get_or_create_spatial_audio().getProcessingStatus();
 }
 
