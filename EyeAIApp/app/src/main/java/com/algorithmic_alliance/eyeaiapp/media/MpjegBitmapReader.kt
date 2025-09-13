@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp.media
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -128,10 +129,20 @@ class MjpegBitmapReader(
 				}
 
 				bmp?.let { bitmap ->
+					// Bitmap um 180° drehen
+					val matrix = Matrix()
+					matrix.postRotate(180f)
+					val rotatedBitmap = try {
+						Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+					} catch (t: Throwable) {
+						t.printStackTrace()
+						bitmap // Fallback auf originale Bitmap falls Rotation fehlschlägt
+					}
+
 					if (deliverOnMainThread) {
-						withContext(Dispatchers.Main) { onFrame(bitmap) }
+						withContext(Dispatchers.Main) { onFrame(rotatedBitmap) }
 					} else {
-						onFrame(bitmap)
+						onFrame(rotatedBitmap)
 					}
 				}
 
