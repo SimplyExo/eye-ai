@@ -1,9 +1,6 @@
 #include "pinout.h"
-#include "camera.h"
-#include "wifi_sta.h"
 #include "http_server.h"
-#include "tcp_server.h"
-#include "ble.h"
+#include "wifi_ap.h"
 
 void init_hw()
 {
@@ -27,10 +24,22 @@ void init_hw()
 
 void app_main(void)
 {
-    init_hw();
-    init_camera();
+    //Initialize NVS
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
 
-    init_sta();
-    startCameraServer();
-    start_tcp_server();
+    init_hw();
+
+    // Default Event Loop nur einmal erstellen
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+
+    init_camera();
+    init_sta("EyeAI", "123456789");
+    startHTTPServer();
+    
+    // STA-Mode wird nach HTTP request mit Andmeldedaten gestartet!
 }

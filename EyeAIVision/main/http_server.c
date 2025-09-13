@@ -6,9 +6,34 @@ static const char* _STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %
 
 static const char * TAG_HTTP = "HTTP";
 
-bool taking_frame = false;
+static bool taking_frame = false;
+static bool mode_change_requested = false;
 
 httpd_handle_t stream_httpd = NULL;
+
+char ssid[32];
+char passwd[32];
+char ip[15];
+char gw[15];
+
+void change_mode() {
+  // von ap in sta mode gehen
+  init_camera();
+  //init_sta(ssid, passwd, ip, gw);
+  start_tcp_server();
+}
+
+// Task, die im Hintergrund läuft
+void wifi_mode_task(void *pvParameters) {
+    for (;;) {
+        if (mode_change_requested) {
+            vTaskDelay(500 / portTICK_PERIOD_MS); // Warte etwas, damit Response rausgeht
+            change_mode(); // Hier wirklich Wi-Fi umschalten
+            mode_change_requested = false;
+        }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+}
 
 void set_framesize(framesize_t framesize) {
   sensor_t *sensor = esp_camera_sensor_get();
@@ -118,10 +143,61 @@ esp_err_t single_frame_handler(httpd_req_t *req) {
   return res;
 }
 
-void startCameraServer() {
+esp_err_t wifi_ssid_passwd_handler(httpd_req_t *req) {
+  // EXAMPLE: http://192.168.4.1/wifi_credentials?ssid=hallo&passwd=moin
+  // Puffergröße inkl. Nullterminator
+    size_t buf_len = httpd_req_get_url_query_len(req) + 1;
+
+    if (buf_len > 1) {
+        char *buf = malloc(buf_len);
+        if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
+            ESP_LOGI(TAG_HTTP, "URL query => %s", buf);
+
+            char param[32];
+
+            if (httpd_query_key_value(buf, "ssid", param, sizeof(param)) == ESP_OK) {
+                strncpy(ssid, param, sizeof(ssid));
+                ESP_LOGI(TAG_HTTP, "Found ssid=%s", param);
+            }
+
+            if (httpd_query_key_value(buf, "passwd", param, sizeof(param)) == ESP_OK) {
+                strncpy(passwd, param, sizeof(passwd));
+                ESP_LOGI(TAG_HTTP, "Found passwd=%s", param);
+            }
+
+            if (httpd_query_key_value(buf, "ip", param, sizeof(param)) == ESP_OK) {
+                strncpy(ip, param, sizeof(ip));
+                ESP_LOGI(TAG_HTTP, "Found ip=%s", param);
+            }
+
+            if (httpd_query_key_value(buf, "gw", param, sizeof(param)) == ESP_OK) {
+                strncpy(gw, param, sizeof(ip));
+                ESP_LOGI(TAG_HTTP, "Found gw=%s", param);
+            }
+        }
+        free(buf);
+    }
+
+    // Response senden
+    char buffer[sizeof(ssid)+sizeof(passwd)+sizeof(ip)+sizeof(gw)+25];
+    snprintf(buffer, sizeof(buffer), "SSID: %s\nPASSWD: %s\nIP: %s\nGW: %s", ssid, passwd, ip, gw);
+    httpd_resp_send(req, buffer, HTTPD_RESP_USE_STRLEN);
+
+    return ESP_OK;
+}
+
+esp_err_t to_sta(httpd_req_t *req) {
+  // Nur Flag setzen
+  mode_change_requested = true;
+  httpd_resp_send(req, "OK\n", HTTPD_RESP_USE_STRLEN); // Antwort muss nicht bei Client ankommen!
+
+  return ESP_OK;
+}
+
+void startHTTPServer() {
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
   config.server_port = 80;
-  config.max_uri_handlers = 2;
+  config.max_uri_handlers = 4;
 
   httpd_uri_t index_uri = {
     .uri       = "/cam0",
@@ -137,8 +213,26 @@ void startCameraServer() {
     .user_ctx  = NULL
   };
 
+  httpd_uri_t wifi_uri = {
+    .uri       = "/wifi_credentials",
+    .method    = HTTP_GET,
+    .handler   = wifi_ssid_passwd_handler,
+    .user_ctx  = NULL
+  };
+
+  httpd_uri_t set_sta_uri = {
+    .uri       = "/set_sta",
+    .method    = HTTP_GET,
+    .handler   = to_sta,
+    .user_ctx  = NULL
+  };
+
   if (httpd_start(&stream_httpd, &config) == ESP_OK) {
     httpd_register_uri_handler(stream_httpd, &index_uri);
     httpd_register_uri_handler(stream_httpd, &frame_uri);
+    httpd_register_uri_handler(stream_httpd, &wifi_uri);
+    httpd_register_uri_handler(stream_httpd, &set_sta_uri);
   }
+
+  xTaskCreate(wifi_mode_task, "wifi_mode_task", 4096, NULL, 5, NULL);
 }

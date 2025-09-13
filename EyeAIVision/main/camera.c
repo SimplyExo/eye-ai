@@ -41,12 +41,11 @@ void init_camera()
           return;
     }
 
-    sensor_t *sensor = esp_camera_sensor_get();    
+    sensor_t *sensor = esp_camera_sensor_get();
     
     sensor->set_exposure_ctrl(sensor, true);
     sensor->set_gain_ctrl(sensor, true);
     sensor->set_aec2(sensor, true);
 
     sensor->set_framesize(sensor, FRAMESIZE_VGA);
-    //vTaskDelay(pdMS_TO_TICKS(200));
 }
