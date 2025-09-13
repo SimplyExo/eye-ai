@@ -21,6 +21,10 @@ if(EYE_AI_CORE_USE_PREBUILT_TFLITE)
 		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libqnn_delegate_jni.so"
 		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnHtp.so"
 		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnHtpV79Stub.so"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnHtpV75Stub.so"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnHtpV73Stub.so"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnHtpV69Stub.so"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnHtpV68Stub.so"
 		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnHtpPrepare.so"
 		"${CMAKE_CURRENT_SOURCE_DIR}/qnn-litert-delegate-2.38.0/lib/${EYE_AI_CORE_ABI}/libQnnSystem.so"
 	)

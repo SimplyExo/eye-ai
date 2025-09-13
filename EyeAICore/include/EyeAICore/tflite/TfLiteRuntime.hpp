@@ -46,9 +46,12 @@ class TfLiteRuntime {
 		TfLiteInterpreterOptions,
 		decltype(&TfLiteInterpreterOptionsDelete)>
 		interpreter_options{nullptr, TfLiteInterpreterOptionsDelete};
-	/// can be null if GPU/NPU (QNN) delegates are not supported on this device
+	/// can be null if GPU delegate are not supported on this device
 	std::unique_ptr<TfLiteDelegate, void(*)(TfLiteDelegate*)>
-		hardware_delegate{nullptr, TfLiteGpuDelegateV2Delete};
+	gpu_delegate{nullptr, TfLiteGpuDelegateV2Delete};
+	/// can be null if NPU delegate are not supported on this device
+	std::unique_ptr<TfLiteDelegate, void(*)(TfLiteDelegate*)>
+		npu_delegate{nullptr, TfLiteGpuDelegateV2Delete};
 
 	TfLiteReporterUserData reporter_user_data;
 
