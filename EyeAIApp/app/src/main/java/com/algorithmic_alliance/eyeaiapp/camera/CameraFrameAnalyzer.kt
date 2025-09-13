@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp.camera
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.util.Log
 import android.util.Size
 import android.widget.ImageView
 import android.widget.TextView
@@ -42,25 +43,18 @@ class CameraFrameAnalyzer(
 
 	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
 	private var objectDetectionProcessingExecutor: ExecutorService? = null
-	private var ocrProcessingExecutor: ExecutorService? = null
 
 	private val depthScope: CoroutineScope =
 		CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher())
+
 	private val objectScope: CoroutineScope? = if (eyeAIApp.settings.enableObjectDetection) {
 		objectDetectionProcessingExecutor = Executors.newSingleThreadExecutor()
 		CoroutineScope(objectDetectionProcessingExecutor!!.asCoroutineDispatcher())
 	} else {
 		null
 	}
-	private val ocrScope = if (eyeAIApp.settings.enableOCR) {
-		ocrProcessingExecutor = Executors.newSingleThreadExecutor()
-		CoroutineScope(ocrProcessingExecutor!!.asCoroutineDispatcher())
-	} else {
-		null
-	}
 
 	private var latestCameraFrame = AtomicReference<Bitmap?>(null)
-
 	private lateinit var colorMappedImage: Bitmap
 
 	var started = false
@@ -74,16 +68,12 @@ class CameraFrameAnalyzer(
 			while (isActive) {
 				val metricDepthModel = eyeAIApp.metricDepthModel
 				val frame = getFrame()
-
 				if (frame != null && metricDepthModel != null) {
 					NativeLib.newDepthFrame()
-
 					val predictionOutput = metricDepthModel.predictDepth(frame)
 					eyeAIApp.aiData.depthEstimationData.set(predictionOutput)
-
 					val inputWidth = frame.width
 					val inputHeight = frame.height
-
 					colorMappedImage = NativeLib.metricDepthColormap(
 						predictionOutput,
 						metricDepthModel.inputDim
@@ -91,7 +81,6 @@ class CameraFrameAnalyzer(
 
 					withContext(Dispatchers.Main) {
 						depthView.setImageBitmap(colorMappedImage)
-
 						if (debugInputBitmapPreview.isVisible)
 							debugInputBitmapPreview.setImageBitmap(frame)
 
@@ -100,7 +89,7 @@ class CameraFrameAnalyzer(
 							val formattedDepthModelInputSize =
 								"${metricDepthModel.inputDim.width}x${metricDepthModel.inputDim.height}"
 							performanceText.text =
-								"Metric Depth model: ${metricDepthModel.name}\nCamera resolution: $formattedInputResolution --> Depth model input: $formattedDepthModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}\n${NativeLib.formatObjectFrame()}"
+								"Metric Depth model: ${metricDepthModel.name}\nCamera resolution: $formattedInputResolution -> Depth model input: $formattedDepthModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}\n${NativeLib.formatObjectFrame()}"
 						} else {
 							performanceText.text = ""
 						}
@@ -109,19 +98,17 @@ class CameraFrameAnalyzer(
 			}
 		}
 
-		// Objekterkennung
+		// object-detection
 		objectScope?.launch {
 			while (isActive) {
 				val frame = getFrame()
-
 				if (frame != null) {
 					NativeLib.newObjectFrame()
-
-					// Frame analysieren
+					// analyzing the frame
 					val boxes = eyeAIApp.yoloModel.runInference(frame)
 					eyeAIApp.aiData.objectDetectionBoxes.set(boxes)
 
-					// Anzeigen der Boxes
+					// showing boxes
 					withContext(Dispatchers.Main) {
 						if (boxes != null) {
 							overlayOD.setResults(boxes)
@@ -134,23 +121,24 @@ class CameraFrameAnalyzer(
 			}
 		}
 
-		// OCR Texterkennung
-		ocrScope?.launch {
-			while (isActive) {
-				val frame = getFrame()
+		// OCR removed, on demand only now.
+	}
 
-				if (frame != null) {
-					val textBoxes = eyeAIApp.ocrModel.analyzeFrame(frame).toTypedArray()
-					eyeAIApp.aiData.ocrBoxes.set(textBoxes)
+	suspend fun runOcrAnalysis(): Boolean = withContext(Dispatchers.IO) {
+		val frame = getFrame() ?: return@withContext false
 
-					withContext(Dispatchers.Main) {
-						overlayOCR.setCameraResolution(
-							Size(frame.width, frame.height)
-						)
-						overlayOCR.setResults(textBoxes)
-					}
-				}
-			}
+		return@withContext try {
+			Log.d(EyeAIApp.APP_LOG_TAG, "Running on-demand OCR analysis")
+			val textBoxes = eyeAIApp.ocrModel.analyzeFrame(frame).toTypedArray()
+			eyeAIApp.aiData.ocrBoxes.set(textBoxes)
+
+			// OCR-Overlay removed
+
+			Log.d(EyeAIApp.APP_LOG_TAG, "OCR analysis completed successfully, found ${textBoxes.size} text boxes")
+			true
+		} catch (e: Exception) {
+			Log.e(EyeAIApp.APP_LOG_TAG, "Error during on-demand OCR analysis", e)
+			false
 		}
 	}
 
@@ -164,31 +152,23 @@ class CameraFrameAnalyzer(
 				(mediaImageView.drawable as BitmapDrawable).bitmap
 			}
 		}
-
 		return frame
 	}
 
 	fun shutdown() {
 		depthScope.cancel()
 		objectScope?.cancel()
-		ocrScope?.cancel()
-
 		depthProcessingExecutor.shutdownNow()
 		objectDetectionProcessingExecutor?.shutdownNow()
-		ocrProcessingExecutor?.shutdownNow()
-
 		started = false
 	}
-
 
 	@OptIn(ExperimentalGetImage::class)
 	override fun analyze(image: ImageProxy) {
 		if (image.image != null) {
 			NativeLib.newCameraFrame()
-
 			val inputBitmap =
 				NativeLib.imageToBitmap(image.image!!, image.imageInfo.rotationDegrees.toFloat())
-
 			latestCameraFrame.set(inputBitmap)
 		}
 		image.close()

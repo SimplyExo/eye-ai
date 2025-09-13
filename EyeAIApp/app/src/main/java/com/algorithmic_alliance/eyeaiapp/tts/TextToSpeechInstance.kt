@@ -264,8 +264,8 @@ class TextToSpeechInstance(
 	fun setVoice(number: Int) {
 		loadAvailableGermanVoices()
 		when (number) {
-			0 -> if (germanMaleVoice != null) tts?.voice = germanMaleVoice
-			1 -> if (germanFemaleVoice != null) tts?.voice = germanFemaleVoice
+			1 -> if (germanMaleVoice != null) tts?.voice = germanMaleVoice
+			0 -> if (germanFemaleVoice != null) tts?.voice = germanFemaleVoice
 			else -> Log.w(EyeAIApp.APP_LOG_TAG, "Invalid voice number: $number")
 		}
 	}

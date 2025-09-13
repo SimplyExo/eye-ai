@@ -1,7 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.object_detection
 
 import android.content.Context
-import com.sun.jna.StringArray
 
 class YoloModelInfo(var filename: String, var size: Int) {
 	fun getAsBytes(context: Context): ByteArray
