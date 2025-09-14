@@ -5,7 +5,7 @@ import android.content.Context
 import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
-import com.algorithmic_alliance.eyeaiapp.llm.GoogleAIStudioLLM
+import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo

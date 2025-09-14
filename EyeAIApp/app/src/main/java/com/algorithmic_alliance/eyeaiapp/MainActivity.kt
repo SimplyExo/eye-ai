@@ -1,10 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp
 
-import android.bluetooth.BluetoothAdapter
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.Bitmap
-import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -46,8 +43,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.flow.MutableSharedFlow
-import java.io.IOException
-import java.net.UnknownHostException
 
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
@@ -93,6 +88,10 @@ class MainActivity : AppCompatActivity() {
 
 	private var currentStateMachine: StateMachine? = null
 
+	private var tcpErrorShowing = false
+	private var mjpegErrorShowing = false
+
+	private var mjpegErrorIgnored = false
 
 	enum class State {
 		IDLE,
@@ -431,18 +430,52 @@ class MainActivity : AppCompatActivity() {
 					},
 					onSocketFailed = { e ->
 						runOnUiThread {
-							val errorMessage = AlertDialog.Builder(this)
-							errorMessage.setMessage("TCP connection to EyeAIVision (IP: ${eyeAIApp().settings.eyeAIVisionIP.toString()}) has failed: ${e.message.toString()}")
-							errorMessage.setPositiveButton("Open settings") { dialog, which ->
-								startActivity(Intent(this, SettingsActivity::class.java))
-								overridePendingTransition(
-									android.R.anim.fade_in,
-									android.R.anim.fade_out
-								)
+							if (!tcpErrorShowing) {
+								tcpErrorShowing = true
+								val errorMessage = AlertDialog.Builder(this)
+								errorMessage.setMessage("TCP connection to EyeAIVision (IP: ${eyeAIApp().settings.eyeAIVisionIP.toString()}) has failed: ${e.message.toString()}")
+								errorMessage.setPositiveButton("Open settings") { dialog, which ->
+									tcpErrorShowing = false
+									startActivity(Intent(this, SettingsActivity::class.java))
+									dialog.dismiss()
+									overridePendingTransition(
+										android.R.anim.fade_in,
+										android.R.anim.fade_out
+									)
+								}
+
+								errorMessage.setNegativeButton("Ignore") { dialog, which ->
+									tcpErrorShowing = false
+									dialog.dismiss()
+								}
+								errorMessage.show()
 							}
-							
-							errorMessage.setNegativeButton("Ignore") { dialog, which -> }
-							errorMessage.show()
+						}
+					},
+
+					onMjpegError = { e->
+						runOnUiThread {
+							if (!mjpegErrorShowing && !mjpegErrorIgnored) {
+								mjpegErrorShowing = true
+								val errorMessage = AlertDialog.Builder(this)
+								errorMessage.setMessage("Error while getting camera frame from EyeAIVision (IP: ${eyeAIApp().settings.eyeAIVisionIP.toString()}): ${e.message.toString()}")
+								errorMessage.setPositiveButton("Open settings") { dialog, which ->
+									mjpegErrorShowing = false
+									dialog.dismiss()
+									startActivity(Intent(this, SettingsActivity::class.java))
+									overridePendingTransition(
+										android.R.anim.fade_in,
+										android.R.anim.fade_out
+									)
+								}
+
+								errorMessage.setNegativeButton("Ignore") { dialog, which ->
+									dialog.dismiss()
+									mjpegErrorIgnored = true
+									mjpegErrorShowing = false
+								}
+								errorMessage.show()
+							}
 						}
 					}
 				)

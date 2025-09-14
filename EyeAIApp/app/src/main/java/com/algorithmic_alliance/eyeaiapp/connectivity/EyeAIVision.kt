@@ -21,7 +21,8 @@ open class EyeAIVision(
 	private val bitmapFlow: MutableSharedFlow<Bitmap>?,
 	private val onSingleClick: () -> Unit,
 	private val onDoubleClick: () -> Unit,
-	private val onSocketFailed: (Exception) -> Unit
+	private val onSocketFailed: (Exception) -> Unit,
+	private val onMjpegError: (Exception) -> Unit
 ) {
 	private lateinit var touchSocket: Socket
 	private var mjpegBitmapReader: MjpegBitmapReader? = null
@@ -58,7 +59,10 @@ open class EyeAIVision(
 				bitmapFlow?.tryEmit(bitmap)
 			},
 			deliverOnMainThread = false,
-			parentScope = lifecycleScope
+			parentScope = lifecycleScope,
+			onMjpegError = { e ->
+				onMjpegError(e)
+			}
 		)
 
 		mjpegBitmapReader?.start()
