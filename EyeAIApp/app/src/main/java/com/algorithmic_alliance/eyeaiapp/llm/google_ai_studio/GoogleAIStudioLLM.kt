@@ -1,8 +1,9 @@
-package com.algorithmic_alliance.eyeaiapp.llm
+package com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio
 
 import android.annotation.SuppressLint
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
+import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,6 +14,8 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
@@ -22,7 +25,7 @@ import javax.net.ssl.X509TrustManager
 
 class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: String?) : LLM {
 	companion object {
-		const val MODEL_NAME: String = "gemini-2.5-flash-lite"
+		const val MODEL_NAME: String = "gemini-2.5-flash"
 		private const val GOOGLE_GEN_AI_ENDPOINT = "https://generativelanguage.googleapis.com"
 	}
 
@@ -254,7 +257,7 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 							}
 						}
 
-						
+
 						Log.d(EyeAIApp.APP_LOG_TAG, "Stream finished naturally - calling completion")
 						safeCallComplete()
 					}
@@ -386,7 +389,7 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 		val defaultResponseBody = JSONObject().apply {
 			put("systemInstruction", JSONObject().apply {
 				put("parts", JSONArray().apply {
-					put(JSONObject().apply { put("text", LLM.SYSTEM_PROMPT) })
+					put(JSONObject().apply { put("text", LLM.Companion.SYSTEM_PROMPT) })
 				})
 			})
 			put("contents", JSONArray().apply {
@@ -490,13 +493,13 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 private fun createTrustAllSslSocketFactory(): SSLSocketFactory {
 	val trustAllCerts = arrayOf<TrustManager>(
 		object : X509TrustManager {
-			override fun checkClientTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
-			override fun checkServerTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
-			override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> = arrayOf()
+			override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
+			override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
+			override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
 		}
 	)
 
 	val sslContext = SSLContext.getInstance("TLS")
-	sslContext.init(null, trustAllCerts, java.security.SecureRandom())
+	sslContext.init(null, trustAllCerts, SecureRandom())
 	return sslContext.socketFactory
 }
