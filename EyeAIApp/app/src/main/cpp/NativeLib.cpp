@@ -206,10 +206,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
 
 	const auto result = yolo_instance.lock()->run(input_tensor);
 	if (result) {
-		LOG_INFO("[SpatialAudio] Setting last_detected_objects");
 		const auto tracked_objects = (*object_tracker.lock())->update(*result);
 		*last_tracked_objects.lock() = tracked_objects;
-		LOG_INFO("[SpatialAudio] Set last_detected_objects");
 		return convertTrackedBoundingBoxesToJsonString(env, tracked_objects);
 	} else {
 		LOG_ERROR("YoloModel failed to run: {}", result.error());
