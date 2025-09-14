@@ -38,7 +38,7 @@ class EyeAIApp : Application() {
 		private set
 
 	/* will not be fully created if enableObjectDetection is disabled in settings */
-	var yoloModel: YoloModel = YoloModel(YoloModelInfo("model.tflite", 640))
+	var yoloModel: YoloModel = YoloModel(YoloModelInfo("best_float32.tflite", 640))
 		private set
 
 	/* will not be fully initialized when enableOCR is disabled in settings */

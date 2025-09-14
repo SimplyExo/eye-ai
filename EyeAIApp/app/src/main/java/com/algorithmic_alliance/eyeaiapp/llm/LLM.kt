@@ -28,7 +28,21 @@ interface LLM {
 		  So wird dieses Tool verwendet. Dies wird durch die Eigenschaft 'einstellungen' im JSON gesteuert.
           Innerhalb der Einstellungen wird die genaue Absicht des Nutzers über die Eigenschaft 'setting_intent' im JSON klassifiziert.
 		  
-		  Möchte der Nutzer keine der beiden Tools nutzen, so kannst du auch in der JSON-Antwort in 'interaction_text' ganz regulär mit Text antworten, der zur Interaktion bzw. Anfrage des Nutzers passt.
+		  3. Objekterkennung:
+		  Verwende dies NUR wenn der Nutzer explizit nach einem spezifischen Objekt fragt:
+			- "Wo ist der Stuhl?" / "Wie weit ist die Lampe entfernt?" 
+			- "Beschreibe mir den Tisch" / "Wo befindet sich die Person?"
+		
+		  WICHTIG: Der Nutzer MUSS ein spezifisches Objekt nennen!
+		  Übersetze das Objekt ins Englische und trage es in "object_query" ein.
+		  Beispiele: "Stuhl" -> "chair", "Lampe" -> "lamp", "Tisch" -> "table", "Person/Mensch" -> "person"
+	
+		  WENN objekterkennung in JSON true ist, dann muss auch object_query gesetzt werden!
+
+		  Wenn der Nutzer nur allgemein fragt ("Was sehe ich?", "Objekterkennung"), so wird dieses Tool verwendet. Dies wird durch die Eigenschaft 'objekterkennung' im JSON gesteuert.
+		  
+		  
+		  Möchte der Nutzer keine der Tools nutzen, so kannst du auch in der JSON-Antwort in 'interaction_text' ganz regulär mit Text antworten, der zur Interaktion bzw. Anfrage des Nutzers passt.
 		  
 		"""
 
@@ -49,9 +63,37 @@ interface LLM {
 		const val SNIPPET_VOICE: String =
 			"""Mit dieser Einstellung können Sie die Stimme des Assistentenagenten zwischen männlich und weiblich variieren. Möchten Sie die männliche oder die weibliche Assistentenstimme nutzen?
         """
+
+		val knownObjectLabels = setOf(
+			"airplane", "ambulance", "barge", "bathroom cabinet", "bathtub", "bed", "bench",
+			"bicycle", "bidet", "billboard", "boat", "bookcase", "boy", "building", "bus",
+			"cabinetry", "car", "castle", "cat furniture", "chair", "chest of drawers",
+			"closet", "coffee table", "couch", "countertop", "cupboard", "desk", "dishwasher",
+			"door", "door handle", "drawer", "filing cabinet", "furniture", "gas stove",
+			"girl", "golf cart", "gondola", "helicopter", "home appliance", "humidifier",
+			"infant bed", "jet ski", "kitchen & dining room table", "lamp", "land vehicle",
+			"light bulb", "light switch", "lighthouse", "limousine", "loveseat", "man",
+			"microwave oven", "motorcycle", "nightstand", "oven", "person", "porch",
+			"power plugs and sockets", "refrigerator", "shelf", "shower", "sink", "skyscraper",
+			"soap dispenser", "sofa bed", "stairs", "stool", "stop sign", "street light",
+			"studio couch", "submarine", "table", "tank", "taxi", "toilet", "tower",
+			"traffic light", "traffic sign", "train", "training bench", "truck", "unicycle",
+			"van", "vehicle", "wall clock", "wardrobe", "washing machine", "window",
+			"window blind", "woman"
+		)
 	}
 
+	fun buildObjectDetectionPrompt(label: String, height: Float, width: Float, x: Float, y: Float, distance: Float): String {
 
+		return "Vor dir befindet sich das Objekt '$label'. " +
+			"Der sehbeinträchtigte Nutzer möchte von dir wissen, wo in etwa sich das Objekt von dir aus gesehen befindet. " +
+			"Dazu hast du folgende die folgenden Daten: " +
+			"Das ist die x-Koordinate der Mitte des Objekts $x, das ist die y-Koordinate der Mitte des Objekts $y. " +
+			"Das ist die Höhe des Objekts $height. " +
+			"Das ist die Breite des Objekts $width. "+
+			"Das ist die Distanz zum Objekt aus der Perspektive des Nutzers: $distance " +
+			"Antworte nicht mit einem JSON-Objekt, sondern mit Standartsprache!"
+	}
 	fun buildOcrPrompt(input: String): String {
 		return "Das ist der zuletzt erkannte Text mit den zusätzlichen Koordinaten: " +
 			input +

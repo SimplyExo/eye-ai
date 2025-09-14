@@ -10,9 +10,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-object OCRManager {
-	val googleOCR = GoogleOCR().apply { create() }
-}
 class GoogleOCR {
 	private var ocrModel: TextRecognizer? = null
 
