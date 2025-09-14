@@ -149,7 +149,13 @@ class CameraFrameAnalyzer(
 			if (mediaImageView.drawable == null) {
 				null
 			} else {
-				(mediaImageView.drawable as BitmapDrawable).bitmap
+				try {
+					(mediaImageView.drawable as BitmapDrawable).bitmap
+				}
+				catch (e: Exception) {
+					Log.w(EyeAIApp.APP_LOG_TAG, "Failed to get frame bitmap (ignoring): $e")
+					return null
+				}
 			}
 		}
 		return frame
