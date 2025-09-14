@@ -1,7 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <utility>
+#include <string>
 
 /*
 Struct of all the data a source needs to play a specific object
@@ -18,7 +17,7 @@ struct ObjectAudioSourceData {
 	float x2_position;
 	float x3_position;
 
-	ObjectAudioSourceData(
+	explicit ObjectAudioSourceData(
 		int object_id = -1,
 		std::string name = "",
 		int sound_begin = 0,

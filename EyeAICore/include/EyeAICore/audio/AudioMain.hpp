@@ -23,7 +23,7 @@ is ensured
 
 class AudioMain {
   public:
-	AudioMain(const SpatialAudioSettings& audio_settings);
+	explicit AudioMain(const SpatialAudioSettings& audio_settings);
 	~AudioMain();
 
 	// Functions for playing depth estimation data
@@ -35,7 +35,7 @@ class AudioMain {
 	// Functions for playing object detection data
 	void startObjectAudioLoop(std::atomic<bool>& running);
 	void changeObjectAudioData(
-		std::vector<ObjectAudioSourceData> new_audio_source_data
+		const std::vector<ObjectAudioSourceData>& new_audio_source_data
 	);
 
   private:
@@ -52,7 +52,7 @@ class AudioMain {
 	std::unordered_set<int> seen_objects;
 	std::vector<short> audio_labels_file_buffer;
 	std::mutex object_mutex;
-	int AUDIO_FILE_SAMPLE_RATE;
+	int AUDIO_FILE_SAMPLE_RATE = 0;
 
 	ALCdevice* device = AL_NONE;
 	ALCcontext* context = AL_NONE;

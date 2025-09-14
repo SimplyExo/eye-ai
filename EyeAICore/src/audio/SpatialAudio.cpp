@@ -100,7 +100,7 @@ void SpatialAudio::processDepthEstimationData() {
 		// float frequency =
 		// 300 - (100 * (std::fabs(calculateSoundOrigin.pixelAngle) / 90));
 		new_audio_source_data.emplace_back(
-			200, SpatialAudioSettings::BUFFER_DURATION,
+			audio_settings.FREQUENCY, SpatialAudioSettings::BUFFER_DURATION,
 			SpatialAudioSettings::SAMPLE_RATE, sound_origin[0], sound_origin[1],
 			sound_origin[2]
 		);
@@ -214,20 +214,20 @@ std::string SpatialAudio::toLower(const std::string& s) {
 std::string SpatialAudio::trim(const std::string& str) {
 	size_t start = 0;
 	while (start < str.size() &&
-		   std::isspace(static_cast<unsigned char>(str[start]))) {
+		   (std::isspace(static_cast<unsigned char>(str[start])) != 0)) {
 		++start;
 	}
 
 	size_t end = str.size();
 	while (end > start &&
-		   std::isspace(static_cast<unsigned char>(str[end - 1]))) {
+		   (std::isspace(static_cast<unsigned char>(str[end - 1])) != 0)) {
 		--end;
 	}
 
 	return str.substr(start, end - start);
 }
 
-bool SpatialAudio::getProcessingStatus() { return processingFinished; }
+bool SpatialAudio::getProcessingStatus() const { return processingFinished; }
 
 SpatialAudio::~SpatialAudio() {
 	depth_audio_running = false;

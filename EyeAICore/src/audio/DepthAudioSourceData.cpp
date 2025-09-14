@@ -9,9 +9,6 @@ createAudioData(float frequency, float duration, int sample_rate) {
 	const float PI = std::numbers::pi;
 	const int numSamples =
 		static_cast<int>(static_cast<double>(sample_rate) * duration);
-	const float fade_out_duration = 0.01;
-	const int fade_out_samples =
-		static_cast<int>(static_cast<double>(sample_rate) * fade_out_duration);
 	const float amplitude = 0.97f;
 
 	/*
@@ -26,21 +23,13 @@ createAudioData(float frequency, float duration, int sample_rate) {
 	*/
 	std::vector<short> samples(numSamples);
 
-	for (int i = 0; i < numSamples - fade_out_samples; ++i) {
+	for (int i = 0; i < numSamples; ++i) {
 		float t = static_cast<float>(i) / static_cast<float>(sample_rate);
 		samples[i] = static_cast<short>(
 			amplitude * 32760 * std::sin(2.0f * PI * frequency * t)
 		);
 	}
 
-	float m = -(static_cast<float>(samples[numSamples - fade_out_samples - 1]) / (fade_out_duration));
-	float c = -(m * duration);
-
-	for (int i = numSamples - fade_out_samples; i < numSamples; i++) {
-		float t = static_cast<float>(i) / static_cast<float>(sample_rate);
-		float value = (m * t) + c;
-		samples[i] = static_cast<short>(value);
-	}
 
 	return samples;
 }
