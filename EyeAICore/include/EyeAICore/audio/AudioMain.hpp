@@ -35,7 +35,7 @@ class AudioMain {
 	// Functions for playing object detection data
 	void startObjectAudioLoop(std::atomic<bool>& running);
 	void changeObjectAudioData(
-		std::vector<ObjectAudioSourceData> new_audio_source_data
+		const std::vector<ObjectAudioSourceData>& new_audio_source_data
 	);
 
   private:

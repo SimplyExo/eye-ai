@@ -27,7 +27,7 @@ createAudioData(float frequency, float duration, int sample_rate) {
 	std::vector<short> samples(numSamples);
 
 	for (int i = 0; i < numSamples; ++i) {
-		float t = static_cast<float>(i) / static_cast<float>(sample_rate);
+		const float t = static_cast<float>(i) / static_cast<float>(sample_rate);
 		samples[i] = static_cast<short>(
 			amplitude * 32760 * std::sin(2.0f * PI * frequency * t)
 		);

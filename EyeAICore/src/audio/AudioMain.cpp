@@ -326,7 +326,7 @@ void AudioMain::setupDepthAudioSources() {
 	for (int i = 0; i < audio_settings.NUMBER_OF_SOURCES; ++i) {
 		// Extracting the AudioSourceData for the source, and creating according
 		// AudioData
-		DepthAudioSourceData source_data = depth_audio_sources_data[i];
+		DepthAudioSourceData const source_data = depth_audio_sources_data[i];
 
 		// Generating each buffer, filling it up and queuing it to the source
 		alGenBuffers(audio_settings.BUFFERS_PER_SOURCE, buffers[i].data());
@@ -373,7 +373,7 @@ void AudioMain::loadAudioLabelsFile() {
 
 	SF_INFO info{};
 	SNDFILE* snd = sf_open_virtual(&vio, SFM_READ, &info, &mem);
-	if (!snd) {
+	if (snd == nullptr) {
 		LOG_ERROR(
 			std::format(
 				"[LoadAudioLabelsFile] sf_open_virtual failed: {}",
@@ -395,7 +395,7 @@ void AudioMain::loadAudioLabelsFile() {
 
 	// reading the data
 	audio_labels_file_buffer.resize(info.frames * info.channels);
-	sf_count_t read_frames =
+	sf_count_t const read_frames =
 		sf_readf_short(snd, audio_labels_file_buffer.data(), info.frames);
 
 	if (read_frames <= 0) {
@@ -412,14 +412,14 @@ void AudioMain::changeDepthAudioData(
 	std::vector<DepthAudioSourceData> new_audio_source_data
 ) {
 	PROFILE_AUDIO_FUNCTION()
-	this->depth_audio_sources_data = new_audio_source_data;
+	this->depth_audio_sources_data = std::move(new_audio_source_data);
 }
 
 void AudioMain::changeObjectAudioData(
-	std::vector<ObjectAudioSourceData> new_audio_source_data
+	const std::vector<ObjectAudioSourceData>& new_audio_source_data
 ) {
 	PROFILE_AUDIO_FUNCTION()
-	std::lock_guard<std::mutex> lock(object_mutex);
+	std::lock_guard<std::mutex> const lock(object_mutex);
 	LOG_INFO("[ChangeObjectAudioData] Got lock...");
 
 	for (const auto& new_object : new_audio_source_data) {
@@ -440,7 +440,7 @@ AudioMain::~AudioMain() {
 	*/
 	alDeleteSources(audio_settings.NUMBER_OF_SOURCES, sources.data());
 	for (auto buff : buffers) {
-		alDeleteBuffers(audio_settings.BUFFERS_PER_SOURCE, buff.data());
+		alDeleteBuffers(SpatialAudioSettings::BUFFERS_PER_SOURCE, buff.data());
 	}
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
