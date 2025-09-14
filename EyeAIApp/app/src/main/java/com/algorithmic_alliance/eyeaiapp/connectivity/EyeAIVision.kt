@@ -21,8 +21,12 @@ open class EyeAIVision(
 	private val bitmapFlow: MutableSharedFlow<Bitmap>?,
 	private val onSingleClick: () -> Unit,
 	private val onDoubleClick: () -> Unit,
+	private val onConnectingSocket: () -> Unit,
+	private val onSocketConnectionEstablished: () -> Unit,
 	private val onSocketFailed: (Exception) -> Unit,
-	private val onMjpegError: (Exception) -> Unit
+	private val onMjpegError: (Exception) -> Unit,
+	private val onConnectingHTTP: () -> Unit,
+	private val onHTTPConnectionEstablished: () -> Unit
 ) {
 	private lateinit var touchSocket: Socket
 	private var mjpegBitmapReader: MjpegBitmapReader? = null
@@ -31,11 +35,13 @@ open class EyeAIVision(
 		CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
 	init {
-		// Touch Button
+		// Touch Button Client starten
 		socketThread.launch {
 			try {
+				onConnectingSocket()
 				touchSocket = Socket(ip, 3333)
 				val reader = BufferedReader(InputStreamReader(touchSocket.inputStream))
+				onSocketConnectionEstablished()
 
 				while (true) {
 					val char = reader.read().toChar()
@@ -53,6 +59,7 @@ open class EyeAIVision(
 			}
 		}
 
+		// Video Steam starten
 		mjpegBitmapReader = MjpegBitmapReader(
 			ip = ip,
 			onFrame = { bitmap ->
@@ -62,7 +69,8 @@ open class EyeAIVision(
 			parentScope = lifecycleScope,
 			onMjpegError = { e ->
 				onMjpegError(e)
-			}
+			},
+
 		)
 
 		mjpegBitmapReader?.start()
