@@ -38,7 +38,8 @@ class EyeAIApp : Application() {
 		private set
 
 	/* will not be fully created if enableObjectDetection is disabled in settings */
-	var yoloModel: YoloModel = YoloModel(YoloModelInfo("best_float32.tflite", 640))
+	var yoloModel: YoloModel =
+		YoloModel(YoloModelInfo("best_float32.tflite", "best_float32.names", 640))
 		private set
 
 	/* will not be fully initialized when enableOCR is disabled in settings */
@@ -106,11 +107,11 @@ class EyeAIApp : Application() {
 		val oldSettings = settings.clone()
 		settings = Settings.load(context)
 
-		if(oldSettings.depthAudioPlayback != settings.depthAudioPlayback){
+		if (oldSettings.depthAudioPlayback != settings.depthAudioPlayback) {
 			NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		}
 
-		if(oldSettings.objectAudioPlayback != settings.objectAudioPlayback){
+		if (oldSettings.objectAudioPlayback != settings.objectAudioPlayback) {
 			NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		}
 
