@@ -36,7 +36,7 @@ object SpatialAudio {
 		eyeAIApp = context.applicationContext as EyeAIApp
 		NativeLib.setAudioSettings(9, 150.0f)
 
-		val cocoLabelsAudio = loadFileFromAssets(context, "coco_labels.wav")
+		val cocoLabelsAudio = loadFileFromAssets(context, "coco_labels.mp3")
 		val cocoLabelsData = loadFileFromAssets(context, "coco_labels_data.json")
 
 		if(cocoLabelsData != null  && cocoLabelsAudio != null){
