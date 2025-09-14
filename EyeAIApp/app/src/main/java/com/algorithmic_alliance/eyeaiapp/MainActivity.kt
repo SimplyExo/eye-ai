@@ -46,6 +46,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.flow.MutableSharedFlow
+import java.io.IOException
+import java.net.UnknownHostException
 
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
@@ -408,6 +410,8 @@ class MainActivity : AppCompatActivity() {
 
 				eyeAIVision = EyeAIVision(
 					ip = eyeAIApp().settings.eyeAIVisionIP.toString(),
+					lifecycleScope = lifecycleScope,
+					bitmapFlow = bitmapFlow,
 					onSingleClick = {
 						Log.i("CLICK", "SINGLE")
 
@@ -424,11 +428,23 @@ class MainActivity : AppCompatActivity() {
 						if(voskUserStart.get()) {
 							stopVoskListening()
 						}
-
-
 					},
-					lifecycleScope = lifecycleScope,
-					bitmapFlow = bitmapFlow
+					onSocketFailed = { e ->
+						runOnUiThread {
+							val errorMessage = AlertDialog.Builder(this)
+							errorMessage.setMessage("TCP connection to EyeAIVision (IP: ${eyeAIApp().settings.eyeAIVisionIP.toString()}) has failed: ${e.message.toString()}")
+							errorMessage.setPositiveButton("Open settings") { dialog, which ->
+								startActivity(Intent(this, SettingsActivity::class.java))
+								overridePendingTransition(
+									android.R.anim.fade_in,
+									android.R.anim.fade_out
+								)
+							}
+							
+							errorMessage.setNegativeButton("Ignore") { dialog, which -> }
+							errorMessage.show()
+						}
+					}
 				)
 
 				mediaPlayer?.shutdown()
