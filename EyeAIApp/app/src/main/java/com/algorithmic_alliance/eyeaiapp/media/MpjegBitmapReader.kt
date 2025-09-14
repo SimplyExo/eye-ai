@@ -28,7 +28,8 @@ class MjpegBitmapReader(
 	private val ip: String,
 	private val onFrame: (Bitmap) -> Unit,
 	private val deliverOnMainThread: Boolean = false,
-	parentScope: CoroutineScope? = null
+	parentScope: CoroutineScope? = null,
+	private val onMjpegError: (Exception) -> Unit
 ) {
 
 	private val trustAllCertificates: Boolean = true
@@ -46,9 +47,11 @@ class MjpegBitmapReader(
 				try {
 					fetchLoop()
 				} catch (ce: CancellationException) {
+					onMjpegError(ce)
 					throw ce
-				} catch (t: Throwable) {
-					t.printStackTrace()
+				} catch (e: Exception) {
+					onMjpegError(e)
+					e.printStackTrace()
 					delay(1000)
 				}
 			}
