@@ -177,6 +177,7 @@ void SpatialAudio::readObjectLabelData() {
 		reinterpret_cast<const char*>(audio_settings.coco_labels_data.data()),
 		audio_settings.coco_labels_data.size()
 	);
+	LOG_INFO(std::format("[ReadingObjectLabelData] Data size: {}", audio_settings.coco_labels_data.size()));
 	nlohmann::json json_object_data;
 	try {
 		json_object_data = nlohmann::json::parse(json_string);
@@ -185,6 +186,7 @@ void SpatialAudio::readObjectLabelData() {
 			"[ReadingObjectLabelData] Could not parse JSON Data from Object "
 			"Label data file"
 		);
+		LOG_ERROR(e.what());
 	}
 	for (auto const& data : json_object_data) {
 		object_label_data[toLower(data["text"])] = {data["start"], data["end"]};

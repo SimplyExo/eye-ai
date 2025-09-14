@@ -384,7 +384,7 @@ void AudioMain::changeObjectAudioData(
 ) {
 	PROFILE_AUDIO_FUNCTION()
 	std::lock_guard<std::mutex> lock(object_mutex);
-	LOG_INFO("[ChangeObjectAudioData] Got lock...");
+	
 
 	for (const auto& new_object : new_audio_source_data) {
 		auto [it, inserted] = seen_objects.emplace(new_object.object_id);
@@ -393,7 +393,7 @@ void AudioMain::changeObjectAudioData(
 			object_audio_sources_data.push(new_object);
 		}
 	}
-	LOG_INFO("[ChangeObjectAudioData] Released lock...");
+
 }
 
 AudioMain::~AudioMain() {

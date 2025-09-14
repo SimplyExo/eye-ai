@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.audio
 
 import android.content.Context
+import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import kotlinx.coroutines.CoroutineScope
@@ -36,11 +37,14 @@ object SpatialAudio {
 		eyeAIApp = context.applicationContext as EyeAIApp
 		NativeLib.setAudioSettings(9, 150.0f)
 
-		val cocoLabelsAudio = loadFileFromAssets(context, "coco_labels.mp3")
+		val cocoLabelsAudio = loadFileFromAssets(context, "coco_labels.wav")
 		val cocoLabelsData = loadFileFromAssets(context, "coco_labels_data.json")
 
 		if(cocoLabelsData != null  && cocoLabelsAudio != null){
 			NativeLib.setupAudioSettings(cocoLabelsAudio, cocoLabelsData)
+			Log.d("SpatialAudio", "[SpatialAudio] Loaded coco data")
+		}else{
+			Log.e("SpatialAudio", "[SpatialAudio] Could not load coco data")
 		}
 	}
 
