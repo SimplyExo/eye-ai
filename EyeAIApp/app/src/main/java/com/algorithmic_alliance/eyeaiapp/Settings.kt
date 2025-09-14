@@ -17,7 +17,7 @@ data class Settings(
 	val eyeAIVisionIP: String?,
 	var depthAudioPlayback: Boolean,
 	var objectAudioPlayback: Boolean,
-
+	var enableNpu: Boolean
 ) : Cloneable {
 	companion object {
 		fun load(context: Context): Settings {
@@ -87,6 +87,11 @@ data class Settings(
 				true
 			)
 
+			val enableNpu = sharedPreferences.getBoolean(
+				context.getString(R.string.enable_npu_delegate_setting),
+				true
+			)
+
 			return Settings(
 				depthModel,
 				showProfilingInfo,
@@ -101,9 +106,8 @@ data class Settings(
 				eyeAIVisionIP,
 				depthAudioPlayback,
 				objectAudioPlayback,
+				enableNpu
 			)
-
-
 		}
 	}
 
@@ -121,5 +125,6 @@ data class Settings(
 		eyeAIVisionIP,
 		depthAudioPlayback,
 		objectAudioPlayback,
+		enableNpu
 	)
 }

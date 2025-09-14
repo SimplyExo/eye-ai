@@ -30,7 +30,8 @@ class YoloModel {
 		std::string_view gpu_delegate_serialization_dir,
 		std::string_view model_token,
 		TfLiteLogWarningCallback log_warning_callback,
-		TfLiteLogErrorCallback log_error_callback
+		TfLiteLogErrorCallback log_error_callback,
+		bool enable_npu
 	);
 
 	tl::expected<std::vector<BoundingBox>, std::string>
@@ -49,7 +50,7 @@ class YoloModel {
   private:
 	[[nodiscard]] std::optional<BoundingBox>
 	parse_box(std::span<const float> array, size_t box_index) const;
-	std::vector<BoundingBox> apply_nms(std::vector<BoundingBox>& boxes) const;
+	std::vector<BoundingBox> apply_nms(const std::vector<BoundingBox>& boxes) const;
 	static float
 	calculate_iou(const BoundingBox& box1, const BoundingBox& box2);
 

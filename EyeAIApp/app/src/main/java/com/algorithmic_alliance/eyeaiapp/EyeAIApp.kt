@@ -92,7 +92,7 @@ class EyeAIApp : Application() {
 
 			// Yolo Model erstellen
 			if (settings.enableObjectDetection) {
-				yoloModel.create(baseContext)
+				yoloModel.create(baseContext, settings.enableNpu)
 			}
 
 			// Google ML Kit initialisieren
@@ -106,16 +106,18 @@ class EyeAIApp : Application() {
 		val oldSettings = settings.clone()
 		settings = Settings.load(context)
 
-		if(oldSettings.depthAudioPlayback != settings.depthAudioPlayback){
+		if (oldSettings.depthAudioPlayback != settings.depthAudioPlayback) {
 			NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		}
 
-		if(oldSettings.objectAudioPlayback != settings.objectAudioPlayback){
+		if (oldSettings.objectAudioPlayback != settings.objectAudioPlayback) {
 			NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		}
 
+		val enableNpuChanged = oldSettings.enableNpu != settings.enableNpu
+
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
-			if (oldSettings.depthModel != settings.depthModel) {
+			if (oldSettings.depthModel != settings.depthModel || enableNpuChanged) {
 				switchDepthModel(settings.depthModel)
 			}
 
@@ -135,9 +137,9 @@ class EyeAIApp : Application() {
 				}
 			}
 
-			if (oldSettings.enableObjectDetection != settings.enableObjectDetection) {
+			if (oldSettings.enableObjectDetection != settings.enableObjectDetection || enableNpuChanged) {
 				if (settings.enableObjectDetection) {
-					yoloModel.create(baseContext)
+					yoloModel.create(baseContext, settings.enableNpu)
 				}
 			}
 
@@ -150,13 +152,13 @@ class EyeAIApp : Application() {
 	}
 
 	private fun switchDepthModel(modelName: String) {
-		if (metricDepthModel?.name == modelName) return
+		if (metricDepthModel?.name == modelName && metricDepthModel?.enableNpu == settings.enableNpu) return
 
 		metricDepthModel?.close()
 		metricDepthModel = null
 
 		metricDepthModel = findDepthModelInfo(modelName)
-			.createDepthModel(this)
+			.createDepthModel(this, settings.enableNpu)
 	}
 
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {
