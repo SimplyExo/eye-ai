@@ -8,6 +8,13 @@ std::vector<ObjectTracker::TrackedBoundingBox>
 ObjectTracker::update(std::span<const BoundingBox> detected_objects) {
 	PROFILE_OBJECT_FUNCTION()
 
+	const auto now = std::chrono::high_resolution_clock::now();
+	auto update_duration_seconds = std::chrono::duration<float>(now - last_update);
+	last_update = now;
+
+	const float frame_rate = 1.f / update_duration_seconds.count();
+	tracker.setMaxTimeLost(MAX_TRACKING_TIME_SECONDS, frame_rate);
+
 	std::vector<Object> byte_track_objects;
 	byte_track_objects.reserve(detected_objects.size());
 
