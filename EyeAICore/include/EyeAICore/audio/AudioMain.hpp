@@ -42,8 +42,6 @@ class AudioMain {
     // global settings for spatial audio
 	const SpatialAudioSettings& audio_settings;
 
-	bool audio_device_initialized = false;
-
 	// for playing depth estimation data
 	std::vector<ALuint> sources;
 	std::vector<std::vector<ALuint>> buffers;
@@ -56,8 +54,8 @@ class AudioMain {
 	std::mutex object_mutex;
 	int AUDIO_FILE_SAMPLE_RATE;
 
-	ALCdevice* device;
-	ALCcontext* context;
+	ALCdevice* device = AL_NONE;
+	ALCcontext* context = AL_NONE;
 
 	void setupDepthAudioSources();
 	void loadAudioLabelsFile();

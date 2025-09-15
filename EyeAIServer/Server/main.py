@@ -7,8 +7,10 @@ def main():
     camera_thread = Camera("Kamera", 640, 640)
     camera_thread.start()
 
-  
-    use_https = True  # for https
+    tcp_port = 3333
+    web_port = 80
+
+    use_https = False  # for https
     cert_path = "cert.pem"  # path to certificate
     key_path = "key.pem"   # path to private key
     
@@ -26,7 +28,8 @@ def main():
     
     c1 = EyeAIServer(
         camera_thread, 
-        3333,  
+        web_port,
+        tcp_port,
         30,
         use_https=use_https,
         cert_path=cert_path if use_https else None,
@@ -35,8 +38,8 @@ def main():
     c1.start()
     
     protocol = "HTTPS" if use_https else "HTTP"
-    print(f"\n[INFO] Server läuft auf {protocol}://localhost:{3333}")
-    print(f"[INFO] Erreichbar im Netzwerk über {protocol}://<SERVER-IP>:{3333}")
+    print(f"\n[INFO] Server läuft auf {protocol}://localhost:{web_port}")
+    print(f"[INFO] Erreichbar im Netzwerk über {protocol}://<SERVER-IP>:{web_port}")
     
     if use_https:
         print("\n[WARNUNG] Self-signed Zertifikat wird verwendet!")

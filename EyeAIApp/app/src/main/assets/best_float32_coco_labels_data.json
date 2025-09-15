@@ -1,0 +1,452 @@
+[
+    {
+        "start": 270,
+        "end": 970,
+        "text": "Airplane"
+    },
+    {
+        "start": 1470,
+        "end": 2240,
+        "text": "Ambulance"
+    },
+    {
+        "start": 2700,
+        "end": 3340,
+        "text": "Barge"
+    },
+    {
+        "start": 3840,
+        "end": 4920,
+        "text": "Bathroom cabinet"
+    },
+    {
+        "start": 5410,
+        "end": 6080,
+        "text": "Bathtub"
+    },
+    {
+        "start": 6650,
+        "end": 7080,
+        "text": "Bed"
+    },
+    {
+        "start": 7850,
+        "end": 8370,
+        "text": "Bench"
+    },
+    {
+        "start": 8950,
+        "end": 9580,
+        "text": "Bicycle"
+    },
+    {
+        "start": 10150,
+        "end": 10800,
+        "text": "Bidet"
+    },
+    {
+        "start": 11520,
+        "end": 12170,
+        "text": "Billboard"
+    },
+    {
+        "start": 12750,
+        "end": 13180,
+        "text": "Boat"
+    },
+    {
+        "start": 13940,
+        "end": 14680,
+        "text": "Bookcase"
+    },
+    {
+        "start": 15160,
+        "end": 15650,
+        "text": "Boy"
+    },
+    {
+        "start": 16300,
+        "end": 16950,
+        "text": "Building"
+    },
+    {
+        "start": 17550,
+        "end": 18030,
+        "text": "Bus"
+    },
+    {
+        "start": 18540,
+        "end": 19370,
+        "text": "Cabinetry"
+    },
+    {
+        "start": 19900,
+        "end": 20470,
+        "text": "Car"
+    },
+    {
+        "start": 21010,
+        "end": 21640,
+        "text": "Castle"
+    },
+    {
+        "start": 22280,
+        "end": 23180,
+        "text": "Cat furniture"
+    },
+    {
+        "start": 23770,
+        "end": 24320,
+        "text": "Chair"
+    },
+    {
+        "start": 24830,
+        "end": 25950,
+        "text": "Chest of drawers"
+    },
+    {
+        "start": 26420,
+        "end": 27050,
+        "text": "Closet"
+    },
+    {
+        "start": 27710,
+        "end": 28540,
+        "text": "Coffee table"
+    },
+    {
+        "start": 29110,
+        "end": 29700,
+        "text": "Couch"
+    },
+    {
+        "start": 30310,
+        "end": 31010,
+        "text": "Countertop"
+    },
+    {
+        "start": 31650,
+        "end": 32170,
+        "text": "Cupboard"
+    },
+    {
+        "start": 32920,
+        "end": 33400,
+        "text": "Desk"
+    },
+    {
+        "start": 33950,
+        "end": 34690,
+        "text": "Dishwasher"
+    },
+    {
+        "start": 35150,
+        "end": 35670,
+        "text": "Door"
+    },
+    {
+        "start": 36290,
+        "end": 37070,
+        "text": "Door handle"
+    },
+    {
+        "start": 37500,
+        "end": 38050,
+        "text": "Drawer"
+    },
+    {
+        "start": 38700,
+        "end": 39580,
+        "text": "Filing cabinet"
+    },
+    {
+        "start": 40110,
+        "end": 40750,
+        "text": "Furniture"
+    },
+    {
+        "start": 41280,
+        "end": 42210,
+        "text": "Gas stove"
+    },
+    {
+        "start": 42820,
+        "end": 43340,
+        "text": "Girl"
+    },
+    {
+        "start": 44000,
+        "end": 44730,
+        "text": "Golf cart"
+    },
+    {
+        "start": 45370,
+        "end": 45990,
+        "text": "Gondola"
+    },
+    {
+        "start": 46570,
+        "end": 47370,
+        "text": "Helicopter"
+    },
+    {
+        "start": 47880,
+        "end": 48960,
+        "text": "Home appliance"
+    },
+    {
+        "start": 49350,
+        "end": 50240,
+        "text": "Humidifier"
+    },
+    {
+        "start": 50760,
+        "end": 51570,
+        "text": "Infant bed"
+    },
+    {
+        "start": 52160,
+        "end": 52860,
+        "text": "Jet ski"
+    },
+    {
+        "start": 53420,
+        "end": 55000,
+        "text": "Kitchen & dining room table"
+    },
+    {
+        "start": 55550,
+        "end": 55990,
+        "text": "Lamp"
+    },
+    {
+        "start": 56670,
+        "end": 57650,
+        "text": "Land vehicle"
+    },
+    {
+        "start": 58250,
+        "end": 58900,
+        "text": "Light bulb"
+    },
+    {
+        "start": 59510,
+        "end": 60340,
+        "text": "Light switch"
+    },
+    {
+        "start": 60810,
+        "end": 61580,
+        "text": "Lighthouse"
+    },
+    {
+        "start": 62230,
+        "end": 63000,
+        "text": "Limousine"
+    },
+    {
+        "start": 63580,
+        "end": 64260,
+        "text": "Loveseat"
+    },
+    {
+        "start": 64850,
+        "end": 65470,
+        "text": "Man"
+    },
+    {
+        "start": 65980,
+        "end": 67220,
+        "text": "Microwave oven"
+    },
+    {
+        "start": 67600,
+        "end": 68410,
+        "text": "Motorcycle"
+    },
+    {
+        "start": 68880,
+        "end": 69780,
+        "text": "Nightstand"
+    },
+    {
+        "start": 70360,
+        "end": 70920,
+        "text": "Oven"
+    },
+    {
+        "start": 71500,
+        "end": 72140,
+        "text": "Person"
+    },
+    {
+        "start": 72620,
+        "end": 73260,
+        "text": "Porch"
+    },
+    {
+        "start": 74050,
+        "end": 75720,
+        "text": "Power plugs and sockets"
+    },
+    {
+        "start": 76200,
+        "end": 77070,
+        "text": "Refrigerator"
+    },
+    {
+        "start": 77480,
+        "end": 78020,
+        "text": "Shelf"
+    },
+    {
+        "start": 78750,
+        "end": 79390,
+        "text": "Shower"
+    },
+    {
+        "start": 79880,
+        "end": 80390,
+        "text": "Sink"
+    },
+    {
+        "start": 80970,
+        "end": 81870,
+        "text": "Skyscraper"
+    },
+    {
+        "start": 82370,
+        "end": 83430,
+        "text": "Soap dispenser"
+    },
+    {
+        "start": 83880,
+        "end": 84740,
+        "text": "Sofa bed"
+    },
+    {
+        "start": 85150,
+        "end": 86010,
+        "text": "Stairs"
+    },
+    {
+        "start": 86460,
+        "end": 87200,
+        "text": "Stool"
+    },
+    {
+        "start": 87680,
+        "end": 88600,
+        "text": "Stop sign"
+    },
+    {
+        "start": 89050,
+        "end": 89850,
+        "text": "Street light"
+    },
+    {
+        "start": 90430,
+        "end": 91520,
+        "text": "Studio couch"
+    },
+    {
+        "start": 91950,
+        "end": 92840,
+        "text": "Submarine"
+    },
+    {
+        "start": 93390,
+        "end": 94000,
+        "text": "Table"
+    },
+    {
+        "start": 94630,
+        "end": 95090,
+        "text": "Tank"
+    },
+    {
+        "start": 95780,
+        "end": 96480,
+        "text": "Taxi"
+    },
+    {
+        "start": 97030,
+        "end": 97630,
+        "text": "Toilet"
+    },
+    {
+        "start": 98240,
+        "end": 98830,
+        "text": "Tower"
+    },
+    {
+        "start": 99360,
+        "end": 100120,
+        "text": "Traffic light"
+    },
+    {
+        "start": 100650,
+        "end": 101610,
+        "text": "Traffic sign"
+    },
+    {
+        "start": 102010,
+        "end": 102630,
+        "text": "Train"
+    },
+    {
+        "start": 103190,
+        "end": 104090,
+        "text": "Training bench"
+    },
+    {
+        "start": 104570,
+        "end": 104990,
+        "text": "Truck"
+    },
+    {
+        "start": 105710,
+        "end": 106540,
+        "text": "Unicycle"
+    },
+    {
+        "start": 107060,
+        "end": 107720,
+        "text": "Van"
+    },
+    {
+        "start": 108280,
+        "end": 108970,
+        "text": "Vehicle"
+    },
+    {
+        "start": 109550,
+        "end": 110390,
+        "text": "Wall clock"
+    },
+    {
+        "start": 111000,
+        "end": 111760,
+        "text": "Wardrobe"
+    },
+    {
+        "start": 112320,
+        "end": 113360,
+        "text": "Washing machine"
+    },
+    {
+        "start": 113850,
+        "end": 114510,
+        "text": "Window"
+    },
+    {
+        "start": 114960,
+        "end": 115820,
+        "text": "Window blind"
+    },
+    {
+        "start": 116390,
+        "end": 116920,
+        "text": "Woman"
+    }
+]

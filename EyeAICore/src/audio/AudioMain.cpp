@@ -82,8 +82,6 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 		return;
 	}
 
-	audio_device_initialized = true;
-
 	alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
 
 	// Setting the listener to his default position of (0|0|0)
@@ -103,7 +101,7 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 
 	LOG_INFO("[DepthAudioLoop] Starting depth audio loop...");
 
-	if (!audio_device_initialized) {
+	if (device == AL_NONE || context == AL_NONE) {
 		LOG_INFO("[DepthAudioLoop] Audio device not initialized. Aborting ...");
 		return;
 	}
@@ -178,8 +176,8 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 	// loading the wav file
 	loadAudioLabelsFile();
 
-	ALuint source;
-	ALuint buffer;
+	ALuint source = AL_NONE;
+	ALuint buffer = AL_NONE;
 	std::vector<short> sound_buffer;
 	// adapting the sample rate to ms for easier use
 	int MODIFIED_SAMPLE_RATE = AUDIO_FILE_SAMPLE_RATE / 1000;
@@ -201,7 +199,6 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 
 		{
 			PROFILE_AUDIO_FUNCTION()
-			LOG_INFO("[ChangeObjectAudioData] Player got lock...");
 			std::lock_guard<std::mutex> lock(object_mutex);
 
 			empty_queue = object_audio_sources_data.empty();
@@ -210,8 +207,6 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 				object_data = object_audio_sources_data.front();
 				object_audio_sources_data.pop();
 			}
-
-			LOG_INFO("[ChangeObjectAudioData] Player released lock...");
 		}
 
 		// extracted logic, so that the lock is freed
@@ -233,18 +228,6 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 				(MODIFIED_SAMPLE_RATE * object_data.sound_end),
 			sound_buffer.begin()
 		);
-		LOG_INFO(
-			std::format(
-				"[ChangeObjectAudioData] Sound begin of {}: {}",
-				object_data.name, object_data.sound_begin
-			)
-		);
-		LOG_INFO(
-			std::format(
-				"[ChangeObjectAudioData] Sound end of {}: {}", object_data.name,
-				object_data.sound_end
-			)
-		);
 
 		// playing the right sound
 		alBufferData(
@@ -257,39 +240,20 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 			object_data.x2_position, object_data.x3_position
 		);
 		alSourcePlay(source);
-
-		LOG_INFO(
-			std::format(
-				"[ChangeObjectAudioData] Playing object: {}", object_data.name
-			)
-		);
 		// waiting until the sound is played, so that no sounds overlap
 		ALint source_state = AL_PLAYING;
 		while (source_state == AL_PLAYING) {
 			alGetSourcei(source, AL_SOURCE_STATE, &source_state);
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
-		LOG_INFO(
-			std::format(
-				"[ChangeObjectAudioData] Played object: {}", object_data.name
-			)
-		);
 
 		// preparing for next object
 		alSourceStop(source);
 		alSourcei(source, AL_BUFFER, AL_NONE);
 		sound_buffer.clear();
 		{
-			LOG_INFO(
-				"[ChangeObjectAudioData] Play got lock for releasing seen "
-				"object..."
-			);
 			std::lock_guard<std::mutex> lock(object_mutex);
 			seen_objects.erase(object_data.object_id);
-			LOG_INFO(
-				"[ChangeObjectAudioData] Play released lock for releasing seen "
-				"object..."
-			);
 		}
 	}
 
@@ -419,8 +383,8 @@ void AudioMain::changeObjectAudioData(
 	const std::vector<ObjectAudioSourceData>& new_audio_source_data
 ) {
 	PROFILE_AUDIO_FUNCTION()
-	std::lock_guard<std::mutex> const lock(object_mutex);
-	LOG_INFO("[ChangeObjectAudioData] Got lock...");
+	std::lock_guard<std::mutex> lock(object_mutex);
+	
 
 	for (const auto& new_object : new_audio_source_data) {
 		auto [it, inserted] = seen_objects.emplace(new_object.object_id);
@@ -429,7 +393,7 @@ void AudioMain::changeObjectAudioData(
 			object_audio_sources_data.push(new_object);
 		}
 	}
-	LOG_INFO("[ChangeObjectAudioData] Released lock...");
+
 }
 
 AudioMain::~AudioMain() {

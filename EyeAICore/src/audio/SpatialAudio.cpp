@@ -69,12 +69,10 @@ void SpatialAudio::processDepthEstimationData() {
 		SpatialAudioSettings::picture_x_resolution / step_size
 	);
 
-	LOG_INFO("[ProcessDepthEstimationData] Started processing...");
 
 	for (int i = 0; i < SpatialAudioSettings::picture_x_resolution;
 		 i += step_size) {
 
-		LOG_INFO(std::format("[ProcessDepthEstimationData] Source {}", i));
 		/*
 		Because the data doesn't come in a 2d form, it is
 		necessary to extract all elements of a column first.
@@ -109,7 +107,6 @@ void SpatialAudio::processDepthEstimationData() {
 		i == 0 ? i-- : i;
 	}
 	audio_main.changeDepthAudioData(new_audio_source_data);
-	LOG_INFO("[ProcessDepthEstimationData] Finished processing...");
 }
 
 void SpatialAudio::processObjectDetectionData() {
@@ -121,10 +118,8 @@ object detection data:
 	- retrieving objects data
 	- saving the data in the vector
 	*/
-
-	LOG_INFO("[ProcessObjectDetectionData] Started processing...");
 	std::vector<ObjectAudioSourceData> new_audio_source_data;
-	for (auto object : objectDetectionData) {
+	for (const auto& object : objectDetectionData) {
 
 		const auto& box = object.bounding_box;
 		std::string object_name = trim(toLower(box.cls_name));
@@ -132,10 +127,10 @@ object detection data:
 		object coordinates are represented by values between 0 and 1
 		so they need to be converted
 		*/
-		int x_coord = (int)(box.cx * (audio_settings.picture_x_resolution - 1));
+		int x_coord = (int)(box.cx * (SpatialAudioSettings::picture_x_resolution - 1));
 		int y_coord =
 
-			(int)(box.cy * (audio_settings.picture_y_resolution - 1));
+			(int)(box.cy * (SpatialAudioSettings::picture_y_resolution - 1));
 
 		if (!object_label_data.contains(object_name)) {
 			LOG_ERROR(
@@ -152,24 +147,22 @@ object detection data:
 
 		// retrieving distance
 		float distance = depthEstimationData.at(
-			x_coord + (y_coord * audio_settings.picture_x_resolution)
+			x_coord + (y_coord * SpatialAudioSettings::picture_x_resolution)
 		);
 
 		std::array<float, 3> sound_origin =
 			CalculateSoundOrigin().calculateSoundOrigin(
 				std::array<int, 2>{x_coord + 1, 0}, distance,
-				audio_settings.picture_x_resolution
+				SpatialAudioSettings::picture_x_resolution
 			);
-		new_audio_source_data.push_back(
-			ObjectAudioSourceData{
+		new_audio_source_data.emplace_back(
 				object.tracking_id, object_name, label_sound_start,
 				label_sound_end, sound_origin[0], sound_origin[1],
 				sound_origin[2]
-			}
+			
 		);
 	}
 	audio_main.changeObjectAudioData(new_audio_source_data);
-	LOG_INFO("[ProcessObjectDetectionData] Finished processing...");
 }
 
 void SpatialAudio::readObjectLabelData() {
@@ -184,6 +177,7 @@ void SpatialAudio::readObjectLabelData() {
 		reinterpret_cast<const char*>(audio_settings.coco_labels_data.data()),
 		audio_settings.coco_labels_data.size()
 	);
+	LOG_INFO(std::format("[ReadingObjectLabelData] Data size: {}", audio_settings.coco_labels_data.size()));
 	nlohmann::json json_object_data;
 	try {
 		json_object_data = nlohmann::json::parse(json_string);
@@ -192,6 +186,7 @@ void SpatialAudio::readObjectLabelData() {
 			"[ReadingObjectLabelData] Could not parse JSON Data from Object "
 			"Label data file"
 		);
+		LOG_ERROR(e.what());
 	}
 	for (auto const& data : json_object_data) {
 		object_label_data[toLower(data["text"])] = {data["start"], data["end"]};
