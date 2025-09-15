@@ -11,6 +11,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
@@ -42,6 +43,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 class MainActivity : AppCompatActivity() {
@@ -407,6 +409,12 @@ class MainActivity : AppCompatActivity() {
 			if (!eyeAIApp().settings.eyeAIVisionIP!!.isEmpty()) {
 				bitmapFlow = MutableSharedFlow(replay = 1)
 
+				val connectingTCPDialog = AlertDialog.Builder(this)
+				connectingTCPDialog.setMessage("Connecting to Button Server...")
+				connectingTCPDialog.setView(ProgressBar(this))
+
+				var shownConnectDialog: AlertDialog? = null
+
 				eyeAIVision = EyeAIVision(
 					ip = eyeAIApp().settings.eyeAIVisionIP.toString(),
 					lifecycleScope = lifecycleScope,
@@ -477,6 +485,26 @@ class MainActivity : AppCompatActivity() {
 								errorMessage.show()
 							}
 						}
+					},
+
+					onConnectingSocket = {
+						runOnUiThread {
+							shownConnectDialog = connectingTCPDialog.show()
+						}
+					},
+
+					onSocketConnectionEstablished = {
+						runOnUiThread {
+							shownConnectDialog?.dismiss()
+						}
+					},
+
+					onConnectingHTTP = {
+
+					},
+
+					onHTTPConnectionEstablished = {
+
 					}
 				)
 
