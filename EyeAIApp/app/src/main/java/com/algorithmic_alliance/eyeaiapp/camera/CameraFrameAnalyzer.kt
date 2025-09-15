@@ -25,7 +25,10 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import androidx.core.view.isVisible
+import kotlinx.coroutines.delay
 import java.util.concurrent.ExecutorService
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTime
 
 /**
  * Helper class that analyses the camera feed images in realtime
@@ -69,30 +72,38 @@ class CameraFrameAnalyzer(
 				val metricDepthModel = eyeAIApp.metricDepthModel
 				val frame = getFrame()
 				if (frame != null && metricDepthModel != null) {
-					NativeLib.newDepthFrame()
-					val predictionOutput = metricDepthModel.predictDepth(frame)
-					eyeAIApp.aiData.depthEstimationData.set(predictionOutput)
-					val inputWidth = frame.width
-					val inputHeight = frame.height
-					colorMappedImage = NativeLib.metricDepthColormap(
-						predictionOutput,
-						metricDepthModel.inputDim
-					)
+					val inferenceDuration = measureTime {
+						NativeLib.newDepthFrame()
+						val predictionOutput = metricDepthModel.predictDepth(frame)
+						eyeAIApp.aiData.depthEstimationData.set(predictionOutput)
+						val inputWidth = frame.width
+						val inputHeight = frame.height
+						colorMappedImage = NativeLib.metricDepthColormap(
+							predictionOutput,
+							metricDepthModel.inputDim
+						)
 
-					withContext(Dispatchers.Main) {
-						depthView.setImageBitmap(colorMappedImage)
-						if (debugInputBitmapPreview.isVisible)
-							debugInputBitmapPreview.setImageBitmap(frame)
+						withContext(Dispatchers.Main) {
+							depthView.setImageBitmap(colorMappedImage)
+							if (debugInputBitmapPreview.isVisible)
+								debugInputBitmapPreview.setImageBitmap(frame)
 
-						if (eyeAIApp.settings.showProfilingInfo) {
-							val formattedInputResolution = "${inputWidth}x${inputHeight}"
-							val formattedDepthModelInputSize =
-								"${metricDepthModel.inputDim.width}x${metricDepthModel.inputDim.height}"
-							performanceText.text =
-								"Metric Depth model: ${metricDepthModel.name}\nCamera resolution: $formattedInputResolution -> Depth model input: $formattedDepthModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}\n${NativeLib.formatObjectFrame()}"
-						} else {
-							performanceText.text = ""
+							if (eyeAIApp.settings.showProfilingInfo) {
+								val formattedInputResolution = "${inputWidth}x${inputHeight}"
+								val formattedDepthModelInputSize =
+									"${metricDepthModel.inputDim.width}x${metricDepthModel.inputDim.height}"
+								performanceText.text =
+									"Metric Depth model: ${metricDepthModel.name}\nCamera resolution: $formattedInputResolution -> Depth model input: $formattedDepthModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}\n${NativeLib.formatObjectFrame()}"
+							} else {
+								performanceText.text = ""
+							}
 						}
+					}
+
+					val maxFrameRate = eyeAIApp.settings.maxDepthFrameRate
+					val minInferenceDuration = (maxFrameRate?.let { 1.0 / it })?.seconds
+					if (minInferenceDuration != null && inferenceDuration < minInferenceDuration) {
+						delay(minInferenceDuration - inferenceDuration)
 					}
 				}
 			}
@@ -103,19 +114,27 @@ class CameraFrameAnalyzer(
 			while (isActive) {
 				val frame = getFrame()
 				if (frame != null) {
-					NativeLib.newObjectFrame()
-					// analyzing the frame
-					val boxes = eyeAIApp.yoloModel.runInference(frame)
-					eyeAIApp.aiData.objectDetectionBoxes.set(boxes)
+					val inferenceDuration = measureTime {
+						NativeLib.newObjectFrame()
+						// analyzing the frame
+						val boxes = eyeAIApp.yoloModel.runInference(frame)
+						eyeAIApp.aiData.objectDetectionBoxes.set(boxes)
 
-					// showing boxes
-					withContext(Dispatchers.Main) {
-						if (boxes != null) {
-							overlayOD.setResults(boxes)
-							overlayOD.setCameraResolution(Size(frame.width, frame.height))
-						} else {
-							overlayOD.reset()
+						// showing boxes
+						withContext(Dispatchers.Main) {
+							if (boxes != null) {
+								overlayOD.setResults(boxes)
+								overlayOD.setCameraResolution(Size(frame.width, frame.height))
+							} else {
+								overlayOD.reset()
+							}
 						}
+					}
+
+					val maxFrameRate = eyeAIApp.settings.maxObjectDetectionFrameRate
+					val minInferenceDuration = (maxFrameRate?.let { 1.0 / it })?.seconds
+					if (minInferenceDuration != null && inferenceDuration < minInferenceDuration) {
+						delay(minInferenceDuration - inferenceDuration)
 					}
 				}
 			}
