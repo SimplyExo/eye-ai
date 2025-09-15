@@ -28,6 +28,14 @@ class ObjectTracker {
 
   private:
 	const std::vector<std::string> labels;
+	/// TODO: update byte-track fork to allow updating fps / tracked buffer size
+	/// at runtime
 	constexpr static int EXPECTED_FPS = 10;
-	BYTETracker tracker{EXPECTED_FPS};
+	constexpr static int TRACKED_BUFFER_COUNT = 60;
+	/// How many times a 100% confident prediction needs to be tracked in order to be
+	/// considered valid (for ex. 150% -> 1x100% + 1x50% or 3x50% etc.
+	constexpr static float MIN_VALID_PREDICTION_SCORE = 1.5f;
+	BYTETracker tracker{EXPECTED_FPS, TRACKED_BUFFER_COUNT};
+	/// sums up all the confidence of a tracked object
+	std::unordered_map<int, float> tracked_object_valid_score;
 };

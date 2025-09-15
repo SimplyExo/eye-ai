@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "EyeAICore/ObjectTracker.hpp"
 #include "EyeAICore/YoloModel.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
@@ -21,8 +23,15 @@ ObjectTracker::update(std::span<const BoundingBox> detected_objects) {
 
 	for (const auto& tracked_object : tracked_objects) {
 		const int cls = tracked_object->getLabel();
-		if (cls < 0 || cls >= (int)labels.size())
+		if (cls < 0 || std::cmp_greater_equal(cls ,labels.size()))
 			continue;
+
+		float& valid_score = tracked_object_valid_score[static_cast<size_t>(tracked_object->getTrackId())];
+		valid_score += tracked_object->getScore();
+
+		if (valid_score < MIN_VALID_PREDICTION_SCORE)
+			continue;
+
 		const std::string& cls_name = labels[cls];
 		const auto& rect = tracked_object->getRect();
 		const float x1 = rect.tl_x();
