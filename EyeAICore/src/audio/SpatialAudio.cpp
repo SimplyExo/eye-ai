@@ -177,7 +177,6 @@ void SpatialAudio::readObjectLabelData() {
 		reinterpret_cast<const char*>(audio_settings.coco_labels_data.data()),
 		audio_settings.coco_labels_data.size()
 	);
-	LOG_INFO(std::format("[ReadingObjectLabelData] Data size: {}", audio_settings.coco_labels_data.size()));
 	nlohmann::json json_object_data;
 	try {
 		json_object_data = nlohmann::json::parse(json_string);
@@ -190,14 +189,6 @@ void SpatialAudio::readObjectLabelData() {
 	}
 	for (auto const& data : json_object_data) {
 		object_label_data[toLower(data["text"])] = {data["start"], data["end"]};
-	}
-	for (const auto& [key, value] : object_label_data) {
-		LOG_INFO(
-			std::format(
-				"[ReadingObjectLabelData] {}: Begin {}, End {}", key, value[0],
-				value[1]
-			)
-		);
 	}
 	LOG_INFO("[ReadingObjectLabelData] Finished reading Object Label data...");
 }

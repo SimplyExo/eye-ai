@@ -6,9 +6,8 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <atomic>
+#include <deque>
 #include <mutex>
-#include <queue>
-#include <unordered_set>
 #include <vector>
 
 /*
@@ -48,8 +47,7 @@ class AudioMain {
 	std::vector<DepthAudioSourceData> depth_audio_sources_data;
 
 	// for playing object detection data
-	std::queue<ObjectAudioSourceData> object_audio_sources_data;
-	std::unordered_set<int> seen_objects;
+	std::deque<ObjectAudioSourceData> object_audio_sources_data;
 	std::vector<short> audio_labels_file_buffer;
 	std::mutex object_mutex;
 	int AUDIO_FILE_SAMPLE_RATE = 0;
