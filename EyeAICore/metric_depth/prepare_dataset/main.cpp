@@ -10,7 +10,6 @@
 #include <filesystem>
 #include <format>
 #include <iostream>
-#include <ranges>
 #include <span>
 
 /// max number of threads for evaluation, tested such that the drive is now the
@@ -46,6 +45,10 @@ int main(const int argc, const char* argv[]) {
 	const std::string midas_model_token = std::format(
 		"{}_{}", midas_model_path.filename().string(), midas_model_last_modified
 	);
+
+	// not used, since mobile phones with qualcomm npu's are not preparing datasets
+	const std::filesystem::path npu_delegate_dir = temp_dir / "qnn_npu_delegate";
+	std::filesystem::create_directories(npu_delegate_dir);
 
 	const size_t thread_count = std::min(
 		MAX_THREAD_COUNT,
@@ -104,7 +107,7 @@ int main(const int argc, const char* argv[]) {
 			auto result = DepthModel::create(
 				std::move(model_data_clone),
 				gpu_delegate_serialization_dir.string(), midas_model_token,
-				tflite_log_warning_callback, tflite_log_error_callback
+				tflite_log_warning_callback, tflite_log_error_callback, npu_delegate_dir
 			);
 
 			if (result) {

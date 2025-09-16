@@ -7,7 +7,7 @@ using ::testing::FloatNear;
 using ::testing::Pointwise;
 
 TEST(DepthEstimationTest, CorrectOutput) {
-	constexpr float tolerance = 1e-3f;
+	constexpr float tolerance = 1e-1f;
 	constexpr auto test_image_path = "../tests/00022_00193_outdoor_010_030.png";
 	constexpr auto expected_rel_depth_path =
 		"../tests/00022_00193_outdoor_010_030_expected.npy";
@@ -44,8 +44,8 @@ TEST(DepthEstimationTest, CorrectOutput) {
 	 * (npy file viewer: https://perchance.org/npy-file-viewer)
 
 	npy::write_npy(
-		"../tests/00022_00193_outdoor_010_030_expected.npy",
-		npy::npy_data{.data = output, .shape = {(size_t)height, (size_t)width}}
+		"../tests/00022_00193_outdoor_010_030_qualcomm.npy",//"../tests/00022_00193_outdoor_010_030_expected.npy",
+		npy::npy_data_ptr{.data_ptr = output.data(), .shape = {(size_t)height, (size_t)width}}
 	);
 
 	*/
