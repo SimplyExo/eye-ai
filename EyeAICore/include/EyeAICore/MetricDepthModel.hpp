@@ -19,7 +19,8 @@ class MetricDepthModel {
 		std::string_view depth_model_token,
 		std::string_view rel2abs_depth_model_token,
 		TfLiteLogWarningCallback log_warning_callback,
-		TfLiteLogErrorCallback log_error_callback
+		TfLiteLogErrorCallback log_error_callback,
+		std::string npu_skel_directory
 	);
 
 	using RunResult = tl::expected<

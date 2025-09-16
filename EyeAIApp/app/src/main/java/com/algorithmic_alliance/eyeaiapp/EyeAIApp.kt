@@ -2,6 +2,9 @@ package com.algorithmic_alliance.eyeaiapp
 
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
 import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
@@ -14,6 +17,7 @@ import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.concurrent.Executors
 
 /**
@@ -47,6 +51,8 @@ class EyeAIApp : Application() {
 		private set
 
 	var aiData = AIModelData
+
+	var npuQnnDelegateDirectory: String? = null
 
 	companion object {
 		const val APP_LOG_TAG = "Eye AI"
@@ -83,6 +89,9 @@ class EyeAIApp : Application() {
 		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 
+		// blocks till all files are copied
+		copyNpuSkelFiles()
+
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
 
@@ -93,7 +102,7 @@ class EyeAIApp : Application() {
 
 			// Yolo Model erstellen
 			if (settings.enableObjectDetection) {
-				yoloModel.create(baseContext)
+				yoloModel.create(baseContext, npuQnnDelegateDirectory!!)
 			}
 
 			// Google ML Kit initialisieren
@@ -138,7 +147,7 @@ class EyeAIApp : Application() {
 
 			if (oldSettings.enableObjectDetection != settings.enableObjectDetection) {
 				if (settings.enableObjectDetection) {
-					yoloModel.create(baseContext)
+					yoloModel.create(baseContext, npuQnnDelegateDirectory!!)
 				}
 			}
 
@@ -157,11 +166,67 @@ class EyeAIApp : Application() {
 		metricDepthModel = null
 
 		metricDepthModel = findDepthModelInfo(modelName)
-			.createDepthModel(this)
+			.createDepthModel(this, npuQnnDelegateDirectory!!)
 	}
 
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {
 		return DEPTH_MODELS.find { it.name == modelName }
 			?: (DEPTH_MODELS.find { it.name == DEFAULT_DEPTH_MODEL_NAME } ?: DEPTH_MODELS[0])
+	}
+
+	private fun copyNpuSkelFile(filename: String, lastUpdateAppTime: Long) {
+		val dstFile = File(npuQnnDelegateDirectory, filename)
+		val dstFileModifiedDate = dstFile.lastModified()
+		if (dstFile.exists() && dstFileModifiedDate >= lastUpdateAppTime) {
+			Log.i(APP_LOG_TAG, "Not copying npu skel file $filename, already exists")
+			return
+		}
+
+		try {
+			baseContext.assets.open("hexagon/$filename").use { fileContents ->
+				dstFile.writeBytes(fileContents.readBytes())
+			}
+
+			Log.i(APP_LOG_TAG, "Copied npu skel file $filename")
+		} catch (e: Exception) {
+			Log.e(APP_LOG_TAG, "Failed to copy npu skel file $filename: ${e.message}")
+		}
+	}
+
+	private fun copyNpuSkelFiles() {
+		npuQnnDelegateDirectory = "${getExternalFilesDir(null)}/qnn_delegate"
+
+		val created = File(npuQnnDelegateDirectory!!).mkdirs()
+		if (!created && !File(npuQnnDelegateDirectory!!).exists()) {
+			Log.e(APP_LOG_TAG, "Could not create qnn_delegate directory!")
+			return
+		}
+
+		val skelFilepaths = baseContext.assets.list("hexagon")
+
+		if (skelFilepaths == null) {
+			Log.e(APP_LOG_TAG, "Could not list all skel files in assets -> will not copy them!")
+			return
+		}
+
+		val lastUpdateAppTime = getLastAppUpdateTime(baseContext)
+		for (skelFilepath in skelFilepaths) {
+			copyNpuSkelFile(skelFilepath, lastUpdateAppTime)
+		}
+	}
+}
+
+fun getLastAppUpdateTime(context: Context): Long {
+	try {
+		val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			packageInfo.lastUpdateTime
+		} else {
+			// Fallback
+			File(context.packageCodePath).lastModified()
+		}
+	} catch (e: PackageManager.NameNotFoundException) {
+		e.printStackTrace()
+		return 0L
 	}
 }

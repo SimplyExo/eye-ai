@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 
-class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: String?) : LLM {
+class GoogleAIStudioLLM(apiKey: String, customEndpoint: String?) : LLM {
 
 
 	// handling to stop streaming
@@ -21,7 +21,7 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 	}
 
 	companion object {
-		const val MODEL_NAME: String = "gemini-2.5-flash-lite"
+		const val MODEL_NAME: String = "gemini-2.5-flash"
 		private const val GOOGLE_GEN_AI_ENDPOINT = "https://generativelanguage.googleapis.com"
 
 		private fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000

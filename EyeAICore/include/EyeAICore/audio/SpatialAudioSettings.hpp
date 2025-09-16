@@ -18,7 +18,7 @@ using SpatialAudioLogInfoCallback = void (*)(std::string);
 class SpatialAudioSettings {
   public:
 	// constants
-	constexpr static float BUFFER_DURATION = 0.5f;
+	constexpr static float BUFFER_DURATION = 0.100f;
 	constexpr static int BUFFERS_PER_SOURCE = 3;
 	constexpr static int SAMPLE_RATE = 48000;
 	constexpr static int picture_x_resolution = 256;
