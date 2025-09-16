@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -21,6 +22,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
+import androidx.core.os.postDelayed
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.algorithmic_alliance.eyeaiapp.NativeLib.setDepthAudioPaused
@@ -34,6 +36,9 @@ import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
+import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
+import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.SpeechManager
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.LLMStreamingHandler
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +50,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import java.util.logging.Handler
+import kotlin.compareTo
 
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
@@ -95,6 +102,10 @@ class MainActivity : AppCompatActivity() {
 
 	private var mjpegErrorIgnored = false
 
+
+
+
+
 	enum class State {
 		IDLE,
 		SETTINGS_MENU,
@@ -108,6 +119,7 @@ class MainActivity : AppCompatActivity() {
 	private var mediaPlayer: MediaPlayer? = null
 
 	private lateinit var audioDeviceManager : AudioDeviceManager
+
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -147,7 +159,13 @@ class MainActivity : AppCompatActivity() {
 		startStopVosk!!.setOnClickListener {
 
 			if (voskUserStart.get()){
-				stopVoskListening()
+
+				SpeechManager.forceStop()
+
+				android.os.Handler(Looper.getMainLooper()).postDelayed({
+					stopVoskListening()
+				}, 100)
+
 			}
 			else{
 				startVoskListening()
@@ -163,6 +181,8 @@ class MainActivity : AppCompatActivity() {
 			startActivity(Intent(this, SettingsActivity::class.java))
 			overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
 		}
+
+
 
 		updateUngrantedPermissionsNotice()
 
@@ -236,6 +256,10 @@ class MainActivity : AppCompatActivity() {
 				}
 			}
 		}
+
+		SpeechManager.tts = textToSpeechInstance
+
+
 
 
 		CoroutineScope(Dispatchers.IO).launch {
@@ -433,6 +457,7 @@ class MainActivity : AppCompatActivity() {
 						Log.i("CLICK", "DOUBLE")
 
 						if(voskUserStart.get()) {
+							SpeechManager.forceStop()
 							stopVoskListening()
 						}
 					},
@@ -539,6 +564,7 @@ class MainActivity : AppCompatActivity() {
 			}
 		}
 	}
+
 
 	private fun updateSpeechRecognitionUIVisibility() {
 		val visibility = if (eyeAIApp().settings.enableSpeechRecognition) {
@@ -662,15 +688,20 @@ class MainActivity : AppCompatActivity() {
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun updateVoskStatusText() {
-		speechRecognitionFinalResultText?.text = when {
-			!permissionManager.isMicrophonePermissionGranted() ->
-				"Mikrofon-Berechtigung erforderlich"
-			!eyeAIApp().settings.enableSpeechRecognition ->
-				"Spracherkennung deaktiviert"
-			voskUserStart.get() ->
-				getString(R.string.speech_recognition_ready)
-			else ->
-				"Vosk bereit - Button klicken zum Starten"
+		runOnUiThread {
+			speechRecognitionFinalResultText?.text = when {
+				!permissionManager.isMicrophonePermissionGranted() ->
+					"Mikrofon-Berechtigung erforderlich"
+
+				!eyeAIApp().settings.enableSpeechRecognition ->
+					"Spracherkennung deaktiviert"
+
+				voskUserStart.get() ->
+					getString(R.string.speech_recognition_ready)
+
+				else ->
+					"Vosk bereit - Button klicken zum Starten"
+			}
 		}
 	}
 
@@ -686,7 +717,6 @@ class MainActivity : AppCompatActivity() {
 			llmResponseText,
 			cameraManager.cameraFrameAnalyzer ?: mediaFrameAnalyzer
 		) {
-
 			CoroutineScope(Dispatchers.Main).launch {
 				Log.d(
 					EyeAIApp.APP_LOG_TAG,
@@ -695,6 +725,7 @@ class MainActivity : AppCompatActivity() {
 			}
 		}
 
+		SpeechManager.stream = stateMachine.getStreamingHandler()
 
 		currentStateMachine = stateMachine
 
@@ -705,7 +736,7 @@ class MainActivity : AppCompatActivity() {
 			State.SETTINGS_ACTION -> stateMachine.handleSettingsAction(final)
 		}
 
-		//Logging the state transition.
+		// Logging der state transition
 		Log.d(EyeAIApp.APP_LOG_TAG, "State transition: $currentState -> ${update.newState}")
 		currentState = update.newState
 		lastLlmJsonResponse = update.newJson
@@ -734,6 +765,8 @@ class MainActivity : AppCompatActivity() {
 		Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
 		updateVoskStatusText()
 	}
+
+
 
 
 	fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000

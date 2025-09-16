@@ -38,10 +38,14 @@ class StateMachine(
 	    streamingHandler::speakAndHandleUi
     )
 
+
+
     // Performance optimizations
     private val promptCache = mutableMapOf<String, String>()
 
     fun isStreaming(): Boolean = streamingHandler.isStreaming()
+
+    fun getStreamingHandler(): LLMStreamingHandler = streamingHandler
 
     private fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
 

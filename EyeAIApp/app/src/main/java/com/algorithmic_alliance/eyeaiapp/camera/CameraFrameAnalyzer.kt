@@ -143,16 +143,11 @@ class CameraFrameAnalyzer(
 	}
 
 	fun getFrame(): Bitmap? {
-		val frame: Bitmap? = if (eyeAIApp.settings.inputSource == "camera") {
+		return if (eyeAIApp.settings.inputSource == "camera") {
 			latestCameraFrame.get()
 		} else {
-			if (mediaImageView.drawable == null) {
-				null
-			} else {
-				(mediaImageView.drawable as BitmapDrawable).bitmap
-			}
+			(mediaImageView.drawable as? BitmapDrawable)?.bitmap
 		}
-		return frame
 	}
 
 	fun shutdown() {

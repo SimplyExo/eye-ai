@@ -11,6 +11,15 @@ import org.json.JSONObject
 
 class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: String?) : LLM {
 
+
+	// handling to stop streaming
+	@Volatile
+	private var shouldStopStream = false
+
+	fun stopCurrentStream() {
+		shouldStopStream = true
+	}
+
 	companion object {
 		const val MODEL_NAME: String = "gemini-2.5-flash-lite"
 		private const val GOOGLE_GEN_AI_ENDPOINT = "https://generativelanguage.googleapis.com"
@@ -50,6 +59,9 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 		onComplete: () -> Unit,
 		onError: (Exception) -> Unit
 	) {
+
+		shouldStopStream = false
+
 		CoroutineScope(Dispatchers.IO).launch {
 			val totalStart = System.nanoTime()
 			var hasCalledComplete = false
@@ -85,11 +97,11 @@ class GoogleAIStudioLLM(private val apiKey: String, private val customEndpoint: 
 					reader = reader,
 					onComplete = { safeCallComplete() },
 					onError = { safeCallError(it) },
-					hasCalledComplete = { hasCalledComplete }
+					hasCalledComplete = { hasCalledComplete || shouldStopStream}
 				)
 
 			} catch (e: Exception) {
-				safeCallError(e)
+				if(!shouldStopStream) safeCallError(e)
 			}
 		}
 	}
