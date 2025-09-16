@@ -23,7 +23,7 @@ class TextToSpeechInstance(
 	private val onTTSFinishedSpeaking: (() -> Unit)? = null
 ) : TextToSpeech.OnInitListener {
 
-	private var tts: TextToSpeech? = TextToSpeech(context, this)
+	var tts: TextToSpeech? = TextToSpeech(context, this)
 	private var isReady = false
 
 	private val pendingCallbacks = mutableMapOf<String, () -> Unit>()
@@ -242,6 +242,7 @@ class TextToSpeechInstance(
 		}
 	}
 
+
 	// ------------------------------
 	// Settings
 	// ------------------------------
@@ -298,4 +299,5 @@ class TextToSpeechInstance(
 	@Synchronized
 	fun getActiveUtteranceCount(): Int = activeUtteranceCount
 
+	fun isSpeaking(): Boolean = tts?.isSpeaking == true || getActiveUtteranceCount() > 0
 }

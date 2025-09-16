@@ -39,7 +39,6 @@ class CameraFrameAnalyzer(
 	private var depthView: ImageView,
 	private var performanceText: TextView,
 	private var overlayOD: OverlayViewOD,
-	private var overlayOCR: OverlayViewOCR,
 	private var debugInputBitmapPreview: ImageView,
 	private var mediaImageView: ImageView
 ) : ImageAnalysis.Analyzer {
@@ -162,22 +161,11 @@ class CameraFrameAnalyzer(
 	}
 
 	fun getFrame(): Bitmap? {
-		val frame: Bitmap? = if (eyeAIApp.settings.inputSource == "camera") {
+		return if (eyeAIApp.settings.inputSource == "camera") {
 			latestCameraFrame.get()
 		} else {
-			if (mediaImageView.drawable == null) {
-				null
-			} else {
-				try {
-					(mediaImageView.drawable as BitmapDrawable).bitmap
-				}
-				catch (e: Exception) {
-					Log.w(EyeAIApp.APP_LOG_TAG, "Failed to get frame bitmap (ignoring): $e")
-					return null
-				}
-			}
+			(mediaImageView.drawable as? BitmapDrawable)?.bitmap
 		}
-		return frame
 	}
 
 	fun shutdown() {
