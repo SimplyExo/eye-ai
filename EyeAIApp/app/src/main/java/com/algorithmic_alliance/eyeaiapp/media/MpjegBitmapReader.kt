@@ -28,7 +28,8 @@ class MjpegBitmapReader(
 	private val ip: String,
 	private val onFrame: (Bitmap) -> Unit,
 	private val deliverOnMainThread: Boolean = false,
-	parentScope: CoroutineScope? = null
+	parentScope: CoroutineScope? = null,
+	private val onMjpegError: (Exception) -> Unit
 ) {
 
 	private val trustAllCertificates: Boolean = true
@@ -36,8 +37,11 @@ class MjpegBitmapReader(
 	private val scope: CoroutineScope = parentScope ?: CoroutineScope(Dispatchers.IO + SupervisorJob())
 	private var job: Job? = null
 
+	private val urlObj = URL("http://$ip/cam0")
+	private val connRaw = urlObj.openConnection() ?: throw IllegalStateException("Cannot open connection")
+
 	@Volatile
-	private var connection: HttpURLConnection? = null
+	private var connection = (connRaw as? HttpURLConnection) ?: throw IllegalStateException("Not an HTTP connection")
 
 	fun start() {
 		if (job?.isActive == true) return
@@ -46,9 +50,11 @@ class MjpegBitmapReader(
 				try {
 					fetchLoop()
 				} catch (ce: CancellationException) {
+					onMjpegError(ce)
 					throw ce
-				} catch (t: Throwable) {
-					t.printStackTrace()
+				} catch (e: Exception) {
+					onMjpegError(e)
+					e.printStackTrace()
 					delay(1000)
 				}
 			}
@@ -62,37 +68,31 @@ class MjpegBitmapReader(
 
 	private fun disconnect() {
 		try {
-			connection?.disconnect()
+			connection.disconnect()
 		} catch (_: Throwable) { }
-		connection = null
+		//connection = null
 	}
 
 	private suspend fun fetchLoop() = withContext(Dispatchers.IO) {
-		val urlObj = URL("http://$ip/cam0")
-		val connRaw = urlObj.openConnection() ?: throw IllegalStateException("Cannot open connection")
-		val conn = (connRaw as? HttpURLConnection) ?: throw IllegalStateException("Not an HTTP connection")
-		connection = conn
-
-		if (trustAllCertificates && conn is HttpsURLConnection) {
+		if (trustAllCertificates && connection is HttpsURLConnection) {
 			val (sf, hv) = createInsecureSsl()
-			conn.sslSocketFactory = sf
-			conn.hostnameVerifier = hv
+			(connection as HttpsURLConnection).sslSocketFactory = sf
+			(connection as HttpsURLConnection).hostnameVerifier = hv
 		}
 
-		conn.requestMethod = "GET"
-		conn.connectTimeout = 5000
-		conn.readTimeout = 0
-		conn.doInput = true
-		conn.useCaches = false
+		connection.requestMethod = "GET"
+		connection.connectTimeout = 5000
+		connection.readTimeout = 0
+		connection.doInput = true
+		connection.useCaches = false
 
 		try {
-			conn.connect()
-			conn.inputStream.use { input ->
+			connection.connect()
+			connection.inputStream.use { input ->
 				parseStream(input)
 			}
 		} finally {
-			try { conn.disconnect() } catch (_: Throwable) {}
-			if (connection == conn) connection = null
+			disconnect()
 		}
 	}
 

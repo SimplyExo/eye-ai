@@ -122,9 +122,9 @@ Beispiel für die Eingabe "verlassen": {"setting_intent": "leave"}
 			onJsonUpdate(null)
 			StateUpdate(State.IDLE, null) // Keine weitere Nachricht, da schon gesprochen
 		} else {
-			speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen.")
+			speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Einstellungen verlassen.")
 			onJsonUpdate(null)
-			StateUpdate(State.IDLE, null)
+			StateUpdate(State.SETTINGS_MENU, null)
 		}
 	}
 

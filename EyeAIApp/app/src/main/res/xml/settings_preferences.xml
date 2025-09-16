@@ -1,12 +1,17 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory app:title="General">
-        <CheckBoxPreference app:key="@string/enable_npu_delegate_setting"
-            app:title="Use NPU (experimental)"
+        <CheckBoxPreference
             app:defaultValue="true"
-            app:summary="@string/enable_npu_summary"/>
+            app:key="@string/enable_npu_delegate_setting"
+            app:summary="@string/enable_npu_summary"
+            app:title="Use NPU (experimental)" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:key="@string/debugging_settings_category" app:title="Debugging" app:isPreferenceVisible="false">
+    <PreferenceCategory
+        app:isPreferenceVisible="false"
+        app:key="@string/debugging_settings_category"
+        app:title="Debugging">
         <CheckBoxPreference
             app:key="@string/show_profiling_info_setting"
             app:title="Show Profiling Information" />
@@ -22,6 +27,18 @@
             app:key="@string/depth_model_setting"
             app:summary="%s"
             app:title="Depth Estimation Model" />
+
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="@string/enable_depth_frame_rate_limit_setting"
+            app:title="Enable Framerate Limiter" />
+
+        <EditTextPreference
+            android:inputType="number"
+            app:useSimpleSummaryProvider="true"
+            app:key="@string/max_depth_frame_rate_setting"
+            app:title="Framerate Limit"
+            app:defaultValue="30" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Speech Recognition">
@@ -57,6 +74,18 @@
             app:defaultValue="true"
             app:key="@string/enable_object_detection_setting"
             app:title="Enabled" />
+
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="@string/enable_object_detection_frame_rate_limit_setting"
+            app:title="Enable Framerate Limiter" />
+
+        <EditTextPreference
+            android:inputType="number"
+            app:useSimpleSummaryProvider="true"
+            app:key="@string/max_object_detection_frame_rate_setting"
+            app:title="Framerate Limit"
+            app:defaultValue="30" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="OCR">
@@ -68,26 +97,27 @@
 
     <PreferenceCategory app:title="Input Source">
         <ListPreference
-            app:key="@string/input_source_setting"
-            app:title="Input Source"
             app:defaultValue="camera"
             app:entries="@array/input_source_entries"
             app:entryValues="@array/input_source_values"
+            app:key="@string/input_source_setting"
+            app:title="Input Source"
             app:useSimpleSummaryProvider="true" />
 
         <Preference
             app:key="@string/media_path_setting"
-            app:title="Select Media File">
-        </Preference>
+            app:title="Select Media File" />
 
         <EditTextPreference
             app:key="@string/eyeaivision_ip_setting"
-            app:title="EyeAIVision IP">
-        </EditTextPreference>
+            app:title="EyeAIVision IP" />
     </PreferenceCategory>
 
     // this will be populated by SettingsActivity.kt
-    <PreferenceCategory app:key="@string/build_info_settings_category" app:title="Build Info" app:isPreferenceVisible="false">
+    <PreferenceCategory
+        app:isPreferenceVisible="false"
+        app:key="@string/build_info_settings_category"
+        app:title="Build Info">
         <Preference
             app:key="version_info"
             app:title="App Version" />

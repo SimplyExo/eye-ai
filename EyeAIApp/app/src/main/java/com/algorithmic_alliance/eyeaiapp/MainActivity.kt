@@ -11,6 +11,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
@@ -42,6 +43,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 class MainActivity : AppCompatActivity() {
@@ -88,6 +90,10 @@ class MainActivity : AppCompatActivity() {
 
 	private var currentStateMachine: StateMachine? = null
 
+	private var tcpErrorShowing = false
+	private var mjpegErrorShowing = false
+
+	private var mjpegErrorIgnored = false
 
 	enum class State {
 		IDLE,
@@ -403,8 +409,16 @@ class MainActivity : AppCompatActivity() {
 			if (!eyeAIApp().settings.eyeAIVisionIP!!.isEmpty()) {
 				bitmapFlow = MutableSharedFlow(replay = 1)
 
+				val connectingTCPDialog = AlertDialog.Builder(this)
+				connectingTCPDialog.setMessage("Connecting to Button Server...")
+				connectingTCPDialog.setView(ProgressBar(this))
+
+				var shownConnectDialog: AlertDialog? = null
+
 				eyeAIVision = EyeAIVision(
 					ip = eyeAIApp().settings.eyeAIVisionIP.toString(),
+					lifecycleScope = lifecycleScope,
+					bitmapFlow = bitmapFlow,
 					onSingleClick = {
 						Log.i("CLICK", "SINGLE")
 
@@ -421,11 +435,77 @@ class MainActivity : AppCompatActivity() {
 						if(voskUserStart.get()) {
 							stopVoskListening()
 						}
+					},
+					onSocketFailed = { e ->
+						runOnUiThread {
+							if (!tcpErrorShowing) {
+								tcpErrorShowing = true
+								val errorMessage = AlertDialog.Builder(this)
+								errorMessage.setMessage("TCP connection to EyeAIVision (IP: ${eyeAIApp().settings.eyeAIVisionIP.toString()}) has failed: ${e.message.toString()}")
+								errorMessage.setPositiveButton("Open settings") { dialog, which ->
+									tcpErrorShowing = false
+									startActivity(Intent(this, SettingsActivity::class.java))
+									dialog.dismiss()
+									overridePendingTransition(
+										android.R.anim.fade_in,
+										android.R.anim.fade_out
+									)
+								}
 
+								errorMessage.setNegativeButton("Ignore") { dialog, which ->
+									tcpErrorShowing = false
+									dialog.dismiss()
+								}
+								errorMessage.show()
+							}
+						}
+					},
+
+					onMjpegError = { e->
+						runOnUiThread {
+							if (!mjpegErrorShowing && !mjpegErrorIgnored) {
+								mjpegErrorShowing = true
+								val errorMessage = AlertDialog.Builder(this)
+								errorMessage.setMessage("Error while getting camera frame from EyeAIVision (IP: ${eyeAIApp().settings.eyeAIVisionIP.toString()}): ${e.message.toString()}")
+								errorMessage.setPositiveButton("Open settings") { dialog, which ->
+									mjpegErrorShowing = false
+									dialog.dismiss()
+									startActivity(Intent(this, SettingsActivity::class.java))
+									overridePendingTransition(
+										android.R.anim.fade_in,
+										android.R.anim.fade_out
+									)
+								}
+
+								errorMessage.setNegativeButton("Ignore") { dialog, which ->
+									dialog.dismiss()
+									mjpegErrorIgnored = true
+									mjpegErrorShowing = false
+								}
+								errorMessage.show()
+							}
+						}
+					},
+
+					onConnectingSocket = {
+						runOnUiThread {
+							shownConnectDialog = connectingTCPDialog.show()
+						}
+					},
+
+					onSocketConnectionEstablished = {
+						runOnUiThread {
+							shownConnectDialog?.dismiss()
+						}
+					},
+
+					onConnectingHTTP = {
 
 					},
-					lifecycleScope = lifecycleScope,
-					bitmapFlow = bitmapFlow
+
+					onHTTPConnectionEstablished = {
+
+					}
 				)
 
 				mediaPlayer?.shutdown()

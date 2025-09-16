@@ -12,8 +12,12 @@ class ButtonThread(threading.Thread):
         try:
             print(f"[BUTTON] Client {self.address} verbunden!")
             while True:
-                self.connection.send(b'\xff\n')
-                time.sleep(0.1)
+                byte_to_send = input("[BUTTON] Bitte Clickzahl eingeben (1 oder 2): ")
+
+                if byte_to_send == "1" or byte_to_send == "2":
+                    self.connection.send(byte_to_send.encode())
+                else:
+                    print("[BUTTON] Dies ist keine zulässige Eingabe!")
 
         except:     # Wenn Client sich trennt
             print(f"[BUTTON] Client {self.address} getrennt!")

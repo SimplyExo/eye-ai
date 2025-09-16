@@ -2,5 +2,28 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/FXdiv-source" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/bytetrack-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/concurrentqueue-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/tl-expected-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/abseil-cpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/cpuinfo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/egl_headers" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/eigen" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/farmhash" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/flatbuffers" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/gemmlowp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/ml_dtypes" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/ml_dtypes/third_party/eigen" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/opencl_headers" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/opengl_headers" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/protobuf" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/protobuf/third_party/benchmark" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/protobuf/third_party/googletest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/ruy" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/ruy/third_party/cpuinfo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/ruy/third_party/googletest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/vulkan_headers" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/xnnpack" vcs="Git" />
   </component>
 </project>
