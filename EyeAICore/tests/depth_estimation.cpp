@@ -7,7 +7,7 @@ using ::testing::FloatNear;
 using ::testing::Pointwise;
 
 TEST(DepthEstimationTest, CorrectOutput) {
-	constexpr float tolerance = 1e-1f;
+	constexpr float tolerance = 1e-3f;
 	constexpr auto test_image_path = "../tests/00022_00193_outdoor_010_030.png";
 	constexpr auto expected_rel_depth_path =
 		"../tests/00022_00193_outdoor_010_030_expected.npy";
