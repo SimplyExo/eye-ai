@@ -1,10 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp
 
-import android.bluetooth.BluetoothAdapter
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.Bitmap
-import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log

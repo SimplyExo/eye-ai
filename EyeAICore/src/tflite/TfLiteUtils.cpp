@@ -114,7 +114,7 @@ create_qnn_npu_delegate(
 
 	case NpuConfiguration::Yolo:
 		options.htp_options.precision = TfLiteQnnDelegateHtpPrecision::kHtpQuantized;
-		options.htp_options.useConvHmx = true;
+		options.htp_options.useConvHmx = false;
 		options.htp_options.performance_mode = kHtpSustainedHighPerformance;
 
 		break;
