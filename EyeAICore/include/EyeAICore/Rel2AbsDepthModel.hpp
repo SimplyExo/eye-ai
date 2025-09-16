@@ -19,7 +19,8 @@ class Rel2AbsDepthModel {
 		std::string_view model_token,
 		TfLiteLogWarningCallback log_warning_callback,
 		TfLiteLogErrorCallback log_error_callback,
-		bool enable_npu
+		bool enable_npu,
+		std::string npu_skel_directory
 	);
 
 	using RunResult = tl::expected<

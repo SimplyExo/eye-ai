@@ -21,7 +21,7 @@ class YoloModel(var info: YoloModelInfo) {
 
 	private var initialized = false
 
-	fun create(context: Context, enableNpu: Boolean) {
+	fun create(context: Context, enableNpu: Boolean, skelDirectory: String) {
 		// Erstellen einer Yolo-Instanz
 		val modelBytes = info.getAsBytes(context)
 		labels = info.readLinesFromAsset(context)
@@ -29,7 +29,7 @@ class YoloModel(var info: YoloModelInfo) {
 		NativeLib.initYoloRuntime(
 			modelBytes, labels,
 			createSerializedGpuDelegateCacheDirectory(context).path,
-			getModelToken(context, info.tfliteFilename), enableNpu
+			getModelToken(context, info.tfliteFilename), enableNpu, skelDirectory
 		)
 
 		val inputShape = NativeLib.getYoloInputShape()

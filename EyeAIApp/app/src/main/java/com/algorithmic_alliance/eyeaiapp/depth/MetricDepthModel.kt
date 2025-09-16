@@ -1,9 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.depth
 
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.os.Build
 import android.util.Size
 import java.io.File
 import android.util.Log
@@ -11,6 +9,7 @@ import androidx.core.graphics.scale
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.ProfilingFrameType
+import com.algorithmic_alliance.eyeaiapp.getLastAppUpdateTime
 
 /** All needed information to create and use a depth model */
 class MetricDepthModelInfo(
@@ -19,13 +18,14 @@ class MetricDepthModelInfo(
 	val rel2absDepthFileName: String
 ) {
 	/** @return null if model type is not supported */
-	fun createDepthModel(context: Context, enableNpu: Boolean): MetricDepthModel {
+	fun createDepthModel(context: Context, enableNpu: Boolean, skelDirectory: String): MetricDepthModel {
 		return MetricDepthModel(
 			context,
 			name,
 			relativeDepthFileName,
 			rel2absDepthFileName,
-			enableNpu
+			enableNpu,
+			skelDirectory
 		)
 	}
 }
@@ -35,7 +35,8 @@ class MetricDepthModel(
 	val name: String,
 	val relativeDepthFileName: String,
 	val rel2absDepthFileName: String,
-	val enableNpu: Boolean
+	val enableNpu: Boolean,
+	val skelDirectory: String
 ) : AutoCloseable {
 	val inputDim: Size
 
@@ -51,7 +52,10 @@ class MetricDepthModel(
 		// cleanup old cached gpu delegate files
 		if (gpuDelegateCacheDirectory.exists()) {
 			for (file in gpuDelegateCacheDirectory.listFiles()!!) {
-				if (file.name.contains(relativeDepthModelToken) || file.name.contains(rel2absDepthModelToken))
+				if (file.name.contains(relativeDepthModelToken) || file.name.contains(
+						rel2absDepthModelToken
+					)
+				)
 					continue
 
 				try {
@@ -68,7 +72,7 @@ class MetricDepthModel(
 		NativeLib.initMetricDepthModel(
 			relativeDepthModelData, rel2absDepthModelData,
 			gpuDelegateCacheDirectory.path,
-			relativeDepthModelToken, rel2absDepthModelToken, enableNpu
+			relativeDepthModelToken, rel2absDepthModelToken, enableNpu, skelDirectory
 		)
 
 		val inputShape = NativeLib.getMetricDepthModelInputShape()
@@ -130,21 +134,6 @@ fun createSerializedGpuDelegateCacheDirectory(context: Context): File {
 	val gpuDelegateCacheDirectory = File(context.cacheDir, "gpu_delegate_cache")
 	if (!gpuDelegateCacheDirectory.exists()) gpuDelegateCacheDirectory.mkdirs()
 	return gpuDelegateCacheDirectory
-}
-
-private fun getLastAppUpdateTime(context: Context): Long {
-	try {
-		val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-			packageInfo.lastUpdateTime
-		} else {
-			// Fallback
-			File(context.packageCodePath).lastModified()
-		}
-	} catch (e: PackageManager.NameNotFoundException) {
-		e.printStackTrace()
-		return 0L
-	}
 }
 
 /**

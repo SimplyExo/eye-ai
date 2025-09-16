@@ -45,7 +45,7 @@ get_tensor_quantization(const TfLiteTensor* tensor);
 		ProfilingFrame& profiling_frame
 	);
 
-enum class NpuConfiguration {
+enum class NpuConfiguration : std::uint8_t {
 	MiDaS,
 	rel2abs,
 	Yolo
@@ -58,7 +58,8 @@ enum class NpuConfiguration {
 create_qnn_npu_delegate(
 	std::string_view delegate_serialization_dir,
 	std::string_view model_token,
-	NpuConfiguration config
+	NpuConfiguration config,
+	std::string_view skel_directory
 );
 
 /// either a input or a output tensor

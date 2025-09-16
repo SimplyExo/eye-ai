@@ -72,13 +72,15 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	jobjectArray labels,
 	jstring gpu_delegate_serialization_dir,
 	jstring model_token,
-	jboolean enable_npu
+	jboolean enable_npu,
+	jstring skel_directory
 ) {
 	NativeByteArrayScope model_data(env, model);
 	const NativeStringScope gpu_delegate_serialization_dir_string(
 		env, gpu_delegate_serialization_dir
 	);
 	const NativeStringScope model_token_string(env, model_token);
+	const NativeStringScope skel_directory_scope(env, skel_directory);
 
 	const auto log_warning_callback = [](std::string msg) {
 		LOG_WARN("[YoloRuntime] {}", msg);
@@ -107,7 +109,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	auto result = yolo_instance.lock()->create(
 		model_data.to_vector(), labels_vector,
 		gpu_delegate_serialization_dir_string, model_token_string,
-		log_warning_callback, log_error_callback, enable_npu
+		log_warning_callback, log_error_callback, enable_npu,
+		skel_directory_scope.to_string()
 	);
 
 	if (!result.has_value()) {
@@ -229,7 +232,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 	jstring gpu_delegate_serialization_dir,
 	jstring relative_depth_model_token,
 	jstring rel2abs_depth_model_token,
-	jboolean enable_npu
+	jboolean enable_npu,
+	jstring skel_directory
 ) {
 	const NativeStringScope gpu_delegate_serialization_dir_string(
 		env, gpu_delegate_serialization_dir
@@ -245,6 +249,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 		env, rel2abs_depth_model_token
 	);
 
+	NativeStringScope skel_directory_scope{env, skel_directory};
+
 	const auto log_warning_callback = [](std::string msg) {
 		LOG_WARN("[TfLiteRuntime] {}", msg);
 	};
@@ -258,7 +264,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 		rel2abs_depth_model_data.to_vector(),
 		gpu_delegate_serialization_dir_string,
 		relative_depth_model_token_string, rel2abs_depth_model_token_string,
-		log_warning_callback, log_error_callback, enable_npu
+		log_warning_callback, log_error_callback, enable_npu,
+		skel_directory_scope.to_string()
 	);
 	if (result) {
 		metric_depth_model.lock()->swap(*result);

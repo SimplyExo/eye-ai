@@ -26,7 +26,8 @@ object NativeLib {
 		labels: Array<String>,
 		gpuDelegateSerializationDir: String,
 		modelToken: String,
-		enableNpu: Boolean
+		enableNpu: Boolean,
+		skelDirectory: String
 	): Boolean
 
 	external fun runYoloOperation(input: FloatArray): String
@@ -48,7 +49,8 @@ object NativeLib {
 		gpuDelegateSerializationDir: String,
 		relativeDepthModelToken: String,
 		rel2absDepthModelToken: String,
-		enableNpu: Boolean
+		enableNpu: Boolean,
+		skelDirectory: String
 	)
 
 	external fun shutdownMetricDepthModel()

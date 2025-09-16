@@ -8,7 +8,8 @@ Rel2AbsDepthModel::CreateResult Rel2AbsDepthModel::create(
 	std::string_view model_token,
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback,
-	bool enable_npu
+	bool enable_npu,
+	std::string npu_skel_directory
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
@@ -17,7 +18,7 @@ Rel2AbsDepthModel::CreateResult Rel2AbsDepthModel::create(
 		FloatTensorFormat::Rel2AbsDepthInput,
 		FloatTensorFormat::Rel2AbsDepthCoefficientOutput, log_warning_callback,
 		log_error_callback, get_depth_profiling_frame(), enable_npu,
-		NpuConfiguration::rel2abs
+		NpuConfiguration::rel2abs, std::move(npu_skel_directory)
 	);
 
 	if (!runtime)

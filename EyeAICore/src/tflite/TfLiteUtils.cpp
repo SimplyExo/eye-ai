@@ -69,7 +69,8 @@ std::unique_ptr<TfLiteDelegate, void (*)(TfLiteDelegate*)>
 create_qnn_npu_delegate(
 	[[maybe_unused]] std::string_view delegate_serialization_dir,
 	[[maybe_unused]] std::string_view model_token,
-	NpuConfiguration config
+	NpuConfiguration config,
+	std::string_view skel_directory
 ) {
 #if EYE_AI_CORE_USE_PREBUILT_TFLITE
 	const auto htp_fp16_status = TfLiteQnnDelegateHasCapability(
@@ -122,7 +123,7 @@ create_qnn_npu_delegate(
 
 
 
-	options.skel_library_dir = "/data/local/tmp/qnn_delegate";
+	options.skel_library_dir = skel_directory.data();
 	return {TfLiteQnnDelegateCreate(&options), TfLiteQnnDelegateDelete};
 #else
 	return {nullptr, null_delegate_delete};
