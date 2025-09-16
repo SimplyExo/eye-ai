@@ -102,7 +102,7 @@ class EyeAIApp : Application() {
 
 			// Yolo Model erstellen
 			if (settings.enableObjectDetection) {
-				yoloModel.create(baseContext, settings.enableNpu, npuQnnDelegateDirectory!!)
+				yoloModel.create(baseContext, npuQnnDelegateDirectory!!)
 			}
 
 			// Google ML Kit initialisieren
@@ -124,10 +124,8 @@ class EyeAIApp : Application() {
 			NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		}
 
-		val enableNpuChanged = oldSettings.enableNpu != settings.enableNpu
-
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
-			if (oldSettings.depthModel != settings.depthModel || enableNpuChanged) {
+			if (oldSettings.depthModel != settings.depthModel) {
 				switchDepthModel(settings.depthModel)
 			}
 
@@ -147,9 +145,9 @@ class EyeAIApp : Application() {
 				}
 			}
 
-			if (oldSettings.enableObjectDetection != settings.enableObjectDetection || enableNpuChanged) {
+			if (oldSettings.enableObjectDetection != settings.enableObjectDetection) {
 				if (settings.enableObjectDetection) {
-					yoloModel.create(baseContext, settings.enableNpu, npuQnnDelegateDirectory!!)
+					yoloModel.create(baseContext, npuQnnDelegateDirectory!!)
 				}
 			}
 
@@ -162,13 +160,13 @@ class EyeAIApp : Application() {
 	}
 
 	private fun switchDepthModel(modelName: String) {
-		if (metricDepthModel?.name == modelName && metricDepthModel?.enableNpu == settings.enableNpu) return
+		if (metricDepthModel?.name == modelName) return
 
 		metricDepthModel?.close()
 		metricDepthModel = null
 
 		metricDepthModel = findDepthModelInfo(modelName)
-			.createDepthModel(this, settings.enableNpu, npuQnnDelegateDirectory!!)
+			.createDepthModel(this, npuQnnDelegateDirectory!!)
 	}
 
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {

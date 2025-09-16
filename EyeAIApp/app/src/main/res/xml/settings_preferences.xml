@@ -1,13 +1,5 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <PreferenceCategory app:title="General">
-        <CheckBoxPreference
-            app:defaultValue="true"
-            app:key="@string/enable_npu_delegate_setting"
-            app:summary="@string/enable_npu_summary"
-            app:title="Use NPU (experimental)" />
-    </PreferenceCategory>
-
     <PreferenceCategory
         app:isPreferenceVisible="false"
         app:key="@string/debugging_settings_category"

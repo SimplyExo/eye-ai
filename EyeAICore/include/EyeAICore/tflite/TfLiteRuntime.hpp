@@ -76,7 +76,6 @@ class TfLiteRuntime {
 		TfLiteLogWarningCallback log_warning_callback,
 		TfLiteLogErrorCallback log_error_callback,
 		ProfilingFrame& profiling_frame,
-		bool enable_npu,
 		NpuConfiguration npu_config,
 		std::string npu_skel_directory
 	);

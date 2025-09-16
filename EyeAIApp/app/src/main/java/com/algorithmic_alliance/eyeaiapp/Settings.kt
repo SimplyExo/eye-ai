@@ -18,8 +18,7 @@ data class Settings(
 	val mediaSource: String?,
 	val eyeAIVisionIP: String?,
 	var depthAudioPlayback: Boolean,
-	var objectAudioPlayback: Boolean,
-	var enableNpu: Boolean
+	var objectAudioPlayback: Boolean
 ) : Cloneable {
 	companion object {
 		const val DEFAULT_FRAME_RATE_LIMIT: Int = 30
@@ -121,11 +120,6 @@ data class Settings(
 				true
 			)
 
-			val enableNpu = sharedPreferences.getBoolean(
-				context.getString(R.string.enable_npu_delegate_setting),
-				true
-			)
-
 			return Settings(
 				depthModel,
 				maxDepthFrameRate,
@@ -141,8 +135,7 @@ data class Settings(
 				mediaSource,
 				eyeAIVisionIP,
 				depthAudioPlayback,
-				objectAudioPlayback,
-				enableNpu
+				objectAudioPlayback
 			)
 		}
 	}
@@ -162,7 +155,6 @@ data class Settings(
 		mediaSource,
 		eyeAIVisionIP,
 		depthAudioPlayback,
-		objectAudioPlayback,
-		enableNpu
+		objectAudioPlayback
 	)
 }

@@ -26,7 +26,6 @@ object NativeLib {
 		labels: Array<String>,
 		gpuDelegateSerializationDir: String,
 		modelToken: String,
-		enableNpu: Boolean,
 		skelDirectory: String
 	): Boolean
 
@@ -49,7 +48,6 @@ object NativeLib {
 		gpuDelegateSerializationDir: String,
 		relativeDepthModelToken: String,
 		rel2absDepthModelToken: String,
-		enableNpu: Boolean,
 		skelDirectory: String
 	)
 
