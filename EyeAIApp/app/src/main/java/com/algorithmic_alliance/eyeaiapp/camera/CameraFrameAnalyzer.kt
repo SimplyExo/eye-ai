@@ -36,7 +36,6 @@ class CameraFrameAnalyzer(
 	private var depthView: ImageView,
 	private var performanceText: TextView,
 	private var overlayOD: OverlayViewOD,
-	private var overlayOCR: OverlayViewOCR,
 	private var debugInputBitmapPreview: ImageView,
 	private var mediaImageView: ImageView
 ) : ImageAnalysis.Analyzer {

@@ -22,7 +22,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
-import androidx.core.os.postDelayed
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.algorithmic_alliance.eyeaiapp.NativeLib.setDepthAudioPaused
@@ -36,9 +35,7 @@ import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
-import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.SpeechManager
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.LLMStreamingHandler
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,10 +45,8 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
-import java.util.logging.Handler
-import kotlin.compareTo
+
 
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
@@ -378,7 +373,7 @@ class MainActivity : AppCompatActivity() {
 						depthPreviewImage!!,
 						performanceText!!,
 						overlayObjectDetection!!,
-						overlayOcr!!,
+
 						debugInputBitmapPreview!!,
 						mediaImageView!!
 					)
@@ -413,7 +408,7 @@ class MainActivity : AppCompatActivity() {
 						depthPreviewImage!!,
 						performanceText!!,
 						overlayObjectDetection!!,
-						overlayOcr!!,
+
 						debugInputBitmapPreview!!,
 						mediaImageView!!
 					)
@@ -547,7 +542,7 @@ class MainActivity : AppCompatActivity() {
 					depthPreviewImage!!,
 					performanceText!!,
 					overlayObjectDetection!!,
-					overlayOcr!!,
+
 					debugInputBitmapPreview!!,
 					mediaImageView!!
 				)
