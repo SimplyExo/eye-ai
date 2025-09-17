@@ -89,8 +89,7 @@ class EyeAIApp : Application() {
 		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 
-		// blocks till all files are copied
-		copyNpuSkelFiles()
+		npuQnnDelegateDirectory = applicationInfo.nativeLibraryDir
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
@@ -172,47 +171,6 @@ class EyeAIApp : Application() {
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {
 		return DEPTH_MODELS.find { it.name == modelName }
 			?: (DEPTH_MODELS.find { it.name == DEFAULT_DEPTH_MODEL_NAME } ?: DEPTH_MODELS[0])
-	}
-
-	private fun copyNpuSkelFile(filename: String, lastUpdateAppTime: Long) {
-		val dstFile = File(npuQnnDelegateDirectory, filename)
-		val dstFileModifiedDate = dstFile.lastModified()
-		if (dstFile.exists() && dstFileModifiedDate >= lastUpdateAppTime) {
-			Log.i(APP_LOG_TAG, "Not copying npu skel file $filename, already exists")
-			return
-		}
-
-		try {
-			baseContext.assets.open("hexagon/$filename").use { fileContents ->
-				dstFile.writeBytes(fileContents.readBytes())
-			}
-
-			Log.i(APP_LOG_TAG, "Copied npu skel file $filename")
-		} catch (e: Exception) {
-			Log.e(APP_LOG_TAG, "Failed to copy npu skel file $filename: ${e.message}")
-		}
-	}
-
-	private fun copyNpuSkelFiles() {
-		npuQnnDelegateDirectory = "${getExternalFilesDir(null)}/qnn_delegate"
-
-		val created = File(npuQnnDelegateDirectory!!).mkdirs()
-		if (!created && !File(npuQnnDelegateDirectory!!).exists()) {
-			Log.e(APP_LOG_TAG, "Could not create qnn_delegate directory!")
-			return
-		}
-
-		val skelFilepaths = baseContext.assets.list("hexagon")
-
-		if (skelFilepaths == null) {
-			Log.e(APP_LOG_TAG, "Could not list all skel files in assets -> will not copy them!")
-			return
-		}
-
-		val lastUpdateAppTime = getLastAppUpdateTime(baseContext)
-		for (skelFilepath in skelFilepaths) {
-			copyNpuSkelFile(skelFilepath, lastUpdateAppTime)
-		}
 	}
 }
 
