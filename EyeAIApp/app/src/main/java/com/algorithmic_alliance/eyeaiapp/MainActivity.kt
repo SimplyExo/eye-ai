@@ -342,13 +342,15 @@ class MainActivity : AppCompatActivity() {
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun onMicrophonePermissionResult(isGranted: Boolean) {
 		if (isGranted && eyeAIApp().settings.enableSpeechRecognition) {
-			eyeAIApp()
-				.voskModel
-				.initService(
-					::onPartialSpeechRecognitionResult,
-					::onFinalSpeechRecognitionResult,
-					::onSpeechRecognitionLoaded
-				)
+			if (!eyeAIApp().voskModel.isListening()) {
+				eyeAIApp()
+					.voskModel
+					.initService(
+						::onPartialSpeechRecognitionResult,
+						::onFinalSpeechRecognitionResult,
+						::onSpeechRecognitionLoaded
+					)
+			}
 		} else {
 			Log.w(EyeAIApp.APP_LOG_TAG, "Microphone Permission not granted!")
 		}
