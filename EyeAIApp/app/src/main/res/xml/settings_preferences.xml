@@ -33,12 +33,13 @@
             app:key="@string/enable_depth_frame_rate_limit_setting"
             app:title="Enable Framerate Limiter" />
 
-        <EditTextPreference
-            android:inputType="number"
-            app:useSimpleSummaryProvider="true"
+        <SeekBarPreference
+            app:min="1"
+            android:max="120"
+            app:showSeekBarValue="true"
             app:key="@string/max_depth_frame_rate_setting"
             app:title="Framerate Limit"
-            app:defaultValue="30" />
+            app:defaultValue="30"/>
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Speech Recognition">
@@ -80,12 +81,13 @@
             app:key="@string/enable_object_detection_frame_rate_limit_setting"
             app:title="Enable Framerate Limiter" />
 
-        <EditTextPreference
-            android:inputType="number"
-            app:useSimpleSummaryProvider="true"
+        <SeekBarPreference
+            app:min="1"
+            android:max="120"
+            app:defaultValue="30"
             app:key="@string/max_object_detection_frame_rate_setting"
             app:title="Framerate Limit"
-            app:defaultValue="30" />
+            app:showSeekBarValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="OCR">
