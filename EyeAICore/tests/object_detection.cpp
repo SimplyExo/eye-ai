@@ -41,7 +41,7 @@ TEST(ObjectDetection, CorrectOutput) {
 
 	auto result = yolo_instance.create(
 		std::move(model_data), labels, gpu_delegate_serialization_dir.string(),
-		YOLO_MODEL_TOKEN, tflite_log_warning_callback, tflite_log_error_callback, npu_delegate_dir
+		YOLO_MODEL_TOKEN, tflite_log_warning_callback, tflite_log_error_callback, false
 	);
 
 	EXPECT_RESULT_HAS_VALUE(result);
