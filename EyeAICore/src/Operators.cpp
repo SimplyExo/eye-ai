@@ -43,7 +43,7 @@ FloatTensorBuffer<FloatTensorFormat::MetricDepth> rel2abs_operator(
 
 	assert(coeffs.data().size() == Rel2AbsDepthModel::COEFFS_COUNT);
 	auto coeffs_values = coeffs.data();
-	std::array<float, Rel2AbsDepthModel::COEFFS_COUNT> rel2abs_coeffs{
+	const std::array<float, Rel2AbsDepthModel::COEFFS_COUNT> rel2abs_coeffs{
 		coeffs_values[0], coeffs_values[1], coeffs_values[2], coeffs_values[3],
 		coeffs_values[4]
 	};

@@ -7,7 +7,8 @@ Rel2AbsDepthModel::CreateResult Rel2AbsDepthModel::create(
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
 	TfLiteLogWarningCallback log_warning_callback,
-	TfLiteLogErrorCallback log_error_callback
+	TfLiteLogErrorCallback log_error_callback,
+	std::string npu_skel_directory
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
@@ -15,7 +16,8 @@ Rel2AbsDepthModel::CreateResult Rel2AbsDepthModel::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
 		FloatTensorFormat::Rel2AbsDepthInput,
 		FloatTensorFormat::Rel2AbsDepthCoefficientOutput, log_warning_callback,
-		log_error_callback, get_depth_profiling_frame()
+		log_error_callback, get_depth_profiling_frame(),
+		NpuConfiguration::rel2abs, std::move(npu_skel_directory)
 	);
 
 	if (!runtime)

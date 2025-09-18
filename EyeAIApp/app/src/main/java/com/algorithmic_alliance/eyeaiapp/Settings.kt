@@ -5,23 +5,27 @@ import androidx.preference.PreferenceManager
 
 data class Settings(
 	var depthModel: String,
+	var maxDepthFrameRate: Int?,
 	var showProfilingInfo: Boolean,
 	var showDebugInputBitmap: Boolean,
 	var enableSpeechRecognition: Boolean,
 	var googleAiStudioApiKey: String?,
 	var customGoogleGenAIStudioEndpoint: String?,
 	var enableObjectDetection: Boolean,
+	var maxObjectDetectionFrameRate: Int?,
 	var enableOCR: Boolean,
 	val inputSource: String?,
 	val mediaSource: String?,
 	val eyeAIVisionIP: String?,
 	var depthAudioPlayback: Boolean,
-	var objectAudioPlayback: Boolean,
+	var objectAudioPlayback: Boolean,	
 	var depthAudioFrequency: Int,
 	var depthAudioClickIncidence: Int
 
 ) : Cloneable {
 	companion object {
+		const val DEFAULT_FRAME_RATE_LIMIT: Int = 30
+
 		fun load(context: Context): Settings {
 			val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -29,6 +33,21 @@ data class Settings(
 				context.getString(R.string.depth_model_setting),
 				EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
 			).toString()
+
+			val depthFrameRateLimitEnabled = sharedPreferences.getBoolean(
+				context.getString(R.string.enable_depth_frame_rate_limit_setting),
+				true
+			)
+
+			val maxDepthFrameRate = if (depthFrameRateLimitEnabled) {
+				sharedPreferences.getString(
+					context.getString(R.string.max_depth_frame_rate_setting),
+					DEFAULT_FRAME_RATE_LIMIT.toString()
+				)
+					?.toIntOrNull()
+			} else {
+				null
+			}
 
 			val showProfilingInfo = sharedPreferences.getBoolean(
 				context.getString(R.string.show_profiling_info_setting),
@@ -59,6 +78,20 @@ data class Settings(
 				context.getString(R.string.enable_object_detection_setting),
 				true
 			)
+
+			val objectDetectionFrameRateLimitEnabled = sharedPreferences.getBoolean(
+				context.getString(R.string.enable_object_detection_frame_rate_limit_setting),
+				true
+			)
+
+			val maxObjectDetectionFrameRate = if (objectDetectionFrameRateLimitEnabled) {
+				sharedPreferences.getString(
+					context.getString(R.string.max_object_detection_frame_rate_setting),
+					DEFAULT_FRAME_RATE_LIMIT.toString()
+				)?.toIntOrNull()
+			} else {
+				null
+			}
 
 			val enableOCR = sharedPreferences.getBoolean(
 				context.getString(R.string.enable_ocr_setting),
@@ -95,40 +128,42 @@ data class Settings(
 
 			return Settings(
 				depthModel,
+				maxDepthFrameRate,
 				showProfilingInfo,
 				showDebugInputBitmap,
 				enableSpeechRecognition,
 				googleAiStudioApiKey,
 				customGoogleGenAIStudioEndpoint,
 				enableObjectDetection,
+				maxObjectDetectionFrameRate,
 				enableOCR,
 				inputSource,
 				mediaSource,
 				eyeAIVisionIP,
 				depthAudioPlayback,
-				objectAudioPlayback,
+				objectAudioPlayback
 				depthAudioFrequency,
 				depthAudioClickIncidence
 			)
-
-
 		}
 	}
 
 	public override fun clone(): Settings = Settings(
 		depthModel,
+		maxDepthFrameRate,
 		showProfilingInfo,
 		showDebugInputBitmap,
 		enableSpeechRecognition,
 		googleAiStudioApiKey,
 		customGoogleGenAIStudioEndpoint,
 		enableObjectDetection,
+		maxObjectDetectionFrameRate,
 		enableOCR,
 		inputSource,
 		mediaSource,
 		eyeAIVisionIP,
 		depthAudioPlayback,
-		objectAudioPlayback,
+		objectAudioPlayback
 		depthAudioFrequency,
 		depthAudioClickIncidence
 	)

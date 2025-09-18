@@ -37,11 +37,15 @@ create_test_depth_model() {
 		std::filesystem::temp_directory_path() / "EyeAICore/gpu_delegate_cache";
 	std::filesystem::create_directories(gpu_serialization_path);
 
+	const std::filesystem::path npu_delegate_dir = std::filesystem::temp_directory_path() / "qnn_npu_delegate";
+	std::filesystem::create_directories(npu_delegate_dir);
+
 	auto depth_model_result = DepthModel::create(
 		std::move(*model_data_result), gpu_serialization_path.string(),
 		midas_model_token,
 		[](const std::string msg) { std::cout << "[WARN]  " << msg << '\n'; },
-		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; }
+		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; },
+		npu_delegate_dir
 	);
 	if (depth_model_result)
 		return std::move(depth_model_result.value());
@@ -67,12 +71,15 @@ create_test_rel2abs_depth_model() {
 		std::filesystem::temp_directory_path() / "EyeAICore/gpu_delegate_cache";
 	std::filesystem::create_directories(gpu_serialization_path);
 
+	const std::filesystem::path npu_delegate_dir = std::filesystem::temp_directory_path() / "qnn_npu_delegate";
+	std::filesystem::create_directories(npu_delegate_dir);
+
 	auto rel2abs_depth_model_result = Rel2AbsDepthModel::create(
 		std::move(*rel2abs_model_data_result), gpu_serialization_path.string(),
 		rel2abs_depth_model_token,
 		[](const std::string msg) { std::cout << "[WARN]  " << msg << '\n'; },
-		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; }
-
+		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; },
+		npu_delegate_dir
 	);
 	if (rel2abs_depth_model_result)
 		return std::move(rel2abs_depth_model_result.value());
@@ -97,11 +104,15 @@ create_test_metric_depth_model() {
 		std::filesystem::temp_directory_path() / "EyeAICore/gpu_delegate_cache";
 	std::filesystem::create_directories(gpu_serialization_path);
 
+	const std::filesystem::path npu_delegate_dir = std::filesystem::temp_directory_path() / "qnn_npu_delegate";
+	std::filesystem::create_directories(npu_delegate_dir);
+
 	auto depth_model_result = DepthModel::create(
 		std::move(*model_data_result), gpu_serialization_path.string(),
 		midas_model_token,
 		[](const std::string msg) { std::cout << "[WARN]  " << msg << '\n'; },
-		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; }
+		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; },
+		npu_delegate_dir
 	);
 	if (!depth_model_result)
 		return tl::unexpected(depth_model_result.error().to_string());

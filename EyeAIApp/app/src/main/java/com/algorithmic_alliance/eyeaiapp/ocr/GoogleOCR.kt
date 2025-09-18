@@ -24,7 +24,7 @@ class GoogleOCR {
 
 	suspend fun analyzeFrame(frame: Bitmap): List<TextBoundingBox> {
 		if (ocrModel == null) {
-			Log.e("OCR", "Failed to analyze frame, OCR Model not created yet!")
+		//	Log.e("OCR", "Failed to analyze frame, OCR Model not created yet!")
 			return emptyList()
 		}
 

@@ -2,6 +2,8 @@ package com.algorithmic_alliance.eyeaiapp
 
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
@@ -15,6 +17,7 @@ import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.concurrent.Executors
 
 /**
@@ -40,7 +43,7 @@ class EyeAIApp : Application() {
 
 	/* will not be fully created if enableObjectDetection is disabled in settings */
 	var yoloModel: YoloModel =
-		YoloModel(YoloModelInfo("best_float32.tflite", "best_float32.names", 640))
+		YoloModel(YoloModelInfo("model.tflite", "coco.names", 640))
 		private set
 
 	/* will not be fully initialized when enableOCR is disabled in settings */
@@ -48,6 +51,8 @@ class EyeAIApp : Application() {
 		private set
 
 	var aiData = AIModelData
+
+	var npuQnnDelegateDirectory: String? = null
 
 	companion object {
 		const val APP_LOG_TAG = "Eye AI"
@@ -85,6 +90,8 @@ class EyeAIApp : Application() {
 		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
 
+		npuQnnDelegateDirectory = applicationInfo.nativeLibraryDir
+
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
 
@@ -95,7 +102,7 @@ class EyeAIApp : Application() {
 
 			// Yolo Model erstellen
 			if (settings.enableObjectDetection) {
-				yoloModel.create(baseContext)
+				yoloModel.create(baseContext, npuQnnDelegateDirectory!!)
 			}
 
 			// Google ML Kit initialisieren
@@ -148,7 +155,7 @@ class EyeAIApp : Application() {
 
 			if (oldSettings.enableObjectDetection != settings.enableObjectDetection) {
 				if (settings.enableObjectDetection) {
-					yoloModel.create(baseContext)
+					yoloModel.create(baseContext, npuQnnDelegateDirectory!!)
 				}
 			}
 
@@ -167,11 +174,26 @@ class EyeAIApp : Application() {
 		metricDepthModel = null
 
 		metricDepthModel = findDepthModelInfo(modelName)
-			.createDepthModel(this)
+			.createDepthModel(this, npuQnnDelegateDirectory!!)
 	}
 
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {
 		return DEPTH_MODELS.find { it.name == modelName }
 			?: (DEPTH_MODELS.find { it.name == DEFAULT_DEPTH_MODEL_NAME } ?: DEPTH_MODELS[0])
+	}
+}
+
+fun getLastAppUpdateTime(context: Context): Long {
+	try {
+		val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			packageInfo.lastUpdateTime
+		} else {
+			// Fallback
+			File(context.packageCodePath).lastModified()
+		}
+	} catch (e: PackageManager.NameNotFoundException) {
+		e.printStackTrace()
+		return 0L
 	}
 }

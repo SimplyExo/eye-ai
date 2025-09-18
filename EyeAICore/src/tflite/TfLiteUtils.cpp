@@ -1,6 +1,10 @@
 #include "EyeAICore/tflite/TfLiteUtils.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 
+#if EYE_AI_CORE_USE_PREBUILT_TFLITE
+#include <QNN/QnnTFLiteDelegate.h>
+#endif
+
 [[nodiscard]] static std::optional<QuantizeFloatError> quantize_floats(
 	std::span<const float> values,
 	std::span<std::byte> out_quantized_values,
@@ -57,6 +61,66 @@ create_gpu_delegate(
 		TfLiteGpuDelegateV2Create(&gpu_delegate_options),
 		TfLiteGpuDelegateV2Delete
 	};
+}
+
+static void null_delegate_delete([[maybe_unused]] TfLiteDelegate* delegate) {}
+
+std::unique_ptr<TfLiteDelegate, void (*)(TfLiteDelegate*)>
+create_qnn_npu_delegate(
+	[[maybe_unused]] std::string_view delegate_serialization_dir,
+	[[maybe_unused]] std::string_view model_token,
+	[[maybe_unused]] NpuConfiguration config,
+	[[maybe_unused]] std::string_view skel_directory
+) {
+#if EYE_AI_CORE_USE_PREBUILT_TFLITE
+	const auto htp_fp16_status = TfLiteQnnDelegateHasCapability(
+		TfLiteQnnDelegateCapability::kCapHtpRuntimeFp16
+	);
+	const auto htp_quant_status = TfLiteQnnDelegateHasCapability(
+		TfLiteQnnDelegateCapability::kCapHtpRuntimeQuant
+	);
+
+	constexpr static TfLiteQnnDelegateCapabilityStatus CAP_SUPPORTED = 1;
+	const bool npu_supported = htp_fp16_status == CAP_SUPPORTED ||
+							   htp_quant_status == CAP_SUPPORTED;
+	if (!npu_supported)
+		return {nullptr, null_delegate_delete};
+
+	TfLiteQnnDelegateOptions options = TfLiteQnnDelegateOptionsDefault();
+	options.cache_dir = delegate_serialization_dir.data();
+	options.model_token = model_token.data();
+	options.skel_library_dir = skel_directory.data();
+	options.graph_priority = TfLiteQnnDelegateGraphPriority::kQnnPriorityHigh;
+	options.backend_type = TfLiteQnnDelegateBackendType::kHtpBackend;
+
+	switch(config) {
+	case NpuConfiguration::MiDaS:
+		options.htp_options.precision = TfLiteQnnDelegateHtpPrecision::kHtpFp16;
+		options.htp_options.useConvHmx = false;
+		options.htp_options.performance_mode =
+			TfLiteQnnDelegateHtpPerformanceMode::kHtpBurst;
+
+		break;
+
+	case NpuConfiguration::rel2abs:
+		options.htp_options.precision = TfLiteQnnDelegateHtpPrecision::kHtpFp16;
+		options.htp_options.useConvHmx = false;
+		options.htp_options.performance_mode =
+			TfLiteQnnDelegateHtpPerformanceMode::kHtpBurst;
+		return {nullptr, null_delegate_delete};
+
+	case NpuConfiguration::Yolo:
+		options.htp_options.precision = TfLiteQnnDelegateHtpPrecision::kHtpQuantized;
+		options.htp_options.useConvHmx = false;
+		options.htp_options.performance_mode = kHtpSustainedHighPerformance;
+
+		break;
+	}
+
+	return {TfLiteQnnDelegateCreate(&options), TfLiteQnnDelegateDelete};
+#else
+	return {nullptr, null_delegate_delete};
+#endif
 }
 
 [[nodiscard]] static std::optional<TfLiteLoadNonQuantizedInputError>

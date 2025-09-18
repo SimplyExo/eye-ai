@@ -106,6 +106,10 @@ struct NativeStringScope {
 		return native_string;
 	}
 
+	[[nodiscard]] std::string to_string() const {
+		return std::string(native_string);
+	}
+
   private:
 	JNIEnv* env = nullptr;
 	jstring string = nullptr;

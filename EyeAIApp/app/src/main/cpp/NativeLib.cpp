@@ -71,13 +71,15 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	jbyteArray model,
 	jobjectArray labels,
 	jstring gpu_delegate_serialization_dir,
-	jstring model_token
+	jstring model_token,
+	jstring skel_directory
 ) {
 	NativeByteArrayScope model_data(env, model);
 	const NativeStringScope gpu_delegate_serialization_dir_string(
 		env, gpu_delegate_serialization_dir
 	);
 	const NativeStringScope model_token_string(env, model_token);
+	const NativeStringScope skel_directory_scope(env, skel_directory);
 
 	const auto log_warning_callback = [](std::string msg) {
 		LOG_WARN("[YoloRuntime] {}", msg);
@@ -106,7 +108,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	auto result = yolo_instance.lock()->create(
 		model_data.to_vector(), labels_vector,
 		gpu_delegate_serialization_dir_string, model_token_string,
-		log_warning_callback, log_error_callback
+		log_warning_callback, log_error_callback,
+		skel_directory_scope.to_string()
 	);
 
 	if (!result.has_value()) {
@@ -127,7 +130,8 @@ static jstring convertTrackedBoundingBoxesToJsonString(
 	nlohmann::json j;
 
 	for (size_t i = 0; i < tracked_boxes.size(); ++i) {
-		const ObjectTracker::TrackedBoundingBox& tracked_bounding_box = tracked_boxes[i];
+		const ObjectTracker::TrackedBoundingBox& tracked_bounding_box =
+			tracked_boxes[i];
 		const YoloModel::BoundingBox& bbox = tracked_bounding_box.bounding_box;
 
 		j["bounding_boxes"][i]["clsName"] = bbox.cls_name;
@@ -147,9 +151,10 @@ static jstring convertTrackedBoundingBoxesToJsonString(
 	try {
 		std::string json_string = j.dump();
 		return env->NewStringUTF(json_string.c_str());
-	}
-	catch (const std::exception& e) {
-		LOG_ERROR("Failed to serialize json string of tracked objects: {}", e.what());
+	} catch (const std::exception& e) {
+		LOG_ERROR(
+			"Failed to serialize json string of tracked objects: {}", e.what()
+		);
 		return env->NewStringUTF("{ \"bounding_boxes\": [] }");
 	}
 }
@@ -225,7 +230,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 	jbyteArray rel2abs_depth_model,
 	jstring gpu_delegate_serialization_dir,
 	jstring relative_depth_model_token,
-	jstring rel2abs_depth_model_token
+	jstring rel2abs_depth_model_token,
+	jstring skel_directory
 ) {
 	const NativeStringScope gpu_delegate_serialization_dir_string(
 		env, gpu_delegate_serialization_dir
@@ -241,6 +247,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 		env, rel2abs_depth_model_token
 	);
 
+	NativeStringScope skel_directory_scope{env, skel_directory};
+
 	const auto log_warning_callback = [](std::string msg) {
 		LOG_WARN("[TfLiteRuntime] {}", msg);
 	};
@@ -254,7 +262,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 		rel2abs_depth_model_data.to_vector(),
 		gpu_delegate_serialization_dir_string,
 		relative_depth_model_token_string, rel2abs_depth_model_token_string,
-		log_warning_callback, log_error_callback
+		log_warning_callback, log_error_callback,
+		skel_directory_scope.to_string()
 	);
 	if (result) {
 		metric_depth_model.lock()->swap(*result);
@@ -459,12 +468,13 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setupAudioSettings(
 		coco_labels_audio_size
 	);
 
-
 	jbyte* coco_labels_data_ptr =
 		env->GetByteArrayElements(coco_labels_data, nullptr);
 	if (coco_labels_data_ptr == nullptr) {
 		LOG_ERROR("[SpatialAudio] Failed to get coco_labels_data elements.");
-		env->ReleaseByteArrayElements(coco_labels_audio, coco_labels_audio_ptr, JNI_ABORT); // Freigeben bei Fehler
+		env->ReleaseByteArrayElements(
+			coco_labels_audio, coco_labels_audio_ptr, JNI_ABORT
+		); // Freigeben bei Fehler
 		return;
 	}
 	jsize coco_labels_data_size = env->GetArrayLength(coco_labels_data);
@@ -478,8 +488,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setupAudioSettings(
 
 	audio_setting_scope->coco_labels_audio =
 		std::move(coco_labels_audio_vector);
-	audio_setting_scope->coco_labels_data =
-		std::move(coco_labels_data_vector);
+	audio_setting_scope->coco_labels_data = std::move(coco_labels_data_vector);
 
 	env->ReleaseByteArrayElements(
 		coco_labels_audio, coco_labels_audio_ptr, JNI_ABORT
@@ -544,14 +553,14 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setObjectAudioPaused(
 	jobject /*this*/,
 	jboolean paused
 ) {
-	LOG_INFO("[SpatialAudio] Setting object audio playback. Paused: {}", paused);
+	LOG_INFO(
+		"[SpatialAudio] Setting object audio playback. Paused: {}", paused
+	);
 
 	auto audio_setting_scope = spatial_audio_settings.lock();
 
 	audio_setting_scope->object_audio_paused = paused;
 }
-
-
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendAIData(
@@ -594,7 +603,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroySpatialAudio(
 		LOG_INFO("[SpatialAudio] Destroying SpatialAudio instance...");
 		spatial_audio_scope->reset(nullptr);
 		LOG_INFO("[SpatialAudio] SpatialAudio destroyed!");
-	}else{
+	} else {
 		LOG_INFO("[SpatialAudio] SpatialAudio already destroyed!");
 	}
 }

@@ -32,23 +32,31 @@ struct TfLiteReporterUserData {
 
 class ProfilingFrame;
 
+using TfLiteModelPtr =
+	std::unique_ptr<TfLiteModel, decltype(&TfLiteModelDelete)>;
+using TfLiteInterpreterPtr =
+	std::unique_ptr<TfLiteInterpreter, decltype(&TfLiteInterpreterDelete)>;
+using TfLiteInterpreterOptionsPtr = std::unique_ptr<
+	TfLiteInterpreterOptions,
+	decltype(&TfLiteInterpreterOptionsDelete)>;
+using TfLiteDelegatePtr =
+	std::unique_ptr<TfLiteDelegate, void (*)(TfLiteDelegate*)>;
+
 /// Helper class that wraps the tflite c api
 class TfLiteRuntime {
 	std::vector<int8_t> model_data;
 	FloatTensorFormat model_input_format;
 	FloatTensorFormat model_output_format;
-	std::unique_ptr<TfLiteModel, decltype(&TfLiteModelDelete)> model{
-		nullptr, TfLiteModelDelete
+	TfLiteModelPtr model{nullptr, TfLiteModelDelete};
+	TfLiteInterpreterPtr interpreter{nullptr, TfLiteInterpreterDelete};
+	TfLiteInterpreterOptionsPtr interpreter_options{
+		nullptr, TfLiteInterpreterOptionsDelete
 	};
-	std::unique_ptr<TfLiteInterpreter, decltype(&TfLiteInterpreterDelete)>
-		interpreter{nullptr, TfLiteInterpreterDelete};
-	std::unique_ptr<
-		TfLiteInterpreterOptions,
-		decltype(&TfLiteInterpreterOptionsDelete)>
-		interpreter_options{nullptr, TfLiteInterpreterOptionsDelete};
-	/// can be null if GPU delegates are not supported on this device
-	std::unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
-		gpu_delegate{nullptr, TfLiteGpuDelegateV2Delete};
+	/// can be null if GPU delegate are not supported on this device
+	TfLiteDelegatePtr gpu_delegate{nullptr, TfLiteGpuDelegateV2Delete};
+	/// can be null if NPU delegate are not supported on this device
+	TfLiteDelegatePtr npu_delegate{nullptr, TfLiteGpuDelegateV2Delete};
+	std::string npu_skel_directory;
 
 	TfLiteReporterUserData reporter_user_data;
 
@@ -61,13 +69,15 @@ class TfLiteRuntime {
 	/// Create a TfLiteRuntime instance
 	[[nodiscard]] static CreateResult create(
 		std::vector<int8_t>&& model_data,
-		std::string_view gpu_delegate_serialization_dir,
+		std::string_view delegate_serialization_dir,
 		std::string_view model_token,
 		FloatTensorFormat model_input_format,
 		FloatTensorFormat model_output_format,
 		TfLiteLogWarningCallback log_warning_callback,
 		TfLiteLogErrorCallback log_error_callback,
-		ProfilingFrame& profiling_frame
+		ProfilingFrame& profiling_frame,
+		NpuConfiguration npu_config,
+		std::string npu_skel_directory
 	);
 
 	~TfLiteRuntime();
@@ -133,11 +143,13 @@ class TfLiteRuntime {
 		FloatTensorFormat model_input_format,
 		FloatTensorFormat model_output_format,
 		TfLiteReporterUserData error_reporter_user_data,
-		ProfilingFrame& profiling_frame
+		ProfilingFrame& profiling_frame,
+		std::string npu_skel_directory
 	)
 		: model_data(std::move(model_data)),
 		  model_input_format(model_input_format),
 		  model_output_format(model_output_format),
+		  npu_skel_directory(std::move(npu_skel_directory)),
 		  reporter_user_data(error_reporter_user_data),
 		  profiling_frame(profiling_frame) {}
 

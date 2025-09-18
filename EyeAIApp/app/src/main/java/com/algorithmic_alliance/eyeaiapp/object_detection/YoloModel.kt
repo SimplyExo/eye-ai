@@ -21,7 +21,7 @@ class YoloModel(var info: YoloModelInfo) {
 
 	private var initialized = false
 
-	fun create(context: Context) {
+	fun create(context: Context, skelDirectory: String) {
 		// Erstellen einer Yolo-Instanz
 		val modelBytes = info.getAsBytes(context)
 		labels = info.readLinesFromAsset(context)
@@ -29,7 +29,7 @@ class YoloModel(var info: YoloModelInfo) {
 		NativeLib.initYoloRuntime(
 			modelBytes, labels,
 			createSerializedGpuDelegateCacheDirectory(context).path,
-			getModelToken(context, info.tfliteFilename)
+			getModelToken(context, info.tfliteFilename), skelDirectory
 		)
 
 		val inputShape = NativeLib.getYoloInputShape()
@@ -44,10 +44,10 @@ class YoloModel(var info: YoloModelInfo) {
 
 	fun runInference(frame: Bitmap): Array<BoundingBox>? {
 		if (!initialized) {
-			Log.e(
+			/*Log.e(
 				"YOLO",
 				"Tried to run YOLO inference on uninitialized yolo model, call create first!"
-			)
+			)*/
 			return null
 		}
 
