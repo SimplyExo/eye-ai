@@ -141,7 +141,7 @@ data class Settings(
 				mediaSource,
 				eyeAIVisionIP,
 				depthAudioPlayback,
-				objectAudioPlayback
+				objectAudioPlayback,
 				depthAudioFrequency,
 				depthAudioClickIncidence
 			)
@@ -163,7 +163,7 @@ data class Settings(
 		mediaSource,
 		eyeAIVisionIP,
 		depthAudioPlayback,
-		objectAudioPlayback
+		objectAudioPlayback,
 		depthAudioFrequency,
 		depthAudioClickIncidence
 	)
