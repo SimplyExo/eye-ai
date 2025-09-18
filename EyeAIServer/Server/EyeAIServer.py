@@ -15,12 +15,13 @@ from ButtonThread import ButtonThread
 
 
 class EyeAIServer:
-    def __init__(self, cam: Camera, port: int, fps: int, use_https: bool = False, cert_path: str = None, key_path: str = None):
+    def __init__(self, cam: Camera, port_web: int, port_tcp: int, fps: int, use_https: bool = False, cert_path: str = None, key_path: str = None):
         super().__init__()
         self.div_content = ""
         self.address = None     # current client
         self.cam = cam
-        self.port = port
+        self.port_tcp = port_tcp
+        self.port_web = port_web
         self.fps = fps
         self.use_https = use_https
         self.cert_path = cert_path
@@ -45,10 +46,9 @@ class EyeAIServer:
         self.swagger = Swagger(self.app, template=template)
 
         # Starte Listener Thread
-        t = threading.Thread(target=self.listener_thread)
+        t = threading.Thread(target=self.start_button_thread)
         t.daemon = True
         t.start()
-
 
     def start(self):
         @self.app.route("/")
@@ -59,10 +59,9 @@ class EyeAIServer:
             <body style="background: black;">
                 <div style="width: 240px; margin: 0px auto;">
                     <img src="/cam0" />
-                    <img src="/cam1" />
                 </div>
                 <div style="color: white; text-align: center; margin-top: 20px;">
-                    Server läuft auf {protocol.upper()} Port {self.port}
+                    Server läuft auf {protocol.upper()} Port {self.port_web}
                 </div>
             </body>
             """
@@ -106,7 +105,7 @@ class EyeAIServer:
         
         if self.use_https and self.cert_path and self.key_path:
             # HTTPS with self-signed certificate
-            print(f"[SERVER] Starte HTTPS Server auf Port {self.port}")
+            print(f"[SERVER] Starte HTTPS Server auf Port {self.port_web}")
             print(f"[SERVER] Verwende Zertifikat: {self.cert_path}")
             print(f"[SERVER] Verwende Key: {self.key_path}")
             
@@ -116,7 +115,7 @@ class EyeAIServer:
             
             thread = Thread(target=lambda: self.app.run(
                 host='0.0.0.0', 
-                port=self.port, 
+                port=self.port_web,
                 threaded=True, 
                 debug=False, 
                 use_reloader=False,
@@ -124,10 +123,10 @@ class EyeAIServer:
             ))
         else:
             # HTTP without ssl
-            print(f"[SERVER] Starte HTTP Server auf Port {self.port}")
+            print(f"[SERVER] Starte HTTP Server auf Port {self.port_web}")
             thread = Thread(target=lambda: self.app.run(
                 host='0.0.0.0', 
-                port=self.port, 
+                port=self.port_web,
                 threaded=True, 
                 debug=False, 
                 use_reloader=False
@@ -142,20 +141,15 @@ class EyeAIServer:
             _, frame = cv2.imencode('.jpg', self.cam.frame)
             yield b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + frame.tobytes() + b'\r\n'
 
-    def listener_thread(self):
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.bind(('0.0.0.0', 8080))
-        self.server_socket.listen(1)
+    def start_button_thread(self):
+        # Starte Button Tester
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind(('0.0.0.0', self.port_tcp))  # Socket an Host und Port binden
+            s.listen()  # auf Verbindungen warten
+            print(f"[BUTTON] Button Server läuft auf 0.0.0.0:{self.port_tcp}")
 
-        # only one client supported
-        while True:
-            connection, address = self.server_socket.accept()
-
-            try:
-                print(f"[BUTTON] Client {address} verbunden!")
-                while True:
-                    connection.send(b'\xff')
-                    time.sleep(0.1)
-
-            except:  
-                print(f"[BUTTON] Client {address} getrennt!")
+            while True:
+                conn, addr = s.accept()
+                button_thread = ButtonThread(conn, addr)
+                button_thread.start()

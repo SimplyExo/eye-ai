@@ -102,6 +102,9 @@ android {
 		noCompress.add("tflite")
 		noCompress.add("onnx")
 	}
+	packaging {
+		jniLibs.useLegacyPackaging = true
+	}
 }
 
 dependencies {

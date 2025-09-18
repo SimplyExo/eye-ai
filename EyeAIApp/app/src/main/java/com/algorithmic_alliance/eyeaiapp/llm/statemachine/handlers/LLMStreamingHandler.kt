@@ -5,7 +5,7 @@ import android.util.Log
 import android.widget.TextView
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.llm.GoogleAIStudioLLM
+import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,11 +25,15 @@ class LLMStreamingHandler(
 	private val sentenceDelimiters = charArrayOf('.', '!', '?')
 
 	@Volatile
+	private var shouldStop = false
+
+	@Volatile
 	private var isCurrentlyStreaming = false
 
 	fun isStreaming(): Boolean = isCurrentlyStreaming
 
 	suspend fun generateAndStreamResponse(llm: GoogleAIStudioLLM, prompt: String) {
+		shouldStop = false
 		Log.d(EyeAIApp.APP_LOG_TAG, "Starting stream with prompt: '${prompt.take(100)}...'")
 		isCurrentlyStreaming = true
 		synchronized(sentenceBuffer) { sentenceBuffer.clear() }
@@ -52,6 +56,12 @@ class LLMStreamingHandler(
 	}
 
 	private fun handleStreamChunk(chunk: String) {
+
+		if (shouldStop) {
+			Log.d(EyeAIApp.APP_LOG_TAG, "Stream chunk ignored due to stop request")
+			return
+		}
+
 		try {
 			Log.v(EyeAIApp.APP_LOG_TAG, "Stream chunk received: '$chunk'")
 			val normalized = chunk.replace("\r", " ").replace("\n", " ").replace(Regex("\\s+"), " ").trim()
@@ -160,5 +170,16 @@ class LLMStreamingHandler(
 			Log.d(EyeAIApp.APP_LOG_TAG, "TTS finished non-streaming response. Invoking completion callback.")
 			onStreamingComplete()
 		}
+	}
+
+	//stop streaming handling
+
+	fun stopStreaming() {
+		Log.d(EyeAIApp.APP_LOG_TAG, "Stopping streaming requested")
+		shouldStop = true
+		isCurrentlyStreaming = false
+		synchronized(sentenceBuffer) { sentenceBuffer.clear() }
+		textToSpeechInstance.stop()
+		onStreamingComplete()
 	}
 }

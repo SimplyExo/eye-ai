@@ -24,6 +24,8 @@ class VoskModel(val context: Context, val modelName: String) {
 	private var onPartialResultCallback: (partial: String) -> Unit = {}
 	private var onFinalResultCallback: (partial: String) -> Unit = {}
 
+
+	fun isListening(): Boolean = isListening
 	private val recognitionListener = object : RecognitionListener {
 		override fun onPartialResult(hypothesis: String) {
 			parsePartialOutput(hypothesis)?.let {
@@ -71,7 +73,6 @@ class VoskModel(val context: Context, val modelName: String) {
 		this.onFinalResultCallback = onFinalResult
 
 		if (model != null) {
-			startListening()
 			onModelLoaded()
 			return
 		}

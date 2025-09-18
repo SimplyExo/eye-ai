@@ -5,7 +5,7 @@ import android.widget.TextView
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.MainActivity.State
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
-import com.algorithmic_alliance.eyeaiapp.llm.GoogleAIStudioLLM
+import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.JsonParser
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.LLMStreamingHandler
@@ -38,10 +38,14 @@ class StateMachine(
 	    streamingHandler::speakAndHandleUi
     )
 
+
+
     // Performance optimizations
     private val promptCache = mutableMapOf<String, String>()
 
     fun isStreaming(): Boolean = streamingHandler.isStreaming()
+
+    fun getStreamingHandler(): LLMStreamingHandler = streamingHandler
 
     private fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
 
