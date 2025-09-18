@@ -17,6 +17,8 @@ data class Settings(
 	val eyeAIVisionIP: String?,
 	var depthAudioPlayback: Boolean,
 	var objectAudioPlayback: Boolean,
+	var depthAudioFrequency: Int,
+	var depthAudioClickIncidence: Int
 
 ) : Cloneable {
 	companion object {
@@ -73,7 +75,8 @@ data class Settings(
 				""
 			)
 
-			val eyeAIVisionIP = sharedPreferences.getString(context.getString(R.string.eyeaivision_ip_setting),
+			val eyeAIVisionIP = sharedPreferences.getString(
+				context.getString(R.string.eyeaivision_ip_setting),
 				""
 			)
 
@@ -86,6 +89,9 @@ data class Settings(
 				context.getString(R.string.object_playback_setting),
 				true
 			)
+			val depthAudioClickIncidence = sharedPreferences.getInt("audio_playback_rate", 2)
+
+			val depthAudioFrequency = sharedPreferences.getInt("audio_frequency_range", 500)
 
 			return Settings(
 				depthModel,
@@ -101,6 +107,8 @@ data class Settings(
 				eyeAIVisionIP,
 				depthAudioPlayback,
 				objectAudioPlayback,
+				depthAudioFrequency,
+				depthAudioClickIncidence
 			)
 
 
@@ -121,5 +129,7 @@ data class Settings(
 		eyeAIVisionIP,
 		depthAudioPlayback,
 		objectAudioPlayback,
+		depthAudioFrequency,
+		depthAudioClickIncidence
 	)
 }

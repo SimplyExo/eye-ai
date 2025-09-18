@@ -1,106 +1,89 @@
-#include "EyeAICore/audio/SpatialAudio.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <chrono>
-#include <cstddef>
-#include <fstream>
 #include <iostream>
-#include <iterator>
 #include <thread>
 #include <vector>
-#include <sndfile.hh>
-#include <nlohmann/json.hpp>
-#include <unordered_map>
+#include <numbers>
+#include <math.h>
 
-#define ALC_HRTF_SOFT 0x1992
+std::vector<short> createData(float duration, int sample_rate, float base_frequency);
 
-int frame_number = 0;
-int audio_frame = 0;
 int main() {
-	std::cout << "Inside Main.cpp1" << std::endl;
+    std::cout << "Inside Main.cpp1" << std::endl;
 
-	ALCcontext* context;
-	ALCdevice* device;
+    ALCcontext* context;
+    ALCdevice* device;
 
-	device = alcOpenDevice(NULL);
+    device = alcOpenDevice(NULL);
+    if (!device) {
+        std::cout << "Device" << std::endl;
+        return -1;
+    }
 
-	if (alcIsExtensionPresent(device, "ALC_SOFT_HRTF") == ALC_TRUE) {
-		typedef ALCboolean(ALC_APIENTRY * LPALCRESETDEVICESOFT)(
-			ALCdevice*, const ALCint*
-		);
-		LPALCRESETDEVICESOFT alcResetDeviceSOFT = (LPALCRESETDEVICESOFT)
-			alcGetProcAddress(device, "alcResetDeviceSOFT");
-		std::cout << "HRTF\n";
-		ALCint attribs[] = {ALC_HRTF_SOFT, ALC_TRUE, 0};
-		alcResetDeviceSOFT(device, attribs);
-	}
+    context = alcCreateContext(device, NULL);
+    alcMakeContextCurrent(context);
 
-	context = alcCreateContext(device, NULL);
-	alcMakeContextCurrent(context);
+    // Listener Position setzen (wichtig!)
+    alListener3f(AL_POSITION, 0.0f, 0.0f, 0.0f);
+    ALfloat orientation[] = {0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f};
+    alListenerfv(AL_ORIENTATION, orientation);
 
-	ALCint hrtf_state;
-	alcGetIntegerv(device, ALC_HRTF_SOFT, 1, &hrtf_state);
+    ALuint source;
+    ALuint buffer;
 
-	if (hrtf_state == ALC_TRUE) {
-		std::cout << "HRTF is active\n";
-	} else {
-		std::cout << "HRTF is not active\n";
-	}
+    alGenBuffers(1, &buffer);
+    alGenSources(1, &source);
 
-	std::cout << "-------------------------------------" << std::endl;
+    // Korrigierte Parameter
+    const int SAMPLE_RATE = 48000;
+    std::vector<short> samples = createData(0.02f, SAMPLE_RATE, 500);
+    std::cout << samples.size() << std::endl;
+    
+    alBufferData(buffer, AL_FORMAT_MONO16, samples.data(), 
+                samples.size() * sizeof(short), SAMPLE_RATE);
 
-	ALuint source;
-	ALuint buffer;
+    alSourcei(source, AL_BUFFER, buffer);
+    alSourcef(source, AL_GAIN, 1.0f);  // Volle Lautstärke
+    alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);
 
-	
+    alSourcePlay(source);
 
-	SndfileHandle file;
-	
-	file = SndfileHandle("../../../EyeAIApp/app/src/main/assets/coco_labels.wav");
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
-	if(file.error()){
-		std::cout << "Error: "<< file.strError() << std::endl;
-	}
+    // Cleanup
+    alDeleteSources(1, &source);
+    alDeleteBuffers(1, &buffer);
+    alcMakeContextCurrent(nullptr);
+    alcDestroyContext(context);
+    alcCloseDevice(device);
 
-	std::cout << "Sample rate: " << file.samplerate() << "\n";
-	std::cout << "Format " << file.format() << "\n"; 
-	std::cout << "Channels: " << file.channels() << "\n";
+    return 0;
+}
 
-	std::vector<short> file_buffer(file.frames());
-
-	int SAMPLE_RATE  = file.samplerate() / 1000;
-	std::vector<short> sound_buffer(SAMPLE_RATE * (95140 - 94610)); 
-	
-
-	file.read(file_buffer.data(), file_buffer.size());
-
-
-	std::ifstream f("../../../EyeAIApp/app/src/main/assets/coco_labels_data.json");
-
-	nlohmann::json datas = nlohmann::json::parse(f);
-	std::unordered_map<std::string,std::array<int, 2>> label_data;
-	for(const auto& data: datas){
-		label_data[data["text"]] = {data["start"], data["end"]};
-	}
-
-	std::cout << label_data.at("chair")[0] << std::endl;
-	std::cout << label_data.at("chair")[1] << std::endl;
-	std::copy(file_buffer.begin() + (SAMPLE_RATE * 94610), file_buffer.begin() + (SAMPLE_RATE * 95140), sound_buffer.begin());
-
-	
-
-	alGenBuffers(1, &buffer);
-	alGenSources(1, &source);
-
-	std::cout << file_buffer.data() << std::endl;
-
-	alBufferData(buffer, AL_FORMAT_MONO16, sound_buffer.data(), sound_buffer.size() * sizeof(short) , file.samplerate());
-
-	alSourcei(source, AL_BUFFER, buffer);
-
-	alSourcePlay(source);
-	// SpatialAudio spatialAudio;
-	std::this_thread::sleep_for(std::chrono::seconds(35));
-
-	return 0;
+std::vector<short> createData(float duration, int sample_rate, float base_frequency) {
+    const float PI = std::numbers::pi;
+    const int numSamples = static_cast<int>(static_cast<double>(sample_rate) * duration);
+    const float amplitude = 0.8f;
+    const float decay_rate = 8.0f; // Steuert wie schnell der Klick abklingt
+    
+    std::vector<short> samples(numSamples);
+    
+    for (int i = 0; i < numSamples; ++i) {
+        float t = static_cast<float>(i) / static_cast<float>(sample_rate);
+        
+        // Exponentieller Decay für natürlichen Klick-Sound
+        float envelope = std::exp(-decay_rate * t);
+        
+        // Mischung aus Grundfrequenz und Harmonischen für prägnanten Sound
+        float wave = std::sin(2.0f * PI * base_frequency * t) +
+                     0.5f * std::sin(2.0f * PI * base_frequency * 2.0f * t) +
+                     0.25f * std::sin(2.0f * PI * base_frequency * 3.0f * t);
+        
+        samples[i] = static_cast<short>(
+            amplitude * envelope * wave * 32760 / 1.75f // Normalisierung wegen der Harmonischen
+        );
+    }
+    
+    return samples;
 }

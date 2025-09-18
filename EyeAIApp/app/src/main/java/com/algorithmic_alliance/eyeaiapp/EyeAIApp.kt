@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
@@ -82,6 +83,7 @@ class EyeAIApp : Application() {
 
 		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
@@ -113,6 +115,14 @@ class EyeAIApp : Application() {
 
 		if (oldSettings.objectAudioPlayback != settings.objectAudioPlayback) {
 			NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		}
+
+		if(oldSettings.depthAudioFrequency != settings.depthAudioFrequency){
+			NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
+		}
+
+		if(oldSettings.depthAudioClickIncidence != settings.depthAudioClickIncidence){
+			NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
 		}
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {

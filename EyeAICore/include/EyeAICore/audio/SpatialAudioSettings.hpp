@@ -18,19 +18,19 @@ using SpatialAudioLogInfoCallback = void (*)(std::string);
 class SpatialAudioSettings {
   public:
 	// constants
-	constexpr static float BUFFER_DURATION = 0.3f;
 	constexpr static int BUFFERS_PER_SOURCE = 3;
 	constexpr static int SAMPLE_RATE = 48000;
 	constexpr static int picture_x_resolution = 256;
 	constexpr static int picture_y_resolution = 256;
+	constexpr static int NUMBER_OF_SOURCES = 9;
 	// files containing the data and audio of the objects
 	std::vector<std::byte> coco_labels_audio;
 	std::vector<std::byte> coco_labels_data;
 	// pausing the playback
 	bool depth_audio_paused = false;
 	bool object_audio_paused = false;
-	int NUMBER_OF_SOURCES;
 	float FREQUENCY;
+	float BUFFER_DURATION = 1.0f;
 
 	SpatialAudioLogErrorCallback logErrorCallback;
 	SpatialAudioLogInfoCallback logInfoCallback;
@@ -38,10 +38,10 @@ class SpatialAudioSettings {
 	SpatialAudioSettings(
 		SpatialAudioLogErrorCallback logErrorCallback,
 		SpatialAudioLogErrorCallback logInfoCallback,
-		int num_of_sources = 9,
-		float freq = 150.0f
+		float freq = 500.0f,
+		float buf_dur = 0.25
 	)
-		: NUMBER_OF_SOURCES(num_of_sources), FREQUENCY(freq),
+		: FREQUENCY(freq),BUFFER_DURATION(buf_dur), 
 		  logErrorCallback(logErrorCallback), logInfoCallback(logInfoCallback) {
 	}
 };

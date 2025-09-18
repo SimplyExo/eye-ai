@@ -493,15 +493,15 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setAudioSettings(
 	JNIEnv* env,
 	jobject /*this*/,
-	jint number_of_sources,
-	jfloat frequency
+	jint frequency,
+	jint incidence
 ) {
 	LOG_INFO("[SpatialAudio] Updating audio settings...");
 
 	auto audio_setting_scope = spatial_audio_settings.lock();
 
-	audio_setting_scope->FREQUENCY = frequency;
-	audio_setting_scope->NUMBER_OF_SOURCES = number_of_sources;
+	audio_setting_scope->FREQUENCY = (float) frequency;
+	audio_setting_scope->BUFFER_DURATION = ((float) 1) / incidence;
 }
 
 void spatial_audio_log_error_callback(std::string msg) {

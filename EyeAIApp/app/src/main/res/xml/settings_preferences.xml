@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory app:key="@string/debugging_settings_category" app:title="Debugging" app:isPreferenceVisible="false">
         <CheckBoxPreference
             app:key="@string/show_profiling_info_setting"
@@ -33,6 +34,23 @@
             app:defaultValue="true"
             app:key="@string/object_playback_setting"
             app:title="Enabled Object Playback" />
+
+        <SeekBarPreference
+            app:key="@string/audio_frequency_range_setting"
+            app:title="Frequency"
+            app:summary="Controls frequency used for depth mapping"
+            app:defaultValue="500"
+            app:min="100"
+            android:max="4000"
+            app:showSeekBarValue="true" />
+        <SeekBarPreference
+            app:key="@string/audio_playback_rate_setting"
+            app:title="Frequency"
+            app:summary="How often per second a sound will be audible"
+            app:defaultValue="2"
+            app:min="1"
+            android:max="10"
+            app:showSeekBarValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="LLM">

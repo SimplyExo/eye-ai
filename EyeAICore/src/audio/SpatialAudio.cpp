@@ -100,7 +100,7 @@ void SpatialAudio::processDepthEstimationData() {
 		// float frequency =
 		// 300 - (100 * (std::fabs(calculateSoundOrigin.pixelAngle) / 90));
 		new_audio_source_data.emplace_back(
-			audio_settings.FREQUENCY, SpatialAudioSettings::BUFFER_DURATION,
+			audio_settings.FREQUENCY, audio_settings.BUFFER_DURATION,
 			SpatialAudioSettings::SAMPLE_RATE, sound_origin[0], sound_origin[1],
 			sound_origin[2]
 		);
