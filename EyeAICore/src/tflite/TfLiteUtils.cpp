@@ -69,7 +69,7 @@ std::unique_ptr<TfLiteDelegate, void (*)(TfLiteDelegate*)>
 create_qnn_npu_delegate(
 	[[maybe_unused]] std::string_view delegate_serialization_dir,
 	[[maybe_unused]] std::string_view model_token,
-	NpuConfiguration config
+	[[maybe_unused]] NpuConfiguration config
 ) {
 #if EYE_AI_CORE_USE_PREBUILT_TFLITE
 	const auto htp_fp16_status = TfLiteQnnDelegateHasCapability(

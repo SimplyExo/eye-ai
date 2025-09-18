@@ -41,7 +41,8 @@ create_test_depth_model() {
 		std::move(*model_data_result), gpu_serialization_path.string(),
 		midas_model_token,
 		[](const std::string msg) { std::cout << "[WARN]  " << msg << '\n'; },
-		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; }
+		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; },
+		false
 	);
 	if (depth_model_result)
 		return std::move(depth_model_result.value());
@@ -71,7 +72,8 @@ create_test_rel2abs_depth_model() {
 		std::move(*rel2abs_model_data_result), gpu_serialization_path.string(),
 		rel2abs_depth_model_token,
 		[](const std::string msg) { std::cout << "[WARN]  " << msg << '\n'; },
-		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; }
+		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; },
+		false
 
 	);
 	if (rel2abs_depth_model_result)
@@ -101,7 +103,8 @@ create_test_metric_depth_model() {
 		std::move(*model_data_result), gpu_serialization_path.string(),
 		midas_model_token,
 		[](const std::string msg) { std::cout << "[WARN]  " << msg << '\n'; },
-		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; }
+		[](const std::string msg) { std::cerr << "[ERROR] " << msg << '\n'; },
+		false
 	);
 	if (!depth_model_result)
 		return tl::unexpected(depth_model_result.error().to_string());
