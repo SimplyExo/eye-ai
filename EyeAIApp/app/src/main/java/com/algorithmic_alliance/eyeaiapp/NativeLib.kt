@@ -35,6 +35,13 @@ object NativeLib {
 
 	external fun getYoloOutputShape(): IntArray
 
+	// NLP
+	external fun initNLPRuntime(
+		model: ByteArray,
+		gpuDelegateSerializationDir: String,
+		modelToken: String
+	): Boolean
+
 	external fun newDepthFrame()
 	external fun formatDepthFrame(): String
 	external fun newCameraFrame()

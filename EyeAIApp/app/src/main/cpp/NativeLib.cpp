@@ -10,6 +10,7 @@
 #include "EyeAICore/MetricDepthModel.hpp"
 #include "EyeAICore/Rel2AbsDepthModel.hpp"
 #include "EyeAICore/YoloModel.hpp"
+#include "EyeAICore/NLPModel.hpp"
 #include "EyeAICore/utils/DepthColormap.hpp"
 #include "EyeAICore/utils/MutexGuard.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
@@ -35,6 +36,8 @@ MutexGuard<std::unique_ptr<SpatialAudio>> spatial_audio{
 MutexGuard<std::unique_ptr<ObjectTracker>> object_tracker;
 
 MutexGuard<YoloModel> yolo_instance;
+
+MutexGuard<NLPModel> nlp_instance;
 
 MutexGuard<std::vector<ObjectTracker::TrackedBoundingBox>> last_tracked_objects;
 
@@ -605,3 +608,41 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroySpatialAudio(
 
 // NOLINTEND(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)
+extern "C" JNIEXPORT jboolean
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initNLPRuntime(
+	JNIEnv* env,
+	jobject /*thiz*/,
+	jbyteArray model,
+	jstring gpu_delegate_serialization_dir,
+	jstring model_token
+) {
+	NativeByteArrayScope model_data(env, model);
+	const NativeStringScope gpu_delegate_serialization_dir_string(
+		env, gpu_delegate_serialization_dir
+	);
+	const NativeStringScope model_token_string(env, model_token);
+
+	const auto log_warning_callback = [](std::string msg) {
+		LOG_WARN("[NLPRuntime] {}", msg);
+	};
+
+	const auto log_error_callback = [](std::string msg) {
+		LOG_ERROR("[NLPRuntime] {}", msg);
+	};
+
+	auto result = nlp_instance.lock()->create(
+		model_data.to_vector(),
+		gpu_delegate_serialization_dir_string, model_token_string,
+		log_warning_callback, log_error_callback
+	);
+
+	if (!result.has_value()) {
+		LOG_ERROR(
+			"[NLPRuntime] Could not create NLPModel: {}", result.error()
+		);
+		return false;
+	}
+
+	LOG_INFO("[NLPRuntime] Runtime erstellt!");
+	return true;
+}
