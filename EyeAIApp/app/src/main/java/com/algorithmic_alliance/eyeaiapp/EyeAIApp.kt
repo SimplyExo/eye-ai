@@ -2,6 +2,9 @@ package com.algorithmic_alliance.eyeaiapp
 
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
 import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
@@ -14,6 +17,7 @@ import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.concurrent.Executors
 
 /**
@@ -47,6 +51,8 @@ class EyeAIApp : Application() {
 		private set
 
 	var aiData = AIModelData
+
+	var npuQnnDelegateDirectory: String? = null
 
 	companion object {
 		const val APP_LOG_TAG = "Eye AI"
@@ -93,7 +99,7 @@ class EyeAIApp : Application() {
 
 			// Yolo Model erstellen
 			if (settings.enableObjectDetection) {
-				yoloModel.create(baseContext)
+				yoloModel.create(baseContext, settings.enableNpu)
 			}
 
 			// Google ML Kit initialisieren
@@ -115,8 +121,10 @@ class EyeAIApp : Application() {
 			NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		}
 
+		val enableNpuChanged = oldSettings.enableNpu != settings.enableNpu
+
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
-			if (oldSettings.depthModel != settings.depthModel) {
+			if (oldSettings.depthModel != settings.depthModel || enableNpuChanged) {
 				switchDepthModel(settings.depthModel)
 			}
 
@@ -136,9 +144,9 @@ class EyeAIApp : Application() {
 				}
 			}
 
-			if (oldSettings.enableObjectDetection != settings.enableObjectDetection) {
+			if (oldSettings.enableObjectDetection != settings.enableObjectDetection || enableNpuChanged) {
 				if (settings.enableObjectDetection) {
-					yoloModel.create(baseContext)
+					yoloModel.create(baseContext, settings.enableNpu)
 				}
 			}
 
@@ -151,17 +159,32 @@ class EyeAIApp : Application() {
 	}
 
 	private fun switchDepthModel(modelName: String) {
-		if (metricDepthModel?.name == modelName) return
+		if (metricDepthModel?.name == modelName && metricDepthModel?.enableNpu == settings.enableNpu) return
 
 		metricDepthModel?.close()
 		metricDepthModel = null
 
 		metricDepthModel = findDepthModelInfo(modelName)
-			.createDepthModel(this)
+			.createDepthModel(this, settings.enableNpu)
 	}
 
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {
 		return DEPTH_MODELS.find { it.name == modelName }
 			?: (DEPTH_MODELS.find { it.name == DEFAULT_DEPTH_MODEL_NAME } ?: DEPTH_MODELS[0])
+	}
+}
+
+fun getLastAppUpdateTime(context: Context): Long {
+	try {
+		val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			packageInfo.lastUpdateTime
+		} else {
+			// Fallback
+			File(context.packageCodePath).lastModified()
+		}
+	} catch (e: PackageManager.NameNotFoundException) {
+		e.printStackTrace()
+		return 0L
 	}
 }

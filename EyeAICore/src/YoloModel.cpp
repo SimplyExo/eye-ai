@@ -14,7 +14,8 @@ tl::expected<bool, std::string> YoloModel::create(
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
 	TfLiteLogWarningCallback log_warning_callback,
-	TfLiteLogErrorCallback log_error_callback
+	TfLiteLogErrorCallback log_error_callback,
+	bool enable_npu
 ) {
 	PROFILE_OBJECT_FUNCTION()
 
@@ -24,7 +25,8 @@ tl::expected<bool, std::string> YoloModel::create(
 	auto new_runtime = TfLiteRuntime::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
 		FloatTensorFormat::YoloImageRGB, FloatTensorFormat::YoloOutput,
-		log_warning_callback, log_error_callback, get_object_profiling_frame()
+		log_warning_callback, log_error_callback, get_object_profiling_frame(),
+		enable_npu, NpuConfiguration::Yolo
 	);
 
 	// bei Fehler gebe string aus
@@ -109,14 +111,14 @@ YoloModel::parse_box(std::span<const float> array, size_t box_index) const {
 		arrayIdx += num_elements;
 	}
 
-	for (size_t j = 4; j < num_channel; ++j) {
+	for (size_t i = 4; i < num_channel; ++i) {
 		if (arrayIdx >= array.size())
 			break;
 
 		const float conf = array[arrayIdx];
 		if (conf > maxConf) {
 			maxConf = conf;
-			maxIdx = static_cast<int>(j - 4);
+			maxIdx = static_cast<int>(i - 4);
 		}
 
 		arrayIdx += num_elements;
@@ -184,7 +186,7 @@ float YoloModel::calculate_iou(
 }
 
 std::vector<YoloModel::BoundingBox>
-YoloModel::apply_nms(std::vector<YoloModel::BoundingBox>& boxes) const {
+YoloModel::apply_nms(const std::vector<YoloModel::BoundingBox>& boxes) const {
 	PROFILE_OBJECT_FUNCTION()
 
 	if (boxes.empty())

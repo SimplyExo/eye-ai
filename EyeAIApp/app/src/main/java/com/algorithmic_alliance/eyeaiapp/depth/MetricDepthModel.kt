@@ -19,12 +19,13 @@ class MetricDepthModelInfo(
 	val rel2absDepthFileName: String
 ) {
 	/** @return null if model type is not supported */
-	fun createDepthModel(context: Context): MetricDepthModel {
+	fun createDepthModel(context: Context, enableNpu: Boolean): MetricDepthModel {
 		return MetricDepthModel(
 			context,
 			name,
 			relativeDepthFileName,
-			rel2absDepthFileName
+			rel2absDepthFileName,
+			enableNpu
 		)
 	}
 }
@@ -33,7 +34,8 @@ class MetricDepthModel(
 	context: Context,
 	val name: String,
 	val relativeDepthFileName: String,
-	val rel2absDepthFileName: String
+	val rel2absDepthFileName: String,
+	val enableNpu: Boolean
 ) : AutoCloseable {
 	val inputDim: Size
 
@@ -66,7 +68,7 @@ class MetricDepthModel(
 		NativeLib.initMetricDepthModel(
 			relativeDepthModelData, rel2absDepthModelData,
 			gpuDelegateCacheDirectory.path,
-			relativeDepthModelToken, rel2absDepthModelToken
+			relativeDepthModelToken, rel2absDepthModelToken, enableNpu
 		)
 
 		val inputShape = NativeLib.getMetricDepthModelInputShape()

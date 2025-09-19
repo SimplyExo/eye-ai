@@ -66,7 +66,6 @@ if (DOXYGEN_FOUND)
 		"${EYE_AI_CORE_DIR}/metric_depth/README.md"
 		"${EYE_AI_CORE_DIR}/../EyeAIApp/README.md"
 		"${EYE_AI_CORE_DIR}/../EyeAIServer/README.md"
-		"${EYE_AI_CORE_DIR}/../EyeAIServer/Client/README.md"
 		"${EYE_AI_CORE_DIR}/../EyeAIServer/Server/README.md"
 		"${EYE_AI_CORE_DIR}/../EyeAIApp/app/src/main/assets/README.md"
 		COMMENT "Generating EyeAICore documentation with Doxygen"

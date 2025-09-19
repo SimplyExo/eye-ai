@@ -12,8 +12,6 @@ import kotlin.coroutines.suspendCoroutine
 
 class GoogleOCR {
 	private var ocrModel: TextRecognizer? = null
-
-	// Hier speichern wir den erkannten Text + Position als String
 	var lastResult: String = ""
 		private set
 
@@ -24,7 +22,6 @@ class GoogleOCR {
 
 	suspend fun analyzeFrame(frame: Bitmap): List<TextBoundingBox> {
 		if (ocrModel == null) {
-			Log.e("OCR", "Failed to analyze frame, OCR Model not created yet!")
 			return emptyList()
 		}
 
@@ -45,15 +42,14 @@ class GoogleOCR {
 						val x2 = bounding.right.toFloat() / frame.width.toFloat()
 						val y2 = bounding.bottom.toFloat() / frame.height.toFloat()
 
-						// Liste für Overlay
+
 						tbb.add(TextBoundingBox(box.text, width, height, x1, y1, x2, y2, bounding))
 
-						// String-Ausgabe aufbauen
+
 						sb.append("Text: \"${box.text}\" ")
 						sb.append("(x1=$x1, y1=$y1, x2=$x2, y2=$y2, w=$width, h=$height)\n")
 					}
-
-					// Speichere den String global abrufbar
+					
 					lastResult = sb.toString().trim()
 
 					continuation.resume(tbb)

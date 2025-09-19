@@ -290,7 +290,7 @@ void AudioMain::setupDepthAudioSources() {
 	for (int i = 0; i < audio_settings.NUMBER_OF_SOURCES; ++i) {
 		// Extracting the AudioSourceData for the source, and creating according
 		// AudioData
-		DepthAudioSourceData source_data = depth_audio_sources_data[i];
+		DepthAudioSourceData const source_data = depth_audio_sources_data[i];
 
 		// Generating each buffer, filling it up and queuing it to the source
 		alGenBuffers(audio_settings.BUFFERS_PER_SOURCE, buffers[i].data());
@@ -359,7 +359,7 @@ void AudioMain::loadAudioLabelsFile() {
 
 	// reading the data
 	audio_labels_file_buffer.resize(info.frames * info.channels);
-	sf_count_t read_frames =
+	sf_count_t const read_frames =
 		sf_readf_short(snd, audio_labels_file_buffer.data(), info.frames);
 
 	if (read_frames <= 0) {
@@ -380,7 +380,7 @@ void AudioMain::changeDepthAudioData(
 }
 
 void AudioMain::changeObjectAudioData(
-	std::vector<ObjectAudioSourceData> new_audio_source_data
+	const std::vector<ObjectAudioSourceData>& new_audio_source_data
 ) {
 	PROFILE_AUDIO_FUNCTION()
 	std::lock_guard<std::mutex> lock(object_mutex);

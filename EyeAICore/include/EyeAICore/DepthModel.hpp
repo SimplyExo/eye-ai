@@ -13,7 +13,8 @@ class DepthModel {
 			std::string_view gpu_delegate_serialization_dir,
 			std::string_view model_token,
 			TfLiteLogWarningCallback log_warning_callback,
-			TfLiteLogErrorCallback log_error_callback
+			TfLiteLogErrorCallback log_error_callback,
+			bool enable_npu
 		);
 
 	/// see @ref DepthModel::create

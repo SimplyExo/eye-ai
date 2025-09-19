@@ -46,9 +46,12 @@ class TfLiteRuntime {
 		TfLiteInterpreterOptions,
 		decltype(&TfLiteInterpreterOptionsDelete)>
 		interpreter_options{nullptr, TfLiteInterpreterOptionsDelete};
-	/// can be null if GPU delegates are not supported on this device
-	std::unique_ptr<TfLiteDelegate, decltype(&TfLiteGpuDelegateV2Delete)>
-		gpu_delegate{nullptr, TfLiteGpuDelegateV2Delete};
+	/// can be null if GPU delegate are not supported on this device
+	std::unique_ptr<TfLiteDelegate, void(*)(TfLiteDelegate*)>
+	gpu_delegate{nullptr, TfLiteGpuDelegateV2Delete};
+	/// can be null if NPU delegate are not supported on this device
+	std::unique_ptr<TfLiteDelegate, void(*)(TfLiteDelegate*)>
+		npu_delegate{nullptr, TfLiteGpuDelegateV2Delete};
 
 	TfLiteReporterUserData reporter_user_data;
 
@@ -61,13 +64,15 @@ class TfLiteRuntime {
 	/// Create a TfLiteRuntime instance
 	[[nodiscard]] static CreateResult create(
 		std::vector<int8_t>&& model_data,
-		std::string_view gpu_delegate_serialization_dir,
+		std::string_view delegate_serialization_dir,
 		std::string_view model_token,
 		FloatTensorFormat model_input_format,
 		FloatTensorFormat model_output_format,
 		TfLiteLogWarningCallback log_warning_callback,
 		TfLiteLogErrorCallback log_error_callback,
-		ProfilingFrame& profiling_frame
+		ProfilingFrame& profiling_frame,
+		bool enable_npu,
+		NpuConfiguration npu_config
 	);
 
 	~TfLiteRuntime();

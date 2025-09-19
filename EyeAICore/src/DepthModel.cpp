@@ -9,12 +9,14 @@ DepthModel::create(
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
 	TfLiteLogWarningCallback log_warning_callback,
-	TfLiteLogErrorCallback log_error_callback
+	TfLiteLogErrorCallback log_error_callback,
+	bool enable_npu
 ) {
 	auto runtime_result = TfLiteRuntime::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
 		FloatTensorFormat::MiDaSImageRGB, FloatTensorFormat::RawRelativeDepth,
-		log_warning_callback, log_error_callback, get_depth_profiling_frame()
+		log_warning_callback, log_error_callback, get_depth_profiling_frame(),
+		enable_npu, NpuConfiguration::MiDaS
 	);
 	if (!runtime_result.has_value())
 		return tl::unexpected(runtime_result.error());
