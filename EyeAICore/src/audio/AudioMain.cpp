@@ -325,6 +325,8 @@ void AudioMain::loadAudioLabelsFile() {
 	*/
 	LOG_INFO("[LoadAudioLabelsFile] Started loading ...");
 
+	audio_labels_file_buffer.clear();
+
 	MemoryData mem{
 		.data = audio_settings.coco_labels_audio.data(),
 		.size =

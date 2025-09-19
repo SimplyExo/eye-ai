@@ -11,4 +11,14 @@
         <item>media</item>
         <item>eyeaivision</item>
     </string-array>
+
+    <string-array name="language_entries">
+        <item>English</item>
+        <item>Deutsch (German)</item>
+    </string-array>
+
+    <string-array name="language_values">
+        <item>english</item>
+        <item>german</item>
+    </string-array>
 </resources>

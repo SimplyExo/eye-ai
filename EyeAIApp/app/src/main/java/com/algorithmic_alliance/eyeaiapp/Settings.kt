@@ -20,7 +20,8 @@ data class Settings(
 	var depthAudioPlayback: Boolean,
 	var objectAudioPlayback: Boolean,	
 	var depthAudioFrequency: Int,
-	var depthAudioClickIncidence: Int
+	var depthAudioClickIncidence: Int,
+	var objectAudioPlaybackLanguage: String?
 
 ) : Cloneable {
 	companion object {
@@ -126,6 +127,8 @@ data class Settings(
 
 			val depthAudioFrequency = sharedPreferences.getInt("audio_frequency_range", 500)
 
+			val objectAudioPlaybackLanguage = sharedPreferences.getString("object_playback_language", "english")
+
 			return Settings(
 				depthModel,
 				maxDepthFrameRate,
@@ -143,7 +146,8 @@ data class Settings(
 				depthAudioPlayback,
 				objectAudioPlayback,
 				depthAudioFrequency,
-				depthAudioClickIncidence
+				depthAudioClickIncidence,
+				objectAudioPlaybackLanguage
 			)
 		}
 	}
@@ -165,6 +169,7 @@ data class Settings(
 		depthAudioPlayback,
 		objectAudioPlayback,
 		depthAudioFrequency,
-		depthAudioClickIncidence
+		depthAudioClickIncidence,
+		objectAudioPlaybackLanguage
 	)
 }

@@ -460,6 +460,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setupAudioSettings(
 		LOG_ERROR("[SpatialAudio] Failed to get coco_labels_audio elements.");
 		return;
 	}
+
 	jsize coco_labels_audio_size = env->GetArrayLength(coco_labels_audio);
 
 	std::vector<std::byte> coco_labels_audio_vector(coco_labels_audio_size);
@@ -486,8 +487,10 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setupAudioSettings(
 	);
 	auto audio_setting_scope = spatial_audio_settings.lock();
 
+	audio_setting_scope->coco_labels_audio.clear();
 	audio_setting_scope->coco_labels_audio =
 		std::move(coco_labels_audio_vector);
+	audio_setting_scope->coco_labels_data.clear();
 	audio_setting_scope->coco_labels_data = std::move(coco_labels_data_vector);
 
 	env->ReleaseByteArrayElements(
@@ -496,6 +499,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setupAudioSettings(
 	env->ReleaseByteArrayElements(
 		coco_labels_data, coco_labels_data_ptr, JNI_ABORT
 	);
+	LOG_INFO("[SpatialAudio] Set up AudioSettings ... ");
 }
 
 extern "C" JNIEXPORT void JNICALL

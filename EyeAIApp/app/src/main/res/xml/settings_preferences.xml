@@ -66,6 +66,14 @@
             app:min="1"
             android:max="10"
             app:showSeekBarValue="true" />
+        <ListPreference
+            app:key="@string/object_playback_language"
+            app:title="Audio language"
+            app:summary="Controls the pitch of audio feedback"
+            app:defaultValue="english"
+            app:entries="@array/language_entries"
+            app:entryValues="@array/language_values"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="LLM">

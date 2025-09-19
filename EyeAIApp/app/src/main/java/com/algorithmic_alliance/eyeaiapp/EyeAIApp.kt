@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.util.Size
+import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
@@ -15,6 +16,7 @@ import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import java.io.File
@@ -109,6 +111,12 @@ class EyeAIApp : Application() {
 			if (settings.enableOCR)
 				ocrModel.create()
 		}
+
+		CoroutineScope(Dispatchers.IO).launch {
+			Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
+			SpatialAudio.setup(this@EyeAIApp)
+			SpatialAudio.start()
+		}
 	}
 
 	fun updateSettings() {
@@ -130,6 +138,14 @@ class EyeAIApp : Application() {
 
 		if(oldSettings.depthAudioClickIncidence != settings.depthAudioClickIncidence){
 			NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
+		}
+
+		if(oldSettings.objectAudioPlaybackLanguage != settings.objectAudioPlaybackLanguage){
+			SpatialAudio.destroy()
+			CoroutineScope(Dispatchers.IO).launch {
+				SpatialAudio.setup(this@EyeAIApp)
+				SpatialAudio.start()
+			}
 		}
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {

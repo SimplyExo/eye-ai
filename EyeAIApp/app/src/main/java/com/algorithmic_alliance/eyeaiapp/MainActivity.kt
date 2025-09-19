@@ -255,13 +255,6 @@ class MainActivity : AppCompatActivity() {
 		SpeechManager.tts = textToSpeechInstance
 
 
-
-
-		CoroutineScope(Dispatchers.IO).launch {
-			SpatialAudio.setup(this@MainActivity)
-			SpatialAudio.start()
-		}
-
 		audioDeviceManager = AudioDeviceManager(this@MainActivity)
 		audioDeviceManager.register()
 	}
@@ -764,8 +757,8 @@ class MainActivity : AppCompatActivity() {
 	}
 
 
-
-
 	fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
+
+	companion object
 
 }

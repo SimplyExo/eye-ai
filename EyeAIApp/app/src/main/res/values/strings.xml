@@ -39,6 +39,7 @@
     <string name="custom_google_gen_ai_studio_endpoint_setting">custom_google_gen_ai_studio_endpoint</string>
     <string name="custom_google_gen_ai_studio_endpoint_summary">EyeAI will send all llm requests to\n\'%1$s\'\nwithout checking their ssl certificate to allow for self signed certificates</string>
     <string name="object_playback_setting">object_playback_setting</string>
+    <string name="object_playback_language">object_playback_language</string>
     <string name="depth_playback_setting">depth_playback_setting</string>
     <string name="audio_frequency_range_setting">audio_frequency_range</string>
     <string name="audio_playback_rate_setting">audio_playback_rate</string>

@@ -142,8 +142,10 @@ object detection data:
 			);
 			continue;
 		}
-		int label_sound_start = object_label_data[object_name][0];
-		int label_sound_end = object_label_data[object_name][1];
+		int label_sound_start = object_label_data.at(object_name)[0];
+		int label_sound_end = object_label_data.at(object_name)[1];
+
+		LOG_INFO(std::format("Object {}: Start: {} End: {}", object_name, label_sound_start, label_sound_end));
 
 		// retrieving distance
 		float distance = depthEstimationData.at(
@@ -173,6 +175,8 @@ void SpatialAudio::readObjectLabelData() {
 	*/
 	LOG_INFO("[ReadingObjectLabelData] Reading Object Label data...");
 
+	object_label_data.clear();
+
 	std::string json_string(
 		reinterpret_cast<const char*>(audio_settings.coco_labels_data.data()),
 		audio_settings.coco_labels_data.size()
@@ -189,7 +193,9 @@ void SpatialAudio::readObjectLabelData() {
 	}
 	for (auto const& data : json_object_data) {
 		object_label_data[toLower(data["text"])] = {data["start"], data["end"]};
+		LOG_INFO(std::format("Object {} Begin {} End {}", (std::string) data["text"], (int) data["start"], (int) data["end"]));
 	}
+
 	LOG_INFO("[ReadingObjectLabelData] Finished reading Object Label data...");
 }
 
@@ -229,4 +235,5 @@ SpatialAudio::~SpatialAudio() {
 	if (object_audio_thread.joinable()) {
 		object_audio_thread.join();
 	}
+
 }
