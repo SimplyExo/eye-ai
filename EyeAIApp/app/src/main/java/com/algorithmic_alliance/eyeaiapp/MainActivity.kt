@@ -156,6 +156,7 @@ class MainActivity : AppCompatActivity() {
 			if (voskUserStart.get()){
 
 				SpeechManager.forceStop()
+				State.IDLE
 
 				android.os.Handler(Looper.getMainLooper()).postDelayed({
 					stopVoskListening()
