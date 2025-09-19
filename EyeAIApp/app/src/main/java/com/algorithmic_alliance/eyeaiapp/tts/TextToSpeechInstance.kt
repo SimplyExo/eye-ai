@@ -69,20 +69,19 @@ class TextToSpeechInstance(
 		tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
 			override fun onStart(utteranceId: String?) {
 				Log.d(EyeAIApp.APP_LOG_TAG, "TTS onStart utterance=$utteranceId")
-				// Markiere, dass Wiedergabe aktiv ist (so lange mindestens eine Utterance läuft oder gerade lief)
 			}
 
 			override fun onDone(utteranceId: String?) {
 				Log.d(EyeAIApp.APP_LOG_TAG, "TTS onDone utterance=$utteranceId")
 				utteranceId?.let { id ->
-					// Zähler zuerst reduzieren (wichtig)
+
 					decrementUtteranceCount()
 
-					// jetzt spezifischen Callback ausführen (falls vorhanden)
+
 					pendingCallbacks.remove(id)?.invoke()
 					hasSpecificCallback.remove(id)
 
-					// wenn keine Utterances mehr aktiv sind -> prüfen wir Playback und rufen globales Callback
+
 					if (getActiveUtteranceCount() == 0) {
 						Log.d(EyeAIApp.APP_LOG_TAG, "No active utterances left -> schedule global callback when playback stops")
 						invokeOnFinishedWhenPlaybackStops()
