@@ -129,14 +129,14 @@ class MjpegBitmapReader(
 				}
 
 				bmp?.let { bitmap ->
-					// Bitmap um 180° drehen
+					// turn bitmap 180°
 					val matrix = Matrix()
 					matrix.postRotate(180f)
 					val rotatedBitmap = try {
 						Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
 					} catch (t: Throwable) {
 						t.printStackTrace()
-						bitmap // Fallback auf originale Bitmap falls Rotation fehlschlägt
+						bitmap // fallback if roation fails
 					}
 
 					if (deliverOnMainThread) {
