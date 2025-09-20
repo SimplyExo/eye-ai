@@ -20,8 +20,8 @@ Preparing the dataset:
 
 1. Download and extract the dataset:
 
-- SUNRGB-D: <https://rgbd.cs.princeton.edu>
-- DIODE: <https://diode-dataset.org> (not recommended as images are not too usable, download testing data as sample)
+- SUNRGB-D: <https://rgbd.cs.princeton.edu> (better fitting images, but less total images)
+- DIODE: <https://diode-dataset.org> (more total images, but less fitting)
 
 2. Prepare the dataset:
 
@@ -29,6 +29,14 @@ Preparing the dataset:
    cmake --preset=release
 
    ./scripts/build_and_run_prepare_dataset.sh <diode or sun_rgbd> <dataset_directory> <dataset_evaluation_directory>
+   ```
+
+(Optional) 3. Combine multiple datasets into one prepared dataset:
+
+   Only if you want to have a larger, more diverse dataset that challenges the model to generalize.
+
+   ```bash
+   python combine_datasets.py <prepared_dataset_directory_1> <prepared_dataset_directory_2> <output_dataset_directory>
    ```
 
 Running the Rel2Abs model training:
