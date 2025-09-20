@@ -28,6 +28,8 @@ class ScaledRel2AbsModel(tf.keras.Model):
 
 		self.coeff_scaling_factors = coeff_scaling_factors
 
+		self.loss_tracker = tf.keras.metrics.Mean(name="loss")
+
 		# Inputs
 		inputs = layers.Input(shape=(*IMG_SIZE, 4), name="rgbd_input")
 		rgb = layers.Lambda(lambda x: x[..., :3])(inputs)   # first 3 channels
@@ -73,7 +75,8 @@ class ScaledRel2AbsModel(tf.keras.Model):
 			loss = custom_loss(coeffs, self.coeff_scaling_factors, rel_abs_pairs_batch)
 		grads = tape.gradient(loss, self.trainable_variables)
 		self.optimizer.apply_gradients(zip(grads, self.trainable_variables))
-		return {"loss": loss}
+		self.loss_tracker.update_state(loss)
+		return {"loss": self.loss_tracker.result()}
 
 	def call(self, inputs):
 		return self.model(inputs)

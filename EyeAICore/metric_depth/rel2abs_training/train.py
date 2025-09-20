@@ -13,7 +13,8 @@ UNFROZEN_EPOCHS = 10
 def train_scaled_rel2abs_model(scaled_rel2abs_model, checkpoint_filepath, epochs, lr):
 	scaled_rel2abs_model.compile(
 		optimizer=optimizers.Adam(lr, clipnorm=1.0),
-		metrics=['mae']
+		loss=None,
+		metrics=[]
 	)
 	early_stopping_callback = tf.keras.callbacks.EarlyStopping(
 		monitor='val_loss',
