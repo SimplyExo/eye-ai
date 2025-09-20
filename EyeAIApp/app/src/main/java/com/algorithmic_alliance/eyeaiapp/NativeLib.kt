@@ -48,7 +48,7 @@ object NativeLib {
 
 	external fun getNLPOutputShape(): IntArray
 
-	//external fun runNLPOperation(input: IntArray): FloatArray
+	external fun runNLPOperation(input: FloatArray): FloatArray
 
 	external fun newDepthFrame()
 	external fun formatDepthFrame(): String

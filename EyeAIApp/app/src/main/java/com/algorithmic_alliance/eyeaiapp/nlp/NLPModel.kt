@@ -31,8 +31,8 @@ class NLPModel(var info: NLPModelInfo) {
 		initialized = true
 	}
 
-	fun vectorizePrompt(prompt: String): IntArray {
-		val output_array = IntArray(SEQUENCE_LENGTH)
+	fun vectorizePrompt(prompt: String): FloatArray {
+		val output_array = FloatArray(SEQUENCE_LENGTH)
 
 		vocabFile.forEachIndexed { index, word ->
 			var res = vocabFile.indexOf(word)
@@ -40,14 +40,14 @@ class NLPModel(var info: NLPModelInfo) {
 			if (res == -1)
 				res = 1
 
-			output_array[index] = res
+			output_array[index] = res.toFloat()
 		}
 
 		return output_array
 	}
 
 	fun runInference(prompt: String) {
-		//NativeLib.runNLPOperation(vectorizePrompt(prompt))
+		NativeLib.runNLPOperation(vectorizePrompt(prompt))
 	}
 
 	fun inputShape(): IntArray {

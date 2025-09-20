@@ -28,8 +28,8 @@ class NLPModel {
 		std::string npu_skel_directory
 	);
 
-	tl::expected<std::vector<ClassResults>, std::string>
-	run(FloatTensorBuffer<FloatTensorFormat::NLPOutput>& input);
+	tl::expected<std::vector<float>, std::string>
+	run(FloatTensorBuffer<FloatTensorFormat::NLPInput>& input);
 
 	std::span<const int> get_input_shape();
 
@@ -40,4 +40,5 @@ class NLPModel {
 
   private:
 	std::unique_ptr<TfLiteRuntime> runtime;
+	std::vector<float> to_vector(std::span<float> in);
 };

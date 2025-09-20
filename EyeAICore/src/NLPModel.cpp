@@ -47,3 +47,28 @@ std::span<const int> NLPModel::get_input_shape() {
 std::span<const int> NLPModel::get_output_shape() {
 	return runtime->get_output_shape();
 }
+
+tl::expected<std::vector<float>, std::string>
+NLPModel::run(FloatTensorBuffer<FloatTensorFormat::NLPInput>& input) {
+	auto result = runtime->run_inference<
+		FloatTensorFormat::NLPInput, FloatTensorFormat::NLPOutput>(
+		input
+	);
+
+	if (!result) {
+		return tl::unexpected(result.error().to_string());
+	}
+
+	return to_vector(result->data());
+}
+
+std::vector<float> NLPModel::to_vector(std::span<float> in) {
+	std::vector<float> out = {};
+
+	for (float f : in) {
+		out.push_back(f);
+	}
+
+	return out;
+}
+
