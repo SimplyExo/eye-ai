@@ -36,9 +36,7 @@ class MetricDepthModel {
 
 	[[nodiscard]] std::span<const int> get_output_shape() const;
 
-	MetricDepthModel(
-		std::unique_ptr<DepthModel>&& depth_model
-	);
+	MetricDepthModel(std::unique_ptr<DepthModel>&& depth_model);
 
   private:
 	constexpr static std::array<float, 5> REL2ABS_COEFFS = {
@@ -47,6 +45,11 @@ class MetricDepthModel {
 
 	std::unique_ptr<DepthModel> depth_model;
 };
+
+FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthInput> rel2abs_input_operator(
+	const FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& rgb,
+	const FloatTensorBuffer<FloatTensorFormat::RawRelativeDepth>& depth
+);
 
 /**
  * Polynomial function of degree 4 using Horner's method.
