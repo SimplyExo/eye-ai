@@ -49,8 +49,8 @@ def unscale_rel2abs_model(scaled_model, coeff_scaling_factors):
 	def unscale_fn(scaled_coeff):
 		return (scaled_coeff - b) / a
 
-	input = scaled_model.input
-	scaled_output = scaled_model.output
+	input = scaled_model.model.input
+	scaled_output = scaled_model.model.output
 	output = tf.keras.layers.Lambda(unscale_fn, name="coeffs_output", output_shape=(N_COEFFS,))(scaled_output)
 
 	unscaled_rel2abs_model = tf.keras.Model(inputs=input, outputs=output)
@@ -89,8 +89,6 @@ if __name__ == "__main__":
 		train_scaled_rel2abs_model(scaled_rel2abs_model, "_scaled_rel2abs_model_checkpoint.h5", FROZEN_EPOCHS, FROZEN_LEARNING_RATE)
 		scaled_rel2abs_model.base_model.trainable = True
 		train_scaled_rel2abs_model(scaled_rel2abs_model, "_scaled_rel2abs_model_checkpoint.h5", UNFROZEN_EPOCHS, UNFROZEN_LEARNING_RATE)
-
-	scaled_rel2abs_model.build((None, IMG_SIZE[0], IMG_SIZE[1], 4))
 
 	# Adds unscaling op to the end to output the final coeffs directly
 	rel2abs_model = unscale_rel2abs_model(scaled_rel2abs_model, coeff_scaling_factors)

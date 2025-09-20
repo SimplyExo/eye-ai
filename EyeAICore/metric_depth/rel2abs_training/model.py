@@ -92,7 +92,7 @@ class ScaledRel2AbsModel(tf.keras.Model):
 
 		# Update tracker
 		self.val_loss_tracker.update_state(loss)
-		return {"val_loss": self.val_loss_tracker.result()}
+		return {"loss": self.val_loss_tracker.result()}
 
 
 	def call(self, inputs):
