@@ -67,7 +67,24 @@ object RequestBuilder {
 			})
 			put("object_query", JSONObject().apply {
 				put("type", "STRING")
-				put("description", "Das spezifische Objekt, nach dem der bei der Objekterkennung fragt Nutzer fragt. Z.B. 'Stuhl' oder 'Tisch'. IMMER SETZEN WENN OBJEKTERKENNUNG = TRUE!!!")
+				put("description", "Das spezifische deutsche Objekt aus der COCO-Liste, nach dem der Nutzer fragt.")
+				put("enum", JSONArray().apply {
+					val germanObjects = arrayOf(
+						"Person", "Fahrrad", "Auto", "Motorrad", "Flugzeug", "Bus", "Zug", "Lkw",
+						"Boot", "Ampel", "Hydrant", "Stoppschild", "Parkuhr", "Bank", "Vogel",
+						"Katze", "Hund", "Pferd", "Schaf", "Kuh", "Elefant", "Bär", "Zebra",
+						"Giraffe", "Rucksack", "Regenschirm", "Handtasche", "Krawatte", "Koffer",
+						"Frisbee", "Skier", "Snowboard", "Sportball", "Drachen", "Baseballschläger",
+						"Baseballhandschuh", "Skateboard", "Surfbrett", "Tennisschläger", "Flasche",
+						"Weinglas", "Tasse", "Gabel", "Messer", "Löffel", "Schüssel", "Banane",
+						"Apfel", "Sandwich", "Orange", "Brokkoli", "Karotte", "Hot Dog", "Pizza",
+						"Donut", "Kuchen", "Stuhl", "Couch", "Topfpflanze", "Bett", "Esstisch",
+						"Toilette", "Fernseher", "Laptop", "Maus", "Fernbedienung", "Tastatur",
+						"Mobiltelefon", "Mikrowelle", "Backofen", "Toaster", "Spüle", "Kühlschrank",
+						"Buch", "Uhr", "Vase", "Schere", "Teddybär", "Haartrockner", "Zahnbürste"
+					)
+					germanObjects.forEach { put(it) }
+				})
 			})
 			put("setting_intent", createSettingIntentProperty())
 			put("requested_functions", createRequestedFunctionsProperty())

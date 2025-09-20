@@ -129,10 +129,10 @@ class SettingsHandler(
 		}
 
 		return if (jsonParser.isApproved(jsonResponse) && currentJson != null) {
-			// Direkt die Einstellungen anwenden und die entsprechende Nachricht sprechen
+			// Adapt settings and save JSOn
 			applySettings(currentJson)
 			onJsonUpdate(null)
-			StateUpdate(State.IDLE, null) // Keine weitere Nachricht, da schon gesprochen
+			StateUpdate(State.IDLE, null) // No further message needed.
 		} else {
 			speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Einstellungen verlassen.")
 			onJsonUpdate(null)

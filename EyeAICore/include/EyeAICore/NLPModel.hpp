@@ -25,11 +25,12 @@ class NLPModel {
 		std::string_view model_token,
 		TfLiteLogWarningCallback log_warning_callback,
 		TfLiteLogErrorCallback log_error_callback,
-		std::string npu_skel_directory
+		bool enable_npu,
+		std::string skel_directory_dir
 	);
 
-	tl::expected<std::vector<ClassResults>, std::string>
-	run(FloatTensorBuffer<FloatTensorFormat::NLPOutput>& input);
+	tl::expected<std::vector<float>, std::string>
+	run(FloatTensorBuffer<FloatTensorFormat::NLPInput>& input);
 
 	std::span<const int> get_input_shape();
 
@@ -40,4 +41,5 @@ class NLPModel {
 
   private:
 	std::unique_ptr<TfLiteRuntime> runtime;
+	std::vector<float> to_vector(std::span<float> in);
 };

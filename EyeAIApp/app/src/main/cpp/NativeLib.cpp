@@ -8,7 +8,6 @@
 
 #include "EyeAICore/DepthModel.hpp"
 #include "EyeAICore/MetricDepthModel.hpp"
-#include "EyeAICore/Rel2AbsDepthModel.hpp"
 #include "EyeAICore/YoloModel.hpp"
 #include "EyeAICore/NLPModel.hpp"
 #include "EyeAICore/utils/DepthColormap.hpp"
@@ -37,7 +36,7 @@ MutexGuard<std::unique_ptr<ObjectTracker>> object_tracker;
 
 MutexGuard<YoloModel> yolo_instance;
 
-MutexGuard<NLPModel> nlp_instance;
+NLPModel nlp_instance;
 
 MutexGuard<std::vector<ObjectTracker::TrackedBoundingBox>> last_tracked_objects;
 
@@ -75,6 +74,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	jobjectArray labels,
 	jstring gpu_delegate_serialization_dir,
 	jstring model_token,
+	jboolean enable_npu,
 	jstring skel_directory
 ) {
 	NativeByteArrayScope model_data(env, model);
@@ -111,7 +111,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
 	auto result = yolo_instance.lock()->create(
 		model_data.to_vector(), labels_vector,
 		gpu_delegate_serialization_dir_string, model_token_string,
-		log_warning_callback, log_error_callback,
+		log_warning_callback, log_error_callback, enable_npu,
 		skel_directory_scope.to_string()
 	);
 
@@ -230,10 +230,9 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 	JNIEnv* env,
 	jobject /*thiz*/,
 	jbyteArray relative_depth_model,
-	jbyteArray rel2abs_depth_model,
 	jstring gpu_delegate_serialization_dir,
 	jstring relative_depth_model_token,
-	jstring rel2abs_depth_model_token,
+	jboolean enable_npu,
 	jstring skel_directory
 ) {
 	const NativeStringScope gpu_delegate_serialization_dir_string(
@@ -243,11 +242,6 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 	NativeByteArrayScope relative_depth_model_data(env, relative_depth_model);
 	const NativeStringScope relative_depth_model_token_string(
 		env, relative_depth_model_token
-	);
-
-	NativeByteArrayScope rel2abs_depth_model_data(env, rel2abs_depth_model);
-	const NativeStringScope rel2abs_depth_model_token_string(
-		env, rel2abs_depth_model_token
 	);
 
 	NativeStringScope skel_directory_scope{env, skel_directory};
@@ -262,10 +256,9 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 
 	auto result = MetricDepthModel::create(
 		relative_depth_model_data.to_vector(),
-		rel2abs_depth_model_data.to_vector(),
 		gpu_delegate_serialization_dir_string,
-		relative_depth_model_token_string, rel2abs_depth_model_token_string,
-		log_warning_callback, log_error_callback,
+		relative_depth_model_token_string,
+		log_warning_callback, log_error_callback, enable_npu,
 		skel_directory_scope.to_string()
 	);
 	if (result) {
@@ -642,6 +635,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initNLPRuntime(
 	jbyteArray model,
 	jstring gpu_delegate_serialization_dir,
 	jstring model_token,
+	jboolean enable_npu,
 	jstring skel_directory
 ) {
 	NativeByteArrayScope model_data(env, model);
@@ -649,8 +643,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initNLPRuntime(
 		env, gpu_delegate_serialization_dir
 	);
 	const NativeStringScope model_token_string(env, model_token);
-
-	NativeStringScope skel_directory_scope{env, skel_directory};
+	const NativeStringScope skel_directory_scope(env, skel_directory);
 
 	const auto log_warning_callback = [](std::string msg) {
 		LOG_WARN("[NLPRuntime] {}", msg);
@@ -660,16 +653,16 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initNLPRuntime(
 		LOG_ERROR("[NLPRuntime] {}", msg);
 	};
 
-	auto result = nlp_instance.lock()->create(
+	auto result = nlp_instance.create(
 		model_data.to_vector(),
 		gpu_delegate_serialization_dir_string, model_token_string,
-		log_warning_callback, log_error_callback,
+		log_warning_callback, log_error_callback, enable_npu,
 		skel_directory_scope.to_string()
 	);
 
 	if (!result.has_value()) {
 		LOG_ERROR(
-			"[NLPRuntime] Could not create NLPModel: {}", result.error()
+			"[NLPRuntime] Could not create YoloModel: {}", result.error()
 		);
 		return false;
 	}
@@ -682,7 +675,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getNLPInputShape(
 	JNIEnv* env,
 	jobject /* this */
 ) {
-	auto shape = nlp_instance.lock()->get_input_shape();
+	auto shape = nlp_instance.get_input_shape();
 	jsize length = static_cast<jsize>(shape.size());
 
 	jintArray array = env->NewIntArray(length);
@@ -701,7 +694,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getNLPOutputShape(
 	JNIEnv* env,
 	jobject /* this */
 ) {
-	auto shape = nlp_instance.lock()->get_output_shape();
+	auto shape = nlp_instance.get_output_shape();
 	jsize length = static_cast<jsize>(shape.size());
 
 	jintArray array = env->NewIntArray(length);
@@ -715,28 +708,36 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getNLPOutputShape(
 	return array;
 }
 
-/*
+static jfloatArray vectorToJFloatArray(JNIEnv* env, std::vector<float> vector) {
+	jfloatArray arr = env->NewFloatArray(vector.size());
+	if (!arr) return nullptr; // Fehlerhandling
+
+	env->SetFloatArrayRegion(arr, 0, vector.size(), vector.data());
+
+	return arr;
+}
+
 extern "C" JNIEXPORT jfloatArray
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runNLPOperation(
 	JNIEnv* env,
-	jobject ,
-	jintArray input
+	jobject /* thiz */,
+	jfloatArray input
 ) {
-	NativeFloatArrayScope input_scope(env, input_array);
+	NativeFloatArrayScope input_scope(env, input);
 
 	FloatTensorBuffer<FloatTensorFormat::NLPInput> input_tensor{
 		std::span<float>(input_scope)
 	};
 
-	const auto result = nlp_instance.lock()->run(input_tensor);
+	auto result = nlp_instance.run(input_tensor);
 	if (result) {
-		const auto tracked_objects = (*object_tracker.lock())->update(*result);
-		*last_tracked_objects.lock() = tracked_objects;
-		return NULL;
+		std::vector<float> const out = result.value();
+		auto data = vectorToJFloatArray(env, out);
+
+		return data;
 	} else {
 		LOG_ERROR("NLPModel failed to run: {}", result.error());
-		return NULL;
+		std::vector<float> empty = {};
+		return vectorToJFloatArray(env, empty);
 	}
-
-	return NULL;
-}*/
+}

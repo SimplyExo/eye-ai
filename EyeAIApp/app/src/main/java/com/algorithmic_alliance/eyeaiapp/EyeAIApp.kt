@@ -71,13 +71,11 @@ class EyeAIApp : Application() {
 			arrayOf(
 				MetricDepthModelInfo(
 					DEFAULT_DEPTH_MODEL_NAME,
-					"midas_v2_1_256x256.tflite",
-					"rel2abs_model.tflite"
+					"midas_v2_1_256x256.tflite"
 				),
 				MetricDepthModelInfo(
 					"MiDaS V2.1 (quantized)",
-					"midas_v2_1_256x256_quantized.tflite",
-					"rel2abs_model.tflite"
+					"midas_v2_1_256x256_quantized.tflite"
 				)
 			)
 
@@ -98,7 +96,7 @@ class EyeAIApp : Application() {
 		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
 
-		npuQnnDelegateDirectory = applicationInfo.nativeLibraryDir
+		npuQnnDelegateDirectory = "/data/local/tmp/qnn_delegate"
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
@@ -110,11 +108,11 @@ class EyeAIApp : Application() {
 
 			// Yolo Model erstellen
 			if (settings.enableObjectDetection) {
-				yoloModel.create(baseContext, npuQnnDelegateDirectory!!)
+				yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
 			}
 
 			// NLP erstellen
-			nlpModel.create(baseContext, npuQnnDelegateDirectory!!)
+			nlpModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
 
 			// Google ML Kit initialisieren
 			if (settings.enableOCR)
@@ -157,8 +155,10 @@ class EyeAIApp : Application() {
 			}
 		}
 
+		val enableNpuChanged = oldSettings.enableNpu != settings.enableNpu
+
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
-			if (oldSettings.depthModel != settings.depthModel) {
+			if (oldSettings.depthModel != settings.depthModel || enableNpuChanged) {
 				switchDepthModel(settings.depthModel)
 			}
 
@@ -178,9 +178,9 @@ class EyeAIApp : Application() {
 				}
 			}
 
-			if (oldSettings.enableObjectDetection != settings.enableObjectDetection) {
+			if (oldSettings.enableObjectDetection != settings.enableObjectDetection || enableNpuChanged) {
 				if (settings.enableObjectDetection) {
-					yoloModel.create(baseContext, npuQnnDelegateDirectory!!)
+					yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
 				}
 			}
 
@@ -193,13 +193,13 @@ class EyeAIApp : Application() {
 	}
 
 	private fun switchDepthModel(modelName: String) {
-		if (metricDepthModel?.name == modelName) return
+		if (metricDepthModel?.name == modelName && metricDepthModel?.enableNpu == settings.enableNpu) return
 
 		metricDepthModel?.close()
 		metricDepthModel = null
 
 		metricDepthModel = findDepthModelInfo(modelName)
-			.createDepthModel(this, npuQnnDelegateDirectory!!)
+			.createDepthModel(this, npuQnnDelegateDirectory!!, settings.enableNpu)
 	}
 
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {
