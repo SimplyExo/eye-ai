@@ -99,8 +99,8 @@ class CameraFrameAnalyzer(
 						}
 					}
 
-					val maxFrameRate = eyeAIApp.settings.maxDepthFrameRate
-					val minInferenceDuration = (maxFrameRate?.let { 1.0 / it })?.seconds
+					val maxFrameRate = 30 //eyeAIApp.settings.maxDepthFrameRate
+					val minInferenceDuration =(maxFrameRate?.let { 1.0 / it })?.seconds
 					if (minInferenceDuration != null && inferenceDuration < minInferenceDuration) {
 						delay(minInferenceDuration - inferenceDuration)
 					}
@@ -130,7 +130,7 @@ class CameraFrameAnalyzer(
 						}
 					}
 
-					val maxFrameRate = eyeAIApp.settings.maxObjectDetectionFrameRate
+					val maxFrameRate = 30 //eyeAIApp.settings.maxObjectDetectionFrameRate TODO: Fix this as well
 					val minInferenceDuration = (maxFrameRate?.let { 1.0 / it })?.seconds
 					if (minInferenceDuration != null && inferenceDuration < minInferenceDuration) {
 						delay(minInferenceDuration - inferenceDuration)

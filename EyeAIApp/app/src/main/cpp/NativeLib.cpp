@@ -615,6 +615,24 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroySpatialAudio(
 	}
 }
 
+std::vector<std::string> splitJString(JNIEnv* env, jstring jstr) {
+	std::vector<std::string> result;
+
+	const char* cstr = env->GetStringUTFChars(jstr, nullptr);
+	if (!cstr) return result; // Fehlerhandling
+
+	std::stringstream ss(cstr);
+	std::string line;
+
+	while (std::getline(ss, line, '\n')) {
+		result.push_back(line);
+	}
+
+	env->ReleaseStringUTFChars(jstr, cstr);
+
+	return result;
+}
+
 // NOLINTEND(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)
 extern "C" JNIEXPORT jboolean
@@ -623,13 +641,16 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initNLPRuntime(
 	jobject /*thiz*/,
 	jbyteArray model,
 	jstring gpu_delegate_serialization_dir,
-	jstring model_token
+	jstring model_token,
+	jstring skel_directory
 ) {
 	NativeByteArrayScope model_data(env, model);
 	const NativeStringScope gpu_delegate_serialization_dir_string(
 		env, gpu_delegate_serialization_dir
 	);
 	const NativeStringScope model_token_string(env, model_token);
+
+	NativeStringScope skel_directory_scope{env, skel_directory};
 
 	const auto log_warning_callback = [](std::string msg) {
 		LOG_WARN("[NLPRuntime] {}", msg);
@@ -642,7 +663,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initNLPRuntime(
 	auto result = nlp_instance.lock()->create(
 		model_data.to_vector(),
 		gpu_delegate_serialization_dir_string, model_token_string,
-		log_warning_callback, log_error_callback
+		log_warning_callback, log_error_callback,
+		skel_directory_scope.to_string()
 	);
 
 	if (!result.has_value()) {
@@ -655,3 +677,66 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initNLPRuntime(
 	LOG_INFO("[NLPRuntime] Runtime erstellt!");
 	return true;
 }
+extern "C" JNIEXPORT jintArray
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getNLPInputShape(
+	JNIEnv* env,
+	jobject /* this */
+) {
+	auto shape = nlp_instance.lock()->get_input_shape();
+	jsize length = static_cast<jsize>(shape.size());
+
+	jintArray array = env->NewIntArray(length);
+	if (array == nullptr) {
+		// Fehlerbehandlung: Speicher konnte nicht alloziert werden
+		return nullptr;
+	}
+
+	env->SetIntArrayRegion(array, 0, length, shape.data());
+
+	return array;
+}
+
+extern "C" JNIEXPORT jintArray
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getNLPOutputShape(
+	JNIEnv* env,
+	jobject /* this */
+) {
+	auto shape = nlp_instance.lock()->get_output_shape();
+	jsize length = static_cast<jsize>(shape.size());
+
+	jintArray array = env->NewIntArray(length);
+	if (array == nullptr) {
+		// Fehlerbehandlung: Speicher konnte nicht alloziert werden
+		return nullptr;
+	}
+
+	env->SetIntArrayRegion(array, 0, length, shape.data());
+
+	return array;
+}
+
+/*
+extern "C" JNIEXPORT jfloatArray
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runNLPOperation(
+	JNIEnv* env,
+	jobject ,
+	jintArray input
+) {
+	NativeFloatArrayScope input_scope(env, input_array);
+
+	FloatTensorBuffer<FloatTensorFormat::NLPInput> input_tensor{
+		std::span<float>(input_scope)
+	};
+
+	const auto result = nlp_instance.lock()->run(input_tensor);
+	if (result) {
+		const auto tracked_objects = (*object_tracker.lock())->update(*result);
+		*last_tracked_objects.lock() = tracked_objects;
+		return NULL;
+	} else {
+		LOG_ERROR("NLPModel failed to run: {}", result.error());
+		return NULL;
+	}
+
+	return NULL;
+}*/

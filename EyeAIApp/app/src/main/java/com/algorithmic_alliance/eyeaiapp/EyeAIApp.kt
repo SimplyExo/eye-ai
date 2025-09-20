@@ -51,7 +51,7 @@ class EyeAIApp : Application() {
 		private set
 
 	var nlpModel: NLPModel =
-		NLPModel(NLPModelInfo("nlp_model.tflite"))
+		NLPModel(NLPModelInfo("nlp_model_int.tflite"))
 		private set
 
 	/* will not be fully initialized when enableOCR is disabled in settings */
@@ -114,7 +114,7 @@ class EyeAIApp : Application() {
 			}
 
 			// NLP erstellen
-			nlpModel.create(baseContext)
+			nlpModel.create(baseContext, npuQnnDelegateDirectory!!)
 
 			// Google ML Kit initialisieren
 			if (settings.enableOCR)

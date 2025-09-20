@@ -14,7 +14,8 @@ tl::expected<bool, std::string> NLPModel::create(
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view model_token,
 	TfLiteLogWarningCallback log_warning_callback,
-	TfLiteLogErrorCallback log_error_callback
+	TfLiteLogErrorCallback log_error_callback,
+	std::string npu_skel_directory
 ) {
 	PROFILE_OBJECT_FUNCTION()
 
@@ -22,7 +23,7 @@ tl::expected<bool, std::string> NLPModel::create(
 		std::move(model_data), gpu_delegate_serialization_dir, model_token,
 		FloatTensorFormat::NLPInput, FloatTensorFormat::NLPOutput,
 		log_warning_callback, log_error_callback, get_object_profiling_frame(),
-		false, NpuConfiguration::Yolo
+		NpuConfiguration::Yolo, std::move(npu_skel_directory)
 	);
 
 	// bei Fehler gebe string aus

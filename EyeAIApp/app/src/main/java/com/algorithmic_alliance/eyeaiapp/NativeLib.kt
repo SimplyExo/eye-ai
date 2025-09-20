@@ -1,5 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp
 
+import android.R
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.PixelFormat
@@ -39,8 +40,15 @@ object NativeLib {
 	external fun initNLPRuntime(
 		model: ByteArray,
 		gpuDelegateSerializationDir: String,
-		modelToken: String
+		modelToken: String,
+		skelDirectory: String
 	): Boolean
+
+	external fun getNLPInputShape(): IntArray
+
+	external fun getNLPOutputShape(): IntArray
+
+	//external fun runNLPOperation(input: IntArray): FloatArray
 
 	external fun newDepthFrame()
 	external fun formatDepthFrame(): String

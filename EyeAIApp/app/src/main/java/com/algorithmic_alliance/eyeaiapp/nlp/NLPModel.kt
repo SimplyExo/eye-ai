@@ -10,26 +10,51 @@ class NLPModel(var info: NLPModelInfo) {
 	private var tensorHeight = 0
 	private var numChannel = 0
 	private var numElements = 0
+	private var SEQUENCE_LENGTH = 250
+
+	private var vocabFile = emptyArray<String>();
 
 	private var initialized = false
 
-	fun create(context: Context) {
-		// Erstellen einer Yolo-Instanz
+
+	fun create(context: Context, skelDirectory: String) {
+		// Erstellen einer NLP-Instanz
 		val modelBytes = info.getAsBytes(context)
+		vocabFile = info.getVocab(context)
 
 		NativeLib.initNLPRuntime(
 			modelBytes,
 			createSerializedGpuDelegateCacheDirectory(context).path,
-			getModelToken(context, info.tfliteFilename)
+			getModelToken(context, info.tfliteFilename), skelDirectory
 		)
 
-		/*val inputShape = NativeLib.getNLPInputShape()
-		tensorWidth = inputShape[1]
-		tensorHeight = inputShape[2]
-		val outputShape = NativeLib.getNLPOutputShape()
-		numChannel = outputShape[1]
-		numElements = outputShape[2]*/
-
 		initialized = true
+	}
+
+	fun vectorizePrompt(prompt: String): IntArray {
+		val output_array = IntArray(SEQUENCE_LENGTH)
+
+		vocabFile.forEachIndexed { index, word ->
+			var res = vocabFile.indexOf(word)
+
+			if (res == -1)
+				res = 1
+
+			output_array[index] = res
+		}
+
+		return output_array
+	}
+
+	fun runInference(prompt: String) {
+		//NativeLib.runNLPOperation(vectorizePrompt(prompt))
+	}
+
+	fun inputShape(): IntArray {
+		return NativeLib.getNLPInputShape()
+	}
+
+	fun outputShape(): IntArray {
+		return NativeLib.getNLPOutputShape()
 	}
 }
