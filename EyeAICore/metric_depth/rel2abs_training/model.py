@@ -29,6 +29,7 @@ class ScaledRel2AbsModel(tf.keras.Model):
 		self.coeff_scaling_factors = coeff_scaling_factors
 
 		self.loss_tracker = tf.keras.metrics.Mean(name="loss")
+		self.val_loss_tracker = tf.keras.metrics.Mean(name="val_loss")
 
 		# Inputs
 		inputs = layers.Input(shape=(*IMG_SIZE, 4), name="rgbd_input")
@@ -68,6 +69,12 @@ class ScaledRel2AbsModel(tf.keras.Model):
 
 		self.model = tf.keras.models.Model(inputs=inputs, outputs=scaled_coeffs_output)
 
+
+	@property
+	def metrics(self):
+		# Keras will reset these each epoch
+		return [self.loss_tracker, self.val_loss_tracker]
+
 	def train_step(self, data):
 		rgbd_images, rel_abs_pairs_batch = data
 		with tf.GradientTape() as tape:
@@ -77,6 +84,16 @@ class ScaledRel2AbsModel(tf.keras.Model):
 		self.optimizer.apply_gradients(zip(grads, self.trainable_variables))
 		self.loss_tracker.update_state(loss)
 		return {"loss": self.loss_tracker.result()}
+
+	def test_step(self, data):
+		rgbd_images, rel_abs_pairs_batch = data
+		coeffs = self(rgbd_images, training=False)
+		loss = custom_loss(coeffs, self.coeff_scaling_factors, rel_abs_pairs_batch)
+
+		# Update tracker
+		self.val_loss_tracker.update_state(loss)
+		return {"val_loss": self.val_loss_tracker.result()}
+
 
 	def call(self, inputs):
 		return self.model(inputs)
