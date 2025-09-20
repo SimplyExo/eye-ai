@@ -37,6 +37,8 @@ class JsonParser {
 			when (JSONObject(jsonString).optString("setting_intent", "none")) {
 				"tts_speed" -> SettingIntent.TTS_SPEED
 				"voice" -> SettingIntent.VOICE
+				"frequency" -> SettingIntent.FREQUENCY
+				"bps" -> SettingIntent.BPS
 				"leave" -> SettingIntent.LEAVE
 				else -> SettingIntent.NONE
 			}
@@ -76,6 +78,14 @@ class JsonParser {
 						val voice = firstChange.getInt("voice")
 						return if (voice == 1) "Verstanden. Soll die Assistentenstimme nun weiblich sein?"
 						else "Verstanden. Soll die Assistentenstimme nun männlich sein?"
+					}
+					firstChange.has("frequency") -> {
+						val frequency = firstChange.getInt("frequency")
+						return "Verstanden. Soll ich die Audio-Frequenz auf $frequency Hz setzen?"
+					}
+					firstChange.has("bps") -> {
+						val bps = firstChange.getInt("bps")
+						return "Verstanden. Soll ich die BPS auf $bps setzen?"
 					}
 					firstChange.has("leave") -> return "Möchten Sie die Einstellungen wirklich verlassen?"
 				}

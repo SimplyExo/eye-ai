@@ -49,7 +49,7 @@ class GoogleOCR {
 						sb.append("Text: \"${box.text}\" ")
 						sb.append("(x1=$x1, y1=$y1, x2=$x2, y2=$y2, w=$width, h=$height)\n")
 					}
-					
+
 					lastResult = sb.toString().trim()
 
 					continuation.resume(tbb)

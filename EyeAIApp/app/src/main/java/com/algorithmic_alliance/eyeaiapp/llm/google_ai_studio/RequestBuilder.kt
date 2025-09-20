@@ -84,6 +84,8 @@ object RequestBuilder {
 			put("enum", JSONArray().apply {
 				put("tts_speed")
 				put("voice")
+				put("frequency")
+				put("bps")
 				put("leave")
 				put("none")
 			})
@@ -109,6 +111,8 @@ object RequestBuilder {
 				put("properties", JSONObject().apply {
 					put("tts_speed", JSONObject().apply { put("type", "NUMBER") })
 					put("voice", JSONObject().apply { put("type", "NUMBER") })
+					put("frequency", JSONObject().apply { put("type", "NUMBER") })
+					put("bps", JSONObject().apply { put("type", "NUMBER") })
 					put("leave", JSONObject().apply { put("type", "BOOLEAN") })
 				})
 			})
