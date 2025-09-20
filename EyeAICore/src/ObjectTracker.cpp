@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "EyeAICore/ObjectTracker.hpp"
 #include "EyeAICore/YoloModel.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
@@ -5,6 +7,13 @@
 std::vector<ObjectTracker::TrackedBoundingBox>
 ObjectTracker::update(std::span<const BoundingBox> detected_objects) {
 	PROFILE_OBJECT_FUNCTION()
+
+	const auto now = std::chrono::high_resolution_clock::now();
+	auto update_duration_seconds = std::chrono::duration<float>(now - last_update);
+	last_update = now;
+
+	const float frame_rate = 1.f / update_duration_seconds.count();
+	tracker.setMaxTimeLost(MAX_TRACKING_TIME_SECONDS, frame_rate);
 
 	std::vector<Object> byte_track_objects;
 	byte_track_objects.reserve(detected_objects.size());
@@ -21,8 +30,15 @@ ObjectTracker::update(std::span<const BoundingBox> detected_objects) {
 
 	for (const auto& tracked_object : tracked_objects) {
 		const int cls = tracked_object->getLabel();
-		if (cls < 0 || cls >= (int)labels.size())
+		if (cls < 0 || std::cmp_greater_equal(cls ,labels.size()))
 			continue;
+
+		float& valid_score = tracked_object_valid_score[static_cast<size_t>(tracked_object->getTrackId())];
+		valid_score += tracked_object->getScore();
+
+		if (valid_score < MIN_VALID_PREDICTION_SCORE)
+			continue;
+
 		const std::string& cls_name = labels[cls];
 		const auto& rect = tracked_object->getRect();
 		const float x1 = rect.tl_x();

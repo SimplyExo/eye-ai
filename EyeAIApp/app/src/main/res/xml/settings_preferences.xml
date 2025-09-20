@@ -1,5 +1,13 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="General">
+        <CheckBoxPreference app:key="@string/enable_npu_delegate_setting"
+            app:title="Use NPU (experimental)"
+            app:defaultValue="true"
+            app:summary="@string/enable_npu_summary"/>
+    </PreferenceCategory>
+
     <PreferenceCategory
         app:isPreferenceVisible="false"
         app:key="@string/debugging_settings_category"
@@ -25,12 +33,13 @@
             app:key="@string/enable_depth_frame_rate_limit_setting"
             app:title="Enable Framerate Limiter" />
 
-        <EditTextPreference
-            android:inputType="number"
-            app:useSimpleSummaryProvider="true"
+        <SeekBarPreference
+            app:min="1"
+            android:max="120"
+            app:showSeekBarValue="true"
             app:key="@string/max_depth_frame_rate_setting"
             app:title="Framerate Limit"
-            app:defaultValue="30" />
+            app:defaultValue="30"/>
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Speech Recognition">
@@ -97,12 +106,13 @@
             app:key="@string/enable_object_detection_frame_rate_limit_setting"
             app:title="Enable Framerate Limiter" />
 
-        <EditTextPreference
-            android:inputType="number"
-            app:useSimpleSummaryProvider="true"
+        <SeekBarPreference
+            app:min="1"
+            android:max="120"
+            app:defaultValue="30"
             app:key="@string/max_object_detection_frame_rate_setting"
             app:title="Framerate Limit"
-            app:defaultValue="30" />
+            app:showSeekBarValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="OCR">

@@ -29,7 +29,7 @@ class YoloModel(var info: YoloModelInfo) {
 		NativeLib.initYoloRuntime(
 			modelBytes, labels,
 			createSerializedGpuDelegateCacheDirectory(context).path,
-			getModelToken(context, info.tfliteFilename), skelDirectory
+			getModelToken(context, info.tfliteFilename), enableNpu
 		)
 
 		val inputShape = NativeLib.getYoloInputShape()

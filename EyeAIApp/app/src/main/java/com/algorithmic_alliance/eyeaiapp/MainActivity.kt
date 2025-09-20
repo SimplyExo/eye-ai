@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
+import android.os.Looper
 import android.util.Log
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -36,6 +37,7 @@ import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.SpeechManager
+import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.SpeechManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +48,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.flow.MutableSharedFlow
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -156,6 +159,7 @@ class MainActivity : AppCompatActivity() {
 			if (voskUserStart.get()){
 
 				SpeechManager.forceStop()
+				State.IDLE
 
 				android.os.Handler(Looper.getMainLooper()).postDelayed({
 					stopVoskListening()

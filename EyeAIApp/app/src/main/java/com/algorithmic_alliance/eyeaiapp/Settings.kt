@@ -6,12 +6,14 @@ import androidx.preference.PreferenceManager
 data class Settings(
 	var depthModel: String,
 	var maxDepthFrameRate: Int?,
+	var maxDepthFrameRate: Int?,
 	var showProfilingInfo: Boolean,
 	var showDebugInputBitmap: Boolean,
 	var enableSpeechRecognition: Boolean,
 	var googleAiStudioApiKey: String?,
 	var customGoogleGenAIStudioEndpoint: String?,
 	var enableObjectDetection: Boolean,
+	var maxObjectDetectionFrameRate: Int?,
 	var maxObjectDetectionFrameRate: Int?,
 	var enableOCR: Boolean,
 	val inputSource: String?,
@@ -41,11 +43,10 @@ data class Settings(
 			)
 
 			val maxDepthFrameRate = if (depthFrameRateLimitEnabled) {
-				sharedPreferences.getString(
+				sharedPreferences.getInt(
 					context.getString(R.string.max_depth_frame_rate_setting),
-					DEFAULT_FRAME_RATE_LIMIT.toString()
+					DEFAULT_FRAME_RATE_LIMIT
 				)
-					?.toIntOrNull()
 			} else {
 				null
 			}
@@ -86,10 +87,10 @@ data class Settings(
 			)
 
 			val maxObjectDetectionFrameRate = if (objectDetectionFrameRateLimitEnabled) {
-				sharedPreferences.getString(
+				sharedPreferences.getInt(
 					context.getString(R.string.max_object_detection_frame_rate_setting),
-					DEFAULT_FRAME_RATE_LIMIT.toString()
-				)?.toIntOrNull()
+					DEFAULT_FRAME_RATE_LIMIT
+				)
 			} else {
 				null
 			}
