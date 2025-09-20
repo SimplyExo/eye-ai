@@ -66,6 +66,7 @@ add_subdirectory(third_party)
 file(GLOB_RECURSE EYE_AI_CORE_SOURCE_FILES
 	"${CMAKE_CURRENT_SOURCE_DIR}/include/EyeAICore/*.hpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/NLPModel.cpp"
 )
 
 add_library(

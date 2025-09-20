@@ -10,6 +10,8 @@ import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
+import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
+import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
@@ -44,6 +46,10 @@ class EyeAIApp : Application() {
 	/* will not be fully created if enableObjectDetection is disabled in settings */
 	var yoloModel: YoloModel =
 		YoloModel(YoloModelInfo("model.tflite", "coco.names", 640))
+		private set
+
+	var nlpModel: NLPModel =
+		NLPModel(NLPModelInfo("nlp_model.tflite"))
 		private set
 
 	/* will not be fully initialized when enableOCR is disabled in settings */
@@ -103,6 +109,9 @@ class EyeAIApp : Application() {
 			if (settings.enableObjectDetection) {
 				yoloModel.create(baseContext, npuQnnDelegateDirectory!!)
 			}
+
+			// NLP erstellen
+			nlpModel.create(baseContext)
 
 			// Google ML Kit initialisieren
 			if (settings.enableOCR)

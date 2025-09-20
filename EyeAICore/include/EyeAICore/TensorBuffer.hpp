@@ -93,7 +93,11 @@ enum class FloatTensorFormat : std::uint8_t {
 	/// 1 float per pixel for metric depth in meters
 	MetricDepth,
 	/// special yolo output of detected objects and their confidence
-	YoloOutput
+	YoloOutput,
+	/// output for nlp model
+	NLPOutput,
+	/// input string for nlp
+	NLPInput
 };
 
 std::string_view format_float_tensor_format(FloatTensorFormat format);
