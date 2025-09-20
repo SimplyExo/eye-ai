@@ -5,21 +5,22 @@
 #include <memory>
 
 class DepthModel;
-class Rel2AbsDepthModel;
 
 class MetricDepthModel {
   public:
+	constexpr static size_t POLYNOMIAL_DEGREE = 4;
+	constexpr static size_t COEFFS_COUNT = POLYNOMIAL_DEGREE + 1;
+
 	using CreateResult = tl::
 		expected<std::unique_ptr<MetricDepthModel>, TfLiteCreateRuntimeError>;
 
 	[[nodiscard]] static CreateResult create(
 		std::vector<int8_t>&& depth_model_data,
-		std::vector<int8_t>&& rel2abs_depth_model_data,
 		std::string_view gpu_delegate_serialization_dir,
 		std::string_view depth_model_token,
-		std::string_view rel2abs_depth_model_token,
 		TfLiteLogWarningCallback log_warning_callback,
 		TfLiteLogErrorCallback log_error_callback,
+		bool enable_npu,
 		std::string npu_skel_directory
 	);
 
@@ -36,13 +37,15 @@ class MetricDepthModel {
 	[[nodiscard]] std::span<const int> get_output_shape() const;
 
 	MetricDepthModel(
-		std::unique_ptr<DepthModel>&& depth_model,
-		std::unique_ptr<Rel2AbsDepthModel>&& rel2abs_depth_model
+		std::unique_ptr<DepthModel>&& depth_model
 	);
 
   private:
+	constexpr static std::array<float, 5> REL2ABS_COEFFS = {
+		4.30595f, -6.5995E-03f, 5.25059E-6f, -2.7962E-9f, 9.28594E-13f
+	};
+
 	std::unique_ptr<DepthModel> depth_model;
-	std::unique_ptr<Rel2AbsDepthModel> rel2abs_depth_model;
 };
 
 /**

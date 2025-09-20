@@ -25,7 +25,8 @@ class NLPModel {
 		std::string_view model_token,
 		TfLiteLogWarningCallback log_warning_callback,
 		TfLiteLogErrorCallback log_error_callback,
-		std::string npu_skel_directory
+		bool enable_npu,
+		std::string skel_directory_dir
 	);
 
 	tl::expected<std::vector<float>, std::string>

@@ -1,6 +1,5 @@
 #include "EyeAICore/Operators.hpp"
 #include "EyeAICore/MetricDepthModel.hpp"
-#include "EyeAICore/Rel2AbsDepthModel.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 
 #include <algorithm>
@@ -37,23 +36,16 @@ raw_relative_depth_post_operator(
 
 FloatTensorBuffer<FloatTensorFormat::MetricDepth> rel2abs_operator(
 	FloatTensorBuffer<FloatTensorFormat::RawRelativeDepth>& input,
-	FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthCoefficientOutput>& coeffs
+	const std::array<float, MetricDepthModel::COEFFS_COUNT>& coeffs
 ) {
 	PROFILE_DEPTH_FUNCTION()
-
-	assert(coeffs.data().size() == Rel2AbsDepthModel::COEFFS_COUNT);
-	auto coeffs_values = coeffs.data();
-	const std::array<float, Rel2AbsDepthModel::COEFFS_COUNT> rel2abs_coeffs{
-		coeffs_values[0], coeffs_values[1], coeffs_values[2], coeffs_values[3],
-		coeffs_values[4]
-	};
 
 	auto output = input.data();
 
 	for (float& value : output) {
 		const float relative_depth = value;
 		const float absolute_depth =
-			polynomial_n<4>(relative_depth, rel2abs_coeffs);
+			polynomial_n<4>(relative_depth, coeffs);
 		value = absolute_depth;
 	}
 

@@ -17,7 +17,8 @@ class NLPModel(var info: NLPModelInfo) {
 	private var initialized = false
 
 
-	fun create(context: Context, skelDirectory: String) {
+	fun create(context: Context, skelDirectory: String,
+	           enableNpu: Boolean) {
 		// Erstellen einer NLP-Instanz
 		val modelBytes = info.getAsBytes(context)
 		vocabFile = info.getVocab(context)
@@ -25,7 +26,7 @@ class NLPModel(var info: NLPModelInfo) {
 		NativeLib.initNLPRuntime(
 			modelBytes,
 			createSerializedGpuDelegateCacheDirectory(context).path,
-			getModelToken(context, info.tfliteFilename), skelDirectory
+			getModelToken(context, info.tfliteFilename), enableNpu, skelDirectory
 		)
 
 		initialized = true
