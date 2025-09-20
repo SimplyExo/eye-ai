@@ -10,7 +10,6 @@ import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.JsonParser
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.LLMStreamingHandler
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.ObjectDetectionHandler
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.ObjectDetectionResult
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.RequestedFunction
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingsHandler
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
@@ -26,16 +25,15 @@ class StateMachine(
 ) {
 
     private val streamingHandler = LLMStreamingHandler(textToSpeechInstance, llmResponseText, eyeAIApp, onStreamingComplete)
-    private val objectDetectionHandler = ObjectDetectionHandler()
     private val jsonParser = JsonParser()
 
     // SettingsHandler
     private val settingsHandler = SettingsHandler(
-	    textToSpeechInstance,
-	    jsonParser,
-	    eyeAIApp,
-	    ::generateLlmResponse,
-	    streamingHandler::speakAndHandleUi
+        textToSpeechInstance,
+        jsonParser,
+        eyeAIApp,
+        ::generateLlmResponse,
+        streamingHandler::speakAndHandleUi
     )
 
 
@@ -62,48 +60,90 @@ class StateMachine(
     }
 
     private suspend fun handleObjectDetectionRequest(jsonResponse: String): StateUpdate {
-        val specificQuery = jsonParser.parseObjectQuery(jsonResponse)?.lowercase()?.trim() ?: ""
+        val germanObjectQuery = jsonParser.parseObjectQuery(jsonResponse)?.trim() ?: ""
 
-        when (val result = objectDetectionHandler.handleObjectQuery(specificQuery)) {
-            is ObjectDetectionResult.ObjectFound -> {
+        Log.d(EyeAIApp.APP_LOG_TAG, "German object query from LLM: '$germanObjectQuery'")
+        Log.d(EyeAIApp.APP_LOG_TAG, "JSON response: $jsonResponse")
+
+        if (germanObjectQuery.isBlank()) {
+            Log.w(EyeAIApp.APP_LOG_TAG, "Object query is blank")
+            val availableGermanObjects = ObjectDetectionHandler.getGermanObjectLabelsForLLM()
+            Log.d(EyeAIApp.APP_LOG_TAG, "Available German objects: $availableGermanObjects")
+
+            if (availableGermanObjects.isNotEmpty()) {
+                val objectList = availableGermanObjects.take(5).joinToString(", ")
+                streamingHandler.speakAndHandleUi(
+                    "Bitte nennen Sie ein spezifisches Objekt, nach dem Sie suchen möchten. " +
+                        "Verfügbare Objekte: $objectList"
+                )
+            } else {
+                streamingHandler.speakAndHandleUi("Entschuldigung, ich konnte gerade keine Objekte erkennen.")
+            }
+            return StateUpdate(State.IDLE, null)
+        }
+
+        Log.d(EyeAIApp.APP_LOG_TAG, "Calling ObjectDetectionHandler.handleGermanObjectQuery with: '$germanObjectQuery'")
+
+        // Looking for the german object instantly
+        when (val result = ObjectDetectionHandler.handleGermanObjectQuery(germanObjectQuery)) {
+            is ObjectDetectionHandler.ObjectDetectionResult.ObjectFound -> {
+                Log.d(EyeAIApp.APP_LOG_TAG, "Object FOUND: ${result.obj}")
+                val obj = result.obj
                 val prompt = eyeAIApp.llm!!.buildObjectDetectionPrompt(
-                     result.obj.label,
-                     result.obj.height,
-                  result.obj.width,
-                     result.obj.x,
-                     result.obj.y,
-                    result.obj.distance
+                    obj.label,
+                    obj.height,
+                    obj.width,
+                    obj.x,
+                    obj.y,
+                    obj.distance
                 )
                 streamingHandler.generateAndStreamResponse(eyeAIApp.llm as GoogleAIStudioLLM, prompt)
             }
-            is ObjectDetectionResult.ObjectNotFound -> {
-                streamingHandler.speakAndHandleUi("Entschuldigung, das Objekt '$specificQuery' konnte ich nicht finden. Ich sehe aber folgende Objekte: ${result.availableObjects.joinToString(", ")}. Versuchen Sie es mit einem dieser Objekte.")
+
+            is ObjectDetectionHandler.ObjectDetectionResult.ObjectNotFound -> {
+                Log.d(EyeAIApp.APP_LOG_TAG, "Object NOT FOUND. Available: ${result.availableObjects}")
+                streamingHandler.speakAndHandleUi(
+                    "Entschuldigung, das Objekt '$germanObjectQuery' konnte ich nicht finden. " +
+                        "Ich sehe aber folgende Objekte: ${result.availableObjects.joinToString(", ")}."
+                )
             }
-            is ObjectDetectionResult.NoObjectsFound -> {
+
+            is ObjectDetectionHandler.ObjectDetectionResult.NoObjectsFound -> {
+                Log.d(EyeAIApp.APP_LOG_TAG, "No objects found")
                 streamingHandler.speakAndHandleUi("Entschuldigung, ich konnte gerade keine Objekte erkennen.")
             }
-            is ObjectDetectionResult.NoQueryProvided -> {
-                streamingHandler.speakAndHandleUi("Bitte nennen Sie ein spezifisches Objekt, nach dem Sie suchen möchten, zum Beispiel: 'Wo ist der Stuhl?'")
-            }
-            is ObjectDetectionResult.DepthDataUnavailable -> {
+
+            is ObjectDetectionHandler.ObjectDetectionResult.DepthDataUnavailable -> {
+                Log.d(EyeAIApp.APP_LOG_TAG, "Depth data unavailable")
                 streamingHandler.speakAndHandleUi("Entschuldigung, die Tiefenerkennung ist derzeit nicht verfügbar.")
             }
-            is ObjectDetectionResult.DepthDataInvalid -> {
+
+            is ObjectDetectionHandler.ObjectDetectionResult.DepthDataInvalid -> {
+                Log.d(EyeAIApp.APP_LOG_TAG, "Depth data invalid")
                 streamingHandler.speakAndHandleUi("Entschuldigung, die Tiefendaten haben eine unerwartete Größe.")
             }
-            is ObjectDetectionResult.NoKnownObjectsFound -> {
+
+            is ObjectDetectionHandler.ObjectDetectionResult.NoKnownObjectsFound -> {
+                Log.d(EyeAIApp.APP_LOG_TAG, "No known objects found")
                 streamingHandler.speakAndHandleUi("Ich konnte leider keine bekannten Objekte erkennen.")
             }
+
+            is ObjectDetectionHandler.ObjectDetectionResult.NoQueryProvided -> {
+                Log.d(EyeAIApp.APP_LOG_TAG, "No query provided")
+                streamingHandler.speakAndHandleUi("Bitte nennen Sie ein spezifisches Objekt.")
+            }
+
         }
 
         return StateUpdate(State.IDLE, null)
     }
 
+
     private suspend fun handleTextRecognitionRequest(): StateUpdate {
         val ocrSuccess = cameraFrameAnalyzer?.runOcrAnalysis() ?: false
         if (!ocrSuccess) {
             Log.d(EyeAIApp.APP_LOG_TAG, "OCR analysis failed")
-            streamingHandler.speakAndHandleUi("Entschuldigung, die Texterkennung konnte nicht durchgeführt werden.")
+            streamingHandler.speakAndHandleUi("Entschuldigung, die Texterkennung konnte nicht durchgefÃ¼hrt werden.")
             return StateUpdate(State.IDLE, null)
         }
 

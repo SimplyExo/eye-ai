@@ -34,10 +34,20 @@ interface LLM {
 			- "Beschreibe mir den Tisch" / "Wo befindet sich die Person?"
 		
 		  WICHTIG: Der Nutzer MUSS ein spezifisches Objekt nennen!
-		  Übersetze das Objekt ins Englische und trage es in "object_query" ein.
-		  Beispiele: "Stuhl" -> "chair", "Lampe" -> "lamp", "Tisch" -> "table", "Person/Mensch" -> "person"
-	
-		  WENN objekterkennung in JSON true ist, dann muss auch object_query gesetzt werden!
+		  Schreibe das deutsche Objektname EXAKT in "object_query" ein.
+			
+		  ERLAUBTE DEUTSCHE OBJEKTNAMEN:
+Person, Fahrrad, Auto, Motorrad, Flugzeug, Bus, Zug, Lkw, Boot, Ampel, Hydrant, Stoppschild, Parkuhr, Bank, Vogel, Katze, Hund, Pferd, Schaf, Kuh, Elefant, Bär, Zebra, Giraffe, Rucksack, Regenschirm, Handtasche, Krawatte, Koffer, Frisbee, Skier, Snowboard, Sportball, Drachen, Baseballschläger, Baseballhandschuh, Skateboard, Surfbrett, Tennisschläger, Flasche, Weinglas, Tasse, Gabel, Messer, Löffel, Schüssel, Banane, Apfel, Sandwich, Orange, Brokkoli, Karotte, Hot Dog, Pizza, Donut, Kuchen, Stuhl, Couch, Topfpflanze, Bett, Esstisch, Toilette, Fernseher, Laptop, Maus, Fernbedienung, Tastatur, Mobiltelefon, Mikrowelle, Backofen, Toaster, Spüle, Kühlschrank, Buch, Uhr, Vase, Schere, Teddybär, Haartrockner, Zahnbürste
+
+Wähle das passendste Objekt aus der Liste basierend auf der Benutzeranfrage:
+
+Beispiele:
+- "Wo ist die Person?" → {"requested_functions": {"objekterkennung": true}, "object_query": "Person"}
+- "Zeig mir das Auto" → {"requested_functions": {"objekterkennung": true}, "object_query": "Auto"}  
+- "Wo befindet sich der Computer?" → {"requested_functions": {"objekterkennung": true}, "object_query": "Laptop"}
+- "Ich suche den Stuhl" → {"requested_functions": {"objekterkennung": true}, "object_query": "Stuhl"}
+
+Verwende NUR Objektnamen aus der obigen Liste! Wenn der Benutzer nach etwas fragt, das nicht in der Liste steht, wähle das ähnlichste Objekt oder antworte über interaction_text.
 
 		  Wenn der Nutzer nur allgemein fragt ("Was sehe ich?", "Objekterkennung"), so wird dieses Tool verwendet. Dies wird durch die Eigenschaft 'objekterkennung' im JSON gesteuert.
 		  
@@ -65,35 +75,104 @@ interface LLM {
         """
 
 		val knownObjectLabels = setOf(
-			"airplane", "ambulance", "barge", "bathroom cabinet", "bathtub", "bed", "bench",
-			"bicycle", "bidet", "billboard", "boat", "bookcase", "boy", "building", "bus",
-			"cabinetry", "car", "castle", "cat furniture", "chair", "chest of drawers",
-			"closet", "coffee table", "couch", "countertop", "cupboard", "desk", "dishwasher",
-			"door", "door handle", "drawer", "filing cabinet", "furniture", "gas stove",
-			"girl", "golf cart", "gondola", "helicopter", "home appliance", "humidifier",
-			"infant bed", "jet ski", "kitchen & dining room table", "lamp", "land vehicle",
-			"light bulb", "light switch", "lighthouse", "limousine", "loveseat", "man",
-			"microwave oven", "motorcycle", "nightstand", "oven", "person", "porch",
-			"power plugs and sockets", "refrigerator", "shelf", "shower", "sink", "skyscraper",
-			"soap dispenser", "sofa bed", "stairs", "stool", "stop sign", "street light",
-			"studio couch", "submarine", "table", "tank", "taxi", "toilet", "tower",
-			"traffic light", "traffic sign", "train", "training bench", "truck", "unicycle",
-			"van", "vehicle", "wall clock", "wardrobe", "washing machine", "window",
-			"window blind", "woman"
+			"person",
+			"bicycle",
+			"car",
+			"motorcycle",
+			"airplane",
+			"bus",
+			"train",
+			"truck",
+			"boat",
+			"traffic light",
+			"fire hydrant",
+			"stop sign",
+			"parking meter",
+			"bench",
+			"bird",
+			"cat",
+			"dog",
+			"horse",
+			"sheep",
+			"cow",
+			"elephant",
+			"bear",
+			"zebra",
+			"giraffe",
+			"backpack",
+			"umbrella",
+			"handbag",
+			"tie",
+			"suitcase",
+			"frisbee",
+			"skis",
+			"snowboard",
+			"sports ball",
+			"kite",
+			"baseball bat",
+			"baseball glove",
+			"skateboard",
+			"surfboard",
+			"tennis racket",
+			"bottle",
+			"wine glass",
+			"cup",
+			"fork",
+			"knife",
+			"spoon",
+			"bowl",
+			"banana",
+			"apple",
+			"sandwich",
+			"orange",
+			"broccoli",
+			"carrot",
+			"hot dog",
+			"pizza",
+			"donut",
+			"cake",
+			"chair",
+			"couch",
+			"potted plant",
+			"bed",
+			"dining table",
+			"toilet",
+			"tv",
+			"laptop",
+			"mouse",
+			"remote",
+			"keyboard",
+			"cell phone",
+			"microwave",
+			"oven",
+			"toaster",
+			"sink",
+			"refrigerator",
+			"book",
+			"clock",
+			"vase",
+			"scissors",
+			"teddy bear",
+			"hair drier",
+			"toothbrush"
 		)
 	}
 
 	fun buildObjectDetectionPrompt(label: String, height: Float, width: Float, x: Float, y: Float, distance: Float): String {
-
 		return "Vor dir befindet sich das Objekt '$label'. " +
-			"Der sehbeinträchtigte Nutzer möchte von dir wissen, wo in etwa sich das Objekt von dir aus gesehen befindet. " +
-			"Dazu hast du folgende die folgenden Daten: " +
+			"Der sehbehinderte Nutzer möchte von dir wissen, wo in etwa sich das Objekt von dir aus gesehen befindet. " +
+			"Dazu hast du folgende Daten: " +
 			"Das ist die x-Koordinate der Mitte des Objekts $x, das ist die y-Koordinate der Mitte des Objekts $y. " +
 			"Das ist die Höhe des Objekts $height. " +
-			"Das ist die Breite des Objekts $width. "+
-			"Das ist die Distanz zum Objekt aus der Perspektive des Nutzers: $distance " +
-			"Antworte nicht mit einem JSON-Objekt, sondern mit Standartsprache!"
+			"Das ist die Breite des Objekts $width. " +
+			"Das ist die Distanz zum Objekt aus der Perspektive des Nutzers: $distance Meter. " +
+			"Erstelle eine hilfreiche, natürliche Antwort auf Deutsch, die dem Benutzer nur die Position und Details des angefragten Objekts '$label' erklärt. " +
+			"Erwähne keine anderen Objekte. Konzentriere dich ausschließlich auf das angefragte Objekt. " +
+			"Die Antwort sollte freundlich, präzise und für sehbehinderte Menschen hilfreich sein. " +
+			"Verwende natürliche Sprache und vermeide technische Koordinaten-Details. " +
+			"Antworte nicht mit einem JSON-Objekt, sondern mit Standardsprache!"
 	}
+
 	fun buildOcrPrompt(input: String): String {
 		return "Das ist der zuletzt erkannte Text mit den zusätzlichen Koordinaten: " +
 			input +
@@ -105,7 +184,5 @@ interface LLM {
 			" In diesem Fall sollst du anschließend nicht Texterkennung wiederholen bzw. sagen!" +
 			" Du solltest niemals in JSON oder einem ähnlichem anderem Format antworten. Antworte so, dass eine blinde Person dich verstehen kann."
 	}
-
-
 	fun generate(command: String, structured: Boolean): String
 }
