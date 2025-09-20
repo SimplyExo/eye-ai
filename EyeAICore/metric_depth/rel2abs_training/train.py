@@ -90,6 +90,8 @@ if __name__ == "__main__":
 		scaled_rel2abs_model.base_model.trainable = True
 		train_scaled_rel2abs_model(scaled_rel2abs_model, "_scaled_rel2abs_model_checkpoint.h5", UNFROZEN_EPOCHS, UNFROZEN_LEARNING_RATE)
 
+	scaled_rel2abs_model.build((None, IMG_SIZE[0], IMG_SIZE[1], 4))
+
 	# Adds unscaling op to the end to output the final coeffs directly
 	rel2abs_model = unscale_rel2abs_model(scaled_rel2abs_model, coeff_scaling_factors)
 
