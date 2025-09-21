@@ -43,13 +43,16 @@ class StateMachine(
     private val objectPositionClassifier = ObjectPositionClassifier()
     private val ocrToText = OCRToText()
 
-    // NLP Model Integration
+    // NLP model integration
     private val nlpModel: NLPModel? = eyeAIApp.nlpModel
 
-    // Performance optimizations
+    // Using LLM if less than 50%
+    private val nlpConfidenceThreshold = 0.5f
+
+
     private val promptCache = mutableMapOf<String, String>()
 
-    // Settings-specific intents that lead to settings menu
+
     private val settingsIntents = setOf(
         NLPModel.NLPClasses.CHANGE_SPEECH_SPEED,
         NLPModel.NLPClasses.CHANGE_SPEAKER,
@@ -58,7 +61,7 @@ class StateMachine(
         NLPModel.NLPClasses.SET_BPS
     )
 
-    // Valid intents in settings menu
+
     private val validSettingsIntents = setOf(
         NLPModel.NLPClasses.CHANGE_SPEECH_SPEED,
         NLPModel.NLPClasses.CHANGE_SPEAKER,
@@ -74,10 +77,16 @@ class StateMachine(
     private fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
 
     suspend fun handleIdle(final: String): StateUpdate {
-        // Use NLP for intent classification first, instead of LLM usage -> less LLM requests -> less chances of getting ratelimited
-        val nlpIntent = classifyIntentWithNLP(final)
+        // Intent with nlp if confidence is greater than 50%
+        val (nlpIntent, confidence) = classifyIntentWithNLPAndConfidence(final)
 
-        Log.d(EyeAIApp.APP_LOG_TAG, "NLP classified intent: $nlpIntent for input: '$final'")
+        Log.d(EyeAIApp.APP_LOG_TAG, "NLP classified intent: $nlpIntent with confidence: ${String.format("%.2f", confidence * 100)}% for input: '$final'")
+
+        // fallback to llm
+        if (nlpIntent == null) {
+            Log.d(EyeAIApp.APP_LOG_TAG, "NLP confidence below threshold (${String.format("%.2f", confidence * 100)}%), falling back to LLM")
+            return handleWithLLMFallback(final)
+        }
 
         return when (nlpIntent) {
             NLPModel.NLPClasses.TEXT_RECOGNITION -> handleTextRecognitionDirectly()
@@ -89,21 +98,44 @@ class StateMachine(
         }
     }
 
-    private fun classifyIntentWithNLP(input: String): NLPModel.NLPClasses? {
+    private fun classifyIntentWithNLPAndConfidence(input: String): Pair<NLPModel.NLPClasses?, Float> {
         return try {
-            nlpModel?.runInference(input)
+            val results = nlpModel?.runInferenceWithAllResults(input)
+            if (results == null) return Pair(null, 0f)
+
+            // Get intent with highest confidence
+            val intentConfidences = listOf(
+                NLPModel.NLPClasses.TEXT_RECOGNITION to results.TEXT_RECOGNITION,
+                NLPModel.NLPClasses.OBJECT_DETECTION to results.OBJECT_DETECTION,
+                NLPModel.NLPClasses.CHANGE_SPEECH_SPEED to results.CHANGE_SPEECH_SPEED,
+                NLPModel.NLPClasses.CHANGE_SPEAKER to results.CHANGE_SPEAKER,
+                NLPModel.NLPClasses.REDIRECT_TO_LLM to results.REDIRECT_TO_LLM,
+                NLPModel.NLPClasses.OPEN_SETTINGS to results.OPEN_SETTINGS,
+                NLPModel.NLPClasses.SET_FREQUENCY to results.SET_FREQUENCY,
+                NLPModel.NLPClasses.SET_BPS to results.SET_BPS,
+                NLPModel.NLPClasses.MEASURE_DISTANCE to results.MEASURE_DISTANCE,
+                NLPModel.NLPClasses.ABORT to results.ABORT
+            )
+
+            val bestMatch = intentConfidences.maxByOrNull { it.second }
+            if (bestMatch != null && bestMatch.second >= nlpConfidenceThreshold) {
+                Pair(bestMatch.first, bestMatch.second)
+            } else {
+                Pair(null, bestMatch?.second ?: 0f)
+            }
         } catch (e: Exception) {
-            Log.e(EyeAIApp.APP_LOG_TAG, "NLP classification failed", e)
-            null
+            Log.e(EyeAIApp.APP_LOG_TAG, "NLP classification with confidence failed", e)
+            Pair(null, 0f)
         }
     }
 
-    private fun classifyIntentWithNLPFallbackForSettings(input: String): NLPModel.NLPClasses? {
+    // with confidence levels now
+    private fun classifyIntentWithNLPFallbackForSettings(input: String): Pair<NLPModel.NLPClasses?, Float> {
         return try {
             val results = nlpModel?.runInferenceWithAllResults(input)
-            if (results == null) return null
+            if (results == null) return Pair(null, 0f)
 
-            // Converts results to sorted list of intent and confidence
+            // Convert results to list of intent and confidence
             val intentConfidences = listOf(
                 NLPModel.NLPClasses.TEXT_RECOGNITION to results.TEXT_RECOGNITION,
                 NLPModel.NLPClasses.OBJECT_DETECTION to results.OBJECT_DETECTION,
@@ -117,16 +149,19 @@ class StateMachine(
                 NLPModel.NLPClasses.ABORT to results.ABORT
             ).sortedByDescending { it.second }
 
-            // Ignore non-settings intents
-            for ((intent, _) in intentConfidences) {
-                if (intent in validSettingsIntents) {
-                    return intent
+            // Ignore non-settings intents, use next best if first is invalid
+            for ((intent, confidence) in intentConfidences) {
+                if (intent in validSettingsIntents && confidence >= nlpConfidenceThreshold) {
+                    return Pair(intent, confidence)
                 }
             }
-            return null
+
+            // get best with confidence
+            val bestValidIntent = intentConfidences.find { it.first in validSettingsIntents }
+            return Pair(null, bestValidIntent?.second ?: 0f)
         } catch (e: Exception) {
             Log.e(EyeAIApp.APP_LOG_TAG, "NLP classification with fallback failed", e)
-            null
+            Pair(null, 0f)
         }
     }
 
@@ -139,7 +174,7 @@ class StateMachine(
             return StateUpdate(State.IDLE, null)
         }
 
-        delay(200) // Wait for OCR
+        delay(200) // Wait for OCR result to be available
 
         // Get OCR boxes and convert Array to List
         val ocrBoxes = AIModelData.ocrBoxes.get()
@@ -150,10 +185,10 @@ class StateMachine(
             return StateUpdate(State.IDLE, null)
         }
 
-        // Convert Array to List for OCRToText compatibility
+        // Convert Array to List for OCRToText
         val ocrBoxesList = ocrBoxes.toList()
 
-        // Use OCRToText to generate readable description
+        // Use OCRToText to generate description
         val readableText = ocrToText.generateReadableText(ocrBoxesList)
 
         if (readableText.isEmpty()) {
@@ -169,14 +204,14 @@ class StateMachine(
     }
 
     private suspend fun handleObjectDetectionWithLLM(final: String): StateUpdate {
-        // backup object detection
+
         val jsonResponse = generateLlmResponse(final, true) ?: return StateUpdate(State.IDLE, null)
         logDebugInfo(final, jsonResponse)
         return handleObjectDetectionRequest(jsonResponse)
     }
 
     private suspend fun handleMeasureDistanceWithLLM(final: String): StateUpdate {
-        // backup distance management
+
         val jsonResponse = generateLlmResponse(final, true) ?: return StateUpdate(State.IDLE, null)
         logDebugInfo(final, jsonResponse)
         return handleNoneRequest(jsonResponse, final)
@@ -188,7 +223,7 @@ class StateMachine(
     }
 
     private suspend fun handleWithLLMFallback(final: String): StateUpdate {
-        // Use LLM as backup for REDIRECT_TO_LLM, ABORT, or when NLP fails
+        // Use LLM as fallback for REDIRECT_TO_LLM, ABORT, or when NLP fails
         val jsonResponse = generateLlmResponse(final, true) ?: return StateUpdate(State.IDLE, null)
         logDebugInfo(final, jsonResponse)
 
@@ -289,7 +324,7 @@ class StateMachine(
             return StateUpdate(State.IDLE, null)
         }
 
-        delay(200) // Wait for OCR
+        delay(200) // Wait for OCR result to be available
 
         val ocrText = eyeAIApp.ocrModel.lastResult.trim()
 
@@ -330,10 +365,18 @@ class StateMachine(
     }
 
     suspend fun handleSettingsMenu(final: String): StateUpdate {
-        // Use NLP for classification in settings
-        val nlpIntent = classifyIntentWithNLPFallbackForSettings(final)
+        // Use NLP for intent classification in settings with confidence check
+        val (nlpIntent, confidence) = classifyIntentWithNLPFallbackForSettings(final)
 
-        Log.d(EyeAIApp.APP_LOG_TAG, "Settings menu NLP classified intent: $nlpIntent for input: '$final'")
+        Log.d(EyeAIApp.APP_LOG_TAG, "Settings menu NLP classified intent: $nlpIntent with confidence: ${String.format("%.2f", confidence * 100)}% for input: '$final'")
+
+        // If confidence is below, back to LLM
+        if (nlpIntent == null) {
+            Log.d(EyeAIApp.APP_LOG_TAG, "Settings NLP confidence below threshold (${String.format("%.2f", confidence * 100)}%), falling back to LLM")
+            return settingsHandler.handleSettingsMenu(final, lastLlmJsonResponse) { newJson ->
+                lastLlmJsonResponse = newJson
+            }
+        }
 
         return when (nlpIntent) {
             NLPModel.NLPClasses.CHANGE_SPEECH_SPEED -> {
@@ -341,29 +384,33 @@ class StateMachine(
                 lastLlmJsonResponse = createSyntheticSettingsJson("tts_speed")
                 StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
             }
+
             NLPModel.NLPClasses.CHANGE_SPEAKER -> {
                 streamingHandler.speakAndHandleUi(LLM.Companion.SNIPPET_VOICE)
                 lastLlmJsonResponse = createSyntheticSettingsJson("voice")
                 StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
             }
+
             NLPModel.NLPClasses.SET_FREQUENCY -> {
                 streamingHandler.speakAndHandleUi(LLM.Companion.SNIPPET_FREQUENCY)
                 lastLlmJsonResponse = createSyntheticSettingsJson("frequency")
                 StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
             }
+
             NLPModel.NLPClasses.SET_BPS -> {
                 streamingHandler.speakAndHandleUi(LLM.Companion.SNIPPET_BPS)
                 lastLlmJsonResponse = createSyntheticSettingsJson("bps")
                 StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
             }
+
             NLPModel.NLPClasses.ABORT -> {
                 val syntheticLeave = createLeaveSettingsJson()
                 streamingHandler.speakAndHandleUi("Möchten Sie die Einstellungen wirklich verlassen?")
                 lastLlmJsonResponse = syntheticLeave
                 StateUpdate(State.SETTINGS_ACTION, syntheticLeave)
             }
+
             else -> {
-                // Fallback to Gemini API if NLP does not classify properly or returns invalid
                 settingsHandler.handleSettingsMenu(final, lastLlmJsonResponse) { newJson ->
                     lastLlmJsonResponse = newJson
                 }
