@@ -2,7 +2,17 @@
 
 Converting relative depth estimation to absolute(/metric) depth using SUNRGB-D (or DIODE) dataset
 
-## Training the Rel2Abs model
+The Rel2Abs coefficients used in the app are in `rel2abs_training/rel2abs_coeffs.npy`
+
+This is the accuracy of the Rel2Abs coefficients on the validation data of the SUNRGB-D dataset.
+
+`Average error across dataset: 0.4956 meters`
+
+`Median per image average error across dataset: 0.2355 meters`
+
+![](rel2abs_training/avg_error_distribution.png)
+
+## Finding the optimal Rel2Abs coefficients
 
 Installing python requirements for training the Rel2Abs model:
 
@@ -33,11 +43,11 @@ Preparing the dataset:
 
 (Optional) 3. Combine multiple datasets into one prepared dataset:
 
-   Only if you want to have a larger, more diverse dataset that challenges the model to generalize.
+Only if you want to have a larger, more diverse dataset that challenges the model to generalize.
 
-   ```bash
-   python combine_datasets.py <prepared_dataset_directory_1> <prepared_dataset_directory_2> <output_dataset_directory>
-   ```
+```bash
+python ./scripts/concat_prepared_datasets.py <prepared_dataset_directory_1> <prepared_dataset_directory_2> <output_dataset_directory>
+```
 
 Running the Rel2Abs model training:
 
@@ -48,7 +58,21 @@ python train.py <prepared_dataset_directory>
 
 The model will be trained and exported as `rel2abs_model.tflite`
 
+In order to see how the model performs, and what coefficients it uses:
+
+```bash
+cd rel2abs_training
+python run.py <raw_relative_depth_samples.npy> <rgbd_image_paths...>
+```
+
 <br>
+
+## Rel2Abs coefficients
+
+In order to find the most optimal coefficients for the Rel2Abs convertion,
+we train a ai model that predicts these coefficients.
+After the training of the model, we can see the most optimal coefficients.
+The Rel2Abs AI-Model is not used within the app, just for discovering the coefficients.
 
 ## Rel2Abs model documentation/specification
 
