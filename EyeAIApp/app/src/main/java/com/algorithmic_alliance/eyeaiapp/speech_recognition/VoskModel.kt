@@ -1,8 +1,10 @@
 package com.algorithmic_alliance.eyeaiapp.speech_recognition
 
 import android.content.Context
+import android.media.MediaPlayer
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
+import com.algorithmic_alliance.eyeaiapp.R
 import org.json.JSONObject
 import org.vosk.LibVosk
 import org.vosk.LogLevel
@@ -23,6 +25,9 @@ class VoskModel(val context: Context, val modelName: String) {
 
 	private var onPartialResultCallback: (partial: String) -> Unit = {}
 	private var onFinalResultCallback: (partial: String) -> Unit = {}
+
+	private var activateSound: MediaPlayer? = null
+	private var deactivateSound: MediaPlayer? = null
 
 
 	fun isListening(): Boolean = isListening
@@ -49,6 +54,9 @@ class VoskModel(val context: Context, val modelName: String) {
 			} ?: run {
 				Log.e(EyeAIApp.APP_LOG_TAG, "[VoskModel] failed to parse final result json format")
 			}
+
+			deactivateSound?.seekTo(0);
+			deactivateSound?.start()
 		}
 
 		override fun onError(exception: Exception) {
@@ -62,6 +70,10 @@ class VoskModel(val context: Context, val modelName: String) {
 
 	init {
 		LibVosk.setLogLevel(LogLevel.DEBUG)
+
+		// MediaPlayer initialisieren
+		activateSound = MediaPlayer.create(context, R.raw.activate)
+		deactivateSound = MediaPlayer.create(context, R.raw.deactivate)
 	}
 
 	fun initService(
@@ -119,6 +131,8 @@ class VoskModel(val context: Context, val modelName: String) {
 			speechService?.startListening(recognitionListener)
 			isListening = true
 			Log.d(EyeAIApp.APP_LOG_TAG, "[VoskModel] started listening")
+			activateSound?.seekTo(0);
+			activateSound?.start()
 		} catch (e: Exception) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "[VoskModel] failed to create/start speechService: $e")
 			isListening = false
@@ -134,6 +148,8 @@ class VoskModel(val context: Context, val modelName: String) {
 		try {
 			speechService?.stop()
 			Log.d(EyeAIApp.APP_LOG_TAG, "[VoskModel] stopped listening")
+			deactivateSound?.seekTo(0);
+			deactivateSound?.start()
 		} catch (e: Exception) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "[VoskModel] error while stopping speechService: ", e)
 		} finally {
