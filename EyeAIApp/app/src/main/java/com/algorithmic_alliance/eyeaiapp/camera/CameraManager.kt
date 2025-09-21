@@ -100,25 +100,4 @@ class CameraManager {
 			cameraFrameAnalyzer?.start()
 		}
 	}
-
-	private fun hasCameraFlashlight(): Boolean {
-		return camera?.cameraInfo?.hasFlashUnit() == true
-	}
-
-	fun isCameraFlashlightOn(): Boolean {
-		if (!hasCameraFlashlight())
-			return false
-
-		return camera!!.cameraInfo.torchState.value == TorchState.ON
-	}
-
-	// toggles the camera flashlight and returns whether the flashlight was turned on
-	fun toggleCameraFlashlight(): Boolean {
-		if (!hasCameraFlashlight())
-			return false
-
-		val newFlashlightState = !isCameraFlashlightOn()
-		camera!!.cameraControl.enableTorch(newFlashlightState)
-		return newFlashlightState
-	}
 }

@@ -60,7 +60,6 @@ class MainActivity : AppCompatActivity() {
 	private var ungrantedPermissionsNotice: LinearLayout? = null
 	private var ungrantedPermissionsNoticeText: TextView? = null
 	private var allowCameraPermission: Button? = null
-	private var flashlightButton: FloatingActionButton? = null
 	private var startStopVosk: FloatingActionButton? = null
 
 	private lateinit var eyeAIVision: EyeAIVision
@@ -143,13 +142,6 @@ class MainActivity : AppCompatActivity() {
 
 		allowCameraPermission = findViewById(R.id.allow_camera_permission_btn)
 		allowCameraPermission!!.setOnClickListener { permissionManager.openAppPermissionSettings() }
-
-		flashlightButton = findViewById(R.id.flashlight_button)
-		updateFlashlightButtonTint(cameraManager.isCameraFlashlightOn())
-		flashlightButton!!.setOnClickListener {
-			val flashlightOn = cameraManager.toggleCameraFlashlight()
-			updateFlashlightButtonTint(flashlightOn)
-		}
 
 		startStopVosk = findViewById(R.id.stop_tts_button)
 		startStopVosk!!.setOnClickListener {
@@ -281,8 +273,6 @@ class MainActivity : AppCompatActivity() {
 		} else {
 			GONE
 		}
-
-		updateFlashlightButtonTint(cameraManager.isCameraFlashlightOn())
 
 		val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
 		llmResponseText?.text = if (isLLMConfigured)
@@ -601,16 +591,6 @@ class MainActivity : AppCompatActivity() {
 				}
 			)
 		}
-	}
-
-	private fun updateFlashlightButtonTint(isFlashlightOn: Boolean) {
-		flashlightButton?.backgroundTintList = getColorStateList(
-			if (isFlashlightOn) {
-				R.color.flashlight_button_on
-			} else {
-				R.color.flashlight_button_off
-			}
-		)
 	}
 
 
