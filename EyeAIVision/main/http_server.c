@@ -11,6 +11,9 @@ static bool mode_change_requested = false;
 
 httpd_handle_t stream_httpd = NULL;
 
+long current_compression = 12;
+
+char comp[3];
 char ssid[32];
 char passwd[32];
 char ip[15];
@@ -194,10 +197,66 @@ esp_err_t to_sta(httpd_req_t *req) {
   return ESP_OK;
 }
 
+int to_int() {
+    char *endptr;
+    long val = strtol(comp, &endptr, 10);
+
+    if (*endptr != '\0') {
+        return -1;
+    } else {
+        return val;
+    }
+}
+
+esp_err_t comp_handler(httpd_req_t *req) {
+  // EXAMPLE: http://192.168.4.1/set_comp?comp=20
+  // Puffergröße inkl. Nullterminator
+  size_t buf_len = httpd_req_get_url_query_len(req) + 1;
+  bool error = false;
+
+  if (buf_len > 1) {
+    char *buf = malloc(buf_len);
+    if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
+      ESP_LOGI(TAG_HTTP, "URL query => %s", buf);
+
+      char param[32];
+
+      if (httpd_query_key_value(buf, "comp", param, sizeof(param)) == ESP_OK) {
+        strncpy(comp, param, sizeof(comp));
+        long tmp = to_int();
+        if (tmp > 0) {
+          current_compression = tmp;
+          error = false;
+        } else {
+          error = true;
+        }
+        ESP_LOGI(TAG_HTTP, "Found comp=%s", param);
+      }
+    }
+
+    free(buf);
+  }
+
+  // Response senden
+  if (error) {
+    char buffer[31];
+    snprintf(buffer, sizeof(buffer), "ERROR: Invalid value for comp!");
+    httpd_resp_send(req, buffer, HTTPD_RESP_USE_STRLEN);
+  } else {
+    set_compression(current_compression);
+    char buffer[sizeof(comp)+6];
+    snprintf(buffer, sizeof(buffer), "COMP: %s", comp);
+    httpd_resp_send(req, buffer, HTTPD_RESP_USE_STRLEN);
+  }
+
+  return ESP_OK;
+}
+
+
 void startHTTPServer() {
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
   config.server_port = 80;
-  config.max_uri_handlers = 4;
+  config.max_uri_handlers = 5;
 
   httpd_uri_t index_uri = {
     .uri       = "/cam0",
@@ -227,11 +286,19 @@ void startHTTPServer() {
     .user_ctx  = NULL
   };
 
+  httpd_uri_t set_comp_uri = {
+    .uri       = "/set_comp",
+    .method    = HTTP_GET,
+    .handler   = comp_handler,
+    .user_ctx  = NULL
+  };
+
   if (httpd_start(&stream_httpd, &config) == ESP_OK) {
     httpd_register_uri_handler(stream_httpd, &index_uri);
     httpd_register_uri_handler(stream_httpd, &frame_uri);
     httpd_register_uri_handler(stream_httpd, &wifi_uri);
     httpd_register_uri_handler(stream_httpd, &set_sta_uri);
+    httpd_register_uri_handler(stream_httpd, &set_comp_uri);
   }
 
   xTaskCreate(wifi_mode_task, "wifi_mode_task", 4096, NULL, 5, NULL);
