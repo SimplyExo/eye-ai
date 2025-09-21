@@ -63,4 +63,5 @@ Every camera frame is processed offline locally on your device,
     <string name="max_object_detection_frame_rate_setting">max_object_detection_frame_rate_setting</string>
     <string name="enable_npu_delegate_setting">Use NPU (experimental)</string>
     <string name="enable_npu_summary">Only enable on device with supported Qualcomm NPU. If not supported, performance will be worse!</string>
+    <string name="jpeg_compression">jpeg_compression</string>
 </resources>

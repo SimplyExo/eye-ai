@@ -138,6 +138,15 @@
         <EditTextPreference
             app:key="@string/eyeaivision_ip_setting"
             app:title="EyeAIVision IP" />
+
+        <SeekBarPreference
+            app:key="@string/jpeg_compression"
+            app:title="JPEG Compression (only EyeAIVision)"
+            app:defaultValue="15"
+            app:min="1"
+            app:max="64"
+            app:showSeekBarValue="true" />
+
     </PreferenceCategory>
 
     // this will be populated by SettingsActivity.kt

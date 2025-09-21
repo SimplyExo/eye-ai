@@ -22,7 +22,8 @@ data class Settings(
 	var depthAudioFrequency: Int,
 	var depthAudioClickIncidence: Int,
 	var objectAudioPlaybackLanguage: String?,
-	var enableNpu: Boolean
+	var enableNpu: Boolean,
+	var jpegCompression: Int
 
 ) : Cloneable {
 	companion object {
@@ -123,6 +124,11 @@ data class Settings(
 				context.getString(R.string.object_playback_setting),
 				true
 			)
+
+			val jpegCompression = sharedPreferences.getInt(context.getString(R.string.jpeg_compression),
+				15
+			)
+
 			val depthAudioClickIncidence = sharedPreferences.getInt("audio_playback_rate", 2)
 
 			val depthAudioFrequency = sharedPreferences.getInt("audio_frequency_range", 500)
@@ -153,7 +159,8 @@ data class Settings(
 				depthAudioFrequency,
 				depthAudioClickIncidence,
 				objectAudioPlaybackLanguage,
-				enableNpu
+				enableNpu,
+				jpegCompression
 			)
 		}
 	}
@@ -177,6 +184,7 @@ data class Settings(
 		depthAudioFrequency,
 		depthAudioClickIncidence,
 		objectAudioPlaybackLanguage,
-		enableNpu
+		enableNpu,
+		jpegCompression
 	)
 }
