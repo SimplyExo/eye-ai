@@ -12,7 +12,7 @@ Bilderkennung einer Kamera, die Objekte in der Umgebung in Audio-Hinweise für d
 | Samsung Galaxy S21   | 2021             | ❌               | 48ms (21 FPS) / 34.4ms     | 94ms (10.5 FPS), 90ms (11 FPS) / 85ms, 77ms     |
 | Fairphone 4 (no NPU) | 2021             | ❌               | 100ms (10 FPS) / 90ms      | 200ms (5 FPS), 200ms (5 FPS) / 185ms, 175ms     |
 
-### Bedienungsanleitung
+# Bedienungsanleitung
 
 ## Sprachbefehle nutzen
 
