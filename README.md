@@ -12,20 +12,25 @@ Bilderkennung einer Kamera, die Objekte in der Umgebung in Audio-Hinweise für d
 | Samsung Galaxy S21   | 2021             | ❌               | 48ms (21 FPS) / 34.4ms     | 94ms (10.5 FPS), 90ms (11 FPS) / 85ms, 77ms     |
 | Fairphone 4 (no NPU) | 2021             | ❌               | 100ms (10 FPS) / 90ms      | 200ms (5 FPS), 200ms (5 FPS) / 185ms, 175ms     |
 
-### Projekt-Plan:
+### Bedienungsanleitung
 
-#### 1. Schritt:
+## Sprachbefehle nutzen
 
-Erkennung von Objekten im Raum ohne Klassifizierung jedoch mit Messung der Entfernung. Dann Umwandlung in Ton mit Richtung.
-Wenn das Objekt nicht erkannt wird, wird stattdessen ein solider Block dahin gestellt, um zu verhindern, dass der Nutzer in etwas läuft.
-Not-Aus: Wenn das Programm nicht mitkommt, wird der Nutzer gewarnt, er solle sich erstmal nicht weiter bewegen, bis das Programm aufgehohlt hat.
+Als Nutzer kann man mit natürlicher Sprache, nach einem Buttonclick in der App oder auf der EyeAIVision die Spracheingabe starten.
+Sofort kommuniziert man dann mit dem Vosk-Modell für Spracherkennung. Gibt man nun einen beliebigen Input, so erfolgt eine kurze Klassifizierung des Inputs.
 
-#### 2. Schritt:
+## Klassifizierungen
 
-Klassifizierung von Objekten, möglicherweise Ausgabe per Sprache.
-Möglichkeit der Ausgabe der Objekte im aktuellen Sichtfeld des Nutzers auf dessen Eingabe hin.
+Es gibt verschiedene Möglichkeiten, wie unsere Modelle Input klassifizieren können.
 
-#### 3. Schritt
+# 1. Einstellungen
+Gelangt man in die Einstellungen, so ist das Einstellungsmenü als interaktiver Dialog gestaltet, der alle Einstellungsoptionen diktiert und anschließend für jede Einstellung einen Anpassungsdialog bietet.
 
-Gesichtserkennung von bekannten Personen?
-Nachtsicht?
+# 3. Texterkennung
+Die Texterkennung erfolgt sofort auf Sprachbefehl sofern Text erkannt werden konnte.
+   
+# 4. Objektinformationen
+Objektinformationen erfolgen ebenfalls, sofern das jeweilige angefragte Objekt erkannt wurde, sofort auf Befehl. Notwendig bei der Anfrage ist es dabei jedoch das gewünschte Objekt zu nennen.
+
+# 5. Generelle Fragen 
+Wissensfragen, Fragen zum Alltag o.ä. werden hier beantwortet. Die Antwort findet sofort statt. 
