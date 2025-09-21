@@ -51,7 +51,7 @@ class EyeAIApp : Application() {
 		private set
 
 	var nlpModel: NLPModel =
-		NLPModel(NLPModelInfo("nlp_model_int.tflite"))
+		NLPModel(NLPModelInfo("nlp_model_float32.tflite"))
 		private set
 
 	/* will not be fully initialized when enableOCR is disabled in settings */
