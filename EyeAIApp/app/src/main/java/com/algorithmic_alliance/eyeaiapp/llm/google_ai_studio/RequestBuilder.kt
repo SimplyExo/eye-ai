@@ -12,7 +12,7 @@ object RequestBuilder {
 		return if (structured) {
 			baseRequest.put("generationConfig", createStructuredConfig())
 		} else {
-			baseRequest.put("generationConfig", JSONObject())
+			baseRequest.put("generationConfig", createDefaultConfig())
 		}
 	}
 
@@ -45,10 +45,21 @@ object RequestBuilder {
 		}
 	}
 
+	private fun createDefaultConfig(): JSONObject {
+		return JSONObject().apply {
+			put("thinkingConfig", JSONObject().apply {
+				put("thinkingBudget", 0)  // Deactivating thinking
+			})
+		}
+	}
+
 	private fun createStructuredConfig(): JSONObject {
 		return JSONObject().apply {
 			put("response_mime_type", "application/json")
 			put("response_schema", createSchema())
+			put("thinkingConfig", JSONObject().apply {
+				put("thinkingBudget", 0)  // Deactivating thinking
+			})
 		}
 	}
 
