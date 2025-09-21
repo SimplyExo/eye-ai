@@ -23,14 +23,14 @@ Sofort kommuniziert man dann mit dem Vosk-Modell für Spracherkennung. Gibt man 
 
 Es gibt verschiedene Möglichkeiten, wie unsere Modelle Input klassifizieren können.
 
-# 1. Einstellungen
+### 1. Einstellungen
 Gelangt man in die Einstellungen, so ist das Einstellungsmenü als interaktiver Dialog gestaltet, der alle Einstellungsoptionen diktiert und anschließend für jede Einstellung einen Anpassungsdialog bietet.
 
-# 3. Texterkennung
+### 3. Texterkennung
 Die Texterkennung erfolgt sofort auf Sprachbefehl sofern Text erkannt werden konnte.
    
-# 4. Objektinformationen
+### 4. Objektinformationen
 Objektinformationen erfolgen ebenfalls, sofern das jeweilige angefragte Objekt erkannt wurde, sofort auf Befehl. Notwendig bei der Anfrage ist es dabei jedoch das gewünschte Objekt zu nennen.
 
-# 5. Generelle Fragen 
+### 5. Generelle Fragen 
 Wissensfragen, Fragen zum Alltag o.ä. werden hier beantwortet. Die Antwort findet sofort statt. 
