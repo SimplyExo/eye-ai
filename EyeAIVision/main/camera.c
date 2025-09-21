@@ -48,4 +48,10 @@ void init_camera()
     sensor->set_aec2(sensor, true);
 
     sensor->set_framesize(sensor, FRAMESIZE_VGA);
+    sensor->set_quality(sensor, 50);
+}
+
+void set_compression(int value) {
+    sensor_t *sensor = esp_camera_sensor_get();
+    sensor->set_quality(sensor, value);
 }
