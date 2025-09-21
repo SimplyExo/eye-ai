@@ -20,12 +20,13 @@ class TutorialScreen : AppCompatActivity() {
 	enum class State {
 		CameraPermissionExplanation,
 		MicrophonePermissionExplanation,
+		BluetoothPermissionExplanation
 	}
 
 	private var currentState = State.CameraPermissionExplanation
 
 	private var permissionManager =
-		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult)
+		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult, ::onBluetoothPermissionResult, ::onBluetoothConnectPermissionResult)
 
 	private var acceptBtn: Button? = null
 	private var skipBtn: Button? = null
@@ -86,6 +87,11 @@ class TutorialScreen : AppCompatActivity() {
 					}
 				else
 					permissionManager.requestMicrophonePermission()
+				changeState(State.BluetoothPermissionExplanation)
+			}
+			State.BluetoothPermissionExplanation ->{
+				permissionManager.requestBluetoothPermission()
+				permissionManager.requestBluetoothConnectPermission()
 				exitTutorial()
 			}
 		}
@@ -117,6 +123,12 @@ class TutorialScreen : AppCompatActivity() {
 					getString(R.string.tutorial_microphone_permission_explanation)
 				skipBtn?.visibility = VISIBLE
 			}
+
+			State.BluetoothPermissionExplanation -> {
+				explanationIcon?.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.headphones_24px))
+				explanationText?.text = getString(R.string.tutorial_bluetooth_permission_explanation)
+				skipBtn?.visibility = VISIBLE
+			}
 		}
 	}
 
@@ -140,6 +152,14 @@ class TutorialScreen : AppCompatActivity() {
 
 	@Suppress("unused")
 	private fun onMicrophonePermissionResult(isGranted: Boolean) {
+		// nothing to do
+	}
+
+	private fun onBluetoothPermissionResult(isGranted: Boolean) {
+		// nothing to do
+	}
+
+	private fun onBluetoothConnectPermissionResult(isGranted: Boolean) {
 		// nothing to do
 	}
 }

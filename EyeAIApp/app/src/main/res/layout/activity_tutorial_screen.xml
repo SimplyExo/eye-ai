@@ -5,23 +5,23 @@
     android:id="@+id/main"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:layout_marginVertical="25dp"
     android:layout_marginHorizontal="20dp"
-    android:orientation="vertical"
+    android:layout_marginVertical="25dp"
     android:gravity="center"
+    android:orientation="vertical"
     tools:context=".TutorialScreen">
 
     <androidx.cardview.widget.CardView
         android:layout_width="150dp"
         android:layout_height="150dp"
-        app:cardCornerRadius="250dp"
-        android:layout_gravity="center">
+        android:layout_gravity="center"
+        app:cardCornerRadius="250dp">
 
         <ImageView
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:src="@mipmap/ic_launcher_round"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher_round" />
     </androidx.cardview.widget.CardView>
 
     <Space
@@ -31,16 +31,16 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="20dp"
+        android:background="@drawable/info_box"
         android:orientation="vertical"
-        android:background="@drawable/info_box">
+        android:padding="20dp">
 
         <ImageView
             android:id="@+id/tutorial_screen_explanation_icon"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginBottom="10dp"
             android:layout_gravity="center"
+            android:layout_marginBottom="10dp"
             android:src="@drawable/photo_camera_24px" />
 
         <TextView
@@ -48,8 +48,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/tutorial_camera_permission_explanation"
-            android:textSize="18sp"
-            android:textAlignment="center" />
+            android:textAlignment="center"
+            android:textSize="18sp" />
 
     </LinearLayout>
 
@@ -64,7 +64,6 @@
 
         <Button
             android:id="@+id/tutorial_screen_skip_btn"
-            android:visibility="gone"
             android:layout_width="160dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -73,22 +72,23 @@
             android:paddingHorizontal="40dp"
             android:paddingVertical="15dp"
             android:text="@string/tutorial_skip_text"
-            android:textSize="18sp"
             android:textColor="@android:color/primary_text_dark"
+            android:textSize="18sp"
+            android:visibility="gone"
             tools:visibility="visible" />
 
         <Button
             android:id="@+id/tutorial_screen_accept_btn"
-            android:backgroundTint="@color/default_blue"
             android:layout_width="160dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginHorizontal="25dp"
-            android:textSize="18sp"
+            android:backgroundTint="@color/default_blue"
             android:paddingHorizontal="40dp"
             android:paddingVertical="15dp"
             android:text="@string/tutorial_accept_text"
-            android:textColor="@android:color/primary_text_dark" />
+            android:textColor="@android:color/primary_text_dark"
+            android:textSize="18sp" />
 
     </LinearLayout>
 

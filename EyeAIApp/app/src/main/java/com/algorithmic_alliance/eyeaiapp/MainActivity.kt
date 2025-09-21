@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	private var permissionManager =
-		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult)
+		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult, ::onBluetoothPermissionResult, ::onBluetoothConnectPermissionResult)
 
 	private var cameraPreviewView: PreviewView? = null
 	private var ungrantedPermissionsNotice: LinearLayout? = null
@@ -268,7 +268,8 @@ class MainActivity : AppCompatActivity() {
 		eyeAIApp().updateSettings()
 
 		updateSpeechRecognitionUIVisibility()
-
+		permissionManager.requestBluetoothConnectPermission()
+		permissionManager.requestBluetoothPermission()
 		permissionManager.requestCameraPermission()
 		if (eyeAIApp().settings.enableSpeechRecognition)
 			permissionManager.requestMicrophonePermission()
@@ -331,6 +332,18 @@ class MainActivity : AppCompatActivity() {
 			initCamera()
 		} else {
 			ungrantedPermissionsNotice!!.visibility = VISIBLE
+		}
+	}
+
+	private fun onBluetoothPermissionResult(isGranted: Boolean){
+		if(!isGranted){
+			Log.w(EyeAIApp.APP_LOG_TAG, "Bluetooth permission not granted")
+		}
+	}
+
+	private fun onBluetoothConnectPermissionResult(isGranted: Boolean){
+		if(!isGranted){
+			Log.w(EyeAIApp.APP_LOG_TAG, "Bluetooth connect permission not granted")
 		}
 	}
 
