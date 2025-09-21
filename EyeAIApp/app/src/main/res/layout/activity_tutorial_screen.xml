@@ -18,6 +18,7 @@
         app:cardCornerRadius="250dp">
 
         <ImageView
+            android:contentDescription="@string/icon_description"
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:scaleType="centerCrop"
@@ -37,6 +38,7 @@
 
         <ImageView
             android:id="@+id/tutorial_screen_explanation_icon"
+            android:contentDescription="@string/permission_icon_description"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_gravity="center"
@@ -49,6 +51,7 @@
             android:layout_height="wrap_content"
             android:text="@string/tutorial_camera_permission_explanation"
             android:textAlignment="center"
+            android:textColor="@color/white"
             android:textSize="18sp" />
 
     </LinearLayout>
@@ -64,6 +67,7 @@
 
         <Button
             android:id="@+id/tutorial_screen_skip_btn"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="160dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -79,6 +83,7 @@
 
         <Button
             android:id="@+id/tutorial_screen_accept_btn"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="160dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
