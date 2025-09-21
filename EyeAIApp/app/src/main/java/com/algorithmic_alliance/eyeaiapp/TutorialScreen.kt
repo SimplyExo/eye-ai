@@ -26,7 +26,7 @@ class TutorialScreen : AppCompatActivity() {
 	private var currentState = State.CameraPermissionExplanation
 
 	private var permissionManager =
-		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult, ::onBluetoothPermissionResult, ::onBluetoothConnectPermissionResult)
+		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult, ::onBluetoothPermissionsResult)
 
 	private var acceptBtn: Button? = null
 	private var skipBtn: Button? = null
@@ -62,8 +62,11 @@ class TutorialScreen : AppCompatActivity() {
 
 		skipBtn = findViewById(R.id.tutorial_screen_skip_btn)
 		skipBtn?.setOnClickListener {
-			if (currentState == State.MicrophonePermissionExplanation)
-				continueTutorial(true)
+			when (currentState) {
+				State.MicrophonePermissionExplanation -> continueTutorial(true)
+				State.BluetoothPermissionExplanation -> continueTutorial(true)
+				else -> {}
+			}
 		}
 
 		explanationIcon = findViewById(R.id.tutorial_screen_explanation_icon)
@@ -73,7 +76,7 @@ class TutorialScreen : AppCompatActivity() {
 		changeState(State.CameraPermissionExplanation)
 	}
 
-	private fun continueTutorial(skipMicrophone: Boolean) {
+	private fun continueTutorial(skip: Boolean) {
 		when (currentState) {
 			State.CameraPermissionExplanation -> {
 				permissionManager.requestCameraPermission()
@@ -81,7 +84,7 @@ class TutorialScreen : AppCompatActivity() {
 			}
 
 			State.MicrophonePermissionExplanation -> {
-				if (skipMicrophone)
+				if (skip)
 					PreferenceManager.getDefaultSharedPreferences(this).edit(true) {
 						putBoolean(getString(R.string.enable_speech_recognition_setting), false)
 					}
@@ -89,10 +92,14 @@ class TutorialScreen : AppCompatActivity() {
 					permissionManager.requestMicrophonePermission()
 				changeState(State.BluetoothPermissionExplanation)
 			}
-			State.BluetoothPermissionExplanation ->{
-				permissionManager.requestBluetoothPermission()
-				permissionManager.requestBluetoothConnectPermission()
-				exitTutorial()
+			State.BluetoothPermissionExplanation -> {
+				if (skip) {
+					exitTutorial()
+				}
+				else {
+					// will exit with callback
+					permissionManager.requestBluetoothPermissions()
+				}
 			}
 		}
 	}
@@ -155,11 +162,7 @@ class TutorialScreen : AppCompatActivity() {
 		// nothing to do
 	}
 
-	private fun onBluetoothPermissionResult(isGranted: Boolean) {
-		// nothing to do
-	}
-
-	private fun onBluetoothConnectPermissionResult(isGranted: Boolean) {
-		// nothing to do
+	private fun onBluetoothPermissionsResult(isGranted: Boolean) {
+		exitTutorial()
 	}
 }

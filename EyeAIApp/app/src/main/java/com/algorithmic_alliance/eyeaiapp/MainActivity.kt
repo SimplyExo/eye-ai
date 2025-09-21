@@ -54,13 +54,12 @@ class MainActivity : AppCompatActivity() {
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	private var permissionManager =
-		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult, ::onBluetoothPermissionResult, ::onBluetoothConnectPermissionResult)
+		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult, ::onBluetoothPermissionsResult)
 
 	private var cameraPreviewView: PreviewView? = null
 	private var ungrantedPermissionsNotice: LinearLayout? = null
 	private var ungrantedPermissionsNoticeText: TextView? = null
 	private var allowCameraPermission: Button? = null
-	private var flashlightButton: FloatingActionButton? = null
 	private var startStopVosk: FloatingActionButton? = null
 
 	private lateinit var eyeAIVision: EyeAIVision
@@ -143,13 +142,6 @@ class MainActivity : AppCompatActivity() {
 
 		allowCameraPermission = findViewById(R.id.allow_camera_permission_btn)
 		allowCameraPermission!!.setOnClickListener { permissionManager.openAppPermissionSettings() }
-
-		flashlightButton = findViewById(R.id.flashlight_button)
-		updateFlashlightButtonTint(cameraManager.isCameraFlashlightOn())
-		flashlightButton!!.setOnClickListener {
-			val flashlightOn = cameraManager.toggleCameraFlashlight()
-			updateFlashlightButtonTint(flashlightOn)
-		}
 
 		startStopVosk = findViewById(R.id.stop_tts_button)
 		startStopVosk!!.setOnClickListener {
@@ -270,8 +262,7 @@ class MainActivity : AppCompatActivity() {
 		eyeAIApp().updateSettings()
 
 		updateSpeechRecognitionUIVisibility()
-		permissionManager.requestBluetoothConnectPermission()
-		permissionManager.requestBluetoothPermission()
+
 		permissionManager.requestCameraPermission()
 		if (eyeAIApp().settings.enableSpeechRecognition)
 			permissionManager.requestMicrophonePermission()
@@ -282,8 +273,6 @@ class MainActivity : AppCompatActivity() {
 		} else {
 			GONE
 		}
-
-		updateFlashlightButtonTint(cameraManager.isCameraFlashlightOn())
 
 		val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
 		llmResponseText?.text = if (isLLMConfigured)
@@ -337,15 +326,9 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
-	private fun onBluetoothPermissionResult(isGranted: Boolean){
+	private fun onBluetoothPermissionsResult(isGranted: Boolean){
 		if(!isGranted){
-			Log.w(EyeAIApp.APP_LOG_TAG, "Bluetooth permission not granted")
-		}
-	}
-
-	private fun onBluetoothConnectPermissionResult(isGranted: Boolean){
-		if(!isGranted){
-			Log.w(EyeAIApp.APP_LOG_TAG, "Bluetooth connect permission not granted")
+			Log.w(EyeAIApp.APP_LOG_TAG, "Bluetooth permissions are not all granted")
 		}
 	}
 
@@ -608,16 +591,6 @@ class MainActivity : AppCompatActivity() {
 				}
 			)
 		}
-	}
-
-	private fun updateFlashlightButtonTint(isFlashlightOn: Boolean) {
-		flashlightButton?.backgroundTintList = getColorStateList(
-			if (isFlashlightOn) {
-				R.color.flashlight_button_on
-			} else {
-				R.color.flashlight_button_off
-			}
-		)
 	}
 
 
