@@ -1,61 +1,86 @@
 package com.algorithmic_alliance.eyeaiapp.nlp
 
 import android.content.Context
-import com.algorithmic_alliance.eyeaiapp.NativeLib
-import com.algorithmic_alliance.eyeaiapp.depth.createSerializedGpuDelegateCacheDirectory
-import com.algorithmic_alliance.eyeaiapp.depth.getModelToken
+import android.util.Log
+import com.algorithmic_alliance.eyeaiapp.EyeAIApp
+import org.tensorflow.lite.Interpreter
 
 class NLPModel(var info: NLPModelInfo) {
-	private var tensorWidth = 0
-	private var tensorHeight = 0
-	private var numChannel = 0
-	private var numElements = 0
 	private var SEQUENCE_LENGTH = 250
 
-	private var vocabFile = emptyArray<String>();
+	private var vocabFile = emptyArray<String>()
+
+	enum class Classes {
+		TEXT_RECOGNITION,
+		OBJECT_DETECTION,
+		CHANGE_SPEECH_SPEED,
+		CHANGE_SPEAKER,
+		REDIRECT_TO_LLM,
+		OPEN_SETTINGS,
+		SET_FREQUENCY,
+		SET_BPS,
+		MEASURE_DISTANCE,
+		ABORT
+	}
 
 	private var initialized = false
 
+	private lateinit var interpreter: Interpreter
 
-	fun create(context: Context, skelDirectory: String,
-	           enableNpu: Boolean) {
+
+	fun create(context: Context) {
 		// Creating NLP
-		val modelBytes = info.getAsBytes(context)
+		val modelBytes = info.loadModelFile(context)
 		vocabFile = info.getVocab(context)
 
-		NativeLib.initNLPRuntime(
-			modelBytes,
-			createSerializedGpuDelegateCacheDirectory(context).path,
-			getModelToken(context, info.tfliteFilename), enableNpu, skelDirectory
-		)
+		interpreter = Interpreter(modelBytes)
 
 		initialized = true
+
+		Log.i(EyeAIApp.APP_LOG_TAG, "hello: ${runInference("lies mal den Text vor mit vor")}")
 	}
 
 	fun vectorizePrompt(prompt: String): FloatArray {
-		val output_array = FloatArray(SEQUENCE_LENGTH)
+		val outputArray = FloatArray(SEQUENCE_LENGTH)
 
-		vocabFile.forEachIndexed { index, word ->
-			var res = vocabFile.indexOf(word)
-
-			if (res == -1)
-				res = 1
-
-			output_array[index] = res.toFloat()
+		prompt.split(" ").forEachIndexed { i, word ->
+			if (i < outputArray.size) {
+				var index = vocabFile.indexOf(word.lowercase())
+				if (index == -1)
+					index = 1
+				outputArray[i] = index.toFloat()
+			}
 		}
 
-		return output_array
+		return outputArray
 	}
 
-	fun runInference(prompt: String) {
-		NativeLib.runNLPOperation(vectorizePrompt(prompt))
-	}
+	fun runInference(prompt: String): Classes {
+		require(
+			interpreter.getInputTensor(0).shape()[1] == SEQUENCE_LENGTH
+		) {
+			"input model: ${
+				interpreter.getInputTensor(0).shape()[1]
+			} input sequence: $SEQUENCE_LENGTH"
+		}
+		require(interpreter.getOutputTensor(0).shape()[1] == Classes.entries.size) {
+			"output model: ${
+				interpreter.getOutputTensor(0).shape()[1]
+			} output classes: ${Classes.entries.size}"
+		}
 
-	fun inputShape(): IntArray {
-		return NativeLib.getNLPInputShape()
-	}
+		val output = FloatArray(Classes.entries.size)
+		interpreter.run(Array(1) { vectorizePrompt(prompt) }, Array(1) { output })
 
-	fun outputShape(): IntArray {
-		return NativeLib.getNLPOutputShape()
+		var choice = 0
+		var mostConfidence = 0.0f
+		output.forEachIndexed { index, value ->
+			if (value > mostConfidence) {
+				mostConfidence = value
+				choice = index
+			}
+		}
+
+		return Classes.entries[choice]
 	}
 }

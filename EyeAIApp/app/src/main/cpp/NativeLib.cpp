@@ -9,7 +9,6 @@
 #include "EyeAICore/DepthModel.hpp"
 #include "EyeAICore/MetricDepthModel.hpp"
 #include "EyeAICore/YoloModel.hpp"
-#include "EyeAICore/NLPModel.hpp"
 #include "EyeAICore/utils/DepthColormap.hpp"
 #include "EyeAICore/utils/MutexGuard.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
@@ -35,8 +34,6 @@ MutexGuard<std::unique_ptr<SpatialAudio>> spatial_audio{
 MutexGuard<std::unique_ptr<ObjectTracker>> object_tracker;
 
 MutexGuard<YoloModel> yolo_instance;
-
-NLPModel nlp_instance;
 
 MutexGuard<std::vector<ObjectTracker::TrackedBoundingBox>> last_tracked_objects;
 
@@ -257,9 +254,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
 	auto result = MetricDepthModel::create(
 		relative_depth_model_data.to_vector(),
 		gpu_delegate_serialization_dir_string,
-		relative_depth_model_token_string,
-		log_warning_callback, log_error_callback, enable_npu,
-		skel_directory_scope.to_string()
+		relative_depth_model_token_string, log_warning_callback,
+		log_error_callback, enable_npu, skel_directory_scope.to_string()
 	);
 	if (result) {
 		metric_depth_model.lock()->swap(*result);
@@ -509,8 +505,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setAudioSettings(
 
 	auto audio_setting_scope = spatial_audio_settings.lock();
 
-	audio_setting_scope->FREQUENCY = (float) frequency;
-	audio_setting_scope->BUFFER_DURATION = ((float) 1) / incidence;
+	audio_setting_scope->FREQUENCY = (float)frequency;
+	audio_setting_scope->BUFFER_DURATION = ((float)1) / incidence;
 }
 
 void spatial_audio_log_error_callback(std::string msg) {
@@ -608,136 +604,5 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroySpatialAudio(
 	}
 }
 
-std::vector<std::string> splitJString(JNIEnv* env, jstring jstr) {
-	std::vector<std::string> result;
-
-	const char* cstr = env->GetStringUTFChars(jstr, nullptr);
-	if (!cstr) return result; // Fehlerhandling
-
-	std::stringstream ss(cstr);
-	std::string line;
-
-	while (std::getline(ss, line, '\n')) {
-		result.push_back(line);
-	}
-
-	env->ReleaseStringUTFChars(jstr, cstr);
-
-	return result;
-}
-
 // NOLINTEND(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)
-extern "C" JNIEXPORT jboolean
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initNLPRuntime(
-	JNIEnv* env,
-	jobject /*thiz*/,
-	jbyteArray model,
-	jstring gpu_delegate_serialization_dir,
-	jstring model_token,
-	jboolean enable_npu,
-	jstring skel_directory
-) {
-	NativeByteArrayScope model_data(env, model);
-	const NativeStringScope gpu_delegate_serialization_dir_string(
-		env, gpu_delegate_serialization_dir
-	);
-	const NativeStringScope model_token_string(env, model_token);
-	const NativeStringScope skel_directory_scope(env, skel_directory);
-
-	const auto log_warning_callback = [](std::string msg) {
-		LOG_WARN("[NLPRuntime] {}", msg);
-	};
-
-	const auto log_error_callback = [](std::string msg) {
-		LOG_ERROR("[NLPRuntime] {}", msg);
-	};
-
-	auto result = nlp_instance.create(
-		model_data.to_vector(),
-		gpu_delegate_serialization_dir_string, model_token_string,
-		log_warning_callback, log_error_callback, enable_npu,
-		skel_directory_scope.to_string()
-	);
-
-	if (!result.has_value()) {
-		LOG_ERROR(
-			"[NLPRuntime] Could not create YoloModel: {}", result.error()
-		);
-		return false;
-	}
-
-	LOG_INFO("[NLPRuntime] Runtime erstellt!");
-	return true;
-}
-extern "C" JNIEXPORT jintArray
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getNLPInputShape(
-	JNIEnv* env,
-	jobject /* this */
-) {
-	auto shape = nlp_instance.get_input_shape();
-	jsize length = static_cast<jsize>(shape.size());
-
-	jintArray array = env->NewIntArray(length);
-	if (array == nullptr) {
-		// Fehlerbehandlung: Speicher konnte nicht alloziert werden
-		return nullptr;
-	}
-
-	env->SetIntArrayRegion(array, 0, length, shape.data());
-
-	return array;
-}
-
-extern "C" JNIEXPORT jintArray
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getNLPOutputShape(
-	JNIEnv* env,
-	jobject /* this */
-) {
-	auto shape = nlp_instance.get_output_shape();
-	jsize length = static_cast<jsize>(shape.size());
-
-	jintArray array = env->NewIntArray(length);
-	if (array == nullptr) {
-		// Fehlerbehandlung: Speicher konnte nicht alloziert werden
-		return nullptr;
-	}
-
-	env->SetIntArrayRegion(array, 0, length, shape.data());
-
-	return array;
-}
-
-static jfloatArray vectorToJFloatArray(JNIEnv* env, std::vector<float> vector) {
-	jfloatArray arr = env->NewFloatArray(vector.size());
-	if (!arr) return nullptr; // Fehlerhandling
-
-	env->SetFloatArrayRegion(arr, 0, vector.size(), vector.data());
-
-	return arr;
-}
-
-extern "C" JNIEXPORT jfloatArray
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runNLPOperation(
-	JNIEnv* env,
-	jobject /* thiz */,
-	jfloatArray input
-) {
-	NativeFloatArrayScope input_scope(env, input);
-
-	FloatTensorBuffer<FloatTensorFormat::NLPInput> input_tensor{
-		std::span<float>(input_scope)
-	};
-
-	auto result = nlp_instance.run(input_tensor);
-	if (result) {
-		std::vector<float> const out = result.value();
-		auto data = vectorToJFloatArray(env, out);
-
-		return data;
-	} else {
-		LOG_ERROR("NLPModel failed to run: {}", result.error());
-		std::vector<float> empty = {};
-		return vectorToJFloatArray(env, empty);
-	}
-}

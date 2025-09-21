@@ -1,12 +1,20 @@
 package com.algorithmic_alliance.eyeaiapp.nlp
 
 import android.content.Context
+import java.io.FileInputStream
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 import kotlin.collections.toTypedArray
 
 class NLPModelInfo(var tfliteFilename: String) {
-	fun getAsBytes(context: Context): ByteArray {
-		context.assets.open(tfliteFilename).use { inputStream ->
-			return inputStream.readBytes()
+	fun loadModelFile(context: Context): MappedByteBuffer {
+		val fileDescriptor = context.assets.openFd(tfliteFilename)
+		FileInputStream(fileDescriptor.fileDescriptor).channel.use { channel ->
+			return channel.map(
+				FileChannel.MapMode.READ_ONLY,
+				fileDescriptor.startOffset,
+				fileDescriptor.declaredLength
+			)
 		}
 	}
 

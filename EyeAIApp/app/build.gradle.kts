@@ -133,6 +133,10 @@ dependencies {
 	implementation(libs.androidx.appcompat)
 	implementation(libs.androidx.activity)
 
+	// TFLite Select Ops for NLU
+	implementation("org.tensorflow:tensorflow-lite:2.16.1")
+	implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.16.1")
+
 	//implementation(libs.play.services.mlkit.text.recognition.common)
 	//implementation(libs.play.services.mlkit.text.recognition)
 
