@@ -138,6 +138,9 @@
         <EditTextPreference
             app:key="@string/eyeaivision_ip_setting"
             app:title="EyeAIVision IP" />
+
+        <SeekBarPreference app:key  
+
     </PreferenceCategory>
 
     // this will be populated by SettingsActivity.kt

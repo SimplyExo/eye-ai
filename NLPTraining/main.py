@@ -30,7 +30,7 @@ def load_dataset(filename: str):
             text, label = line.strip().split(";")
             texts.append(text)
             labels.append(label_map[label])
-    return texts, np.array(labels, dtype=np.int32)
+    return texts, np.array(labels, dtype=np.float32)
 
 train_texts, train_labels = load_dataset("DATASET.train")
 val_texts, val_labels = load_dataset("DATASET.val")
@@ -67,7 +67,7 @@ val_dataset = val_dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
 # -----------------------------
 # Modell definieren
 # -----------------------------
-inputs = tf.keras.Input(shape=(SEQUENCE_LENGTH,), dtype=tf.int32)
+inputs = tf.keras.Input(shape=(SEQUENCE_LENGTH,), dtype=tf.float32)
 x = tf.keras.layers.Embedding(VOCAB_SIZE, 64)(inputs)
 x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64, return_sequences=True))(x)
 x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(32))(x)
@@ -88,15 +88,15 @@ model.compile(
 # -----------------------------
 model.fit(
     train_dataset,
-    epochs=60,
+    epochs=3,
     validation_data=val_dataset
 )
 
 # -----------------------------
 # Speichern
 # -----------------------------
-model.save("nlp_model_int.h5")
-print("✅ Keras-Modell gespeichert als nlp_model_int.h5")
+model.save("nlp_model_float32.h5")
+print("✅ Keras-Modell gespeichert als nlp_model_float32.h5")
 
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 converter.target_spec.supported_ops = [
