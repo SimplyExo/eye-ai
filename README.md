@@ -2,6 +2,8 @@
 
 Bilderkennung einer Kamera, die Objekte in der Umgebung in Audio-Hinweise für den Benutzer umwandelt, damit dieser sich ohne Sicht bewegen kann.
 
+Dokumentation in EyeAI Docs: <https://simplyexo.github.io/eye-ai-docs>
+
 ### Performance of EyeAIApp
 
 | **Smartphone**       | **Release date** | **NPU enabled?** | **MiDaS only / inference** | **MiDaS with YOLO / inference**                 |
@@ -28,9 +30,9 @@ Gelangt man in die Einstellungen, so ist das Einstellungsmenü als interaktiver 
 
 ### 3. Texterkennung
 Die Texterkennung erfolgt sofort auf Sprachbefehl sofern Text erkannt werden konnte.
-   
+
 ### 4. Objektinformationen
 Objektinformationen erfolgen ebenfalls, sofern das jeweilige angefragte Objekt erkannt wurde, sofort auf Befehl. Notwendig bei der Anfrage ist es dabei jedoch das gewünschte Objekt zu nennen.
 
-### 5. Generelle Fragen 
-Wissensfragen, Fragen zum Alltag o.ä. werden hier beantwortet. Die Antwort findet sofort statt. 
+### 5. Generelle Fragen
+Wissensfragen, Fragen zum Alltag o.ä. werden hier beantwortet. Die Antwort findet sofort statt.
