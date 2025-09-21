@@ -62,7 +62,7 @@ Verwende NUR Objektnamen aus der obigen Liste! Wenn der Benutzer nach etwas frag
 		const val SNIPPET_SETTINGS: String =
 			"""Sehr gerne, ich kann Ihnen dabei helfen, die Einstellungen anzupassen. 
 
-		Es besteht die Möglichkeit die Sprechgeschwindigkeit der Sprachausgabe anzupassen. Auch ist es möglich die Stimme des Assitentenagenten zu ändern, die Tonhöhe der Distanztöne zu ändern,
+		Es besteht die Möglichkeit die Sprechgeschwindigkeit der Sprachausgabe anzupassen, die Stimme des Assitentenagenten zu ändern, die Tonhöhe der Distanztöne zu ändern,
 		die Schläge pro Sekunde für die Distanzhinweistöne zu ändern, oder aber die Einstellungen zu verlassen. 
 
 		Welche dieser Optionen möchten Sie wählen?"""
