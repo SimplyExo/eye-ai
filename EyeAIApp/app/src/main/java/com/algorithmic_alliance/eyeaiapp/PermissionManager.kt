@@ -15,8 +15,7 @@ class PermissionManager(
 	var activity: ComponentActivity,
 	onCameraPermissionResult: (isGranted: Boolean) -> Unit,
 	onMicrophonePermissionResult: (isGranted: Boolean) -> Unit,
-	onBluetoothPermissionResult: (isGranted: Boolean) -> Unit,
-	onBluetoothConnectPermissionResult: (isGranted: Boolean) -> Unit
+	onBluetoothPermissionsResult: (isGranted: Boolean) -> Unit
 ) {
 	private val requestPermissionsLauncher =
 		activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -36,17 +35,15 @@ class PermissionManager(
 					)
 				)
 			}
-			if (permissions.containsKey(Manifest.permission.BLUETOOTH)) {
-				onBluetoothPermissionResult(
+			if (permissions.containsKey(Manifest.permission.BLUETOOTH) || permissions.containsKey(
+					Manifest.permission.BLUETOOTH_CONNECT
+				)
+			) {
+				onBluetoothPermissionsResult(
 					permissions.getOrDefault(
 						Manifest.permission.BLUETOOTH,
 						false
-					)
-				)
-			}
-			if (permissions.containsKey(Manifest.permission.BLUETOOTH_CONNECT)) {
-				onBluetoothConnectPermissionResult(
-					permissions.getOrDefault(
+					) && permissions.getOrDefault(
 						Manifest.permission.BLUETOOTH_CONNECT,
 						false
 					)
@@ -62,14 +59,14 @@ class PermissionManager(
 		requestPermissionsLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO))
 	}
 
-	fun requestBluetoothPermission() {
-		requestPermissionsLauncher.launch(arrayOf(Manifest.permission.BLUETOOTH))
+	fun requestBluetoothPermissions() {
+		requestPermissionsLauncher.launch(
+			arrayOf(
+				Manifest.permission.BLUETOOTH,
+				Manifest.permission.BLUETOOTH_CONNECT
+			)
+		)
 	}
-
-	fun requestBluetoothConnectPermission() {
-		requestPermissionsLauncher.launch(arrayOf(Manifest.permission.BLUETOOTH_CONNECT))
-	}
-
 
 	fun isCameraPermissionGranted(): Boolean {
 		return ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) ==
@@ -81,13 +78,10 @@ class PermissionManager(
 			PackageManager.PERMISSION_GRANTED
 	}
 
-	fun isBluetoothPermissionGranted(): Boolean {
+	fun areBluetoothPermissionsGranted(): Boolean {
 		return ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH) ==
-			PackageManager.PERMISSION_GRANTED
-	}
-
-	fun isBluetoothConnectPermissionGranted(): Boolean {
-		return ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) ==
+			PackageManager.PERMISSION_GRANTED &&
+			ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) ==
 			PackageManager.PERMISSION_GRANTED
 	}
 
