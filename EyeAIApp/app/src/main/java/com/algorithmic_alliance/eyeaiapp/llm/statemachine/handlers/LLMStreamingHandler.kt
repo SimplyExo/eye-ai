@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.TextView
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GeminiApiExceptionHandler
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.CoroutineScope
@@ -181,5 +182,20 @@ class LLMStreamingHandler(
 		synchronized(sentenceBuffer) { sentenceBuffer.clear() }
 		textToSpeechInstance.stop()
 		onStreamingComplete()
+	}
+
+    //Handling errors
+
+	suspend fun handleStreamingError(e: Exception) {
+		when (e) {
+			is GeminiApiExceptionHandler -> {
+				Log.e(EyeAIApp.APP_LOG_TAG, "Gemini API streaming error: ${e.userMessage}")
+				speakAndHandleUi(e.userMessage)
+			}
+			else -> {
+				Log.e(EyeAIApp.APP_LOG_TAG, "General streaming error: ${e.message}")
+				speakAndHandleUi("Entschuldigung, bei der Streaming-Anfrage ist ein Fehler aufgetreten.")
+			}
+		}
 	}
 }
