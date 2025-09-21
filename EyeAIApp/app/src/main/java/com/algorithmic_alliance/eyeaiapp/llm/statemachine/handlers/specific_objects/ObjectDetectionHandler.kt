@@ -4,7 +4,7 @@ import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.AIModelData
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.TranslateEnglishToGerman
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects.TranslateEnglishToGerman
 
 class ObjectDetectionHandler() {
 	companion object {
