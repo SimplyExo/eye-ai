@@ -14,19 +14,18 @@ class CalculateSoundOrigin {
 		std::array<int, 2> pixelCoordinates,
 		float distanceToObject, int pictureXResolution
 	);
-	float pixelAngle;
 
   private:
   	//FOV of the camera to ONE side
-	float maxAngle = 90;
-	float distanceToObject;
+	float maxAngle = 80;
+	float distanceToObject  =0;
 	//coordinates of the pixel: from 1 to Resolution
-	int pixelXCoordinate;
+	int pixelXCoordinate = 0;
 	//int pixelYCoordinate;
-	int pictureXResolution;
+	int pictureXResolution  =0;
 	//int pictureYResolution;
-	float getPixelAngle();
+	[[nodiscard]] float getPixelAngle() const;
 	
-	std::array<float, 3> getVectorToOrigin(float pixelAngle);
-	std::array<float, 3> getOrigin(std::array<float, 3> directionalVector);
+	static std::array<float, 3> getVectorToOrigin(float pixelAngle);
+	[[nodiscard]] std::array<float, 3> getOrigin(std::array<float, 3> directionalVector) const;
 };

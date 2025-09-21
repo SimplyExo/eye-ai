@@ -15,7 +15,8 @@ TEST(ObjectDetection, CorrectOutput) {
 		"gpu_delegate_cache";
 	std::filesystem::create_directories(gpu_delegate_serialization_dir);
 
-	const std::filesystem::path npu_delegate_dir = std::filesystem::temp_directory_path() / "qnn_npu_delegate";
+	const std::filesystem::path npu_delegate_dir =
+		std::filesystem::temp_directory_path() / "qnn_npu_delegate";
 	std::filesystem::create_directories(npu_delegate_dir);
 
 	auto model_data_result = read_model_data(
@@ -41,7 +42,8 @@ TEST(ObjectDetection, CorrectOutput) {
 
 	auto result = yolo_instance.create(
 		std::move(model_data), labels, gpu_delegate_serialization_dir.string(),
-		YOLO_MODEL_TOKEN, tflite_log_warning_callback, tflite_log_error_callback, false
+		YOLO_MODEL_TOKEN, tflite_log_warning_callback,
+		tflite_log_error_callback, false, ""
 	);
 
 	EXPECT_RESULT_HAS_VALUE(result);

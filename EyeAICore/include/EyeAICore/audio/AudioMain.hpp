@@ -6,9 +6,8 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <atomic>
+#include <deque>
 #include <mutex>
-#include <queue>
-#include <unordered_set>
 #include <vector>
 
 /*
@@ -23,7 +22,7 @@ is ensured
 
 class AudioMain {
   public:
-	AudioMain(const SpatialAudioSettings& audio_settings);
+	explicit AudioMain(const SpatialAudioSettings& audio_settings);
 	~AudioMain();
 
 	// Functions for playing depth estimation data
@@ -48,11 +47,10 @@ class AudioMain {
 	std::vector<DepthAudioSourceData> depth_audio_sources_data;
 
 	// for playing object detection data
-	std::queue<ObjectAudioSourceData> object_audio_sources_data;
-	std::unordered_set<int> seen_objects;
+	std::deque<ObjectAudioSourceData> object_audio_sources_data;
 	std::vector<short> audio_labels_file_buffer;
 	std::mutex object_mutex;
-	int AUDIO_FILE_SAMPLE_RATE;
+	int AUDIO_FILE_SAMPLE_RATE = 0;
 
 	ALCdevice* device = AL_NONE;
 	ALCcontext* context = AL_NONE;

@@ -11,8 +11,6 @@
 #include <atomic>
 #include <chrono>
 #include <format>
-#include <iostream>
-#include <iterator>
 #include <mutex>
 #include <sndfile.hh>
 #include <string>
@@ -24,13 +22,13 @@
 #define LOG_INFO(msg) audio_settings.logInfoCallback(msg)
 #define LOG_ERROR(msg) audio_settings.logErrorCallback(msg)
 
-typedef ALCboolean(ALC_APIENTRY* LPALCRESETDEVICESOFT)(
+using LPALCRESETDEVICESOFT = ALCboolean(ALC_APIENTRY* )(
 	ALCdevice*,
 	const ALCint*
 );
 
 AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
-	: audio_settings(audio_settings) {
+	: audio_settings(audio_settings), device(alcOpenDevice(nullptr)) {
 	/*
 	Initialises audio playback:
 	- Prepares vectors in which the sources, buffers and AudioSourceData
@@ -43,7 +41,7 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 	// Preparing the vectors
 	buffers.resize(
 		audio_settings.NUMBER_OF_SOURCES,
-		std::vector<ALuint>(audio_settings.BUFFERS_PER_SOURCE)
+		std::vector<ALuint>(SpatialAudioSettings::BUFFERS_PER_SOURCE)
 	);
 	sources.resize(audio_settings.NUMBER_OF_SOURCES);
 	depth_audio_sources_data.resize(
@@ -54,9 +52,9 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 	);
 
 	// Setting up the OpenAL device configuration
-	device = alcOpenDevice(NULL);
-	if (!device) {
-		LOG_INFO("[AudioMain] Could not open audio device.");
+	
+	if (device == nullptr) {
+		LOG_ERROR("[AudioMain] Could not open audio device.");
 		return;
 	}
 
@@ -77,10 +75,11 @@ AudioMain::AudioMain(const SpatialAudioSettings& audio_settings)
 	}
 
 	context = alcCreateContext(device, nullptr);
-	if (!alcMakeContextCurrent(context)) {
+	if (alcMakeContextCurrent(context) == 0) {
 		LOG_ERROR("[AudioMain] Could not open context");
 		return;
 	}
+
 
 	alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
 
@@ -102,7 +101,7 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 	LOG_INFO("[DepthAudioLoop] Starting depth audio loop...");
 
 	if (device == AL_NONE || context == AL_NONE) {
-		LOG_INFO("[DepthAudioLoop] Audio device not initialized. Aborting ...");
+		LOG_ERROR("[DepthAudioLoop] Audio device not initialized. Aborting ...");
 		return;
 	}
 
@@ -125,7 +124,7 @@ void AudioMain::startDepthAudioLoop(std::atomic<bool>& running) {
 			alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 			if (processed > 0) {
 				// Unqueueing the buffer, filling it up, and requeueing it
-				ALuint buf;
+				ALuint buf = AL_NONE;
 				alSourceUnqueueBuffers(source, 1, &buf);
 				alBufferData(
 					buf, AL_FORMAT_MONO16,
@@ -173,6 +172,11 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 
 	LOG_INFO("[ObjectAudioLoop] Starting object audio loop");
 
+	if (device == AL_NONE || context == AL_NONE) {
+		LOG_ERROR("[ObjectAudioLoop] Audio device not initialized. Aborting ...");
+		return;
+	}
+
 	// loading the wav file
 	loadAudioLabelsFile();
 
@@ -180,7 +184,7 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 	ALuint buffer = AL_NONE;
 	std::vector<short> sound_buffer;
 	// adapting the sample rate to ms for easier use
-	int MODIFIED_SAMPLE_RATE = AUDIO_FILE_SAMPLE_RATE / 1000;
+	long MODIFIED_SAMPLE_RATE = AUDIO_FILE_SAMPLE_RATE / 1000;
 
 	alGenSources(1, &source);
 	alGenBuffers(1, &buffer);
@@ -205,7 +209,6 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 
 			if (!empty_queue) {
 				object_data = object_audio_sources_data.front();
-				object_audio_sources_data.pop();
 			}
 		}
 
@@ -228,7 +231,7 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 				(MODIFIED_SAMPLE_RATE * object_data.sound_end),
 			sound_buffer.begin()
 		);
-
+		
 		// playing the right sound
 		alBufferData(
 			buffer, AL_FORMAT_MONO16, sound_buffer.data(),
@@ -240,6 +243,7 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 			object_data.x2_position, object_data.x3_position
 		);
 		alSourcePlay(source);
+
 		// waiting until the sound is played, so that no sounds overlap
 		ALint source_state = AL_PLAYING;
 		while (source_state == AL_PLAYING) {
@@ -253,7 +257,7 @@ void AudioMain::startObjectAudioLoop(std::atomic<bool>& running) {
 		sound_buffer.clear();
 		{
 			std::lock_guard<std::mutex> lock(object_mutex);
-			seen_objects.erase(object_data.object_id);
+			object_audio_sources_data.pop_front();
 		}
 	}
 
@@ -293,7 +297,7 @@ void AudioMain::setupDepthAudioSources() {
 		DepthAudioSourceData const source_data = depth_audio_sources_data[i];
 
 		// Generating each buffer, filling it up and queuing it to the source
-		alGenBuffers(audio_settings.BUFFERS_PER_SOURCE, buffers[i].data());
+		alGenBuffers(SpatialAudioSettings::BUFFERS_PER_SOURCE, buffers[i].data());
 		for (auto buf : buffers[i]) {
 			alBufferData(
 				buf, AL_FORMAT_MONO16,
@@ -320,6 +324,8 @@ void AudioMain::loadAudioLabelsFile() {
 	- loading the samples into a vector
 	*/
 	LOG_INFO("[LoadAudioLabelsFile] Started loading ...");
+
+	audio_labels_file_buffer.clear();
 
 	MemoryData mem{
 		.data = audio_settings.coco_labels_audio.data(),
@@ -383,17 +389,21 @@ void AudioMain::changeObjectAudioData(
 	const std::vector<ObjectAudioSourceData>& new_audio_source_data
 ) {
 	PROFILE_AUDIO_FUNCTION()
-	std::lock_guard<std::mutex> lock(object_mutex);
-	
-
+	std::lock_guard<std::mutex> const lock(object_mutex);
 	for (const auto& new_object : new_audio_source_data) {
-		auto [it, inserted] = seen_objects.emplace(new_object.object_id);
-		if (inserted && object_audio_sources_data.size() < 20) {
+		bool found = false;
 
-			object_audio_sources_data.push(new_object);
+		for(auto& object: object_audio_sources_data){
+				if(object.object_id == new_object.object_id){
+					object = new_object;
+					found = true;
+					break;
+				}
+			}
+		if(!found && object_audio_sources_data.size() < 7){
+			object_audio_sources_data.push_back(new_object);
 		}
 	}
-
 }
 
 AudioMain::~AudioMain() {

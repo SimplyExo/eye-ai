@@ -1,5 +1,5 @@
 #include "utils.hpp"
-#include "EyeAICore/Rel2AbsDepthModel.hpp"
+#include "EyeAICore/MetricDepthModel.hpp"
 #include "EyeAICore/TensorBuffer.hpp"
 #include "EyeAICore/utils/Errors.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
@@ -272,13 +272,13 @@ find_coeffs(std::span<std::pair<float, float>> relative_absolute_pairs) {
 	}
 
 	long n = (long)avg_relatives.size();
-	Eigen::MatrixXf X(n, Rel2AbsDepthModel::COEFFS_COUNT);
+	Eigen::MatrixXf X(n, MetricDepthModel::COEFFS_COUNT);
 	Eigen::VectorXf Y(n);
 
 	// Build Vandermonde matrix
 	for (long i = 0; i < n; i++) {
 		float xi = 1.0;
-		for (long j = 0; j <= Rel2AbsDepthModel::POLYNOMIAL_DEGREE; j++) {
+		for (long j = 0; j <= MetricDepthModel::POLYNOMIAL_DEGREE; j++) {
 			X(i, j) = xi;
 			float x = avg_relatives[i];
 			xi *= x;

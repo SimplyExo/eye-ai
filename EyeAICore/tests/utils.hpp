@@ -2,7 +2,6 @@
 
 #include "EyeAICore/DepthModel.hpp"
 #include "EyeAICore/MetricDepthModel.hpp"
-#include "EyeAICore/Rel2AbsDepthModel.hpp"
 #include "EyeAICore/TensorBuffer.hpp"
 #include "EyeAICore/utils/Errors.hpp"
 #include <filesystem>
@@ -52,9 +51,6 @@ read_model_data(const std::filesystem::path& filepath);
 
 tl::expected<std::unique_ptr<DepthModel>, std::string>
 create_test_depth_model();
-
-tl::expected<std::unique_ptr<Rel2AbsDepthModel>, std::string>
-create_test_rel2abs_depth_model();
 
 tl::expected<std::unique_ptr<MetricDepthModel>, std::string>
 create_test_metric_depth_model();

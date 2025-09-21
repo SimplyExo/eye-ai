@@ -48,6 +48,7 @@ import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 
+
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
 
@@ -156,6 +157,7 @@ class MainActivity : AppCompatActivity() {
 			if (voskUserStart.get()){
 
 				SpeechManager.forceStop()
+				State.IDLE
 
 				android.os.Handler(Looper.getMainLooper()).postDelayed({
 					stopVoskListening()
@@ -254,13 +256,6 @@ class MainActivity : AppCompatActivity() {
 
 		SpeechManager.tts = textToSpeechInstance
 
-
-
-
-		CoroutineScope(Dispatchers.IO).launch {
-			SpatialAudio.setup(this@MainActivity)
-			SpatialAudio.start()
-		}
 
 		audioDeviceManager = AudioDeviceManager(this@MainActivity)
 		audioDeviceManager.register()
@@ -764,8 +759,8 @@ class MainActivity : AppCompatActivity() {
 	}
 
 
-
-
 	fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
+
+	companion object
 
 }

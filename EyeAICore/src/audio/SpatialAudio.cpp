@@ -100,7 +100,7 @@ void SpatialAudio::processDepthEstimationData() {
 		// float frequency =
 		// 300 - (100 * (std::fabs(calculateSoundOrigin.pixelAngle) / 90));
 		new_audio_source_data.emplace_back(
-			200, SpatialAudioSettings::BUFFER_DURATION,
+			audio_settings.FREQUENCY, audio_settings.BUFFER_DURATION,
 			SpatialAudioSettings::SAMPLE_RATE, sound_origin[0], sound_origin[1],
 			sound_origin[2]
 		);
@@ -142,8 +142,10 @@ object detection data:
 			);
 			continue;
 		}
-		int label_sound_start = object_label_data[object_name][0];
-		int label_sound_end = object_label_data[object_name][1];
+		int label_sound_start = object_label_data.at(object_name)[0];
+		int label_sound_end = object_label_data.at(object_name)[1];
+
+		LOG_INFO(std::format("Object {}: Start: {} End: {}", object_name, label_sound_start, label_sound_end));
 
 		// retrieving distance
 		float distance = depthEstimationData.at(
@@ -173,11 +175,12 @@ void SpatialAudio::readObjectLabelData() {
 	*/
 	LOG_INFO("[ReadingObjectLabelData] Reading Object Label data...");
 
+	object_label_data.clear();
+
 	std::string json_string(
 		reinterpret_cast<const char*>(audio_settings.coco_labels_data.data()),
 		audio_settings.coco_labels_data.size()
 	);
-	LOG_INFO(std::format("[ReadingObjectLabelData] Data size: {}", audio_settings.coco_labels_data.size()));
 	nlohmann::json json_object_data;
 	try {
 		json_object_data = nlohmann::json::parse(json_string);
@@ -190,15 +193,9 @@ void SpatialAudio::readObjectLabelData() {
 	}
 	for (auto const& data : json_object_data) {
 		object_label_data[toLower(data["text"])] = {data["start"], data["end"]};
+		LOG_INFO(std::format("Object {} Begin {} End {}", (std::string) data["text"], (int) data["start"], (int) data["end"]));
 	}
-	for (const auto& [key, value] : object_label_data) {
-		LOG_INFO(
-			std::format(
-				"[ReadingObjectLabelData] {}: Begin {}, End {}", key, value[0],
-				value[1]
-			)
-		);
-	}
+
 	LOG_INFO("[ReadingObjectLabelData] Finished reading Object Label data...");
 }
 
@@ -214,20 +211,20 @@ std::string SpatialAudio::toLower(const std::string& s) {
 std::string SpatialAudio::trim(const std::string& str) {
 	size_t start = 0;
 	while (start < str.size() &&
-		   std::isspace(static_cast<unsigned char>(str[start]))) {
+		   (std::isspace(static_cast<unsigned char>(str[start])) != 0)) {
 		++start;
 	}
 
 	size_t end = str.size();
 	while (end > start &&
-		   std::isspace(static_cast<unsigned char>(str[end - 1]))) {
+		   (std::isspace(static_cast<unsigned char>(str[end - 1])) != 0)) {
 		--end;
 	}
 
 	return str.substr(start, end - start);
 }
 
-bool SpatialAudio::getProcessingStatus() { return processingFinished; }
+bool SpatialAudio::getProcessingStatus() const { return processingFinished; }
 
 SpatialAudio::~SpatialAudio() {
 	depth_audio_running = false;
@@ -238,4 +235,5 @@ SpatialAudio::~SpatialAudio() {
 	if (object_audio_thread.joinable()) {
 		object_audio_thread.join();
 	}
+
 }

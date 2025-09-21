@@ -25,7 +25,7 @@ class JsonParser {
 	fun parseObjectQuery(jsonString: String): String? {
 		return try {
 			val query = JSONObject(jsonString).optString("object_query", null)
-			if (query.isNullOrBlank()) null else query
+			if (query.isNullOrBlank()) null else query.trim()
 		} catch (e: JSONException) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseObjectQuery", e)
 			null
@@ -92,6 +92,16 @@ class JsonParser {
 		} catch (e: JSONException) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in isApproved", e)
 			false
+		}
+	}
+
+	fun parseExtractedObject(jsonString: String): String? {
+		return try {
+			val jsonObject = JSONObject(jsonString)
+			jsonObject.optString("extracted_object", null).takeIf { !it.isNullOrBlank() }
+		} catch (e: JSONException) {
+			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseExtractedObject", e)
+			null
 		}
 	}
 

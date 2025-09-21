@@ -1,5 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp
 
+import android.R
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.PixelFormat
@@ -26,6 +27,7 @@ object NativeLib {
 		labels: Array<String>,
 		gpuDelegateSerializationDir: String,
 		modelToken: String,
+		enableNpu: Boolean,
 		skelDirectory: String
 	): Boolean
 
@@ -34,6 +36,21 @@ object NativeLib {
 	external fun getYoloInputShape(): IntArray
 
 	external fun getYoloOutputShape(): IntArray
+
+	// NLP
+	external fun initNLPRuntime(
+		model: ByteArray,
+		gpuDelegateSerializationDir: String,
+		modelToken: String,
+		enableNpu: Boolean,
+		skelDirectory: String
+	): Boolean
+
+	external fun getNLPInputShape(): IntArray
+
+	external fun getNLPOutputShape(): IntArray
+
+	external fun runNLPOperation(input: FloatArray): FloatArray
 
 	external fun newDepthFrame()
 	external fun formatDepthFrame(): String
@@ -44,10 +61,9 @@ object NativeLib {
 
 	external fun initMetricDepthModel(
 		relativeDepthModel: ByteArray,
-		rel2absDepthModel: ByteArray,
 		gpuDelegateSerializationDir: String,
 		relativeDepthModelToken: String,
-		rel2absDepthModelToken: String,
+		enableNpu: Boolean,
 		skelDirectory: String
 	)
 
@@ -71,7 +87,7 @@ object NativeLib {
 	)
 
 	external fun setupAudioSettings(cocoLabelsAudio: ByteArray, cocoLabelsData: ByteArray)
-	external fun setAudioSettings(numberOfSources: Int, frequency: Float)
+	external fun setAudioSettings(frequency: Int, incidence: Int)
 	external fun sendAIData(array: FloatArray)
 	external fun setDepthAudioPaused(paused: Boolean)
 	external fun setObjectAudioPaused(paused: Boolean)

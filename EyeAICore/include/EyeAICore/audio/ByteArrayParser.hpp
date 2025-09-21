@@ -53,7 +53,7 @@ inline sf_count_t vio_read(void* ptr, sf_count_t count, void* user_data) {
     return to_read;
 }
 
-inline sf_count_t vio_write(const void*, sf_count_t, void*) {
+inline sf_count_t vio_write(const void* /*unused*/, sf_count_t /*unused*/, void* /*unused*/) {
     return 0;
 }
 

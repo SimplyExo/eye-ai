@@ -20,8 +20,7 @@ std::optional<DepthColorArraySizeMismatch> metric_depth_colormap(
 	}
 
 	for (size_t i = 0; i < depth_values.size(); i++) {
-		// TODO: maybe use logarithmic scale
-		constexpr static float MAX_METRIC_DISTANCE = 6.f;
+		constexpr static float MAX_METRIC_DISTANCE = 5.f;
 		colormapped_pixels[i] =
 			inferno_colormap(depth_values[i] / MAX_METRIC_DISTANCE);
 	}

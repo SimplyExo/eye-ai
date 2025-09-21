@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EyeAICore/TensorBuffer.hpp"
+#include "EyeAICore/MetricDepthModel.hpp"
 
 [[nodiscard]] FloatTensorBuffer<FloatTensorFormat::RelativeDepth>
 raw_relative_depth_post_operator(
@@ -10,7 +11,7 @@ raw_relative_depth_post_operator(
 [[nodiscard]] FloatTensorBuffer<FloatTensorFormat::MetricDepth>
 rel2abs_operator(
 	FloatTensorBuffer<FloatTensorFormat::RawRelativeDepth>& input,
-	FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthCoefficientOutput>& coeffs
+	const std::array<float, MetricDepthModel::COEFFS_COUNT>& coeffs
 );
 
 /// normalizes rgb input values (3 floats for r, g and b) based on their

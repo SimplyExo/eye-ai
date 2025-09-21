@@ -1,6 +1,5 @@
 #pragma once
 
-#include "EyeAICore/YoloModel.hpp"
 #include "EyeAICore/ObjectTracker.hpp"
 #include "EyeAICore/audio/AudioMain.hpp"
 #include "EyeAICore/audio/SpatialAudioSettings.hpp"
@@ -27,12 +26,12 @@ class SpatialAudio {
 	~SpatialAudio();
 
 	void getAIData(
-		std::span<float, 256 * 256> depth_estimation_data,
+		std::span<float, static_cast<long>(256 * 256)> depth_estimation_data,
 		std::vector<ObjectTracker::TrackedBoundingBox> object_detection_data
 	);
 	void processDepthEstimationData();
 	void processObjectDetectionData();
-	bool getProcessingStatus();
+	bool getProcessingStatus() const;
 
 	// thread handling
 	std::thread depth_audio_thread;
@@ -42,7 +41,7 @@ class SpatialAudio {
 
   private:
 	// the ai data
-	std::array<float, 256 * 256> depthEstimationData = {0};
+	std::array<float, static_cast<long>(256) * 256> depthEstimationData = {0};
 	std::vector<ObjectTracker::TrackedBoundingBox> objectDetectionData;
 
 	bool processingFinished = true;
@@ -54,6 +53,6 @@ class SpatialAudio {
 	// handling the data of the objects
 	void readObjectLabelData();
 	std::unordered_map<std::string, std::array<int, 2>> object_label_data;
-	std::string toLower(const std::string& s);
-	std::string trim(const std::string& str);
+	static std::string toLower(const std::string& s);
+	static std::string trim(const std::string& str);
 };

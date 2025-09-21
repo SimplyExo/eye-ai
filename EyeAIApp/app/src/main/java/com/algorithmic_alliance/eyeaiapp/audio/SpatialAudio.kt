@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
+import com.algorithmic_alliance.eyeaiapp.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.isActive
@@ -12,14 +13,16 @@ import java.util.concurrent.Executors
 import kotlinx.coroutines.*
 import java.io.InputStream
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.ExecutorService
 
 
 object SpatialAudio {
-	private var executor = Executors.newSingleThreadExecutor()
-	private var scope = CoroutineScope(executor.asCoroutineDispatcher())
+	private lateinit var  executor: ExecutorService
+	private lateinit var scope: CoroutineScope
 	private lateinit var eyeAIApp: EyeAIApp;
 
 	fun start() {
+		if (!::scope.isInitialized) return
 		scope.launch {
 			while (isActive) {
 				if(NativeLib.getProcessingStatus()){
@@ -35,20 +38,19 @@ object SpatialAudio {
 
 	fun setup(context: Context){
 		eyeAIApp = context.applicationContext as EyeAIApp
-		NativeLib.setAudioSettings(9, 150.0f)
+		val settings = Settings.load(context)
+		loadAudioDataFiles(context, settings.objectAudioPlaybackLanguage)
 
-		val cocoLabelsAudio = loadFileFromAssets(context, "coco_labels.wav")
-		val cocoLabelsData = loadFileFromAssets(context, "coco_labels_data.json")
-
-		if(cocoLabelsData != null  && cocoLabelsAudio != null){
-			NativeLib.setupAudioSettings(cocoLabelsAudio, cocoLabelsData)
-			Log.d("SpatialAudio", "[SpatialAudio] Loaded coco data")
-		}else{
-			Log.e("SpatialAudio", "[SpatialAudio] Could not load coco data")
+		if (!::executor.isInitialized || executor.isShutdown) {
+			executor = Executors.newSingleThreadExecutor()
+			scope = CoroutineScope(executor.asCoroutineDispatcher())
 		}
 	}
 
 	fun destroy() {
+		if (::scope.isInitialized) scope.cancel()
+		if (::executor.isInitialized) executor.shutdown()
+		NativeLib.destroySpatialAudio()
 		NativeLib.destroySpatialAudio()
 	}
 
@@ -73,6 +75,42 @@ object SpatialAudio {
 		} catch (e: Exception){
 			e.printStackTrace()
 			return null
+		}
+	}
+	fun loadAudioDataFiles(context: Context, language: String?){
+		Log.d("Spatial Audio", "[LoadAudioDataFiles] Loading files...")
+		var fileNameWav: String
+		var fileNameJson: String
+		when(language){
+			"english" -> {
+				Log.d("SpatialAudio", "[SpatialAudio] Selected english language")
+				fileNameWav = "coco_labels_english.wav"
+				fileNameJson = "coco_labels_data_english.json"
+			}
+			"german" ->{
+				Log.d("SpatialAudio", "[SpatialAudio] Selected german language")
+				fileNameWav = "coco_labels_german.wav"
+				fileNameJson = "coco_labels_data_german.json"
+			}
+			else -> {
+				Log.d("SpatialAudio", "[SpatialAudio] Selected no language, loading default")
+				fileNameWav = "coco_labels_english.wav"
+				fileNameJson = "coco_labels_data_english.json"
+			}
+		}
+
+		val cocoLabelsAudio = loadFileFromAssets(context, fileNameWav)
+		val cocoLabelsData = loadFileFromAssets(context, fileNameJson)
+
+
+
+		if(cocoLabelsData != null  && cocoLabelsAudio != null){
+			NativeLib.setupAudioSettings(cocoLabelsAudio, cocoLabelsData)
+			Log.d("SpatialAudio",
+				"[SpatialAudio] Loaded coco data from $fileNameWav and $fileNameJson"
+			)
+		}else{
+			Log.e("SpatialAudio", "[SpatialAudio] Could not load coco data")
 		}
 	}
 }

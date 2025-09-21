@@ -18,7 +18,12 @@ data class Settings(
 	val mediaSource: String?,
 	val eyeAIVisionIP: String?,
 	var depthAudioPlayback: Boolean,
-	var objectAudioPlayback: Boolean
+	var objectAudioPlayback: Boolean,	
+	var depthAudioFrequency: Int,
+	var depthAudioClickIncidence: Int,
+	var objectAudioPlaybackLanguage: String?,
+	var enableNpu: Boolean
+
 ) : Cloneable {
 	companion object {
 		const val DEFAULT_FRAME_RATE_LIMIT: Int = 30
@@ -37,11 +42,10 @@ data class Settings(
 			)
 
 			val maxDepthFrameRate = if (depthFrameRateLimitEnabled) {
-				sharedPreferences.getString(
+				sharedPreferences.getInt(
 					context.getString(R.string.max_depth_frame_rate_setting),
-					DEFAULT_FRAME_RATE_LIMIT.toString()
+					DEFAULT_FRAME_RATE_LIMIT
 				)
-					?.toIntOrNull()
 			} else {
 				null
 			}
@@ -82,10 +86,10 @@ data class Settings(
 			)
 
 			val maxObjectDetectionFrameRate = if (objectDetectionFrameRateLimitEnabled) {
-				sharedPreferences.getString(
+				sharedPreferences.getInt(
 					context.getString(R.string.max_object_detection_frame_rate_setting),
-					DEFAULT_FRAME_RATE_LIMIT.toString()
-				)?.toIntOrNull()
+					DEFAULT_FRAME_RATE_LIMIT
+				)
 			} else {
 				null
 			}
@@ -119,6 +123,16 @@ data class Settings(
 				context.getString(R.string.object_playback_setting),
 				true
 			)
+			val depthAudioClickIncidence = sharedPreferences.getInt("audio_playback_rate", 2)
+
+			val depthAudioFrequency = sharedPreferences.getInt("audio_frequency_range", 500)
+
+			val objectAudioPlaybackLanguage = sharedPreferences.getString("object_playback_language", "english")
+
+			val enableNpu = sharedPreferences.getBoolean(
+				context.getString(R.string.enable_npu_delegate_setting),
+				true
+			)
 
 			return Settings(
 				depthModel,
@@ -135,7 +149,11 @@ data class Settings(
 				mediaSource,
 				eyeAIVisionIP,
 				depthAudioPlayback,
-				objectAudioPlayback
+				objectAudioPlayback,
+				depthAudioFrequency,
+				depthAudioClickIncidence,
+				objectAudioPlaybackLanguage,
+				enableNpu
 			)
 		}
 	}
@@ -155,6 +173,10 @@ data class Settings(
 		mediaSource,
 		eyeAIVisionIP,
 		depthAudioPlayback,
-		objectAudioPlayback
+		objectAudioPlayback,
+		depthAudioFrequency,
+		depthAudioClickIncidence,
+		objectAudioPlaybackLanguage,
+		enableNpu
 	)
 }

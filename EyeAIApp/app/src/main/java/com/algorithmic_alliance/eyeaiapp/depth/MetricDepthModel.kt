@@ -14,17 +14,16 @@ import com.algorithmic_alliance.eyeaiapp.getLastAppUpdateTime
 /** All needed information to create and use a depth model */
 class MetricDepthModelInfo(
 	val name: String,
-	val relativeDepthFileName: String,
-	val rel2absDepthFileName: String
+	val relativeDepthFileName: String
 ) {
 	/** @return null if model type is not supported */
-	fun createDepthModel(context: Context, skelDirectory: String): MetricDepthModel {
+	fun createDepthModel(context: Context, skelDirectory: String, enableNpu: Boolean): MetricDepthModel {
 		return MetricDepthModel(
 			context,
 			name,
 			relativeDepthFileName,
-			rel2absDepthFileName,
-			skelDirectory
+			skelDirectory,
+			enableNpu
 		)
 	}
 }
@@ -33,27 +32,22 @@ class MetricDepthModel(
 	context: Context,
 	val name: String,
 	relativeDepthFileName: String,
-	rel2absDepthFileName: String,
-	skelDirectory: String
+	skelDirectory: String,
+	val enableNpu: Boolean
 ) : AutoCloseable {
 	val inputDim: Size
 
 	init {
 		val relativeDepthModelData = context.assets.open(relativeDepthFileName).readBytes()
-		val rel2absDepthModelData = context.assets.open(rel2absDepthFileName).readBytes()
 
 		val gpuDelegateCacheDirectory =
 			createSerializedGpuDelegateCacheDirectory(context)
 		val relativeDepthModelToken = getModelToken(context, relativeDepthFileName)
-		val rel2absDepthModelToken = getModelToken(context, rel2absDepthFileName)
 
 		// cleanup old cached gpu delegate files
 		if (gpuDelegateCacheDirectory.exists()) {
 			for (file in gpuDelegateCacheDirectory.listFiles()!!) {
-				if (file.name.contains(relativeDepthModelToken) || file.name.contains(
-						rel2absDepthModelToken
-					)
-				)
+				if (file.name.contains(relativeDepthModelToken))
 					continue
 
 				try {
@@ -68,9 +62,8 @@ class MetricDepthModel(
 		}
 
 		NativeLib.initMetricDepthModel(
-			relativeDepthModelData, rel2absDepthModelData,
-			gpuDelegateCacheDirectory.path,
-			relativeDepthModelToken, rel2absDepthModelToken, skelDirectory
+			relativeDepthModelData, 	gpuDelegateCacheDirectory.path,
+			relativeDepthModelToken, enableNpu, skelDirectory
 		)
 
 		val inputShape = NativeLib.getMetricDepthModelInputShape()

@@ -1,49 +1,33 @@
 #include "EyeAICore/MetricDepthModel.hpp"
 #include "EyeAICore/DepthModel.hpp"
 #include "EyeAICore/Operators.hpp"
-#include "EyeAICore/Rel2AbsDepthModel.hpp"
 #include "EyeAICore/utils/Profiling.hpp"
 
-MetricDepthModel::MetricDepthModel(
-	std::unique_ptr<DepthModel>&& depth_model,
-	std::unique_ptr<Rel2AbsDepthModel>&& rel2abs_depth_model
-)
-	: depth_model(std::move(depth_model)),
-	  rel2abs_depth_model(std::move(rel2abs_depth_model)) {}
+MetricDepthModel::MetricDepthModel(std::unique_ptr<DepthModel>&& depth_model)
+	: depth_model(std::move(depth_model)) {}
 
 MetricDepthModel::CreateResult MetricDepthModel::create(
 	std::vector<int8_t>&& depth_model_data,
-	std::vector<int8_t>&& rel2abs_depth_model_data,
 	std::string_view gpu_delegate_serialization_dir,
 	std::string_view depth_model_token,
-	std::string_view rel2abs_depth_model_token,
 	TfLiteLogWarningCallback log_warning_callback,
 	TfLiteLogErrorCallback log_error_callback,
+	bool enable_npu,
 	std::string npu_skel_directory
 ) {
 	PROFILE_DEPTH_FUNCTION()
 
 	auto depth_model_result = DepthModel::create(
 		std::move(depth_model_data), gpu_delegate_serialization_dir,
-		depth_model_token, log_warning_callback, log_error_callback,
+		depth_model_token, log_warning_callback, log_error_callback, enable_npu,
 		npu_skel_directory
 	);
 	if (!depth_model_result) {
 		return tl::unexpected(depth_model_result.error());
 	}
 
-	auto rel2abs_depth_model_result = Rel2AbsDepthModel::create(
-		std::move(rel2abs_depth_model_data), gpu_delegate_serialization_dir,
-		rel2abs_depth_model_token, log_warning_callback, log_error_callback,
-		std::move(npu_skel_directory)
-	);
-	if (!rel2abs_depth_model_result) {
-		return tl::unexpected(rel2abs_depth_model_result.error());
-	}
-
 	return std::make_unique<MetricDepthModel>(
-		std::move(depth_model_result.value()),
-		std::move(rel2abs_depth_model_result.value())
+		std::move(depth_model_result.value())
 	);
 }
 
@@ -57,15 +41,7 @@ MetricDepthModel::RunResult MetricDepthModel::run(
 		return tl::unexpected(relative_depth_result.error());
 	auto& relative_depth = *relative_depth_result;
 
-	FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthInput>
-		rel2abs_input_tensor = rel2abs_input_operator(input, relative_depth);
-
-	auto rel2abs_coeffs_result = rel2abs_depth_model->run(rel2abs_input_tensor);
-	if (!rel2abs_coeffs_result) {
-		return tl::unexpected(rel2abs_coeffs_result.error());
-	}
-
-	return rel2abs_operator(relative_depth, *rel2abs_coeffs_result);
+	return rel2abs_operator(relative_depth, REL2ABS_COEFFS);
 }
 
 std::span<const int> MetricDepthModel::get_input_shape() const {
@@ -74,4 +50,46 @@ std::span<const int> MetricDepthModel::get_input_shape() const {
 
 std::span<const int> MetricDepthModel::get_output_shape() const {
 	return depth_model->get_output_shape();
+}
+
+template<typename T>
+constexpr static T remap(T value, T from_min, T from_max, T to_min, T to_max) {
+	return (((value - from_min) * (to_max - to_min)) / (from_max - from_min)) +
+		   to_min;
+}
+
+FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthInput> rel2abs_input_operator(
+	const FloatTensorBuffer<FloatTensorFormat::ImageRGB255>& rgb,
+	const FloatTensorBuffer<FloatTensorFormat::RawRelativeDepth>& depth
+) {
+	PROFILE_DEPTH_FUNCTION()
+
+	const size_t input_pixel_count = rgb.data().size() / 3;
+
+	std::vector<float> rel2abs_input(input_pixel_count * 4);
+
+	auto rgb_values = rgb.data();
+	// copy image channels ([0.f, 255.f] to [-1.f, 1.f])
+	for (size_t i = 0; i < input_pixel_count; ++i) {
+		rel2abs_input[(i * 4) + 0] =
+			remap(rgb_values[(i * 3) + 0], 0.f, 255.f, -1.f, 1.f);
+		rel2abs_input[(i * 4) + 1] =
+			remap(rgb_values[(i * 3) + 1], 0.f, 255.f, -1.f, 1.f);
+		rel2abs_input[(i * 4) + 2] =
+			remap(rgb_values[(i * 3) + 2], 0.f, 255.f, -1.f, 1.f);
+	}
+
+	auto relative_depth_values = depth.data();
+
+	// remap raw relative depth from [0.f, 1500.f] to [-1.f, 1.f]
+	for (size_t i = 0; i < input_pixel_count; ++i) {
+		const float remapped_raw_rel_depth =
+			remap(relative_depth_values[i], 0.f, 1500.f, -1.f, 1.f);
+		rel2abs_input[(i * 4) + 3] =
+			std::clamp(remapped_raw_rel_depth, -1.f, 1.f);
+	}
+
+	return FloatTensorBuffer<FloatTensorFormat::Rel2AbsDepthInput>(
+		std::move(rel2abs_input)
+	);
 }

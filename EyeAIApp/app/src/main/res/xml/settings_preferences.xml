@@ -33,12 +33,13 @@
             app:key="@string/enable_depth_frame_rate_limit_setting"
             app:title="Enable Framerate Limiter" />
 
-        <EditTextPreference
-            android:inputType="number"
-            app:useSimpleSummaryProvider="true"
+        <SeekBarPreference
+            app:min="1"
+            android:max="120"
+            app:showSeekBarValue="true"
             app:key="@string/max_depth_frame_rate_setting"
             app:title="Framerate Limit"
-            app:defaultValue="30" />
+            app:defaultValue="30"/>
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Speech Recognition">
@@ -57,6 +58,31 @@
             app:defaultValue="true"
             app:key="@string/object_playback_setting"
             app:title="Enabled Object Playback" />
+
+        <SeekBarPreference
+            app:key="@string/audio_frequency_range_setting"
+            app:title="Frequency"
+            app:summary="Controls frequency used for depth mapping"
+            app:defaultValue="500"
+            app:min="100"
+            android:max="4000"
+            app:showSeekBarValue="true" />
+        <SeekBarPreference
+            app:key="@string/audio_playback_rate_setting"
+            app:title="Frequency"
+            app:summary="How often per second a sound will be audible"
+            app:defaultValue="2"
+            app:min="1"
+            android:max="10"
+            app:showSeekBarValue="true" />
+        <ListPreference
+            app:key="@string/object_playback_language"
+            app:title="Audio language"
+            app:summary="Controls the pitch of audio feedback"
+            app:defaultValue="english"
+            app:entries="@array/language_entries"
+            app:entryValues="@array/language_values"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="LLM">
@@ -80,12 +106,13 @@
             app:key="@string/enable_object_detection_frame_rate_limit_setting"
             app:title="Enable Framerate Limiter" />
 
-        <EditTextPreference
-            android:inputType="number"
-            app:useSimpleSummaryProvider="true"
+        <SeekBarPreference
+            app:min="1"
+            android:max="120"
+            app:defaultValue="30"
             app:key="@string/max_object_detection_frame_rate_setting"
             app:title="Framerate Limit"
-            app:defaultValue="30" />
+            app:showSeekBarValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="OCR">

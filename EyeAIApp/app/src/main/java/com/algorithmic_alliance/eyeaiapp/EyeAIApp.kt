@@ -6,15 +6,19 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.util.Size
+import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
+import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
+import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import java.io.File
@@ -46,6 +50,10 @@ class EyeAIApp : Application() {
 		YoloModel(YoloModelInfo("model.tflite", "coco.names", 640))
 		private set
 
+	var nlpModel: NLPModel =
+		NLPModel(NLPModelInfo("nlp_model_int.tflite"))
+		private set
+
 	/* will not be fully initialized when enableOCR is disabled in settings */
 	var ocrModel = GoogleOCR()
 		private set
@@ -63,13 +71,11 @@ class EyeAIApp : Application() {
 			arrayOf(
 				MetricDepthModelInfo(
 					DEFAULT_DEPTH_MODEL_NAME,
-					"midas_v2_1_256x256.tflite",
-					"rel2abs_model.tflite"
+					"midas_v2_1_256x256.tflite"
 				),
 				MetricDepthModelInfo(
 					"MiDaS V2.1 (quantized)",
-					"midas_v2_1_256x256_quantized.tflite",
-					"rel2abs_model.tflite"
+					"midas_v2_1_256x256_quantized.tflite"
 				)
 			)
 
@@ -88,8 +94,9 @@ class EyeAIApp : Application() {
 
 		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
 
-		npuQnnDelegateDirectory = applicationInfo.nativeLibraryDir
+		npuQnnDelegateDirectory = "/data/local/tmp/qnn_delegate"
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
@@ -101,12 +108,21 @@ class EyeAIApp : Application() {
 
 			// Yolo Model erstellen
 			if (settings.enableObjectDetection) {
-				yoloModel.create(baseContext, npuQnnDelegateDirectory!!)
+				yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
 			}
+
+			// NLP erstellen
+			nlpModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
 
 			// Google ML Kit initialisieren
 			if (settings.enableOCR)
 				ocrModel.create()
+		}
+
+		CoroutineScope(Dispatchers.IO).launch {
+			Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
+			SpatialAudio.setup(this@EyeAIApp)
+			SpatialAudio.start()
 		}
 	}
 
@@ -123,8 +139,26 @@ class EyeAIApp : Application() {
 			NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		}
 
+		if(oldSettings.depthAudioFrequency != settings.depthAudioFrequency){
+			NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
+		}
+
+		if(oldSettings.depthAudioClickIncidence != settings.depthAudioClickIncidence){
+			NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
+		}
+
+		if(oldSettings.objectAudioPlaybackLanguage != settings.objectAudioPlaybackLanguage){
+			SpatialAudio.destroy()
+			CoroutineScope(Dispatchers.IO).launch {
+				SpatialAudio.setup(this@EyeAIApp)
+				SpatialAudio.start()
+			}
+		}
+
+		val enableNpuChanged = oldSettings.enableNpu != settings.enableNpu
+
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
-			if (oldSettings.depthModel != settings.depthModel) {
+			if (oldSettings.depthModel != settings.depthModel || enableNpuChanged) {
 				switchDepthModel(settings.depthModel)
 			}
 
@@ -144,9 +178,9 @@ class EyeAIApp : Application() {
 				}
 			}
 
-			if (oldSettings.enableObjectDetection != settings.enableObjectDetection) {
+			if (oldSettings.enableObjectDetection != settings.enableObjectDetection || enableNpuChanged) {
 				if (settings.enableObjectDetection) {
-					yoloModel.create(baseContext, npuQnnDelegateDirectory!!)
+					yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
 				}
 			}
 
@@ -159,13 +193,13 @@ class EyeAIApp : Application() {
 	}
 
 	private fun switchDepthModel(modelName: String) {
-		if (metricDepthModel?.name == modelName) return
+		if (metricDepthModel?.name == modelName && metricDepthModel?.enableNpu == settings.enableNpu) return
 
 		metricDepthModel?.close()
 		metricDepthModel = null
 
 		metricDepthModel = findDepthModelInfo(modelName)
-			.createDepthModel(this, npuQnnDelegateDirectory!!)
+			.createDepthModel(this, npuQnnDelegateDirectory!!, settings.enableNpu)
 	}
 
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {

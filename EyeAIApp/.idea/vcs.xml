@@ -5,6 +5,11 @@
     <mapping directory="$PROJECT_DIR$/../EyeAICore/build/FXdiv-source" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/bytetrack-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/concurrentqueue-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/libnpy-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/libsndfile-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/nlohmann_json-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/openal-soft-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/stb-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../EyeAICore/build/_deps/tl-expected-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../EyeAICore/build/abseil-cpp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../EyeAICore/build/cpuinfo" vcs="Git" />

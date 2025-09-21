@@ -100,7 +100,7 @@ class CameraFrameAnalyzer(
 					}
 
 					val maxFrameRate = eyeAIApp.settings.maxDepthFrameRate
-					val minInferenceDuration = (maxFrameRate?.let { 1.0 / it })?.seconds
+					val minInferenceDuration =(maxFrameRate?.let { 1.0 / it })?.seconds
 					if (minInferenceDuration != null && inferenceDuration < minInferenceDuration) {
 						delay(minInferenceDuration - inferenceDuration)
 					}
