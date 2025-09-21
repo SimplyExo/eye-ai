@@ -70,6 +70,25 @@ class StateMachine(
         NLPModel.NLPClasses.ABORT
     )
 
+    private val exitKeywords = setOf(
+        "verlassen", "stopp", "abbruch", "stop", "exit", "quit",
+        "beenden", "raus", "zurück", "abbrechen", "cancel", "zumachen", "exit", "verlasse einstellungen", "schließ das", "home", "startseite", "ich will raus", "will hier raus"
+    )
+
+    private fun checkForExitKeywords(input: String): Boolean {
+        val lowerInput = input.lowercase().trim()
+        return exitKeywords.any { keyword ->
+            lowerInput.contains(keyword) || lowerInput == keyword
+        }
+    }
+
+    private suspend fun handleExitFromSettings(): StateUpdate {
+        val syntheticLeave = createLeaveSettingsJson()
+        streamingHandler.speakAndHandleUi("Möchten Sie die Einstellungen wirklich verlassen?")
+        lastLlmJsonResponse = syntheticLeave
+        return StateUpdate(State.SETTINGS_ACTION, syntheticLeave)
+    }
+
     fun isStreaming(): Boolean = streamingHandler.isStreaming()
 
     fun getStreamingHandler(): LLMStreamingHandler = streamingHandler
@@ -365,6 +384,13 @@ class StateMachine(
     }
 
     suspend fun handleSettingsMenu(final: String): StateUpdate {
+
+        //keyword search
+        if (checkForExitKeywords(final)) {
+            Log.d(EyeAIApp.APP_LOG_TAG, "Exit keyword detected in settings menu: '$final'")
+            return handleExitFromSettings()
+        }
+
         // Use NLP for intent classification in settings with confidence check
         val (nlpIntent, confidence) = classifyIntentWithNLPFallbackForSettings(final)
 
@@ -419,12 +445,24 @@ class StateMachine(
     }
 
     suspend fun handleSettingsChoice(final: String): StateUpdate {
+
+        if (checkForExitKeywords(final)) {
+            Log.d(EyeAIApp.APP_LOG_TAG, "Exit keyword detected in settings choice: '$final'")
+            return handleExitFromSettings()
+        }
+
         return settingsHandler.handleSettingsChoice(final, lastLlmJsonResponse) { newJson ->
             lastLlmJsonResponse = newJson
         }
     }
 
     suspend fun handleSettingsAction(final: String): StateUpdate {
+
+        if (checkForExitKeywords(final)) {
+            Log.d(EyeAIApp.APP_LOG_TAG, "Exit keyword detected in settings choice: '$final'")
+            return handleExitFromSettings()
+        }
+
         return settingsHandler.handleSettingsAction(final, lastLlmJsonResponse) { newJson ->
             lastLlmJsonResponse = newJson
         }

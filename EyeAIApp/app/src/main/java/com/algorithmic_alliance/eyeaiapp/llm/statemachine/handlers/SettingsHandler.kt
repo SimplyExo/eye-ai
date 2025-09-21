@@ -127,6 +127,46 @@ class SettingsHandler(
 		currentJson: String?,
 		onJsonUpdate: (String?) -> Unit
 	): StateUpdate {
+
+		if (currentJson != null && jsonParser.isLeaveRequest(currentJson)) {
+
+			val confirmationPrompt = """
+            Der Nutzer wurde gefragt: "Möchten Sie die Einstellungen wirklich verlassen?"
+            Die Antwort des Nutzers war: "$input"
+            
+            Analysiere ob der Nutzer das Verlassen der Einstellungen bestätigt hat.
+            Berücksichtige verschiedene Bestätigungsformen wie:
+            - "ja", "yes", "okay", "ok", "bestätigen"
+            - "auf jeden Fall", "sicher", "klar"
+            - "verlassen", "raus", "weg"
+            
+            Oder Ablehnungen wie:
+            - "nein", "no", "nicht"
+            - "abbrechen", "stopp", "bleiben"
+            - "zurück", "doch nicht"
+            
+            Antworte mit einer JSON-Antwort mit dem Feld "approval" (true/false).
+        """.trimIndent()
+
+			val jsonResponse = generateLlmResponse(confirmationPrompt, true)
+
+			if (jsonResponse == null) {
+				speakAndHandleUi("Fehler bei der Verarbeitung.")
+				onJsonUpdate(null)
+				return StateUpdate(State.IDLE, null)
+			}
+
+			return if (jsonParser.isApproved(jsonResponse)) {
+				speakAndHandleUi("Die Einstellungen werden verlassen.")
+				onJsonUpdate(null)
+				StateUpdate(State.IDLE, null)
+			} else {
+				speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
+				onJsonUpdate(null)
+				StateUpdate(State.SETTINGS_MENU, null)
+			}
+		}
+
 		val prompt = "Würdest du sagen der Nutzer hat diesen Command bestätigt? Die Antwort des Nutzers war $input. Antworte bitte mit einer JSON-Antwort in approval."
 		val jsonResponse = generateLlmResponse(prompt, true)
 
@@ -235,4 +275,6 @@ class SettingsHandler(
 			})
 		}.toString()
 	}
+
+
 }

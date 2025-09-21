@@ -115,4 +115,22 @@ class JsonParser {
 		}
 	}
 
+	fun isLeaveRequest(jsonString: String): Boolean {
+		return try {
+			val json = JSONObject(jsonString)
+			if (json.has("changed_settings")) {
+				val settings = json.getJSONArray("changed_settings")
+				for (i in 0 until settings.length()) {
+					val setting = settings.getJSONObject(i)
+					if (setting.has("leave") && setting.getBoolean("leave")) {
+						return true
+					}
+				}
+			}
+			false
+		} catch (e: Exception) {
+			false
+		}
+	}
+
 }
