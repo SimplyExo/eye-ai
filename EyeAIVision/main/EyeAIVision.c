@@ -39,7 +39,7 @@ void app_main(void)
 
     init_camera();
     init_sta("EyeAI", "123456789");
-    startHTTPServer();
     
-    // STA-Mode wird nach HTTP request mit Andmeldedaten gestartet!
+    start_tcp_server();
+    startHTTPServer();
 }
