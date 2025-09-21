@@ -433,6 +433,7 @@ class MainActivity : AppCompatActivity() {
 
 				eyeAIVision = EyeAIVision(
 					ip = eyeAIApp().settings.eyeAIVisionIP.toString(),
+					eyeAIApp().settings.jpegCompression,
 					lifecycleScope = lifecycleScope,
 					bitmapFlow = bitmapFlow,
 					onSingleClick = {

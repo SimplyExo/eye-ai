@@ -17,6 +17,7 @@ import java.util.concurrent.Executors
 
 open class EyeAIVision(
 	private val ip: String,
+	private val compression: Int,
 	private val lifecycleScope: LifecycleCoroutineScope,
 	private val bitmapFlow: MutableSharedFlow<Bitmap>?,
 	private val onSingleClick: () -> Unit,
@@ -35,6 +36,8 @@ open class EyeAIVision(
 		CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
 	init {
+		setCompression(compression)
+
 		// Touch Button Client starten
 		socketThread.launch {
 			try {
@@ -74,5 +77,9 @@ open class EyeAIVision(
 		)
 
 		mjpegBitmapReader?.start()
+	}
+
+	public fun setCompression(value: Int) {
+
 	}
 }
