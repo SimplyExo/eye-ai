@@ -36,8 +36,6 @@ class NLPModel(var info: NLPModelInfo) {
 		interpreter = Interpreter(modelBytes)
 
 		initialized = true
-
-		Log.i(EyeAIApp.APP_LOG_TAG, "hello: ${runInference("lies mal den Text vor mit vor")}")
 	}
 
 	fun vectorizePrompt(prompt: String): FloatArray {
