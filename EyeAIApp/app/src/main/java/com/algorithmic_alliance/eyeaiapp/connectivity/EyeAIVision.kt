@@ -9,8 +9,10 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.io.*
+import java.net.HttpURLConnection
 import java.net.Socket
 import java.net.SocketException
+import java.net.URL
 import java.net.UnknownHostException
 import java.util.concurrent.Executors
 
@@ -33,6 +35,9 @@ open class EyeAIVision(
 	private var mjpegBitmapReader: MjpegBitmapReader? = null
 
 	private val socketThread: CoroutineScope =
+		CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+
+	private val compressionThread: CoroutineScope =
 		CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
 	init {
@@ -79,7 +84,33 @@ open class EyeAIVision(
 		mjpegBitmapReader?.start()
 	}
 
-	public fun setCompression(value: Int) {
+	fun setCompression(value: Int) {
+		compressionThread.launch {
+			httpGetRequest("http://$ip/set_comp?comp=$value")
+		}
+	}
 
+	fun httpGetRequest(urlString: String): String? {
+		return try {
+			val url = URL(urlString)
+			val connection = url.openConnection() as HttpURLConnection
+
+			connection.requestMethod = "GET"
+
+			connection.doInput = true
+			connection.doOutput = false
+
+			val responseCode = connection.responseCode
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				connection.inputStream.bufferedReader().use {
+					it.readText()
+				}
+			} else {
+				null
+			}
+		} catch (e: Exception) {
+			e.printStackTrace()
+			null
+		}
 	}
 }
