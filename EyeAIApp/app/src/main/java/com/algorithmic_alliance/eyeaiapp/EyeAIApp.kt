@@ -96,7 +96,8 @@ class EyeAIApp : Application() {
 		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
 
-		npuQnnDelegateDirectory = "/data/local/tmp/qnn_delegate"
+
+		npuQnnDelegateDirectory = applicationInfo.nativeLibraryDir
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
