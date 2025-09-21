@@ -154,10 +154,12 @@ class MainActivity : AppCompatActivity() {
 		startStopVosk = findViewById(R.id.stop_tts_button)
 		startStopVosk!!.setOnClickListener {
 
+			State.IDLE
+
 			if (voskUserStart.get()){
 
 				SpeechManager.forceStop()
-				State.IDLE
+
 
 				android.os.Handler(Looper.getMainLooper()).postDelayed({
 					stopVoskListening()
@@ -452,6 +454,7 @@ class MainActivity : AppCompatActivity() {
 					onSingleClick = {
 						Log.i("CLICK", "SINGLE")
 
+						State.IDLE
 
 						if (!voskUserStart.get()) {
 							startVoskListening()
@@ -462,8 +465,11 @@ class MainActivity : AppCompatActivity() {
 					onDoubleClick = {
 						Log.i("CLICK", "DOUBLE")
 
+						State.IDLE
+
 						if(voskUserStart.get()) {
 							SpeechManager.forceStop()
+
 							stopVoskListening()
 						}
 					},
