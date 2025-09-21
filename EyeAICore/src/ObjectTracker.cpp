@@ -9,7 +9,8 @@ ObjectTracker::update(std::span<const BoundingBox> detected_objects) {
 	PROFILE_OBJECT_FUNCTION()
 
 	const auto now = std::chrono::high_resolution_clock::now();
-	auto update_duration_seconds = std::chrono::duration<float>(now - last_update);
+	auto update_duration_seconds =
+		std::chrono::duration<float>(now - last_update);
 	last_update = now;
 
 	const float frame_rate = 1.f / update_duration_seconds.count();
@@ -28,15 +29,20 @@ ObjectTracker::update(std::span<const BoundingBox> detected_objects) {
 	std::vector<TrackedBoundingBox> tracked_object_boxes;
 	tracked_object_boxes.reserve(tracked_objects.size());
 
+	size_t min_valid_predicition_score =
+		MIN_WAITING_PREDICTION_TIME_BEFORE_VALID * frame_rate;
+
 	for (const auto& tracked_object : tracked_objects) {
 		const int cls = tracked_object->getLabel();
-		if (cls < 0 || std::cmp_greater_equal(cls ,labels.size()))
+		if (cls < 0 || std::cmp_greater_equal(cls, labels.size()))
 			continue;
 
-		float& valid_score = tracked_object_valid_score[static_cast<size_t>(tracked_object->getTrackId())];
+		float& valid_score =
+			tracked_object_valid_score[static_cast<size_t>(tracked_object
+															   ->getTrackId())];
 		valid_score += tracked_object->getScore();
 
-		if (valid_score < MIN_VALID_PREDICTION_SCORE)
+		if (valid_score < min_valid_predicition_score)
 			continue;
 
 		const std::string& cls_name = labels[cls];

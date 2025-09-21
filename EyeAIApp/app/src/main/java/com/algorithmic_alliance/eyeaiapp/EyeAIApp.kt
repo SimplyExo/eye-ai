@@ -113,7 +113,7 @@ class EyeAIApp : Application() {
 			}
 
 			// NLP erstellen
-			nlpModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
+			nlpModel.create(baseContext)
 
 			// Google ML Kit initialisieren
 			if (settings.enableOCR)
@@ -140,15 +140,21 @@ class EyeAIApp : Application() {
 			NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		}
 
-		if(oldSettings.depthAudioFrequency != settings.depthAudioFrequency){
-			NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
+		if (oldSettings.depthAudioFrequency != settings.depthAudioFrequency) {
+			NativeLib.setAudioSettings(
+				settings.depthAudioFrequency,
+				settings.depthAudioClickIncidence
+			)
 		}
 
-		if(oldSettings.depthAudioClickIncidence != settings.depthAudioClickIncidence){
-			NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
+		if (oldSettings.depthAudioClickIncidence != settings.depthAudioClickIncidence) {
+			NativeLib.setAudioSettings(
+				settings.depthAudioFrequency,
+				settings.depthAudioClickIncidence
+			)
 		}
 
-		if(oldSettings.objectAudioPlaybackLanguage != settings.objectAudioPlaybackLanguage){
+		if (oldSettings.objectAudioPlaybackLanguage != settings.objectAudioPlaybackLanguage) {
 			SpatialAudio.destroy()
 			CoroutineScope(Dispatchers.IO).launch {
 				SpatialAudio.setup(this@EyeAIApp)
