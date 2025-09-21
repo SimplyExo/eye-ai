@@ -9,11 +9,13 @@ import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.JsonParser
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.LLMStreamingHandler
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.ObjectDetectionHandler
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects.ObjectDetectionHandler
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.RequestedFunction
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingsHandler
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.delay
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects.ObjectPositionClassifier
+
 
 class StateMachine(
     private val eyeAIApp: EyeAIApp,
@@ -36,6 +38,7 @@ class StateMachine(
         streamingHandler::speakAndHandleUi
     )
 
+    private val objectPositionClassifier = ObjectPositionClassifier()
 
 
     // Performance optimizations
@@ -89,15 +92,17 @@ class StateMachine(
             is ObjectDetectionHandler.ObjectDetectionResult.ObjectFound -> {
                 Log.d(EyeAIApp.APP_LOG_TAG, "Object FOUND: ${result.obj}")
                 val obj = result.obj
-                val prompt = eyeAIApp.llm!!.buildObjectDetectionPrompt(
-                    obj.label,
-                    obj.height,
-                    obj.width,
-                    obj.x,
-                    obj.y,
-                    obj.distance
+                val objectData = ObjectPositionClassifier.ObjectData(
+                    label = obj.label,
+                    height = obj.height,
+                    width = obj.width,
+                    x = obj.x,
+                    y = obj.y,
+                    distance = obj.distance
                 )
-                streamingHandler.generateAndStreamResponse(eyeAIApp.llm as GoogleAIStudioLLM, prompt)
+                val description = objectPositionClassifier.generatePositionDescription(objectData)
+                Log.d(EyeAIApp.APP_LOG_TAG, "Generated position description: $description")
+                streamingHandler.speakAndHandleUi(description)
             }
 
             is ObjectDetectionHandler.ObjectDetectionResult.ObjectNotFound -> {

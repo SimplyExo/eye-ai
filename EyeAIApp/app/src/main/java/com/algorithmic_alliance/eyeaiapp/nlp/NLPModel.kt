@@ -19,7 +19,7 @@ class NLPModel(var info: NLPModelInfo) {
 
 	fun create(context: Context, skelDirectory: String,
 	           enableNpu: Boolean) {
-		// Erstellen einer NLP-Instanz
+		// Creating NLP
 		val modelBytes = info.getAsBytes(context)
 		vocabFile = info.getVocab(context)
 
