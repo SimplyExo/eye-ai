@@ -27,7 +27,7 @@ camera_config_t camera_config = {
 
     .pixel_format = PIXFORMAT_JPEG,
     .frame_size = FRAMESIZE_UXGA, // Wird später auf VGA umgestellt
-    .jpeg_quality = 12,
+    .jpeg_quality = 20,
     .fb_count = 1,
     .fb_location = CAMERA_FB_IN_PSRAM,
     .grab_mode = CAMERA_GRAB_LATEST
@@ -48,4 +48,10 @@ void init_camera()
     sensor->set_aec2(sensor, true);
 
     sensor->set_framesize(sensor, FRAMESIZE_VGA);
+    sensor->set_quality(sensor, 50);
+}
+
+void set_compression(int value) {
+    sensor_t *sensor = esp_camera_sensor_get();
+    sensor->set_quality(sensor, value);
 }

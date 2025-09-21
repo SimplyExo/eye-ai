@@ -26,3 +26,4 @@
 extern camera_config_t camera_config;
 
 void init_camera();
+void set_compression(int value);
