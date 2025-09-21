@@ -1,5 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers
 
+import android.content.Context
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.MainActivity.State
@@ -134,7 +135,7 @@ class SettingsHandler(
 			onJsonUpdate(null)
 			StateUpdate(State.IDLE, null) // No further message needed.
 		} else {
-			speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Einstellungen verlassen.")
+			speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
 			onJsonUpdate(null)
 			StateUpdate(State.SETTINGS_MENU, null)
 		}
@@ -143,14 +144,23 @@ class SettingsHandler(
 	private suspend fun applySettings(jsonString: String): Boolean {
 		try {
 			val changedSettings = JSONObject(jsonString).getJSONArray("changed_settings")
-			val settings = Settings.load(eyeAIApp) // Settings-Instanz laden
+			val settings = Settings.load(eyeAIApp)
+
+			// SharedPrefs for TTS
+			val ttsPrefs = eyeAIApp.getSharedPreferences("tts_settings", Context.MODE_PRIVATE)
+			val ttsEditor = ttsPrefs.edit()
 
 			for (i in 0 until changedSettings.length()) {
 				val setting = changedSettings.getJSONObject(i)
+
 				when {
 					setting.has("tts_speed") -> {
 						val newSpeed = setting.getDouble("tts_speed").toFloat()
 						textToSpeechInstance.setSpeechRate(newSpeed)
+
+						// Save TTS settings
+						ttsEditor.putFloat("tts_speech_rate", newSpeed)
+
 						Log.d(EyeAIApp.APP_LOG_TAG, "TTS-Geschwindigkeit wird auf $newSpeed gesetzt.")
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
@@ -158,6 +168,10 @@ class SettingsHandler(
 					setting.has("voice") -> {
 						val voice = setting.getInt("voice")
 						textToSpeechInstance.setVoice(voice)
+
+						// Save TTS settigns
+						ttsEditor.putInt("tts_voice", voice)
+
 						Log.d(EyeAIApp.APP_LOG_TAG, "Stimme wird auf $voice gesetzt.")
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
@@ -166,7 +180,12 @@ class SettingsHandler(
 						val frequency = setting.getInt("frequency")
 						val clampedFreq = frequency.coerceIn(100, 4000)
 						val currentBps = settings.depthAudioClickIncidence
+
 						NativeLib.setAudioSettings(clampedFreq, currentBps)
+
+						// Save settings
+						settings.depthAudioFrequency = clampedFreq
+						settings.save(eyeAIApp)
 
 						Log.d(EyeAIApp.APP_LOG_TAG, "Audio-Frequenz wird auf $clampedFreq Hz gesetzt.")
 						speakAndHandleUi("Die Audio-Frequenz wurde erfolgreich auf $clampedFreq Hz geändert.")
@@ -176,17 +195,22 @@ class SettingsHandler(
 						val bps = setting.getInt("bps")
 						val clampedBps = bps.coerceIn(1, 10)
 						val currentFreq = settings.depthAudioFrequency
+
 						NativeLib.setAudioSettings(currentFreq, clampedBps)
+
+						// Save settings
+						settings.depthAudioClickIncidence = clampedBps
+						settings.save(eyeAIApp)
 
 						Log.d(EyeAIApp.APP_LOG_TAG, "Audio-BPS wird auf $clampedBps gesetzt.")
 						speakAndHandleUi("Die BPS wurde erfolgreich auf $clampedBps geändert.")
 					}
-
-					setting.has("leave") -> {
-						speakAndHandleUi("Die Einstellungen wurden verlassen.")
-					}
 				}
 			}
+
+			// save tts settings
+			ttsEditor.apply()
+
 			return true
 		} catch (e: JSONException) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "Fehler bei der Verarbeitung der JSON-Aktion.", e)

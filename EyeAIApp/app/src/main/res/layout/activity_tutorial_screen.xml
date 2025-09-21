@@ -55,7 +55,7 @@
 
     <Space
         android:layout_width="match_parent"
-        android:layout_height="50dp" />
+        android:layout_height="10dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -72,7 +72,7 @@
             android:paddingHorizontal="40dp"
             android:paddingVertical="15dp"
             android:text="@string/tutorial_skip_text"
-            android:textColor="@android:color/primary_text_dark"
+            android:textColor="@android:color/white"
             android:textSize="18sp"
             android:visibility="gone"
             tools:visibility="visible" />
@@ -87,7 +87,7 @@
             android:paddingHorizontal="40dp"
             android:paddingVertical="15dp"
             android:text="@string/tutorial_accept_text"
-            android:textColor="@android:color/primary_text_dark"
+            android:textColor="@android:color/white"
             android:textSize="18sp" />
 
     </LinearLayout>

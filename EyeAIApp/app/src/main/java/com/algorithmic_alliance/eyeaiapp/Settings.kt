@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp
 
 import android.content.Context
 import androidx.preference.PreferenceManager
+import androidx.core.content.edit
 
 data class Settings(
 	var depthModel: String,
@@ -187,4 +188,68 @@ data class Settings(
 		enableNpu,
 		jpegCompression
 	)
+
+	fun save(context: Context) {
+		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+		sharedPreferences.edit {
+
+			// Audiosettings that can be modified via speech
+			putInt("audio_playback_rate", depthAudioClickIncidence)
+			putInt("audio_frequency_range", depthAudioFrequency)
+			putString("object_playback_language", objectAudioPlaybackLanguage)
+
+			//other settings
+			putString(context.getString(R.string.depth_model_setting), depthModel)
+			putBoolean(context.getString(R.string.show_profiling_info_setting), showProfilingInfo)
+			putBoolean(
+				context.getString(R.string.show_debug_input_bitmap_setting),
+				showDebugInputBitmap
+			)
+			putBoolean(
+				context.getString(R.string.enable_speech_recognition_setting),
+				enableSpeechRecognition
+			)
+			putBoolean(
+				context.getString(R.string.enable_object_detection_setting),
+				enableObjectDetection
+			)
+			putBoolean(context.getString(R.string.enable_ocr_setting), enableOCR)
+			putBoolean(context.getString(R.string.depth_playback_setting), depthAudioPlayback)
+			putBoolean(context.getString(R.string.object_playback_setting), objectAudioPlayback)
+			putBoolean(context.getString(R.string.enable_npu_delegate_setting), enableNpu)
+			putInt(context.getString(R.string.jpeg_compression), jpegCompression)
+
+			// Nullable Strings
+			googleAiStudioApiKey?.let {
+				putString(context.getString(R.string.google_ai_studio_api_key_stetting), it)
+			}
+			customGoogleGenAIStudioEndpoint?.let {
+				putString(
+					context.getString(R.string.custom_google_gen_ai_studio_endpoint_setting),
+					it
+				)
+			}
+
+			// Frame Rate Limits
+			maxDepthFrameRate?.let {
+				putBoolean(context.getString(R.string.enable_depth_frame_rate_limit_setting), true)
+				putInt(context.getString(R.string.max_depth_frame_rate_setting), it)
+			} ?: putBoolean(
+				context.getString(R.string.enable_depth_frame_rate_limit_setting),
+				false
+			)
+
+			maxObjectDetectionFrameRate?.let {
+				putBoolean(
+					context.getString(R.string.enable_object_detection_frame_rate_limit_setting),
+					true
+				)
+				putInt(context.getString(R.string.max_object_detection_frame_rate_setting), it)
+			} ?: putBoolean(
+				context.getString(R.string.enable_object_detection_frame_rate_limit_setting),
+				false
+			)
+
+		}
+	}
 }

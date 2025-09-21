@@ -19,7 +19,7 @@ import java.util.UUID
 import kotlin.random.Random
 
 class TextToSpeechInstance(
-	context: Context,
+	private val context: Context,
 	private val onTTSFinishedSpeaking: (() -> Unit)? = null
 ) : TextToSpeech.OnInitListener {
 
@@ -53,6 +53,9 @@ class TextToSpeechInstance(
 			try { tts?.language = Locale.GERMAN } catch (_: Exception) {}
 			isReady = true
 			Log.d(EyeAIApp.APP_LOG_TAG, "TextToSpeech initialized.")
+			Log.d(EyeAIApp.APP_LOG_TAG, "Loading saved settings...")
+			loadSavedTTSSettings()
+			Log.d(EyeAIApp.APP_LOG_TAG, "Saved settings loaded!")
 			setupUtteranceListener()
 		} else {
 			isReady = false
@@ -60,6 +63,27 @@ class TextToSpeechInstance(
 		}
 	}
 
+	private fun loadSavedTTSSettings() {
+		try {
+			val sharedPrefs = context.getSharedPreferences("tts_settings", Context.MODE_PRIVATE)
+
+			// Load tts speed
+			val savedSpeechRate = sharedPrefs.getFloat("tts_speech_rate", 1.0f)
+			if (savedSpeechRate != 1.0f) {
+				setSpeechRate(savedSpeechRate)
+			}
+
+			// Load voice
+			val savedVoice = sharedPrefs.getInt("tts_voice", -1)
+			if (savedVoice != -1) {
+				setVoice(savedVoice)
+			}
+
+		} catch (e: Exception) {
+			Log.e(EyeAIApp.APP_LOG_TAG, "Error loading TTS settings", e)
+		}
+
+	}
 
 
 	// ------------------------------
