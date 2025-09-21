@@ -10,7 +10,7 @@ class NLPModel(var info: NLPModelInfo) {
 
 	private var vocabFile = emptyArray<String>()
 
-	enum class Classes {
+	enum class NLPClasses {
 		TEXT_RECOGNITION,
 		OBJECT_DETECTION,
 		CHANGE_SPEECH_SPEED,
@@ -22,6 +22,19 @@ class NLPModel(var info: NLPModelInfo) {
 		MEASURE_DISTANCE,
 		ABORT
 	}
+
+	data class NLPResults(
+		val TEXT_RECOGNITION: Float,
+		val OBJECT_DETECTION: Float,
+		val CHANGE_SPEECH_SPEED: Float,
+		val CHANGE_SPEAKER: Float,
+		val REDIRECT_TO_LLM: Float,
+		val OPEN_SETTINGS: Float,
+		val SET_FREQUENCY: Float,
+		val SET_BPS: Float,
+		val MEASURE_DISTANCE: Float,
+		val ABORT: Float
+	)
 
 	private var initialized = false
 
@@ -36,8 +49,6 @@ class NLPModel(var info: NLPModelInfo) {
 		interpreter = Interpreter(modelBytes)
 
 		initialized = true
-
-		Log.i(EyeAIApp.APP_LOG_TAG, "hello: ${runInference("lies mal den Text vor mit vor")}")
 	}
 
 	fun vectorizePrompt(prompt: String): FloatArray {
@@ -55,7 +66,7 @@ class NLPModel(var info: NLPModelInfo) {
 		return outputArray
 	}
 
-	fun runInference(prompt: String): Classes {
+	fun runInferenceWithAllResults(prompt: String): NLPResults {
 		require(
 			interpreter.getInputTensor(0).shape()[1] == SEQUENCE_LENGTH
 		) {
@@ -63,13 +74,44 @@ class NLPModel(var info: NLPModelInfo) {
 				interpreter.getInputTensor(0).shape()[1]
 			} input sequence: $SEQUENCE_LENGTH"
 		}
-		require(interpreter.getOutputTensor(0).shape()[1] == Classes.entries.size) {
+		require(interpreter.getOutputTensor(0).shape()[1] == NLPClasses.entries.size) {
 			"output model: ${
 				interpreter.getOutputTensor(0).shape()[1]
-			} output classes: ${Classes.entries.size}"
+			} output classes: ${NLPClasses.entries.size}"
 		}
 
-		val output = FloatArray(Classes.entries.size)
+		val output = FloatArray(NLPClasses.entries.size)
+		interpreter.run(Array(1) { vectorizePrompt(prompt) }, Array(1) { output })
+
+		return NLPResults(
+			output[0],
+			output[1],
+			output[2],
+			output[3],
+			output[4],
+			output[5],
+			output[6],
+			output[7],
+			output[8],
+			output[9],
+		)
+	}
+
+	fun runInference(prompt: String): NLPClasses {
+		require(
+			interpreter.getInputTensor(0).shape()[1] == SEQUENCE_LENGTH
+		) {
+			"input model: ${
+				interpreter.getInputTensor(0).shape()[1]
+			} input sequence: $SEQUENCE_LENGTH"
+		}
+		require(interpreter.getOutputTensor(0).shape()[1] == NLPClasses.entries.size) {
+			"output model: ${
+				interpreter.getOutputTensor(0).shape()[1]
+			} output classes: ${NLPClasses.entries.size}"
+		}
+
+		val output = FloatArray(NLPClasses.entries.size)
 		interpreter.run(Array(1) { vectorizePrompt(prompt) }, Array(1) { output })
 
 		var choice = 0
@@ -81,6 +123,6 @@ class NLPModel(var info: NLPModelInfo) {
 			}
 		}
 
-		return Classes.entries[choice]
+		return NLPClasses.entries[choice]
 	}
 }
