@@ -22,7 +22,9 @@ interface LLM {
           2. Einstellungen:
           Wenn der Nutzer die Einstellungen anpassen möchte beispielhaft wie etwa:
 		  - Der Nutzer möchte die Sprechgeschwindigkeit anpassen
-		  - Der Nutzer möchte die Stimme des Assitentenagenten ändern 
+		  - Der Nutzer möchte die Stimme des Assitentenagenten ändern
+		  - Der Nutzer möchte die Frequenz (bzw. die Tonhöhe!) der Distanztöne anpassen
+		  - Der Nutzer möchte die Schläge pro Sekunden/Beats per second der Distanztöne anpassen
 		  - Der Nutzer möchte die Einstellungen öffnen oder aufrufen
 		  
 		  So wird dieses Tool verwendet. Dies wird durch die Eigenschaft 'einstellungen' im JSON gesteuert.
@@ -32,7 +34,7 @@ interface LLM {
 		  Verwende dies NUR wenn der Nutzer explizit nach einem spezifischen Objekt fragt:
 			- "Wo ist der Stuhl?" / "Wie weit ist die Lampe entfernt?" 
 			- "Beschreibe mir den Tisch" / "Wo befindet sich die Person?"
-		
+		  
 		  WICHTIG: Der Nutzer MUSS ein spezifisches Objekt nennen!
 		  Schreibe das deutsche Objektname EXAKT in "object_query" ein.
 			
@@ -60,12 +62,13 @@ Verwende NUR Objektnamen aus der obigen Liste! Wenn der Benutzer nach etwas frag
 		const val SNIPPET_SETTINGS: String =
 			"""Sehr gerne, ich kann Ihnen dabei helfen, die Einstellungen anzupassen. 
 
-		Es besteht die Möglichkeit die Sprechgeschwindigkeit der Sprachausgabe anzupassen. Auch ist es möglich die Stimme des Assitentenagenten zu ändern oder aber die Einstellungen zu verlassen. 
+		Es besteht die Möglichkeit die Sprechgeschwindigkeit der Sprachausgabe anzupassen. Auch ist es möglich die Stimme des Assitentenagenten zu ändern, die Tonhöhe der Distanztöne zu ändern,
+		die Schläge pro Sekunde für die Distanzhinweistöne zu ändern, oder aber die Einstellungen zu verlassen. 
 
 		Welche dieser Optionen möchten Sie wählen?"""
 
 		const val SNIPPET_TTS_SPEED: String =
-			"""Mit dieser Option können Sie die Sprechgeschwindigkeit der Sprachausgabe anzupassen.
+			"""Mit dieser Option können Sie die Sprechgeschwindigkeit der Sprachausgabe anpassen.
         Der standartmäßige Wert der Geschwindigkeit liegt bei 1,0.
         Möchten Sie die Geschwindigkeit erhöhen, verringern oder auf einen bestimmten Wert setzen?
         """
@@ -74,6 +77,11 @@ Verwende NUR Objektnamen aus der obigen Liste! Wenn der Benutzer nach etwas frag
 			"""Mit dieser Einstellung können Sie die Stimme des Assistentenagenten zwischen männlich und weiblich variieren. Möchten Sie die männliche oder die weibliche Assistentenstimme nutzen?
         """
 
+
+
+		const val SNIPPET_BPS: String = "Mit dieser Einstellung können Sie die Distanzhinweisschläge pro Sekunde anpassen. Möchten Sie die Frequenz dieser erhöhen oder verringern?"
+
+		const val SNIPPET_FREQUENCY: String = "Mit dieser Einstellung können sie Tonhöhe der Distanzhinweisetöne anpassen. Möchten Sie diese erhöhen oder verringern?"
 		val knownObjectLabels = setOf(
 			"person",
 			"bicycle",
@@ -184,5 +192,24 @@ Verwende NUR Objektnamen aus der obigen Liste! Wenn der Benutzer nach etwas frag
 			" In diesem Fall sollst du anschließend nicht Texterkennung wiederholen bzw. sagen!" +
 			" Du solltest niemals in JSON oder einem ähnlichem anderem Format antworten. Antworte so, dass eine blinde Person dich verstehen kann."
 	}
+
+	fun buildSettingsMenuPrompt(input: String) = """Der Nutzer ist im Einstellungsmenü und sagt: $input.
+    
+		Klassifiziere die Absicht des Nutzers in eine der folgenden Kategorien und gib sie im Feld 'setting_intent' zurück:
+		
+		- 'tts_speed': Wenn der Nutzer die Sprechgeschwindigkeit ändern will (z.B. "schneller sprechen").
+		- 'voice': Wenn der Nutzer die Stimme des Assistenten ändern will (z.B. "Stimme ändern", "andere Stimme", "Assistentenagenten anpassen").
+		- 'frequency': Wenn der Nutzer die Audio-Frequenz ändern will (z.B. "Frequenz anpassen", "Tonhöhe ändern").
+		- 'bps': Wenn der Nutzer die BPS (Beats per Second) ändern will (z.B. "BPS ändern", "Schläge pro Sekunde").
+		- 'leave': Wenn der Nutzer die Einstellungen verlassen will.
+		- 'none': Wenn keine der obigen Absichten klar erkennbar ist.
+		
+		Antworte NUR mit dem JSON-Objekt.
+		
+		Beispiel für die Eingabe "ich will eine andere Stimme": {"setting_intent": "voice"}
+		Beispiel für die Eingabe "Frequenz ändern": {"setting_intent": "frequency"}
+		Beispiel für die Eingabe "verlassen": {"setting_intent": "leave"}
+		"""
+
 	fun generate(command: String, structured: Boolean): String
 }

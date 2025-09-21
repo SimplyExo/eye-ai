@@ -56,8 +56,7 @@ class NetworkClient(
 		val responseCode = connection.responseCode
 		if (responseCode != HttpURLConnection.HTTP_OK) {
 			val errorResponse = connection.errorStream?.bufferedReader()?.readText() ?: "No error body"
-			Log.e(EyeAIApp.APP_LOG_TAG, "HTTP error body: ${errorResponse.take(1000)}")
-			throw RuntimeException("API request failed: $responseCode - $errorResponse")
+			throw GeminiErrorHandler.handleHttpError(responseCode, errorResponse)
 		}
 	}
 

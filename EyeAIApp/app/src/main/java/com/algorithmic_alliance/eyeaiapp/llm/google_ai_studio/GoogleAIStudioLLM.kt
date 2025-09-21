@@ -21,7 +21,7 @@ class GoogleAIStudioLLM(apiKey: String, customEndpoint: String?) : LLM {
 	}
 
 	companion object {
-		const val MODEL_NAME: String = "gemini-2.5-flash"
+		const val MODEL_NAME: String = "gemini-2.5-flash-lite"
 		private const val GOOGLE_GEN_AI_ENDPOINT = "https://generativelanguage.googleapis.com"
 
 		private fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
@@ -43,6 +43,10 @@ class GoogleAIStudioLLM(apiKey: String, customEndpoint: String?) : LLM {
 			Log.d(EyeAIApp.APP_LOG_TAG, "Total LLM HTTP roundtrip: ${elapsedMs(totalStart)} ms")
 			parsed
 
+		} catch (e: GeminiApiExceptionHandler) {
+			val duration = elapsedMs(totalStart)
+			Log.e(EyeAIApp.APP_LOG_TAG, "Gemini API error after $duration ms: ${e.userMessage}", e)
+			e.userMessage
 		} catch (e: Exception) {
 			val duration = elapsedMs(totalStart)
 			val errorMsg = "Error in LLM generate after $duration ms: ${e.message}"
@@ -100,6 +104,12 @@ class GoogleAIStudioLLM(apiKey: String, customEndpoint: String?) : LLM {
 					hasCalledComplete = { hasCalledComplete || shouldStopStream}
 				)
 
+			} catch (e: GeminiApiExceptionHandler) {
+				// Specifically for GeminiAPI Errors.
+				if (!shouldStopStream) {
+					Log.e(EyeAIApp.APP_LOG_TAG, "Gemini API streaming error ${e.errorCode}: ${e.userMessage}")
+					safeCallError(e)
+				}
 			} catch (e: Exception) {
 				if(!shouldStopStream) safeCallError(e)
 			}

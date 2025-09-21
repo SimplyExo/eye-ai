@@ -1,8 +1,7 @@
-package com.algorithmic_alliance.eyeaiapp.llm.statemachine
+package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects
 
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
-
 
 class TranslateEnglishToGerman {
 	companion object {
@@ -91,7 +90,7 @@ class TranslateEnglishToGerman {
 
 		fun translateToGerman(englishLabel: String): String {
 			val translation = englishToGermanMap[englishLabel] ?: englishLabel
-			Log.d(EyeAIApp.APP_LOG_TAG, "TranslateToGerman: '$englishLabel' -> '$translation'")
+			Log.d(EyeAIApp.Companion.APP_LOG_TAG, "TranslateToGerman: '$englishLabel' -> '$translation'")
 			return translation
 		}
 	}

@@ -53,6 +53,10 @@ class StreamProcessor(private val parser: StreamParser) {
 			Log.d(EyeAIApp.APP_LOG_TAG, "Stream finished naturally")
 			onComplete()
 
+		} catch (e: GeminiApiExceptionHandler) {
+			//Catching Gemini API Errors
+			Log.e(EyeAIApp.APP_LOG_TAG, "Gemini API error in stream processing: ${e.userMessage}")
+			onError(e)
 		} catch (e: Exception) {
 			Log.w(EyeAIApp.APP_LOG_TAG, "Exception during stream reading", e)
 			onError(e)

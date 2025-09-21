@@ -12,7 +12,7 @@ object RequestBuilder {
 		return if (structured) {
 			baseRequest.put("generationConfig", createStructuredConfig())
 		} else {
-			baseRequest.put("generationConfig", JSONObject())
+			baseRequest.put("generationConfig", createDefaultConfig())
 		}
 	}
 
@@ -45,10 +45,21 @@ object RequestBuilder {
 		}
 	}
 
+	private fun createDefaultConfig(): JSONObject {
+		return JSONObject().apply {
+			put("thinkingConfig", JSONObject().apply {
+				put("thinkingBudget", 0)  // Deactivating thinking
+			})
+		}
+	}
+
 	private fun createStructuredConfig(): JSONObject {
 		return JSONObject().apply {
 			put("response_mime_type", "application/json")
 			put("response_schema", createSchema())
+			put("thinkingConfig", JSONObject().apply {
+				put("thinkingBudget", 0)  // Deactivating thinking
+			})
 		}
 	}
 
@@ -101,6 +112,8 @@ object RequestBuilder {
 			put("enum", JSONArray().apply {
 				put("tts_speed")
 				put("voice")
+				put("frequency")
+				put("bps")
 				put("leave")
 				put("none")
 			})
@@ -126,6 +139,8 @@ object RequestBuilder {
 				put("properties", JSONObject().apply {
 					put("tts_speed", JSONObject().apply { put("type", "NUMBER") })
 					put("voice", JSONObject().apply { put("type", "NUMBER") })
+					put("frequency", JSONObject().apply { put("type", "NUMBER") })
+					put("bps", JSONObject().apply { put("type", "NUMBER") })
 					put("leave", JSONObject().apply { put("type", "BOOLEAN") })
 				})
 			})

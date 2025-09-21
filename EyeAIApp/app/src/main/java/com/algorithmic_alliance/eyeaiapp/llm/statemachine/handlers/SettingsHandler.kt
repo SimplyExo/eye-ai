@@ -3,6 +3,8 @@ package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.MainActivity.State
+import com.algorithmic_alliance.eyeaiapp.NativeLib
+import com.algorithmic_alliance.eyeaiapp.Settings
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateUpdate
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
@@ -17,29 +19,13 @@ class SettingsHandler(
 	private val generateLlmResponse: suspend (String, Boolean) -> String?,
 	private val speakAndHandleUi: suspend (String) -> Unit
 ) {
-	companion object {
-		private const val SETTINGS_MENU_PROMPT_TEMPLATE = """Der Nutzer ist im Einstellungsmenü und sagt: '$1'.
-
-Klassifiziere die Absicht des Nutzers in eine der folgenden Kategorien und gib sie im Feld 'setting_intent' zurück:
-
-- 'tts_speed': Wenn der Nutzer die Sprechgeschwindigkeit ändern will (z.B. "schneller sprechen").
-- 'voice': Wenn der Nutzer die Stimme des Assistenten ändern will (z.B. "Stimme ändern", "andere Stimme", "Assistentenagenten anpassen").
-- 'leave': Wenn der Nutzer die Einstellungen verlassen will.
-- 'none': Wenn keine der obigen Absichten klar erkennbar ist.
-
-Antworte NUR mit dem JSON-Objekt.
-
-Beispiel für die Eingabe "ich will eine andere Stimme": {"setting_intent": "voice"}
-Beispiel für die Eingabe "verlassen": {"setting_intent": "leave"}
-"""
-	}
 
 	suspend fun handleSettingsMenu(
 		input: String,
 		currentJson: String?,
 		onJsonUpdate: (String?) -> Unit
 	): StateUpdate {
-		val intentPrompt = SETTINGS_MENU_PROMPT_TEMPLATE.replace("$1", input)
+		val intentPrompt = eyeAIApp.llm!!.buildSettingsMenuPrompt(input)
 		val jsonResponse = generateLlmResponse(intentPrompt, true)
 
 		if (jsonResponse == null) {
@@ -53,19 +39,34 @@ Beispiel für die Eingabe "verlassen": {"setting_intent": "leave"}
 				onJsonUpdate(jsonResponse)
 				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
 			}
+
 			SettingIntent.VOICE -> {
 				speakAndHandleUi(LLM.Companion.SNIPPET_VOICE)
 				onJsonUpdate(jsonResponse)
 				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
 			}
+
+			SettingIntent.FREQUENCY -> {
+				speakAndHandleUi(LLM.Companion.SNIPPET_FREQUENCY)
+				onJsonUpdate(jsonResponse)
+				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
+			}
+
+			SettingIntent.BPS -> {
+				speakAndHandleUi(LLM.Companion.SNIPPET_BPS)
+				onJsonUpdate(jsonResponse)
+				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
+			}
+
 			SettingIntent.LEAVE -> {
 				val syntheticLeave = createLeaveSettingsJson()
 				speakAndHandleUi("Möchten Sie die Einstellungen wirklich verlassen?")
 				onJsonUpdate(syntheticLeave)
 				StateUpdate(State.SETTINGS_ACTION, syntheticLeave)
 			}
+
 			SettingIntent.NONE -> {
-				speakAndHandleUi("Ich habe das leider nicht verstanden. Sie können die Sprechgeschwindigkeit anpassen, die Stimme ändern oder die Einstellungen verlassen.")
+				speakAndHandleUi("Ich habe das leider nicht verstanden. Sie können die Sprechgeschwindigkeit, die Stimme, die Frequenz, die BPS anpassen oder die Einstellungen verlassen.")
 				StateUpdate(State.SETTINGS_MENU, currentJson)
 			}
 		}
@@ -77,14 +78,25 @@ Beispiel für die Eingabe "verlassen": {"setting_intent": "leave"}
 		onJsonUpdate: (String?) -> Unit
 	): StateUpdate {
 		val currentIntent = currentJson?.let { jsonParser.parseSettingIntent(it) }
+		val settings = Settings.load(eyeAIApp) // Settings-Instanz laden
 
 		val prompt = when (currentIntent) {
 			SettingIntent.TTS_SPEED -> {
 				"Die aktuelle Sprechgeschwindigkeit ist ${textToSpeechInstance.speechRate}. Der Nutzer möchte folgendes: '$input'. Passe die Geschwindigkeit entsprechend an und erstelle ein JSON mit 'changed_settings' Array mit 'tts_speed' Feld."
 			}
+
 			SettingIntent.VOICE -> {
 				"Der Nutzer möchte die Assistentenstimme ändern: '$input'. Wenn der Nutzer 'männlich' oder ähnliches sagt, setze 'voice' auf 0. Wenn 'weiblich' oder ähnliches, setze 'voice' auf 1. Erstelle ein JSON mit 'changed_settings' Array mit 'voice' Feld."
 			}
+
+			SettingIntent.FREQUENCY -> {
+				"Der Nutzer möchte die Audio-Frequenz ändern: '$input'. Die Frequenz muss zwischen 100 und 4000 Hz liegen. Aktuelle Frequenz ist ${settings.depthAudioFrequency} Hz. Erstelle ein JSON mit 'changed_settings' Array mit 'frequency' Feld."
+			}
+
+			SettingIntent.BPS -> {
+				"Der Nutzer möchte die BPS (Beats per Second) ändern: '$input'. Die BPS müssen zwischen 1 und 10 liegen. Aktuelle BPS ist ${settings.depthAudioClickIncidence}. Erstelle ein JSON mit 'changed_settings' Array mit 'bps' Feld."
+			}
+
 			else -> {
 				"Führe die folgende Aktion aus: '$input'."
 			}
@@ -131,6 +143,8 @@ Beispiel für die Eingabe "verlassen": {"setting_intent": "leave"}
 	private suspend fun applySettings(jsonString: String): Boolean {
 		try {
 			val changedSettings = JSONObject(jsonString).getJSONArray("changed_settings")
+			val settings = Settings.load(eyeAIApp) // Settings-Instanz laden
+
 			for (i in 0 until changedSettings.length()) {
 				val setting = changedSettings.getJSONObject(i)
 				when {
@@ -140,12 +154,34 @@ Beispiel für die Eingabe "verlassen": {"setting_intent": "leave"}
 						Log.d(EyeAIApp.APP_LOG_TAG, "TTS-Geschwindigkeit wird auf $newSpeed gesetzt.")
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
+
 					setting.has("voice") -> {
 						val voice = setting.getInt("voice")
 						textToSpeechInstance.setVoice(voice)
 						Log.d(EyeAIApp.APP_LOG_TAG, "Stimme wird auf $voice gesetzt.")
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
+
+					setting.has("frequency") -> {
+						val frequency = setting.getInt("frequency")
+						val clampedFreq = frequency.coerceIn(100, 4000)
+						val currentBps = settings.depthAudioClickIncidence
+						NativeLib.setAudioSettings(clampedFreq, currentBps)
+
+						Log.d(EyeAIApp.APP_LOG_TAG, "Audio-Frequenz wird auf $clampedFreq Hz gesetzt.")
+						speakAndHandleUi("Die Audio-Frequenz wurde erfolgreich auf $clampedFreq Hz geändert.")
+					}
+
+					setting.has("bps") -> {
+						val bps = setting.getInt("bps")
+						val clampedBps = bps.coerceIn(1, 10)
+						val currentFreq = settings.depthAudioFrequency
+						NativeLib.setAudioSettings(currentFreq, clampedBps)
+
+						Log.d(EyeAIApp.APP_LOG_TAG, "Audio-BPS wird auf $clampedBps gesetzt.")
+						speakAndHandleUi("Die BPS wurde erfolgreich auf $clampedBps geändert.")
+					}
+
 					setting.has("leave") -> {
 						speakAndHandleUi("Die Einstellungen wurden verlassen.")
 					}
