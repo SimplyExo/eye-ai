@@ -21,7 +21,7 @@ class GoogleAIStudioLLM(apiKey: String, customEndpoint: String?) : LLM {
 	}
 
 	companion object {
-		const val MODEL_NAME: String = "gemini-2.5-flash"
+		const val MODEL_NAME: String = "gemini-2.5-flash-lite"
 		private const val GOOGLE_GEN_AI_ENDPOINT = "https://generativelanguage.googleapis.com"
 
 		private fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
