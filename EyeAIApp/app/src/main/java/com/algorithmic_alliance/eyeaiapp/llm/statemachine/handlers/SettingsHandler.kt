@@ -9,6 +9,7 @@ import com.algorithmic_alliance.eyeaiapp.Settings
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateUpdate
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
+import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -21,11 +22,16 @@ class SettingsHandler(
 	private val speakAndHandleUi: suspend (String) -> Unit
 ) {
 
+	private val nlpModel: NLPModel? = eyeAIApp.nlpModel
+
 	suspend fun handleSettingsMenu(
 		input: String,
 		currentJson: String?,
 		onJsonUpdate: (String?) -> Unit
 	): StateUpdate {
+		// Method when NLP fails
+		// NLP logic majorly in StateMachine.kt
+
 		val intentPrompt = eyeAIApp.llm!!.buildSettingsMenuPrompt(input)
 		val jsonResponse = generateLlmResponse(intentPrompt, true)
 
@@ -83,19 +89,19 @@ class SettingsHandler(
 
 		val prompt = when (currentIntent) {
 			SettingIntent.TTS_SPEED -> {
-				"Die aktuelle Sprechgeschwindigkeit ist ${textToSpeechInstance.speechRate}. Der Nutzer möchte folgendes: '$input'. Passe die Geschwindigkeit entsprechend an und erstelle ein JSON mit 'changed_settings' Array mit 'tts_speed' Feld."
+				"Die aktuelle Sprechgeschwindigkeit ist ${textToSpeechInstance.speechRate}. Der Nutzer möchte folgendes: '$input'. Passe die Geschwindigkeit entsprechend an und erstelle eine JSON mit 'changed_settings' Array mit 'tts_speed' Feld."
 			}
 
 			SettingIntent.VOICE -> {
-				"Der Nutzer möchte die Assistentenstimme ändern: '$input'. Wenn der Nutzer 'männlich' oder ähnliches sagt, setze 'voice' auf 0. Wenn 'weiblich' oder ähnliches, setze 'voice' auf 1. Erstelle ein JSON mit 'changed_settings' Array mit 'voice' Feld."
+				"Der Nutzer möchte die Assistentenstimme ändern: '$input'. Wenn der Nutzer 'männlich' oder ähnliches sagt, setze 'voice' auf 0. Wenn 'weiblich' oder ähnliches, setze 'voice' auf 1. Erstelle eine JSON mit 'changed_settings' Array mit 'voice' Feld."
 			}
 
 			SettingIntent.FREQUENCY -> {
-				"Der Nutzer möchte die Audio-Frequenz ändern: '$input'. Die Frequenz muss zwischen 100 und 4000 Hz liegen. Aktuelle Frequenz ist ${settings.depthAudioFrequency} Hz. Erstelle ein JSON mit 'changed_settings' Array mit 'frequency' Feld."
+				"Der Nutzer möchte die Audio-Frequenz ändern: '$input'. Die Frequenz muss zwischen 100 und 4000 Hz liegen. Aktuelle Frequenz ist ${settings.depthAudioFrequency} Hz. Erstelle eine JSON mit 'changed_settings' Array mit 'frequency' Feld."
 			}
 
 			SettingIntent.BPS -> {
-				"Der Nutzer möchte die BPS (Beats per Second) ändern: '$input'. Die BPS müssen zwischen 1 und 10 liegen. Aktuelle BPS ist ${settings.depthAudioClickIncidence}. Erstelle ein JSON mit 'changed_settings' Array mit 'bps' Feld."
+				"Der Nutzer möchte die BPS (Beats per Second) ändern: '$input'. Die BPS müssen zwischen 1 und 10 liegen. Aktuelle BPS ist ${settings.depthAudioClickIncidence}. Erstelle eine JSON mit 'changed_settings' Array mit 'bps' Feld."
 			}
 
 			else -> {
@@ -104,6 +110,7 @@ class SettingsHandler(
 		}
 
 		val jsonResponse = generateLlmResponse(prompt, true)
+
 		if (jsonResponse == null) {
 			speakAndHandleUi("LLM-Antwort konnte nicht generiert werden.")
 			return StateUpdate(State.SETTINGS_CHOICE, currentJson)
@@ -130,7 +137,7 @@ class SettingsHandler(
 		}
 
 		return if (jsonParser.isApproved(jsonResponse) && currentJson != null) {
-			// Adapt settings and save JSOn
+			// Adapt settings and save JSON
 			applySettings(currentJson)
 			onJsonUpdate(null)
 			StateUpdate(State.IDLE, null) // No further message needed.
@@ -138,6 +145,16 @@ class SettingsHandler(
 			speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
 			onJsonUpdate(null)
 			StateUpdate(State.SETTINGS_MENU, null)
+		}
+	}
+
+	fun createSyntheticSettingsJson(settingType: String): String {
+		return when (settingType) {
+			"tts_speed" -> """{"setting_intent": "TTS_SPEED"}"""
+			"voice" -> """{"setting_intent": "VOICE"}"""
+			"frequency" -> """{"setting_intent": "FREQUENCY"}"""
+			"bps" -> """{"setting_intent": "BPS"}"""
+			else -> """{"setting_intent": "NONE"}"""
 		}
 	}
 
@@ -157,10 +174,8 @@ class SettingsHandler(
 					setting.has("tts_speed") -> {
 						val newSpeed = setting.getDouble("tts_speed").toFloat()
 						textToSpeechInstance.setSpeechRate(newSpeed)
-
 						// Save TTS settings
 						ttsEditor.putFloat("tts_speech_rate", newSpeed)
-
 						Log.d(EyeAIApp.APP_LOG_TAG, "TTS-Geschwindigkeit wird auf $newSpeed gesetzt.")
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
@@ -168,10 +183,8 @@ class SettingsHandler(
 					setting.has("voice") -> {
 						val voice = setting.getInt("voice")
 						textToSpeechInstance.setVoice(voice)
-
-						// Save TTS settigns
+						// Save TTS settings
 						ttsEditor.putInt("tts_voice", voice)
-
 						Log.d(EyeAIApp.APP_LOG_TAG, "Stimme wird auf $voice gesetzt.")
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
@@ -180,13 +193,11 @@ class SettingsHandler(
 						val frequency = setting.getInt("frequency")
 						val clampedFreq = frequency.coerceIn(100, 4000)
 						val currentBps = settings.depthAudioClickIncidence
-
 						NativeLib.setAudioSettings(clampedFreq, currentBps)
 
 						// Save settings
 						settings.depthAudioFrequency = clampedFreq
 						settings.save(eyeAIApp)
-
 						Log.d(EyeAIApp.APP_LOG_TAG, "Audio-Frequenz wird auf $clampedFreq Hz gesetzt.")
 						speakAndHandleUi("Die Audio-Frequenz wurde erfolgreich auf $clampedFreq Hz geändert.")
 					}
@@ -195,13 +206,11 @@ class SettingsHandler(
 						val bps = setting.getInt("bps")
 						val clampedBps = bps.coerceIn(1, 10)
 						val currentFreq = settings.depthAudioFrequency
-
 						NativeLib.setAudioSettings(currentFreq, clampedBps)
 
 						// Save settings
 						settings.depthAudioClickIncidence = clampedBps
 						settings.save(eyeAIApp)
-
 						Log.d(EyeAIApp.APP_LOG_TAG, "Audio-BPS wird auf $clampedBps gesetzt.")
 						speakAndHandleUi("Die BPS wurde erfolgreich auf $clampedBps geändert.")
 					}
@@ -210,7 +219,6 @@ class SettingsHandler(
 
 			// save tts settings
 			ttsEditor.apply()
-
 			return true
 		} catch (e: JSONException) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "Fehler bei der Verarbeitung der JSON-Aktion.", e)
