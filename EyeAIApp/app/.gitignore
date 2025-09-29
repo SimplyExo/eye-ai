@@ -1,1 +1,3 @@
 /build
+/src/main/jniLibs/arm64-v8a/libeye_ai_core_rs_native_lib.so
+/src/main/java/com/algorithmic_alliance/eyeaiapp/uniffi/NativeLib/NativeLib.kt

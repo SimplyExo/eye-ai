@@ -1,0 +1,14 @@
+[package]
+name = "eye-ai-core-rs-native-lib"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+uniffi = { workspace = true }
+eye-ai-core-rs = { path = "../" }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

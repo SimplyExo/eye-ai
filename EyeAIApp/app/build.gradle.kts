@@ -171,3 +171,35 @@ fun getGitCommitHash(): String {
 		commandLine("git", "rev-parse", "--short", "HEAD")
 	}.standardOutput.asText.get().trim()
 }
+
+
+// eye-ai-core-rs-native-lib
+abstract class VerifyEyeAICoreRSBuildTask : DefaultTask() {
+	@get:OutputFile
+    val requiredFile = project.layout.projectDirectory.file("src/main/jniLibs/arm64-v8a/libeye_ai_core_rs_native_lib.so")
+
+	init {
+		group = "verification"
+		description =
+			"Verifies that the eye-ai-core-rs-native-lib rust library was build and the needed eye_ai_core_rs_native_lib.so library exists in jniLibs."
+	}
+
+	@TaskAction
+	fun verify() {
+		if (requiredFile.asFile.exists()) {
+			println("Verified: eye-ai-core-rs-native-lib-native-lib was built and $requiredFile is present in jniLibs!")
+		} else {
+			throw GradleException(
+				"\nERROR: eye-ai-core-rs-native-lib rust library has not been build yet!\n" +
+					"Please build eye-ai-core-rs-native-lib before building EyeAIApp.\n" +
+					"First follow the build instructions in `eye-ai-core-rs/README.md`.\n" +
+					"After running the `eye-ai-core-rs/native-lib/build_android.sh` script, you are good to go!"
+			)
+		}
+	}
+}
+
+val verifyEyeAICoreRSBuild by tasks.registering(VerifyEyeAICoreRSBuildTask::class)
+tasks.named("preBuild") {
+	dependsOn(verifyEyeAICoreRSBuild)
+}
