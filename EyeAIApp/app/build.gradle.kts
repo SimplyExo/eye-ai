@@ -193,7 +193,7 @@ abstract class VerifyEyeAICoreRSBuildTask : DefaultTask() {
 				"\nERROR: eye-ai-core-rs-native-lib rust library has not been build yet!\n" +
 					"Please build eye-ai-core-rs-native-lib before building EyeAIApp.\n" +
 					"First follow the build instructions in `eye-ai-core-rs/README.md`.\n" +
-					"After running the `eye-ai-core-rs/native-lib/build_android.sh` script, you are good to go!"
+					"After you ran `cargo build-android`, you are good to go!"
 			)
 		}
 	}

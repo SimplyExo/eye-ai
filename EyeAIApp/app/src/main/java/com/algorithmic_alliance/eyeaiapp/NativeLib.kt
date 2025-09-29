@@ -8,7 +8,6 @@ import android.util.Log
 import android.util.Size
 import androidx.core.graphics.createBitmap
 import java.nio.ByteBuffer
-import uniffi.NativeLib.stringFromJni
 
 // see NativeLib.cpp
 enum class ProfilingFrameType(val id: Int) {
@@ -19,8 +18,6 @@ enum class ProfilingFrameType(val id: Int) {
 object NativeLib {
 	init {
 		System.loadLibrary("NativeLib")
-
-		Log.i("eye-ai-core-rs", stringFromJni())
 	}
 
 	// Yolo

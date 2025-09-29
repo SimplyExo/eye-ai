@@ -4,7 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["native_lib", "uniffi_bindgen"]
+members = [
+  "build_android",
+  "native_lib",
+]
 
 [workspace.dependencies]
 uniffi = { version = "0.29", features = ["cli"] }
+uniffi_bindgen = "0.29"

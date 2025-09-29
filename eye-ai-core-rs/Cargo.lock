@@ -181,6 +181,15 @@ name = "eye-ai-core-rs"
 version = "0.1.0"
 
 [[package]]
+name = "eye-ai-core-rs-build-android"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "uniffi",
+ "uniffi_bindgen",
+]
+
+[[package]]
 name = "eye-ai-core-rs-native-lib"
 version = "0.1.0"
 dependencies = [
@@ -546,13 +555,6 @@ dependencies = [
  "uniffi_core",
  "uniffi_macros",
  "uniffi_pipeline",
-]
-
-[[package]]
-name = "uniffi-bindgen"
-version = "0.1.0"
-dependencies = [
- "uniffi",
 ]
 
 [[package]]
