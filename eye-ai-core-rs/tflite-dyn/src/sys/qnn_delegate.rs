@@ -31,7 +31,7 @@ macro_rules! load_qnn_function {
 #[derive(Debug, Error)]
 pub enum LoadQnnDelegateLibError {
 	#[error("Failed to load QNN delegate library: {0}")]
-	Load(libloading::Error),
+	Load(#[from] libloading::Error),
 	#[error("Missing function '{0}' in QNN delegate library")]
 	MissingFunction(String),
 	#[error("Version mismatch: library has version {library_version} but this code was compiled for {expected_version}")]
@@ -49,7 +49,7 @@ pub struct QnnDelegateVt {
 	options_default: TfLiteQnnDelegateOptionsDefaultF,
 	delegate_create: TfLiteQnnDelegateCreateF,
 	delegate_delete: TfLiteQnnDelegateDeleteF,
-	delegate_set_perf: TfLiteQnnDelegateSetPerfF,
+	/*delegate_set_perf: TfLiteQnnDelegateSetPerfF,
 	delegate_has_capability: TfLiteQnnDelegateHasCapabilityF,
 	delegate_update_htp_perf_mode: TfLiteQnnDelegateUpdateHtpPerfModeF,
 	delegate_update_dsp_perf_mode: TfLiteQnnDelegateUpdateDspPerfModeF,
@@ -57,31 +57,31 @@ pub struct QnnDelegateVt {
 	delegate_alloc_custom_mem: TfLiteQnnDelegateAllocCustomMemF,
 	delegate_free_custom_mem: TfLiteQnnDelegateFreeCustomMemF,
 	delegate_get_profiling_result: TfLiteQnnDelegateGetProfilingResultF,
-	delegate_clear_profiling_result: TfLiteQnnDelegateClearProfilingResultF,
+	delegate_clear_profiling_result: TfLiteQnnDelegateClearProfilingResultF,*/
 }
 impl QnnDelegateVt {
 	pub fn load<P: AsRef<OsStr>>(
 		_vt: Arc<TfLiteVt>,
 		path: P,
 	) -> Result<Self, LoadQnnDelegateLibError> {
-		let library = unsafe { Library::new(path) }.map_err(LoadQnnDelegateLibError::Load)?;
+		let library = unsafe { Library::new(path) }?;
 		let options_default = load_qnn_function!(library, TfLiteQnnDelegateOptionsDefaultF);
 		let delegate_create = load_qnn_function!(library, TfLiteQnnDelegateCreateF);
 		let delegate_delete = load_qnn_function!(library, TfLiteQnnDelegateDeleteF);
-		let delegate_set_perf = load_qnn_function!(library, TfLiteQnnDelegateSetPerfF);
+		let delegate_get_api_version = load_qnn_function!(library, TfLiteQnnDelegateGetApiVersionF);
+		/*let delegate_set_perf = load_qnn_function!(library, TfLiteQnnDelegateSetPerfF);
 		let delegate_has_capability = load_qnn_function!(library, TfLiteQnnDelegateHasCapabilityF);
 		let delegate_update_htp_perf_mode =
 			load_qnn_function!(library, TfLiteQnnDelegateUpdateHtpPerfModeF);
 		let delegate_update_dsp_perf_mode =
 			load_qnn_function!(library, TfLiteQnnDelegateUpdateDspPerfModeF);
-		let delegate_get_api_version = load_qnn_function!(library, TfLiteQnnDelegateGetApiVersionF);
 		let delegate_alloc_custom_mem =
 			load_qnn_function!(library, TfLiteQnnDelegateAllocCustomMemF);
 		let delegate_free_custom_mem = load_qnn_function!(library, TfLiteQnnDelegateFreeCustomMemF);
 		let delegate_get_profiling_result =
 			load_qnn_function!(library, TfLiteQnnDelegateGetProfilingResultF);
 		let delegate_clear_profiling_result =
-			load_qnn_function!(library, TfLiteQnnDelegateClearProfilingResultF);
+			load_qnn_function!(library, TfLiteQnnDelegateClearProfilingResultF);*/
 
 		let version = unsafe { (delegate_get_api_version)() };
 		if version != RS_PORT_QNN_DELEGATE_API_VERSION {
@@ -97,7 +97,7 @@ impl QnnDelegateVt {
 			options_default,
 			delegate_create,
 			delegate_delete,
-			delegate_set_perf,
+			/*delegate_set_perf,
 			delegate_has_capability,
 			delegate_update_htp_perf_mode,
 			delegate_update_dsp_perf_mode,
@@ -105,7 +105,7 @@ impl QnnDelegateVt {
 			delegate_alloc_custom_mem,
 			delegate_free_custom_mem,
 			delegate_get_profiling_result,
-			delegate_clear_profiling_result,
+			delegate_clear_profiling_result,*/
 		})
 	}
 

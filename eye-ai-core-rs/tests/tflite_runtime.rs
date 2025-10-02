@@ -33,6 +33,8 @@ fn test_tflite_runtime() {
 		unsafe { load_library_global("libabsl_log_internal_nullguard.so").unwrap() };
 
 	let tmp_dir = std::env::temp_dir().join("eye-ai-core-rs-testing-serialization-cache");
+	std::fs::create_dir_all(&tmp_dir)
+		.expect("failed to create tmp cache directory for delegate serialization");
 	let tmp_dir_str = CString::new(tmp_dir.to_string_lossy().into_owned()).unwrap();
 
 	let model_token = CString::new("midas_model_token").unwrap();

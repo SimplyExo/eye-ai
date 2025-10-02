@@ -8,6 +8,7 @@ tflite-dyn = { path = "tflite-dyn" }
 thiserror = "2.0"
 va_list = "0.2.1"
 libloading = "0.7.2"
+zerocopy = "0.8.27"
 
 [build-dependencies]
 cc = "1.2.39"

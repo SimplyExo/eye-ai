@@ -3,7 +3,7 @@ pub mod tflite;
 mod tensor_buffer;
 pub use tensor_buffer::{
 	FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RBG_FORMAT, FLOAT_TENSOR_BUFFER_RAW_RELATIVE_DEPTH_FORMAT,
-	TensorBuffer, TensorFormat,
+	TensorBuffer, TensorFormat, get_tensor_format_name,
 };
 
 pub fn greet() -> String {

@@ -1,22 +1,59 @@
+use crate::{TensorBuffer, TensorFormat, get_tensor_format_name};
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::Arc;
-use thiserror::Error;
-
-use crate::{TensorBuffer, TensorFormat};
 use tflite_dyn::{
 	Delegate, Interpreter, Model, TfLite,
 	sys::{
 		GpuDelegateAPI, LoadQnnDelegateLibError, LoadTfLiteGpuDelegateError, QnnDelegateVt,
 		TfLiteGpuExperimentalFlags, TfLiteGpuInferenceUsage, TfLiteQnnDelegateBackendType,
 		TfLiteQnnDelegateGraphPriority, TfLiteQnnDelegateHtpPerformanceMode,
-		TfLiteQnnDelegateHtpPrecision,
+		TfLiteQnnDelegateHtpPrecision, TfLiteType,
 	},
 };
+use thiserror::Error;
+use zerocopy::IntoBytes;
 
 #[derive(Debug, Clone, Error)]
 pub enum TfLiteRunInferenceError {
-	// TODO
+	#[error("input tensor not allocated")]
+	InputTensorNotAllocated,
+	#[error("model input tensor size is {model_expected}, but {provided} was provided")]
+	InputTensorSizeMismatch {
+		provided: usize,
+		model_expected: usize,
+	},
+	#[error("we only support float32 input tensor's for now")]
+	NonFloat32InputTensor,
+	#[error("output tensor not allocated")]
+	OutputTensorNotAllocated,
+	#[error("model output tensor size is {model_expected}, but {provided} was provided")]
+	OutputTensorSizeMismatch {
+		provided: usize,
+		model_expected: usize,
+	},
+	#[error("we only support float32 output tensor's for now")]
+	NonFloat32OutputTensor,
+	#[error("failed to invoke inference")]
+	Invoke(#[from] tflite_dyn::Error),
+	#[error(
+		"model expected input of format {}, but {} was provided",
+		get_tensor_format_name(*model_expected),
+		get_tensor_format_name(*provided)
+	)]
+	InputFormatMismatch {
+		model_expected: TensorFormat,
+		provided: TensorFormat,
+	},
+	#[error(
+		"model expected output of format {}, but {} was provided",
+		get_tensor_format_name(*model_expected),
+		get_tensor_format_name(*provided)
+	)]
+	OutputFormatMismatch {
+		model_expected: TensorFormat,
+		provided: TensorFormat,
+	},
 }
 
 #[derive(Debug, Error)]
@@ -61,15 +98,22 @@ struct CreateTfLiteInterpreterResult {
 }
 
 pub struct TfLiteRuntime {
+	#[allow(unused)]
 	tflite_api: Arc<TfLite>,
+	#[allow(unused)]
 	tflite_gpu_delegate_api: Arc<GpuDelegateAPI>,
 	model_input_format: TensorFormat,
 	model_output_format: TensorFormat,
+	#[allow(unused)]
 	model: Rc<Model>,
 	interpreter: Interpreter,
+	#[allow(unused)]
 	gpu_delegate: Option<Rc<Delegate>>,
+	#[allow(unused)]
 	npu_delegate_and_api: Option<(Rc<Delegate>, Arc<QnnDelegateVt>)>,
+	#[allow(unused)]
 	log_warning_callback: fn(msg: &str),
+	#[allow(unused)]
 	log_error_callback: fn(msg: *const std::os::raw::c_char),
 }
 impl TfLiteRuntime {
@@ -138,8 +182,44 @@ impl TfLiteRuntime {
 		&mut self,
 		input: &[f32],
 		output: &mut [f32],
-	) -> Option<TfLiteRunInferenceError> {
-		unimplemented!()
+	) -> Result<(), TfLiteRunInferenceError> {
+		let mut input_tensor = self
+			.interpreter
+			.input_tensor(0)
+			.ok_or(TfLiteRunInferenceError::InputTensorNotAllocated)?;
+		if input_tensor.type_() != TfLiteType::Float32 {
+			return Err(TfLiteRunInferenceError::NonFloat32InputTensor);
+		}
+		let input_tensor_data = input_tensor
+			.data_mut()
+			.ok_or(TfLiteRunInferenceError::InputTensorNotAllocated)?;
+		if input_tensor_data.len() != std::mem::size_of_val(input) {
+			return Err(TfLiteRunInferenceError::InputTensorSizeMismatch {
+				provided: std::mem::size_of_val(input),
+				model_expected: input_tensor_data.len(),
+			});
+		}
+		copy_f32_tensor_data(input, input_tensor_data);
+
+		let mut output_tensor = self
+			.interpreter
+			.output_tensor(0)
+			.ok_or(TfLiteRunInferenceError::OutputTensorNotAllocated)?;
+		let output_tensor_data = output_tensor
+			.data_mut()
+			.ok_or(TfLiteRunInferenceError::OutputTensorNotAllocated)?;
+		if output_tensor_data.len() != std::mem::size_of_val(output) {
+			return Err(TfLiteRunInferenceError::OutputTensorSizeMismatch {
+				provided: std::mem::size_of_val(output),
+				model_expected: output_tensor_data.len(),
+			});
+		}
+		if output_tensor.type_() != TfLiteType::Float32 {
+			return Err(TfLiteRunInferenceError::NonFloat32OutputTensor);
+		}
+		copy_f32_tensor_data(output, output_tensor_data);
+
+		self.interpreter.invoke().map_err(|e| e.into())
 	}
 
 	pub fn run_inference_with_tensors<
@@ -149,8 +229,35 @@ impl TfLiteRuntime {
 		&mut self,
 		input_tensor: TensorBuffer<f32, INPUT_FORMAT>,
 	) -> Result<TensorBuffer<'_, f32, OUTPUT_FORMAT>, TfLiteRunInferenceError> {
-		// TODO: Implement this method
-		unimplemented!()
+		if self.model_input_format != INPUT_FORMAT {
+			return Err(TfLiteRunInferenceError::InputFormatMismatch {
+				model_expected: self.model_input_format,
+				provided: INPUT_FORMAT,
+			});
+		}
+		if self.model_output_format != OUTPUT_FORMAT {
+			return Err(TfLiteRunInferenceError::OutputFormatMismatch {
+				model_expected: self.model_output_format,
+				provided: OUTPUT_FORMAT,
+			});
+		}
+
+		let mut output_container = Vec::<f32>::new();
+		let output_tensor = self
+			.interpreter
+			.output_tensor(0)
+			.ok_or(TfLiteRunInferenceError::OutputTensorNotAllocated)?;
+		let output_tensor_data = output_tensor
+			.data()
+			.ok_or(TfLiteRunInferenceError::OutputTensorNotAllocated)?;
+		output_container.resize(
+			output_tensor_data.len() / std::mem::size_of::<f32>(),
+			0.0f32,
+		);
+		self.run_inference(input_tensor.data(), &mut output_container)?;
+		Ok(TensorBuffer::<'_, f32, OUTPUT_FORMAT>::new(
+			output_container,
+		))
 	}
 }
 
@@ -284,4 +391,11 @@ fn create_npu_delegate<'a>(
 	}
 
 	tflite_npu_delegate_api.create_delegate(&options)
+}
+
+fn copy_f32_tensor_data(src_f32: &[f32], dst_bytes: &mut [u8]) {
+	let src_bytes = src_f32.as_bytes();
+	let copy_bytes_len = src_bytes.len();
+	assert_eq!(copy_bytes_len, dst_bytes.len());
+	dst_bytes[..copy_bytes_len].copy_from_slice(&src_bytes[..copy_bytes_len]);
 }
