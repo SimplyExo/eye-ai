@@ -44,8 +44,10 @@ TEST(DepthEstimationTest, CorrectOutput) {
 	 * (npy file viewer: https://perchance.org/npy-file-viewer)
 
 	npy::write_npy(
-		"../tests/00022_00193_outdoor_010_030_qualcomm.npy",//"../tests/00022_00193_outdoor_010_030_expected.npy",
-		npy::npy_data_ptr{.data_ptr = output.data(), .shape = {(size_t)height, (size_t)width}}
+		"../tests/00022_00193_outdoor_010_030_expected.npy",
+		npy::npy_data_ptr{
+			.data_ptr = output.data(), .shape = {(size_t)height, (size_t)width}
+		}
 	);
 
 	*/

@@ -1,4 +1,4 @@
-use crate::{TensorBuffer, TensorFormat, get_tensor_format_name};
+use crate::{FloatTensorBuffer, TensorFormat, get_tensor_format_name};
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -99,6 +99,8 @@ struct CreateTfLiteInterpreterResult {
 
 pub struct TfLiteRuntime {
 	#[allow(unused)]
+	_libabsl_log_internal_nullguard: GlobalLibrary,
+	#[allow(unused)]
 	tflite_api: Arc<TfLite>,
 	#[allow(unused)]
 	tflite_gpu_delegate_api: Arc<GpuDelegateAPI>,
@@ -117,10 +119,12 @@ pub struct TfLiteRuntime {
 	log_error_callback: fn(msg: *const std::os::raw::c_char),
 }
 impl TfLiteRuntime {
-	#[allow(clippy::too_many_arguments)]
 	pub fn new<'a>(
 		create_info: CreateTfLiteRuntimeInfo<'a>,
 	) -> Result<Self, TfLiteRuntimeCreateError> {
+		let _libabsl_log_internal_nullguard =
+			unsafe { load_library_global("libabsl_log_internal_nullguard.so").unwrap() };
+
 		let tflite_api = Arc::new(
 			TfLite::load(create_info.tflite_lib_filepath)
 				.map_err(TfLiteRuntimeCreateError::TfLiteDyn)?,
@@ -165,6 +169,7 @@ impl TfLiteRuntime {
 		)?;
 
 		Ok(Self {
+			_libabsl_log_internal_nullguard,
 			tflite_api,
 			tflite_gpu_delegate_api,
 			interpreter,
@@ -176,6 +181,28 @@ impl TfLiteRuntime {
 			log_warning_callback: create_info.log_warning_callback,
 			log_error_callback: create_info.log_error_callback,
 		})
+	}
+
+	pub fn get_input_shape(&self) -> Option<Vec<i32>> {
+		let input_tensor = self.interpreter.input_tensor(0)?;
+		let mut input_shape = Vec::with_capacity(input_tensor.num_dims() as usize);
+
+		for i in 0..input_shape.capacity() {
+			input_shape.push(input_tensor.dim(i as i32));
+		}
+
+		Some(input_shape)
+	}
+
+	pub fn get_output_shape(&self) -> Option<Vec<i32>> {
+		let output_tensor = self.interpreter.output_tensor(0)?;
+		let mut output_shape = Vec::with_capacity(output_tensor.num_dims() as usize);
+
+		for i in 0..output_shape.capacity() {
+			output_shape.push(output_tensor.dim(i as i32));
+		}
+
+		Some(output_shape)
 	}
 
 	pub fn run_inference(
@@ -199,7 +226,9 @@ impl TfLiteRuntime {
 				model_expected: input_tensor_data.len(),
 			});
 		}
-		copy_f32_tensor_data(input, input_tensor_data);
+		copy_f32_to_tensor(input, input_tensor_data);
+
+		self.interpreter.invoke()?;
 
 		let mut output_tensor = self
 			.interpreter
@@ -217,9 +246,10 @@ impl TfLiteRuntime {
 		if output_tensor.type_() != TfLiteType::Float32 {
 			return Err(TfLiteRunInferenceError::NonFloat32OutputTensor);
 		}
-		copy_f32_tensor_data(output, output_tensor_data);
 
-		self.interpreter.invoke().map_err(|e| e.into())
+		copy_f32_from_tensor(output_tensor_data, output);
+
+		Ok(())
 	}
 
 	pub fn run_inference_with_tensors<
@@ -227,8 +257,8 @@ impl TfLiteRuntime {
 		const OUTPUT_FORMAT: TensorFormat,
 	>(
 		&mut self,
-		input_tensor: TensorBuffer<f32, INPUT_FORMAT>,
-	) -> Result<TensorBuffer<'_, f32, OUTPUT_FORMAT>, TfLiteRunInferenceError> {
+		input_tensor: FloatTensorBuffer<INPUT_FORMAT>,
+	) -> Result<FloatTensorBuffer<'_, OUTPUT_FORMAT>, TfLiteRunInferenceError> {
 		if self.model_input_format != INPUT_FORMAT {
 			return Err(TfLiteRunInferenceError::InputFormatMismatch {
 				model_expected: self.model_input_format,
@@ -255,7 +285,7 @@ impl TfLiteRuntime {
 			0.0f32,
 		);
 		self.run_inference(input_tensor.data(), &mut output_container)?;
-		Ok(TensorBuffer::<'_, f32, OUTPUT_FORMAT>::new(
+		Ok(FloatTensorBuffer::<'_, OUTPUT_FORMAT>::new(
 			output_container,
 		))
 	}
@@ -393,9 +423,41 @@ fn create_npu_delegate<'a>(
 	tflite_npu_delegate_api.create_delegate(&options)
 }
 
-fn copy_f32_tensor_data(src_f32: &[f32], dst_bytes: &mut [u8]) {
+fn copy_f32_to_tensor(src_f32: &[f32], dst_tensor_bytes: &mut [u8]) {
 	let src_bytes = src_f32.as_bytes();
 	let copy_bytes_len = src_bytes.len();
+	assert_eq!(copy_bytes_len, dst_tensor_bytes.len());
+	dst_tensor_bytes.copy_from_slice(src_bytes);
+}
+
+fn copy_f32_from_tensor(src_tensor_bytes: &[u8], dst_f32: &mut [f32]) {
+	let dst_bytes = dst_f32.as_mut_bytes();
+	let copy_bytes_len = src_tensor_bytes.len();
 	assert_eq!(copy_bytes_len, dst_bytes.len());
-	dst_bytes[..copy_bytes_len].copy_from_slice(&src_bytes[..copy_bytes_len]);
+	dst_bytes.copy_from_slice(src_tensor_bytes);
+}
+
+#[cfg(target_family = "unix")]
+type GlobalLibrary = libloading::os::unix::Library;
+
+#[cfg(not(target_family = "unix"))]
+type GlobalLibrary = libloading::Library;
+
+#[cfg(target_family = "unix")]
+unsafe fn load_library_global<P: AsRef<std::ffi::OsStr>>(
+	path: P,
+) -> Result<GlobalLibrary, libloading::Error> {
+	unsafe {
+		libloading::os::unix::Library::open(
+			Some(path),
+			libloading::os::unix::RTLD_NOW | libloading::os::unix::RTLD_GLOBAL,
+		)
+	}
+}
+
+#[cfg(not(target_family = "unix"))]
+unsafe fn load_library_global<P: AsRef<std::ffi::OsStr>>(
+	path: P,
+) -> Result<GlobalLibrary, libloading::Error> {
+	unsafe { Library::new(path) }
 }
