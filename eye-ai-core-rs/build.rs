@@ -26,18 +26,20 @@ fn main() {
 	)
 	.expect("failed to copy tensorflow-lite library file");
 
-	// copy libabsl_log_internal_nullguard.so
-	let libabsl_log_internal_nullguard_so =
-		format!("{}/libabsl_log_internal_nullguard.so", third_party_dir);
-	println!(
-		"cargo::rerun-if-changed={}",
-		libabsl_log_internal_nullguard_so
-	);
-	std::fs::copy(
-		libabsl_log_internal_nullguard_so,
-		format!("{}/../../../libabsl_log_internal_nullguard.so", out_dir),
-	)
-	.expect("failed to copy absl log internal nullguard library file");
+	if target_os == "linux" {
+		// copy libabsl_log_internal_nullguard.so
+		let libabsl_log_internal_nullguard_so =
+			format!("{}/libabsl_log_internal_nullguard.so", third_party_dir);
+		println!(
+			"cargo::rerun-if-changed={}",
+			libabsl_log_internal_nullguard_so
+		);
+		std::fs::copy(
+			libabsl_log_internal_nullguard_so,
+			format!("{}/../../../libabsl_log_internal_nullguard.so", out_dir),
+		)
+		.expect("failed to copy absl log internal nullguard library file");
+	}
 
 	// copy libqnn_delegate_jni.so
 	if target_os == "android" {
