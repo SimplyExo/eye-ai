@@ -47,7 +47,7 @@ class StateMachine(
     private val nlpModel: NLPModel? = eyeAIApp.nlpModel
 
     // Using LLM if less than 60%
-    private val nlpConfidenceThreshold = 0.5f
+    private val nlpConfidenceThreshold = 0.6f
 
 
     private val promptCache = mutableMapOf<String, String>()
