@@ -3,10 +3,20 @@ name = "eye-ai-core-rs"
 version = "0.1.0"
 edition = "2024"
 
+[dependencies]
+tflite-dyn = { path = "tflite-dyn" }
+thiserror = "2.0"
+va_list = "0.2.1"
+libloading = "0.7.2"
+
+[build-dependencies]
+cc = "1.2.39"
+
 [workspace]
 members = [
   "build_android",
   "native_lib",
+  "tflite-dyn"
 ]
 
 [workspace.dependencies]
