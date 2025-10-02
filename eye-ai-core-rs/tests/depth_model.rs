@@ -63,7 +63,7 @@ fn run_midas_depth_model() {
 
 	let output_tensor_buffer: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_RELATIVE_DEPTH_FORMAT> =
 		depth_model
-			.run(input.clone())
+			.run(input)
 			.expect("failed to run inference on midas model");
 	let output_tensor_buffer_data = output_tensor_buffer.data();
 
