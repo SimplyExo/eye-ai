@@ -46,7 +46,7 @@ class StateMachine(
     // NLP model integration
     private val nlpModel: NLPModel? = eyeAIApp.nlpModel
 
-    // Using LLM if less than 50%
+    // Using LLM if less than 60%
     private val nlpConfidenceThreshold = 0.5f
 
 
