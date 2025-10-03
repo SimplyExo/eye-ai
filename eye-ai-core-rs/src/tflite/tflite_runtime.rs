@@ -14,7 +14,7 @@ use tflite_dyn::{
 use thiserror::Error;
 use zerocopy::IntoBytes;
 
-#[derive(Debug, Clone, Error)]
+#[derive(Debug, Error)]
 pub enum TfLiteRunInferenceError {
 	#[error("input tensor not allocated")]
 	InputTensorNotAllocated,
@@ -154,7 +154,7 @@ impl TfLiteRuntime {
 		let model = Rc::new(tflite_api.model_create(create_info.model_data)?);
 
 		let CreateTfLiteInterpreterResult {
-			interpreter,
+			mut interpreter,
 			gpu_delegate,
 			npu_delegate_and_api,
 		} = try_to_create_interpreter(
@@ -167,6 +167,8 @@ impl TfLiteRuntime {
 			create_info.log_warning_callback,
 			create_info.log_error_callback as *mut std::os::raw::c_void,
 		)?;
+
+		interpreter.allocate_tensors()?;
 
 		Ok(Self {
 			_libabsl_log_internal_nullguard,

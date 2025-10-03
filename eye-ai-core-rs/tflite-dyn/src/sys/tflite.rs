@@ -45,7 +45,10 @@ impl TfLiteVt {
 		let dll_version = Version::parse(version_str.to_str().unwrap()).unwrap();
 		let target_version = VersionReq::parse("2.8.0").unwrap();
 		if !target_version.matches(&dll_version) {
-			return Err(Error::FailedToLoad);
+			return Err(Error::TfLiteApiVersionMismatch {
+				expected: target_version,
+				library_version: dll_version,
+			});
 		}
 
 		let model_create = unsafe { *library.get(b"TfLiteModelCreate\0").unwrap() };

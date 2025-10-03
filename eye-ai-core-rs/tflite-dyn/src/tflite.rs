@@ -20,7 +20,7 @@ pub struct TfLite {
 
 impl TfLite {
 	pub fn load<P: AsRef<OsStr>>(path: P) -> Result<Self, Error> {
-		let library = Arc::new(unsafe { Library::new(path).unwrap() });
+		let library = Arc::new(unsafe { Library::new(path) }?);
 
 		let vt = sys::TfLiteVt::load(library.clone())?;
 		let xnnpack_vt = sys::XnnPackVt::load(library.clone());
