@@ -1,6 +1,7 @@
 use crate::{
 	FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT, FLOAT_TENSOR_BUFFER_YOLO_OUTPUT_FORMAT,
 	FloatTensorBuffer,
+	audio::Vec2,
 	tflite::{
 		CreateTfLiteRuntimeInfo, NpuConfig, NpuConfigType, TfLiteRunInferenceError, TfLiteRuntime,
 		TfLiteRuntimeCreateError,
@@ -59,6 +60,13 @@ impl BoundingBox {
 			&& valid_range.contains(&self.x2())
 			&& valid_range.contains(&self.y1())
 			&& valid_range.contains(&self.y2())
+	}
+	pub fn contains(&self, point: Vec2) -> bool {
+		let x1 = self.x1();
+		let x2 = self.x2();
+		let y1 = self.y1();
+		let y2 = self.y2();
+		(x1..x2).contains(&point.x) && (y1..y2).contains(&point.y)
 	}
 }
 

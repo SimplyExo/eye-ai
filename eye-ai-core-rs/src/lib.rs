@@ -1,3 +1,5 @@
+pub mod audio;
+
 pub mod tflite;
 
 mod tensor_buffer;
@@ -16,7 +18,9 @@ mod metric_depth_model;
 pub use metric_depth_model::MetricDepthModel;
 
 mod yolo_model;
-pub use yolo_model::{CreateYoloModelInfo, YoloModel, YoloModelNpuConfig};
+pub use yolo_model::{
+	BoundingBox, CreateYoloModelInfo, DetectedObject, YoloModel, YoloModelNpuConfig,
+};
 
 pub fn greet() -> String {
 	"Hello from eye-ai-core-rs! Getting called by eye-ai-core-rs-native-lib".to_string()

@@ -90,7 +90,6 @@ impl DepthModel {
 				.copied()
 				.unwrap();
 			let diff = max - min;
-			println!("diff = {}", diff);
 			if diff == 0.0 {
 				for value in relative_depth_tensor.iter_mut() {
 					*value = 0.5;
