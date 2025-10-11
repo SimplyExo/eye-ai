@@ -24,6 +24,8 @@ cargo install cargo-ndk
 
 4. Compile eye-ai-core-rs-native-lib for Android:
 
+('ANDROID_NDK_ROOT' or 'NDK_HOME' environment variable need to be set correctly!)
+
 ```bash
 cargo build-android
 ```

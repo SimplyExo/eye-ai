@@ -9,17 +9,28 @@ fn main() {
 
 	let native_lib_path = project_root().join("native_lib");
 
-	let cargo_ndk_successfull = Command::new("cargo")
-		.current_dir(native_lib_path)
-		.args([
-			"ndk",
-			"-t",
-			"arm64-v8a",
-			"-o",
-			"../../EyeAIApp/app/src/main/jniLibs",
-			"build",
-			"--release",
-		])
+	let ndk_home_set = std::env::var("NDK_HOME").is_ok();
+
+	let mut cargo_ndk_command = Command::new("cargo");
+
+	cargo_ndk_command.current_dir(native_lib_path).args([
+		"ndk",
+		"-t",
+		"arm64-v8a",
+		"-o",
+		"../../EyeAIApp/app/src/main/jniLibs",
+		"build",
+		"--release",
+	]);
+
+	if !ndk_home_set {
+		let ndk_path = std::env::var("ANDROID_NDK_ROOT").expect(
+			"neither 'NDK_HOME' nor 'ANDROID_NDK_ROOT' environment variable is set, please set one of them",
+		);
+		cargo_ndk_command.env("NDK_HOME", ndk_path);
+	}
+
+	let cargo_ndk_successfull = cargo_ndk_command
 		.status()
 		.expect("failed to run cargo ndk")
 		.success();

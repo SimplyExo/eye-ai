@@ -3,31 +3,27 @@ name = "eye-ai-core-rs"
 version = "0.1.0"
 edition = "2024"
 
+[workspace]
+members = ["build_android", "native_lib", "tflite-dyn"]
+
+[workspace.dependencies]
+uniffi = { version = "0.29", features = ["cli"] }
+uniffi_bindgen = "0.29"
+
 [dependencies]
+alto = { git = "https://github.com/Peanutt42/alto", tag = "3.1.0", version = "=3.1.0", default-features = false }
+json = "0.12.4"
+libloading = "0.7.2"
+symphonia = { version = "0.5.4", features = ["all"] }
 tflite-dyn = { path = "tflite-dyn" }
 thiserror = "2.0"
 va_list = "0.2.1"
-libloading = "0.7.2"
 zerocopy = "0.8.27"
-alto = "3.0.4"
-json = "0.12.4"
-symphonia = { version = "0.5.4", features = ["all"] }
-
-[build-dependencies]
-cc = "1.2.39"
 
 [dev-dependencies]
 image = "0.25"
 ndarray = "0.16.1"
 ndarray-npy = "0.9.1"
 
-[workspace]
-members = [
-  "build_android",
-  "native_lib",
-  "tflite-dyn"
-]
-
-[workspace.dependencies]
-uniffi = { version = "0.29", features = ["cli"] }
-uniffi_bindgen = "0.29"
+[build-dependencies]
+cc = "1.2.39"
