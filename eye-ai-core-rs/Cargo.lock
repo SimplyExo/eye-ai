@@ -1817,7 +1817,8 @@ dependencies = [
 
 [[package]]
 name = "tflite-dyn"
-version = "0.1.1"
+version = "0.2.0"
+source = "git+https://github.com/Peanutt42/tflite-dyn?tag=0.2.0#67cd1cf0d27d3ecb1f07efc8f6257d37f5b1da96"
 dependencies = [
  "libloading",
  "semver",

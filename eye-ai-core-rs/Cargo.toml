@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["build_android", "native_lib", "tflite-dyn"]
+members = ["build_android", "native_lib"]
 
 [workspace.dependencies]
 uniffi = { version = "0.29", features = ["cli"] }
@@ -15,7 +15,7 @@ alto = { git = "https://github.com/Peanutt42/alto", tag = "3.1.0", version = "=3
 json = "0.12.4"
 libloading = "0.7.2"
 symphonia = { version = "0.5.4", features = ["all"] }
-tflite-dyn = { path = "tflite-dyn" }
+tflite-dyn = { git = "https://github.com/Peanutt42/tflite-dyn", tag = "0.2.0", version = "=0.2.0" }
 thiserror = "2.0"
 va_list = "0.2.1"
 zerocopy = "0.8.27"
