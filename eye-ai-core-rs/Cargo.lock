@@ -225,6 +225,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 
 [[package]]
+name = "bytetrack-cpp-rs"
+version = "0.1.0"
+dependencies = [
+ "cmake",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "camino"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -506,6 +515,7 @@ name = "eye-ai-core-rs"
 version = "0.1.0"
 dependencies = [
  "alto",
+ "bytetrack-cpp-rs",
  "cc",
  "image",
  "json",

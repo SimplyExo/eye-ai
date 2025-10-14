@@ -42,6 +42,17 @@ pub struct BoundingBox {
 	pub height: f32,
 }
 impl BoundingBox {
+	pub fn new(center_x: f32, center_y: f32, width: f32, height: f32) -> Self {
+		Self {
+			center_x,
+			center_y,
+			width,
+			height,
+		}
+	}
+	pub fn from_x_y_w_h(x: f32, y: f32, width: f32, height: f32) -> Self {
+		Self::new(x + width / 2.0, y + height / 2.0, width, height)
+	}
 	pub fn x1(&self) -> f32 {
 		self.center_x - self.width / 2.0
 	}
@@ -76,6 +87,30 @@ pub struct DetectedObject {
 	pub class_id: usize,
 	pub confidence: f32,
 	pub bbox: BoundingBox,
+}
+impl DetectedObject {
+	pub fn new(class_name: String, class_id: usize, confidence: f32, bbox: BoundingBox) -> Self {
+		Self {
+			class_name,
+			class_id,
+			confidence,
+			bbox,
+		}
+	}
+}
+impl From<DetectedObject> for bytetrack_cpp_rs::Object {
+	fn from(value: DetectedObject) -> Self {
+		Self {
+			label: value.class_id as i32,
+			rect: bytetrack_cpp_rs::Rect::new(
+				value.bbox.x1(),
+				value.bbox.y1(),
+				value.bbox.width,
+				value.bbox.height,
+			),
+			prob: value.confidence,
+		}
+	}
 }
 
 impl YoloModel {

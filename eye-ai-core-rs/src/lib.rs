@@ -22,6 +22,9 @@ pub use yolo_model::{
 	BoundingBox, CreateYoloModelInfo, DetectedObject, YoloModel, YoloModelNpuConfig,
 };
 
+mod object_tracker;
+pub use object_tracker::{ObjectTracker, TrackedObject};
+
 pub fn greet() -> String {
 	"Hello from eye-ai-core-rs! Getting called by eye-ai-core-rs-native-lib".to_string()
 }
