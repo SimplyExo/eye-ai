@@ -7,7 +7,9 @@ use std::{
 };
 
 #[test]
-fn run_midas_depth_model() {
+fn run_yolo_model() {
+	tracing_tracy::client::Client::start();
+
 	let input_image = image::ImageReader::open("tests/cat.jpg")
 		.unwrap()
 		.decode()

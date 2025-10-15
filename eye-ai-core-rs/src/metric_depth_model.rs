@@ -1,6 +1,9 @@
+use eye_ai_core_rs_profiling_attribute::profile_function;
+
 use crate::{
 	CreateDepthModelInfo, DepthModel, FLOAT_TENSOR_BUFFER_METRIC_DEPTH_FORMAT,
-	FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RGB_FORMAT, FloatTensorBuffer,
+	FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RGB_FORMAT, FLOAT_TENSOR_BUFFER_RAW_RELATIVE_DEPTH_FORMAT,
+	FloatTensorBuffer,
 	tflite::{TfLiteRunInferenceError, TfLiteRuntimeCreateError},
 };
 
@@ -20,6 +23,7 @@ impl MetricDepthModel {
 		})
 	}
 
+	#[profile_function]
 	pub fn run(
 		&mut self,
 		input_tensor: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RGB_FORMAT>,
@@ -29,14 +33,24 @@ impl MetricDepthModel {
 	> {
 		let relative_depth_tensor = self.relative_depth_model.run_raw(input_tensor)?;
 
-		let mut metric_depth_tensor =
-			relative_depth_tensor.convert_format::<FLOAT_TENSOR_BUFFER_METRIC_DEPTH_FORMAT>();
-		for value in metric_depth_tensor.iter_mut() {
-			*value = polynomial_n4(*value, &Self::REL2ABS_COEFFS);
-		}
-
-		Ok(metric_depth_tensor)
+		Ok(rel2abs_operator(
+			relative_depth_tensor,
+			&Self::REL2ABS_COEFFS,
+		))
 	}
+}
+
+#[profile_function]
+fn rel2abs_operator<'a>(
+	relative_depth_tensor: FloatTensorBuffer<'a, FLOAT_TENSOR_BUFFER_RAW_RELATIVE_DEPTH_FORMAT>,
+	rel2abs_coeffs: &'a [f32; 5],
+) -> FloatTensorBuffer<'a, FLOAT_TENSOR_BUFFER_METRIC_DEPTH_FORMAT> {
+	let mut metric_depth_tensor =
+		relative_depth_tensor.convert_format::<FLOAT_TENSOR_BUFFER_METRIC_DEPTH_FORMAT>();
+	for value in metric_depth_tensor.iter_mut() {
+		*value = polynomial_n4(*value, rel2abs_coeffs);
+	}
+	metric_depth_tensor
 }
 
 /// Polynomial function of degree 4 using Horner's method.

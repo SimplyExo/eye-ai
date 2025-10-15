@@ -1,4 +1,5 @@
 use crate::{FloatTensorBuffer, TensorFormat, get_tensor_format_name};
+use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -207,6 +208,7 @@ impl TfLiteRuntime {
 		Some(output_shape)
 	}
 
+	#[profile_function]
 	pub fn run_inference(
 		&mut self,
 		input: &[f32],
@@ -254,6 +256,7 @@ impl TfLiteRuntime {
 		Ok(())
 	}
 
+	#[profile_function]
 	pub fn run_inference_with_tensors<
 		const INPUT_FORMAT: TensorFormat,
 		const OUTPUT_FORMAT: TensorFormat,
@@ -302,6 +305,7 @@ unsafe extern "C" {
 }
 
 #[allow(clippy::too_many_arguments)]
+#[profile_function]
 fn try_to_create_interpreter<'a>(
 	tflite_api: &'a TfLite,
 	tflite_gpu_delegate_api: &'a GpuDelegateAPI,
@@ -382,6 +386,7 @@ fn try_to_create_interpreter<'a>(
 	}
 }
 
+#[profile_function]
 fn create_gpu_delegate<'a>(
 	tflite_gpu_delegate_api: &'a GpuDelegateAPI,
 	gpu_delegate_serialization_dir: &'a std::ffi::CStr,
@@ -396,6 +401,7 @@ fn create_gpu_delegate<'a>(
 	tflite_gpu_delegate_api.create_delegate(&gpu_options_v2)
 }
 
+#[profile_function]
 fn create_npu_delegate<'a>(
 	tflite_npu_delegate_api: &'a QnnDelegateVt,
 	npu_delegate_serialization_dir: &'a std::ffi::CStr,
@@ -425,6 +431,7 @@ fn create_npu_delegate<'a>(
 	tflite_npu_delegate_api.create_delegate(&options)
 }
 
+#[profile_function]
 fn copy_f32_to_tensor(src_f32: &[f32], dst_tensor_bytes: &mut [u8]) {
 	let src_bytes = src_f32.as_bytes();
 	let copy_bytes_len = src_bytes.len();
@@ -432,6 +439,7 @@ fn copy_f32_to_tensor(src_f32: &[f32], dst_tensor_bytes: &mut [u8]) {
 	dst_tensor_bytes.copy_from_slice(src_bytes);
 }
 
+#[profile_function]
 fn copy_f32_from_tensor(src_tensor_bytes: &[u8], dst_f32: &mut [f32]) {
 	let dst_bytes = dst_f32.as_mut_bytes();
 	let copy_bytes_len = src_tensor_bytes.len();

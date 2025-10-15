@@ -10,6 +10,8 @@ use std::{
 
 #[test]
 fn run_midas_depth_model() {
+	tracing_tracy::client::Client::start();
+
 	let input_image = image::ImageReader::open("tests/00022_00193_outdoor_010_030.png")
 		.unwrap()
 		.decode()

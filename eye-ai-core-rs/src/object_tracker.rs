@@ -1,6 +1,6 @@
-use std::{collections::HashMap, time::Instant};
-
 use bytetrack_cpp_rs::BYTETracker;
+use eye_ai_core_rs_profiling_attribute::profile_function;
+use std::{collections::HashMap, time::Instant};
 
 use crate::{BoundingBox, DetectedObject};
 
@@ -39,6 +39,7 @@ impl ObjectTracker {
 		}
 	}
 
+	#[profile_function]
 	pub fn update(&mut self, detected_objects: Vec<DetectedObject>) -> Vec<TrackedObject> {
 		let now = Instant::now();
 		let update_duration = now - self.last_update;

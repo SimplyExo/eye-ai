@@ -1,5 +1,6 @@
 use crate::audio::Vec3;
 use alto::Mono;
+use eye_ai_core_rs_profiling_attribute::profile_function;
 
 pub struct DepthAudioSourceData {
 	pub frequency: f32,
@@ -21,6 +22,7 @@ impl DepthAudioSourceData {
 	}
 }
 
+#[profile_function]
 fn create_audio_data(base_frequency: f32, duration: f32, sample_rate: usize) -> Vec<Mono<i16>> {
 	const TWO_PI: f32 = std::f32::consts::PI * 2.0;
 

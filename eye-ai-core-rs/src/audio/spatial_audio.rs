@@ -1,3 +1,9 @@
+use alto::{
+	Alto, Context, ContextAttrs, DeviceObject, DistanceModel, Mono, OutputDevice, Source,
+	SourceState, ext::Alc,
+};
+use eye_ai_core_rs_profiling_attribute::profile_function;
+use json::JsonValue;
 use std::{
 	collections::{HashMap, VecDeque},
 	sync::{
@@ -6,13 +12,8 @@ use std::{
 	},
 	time::Duration,
 };
-
-use alto::{
-	Alto, Context, ContextAttrs, DeviceObject, DistanceModel, Mono, OutputDevice, Source,
-	SourceState, ext::Alc,
-};
-use json::JsonValue;
 use thiserror::Error;
+use tracing_tracy::client::secondary_frame_mark;
 
 use crate::{
 	DetectedObject,
@@ -34,6 +35,7 @@ struct ObjectLabelData {
 	sample_begin: usize,
 	sample_end: usize,
 }
+#[profile_function]
 fn read_object_label_data(
 	json_content: &str,
 ) -> Result<HashMap<String, ObjectLabelData>, json::Error> {
@@ -83,6 +85,7 @@ impl Drop for SpatialAudio {
 	}
 }
 impl SpatialAudio {
+	#[profile_function]
 	pub fn new(
 		audio_settings: Arc<RwLock<SpatialAudioSettings>>,
 	) -> Result<Self, SpatialAudioError> {
@@ -156,6 +159,7 @@ impl SpatialAudio {
 		})
 	}
 
+	#[profile_function]
 	pub fn update(
 		&mut self,
 		depth_estimation_data: &[f32; 256 * 256],
@@ -197,6 +201,7 @@ impl SpatialAudio {
 	}
 }
 
+#[profile_function]
 fn depth_audio_thread(
 	running: Arc<AtomicBool>,
 	context: Arc<Context>,
@@ -286,9 +291,12 @@ fn depth_audio_thread(
 		}
 
 		std::thread::sleep(Duration::from_millis(2));
+
+		secondary_frame_mark!("Depth Audio Frame");
 	}
 }
 
+#[profile_function]
 fn object_audio_thread(
 	running: Arc<AtomicBool>,
 	settings: Arc<RwLock<SpatialAudioSettings>>,
@@ -356,9 +364,12 @@ fn object_audio_thread(
 
 		source.stop();
 		source.clear_buffer();
+
+		secondary_frame_mark!("Object Audio Frame");
 	}
 }
 
+#[profile_function]
 fn process_depth_estimation_data(
 	depth_estimation_data: &[f32; 256 * 256],
 	settings: &SpatialAudioSettings,
@@ -400,6 +411,7 @@ fn process_depth_estimation_data(
 	audio_source_data
 }
 
+#[profile_function]
 fn process_object_detection_data(
 	depth_estimation_data: &[f32; 256 * 256],
 	object_detection_data: &[DetectedObject],

@@ -7,6 +7,7 @@ use crate::{
 		TfLiteRuntimeCreateError,
 	},
 };
+use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::path::PathBuf;
 
 pub struct YoloModelNpuConfig<'a> {
@@ -156,6 +157,7 @@ impl YoloModel {
 		})
 	}
 
+	#[profile_function]
 	pub fn run(
 		&mut self,
 		input_tensor: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT>,
@@ -174,6 +176,7 @@ impl YoloModel {
 	}
 }
 
+#[profile_function]
 fn best_objects(
 	array: &[f32],
 	labels: &[String],
@@ -258,6 +261,7 @@ fn parse_object(
 	})
 }
 
+#[profile_function]
 fn apply_nms(objects: &[DetectedObject], iou_threshold: f32) -> Vec<DetectedObject> {
 	if objects.is_empty() {
 		return Vec::new();

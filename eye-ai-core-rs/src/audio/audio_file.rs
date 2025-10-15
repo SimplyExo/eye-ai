@@ -1,3 +1,4 @@
+use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::io::Cursor;
 use symphonia::core::{
 	audio::SampleBuffer, codecs::DecoderOptions, errors::Error, formats::FormatOptions,
@@ -9,6 +10,7 @@ pub struct AudioFileData {
 	pub sample_rate: u32,
 }
 
+#[profile_function]
 pub fn read_audio_file(audio_file_content: Box<[u8]>) -> Result<AudioFileData, Error> {
 	let mss = MediaSourceStream::new(
 		Box::new(Cursor::new(audio_file_content)),
