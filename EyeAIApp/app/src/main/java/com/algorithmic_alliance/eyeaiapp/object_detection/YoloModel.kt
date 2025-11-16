@@ -10,9 +10,10 @@ import java.io.File
 import androidx.core.graphics.scale
 import com.algorithmic_alliance.eyeaiapp.ProfilingFrameType
 import org.json.*
+import uniffi.NativeLib.UniffiDetectedObject
 
 class YoloModel(var info: YoloModelInfo) {
-	private lateinit var labels: Array<String>
+	private lateinit var labels: List<String>
 
 	private var tensorWidth = 0
 	private var tensorHeight = 0
@@ -25,7 +26,7 @@ class YoloModel(var info: YoloModelInfo) {
 	           enableNpu: Boolean) {
 		// Erstellen einer Yolo-Instanz
 		val modelBytes = info.getAsBytes(context)
-		labels = info.readLinesFromAsset(context)
+		labels = info.readLinesFromAsset(context).toList()
 
 		NativeLib.initYoloRuntime(
 			modelBytes, labels,
@@ -43,7 +44,7 @@ class YoloModel(var info: YoloModelInfo) {
 		initialized = true
 	}
 
-	fun runInference(frame: Bitmap): Array<BoundingBox>? {
+	fun runInference(frame: Bitmap): Array<UniffiDetectedObject>? {
 		if (!initialized) {
 			/*Log.e(
 				"YOLO",
@@ -55,9 +56,9 @@ class YoloModel(var info: YoloModelInfo) {
 		val resizedBitmap = frame.scale(tensorWidth, tensorHeight, false)
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(resizedBitmap, ProfilingFrameType.Object)
 
-		val json_string = NativeLib.runYoloOperation(input)
+		return NativeLib.runYoloOperation(input.toList()).toTypedArray()
 
-		// Wenn string leer ist --> Keine Objekte erkannt!
+		/*// Wenn string leer ist --> Keine Objekte erkannt!
 		if (json_string == "null")
 			return emptyArray()
 
@@ -81,7 +82,7 @@ class YoloModel(var info: YoloModelInfo) {
 			bestBoxes.add(boundingBox)
 		}
 
-		return bestBoxes.toTypedArray()
+		return bestBoxes.toTypedArray()*/
 	}
 
 	fun createSerializedGpuDelegateCacheDirectory(context: Context): File {

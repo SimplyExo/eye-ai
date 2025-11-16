@@ -20,47 +20,68 @@ object NativeLib {
 		System.loadLibrary("NativeLib")
 	}
 
-	// Yolo
-	external fun initYoloRuntime(
-		model: ByteArray,
-		labels: Array<String>,
-		gpuDelegateSerializationDir: String,
-		modelToken: String,
-		enableNpu: Boolean,
-		skelDirectory: String
-	): Boolean
+	val logger = object : uniffi.NativeLib.LogCallbacks {
+		override fun logInfoCallback(msg: String) {
+			Log.i("eye-ai-core-rs", msg)
+		}
 
-	external fun runYoloOperation(input: FloatArray): String
+		override fun logWarningCallback(msg: String) {
+			Log.w("eye-ai-core-rs", msg)
+		}
+		override fun logErrorCallback(msg: String) {
+			Log.e("eye-ai-core-rs", msg)
+		}
+	}
 
-	external fun getYoloInputShape(): IntArray
-
-	external fun getYoloOutputShape(): IntArray
-
-	external fun newDepthFrame()
-	external fun formatDepthFrame(): String
-	external fun newCameraFrame()
-	external fun formatCameraFrame(): String
-	external fun newObjectFrame()
-	external fun formatObjectFrame(): String
-
-	external fun initMetricDepthModel(
+	// Depth (wrapper functions to provide the logging interface to rust)
+	fun initMetricDepthModel(
 		relativeDepthModel: ByteArray,
 		gpuDelegateSerializationDir: String,
 		relativeDepthModelToken: String,
 		enableNpu: Boolean,
 		skelDirectory: String
-	)
+	) {
+		return uniffi.NativeLib.initMetricDepthModel(
+			relativeDepthModel,
+			gpuDelegateSerializationDir,
+			relativeDepthModelToken,
+			enableNpu,
+			skelDirectory,
+			logger
+		)
+	}
 
-	external fun shutdownMetricDepthModel()
+	fun runMetricDepthModelInference(input: List<Float>): List<Float> {
+		return uniffi.NativeLib.runMetricDepthModelInference(input, logger)
+	}
 
-	external fun runMetricDepthModelInference(
-		input: FloatArray,
-		output: FloatArray
-	)
+	fun getMetricDepthModelInputShape(): List<Int> {
+		return uniffi.NativeLib.getMetricDepthModelInputShape(logger)
+	}
 
-	external fun getMetricDepthModelInputShape(): IntArray
+	fun getMetricDepthModelOutputShape(): List<Int> {
+		return uniffi.NativeLib.getMetricDepthModelOutputShape(logger)
+	}
 
-	external fun getMetricDepthModelOutputShape(): IntArray
+	// Yolo (wrapper functions to provide the logging interface to rust)
+	fun initYoloRuntime(
+		model: ByteArray,
+		labels: List<String>,
+		gpuDelegateSerializationDir: String,
+		modelToken: String,
+		enableNpu: Boolean,
+		skelDirectory: String
+	) {
+		return uniffi.NativeLib.initYoloRuntime(model, labels, gpuDelegateSerializationDir, modelToken, enableNpu, skelDirectory, logger)
+	}
+
+	fun runYoloOperation(input: List<Float>): List<uniffi.NativeLib.UniffiDetectedObject> {
+		return uniffi.NativeLib.runYoloOperation(input, logger)
+	}
+
+	fun getYoloInputShape(): List<Int> = uniffi.NativeLib.getYoloInputShape(logger)
+
+	fun getYoloOutputShape(): List<Int> = uniffi.NativeLib.getYoloOutputShape(logger)
 
 	external fun metricDepthColormap(depthValues: FloatArray, colormappedPixels: IntArray)
 

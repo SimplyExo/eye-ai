@@ -1,6 +1,6 @@
 use crate::{
-	FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT, FLOAT_TENSOR_BUFFER_YOLO_OUTPUT_FORMAT,
-	FloatTensorBuffer,
+	FLOAT_TENSOR_BUFFER_IMAGE_RGB_255_FORMAT, FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT,
+	FLOAT_TENSOR_BUFFER_YOLO_OUTPUT_FORMAT, FloatTensorBuffer, ProfilingFrame,
 	audio::Vec2,
 	tflite::{
 		CreateTfLiteRuntimeInfo, NpuConfig, NpuConfigType, TfLiteRunInferenceError, TfLiteRuntime,
@@ -9,30 +9,32 @@ use crate::{
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::path::PathBuf;
+use std::sync::Arc;
 
-pub struct YoloModelNpuConfig<'a> {
+pub struct YoloModelNpuConfig {
 	pub tflite_qnn_npu_delegate_lib_filepath: PathBuf,
-	pub skel_library_dir: &'a std::ffi::CStr,
+	pub skel_library_dir: std::ffi::CString,
 }
 
-pub struct CreateYoloModelInfo<'a> {
+pub struct CreateYoloModelInfo {
 	pub labels: Vec<String>,
 	pub tflite_lib_filepath: PathBuf,
 	/// if None, we try to load gpu delegate api from the tflite_lib_filepath library
 	pub tflite_gpu_delegate_lib_filepath: Option<PathBuf>,
 	pub model_data: Vec<u8>,
-	pub gpu_delegate_serialization_dir: &'a std::ffi::CStr,
-	pub model_token: &'a std::ffi::CStr,
-	pub log_warning_callback: fn(msg: &str),
+	pub gpu_delegate_serialization_dir: std::ffi::CString,
+	pub model_token: std::ffi::CString,
+	pub log_warning_callback: Arc<dyn Fn(&str) + Send + Sync>,
 	pub log_error_callback: fn(msg: *const std::os::raw::c_char),
-	pub npu_config: Option<YoloModelNpuConfig<'a>>,
+	pub npu_config: Option<YoloModelNpuConfig>,
 }
 
-pub struct YoloModel {
-	runtime: TfLiteRuntime,
+pub struct YoloModel<'a> {
+	runtime: TfLiteRuntime<'a>,
 	labels: Vec<String>,
 	num_elements: usize,
 	num_channel: usize,
+	profiling_frame: &'a ProfilingFrame,
 }
 
 #[derive(Debug, Clone)]
@@ -114,11 +116,14 @@ impl From<DetectedObject> for bytetrack_cpp_rs::Object {
 	}
 }
 
-impl YoloModel {
+impl<'a> YoloModel<'a> {
 	const CONFIDENCE_THRESHOLD: f32 = 0.5;
 	const IOU_THRESHOLD: f32 = 0.5;
 
-	pub fn new(create_info: CreateYoloModelInfo) -> Result<Self, TfLiteRuntimeCreateError> {
+	pub fn new(
+		create_info: CreateYoloModelInfo,
+		profiling_frame: &'a ProfilingFrame,
+	) -> Result<Self, TfLiteRuntimeCreateError> {
 		let runtime_create_info = CreateTfLiteRuntimeInfo {
 			tflite_lib_filepath: create_info.tflite_lib_filepath,
 			tflite_gpu_delegate_lib_filepath: create_info.tflite_gpu_delegate_lib_filepath,
@@ -137,7 +142,7 @@ impl YoloModel {
 			}),
 		};
 
-		let runtime = TfLiteRuntime::new(runtime_create_info)?;
+		let runtime = TfLiteRuntime::new(runtime_create_info, profiling_frame)?;
 
 		let output_shape =
 			runtime
@@ -154,11 +159,22 @@ impl YoloModel {
 			labels: create_info.labels,
 			num_channel,
 			num_elements,
+			profiling_frame,
 		})
 	}
 
-	#[profile_function]
+	#[profile_function("self.profiling_frame")]
 	pub fn run(
+		&mut self,
+		input_tensor: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_IMAGE_RGB_255_FORMAT>,
+	) -> Result<Vec<DetectedObject>, TfLiteRunInferenceError> {
+		let processed_input_tensor = yolo_image_operator(input_tensor, self.profiling_frame);
+
+		self.run_no_preprocessing(processed_input_tensor)
+	}
+
+	#[profile_function("self.profiling_frame")]
+	pub fn run_no_preprocessing(
 		&mut self,
 		input_tensor: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT>,
 	) -> Result<Vec<DetectedObject>, TfLiteRunInferenceError> {
@@ -172,11 +188,31 @@ impl YoloModel {
 			self.num_channel,
 			Self::CONFIDENCE_THRESHOLD,
 			Self::IOU_THRESHOLD,
+			self.profiling_frame,
 		))
+	}
+
+	pub fn get_input_shape(&self) -> Option<Vec<i32>> {
+		self.runtime.get_input_shape()
+	}
+
+	pub fn get_output_shape(&self) -> Option<Vec<i32>> {
+		self.runtime.get_output_shape()
 	}
 }
 
-#[profile_function]
+#[profile_function("profiling_frame")]
+fn yolo_image_operator<'a>(
+	mut image: FloatTensorBuffer<'a, FLOAT_TENSOR_BUFFER_IMAGE_RGB_255_FORMAT>,
+	profiling_frame: &ProfilingFrame,
+) -> FloatTensorBuffer<'a, FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT> {
+	for value in image.data_mut() {
+		*value /= 255.0;
+	}
+	image.convert_format()
+}
+
+#[profile_function("profiling_frame")]
 fn best_objects(
 	array: &[f32],
 	labels: &[String],
@@ -184,6 +220,7 @@ fn best_objects(
 	num_channel: usize,
 	confidence_threshold: f32,
 	iou_threshold: f32,
+	profiling_frame: &ProfilingFrame,
 ) -> Vec<DetectedObject> {
 	let mut objects = Vec::new();
 	let actual_size = num_elements * num_channel;
@@ -205,7 +242,7 @@ fn best_objects(
 		}
 	}
 
-	apply_nms(&objects, iou_threshold)
+	apply_nms(&objects, iou_threshold, profiling_frame)
 }
 
 fn parse_object(
@@ -261,8 +298,12 @@ fn parse_object(
 	})
 }
 
-#[profile_function]
-fn apply_nms(objects: &[DetectedObject], iou_threshold: f32) -> Vec<DetectedObject> {
+#[profile_function("profiling_frame")]
+fn apply_nms(
+	objects: &[DetectedObject],
+	iou_threshold: f32,
+	profiling_frame: &ProfilingFrame,
+) -> Vec<DetectedObject> {
 	if objects.is_empty() {
 		return Vec::new();
 	}

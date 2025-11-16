@@ -25,6 +25,5 @@ pub use yolo_model::{
 mod object_tracker;
 pub use object_tracker::{ObjectTracker, TrackedObject};
 
-pub fn greet() -> String {
-	"Hello from eye-ai-core-rs! Getting called by eye-ai-core-rs-native-lib".to_string()
-}
+mod profiling;
+pub use profiling::ProfilingFrame;

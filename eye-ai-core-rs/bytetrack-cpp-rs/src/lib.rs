@@ -14,6 +14,8 @@ pub type STrack = byte_track_STrack;
 pub struct BYTETracker {
 	tracker: *mut c_void,
 }
+unsafe impl Send for BYTETracker {}
+unsafe impl Sync for BYTETracker {}
 impl BYTETracker {
 	pub const DEFAULT_MAX_TRACKING_TIME_SECONDS: f32 = 10.0;
 	pub const DEFAULT_EXPECTED_FPS: f32 = 10.0;

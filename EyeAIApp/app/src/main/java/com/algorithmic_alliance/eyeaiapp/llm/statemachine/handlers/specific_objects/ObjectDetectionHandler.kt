@@ -4,7 +4,6 @@ import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.AIModelData
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects.TranslateEnglishToGerman
 
 class ObjectDetectionHandler() {
 	companion object {
@@ -22,7 +21,7 @@ class ObjectDetectionHandler() {
 
 
 		fun getGermanObjectLabelsForLLM(): List<String> {
-			val objectDetectionBoxes = AIModelData.objectDetectionBoxes.get()
+			val objectDetectionBoxes = AIModelData.detectedObjects.get()
 
 			if (objectDetectionBoxes.isNullOrEmpty()) {
 				return emptyList()
@@ -47,7 +46,7 @@ class ObjectDetectionHandler() {
 				return ObjectDetectionResult.NoQueryProvided
 			}
 
-			val objectDetectionBoxes = AIModelData.objectDetectionBoxes.get()
+			val objectDetectionBoxes = AIModelData.detectedObjects.get()
 			val depthEstimationData = AIModelData.depthEstimationData.get()
 
 			Log.d(EyeAIApp.Companion.APP_LOG_TAG, "Object detection boxes: ${objectDetectionBoxes?.size}")

@@ -2,7 +2,7 @@ use bytetrack_cpp_rs::BYTETracker;
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::{collections::HashMap, time::Instant};
 
-use crate::{BoundingBox, DetectedObject};
+use crate::{BoundingBox, DetectedObject, ProfilingFrame};
 
 #[derive(Debug, Clone)]
 pub struct TrackedObject {
@@ -18,28 +18,30 @@ impl TrackedObject {
 	}
 }
 
-pub struct ObjectTracker {
+pub struct ObjectTracker<'a> {
 	labels: Vec<String>,
 	tracker: BYTETracker,
 	last_update: Instant,
 	/// sums up all the confidence of a tracked object
 	tracked_object_valid_score: HashMap<i32, f32>,
+	profiling_frame: &'a ProfilingFrame,
 }
-impl ObjectTracker {
+impl<'a> ObjectTracker<'a> {
 	/// For how many seconds a 100% confident prediction needs to be tracked in
 	/// order to be considered valid
 	pub const MIN_WAITING_PREDICTION_TIME_BEFORE_VALID: f32 = 0.5;
 
-	pub fn new(labels: Vec<String>) -> Self {
+	pub fn new(labels: Vec<String>, profiling_frame: &'a ProfilingFrame) -> Self {
 		Self {
 			labels,
 			tracker: BYTETracker::default(),
 			last_update: Instant::now(),
 			tracked_object_valid_score: HashMap::new(),
+			profiling_frame,
 		}
 	}
 
-	#[profile_function]
+	#[profile_function("self.profiling_frame")]
 	pub fn update(&mut self, detected_objects: Vec<DetectedObject>) -> Vec<TrackedObject> {
 		let now = Instant::now();
 		let update_duration = now - self.last_update;

@@ -16,7 +16,7 @@ use thiserror::Error;
 use tracing_tracy::client::secondary_frame_mark;
 
 use crate::{
-	DetectedObject,
+	DetectedObject, ProfilingFrame,
 	audio::{
 		CalculateSoundOrigin, DepthAudioSourceData, IVec2, ObjectAudioSourceData,
 		SpatialAudioSettings, Vec3, read_audio_file,
@@ -35,9 +35,10 @@ struct ObjectLabelData {
 	sample_begin: usize,
 	sample_end: usize,
 }
-#[profile_function]
+#[profile_function("profiling_frame")]
 fn read_object_label_data(
 	json_content: &str,
+	profiling_frame: &ProfilingFrame,
 ) -> Result<HashMap<String, ObjectLabelData>, json::Error> {
 	let json = json::parse(json_content)?;
 	let JsonValue::Array(json_array) = json else {
@@ -77,6 +78,7 @@ pub struct SpatialAudio {
 	processing_finished: bool,
 	audio_settings: Arc<RwLock<SpatialAudioSettings>>,
 	object_label_data: HashMap<String, ObjectLabelData>,
+	profiling_frame: Arc<ProfilingFrame>,
 }
 impl Drop for SpatialAudio {
 	fn drop(&mut self) {
@@ -85,15 +87,22 @@ impl Drop for SpatialAudio {
 	}
 }
 impl SpatialAudio {
-	#[profile_function]
+	#[profile_function("profiling_frame")]
 	pub fn new(
 		audio_settings: Arc<RwLock<SpatialAudioSettings>>,
+		profiling_frame: Arc<ProfilingFrame>,
 	) -> Result<Self, SpatialAudioError> {
+		let profiling_frame_clone1 = profiling_frame.clone();
+		let profiling_frame_clone2 = profiling_frame.clone();
+		let profiling_frame_clone3 = profiling_frame.clone();
+
 		let audio_settings_clone1 = audio_settings.clone();
 		let audio_settings_clone2 = audio_settings.clone();
 
-		let object_label_data =
-			read_object_label_data(&audio_settings.read().unwrap().coco_labels_json_content)?;
+		let object_label_data = read_object_label_data(
+			&audio_settings.read().unwrap().coco_labels_json_content,
+			&profiling_frame,
+		)?;
 
 		let depth_audio_running = Arc::new(AtomicBool::new(true));
 		let depth_audio_running_clone = depth_audio_running.clone();
@@ -136,6 +145,7 @@ impl SpatialAudio {
 						context_clone1,
 						depth_audio_sources_data_clone,
 						audio_settings_clone1,
+						&profiling_frame_clone2,
 					)
 				})
 				.expect("failed to spawn depth audio thread"),
@@ -149,6 +159,7 @@ impl SpatialAudio {
 						audio_settings_clone2,
 						context_clone2,
 						object_audio_sources_data_clone,
+						&profiling_frame_clone3,
 					)
 				})
 				.expect("failed to spawn object audio thread"),
@@ -156,10 +167,11 @@ impl SpatialAudio {
 			processing_finished: false,
 			audio_settings,
 			object_label_data,
+			profiling_frame: profiling_frame_clone1,
 		})
 	}
 
-	#[profile_function]
+	#[profile_function("self.profiling_frame")]
 	pub fn update(
 		&mut self,
 		depth_estimation_data: &[f32; 256 * 256],
@@ -168,8 +180,11 @@ impl SpatialAudio {
 		self.processing_finished = false;
 		let audio_settings = self.audio_settings.read().unwrap();
 		if !audio_settings.depth_audio_paused {
-			*self.depth_audio_sources_data.write().unwrap() =
-				process_depth_estimation_data(depth_estimation_data, &audio_settings);
+			*self.depth_audio_sources_data.write().unwrap() = process_depth_estimation_data(
+				depth_estimation_data,
+				&audio_settings,
+				&self.profiling_frame,
+			);
 		}
 		if !audio_settings.object_audio_paused {
 			let new_audio_sources_data = process_object_detection_data(
@@ -177,6 +192,7 @@ impl SpatialAudio {
 				object_detection_data,
 				&self.object_label_data,
 				&audio_settings,
+				&self.profiling_frame,
 			);
 			let mut object_audio_sources_data = self.object_audio_sources_data.write().unwrap();
 			for new_source_data in new_audio_sources_data {
@@ -201,12 +217,13 @@ impl SpatialAudio {
 	}
 }
 
-#[profile_function]
+#[profile_function("profiling_frame")]
 fn depth_audio_thread(
 	running: Arc<AtomicBool>,
 	context: Arc<Context>,
 	depth_audio_sources_data: Arc<RwLock<Vec<DepthAudioSourceData>>>,
 	settings: Arc<RwLock<SpatialAudioSettings>>,
+	profiling_frame: &ProfilingFrame,
 ) {
 	let mut sources = (0..SpatialAudioSettings::NUMBER_OF_SOURCES)
 		.map(|_| context.new_streaming_source().unwrap())
@@ -230,6 +247,7 @@ fn depth_audio_thread(
 		settings.read().unwrap().buffer_duration,
 		SpatialAudioSettings::SAMPLE_RATE,
 		Vec3::default(),
+		profiling_frame,
 	);
 
 	{
@@ -296,12 +314,13 @@ fn depth_audio_thread(
 	}
 }
 
-#[profile_function]
+#[profile_function("profiling_frame")]
 fn object_audio_thread(
 	running: Arc<AtomicBool>,
 	settings: Arc<RwLock<SpatialAudioSettings>>,
 	context: Arc<Context>,
 	object_audio_sources_data: Arc<RwLock<VecDeque<ObjectAudioSourceData>>>,
+	profiling_frame: &ProfilingFrame,
 ) {
 	let audio_file_content = settings
 		.read()
@@ -310,8 +329,8 @@ fn object_audio_thread(
 		.clone()
 		.into_boxed_slice();
 
-	let audio_file_data =
-		read_audio_file(audio_file_content).expect("failed to load coco labels audio file");
+	let audio_file_data = read_audio_file(audio_file_content, profiling_frame)
+		.expect("failed to load coco labels audio file");
 
 	let coco_audio_samples: Vec<i16> = audio_file_data.samples;
 	let info_callback = settings.read().unwrap().log_info_callback;
@@ -369,17 +388,18 @@ fn object_audio_thread(
 	}
 }
 
-#[profile_function]
+#[profile_function("profiling_frame")]
 fn process_depth_estimation_data(
 	depth_estimation_data: &[f32; 256 * 256],
 	settings: &SpatialAudioSettings,
+	profiling_frame: &ProfilingFrame,
 ) -> Vec<DepthAudioSourceData> {
 	let step_size = (SpatialAudioSettings::PICTURE_RESOLUTION.x as f32
 		/ (SpatialAudioSettings::NUMBER_OF_SOURCES as f32 - 1.0)) as usize;
 	let mut audio_source_data = Vec::with_capacity(
 		(SpatialAudioSettings::PICTURE_RESOLUTION.x as f32 / step_size as f32) as usize,
 	);
-	let mut calculate_sound_origin = CalculateSoundOrigin::default();
+	let mut calculate_sound_origin = CalculateSoundOrigin::new(profiling_frame);
 
 	let mut i: i32 = 0;
 	while i < SpatialAudioSettings::PICTURE_RESOLUTION.x {
@@ -398,6 +418,7 @@ fn process_depth_estimation_data(
 			settings.buffer_duration,
 			SpatialAudioSettings::SAMPLE_RATE,
 			sound_origin,
+			profiling_frame,
 		));
 
 		// TODO: Why was that here? see old c++ code!
@@ -411,12 +432,13 @@ fn process_depth_estimation_data(
 	audio_source_data
 }
 
-#[profile_function]
+#[profile_function("profiling_frame")]
 fn process_object_detection_data(
 	depth_estimation_data: &[f32; 256 * 256],
 	object_detection_data: &[DetectedObject],
 	object_label_data: &HashMap<String, ObjectLabelData>,
 	settings: &SpatialAudioSettings,
+	profiling_frame: &ProfilingFrame,
 ) -> VecDeque<ObjectAudioSourceData> {
 	let mut audio_source_data = VecDeque::new();
 
@@ -448,7 +470,7 @@ fn process_object_detection_data(
 
 		let distance = depth_estimation_data
 			[(coord.x + (coord.y * SpatialAudioSettings::PICTURE_RESOLUTION.x)) as usize];
-		let mut calculate_sound_origin = CalculateSoundOrigin::default();
+		let mut calculate_sound_origin = CalculateSoundOrigin::new(profiling_frame);
 		let sound_origin = calculate_sound_origin.calculate_sound_origin(coord, distance);
 
 		audio_source_data.push_back(ObjectAudioSourceData {

@@ -1,9 +1,11 @@
 use eye_ai_core_rs::{
-	CreateYoloModelInfo, FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT, FloatTensorBuffer, YoloModel,
+	CreateYoloModelInfo, FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT, FloatTensorBuffer,
+	ProfilingFrame, YoloModel,
 };
 use std::{
 	ffi::{CStr, CString},
 	path::PathBuf,
+	sync::Arc,
 };
 
 #[test]
@@ -40,9 +42,9 @@ fn run_yolo_model() {
 		model_data: std::fs::read("../EyeAIApp/app/src/main/assets/model.tflite")
 			.expect("failed to load yolo model.tflite file"),
 		labels,
-		gpu_delegate_serialization_dir: tmp_dir_str.as_c_str(),
-		model_token: model_token.as_c_str(),
-		log_warning_callback: |message| println!("[WARN] {}", message),
+		gpu_delegate_serialization_dir: tmp_dir_str,
+		model_token,
+		log_warning_callback: Arc::new(|message| println!("[WARN] {}", message)),
 		log_error_callback: |message| unsafe {
 			match CStr::from_ptr(message).to_str() {
 				Ok(msg) => println!("[ERROR] {}", msg),
@@ -54,11 +56,13 @@ fn run_yolo_model() {
 		npu_config: None,
 	};
 
-	let mut yolo_model =
-		YoloModel::new(yolo_model_create_info).expect("failed to create interpreter");
+	let object_profiling_frame = ProfilingFrame::new("Object");
+
+	let mut yolo_model = YoloModel::new(yolo_model_create_info, &object_profiling_frame)
+		.expect("failed to create interpreter");
 
 	let detected_objects = yolo_model
-		.run(input)
+		.run_no_preprocessing(input)
 		.expect("failed to run inference on yolo model");
 
 	assert_eq!(detected_objects.len(), 1);

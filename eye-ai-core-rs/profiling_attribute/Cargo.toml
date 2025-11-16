@@ -7,9 +7,9 @@ edition = "2024"
 proc-macro = true
 
 [dependencies]
-syn = { version = "2.0", features = ["full"] }
-quote = "1.0"
 proc-macro2 = { version = "1.0.76", features = ["span-locations"] }
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }
 
 [features]
-enable = []
+enable_tracy = []

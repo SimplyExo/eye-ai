@@ -1,4 +1,4 @@
-use crate::audio::Vec3;
+use crate::{ProfilingFrame, audio::Vec3};
 use alto::Mono;
 use eye_ai_core_rs_profiling_attribute::profile_function;
 
@@ -11,19 +11,30 @@ pub struct DepthAudioSourceData {
 }
 
 impl DepthAudioSourceData {
-	pub fn new(frequency: f32, duration: f32, sample_rate: usize, position: Vec3) -> Self {
+	pub fn new(
+		frequency: f32,
+		duration: f32,
+		sample_rate: usize,
+		position: Vec3,
+		profiling_frame: &ProfilingFrame,
+	) -> Self {
 		Self {
 			frequency,
 			duration,
 			sample_rate,
 			position,
-			samples: create_audio_data(frequency, duration, sample_rate),
+			samples: create_audio_data(frequency, duration, sample_rate, profiling_frame),
 		}
 	}
 }
 
-#[profile_function]
-fn create_audio_data(base_frequency: f32, duration: f32, sample_rate: usize) -> Vec<Mono<i16>> {
+#[profile_function("profiling_frame")]
+fn create_audio_data(
+	base_frequency: f32,
+	duration: f32,
+	sample_rate: usize,
+	profiling_frame: &ProfilingFrame,
+) -> Vec<Mono<i16>> {
 	const TWO_PI: f32 = std::f32::consts::PI * 2.0;
 
 	let num_samples = number_of_samples(sample_rate, duration);

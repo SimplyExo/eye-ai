@@ -1,5 +1,5 @@
 use eye_ai_core_rs::{
-	BoundingBox, DetectedObject,
+	BoundingBox, DetectedObject, ProfilingFrame,
 	audio::{SpatialAudio, SpatialAudioSettings, Vec2},
 };
 use std::{
@@ -8,6 +8,8 @@ use std::{
 };
 
 fn main() {
+	let audio_profiling_frame = Arc::new(ProfilingFrame::new("Audio"));
+
 	let coco_labels_json_content =
 		std::fs::read_to_string("../EyeAIApp/app/src/main/assets/coco_labels_data_english.json")
 			.unwrap();
@@ -22,8 +24,11 @@ fn main() {
 		log_info_callback,
 		log_error_callback,
 	);
-	let mut spatial_audio =
-		SpatialAudio::new(Arc::new(RwLock::new(spatial_audio_settings))).unwrap();
+	let mut spatial_audio = SpatialAudio::new(
+		Arc::new(RwLock::new(spatial_audio_settings)),
+		audio_profiling_frame,
+	)
+	.unwrap();
 
 	let mut depth_estimation_data = [0.0; 256 * 256];
 

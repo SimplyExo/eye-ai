@@ -46,7 +46,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.flow.MutableSharedFlow
-import uniffi.NativeLib.stringFromJni
 
 
 class MainActivity : AppCompatActivity() {
@@ -258,8 +257,6 @@ class MainActivity : AppCompatActivity() {
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onResume() {
 		super.onResume()
-
-		Log.i("eye-ai-core-rs", "stringFromJni(): ${stringFromJni()}")
 
 		eyeAIApp().updateSettings()
 

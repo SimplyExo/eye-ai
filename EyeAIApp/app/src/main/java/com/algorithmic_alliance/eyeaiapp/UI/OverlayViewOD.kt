@@ -10,11 +10,11 @@ import android.util.Size
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.object_detection.BoundingBox
+import uniffi.NativeLib.UniffiDetectedObject
 
 class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
-	private var results = arrayOf<BoundingBox>()
+	private var results = arrayOf<UniffiDetectedObject>()
 	private var cameraResolution = Size(720, 1280)
 	private var boxPaint = Paint()
 	private var textBackgroundPaint = Paint()
@@ -105,7 +105,7 @@ class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, att
 		}
 	}
 
-	fun setResults(boundingBoxes: Array<BoundingBox>) {
+	fun setResults(boundingBoxes: Array<UniffiDetectedObject>) {
 		val changed = !results.contentEquals(boundingBoxes)
 		results = boundingBoxes
 		if (changed)

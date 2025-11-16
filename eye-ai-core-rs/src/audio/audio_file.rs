@@ -5,13 +5,18 @@ use symphonia::core::{
 	io::MediaSourceStream, meta::MetadataOptions, probe::Hint,
 };
 
+use crate::ProfilingFrame;
+
 pub struct AudioFileData {
 	pub samples: Vec<i16>,
 	pub sample_rate: u32,
 }
 
-#[profile_function]
-pub fn read_audio_file(audio_file_content: Box<[u8]>) -> Result<AudioFileData, Error> {
+#[profile_function("profiling_frame")]
+pub fn read_audio_file(
+	audio_file_content: Box<[u8]>,
+	profiling_frame: &ProfilingFrame,
+) -> Result<AudioFileData, Error> {
 	let mss = MediaSourceStream::new(
 		Box::new(Cursor::new(audio_file_content)),
 		Default::default(),

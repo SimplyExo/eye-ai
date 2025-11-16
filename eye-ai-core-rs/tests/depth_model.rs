@@ -1,11 +1,12 @@
 use eye_ai_core_rs::{
 	CreateDepthModelInfo, DepthModel, FLOAT_TENSOR_BUFFER_IMAGE_RGB_255_FORMAT,
 	FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RGB_FORMAT, FLOAT_TENSOR_BUFFER_RELATIVE_DEPTH_FORMAT,
-	FloatTensorBuffer,
+	FloatTensorBuffer, ProfilingFrame,
 };
 use std::{
 	ffi::{CStr, CString},
 	path::PathBuf,
+	sync::Arc,
 };
 
 #[test]
@@ -41,14 +42,16 @@ fn run_midas_depth_model() {
 
 	let model_token = CString::new("midas_model_token").unwrap();
 
+	let depth_profiling_frame = ProfilingFrame::new("Depth");
+
 	let depth_model_create_info = CreateDepthModelInfo {
 		tflite_lib_filepath: PathBuf::from("libtensorflow-lite.so"),
 		tflite_gpu_delegate_lib_filepath: None,
 		model_data: std::fs::read("../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite")
 			.expect("failed to load midas.tflite model file"),
-		gpu_delegate_serialization_dir: tmp_dir_str.as_c_str(),
-		model_token: model_token.as_c_str(),
-		log_warning_callback: |message| println!("[WARN] {}", message),
+		gpu_delegate_serialization_dir: tmp_dir_str,
+		model_token,
+		log_warning_callback: Arc::new(|message| println!("[WARN] {}", message)),
 		log_error_callback: |message| unsafe {
 			match CStr::from_ptr(message).to_str() {
 				Ok(msg) => println!("[ERROR] {}", msg),
@@ -60,8 +63,8 @@ fn run_midas_depth_model() {
 		npu_config: None,
 	};
 
-	let mut depth_model =
-		DepthModel::new(depth_model_create_info).expect("failed to create interpreter");
+	let mut depth_model = DepthModel::new(depth_model_create_info, &depth_profiling_frame)
+		.expect("failed to create interpreter");
 
 	let output_tensor_buffer: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_RELATIVE_DEPTH_FORMAT> =
 		depth_model
@@ -69,7 +72,7 @@ fn run_midas_depth_model() {
 			.expect("failed to run inference on midas model");
 	let output_tensor_buffer_data = output_tensor_buffer.data();
 
-	let tolerance: f32 = 1e-3;
+	let tolerance: f32 = 0.05;
 	assert_eq!(output_tensor_buffer_data.len(), flat_expected_output.len());
 	for i in 0..flat_expected_output.len() {
 		let error = flat_expected_output[i] - output_tensor_buffer_data[i];

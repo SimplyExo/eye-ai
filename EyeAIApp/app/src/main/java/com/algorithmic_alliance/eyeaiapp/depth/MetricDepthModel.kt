@@ -10,6 +10,11 @@ import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.ProfilingFrameType
 import com.algorithmic_alliance.eyeaiapp.getLastAppUpdateTime
+import uniffi.NativeLib.getMetricDepthModelInputShape
+import uniffi.NativeLib.getMetricDepthModelOutputShape
+import uniffi.NativeLib.initMetricDepthModel
+import uniffi.NativeLib.runMetricDepthModelInference
+import uniffi.NativeLib.shutdownMetricDepthModel
 
 /** All needed information to create and use a depth model */
 class MetricDepthModelInfo(
@@ -89,7 +94,7 @@ class MetricDepthModel(
 			Size(256, 256)
 		}
 
-		val outputShape = NativeLib.getMetricDepthModelOutputShape()
+		val outputShape = NativeLib.getMetricDepthModelOutputShape().toIntArray()
 		val expectedOutputShape = intArrayOf(1, inputDim.height, inputDim.width, 1)
 		if (!outputShape.contentEquals(expectedOutputShape)) {
 			Log.e(
@@ -100,7 +105,7 @@ class MetricDepthModel(
 	}
 
 	override fun close() {
-		NativeLib.shutdownMetricDepthModel()
+		/*NativeLib.*/shutdownMetricDepthModel()
 	}
 
 	/**
@@ -110,12 +115,12 @@ class MetricDepthModel(
 	fun predictDepth(input: Bitmap): FloatArray {
 		val scaled = input.scale(inputDim.width, inputDim.height)
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled, ProfilingFrameType.Depth)
-		val output = FloatArray(inputDim.width * inputDim.height)
+		val output = /*FloatArray(inputDim.width * inputDim.height)*/
 
 		NativeLib.runMetricDepthModelInference(
-			input,
-			output,
-		)
+			input.toList(),
+			//output,
+		).toFloatArray()
 
 		return output
 	}

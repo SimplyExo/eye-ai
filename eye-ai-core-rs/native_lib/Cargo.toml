@@ -7,8 +7,9 @@ edition = "2024"
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
-uniffi = { workspace = true }
 eye-ai-core-rs = { path = "../" }
+eye-ai-core-rs-profiling_attribute = { path = "../profiling_attribute" }
+uniffi = { workspace = true }
 
 [features]
 ffi-trace = ["uniffi/ffi-trace"]

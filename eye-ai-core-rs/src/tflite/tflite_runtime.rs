@@ -1,7 +1,7 @@
-use crate::{FloatTensorBuffer, TensorFormat, get_tensor_format_name};
+use crate::{FloatTensorBuffer, ProfilingFrame, TensorFormat, get_tensor_format_name};
 use eye_ai_core_rs_profiling_attribute::profile_function;
+use semver::VersionReq;
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::sync::Arc;
 use tflite_dyn::{
 	Delegate, Interpreter, Model, TfLite,
@@ -72,63 +72,63 @@ pub enum NpuConfigType {
 	Yolo,
 }
 
-pub struct NpuConfig<'a> {
+pub struct NpuConfig {
 	pub config_type: NpuConfigType,
 	pub tflite_qnn_npu_delegate_lib_filepath: PathBuf,
-	pub skel_library_dir: &'a std::ffi::CStr,
+	pub skel_library_dir: std::ffi::CString,
 }
 
-pub struct CreateTfLiteRuntimeInfo<'a> {
+pub struct CreateTfLiteRuntimeInfo {
 	pub tflite_lib_filepath: PathBuf,
 	/// if None, we try to load gpu delegate api from the tflite_lib_filepath library
 	pub tflite_gpu_delegate_lib_filepath: Option<PathBuf>,
 	pub model_data: Vec<u8>,
-	pub gpu_delegate_serialization_dir: &'a std::ffi::CStr,
-	pub model_token: &'a std::ffi::CStr,
+	pub gpu_delegate_serialization_dir: std::ffi::CString,
+	pub model_token: std::ffi::CString,
 	pub model_input_format: TensorFormat,
 	pub model_output_format: TensorFormat,
-	pub log_warning_callback: fn(msg: &str),
+	pub log_warning_callback: Arc<dyn Fn(&str) + Send + Sync>,
 	pub log_error_callback: fn(msg: *const std::os::raw::c_char),
-	pub npu_config: Option<NpuConfig<'a>>,
+	pub npu_config: Option<NpuConfig>,
 }
 
 struct CreateTfLiteInterpreterResult {
 	interpreter: Interpreter,
-	gpu_delegate: Option<Rc<Delegate>>,
-	npu_delegate_and_api: Option<(Rc<Delegate>, Arc<QnnDelegateVt>)>,
+	gpu_delegate: Option<Arc<Delegate>>,
+	npu_delegate_and_api: Option<(Arc<Delegate>, Arc<QnnDelegateVt>)>,
 }
 
-pub struct TfLiteRuntime {
-	#[allow(unused)]
-	_libabsl_log_internal_nullguard: GlobalLibrary,
-	#[allow(unused)]
+#[allow(unused)]
+pub struct TfLiteRuntime<'a> {
+	_libabsl_log_internal_nullguard: Result<GlobalLibrary, libloading::Error>,
 	tflite_api: Arc<TfLite>,
-	#[allow(unused)]
 	tflite_gpu_delegate_api: Arc<GpuDelegateAPI>,
 	model_input_format: TensorFormat,
 	model_output_format: TensorFormat,
-	#[allow(unused)]
-	model: Rc<Model>,
+	model: Arc<Model>,
 	interpreter: Interpreter,
-	#[allow(unused)]
-	gpu_delegate: Option<Rc<Delegate>>,
-	#[allow(unused)]
-	npu_delegate_and_api: Option<(Rc<Delegate>, Arc<QnnDelegateVt>)>,
-	#[allow(unused)]
-	log_warning_callback: fn(msg: &str),
-	#[allow(unused)]
-	log_error_callback: fn(msg: *const std::os::raw::c_char),
+	gpu_delegate: Option<Arc<Delegate>>,
+	npu_delegate_and_api: Option<(Arc<Delegate>, Arc<QnnDelegateVt>)>,
+	log_warning_callback: Arc<dyn Fn(&str) + Send + Sync>,
+	gpu_delegate_serialization_dir: std::ffi::CString,
+	model_token: std::ffi::CString,
+	skel_library_dir: Option<std::ffi::CString>,
+	profiling_frame: &'a ProfilingFrame,
 }
-impl TfLiteRuntime {
-	pub fn new<'a>(
-		create_info: CreateTfLiteRuntimeInfo<'a>,
+impl<'a> TfLiteRuntime<'a> {
+	pub fn new(
+		create_info: CreateTfLiteRuntimeInfo,
+		profiling_frame: &'a ProfilingFrame,
 	) -> Result<Self, TfLiteRuntimeCreateError> {
 		let _libabsl_log_internal_nullguard =
-			unsafe { load_library_global("libabsl_log_internal_nullguard.so").unwrap() };
+			unsafe { load_library_global("libabsl_log_internal_nullguard.so") };
 
 		let tflite_api = Arc::new(
-			TfLite::load(create_info.tflite_lib_filepath)
-				.map_err(TfLiteRuntimeCreateError::TfLiteDyn)?,
+			TfLite::load(
+				create_info.tflite_lib_filepath,
+				VersionReq::parse("2.20.0-dev0").unwrap(),
+			)
+			.map_err(TfLiteRuntimeCreateError::TfLiteDyn)?,
 		);
 		let tflite_gpu_delegate_api =
 			Arc::new(match &create_info.tflite_gpu_delegate_lib_filepath {
@@ -152,7 +152,7 @@ impl TfLiteRuntime {
 			None => None,
 		};
 
-		let model = Rc::new(tflite_api.model_create(create_info.model_data)?);
+		let model = Arc::new(tflite_api.model_create(create_info.model_data)?);
 
 		let CreateTfLiteInterpreterResult {
 			mut interpreter,
@@ -162,11 +162,14 @@ impl TfLiteRuntime {
 			&tflite_api,
 			&tflite_gpu_delegate_api,
 			model.clone(),
-			create_info.gpu_delegate_serialization_dir,
-			create_info.model_token,
-			npu_config,
-			create_info.log_warning_callback,
+			&create_info.gpu_delegate_serialization_dir,
+			&create_info.model_token,
+			npu_config
+				.as_ref()
+				.map(|(npu_config, qnn_delegate)| (npu_config, qnn_delegate.clone())),
+			&*create_info.log_warning_callback,
 			create_info.log_error_callback as *mut std::os::raw::c_void,
+			profiling_frame,
 		)?;
 
 		interpreter.allocate_tensors()?;
@@ -182,7 +185,10 @@ impl TfLiteRuntime {
 			gpu_delegate,
 			npu_delegate_and_api,
 			log_warning_callback: create_info.log_warning_callback,
-			log_error_callback: create_info.log_error_callback,
+			gpu_delegate_serialization_dir: create_info.gpu_delegate_serialization_dir,
+			model_token: create_info.model_token,
+			skel_library_dir: npu_config.map(|(npu_config, _)| npu_config.skel_library_dir),
+			profiling_frame,
 		})
 	}
 
@@ -208,7 +214,7 @@ impl TfLiteRuntime {
 		Some(output_shape)
 	}
 
-	#[profile_function]
+	#[profile_function("self.profiling_frame")]
 	pub fn run_inference(
 		&mut self,
 		input: &[f32],
@@ -230,7 +236,7 @@ impl TfLiteRuntime {
 				model_expected: input_tensor_data.len(),
 			});
 		}
-		copy_f32_to_tensor(input, input_tensor_data);
+		copy_f32_to_tensor(input, input_tensor_data, self.profiling_frame);
 
 		self.interpreter.invoke()?;
 
@@ -251,12 +257,12 @@ impl TfLiteRuntime {
 			return Err(TfLiteRunInferenceError::NonFloat32OutputTensor);
 		}
 
-		copy_f32_from_tensor(output_tensor_data, output);
+		copy_f32_from_tensor(output_tensor_data, output, self.profiling_frame);
 
 		Ok(())
 	}
 
-	#[profile_function]
+	#[profile_function("self.profiling_frame")]
 	pub fn run_inference_with_tensors<
 		const INPUT_FORMAT: TensorFormat,
 		const OUTPUT_FORMAT: TensorFormat,
@@ -305,16 +311,17 @@ unsafe extern "C" {
 }
 
 #[allow(clippy::too_many_arguments)]
-#[profile_function]
+#[profile_function("profiling_frame")]
 fn try_to_create_interpreter<'a>(
 	tflite_api: &'a TfLite,
 	tflite_gpu_delegate_api: &'a GpuDelegateAPI,
-	model: Rc<Model>,
+	model: Arc<Model>,
 	delegate_serialization_dir: &'a std::ffi::CStr,
 	model_token: &'a std::ffi::CStr,
-	npu_config: Option<(NpuConfig<'a>, Arc<QnnDelegateVt>)>,
-	log_warning_callback: fn(&str),
+	npu_config: Option<(&'a NpuConfig, Arc<QnnDelegateVt>)>,
+	log_warning_callback: impl Fn(&str),
 	error_reporter_user_data_ptr: *mut std::os::raw::c_void,
+	profiling_frame: &ProfilingFrame,
 ) -> Result<CreateTfLiteInterpreterResult, tflite_dyn::Error> {
 	let mut interpreter_options = tflite_api.interpreter_options_create();
 	interpreter_options.set_num_threads(4);
@@ -328,11 +335,12 @@ fn try_to_create_interpreter<'a>(
 			delegate_serialization_dir,
 			model_token,
 			npu_config,
+			profiling_frame,
 		);
 
 		log_warning_callback("QNN NPU delegate was created!");
 
-		let npu_delegate = Rc::new(npu_delegate);
+		let npu_delegate = Arc::new(npu_delegate);
 		let mut interpreter_options_with_npu_delegate = interpreter_options.clone();
 		interpreter_options_with_npu_delegate.add_delegate(npu_delegate.clone());
 
@@ -361,9 +369,10 @@ fn try_to_create_interpreter<'a>(
 		tflite_gpu_delegate_api,
 		delegate_serialization_dir,
 		model_token,
+		profiling_frame,
 	);
 
-	let gpu_delegate = Rc::new(gpu_delegate);
+	let gpu_delegate = Arc::new(gpu_delegate);
 	let mut interpreter_options_with_gpu_delegate = interpreter_options.clone();
 	interpreter_options_with_gpu_delegate.add_delegate(gpu_delegate.clone());
 	if let Some(interpreter) =
@@ -386,11 +395,12 @@ fn try_to_create_interpreter<'a>(
 	}
 }
 
-#[profile_function]
+#[profile_function("profiling_frame")]
 fn create_gpu_delegate<'a>(
 	tflite_gpu_delegate_api: &'a GpuDelegateAPI,
 	gpu_delegate_serialization_dir: &'a std::ffi::CStr,
 	model_token: &'a std::ffi::CStr,
+	profiling_frame: &ProfilingFrame,
 ) -> Delegate {
 	let mut gpu_options_v2 = tflite_gpu_delegate_api.default_options();
 	gpu_options_v2.is_precision_loss_allowed = true as i32;
@@ -401,12 +411,13 @@ fn create_gpu_delegate<'a>(
 	tflite_gpu_delegate_api.create_delegate(&gpu_options_v2)
 }
 
-#[profile_function]
+#[profile_function("profiling_frame")]
 fn create_npu_delegate<'a>(
 	tflite_npu_delegate_api: &'a QnnDelegateVt,
 	npu_delegate_serialization_dir: &'a std::ffi::CStr,
 	model_token: &'a std::ffi::CStr,
-	config: NpuConfig<'a>,
+	config: &'a NpuConfig,
+	profiling_frame: &ProfilingFrame,
 ) -> Delegate {
 	let mut options = tflite_npu_delegate_api.default_options();
 	options.cache_dir = npu_delegate_serialization_dir.as_ptr();
@@ -431,16 +442,24 @@ fn create_npu_delegate<'a>(
 	tflite_npu_delegate_api.create_delegate(&options)
 }
 
-#[profile_function]
-fn copy_f32_to_tensor(src_f32: &[f32], dst_tensor_bytes: &mut [u8]) {
+#[profile_function("profiling_frame")]
+fn copy_f32_to_tensor(
+	src_f32: &[f32],
+	dst_tensor_bytes: &mut [u8],
+	profiling_frame: &ProfilingFrame,
+) {
 	let src_bytes = src_f32.as_bytes();
 	let copy_bytes_len = src_bytes.len();
 	assert_eq!(copy_bytes_len, dst_tensor_bytes.len());
 	dst_tensor_bytes.copy_from_slice(src_bytes);
 }
 
-#[profile_function]
-fn copy_f32_from_tensor(src_tensor_bytes: &[u8], dst_f32: &mut [f32]) {
+#[profile_function("profiling_frame")]
+fn copy_f32_from_tensor(
+	src_tensor_bytes: &[u8],
+	dst_f32: &mut [f32],
+	profiling_frame: &ProfilingFrame,
+) {
 	let dst_bytes = dst_f32.as_mut_bytes();
 	let copy_bytes_len = src_tensor_bytes.len();
 	assert_eq!(copy_bytes_len, dst_bytes.len());
