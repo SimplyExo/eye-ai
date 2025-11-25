@@ -588,6 +588,7 @@ version = "0.1.0"
 dependencies = [
  "eye-ai-core-rs",
  "eye-ai-core-rs-profiling_attribute",
+ "tracing-tracy",
  "uniffi",
 ]
 

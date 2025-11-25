@@ -1,5 +1,7 @@
 use proc_macro::TokenStream;
 use quote::ToTokens;
+#[cfg(feature = "enable_tracy")]
+use quote::quote;
 use syn::{LitStr, parse::Parse, parse_macro_input};
 
 struct ProfileFunctionArgs {
