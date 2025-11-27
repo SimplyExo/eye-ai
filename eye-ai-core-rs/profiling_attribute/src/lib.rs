@@ -24,7 +24,13 @@ impl Parse for ProfileFunctionArgs {
 pub fn profile_function(attr: TokenStream, input: TokenStream) -> TokenStream {
 	let arg = parse_macro_input!(attr as ProfileFunctionArgs);
 
-	let mut item: syn::Item = syn::parse(input).unwrap();
+	let mut item: syn::Item = match syn::parse(input) {
+		Ok(item) => item,
+		Err(e) => {
+			// forward compile error in the body of the function
+			return e.into_compile_error().into();
+		}
+	};
 	let fn_item = match &mut item {
 		syn::Item::Fn(fn_item) => fn_item,
 		_ => {
