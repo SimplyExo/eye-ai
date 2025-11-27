@@ -1,6 +1,5 @@
 use eye_ai_core_rs::{
-	CreateYoloModelInfo, FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT, FloatTensorBuffer,
-	ProfilingFrame, YoloModel,
+	CreateYoloModelInfo, FloatTensorBuffer, FloatTensorFormat, ProfilingFrame, YoloModel,
 };
 use std::{
 	ffi::{CStr, CString},
@@ -19,8 +18,9 @@ fn run_yolo_model() {
 		.resize_exact(640, 640, image::imageops::FilterType::Nearest);
 	let mut input_image_rgb32f = input_image.into_rgb32f();
 	let mut input_image_rgb32f = input_image_rgb32f.as_flat_samples_mut();
-	let input = FloatTensorBuffer::<FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT>::new(
+	let mut input = FloatTensorBuffer::new(
 		input_image_rgb32f.as_mut_slice(),
+		FloatTensorFormat::YoloImageRgb,
 	);
 
 	let tmp_dir = std::env::temp_dir().join("eye-ai-core-rs-testing-serialization-cache");
@@ -62,7 +62,7 @@ fn run_yolo_model() {
 		.expect("failed to create interpreter");
 
 	let detected_objects = yolo_model
-		.run_no_preprocessing(input)
+		.run_no_preprocessing(&mut input)
 		.expect("failed to run inference on yolo model");
 
 	assert_eq!(detected_objects.len(), 1);

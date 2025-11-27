@@ -7,7 +7,11 @@ import android.media.Image
 import android.util.Log
 import android.util.Size
 import androidx.core.graphics.createBitmap
+import uniffi.NativeLib.UniffiFloatBufferWrapper
+import java.nio.Buffer
 import java.nio.ByteBuffer
+import java.nio.FloatBuffer
+import java.nio.ByteOrder
 
 // see NativeLib.cpp
 enum class ProfilingFrameType(val id: Int) {
@@ -28,6 +32,7 @@ object NativeLib {
 		override fun logWarningCallback(msg: String) {
 			Log.w("eye-ai-core-rs", msg)
 		}
+
 		override fun logErrorCallback(msg: String) {
 			Log.e("eye-ai-core-rs", msg)
 		}
@@ -51,8 +56,8 @@ object NativeLib {
 		)
 	}
 
-	fun runMetricDepthModelInference(input: List<Float>): List<Float> {
-		return uniffi.NativeLib.runMetricDepthModelInference(input, logger)
+	fun runMetricDepthModelInference(input: UniffiFloatBufferWrapper, output: UniffiFloatBufferWrapper) {
+		return uniffi.NativeLib.runMetricDepthModelInference(input, output, logger)
 	}
 
 	fun getMetricDepthModelInputShape(): List<Int> {
@@ -72,10 +77,18 @@ object NativeLib {
 		enableNpu: Boolean,
 		skelDirectory: String
 	) {
-		return uniffi.NativeLib.initYoloRuntime(model, labels, gpuDelegateSerializationDir, modelToken, enableNpu, skelDirectory, logger)
+		return uniffi.NativeLib.initYoloRuntime(
+			model,
+			labels,
+			gpuDelegateSerializationDir,
+			modelToken,
+			enableNpu,
+			skelDirectory,
+			logger
+		)
 	}
 
-	fun runYoloOperation(input: List<Float>): List<uniffi.NativeLib.UniffiDetectedObject> {
+	fun runYoloOperation(input: UniffiFloatBufferWrapper): List<uniffi.NativeLib.UniffiDetectedObject> {
 		return uniffi.NativeLib.runYoloOperation(input, logger)
 	}
 
@@ -83,17 +96,36 @@ object NativeLib {
 
 	fun getYoloOutputShape(): List<Int> = uniffi.NativeLib.getYoloOutputShape(logger)
 
-	external fun metricDepthColormap(depthValues: FloatArray, colormappedPixels: IntArray)
+	// uniffi Float-/ByteArray zero-copy helper functions:
+	external fun getByteBufferPtr(buffer: ByteBuffer): Long
+
+	class NativeFloatBuffer(length: Int) {
+		var byteBuffer = ByteBuffer
+			.allocateDirect(length * Float.SIZE_BYTES)
+			.order(ByteOrder.nativeOrder())
+
+		var floatBuffer = byteBuffer.asFloatBuffer()
+
+		fun asUniffiWrapper(): UniffiFloatBufferWrapper {
+			return UniffiFloatBufferWrapper(
+				getByteBufferPtr(byteBuffer),
+				floatBuffer.capacity()
+			)
+		}
+	}
+
+
+	external fun metricDepthColormap(depthValues: FloatBuffer, colormappedPixels: IntArray)
 
 	external fun bitmapToRgbHwc255FloatArray(
 		bitmap: Bitmap,
-		outFloatArray: FloatArray,
+		outFloatBuffer: FloatBuffer,
 		profilingFrameType: Int
 	)
 
 	external fun setupAudioSettings(cocoLabelsAudio: ByteArray, cocoLabelsData: ByteArray)
 	external fun setAudioSettings(frequency: Int, incidence: Int)
-	external fun sendAIData(array: FloatArray)
+	external fun sendAIData(array: FloatBuffer)
 	external fun setDepthAudioPaused(paused: Boolean)
 	external fun setObjectAudioPaused(paused: Boolean)
 	external fun getProcessingStatus(): Boolean
@@ -102,8 +134,8 @@ object NativeLib {
 	//external fun playSound(frequency: Float, duration: Float)
 
 	/** @param input values should be between 0.0f and 1.0f */
-	fun metricDepthColormap(input: FloatArray, inputImageSize: Size): Bitmap {
-		if (input.size != inputImageSize.width * inputImageSize.height) {
+	fun metricDepthColormap(input: FloatBuffer, inputImageSize: Size): Bitmap {
+		if (input.capacity() != inputImageSize.width * inputImageSize.height) {
 			Log.e(
 				EyeAIApp.APP_LOG_TAG,
 				"input depth array length does not match output bitmap size"
@@ -111,7 +143,7 @@ object NativeLib {
 			return createBitmap(inputImageSize.width, inputImageSize.height)
 		}
 
-		val colormappedPixels = IntArray(input.size)
+		val colormappedPixels = IntArray(input.capacity())
 
 		metricDepthColormap(input, colormappedPixels)
 
@@ -126,12 +158,12 @@ object NativeLib {
 	fun bitmapToRgbHwc255FloatArray(
 		bitmap: Bitmap,
 		profilingFrameType: ProfilingFrameType
-	): FloatArray {
-		val floatArray = FloatArray(bitmap.width * bitmap.height * 3)
+	): NativeFloatBuffer {
+		val floatBuffer = NativeFloatBuffer(bitmap.width * bitmap.height * 3)
 
-		bitmapToRgbHwc255FloatArray(bitmap, floatArray, profilingFrameType.id)
+		bitmapToRgbHwc255FloatArray(bitmap, floatBuffer.floatBuffer, profilingFrameType.id)
 
-		return floatArray
+		return floatBuffer
 	}
 
 	fun imageToBitmap(image: Image, rotationDegrees: Float): Bitmap {

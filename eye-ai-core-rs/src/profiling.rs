@@ -1,24 +1,23 @@
+use crossbeam::queue::SegQueue;
 use std::{
 	sync::{
 		RwLock,
 		atomic::{AtomicUsize, Ordering},
 	},
-	time::{Duration, Instant},
+	time::Instant,
 };
-
-use crossbeam::queue::SegQueue;
 
 #[derive(Debug, Clone)]
 pub struct ProfileScopeRecord {
 	pub name: String,
 	pub scope_depth: usize,
 	pub start: Instant,
-	pub duration: Duration,
+	pub duration: dur::Duration,
 }
 impl std::fmt::Display for ProfileScopeRecord {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		let padding = (0..(self.scope_depth * 4)).map(|_| ' ').collect::<String>();
-		write!(f, "{}{}: {:#?}", padding, self.name, self.duration)
+		write!(f, "{}{}: {:.2}", padding, self.name, self.duration)
 	}
 }
 
@@ -46,7 +45,7 @@ impl<'a> Drop for ProfileScope<'a> {
 				name: std::mem::take(&mut self.name),
 				scope_depth: self.scope_depth,
 				start: self.start,
-				duration: Instant::now() - self.start,
+				duration: dur::Duration::from_std(Instant::now() - self.start),
 			});
 	}
 }
@@ -122,10 +121,10 @@ impl ProfilingFrame {
 		*self.start.write().unwrap() = Instant::now();
 
 		format!(
-			"{} Frame: {:.2} fps ({:.2} ms)\n{}",
+			"{} Frame: {:.2} fps ({:.2})\n{}",
 			self.name,
 			frame_fps,
-			frame_duration_secs * 1000.0,
+			dur::Duration::from_std(frame_duration),
 			profile_scopes_formatted
 		)
 	}

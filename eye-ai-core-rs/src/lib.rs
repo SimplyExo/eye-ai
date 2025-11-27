@@ -4,11 +4,8 @@ pub mod tflite;
 
 mod tensor_buffer;
 pub use tensor_buffer::{
-	FLOAT_TENSOR_BUFFER_IMAGE_RGB_255_FORMAT, FLOAT_TENSOR_BUFFER_IMAGE_RGB_FORMAT,
-	FLOAT_TENSOR_BUFFER_METRIC_DEPTH_FORMAT, FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RGB_FORMAT,
-	FLOAT_TENSOR_BUFFER_RAW_RELATIVE_DEPTH_FORMAT, FLOAT_TENSOR_BUFFER_RELATIVE_DEPTH_FORMAT,
-	FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT, FLOAT_TENSOR_BUFFER_YOLO_OUTPUT_FORMAT,
-	FloatTensorBuffer, TensorBuffer, TensorBufferContainer, TensorFormat, get_tensor_format_name,
+	FloatTensorBuffer, FloatTensorFormat, TensorBuffer, TensorBufferContainer,
+	check_float_tensor_format, image_rgb_255_to_midas_image,
 };
 
 mod depth_model;

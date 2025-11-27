@@ -56,7 +56,7 @@ class YoloModel(var info: YoloModelInfo) {
 		val resizedBitmap = frame.scale(tensorWidth, tensorHeight, false)
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(resizedBitmap, ProfilingFrameType.Object)
 
-		return NativeLib.runYoloOperation(input.toList()).toTypedArray()
+		return NativeLib.runYoloOperation(input.asUniffiWrapper()).toTypedArray()
 
 		/*// Wenn string leer ist --> Keine Objekte erkannt!
 		if (json_string == "null")

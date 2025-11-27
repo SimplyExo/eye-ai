@@ -24,18 +24,9 @@ void spatial_audio_log_error_callback(std::string msg);
 void spatial_audio_log_info_callback(std::string msg);
 
 namespace {
-MutexGuard<std::unique_ptr<MetricDepthModel>> metric_depth_model{
-	std::unique_ptr<MetricDepthModel>(nullptr)
-};
 MutexGuard<std::unique_ptr<SpatialAudio>> spatial_audio{
 	std::unique_ptr<SpatialAudio>(nullptr)
 };
-
-MutexGuard<std::unique_ptr<ObjectTracker>> object_tracker;
-
-MutexGuard<YoloModel> yolo_instance;
-
-MutexGuard<std::vector<ObjectTracker::TrackedBoundingBox>> last_tracked_objects;
 
 MutexGuard<SpatialAudioSettings> spatial_audio_settings =
 	MutexGuard<SpatialAudioSettings>(SpatialAudioSettings(
@@ -63,301 +54,35 @@ static ProfilingFrame& get_profiling_frame(ProfilingFrameType type) {
 // NOLINTBEGIN(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)
 
-extern "C" JNIEXPORT jboolean JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initYoloRuntime(
+// TODO: move to rust?
+extern "C" JNIEXPORT jlong JNICALL Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getByteBufferPtr(
 	JNIEnv* env,
-	jobject /*thiz*/,
-	jbyteArray model,
-	jobjectArray labels,
-	jstring gpu_delegate_serialization_dir,
-	jstring model_token,
-	jboolean enable_npu,
-	jstring skel_directory
+	jobject /*_this*/,
+	jobject byteBuffer
 ) {
-	NativeByteArrayScope model_data(env, model);
-	const NativeStringScope gpu_delegate_serialization_dir_string(
-		env, gpu_delegate_serialization_dir
-	);
-	const NativeStringScope model_token_string(env, model_token);
-	const NativeStringScope skel_directory_scope(env, skel_directory);
-
-	const auto log_warning_callback = [](std::string msg) {
-		LOG_WARN("[YoloRuntime] {}", msg);
-	};
-
-	const auto log_error_callback = [](std::string msg) {
-		LOG_ERROR("[YoloRuntime] {}", msg);
-	};
-
-	// Labels laden
-	jsize len = env->GetArrayLength(labels);
-	std::vector<std::string> labels_vector = {};
-
-	for (jsize i = 0; i < len; i++) {
-		jstring str = (jstring)env->GetObjectArrayElement(labels, i);
-
-		const char* cstr = env->GetStringUTFChars(str, nullptr);
-		labels_vector.push_back(cstr);
-		env->ReleaseStringUTFChars(str, cstr);
-
-		env->DeleteLocalRef(str);
-	}
-
-	*object_tracker.lock() = std::make_unique<ObjectTracker>(labels_vector);
-
-	auto result = yolo_instance.lock()->create(
-		model_data.to_vector(), labels_vector,
-		gpu_delegate_serialization_dir_string, model_token_string,
-		log_warning_callback, log_error_callback, enable_npu,
-		skel_directory_scope.to_string()
-	);
-
-	if (!result.has_value()) {
-		LOG_ERROR(
-			"[YoloRuntime] Could not create YoloModel: {}", result.error()
-		);
-		return false;
-	}
-
-	LOG_INFO("[YoloRuntime] Runtime erstellt!");
-	return true;
-}
-
-static jstring convertTrackedBoundingBoxesToJsonString(
-	JNIEnv* env,
-	const std::vector<ObjectTracker::TrackedBoundingBox>& tracked_boxes
-) {
-	nlohmann::json j;
-
-	for (size_t i = 0; i < tracked_boxes.size(); ++i) {
-		const ObjectTracker::TrackedBoundingBox& tracked_bounding_box =
-			tracked_boxes[i];
-		const YoloModel::BoundingBox& bbox = tracked_bounding_box.bounding_box;
-
-		j["bounding_boxes"][i]["clsName"] = bbox.cls_name;
-		j["bounding_boxes"][i]["cx"] = bbox.cx;
-		j["bounding_boxes"][i]["cy"] = bbox.cy;
-		j["bounding_boxes"][i]["w"] = bbox.w;
-		j["bounding_boxes"][i]["h"] = bbox.h;
-		j["bounding_boxes"][i]["x1"] = bbox.x1;
-		j["bounding_boxes"][i]["y1"] = bbox.y1;
-		j["bounding_boxes"][i]["x2"] = bbox.x2;
-		j["bounding_boxes"][i]["y2"] = bbox.y2;
-		j["bounding_boxes"][i]["cls"] = bbox.cls;
-		j["bounding_boxes"][i]["cnf"] = bbox.cnf;
-		j["bounding_boxes"][i]["trackingId"] = tracked_bounding_box.tracking_id;
-	}
-
-	try {
-		std::string json_string = j.dump();
-		return env->NewStringUTF(json_string.c_str());
-	} catch (const std::exception& e) {
-		LOG_ERROR(
-			"Failed to serialize json string of tracked objects: {}", e.what()
-		);
-		return env->NewStringUTF("{ \"bounding_boxes\": [] }");
-	}
-}
-
-extern "C" JNIEXPORT jintArray
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getYoloOutputShape(
-	JNIEnv* env,
-	jobject /* this */
-) {
-	auto shape = yolo_instance.lock()->get_output_shape();
-	jsize length = static_cast<jsize>(shape.size());
-
-	jintArray array = env->NewIntArray(length);
-	if (array == nullptr) {
-		// Fehlerbehandlung: Speicher konnte nicht alloziert werden
-		return nullptr;
-	}
-
-	env->SetIntArrayRegion(array, 0, length, shape.data());
-
-	return array;
-}
-
-extern "C" JNIEXPORT jintArray
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getYoloInputShape(
-	JNIEnv* env,
-	jobject /* this */
-) {
-	auto shape = yolo_instance.lock()->get_input_shape();
-	jsize length = static_cast<jsize>(shape.size());
-
-	jintArray array = env->NewIntArray(length);
-	if (array == nullptr) {
-		// Fehlerbehandlung: Speicher konnte nicht alloziert werden
-		return nullptr;
-	}
-
-	env->SetIntArrayRegion(array, 0, length, shape.data());
-
-	return array;
-}
-
-extern "C" JNIEXPORT jstring
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runYoloOperation(
-	JNIEnv* env,
-	jobject /* this */,
-	jfloatArray input
-) {
-	NativeFloatArrayScope input_scope(env, input);
-
-	FloatTensorBuffer<FloatTensorFormat::ImageRGB255> input_tensor{
-		std::span<float>(input_scope)
-	};
-
-	const auto result = yolo_instance.lock()->run(input_tensor);
-	if (result) {
-		const auto tracked_objects = (*object_tracker.lock())->update(*result);
-		*last_tracked_objects.lock() = tracked_objects;
-		return convertTrackedBoundingBoxesToJsonString(env, tracked_objects);
-	} else {
-		LOG_ERROR("YoloModel failed to run: {}", result.error());
-		return convertTrackedBoundingBoxesToJsonString(
-			env, std::vector<ObjectTracker::TrackedBoundingBox>{}
-		);
-	}
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_initMetricDepthModel(
-	JNIEnv* env,
-	jobject /*thiz*/,
-	jbyteArray relative_depth_model,
-	jstring gpu_delegate_serialization_dir,
-	jstring relative_depth_model_token,
-	jboolean enable_npu,
-	jstring skel_directory
-) {
-	const NativeStringScope gpu_delegate_serialization_dir_string(
-		env, gpu_delegate_serialization_dir
-	);
-
-	NativeByteArrayScope relative_depth_model_data(env, relative_depth_model);
-	const NativeStringScope relative_depth_model_token_string(
-		env, relative_depth_model_token
-	);
-
-	NativeStringScope skel_directory_scope{env, skel_directory};
-
-	const auto log_warning_callback = [](std::string msg) {
-		LOG_WARN("[TfLiteRuntime] {}", msg);
-	};
-
-	const auto log_error_callback = [](std::string msg) {
-		LOG_ERROR("[TfLiteRuntime] {}", msg);
-	};
-
-	auto result = MetricDepthModel::create(
-		relative_depth_model_data.to_vector(),
-		gpu_delegate_serialization_dir_string,
-		relative_depth_model_token_string, log_warning_callback,
-		log_error_callback, enable_npu, skel_directory_scope.to_string()
-	);
-	if (result) {
-		metric_depth_model.lock()->swap(*result);
-	} else
-		LOG_ERROR(
-			"[TfLiteRuntime] Failed to create depth model: {}",
-			result.error().to_string()
-		);
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_shutdownMetricDepthModel(
-	JNIEnv* /*env*/,
-	jobject /*thiz*/
-) {
-	metric_depth_model.lock()->reset(nullptr);
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_runMetricDepthModelInference(
-	JNIEnv* env,
-	jobject /*thiz*/,
-	jfloatArray input,
-	jfloatArray output
-) {
-	auto depth_model_scope = metric_depth_model.lock();
-
-	if (*depth_model_scope == nullptr) {
-		LOG_ERROR("depth model not initialized!");
-		return;
-	}
-
-	NativeFloatArrayScope input_array(env, input);
-	NativeFloatArrayScope output_array(env, output);
-
-	FloatTensorBuffer<FloatTensorFormat::ImageRGB255> input_tensor{
-		std::span<float>(input_array)
-	};
-
-	auto result = (*depth_model_scope)->run(input_tensor);
-
-	if (result) {
-		auto depth_output = result->data();
-		if (depth_output.size() == output_array.size()) {
-			std::ranges::copy(depth_output, output_array.begin());
-		} else {
-			LOG_ERROR(
-				"DepthModel: invalid output float array size of {} does not "
-				"match the expected size of {} from the model",
-				output_array.size(), depth_output.size()
-			);
-		}
-	} else {
-		LOG_ERROR(
-			"[TfLiteRuntime] Failed to run depth model inference: {}",
-			result.error().to_string()
-		);
-	}
-}
-
-extern "C" JNIEXPORT jintArray JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getMetricDepthModelInputShape(
-	JNIEnv* env,
-	jobject /*thiz*/
-) {
-	std::span<const int> input_shape =
-		(*metric_depth_model.lock())->get_input_shape();
-
-	return create_jni_int_array(env, input_shape);
-}
-
-extern "C" JNIEXPORT jintArray JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getMetricDepthModelOutputShape(
-	JNIEnv* env,
-	jobject /*thiz*/
-) {
-	std::span<const int> output_shape =
-		(*metric_depth_model.lock())->get_output_shape();
-
-	return create_jni_int_array(env, output_shape);
+	return (jlong)env->GetDirectBufferAddress(byteBuffer);
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_metricDepthColormap(
 	JNIEnv* env,
 	jobject /*thiz*/,
-	jfloatArray depth_values,
+	jobject depth_buffer,
 	jintArray colormapped_pixels
 ) {
-	NativeFloatArrayScope depth_value_array(env, depth_values);
+	std::span<float> depth_span{(float*)env->GetDirectBufferAddress(depth_buffer), (size_t)env->GetDirectBufferCapacity(depth_buffer)};
 	NativeIntArrayScope colormapped_pixel_array(env, colormapped_pixels);
 
-	if (depth_value_array.size() == colormapped_pixel_array.size()) {
+	if (depth_span.size() == colormapped_pixel_array.size()) {
 		if (const auto error = metric_depth_colormap(
-				depth_value_array, colormapped_pixel_array
+				depth_span, colormapped_pixel_array
 			))
 			LOG_ERROR("depthColormap failed: {}", error->to_string());
 	} else {
 		LOG_ERROR(
 			"depth and colormapped pixel array should have the same length! "
 			"({} and {})",
-			depth_value_array.size(), colormapped_pixel_array.size()
+			depth_span.size(), colormapped_pixel_array.size()
 		);
 	}
 }
@@ -367,13 +92,17 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 	JNIEnv* env,
 	jobject /*thiz*/,
 	jobject bitmap,
-	jfloatArray out_float_array,
+	jobject out_float_buffer,
 	jint profiling_frame_type
 ) {
-	NativeFloatArrayScope out_float_array_scope(env, out_float_array);
+	std::span<float> out_float_span{
+		(float*)env->GetDirectBufferAddress(out_float_buffer),
+		(size_t)env->GetDirectBufferCapacity(out_float_buffer)
+	};
+	//NativeFloatArrayScope out_float_array_scope(env, out_float_array);
 
 	if (const auto error = bitmap_to_rgb_hwc_255_float_array(
-			env, bitmap, out_float_array_scope,
+			env, bitmap, out_float_span,
 			get_profiling_frame(
 				static_cast<ProfilingFrameType>(profiling_frame_type)
 			)
@@ -558,26 +287,25 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setObjectAudioPaused(
 	audio_setting_scope->object_audio_paused = paused;
 }
 
+// NOTE: since tracked objects are in rust/kotlin, while we port audio to rust, objects is always empty, function will be removed by then
 extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendAIData(
 	JNIEnv* env,
 	jobject /*this*/,
-	jfloatArray depth_data_array
+	jobject depth_data_buffer
 ) {
-	jfloat* rawArray = env->GetFloatArrayElements(depth_data_array, nullptr);
-
-	NativeFloatArrayScope depth_estimation_data(env, depth_data_array);
+	std::span<float> depth_data_span{
+		(float*)env->GetDirectBufferAddress(depth_data_buffer),
+		(size_t)env->GetDirectBufferCapacity(depth_data_buffer)
+	};
 
 	assert(depth_estimation_data.size() == (256 * 256));
-	std::vector<ObjectTracker::TrackedBoundingBox> object_detection_data =
-		*last_tracked_objects.lock();
+	// EMPTY!
+	std::vector<ObjectTracker::TrackedBoundingBox> object_detection_data{};
 	get_or_create_spatial_audio().getAIData(
-		static_cast<std::span<float, 256 * 256>>(depth_estimation_data),
+		static_cast<std::span<float, 256 * 256>>(depth_data_span),
 		object_detection_data
 	);
-
-	// Speicher freigeben
-	env->ReleaseFloatArrayElements(depth_data_array, rawArray, JNI_ABORT);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL

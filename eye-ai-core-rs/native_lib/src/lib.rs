@@ -1,16 +1,16 @@
 #![allow(non_snake_case)]
 
+use eye_ai_core_rs::{
+	CreateDepthModelInfo, CreateYoloModelInfo, DepthModelNpuConfig, FloatTensorBuffer,
+	FloatTensorFormat, MetricDepthModel, ObjectTracker, ProfilingFrame, TrackedObject, YoloModel,
+	YoloModelNpuConfig,
+};
+use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::{
 	ffi::{CStr, CString},
 	path::PathBuf,
 	sync::{Arc, LazyLock, RwLock},
 };
-
-use eye_ai_core_rs::{
-	CreateDepthModelInfo, CreateYoloModelInfo, DepthModelNpuConfig, FloatTensorBuffer,
-	MetricDepthModel, ObjectTracker, ProfilingFrame, TrackedObject, YoloModel, YoloModelNpuConfig,
-};
-use eye_ai_core_rs_profiling_attribute::profile_function;
 
 const TFLITE_LIB_FILEPATH: &str = "libtensorflowlite_jni.so";
 const TFLITE_GPU_DELEGATE_LIB_FILEPATH: &str = "libtensorflowlite_gpu_jni.so";
@@ -33,29 +33,77 @@ static OBJECT_PROFILING_FRAME: LazyLock<ProfilingFrame> =
 	LazyLock::new(|| ProfilingFrame::new("Object"));
 
 /// Waits for the RwLock to be free and also waits for the Option to be Some ^= "waits for the model to be loaded"
-fn wait_for_metric_depth_model<R>(f: impl Fn(&mut MetricDepthModel) -> R) -> R {
-	let waiting_scope = DEPTH_PROFILING_FRAME.scope("wait_for_metric_depth_model");
+fn wait_for_model<M, R>(
+	profiling_scope_name: &'static str,
+	model: &RwLock<Option<M>>,
+	f: impl FnOnce(&mut M) -> R,
+	profiling_frame: &ProfilingFrame,
+) -> R {
+	let waiting_scope = profiling_frame.scope(profiling_scope_name);
 
-	let mut metric_depth_model = METRIC_DEPTH_MODEL.write().unwrap();
+	let mut model = model.write().unwrap();
 
 	loop {
-		if let Some(metric_depth_model) = &mut (*metric_depth_model) {
+		if let Some(model) = &mut (*model) {
 			drop(waiting_scope); // the 'wait_for_metric_depth_model' scope only shows the waiting time
-			return f(metric_depth_model);
+			return f(model);
 		}
 	}
 }
 
 /// Waits for the RwLock to be free and also waits for the Option to be Some ^= "waits for the model to be loaded"
-fn wait_for_yolo_model<R>(f: impl Fn(&mut YoloModel) -> R) -> R {
-	let waiting_scope = OBJECT_PROFILING_FRAME.scope("wait_for_yolo_model");
+fn wait_for_metric_depth_model<R>(f: impl FnOnce(&mut MetricDepthModel) -> R) -> R {
+	wait_for_model(
+		"wait_for_metric_depth_model",
+		&METRIC_DEPTH_MODEL,
+		f,
+		&DEPTH_PROFILING_FRAME,
+	)
+}
 
-	let mut yolo_model = YOLO_MODEL.write().unwrap();
+/// Waits for the RwLock to be free and also waits for the Option to be Some ^= "waits for the model to be loaded"
+fn wait_for_yolo_model<R>(f: impl FnOnce(&mut YoloModel) -> R) -> R {
+	wait_for_model(
+		"wait_for_yolo_model",
+		&YOLO_MODEL,
+		f,
+		&OBJECT_PROFILING_FRAME,
+	)
+}
 
-	loop {
-		if let Some(yolo_model) = &mut (*yolo_model) {
-			drop(waiting_scope); // the 'wait_for_yolo_model' scope only shows the waiting time
-			return f(yolo_model);
+/*
+TODO: This does not get picked up by Kotlin, so for now its in NativeLib c++
+
+if implemented someday:
+add "jni = "0.21.1"" to Cargo.toml of native_lib!!!
+
+#[unsafe(no_mangle)]
+#[allow(unused)]
+pub extern "system" fn Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getByteBufferPtr(
+	env: JNIEnv,
+	_class: JClass,
+	buffer: JByteBuffer,
+) -> jlong {
+	let ptr = env
+		.get_direct_buffer_address(&buffer)
+		.expect("not a direct buffer");
+
+	ptr as jlong
+}
+*/
+
+// Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getFloatArrayPtr
+#[derive(uniffi::Record)]
+struct UniffiFloatBufferWrapper {
+	/// i64 ^= Long, direct pointer address of an FloatBuffer
+	ptr_address: i64,
+	/// length of the FloatArray
+	length: i32,
+}
+impl UniffiFloatBufferWrapper {
+	fn as_slice_mut(&mut self) -> &mut [f32] {
+		unsafe {
+			std::slice::from_raw_parts_mut(self.ptr_address as *mut f32, self.length as usize)
 		}
 	}
 }
@@ -126,18 +174,24 @@ fn shutdownMetricDepthModel() {
 
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
-fn runMetricDepthModelInference(input: &[f32], logger: Box<dyn LogCallbacks>) -> Vec<f32> {
+fn runMetricDepthModelInference(
+	mut input: UniffiFloatBufferWrapper,
+	mut output: UniffiFloatBufferWrapper,
+	logger: Box<dyn LogCallbacks>,
+) {
 	logger.log_info_callback("running metric depth model".to_string());
 
 	wait_for_metric_depth_model(|metric_depth_model| {
-		match metric_depth_model.run(FloatTensorBuffer::new(input)) {
-			Ok(output) => output.to_vec(),
+		match metric_depth_model.run(
+			&mut FloatTensorBuffer::new(input.as_slice_mut(), FloatTensorFormat::MiDaSImageRgb),
+			&mut FloatTensorBuffer::new(output.as_slice_mut(), FloatTensorFormat::MetricDepth),
+		) {
+			Ok(()) => {}
 			Err(e) => {
 				logger.log_error_callback(format!(
-					"Failed to run metric depth model: {}, returning empty float array",
+					"Failed to run metric depth model: {}, output will not be changed",
 					e
 				));
-				vec![]
 			}
 		}
 	})
@@ -266,11 +320,17 @@ impl From<TrackedObject> for UniffiDetectedObject {
 
 #[uniffi::export]
 #[profile_function("OBJECT_PROFILING_FRAME")]
-fn runYoloOperation(input: &[f32], logger: Box<dyn LogCallbacks>) -> Vec<UniffiDetectedObject> {
+fn runYoloOperation(
+	mut input: UniffiFloatBufferWrapper,
+	logger: Box<dyn LogCallbacks>,
+) -> Vec<UniffiDetectedObject> {
 	logger.log_info_callback("running Yolo Operation...".to_string());
 
-	wait_for_yolo_model(
-		|yolo_model| match yolo_model.run(FloatTensorBuffer::new(input)) {
+	wait_for_yolo_model(|yolo_model| {
+		match yolo_model.run(&mut FloatTensorBuffer::new(
+			input.as_slice_mut(),
+			FloatTensorFormat::ImageRgb255,
+		)) {
 			Ok(detected_objects) => {
 				let tracked_objects = OBJECT_TRACKER
 					.write()
@@ -290,8 +350,8 @@ fn runYoloOperation(input: &[f32], logger: Box<dyn LogCallbacks>) -> Vec<UniffiD
 				));
 				vec![]
 			}
-		},
-	)
+		}
+	})
 }
 
 #[uniffi::export]

@@ -1,7 +1,6 @@
 use eye_ai_core_rs::{
-	CreateDepthModelInfo, DepthModel, FLOAT_TENSOR_BUFFER_IMAGE_RGB_255_FORMAT,
-	FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RGB_FORMAT, FLOAT_TENSOR_BUFFER_RELATIVE_DEPTH_FORMAT,
-	FloatTensorBuffer, ProfilingFrame,
+	CreateDepthModelInfo, DepthModel, FloatTensorBuffer, FloatTensorFormat, ProfilingFrame,
+	image_rgb_255_to_midas_image,
 };
 use std::{
 	ffi::{CStr, CString},
@@ -25,9 +24,8 @@ fn run_midas_depth_model() {
 		.iter()
 		.map(|x| *x as f32)
 		.collect::<Vec<_>>();
-	let input =
-		FloatTensorBuffer::<FLOAT_TENSOR_BUFFER_IMAGE_RGB_255_FORMAT>::new(input_buffer_255f);
-	let input: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RGB_FORMAT> = input.into();
+	let mut input = FloatTensorBuffer::new(input_buffer_255f, FloatTensorFormat::ImageRgb255);
+	image_rgb_255_to_midas_image(&mut input).expect("failed to convert rgb255 to midas image");
 
 	let expected_output = ndarray_npy::read_npy::<_, ndarray::Array2<f32>>(
 		"tests/00022_00193_outdoor_010_030_expected.npy",
@@ -66,10 +64,13 @@ fn run_midas_depth_model() {
 	let mut depth_model = DepthModel::new(depth_model_create_info, &depth_profiling_frame)
 		.expect("failed to create interpreter");
 
-	let output_tensor_buffer: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_RELATIVE_DEPTH_FORMAT> =
-		depth_model
-			.run(input)
-			.expect("failed to run inference on midas model");
+	let mut output_tensor_buffer = depth_model
+		.allocate_output_tensor()
+		.expect("failed to allocate output tensor");
+
+	depth_model
+		.run(&mut input, &mut output_tensor_buffer)
+		.expect("failed to run inference on midas model");
 	let output_tensor_buffer_data = output_tensor_buffer.data();
 
 	let tolerance: f32 = 0.05;

@@ -1,7 +1,8 @@
 use crate::{
-	FLOAT_TENSOR_BUFFER_IMAGE_RGB_255_FORMAT, FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT,
-	FLOAT_TENSOR_BUFFER_YOLO_OUTPUT_FORMAT, FloatTensorBuffer, ProfilingFrame,
+	FloatTensorBuffer, FloatTensorFormat, ProfilingFrame,
 	audio::Vec2,
+	check_float_tensor_format,
+	tensor_buffer::WrongFloatTensorFormatError,
 	tflite::{
 		CreateTfLiteRuntimeInfo, NpuConfig, NpuConfigType, TfLiteRunInferenceError, TfLiteRuntime,
 		TfLiteRuntimeCreateError,
@@ -130,8 +131,8 @@ impl<'a> YoloModel<'a> {
 			model_data: create_info.model_data,
 			gpu_delegate_serialization_dir: create_info.gpu_delegate_serialization_dir,
 			model_token: create_info.model_token,
-			model_input_format: FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT,
-			model_output_format: FLOAT_TENSOR_BUFFER_YOLO_OUTPUT_FORMAT,
+			model_input_format: FloatTensorFormat::YoloImageRgb,
+			model_output_format: FloatTensorFormat::YoloOutput,
 			log_warning_callback: create_info.log_warning_callback,
 			log_error_callback: create_info.log_error_callback,
 			npu_config: create_info.npu_config.map(|depth_npu_config| NpuConfig {
@@ -163,23 +164,30 @@ impl<'a> YoloModel<'a> {
 		})
 	}
 
+	/// expects FloatTensorFormat::ImageRgb255
 	#[profile_function("self.profiling_frame")]
 	pub fn run(
 		&mut self,
-		input_tensor: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_IMAGE_RGB_255_FORMAT>,
+		input_tensor: &mut FloatTensorBuffer,
 	) -> Result<Vec<DetectedObject>, TfLiteRunInferenceError> {
-		let processed_input_tensor = yolo_image_operator(input_tensor, self.profiling_frame);
+		check_float_tensor_format!(input_tensor, FloatTensorFormat::ImageRgb255);
 
-		self.run_no_preprocessing(processed_input_tensor)
+		yolo_image_operator(input_tensor, self.profiling_frame)?;
+
+		self.run_no_preprocessing(input_tensor)
 	}
 
+	// expects FloatTensorFormat::YoloImageRgb
 	#[profile_function("self.profiling_frame")]
 	pub fn run_no_preprocessing(
 		&mut self,
-		input_tensor: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT>,
+		input_tensor: &mut FloatTensorBuffer,
 	) -> Result<Vec<DetectedObject>, TfLiteRunInferenceError> {
-		let output_tensor: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_YOLO_OUTPUT_FORMAT> =
-			self.runtime.run_inference_with_tensors(input_tensor)?;
+		check_float_tensor_format!(input_tensor, FloatTensorFormat::YoloImageRgb);
+
+		let mut output_tensor = self.runtime.allocate_output_tensor()?;
+		self.runtime
+			.run_inference(input_tensor, &mut output_tensor)?;
 
 		Ok(best_objects(
 			output_tensor.data(),
@@ -201,15 +209,20 @@ impl<'a> YoloModel<'a> {
 	}
 }
 
+/// converts a FloatTensorFormat::ImageRgb255 image to FloatTensorFormat::YoloImageRgb
 #[profile_function("profiling_frame")]
 fn yolo_image_operator<'a>(
-	mut image: FloatTensorBuffer<'a, FLOAT_TENSOR_BUFFER_IMAGE_RGB_255_FORMAT>,
+	image: &mut FloatTensorBuffer<'a>,
 	profiling_frame: &ProfilingFrame,
-) -> FloatTensorBuffer<'a, FLOAT_TENSOR_BUFFER_YOLO_IMAGE_RGB_FORMAT> {
+) -> Result<(), WrongFloatTensorFormatError> {
+	check_float_tensor_format!(image, FloatTensorFormat::ImageRgb255);
+
 	for value in image.data_mut() {
 		*value /= 255.0;
 	}
-	image.convert_format()
+	image.convert_format(FloatTensorFormat::YoloImageRgb);
+
+	Ok(())
 }
 
 #[profile_function("profiling_frame")]

@@ -1,6 +1,6 @@
 use crate::{
-	FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RGB_FORMAT, FLOAT_TENSOR_BUFFER_RAW_RELATIVE_DEPTH_FORMAT,
-	FLOAT_TENSOR_BUFFER_RELATIVE_DEPTH_FORMAT, FloatTensorBuffer, ProfilingFrame,
+	FloatTensorBuffer, FloatTensorFormat, ProfilingFrame, check_float_tensor_format,
+	tensor_buffer::WrongFloatTensorFormatError,
 	tflite::{
 		CreateTfLiteRuntimeInfo, NpuConfig, NpuConfigType, TfLiteRunInferenceError, TfLiteRuntime,
 		TfLiteRuntimeCreateError,
@@ -43,8 +43,8 @@ impl<'a> DepthModel<'a> {
 			model_data: create_info.model_data,
 			gpu_delegate_serialization_dir: create_info.gpu_delegate_serialization_dir,
 			model_token: create_info.model_token,
-			model_input_format: FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RGB_FORMAT,
-			model_output_format: FLOAT_TENSOR_BUFFER_RAW_RELATIVE_DEPTH_FORMAT,
+			model_input_format: FloatTensorFormat::MiDaSImageRgb,
+			model_output_format: FloatTensorFormat::RawRelativeDepth,
 			log_warning_callback: create_info.log_warning_callback,
 			log_error_callback: create_info.log_error_callback,
 			npu_config: create_info.npu_config.map(|depth_npu_config| NpuConfig {
@@ -63,33 +63,43 @@ impl<'a> DepthModel<'a> {
 		})
 	}
 
+	/// input format: FloatTensorFormat::MiDaSImageRgb, output format will be: FloatTensorFormat::RawRelativeDepth
 	#[profile_function("self.profiling_frame")]
 	pub fn run_raw(
 		&mut self,
-		input_tensor: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RGB_FORMAT>,
-	) -> Result<
-		FloatTensorBuffer<'_, FLOAT_TENSOR_BUFFER_RAW_RELATIVE_DEPTH_FORMAT>,
-		TfLiteRunInferenceError,
-	> {
-		self.runtime.run_inference_with_tensors(input_tensor)
+		input_tensor: &FloatTensorBuffer,
+		output_tensor: &mut FloatTensorBuffer,
+	) -> Result<(), TfLiteRunInferenceError> {
+		check_float_tensor_format!(input_tensor, FloatTensorFormat::MiDaSImageRgb);
+
+		self.runtime.run_inference(input_tensor, output_tensor)?;
+
+		check_float_tensor_format!(output_tensor, FloatTensorFormat::RawRelativeDepth);
+
+		Ok(())
 	}
 
+	/// input format: FloatTensorFormat::MiDaSImageRgb, output format: FloatTensorFormat::RelativeDepth
 	#[profile_function("self.profiling_frame")]
 	pub fn run(
 		&mut self,
-		input_tensor: FloatTensorBuffer<FLOAT_TENSOR_BUFFER_MIDAS_IMAGE_RGB_FORMAT>,
-	) -> Result<
-		FloatTensorBuffer<'_, FLOAT_TENSOR_BUFFER_RELATIVE_DEPTH_FORMAT>,
-		TfLiteRunInferenceError,
-	> {
+		input_tensor: &mut FloatTensorBuffer,
+		output_tensor: &mut FloatTensorBuffer,
+	) -> Result<(), TfLiteRunInferenceError> {
 		let profiling_frame = self.profiling_frame;
 
-		let raw_relative_depth_tensor = self.run_raw(input_tensor)?;
+		self.run_raw(input_tensor, output_tensor)?;
 
-		Ok(min_max_scaling_operator(
-			raw_relative_depth_tensor,
-			profiling_frame,
-		))
+		min_max_scaling_operator(output_tensor, profiling_frame)?;
+
+		Ok(())
+	}
+
+	#[profile_function("self.profiling_frame")]
+	pub fn allocate_output_tensor(
+		&self,
+	) -> Result<FloatTensorBuffer<'static>, TfLiteRunInferenceError> {
+		self.runtime.allocate_output_tensor()
 	}
 
 	pub fn get_input_shape(&self) -> Option<Vec<i32>> {
@@ -101,25 +111,30 @@ impl<'a> DepthModel<'a> {
 	}
 }
 
+/// converts FloatTensorFormat::RawRelativeDepth to FloatTensorFormat::RelativeDepth
 #[profile_function("profiling_frame")]
 fn min_max_scaling_operator<'a>(
-	raw_relative_depth_tensor: FloatTensorBuffer<'a, FLOAT_TENSOR_BUFFER_RAW_RELATIVE_DEPTH_FORMAT>,
+	raw_relative_depth_tensor: &mut FloatTensorBuffer<'a>,
 	profiling_frame: &ProfilingFrame,
-) -> FloatTensorBuffer<'a, FLOAT_TENSOR_BUFFER_RELATIVE_DEPTH_FORMAT> {
-	let mut relative_depth_tensor =
-		raw_relative_depth_tensor.convert_format::<FLOAT_TENSOR_BUFFER_RELATIVE_DEPTH_FORMAT>();
+) -> Result<(), WrongFloatTensorFormatError> {
+	check_float_tensor_format!(
+		raw_relative_depth_tensor,
+		FloatTensorFormat::RawRelativeDepth
+	);
 
-	if relative_depth_tensor.data().is_empty() {
-		return relative_depth_tensor;
+	raw_relative_depth_tensor.convert_format(FloatTensorFormat::RelativeDepth);
+
+	if raw_relative_depth_tensor.data().is_empty() {
+		return Ok(());
 	}
 
-	let min = relative_depth_tensor
+	let min = raw_relative_depth_tensor
 		.data()
 		.iter()
 		.min_by(|a, b| a.total_cmp(b))
 		.copied()
 		.unwrap();
-	let max = relative_depth_tensor
+	let max = raw_relative_depth_tensor
 		.data()
 		.iter()
 		.max_by(|a, b| a.total_cmp(b))
@@ -127,14 +142,14 @@ fn min_max_scaling_operator<'a>(
 		.unwrap();
 	let diff = max - min;
 	if diff == 0.0 {
-		for value in relative_depth_tensor.iter_mut() {
+		for value in raw_relative_depth_tensor.iter_mut() {
 			*value = 0.5;
 		}
 	} else {
-		for value in relative_depth_tensor.iter_mut() {
+		for value in raw_relative_depth_tensor.iter_mut() {
 			*value = (*value - min) / diff;
 		}
 	}
 
-	relative_depth_tensor
+	Ok(())
 }

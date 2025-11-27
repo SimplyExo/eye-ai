@@ -1,4 +1,7 @@
-use crate::{FloatTensorBuffer, ProfilingFrame, TensorFormat, get_tensor_format_name};
+use crate::{
+	FloatTensorBuffer, FloatTensorFormat, ProfilingFrame,
+	tensor_buffer::WrongFloatTensorFormatError,
+};
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use semver::VersionReq;
 use std::path::PathBuf;
@@ -39,22 +42,15 @@ pub enum TfLiteRunInferenceError {
 	Invoke(#[from] tflite_dyn::Error),
 	#[error(
 		"model expected input of format {}, but {} was provided",
-		get_tensor_format_name(*model_expected),
-		get_tensor_format_name(*provided)
+		model_expected,
+		provided
 	)]
 	InputFormatMismatch {
-		model_expected: TensorFormat,
-		provided: TensorFormat,
+		model_expected: FloatTensorFormat,
+		provided: FloatTensorFormat,
 	},
-	#[error(
-		"model expected output of format {}, but {} was provided",
-		get_tensor_format_name(*model_expected),
-		get_tensor_format_name(*provided)
-	)]
-	OutputFormatMismatch {
-		model_expected: TensorFormat,
-		provided: TensorFormat,
-	},
+	#[error("wrong format while converting: {0}")]
+	WrongFormatForConvertion(#[from] WrongFloatTensorFormatError),
 }
 
 #[derive(Debug, Error)]
@@ -85,8 +81,8 @@ pub struct CreateTfLiteRuntimeInfo {
 	pub model_data: Vec<u8>,
 	pub gpu_delegate_serialization_dir: std::ffi::CString,
 	pub model_token: std::ffi::CString,
-	pub model_input_format: TensorFormat,
-	pub model_output_format: TensorFormat,
+	pub model_input_format: FloatTensorFormat,
+	pub model_output_format: FloatTensorFormat,
 	pub log_warning_callback: Arc<dyn Fn(&str) + Send + Sync>,
 	pub log_error_callback: fn(msg: *const std::os::raw::c_char),
 	pub npu_config: Option<NpuConfig>,
@@ -103,8 +99,8 @@ pub struct TfLiteRuntime<'a> {
 	_libabsl_log_internal_nullguard: Result<GlobalLibrary, libloading::Error>,
 	tflite_api: Arc<TfLite>,
 	tflite_gpu_delegate_api: Arc<GpuDelegateAPI>,
-	model_input_format: TensorFormat,
-	model_output_format: TensorFormat,
+	model_input_format: FloatTensorFormat,
+	model_output_format: FloatTensorFormat,
 	model: Arc<Model>,
 	interpreter: Interpreter,
 	gpu_delegate: Option<Arc<Delegate>>,
@@ -214,12 +210,20 @@ impl<'a> TfLiteRuntime<'a> {
 		Some(output_shape)
 	}
 
+	/// output will be formatted with self.model_output_format
 	#[profile_function("self.profiling_frame")]
 	pub fn run_inference(
 		&mut self,
-		input: &[f32],
-		output: &mut [f32],
+		input: &FloatTensorBuffer,
+		output: &mut FloatTensorBuffer,
 	) -> Result<(), TfLiteRunInferenceError> {
+		if self.model_input_format != input.format() {
+			return Err(TfLiteRunInferenceError::InputFormatMismatch {
+				model_expected: self.model_input_format,
+				provided: input.format(),
+			});
+		}
+
 		let mut input_tensor = self
 			.interpreter
 			.input_tensor(0)
@@ -230,13 +234,14 @@ impl<'a> TfLiteRuntime<'a> {
 		let input_tensor_data = input_tensor
 			.data_mut()
 			.ok_or(TfLiteRunInferenceError::InputTensorNotAllocated)?;
-		if input_tensor_data.len() != std::mem::size_of_val(input) {
+		let provided_input_bytes = std::mem::size_of_val(input.data());
+		if input_tensor_data.len() != provided_input_bytes {
 			return Err(TfLiteRunInferenceError::InputTensorSizeMismatch {
-				provided: std::mem::size_of_val(input),
+				provided: provided_input_bytes,
 				model_expected: input_tensor_data.len(),
 			});
 		}
-		copy_f32_to_tensor(input, input_tensor_data, self.profiling_frame);
+		copy_f32_to_tensor(input.data(), input_tensor_data, self.profiling_frame);
 
 		self.interpreter.invoke()?;
 
@@ -247,9 +252,10 @@ impl<'a> TfLiteRuntime<'a> {
 		let output_tensor_data = output_tensor
 			.data_mut()
 			.ok_or(TfLiteRunInferenceError::OutputTensorNotAllocated)?;
-		if output_tensor_data.len() != std::mem::size_of_val(output) {
+		let provided_output_bytes = std::mem::size_of_val(output.data());
+		if output_tensor_data.len() != provided_output_bytes {
 			return Err(TfLiteRunInferenceError::OutputTensorSizeMismatch {
-				provided: std::mem::size_of_val(output),
+				provided: provided_output_bytes,
 				model_expected: output_tensor_data.len(),
 			});
 		}
@@ -257,32 +263,17 @@ impl<'a> TfLiteRuntime<'a> {
 			return Err(TfLiteRunInferenceError::NonFloat32OutputTensor);
 		}
 
-		copy_f32_from_tensor(output_tensor_data, output, self.profiling_frame);
+		copy_f32_from_tensor(output_tensor_data, output.data_mut(), self.profiling_frame);
+		output.convert_format(self.model_output_format);
 
 		Ok(())
 	}
 
+	/// allocates the output FloatTensorBuffer to automatically fit the model output
 	#[profile_function("self.profiling_frame")]
-	pub fn run_inference_with_tensors<
-		const INPUT_FORMAT: TensorFormat,
-		const OUTPUT_FORMAT: TensorFormat,
-	>(
-		&mut self,
-		input_tensor: FloatTensorBuffer<INPUT_FORMAT>,
-	) -> Result<FloatTensorBuffer<'_, OUTPUT_FORMAT>, TfLiteRunInferenceError> {
-		if self.model_input_format != INPUT_FORMAT {
-			return Err(TfLiteRunInferenceError::InputFormatMismatch {
-				model_expected: self.model_input_format,
-				provided: INPUT_FORMAT,
-			});
-		}
-		if self.model_output_format != OUTPUT_FORMAT {
-			return Err(TfLiteRunInferenceError::OutputFormatMismatch {
-				model_expected: self.model_output_format,
-				provided: OUTPUT_FORMAT,
-			});
-		}
-
+	pub fn allocate_output_tensor(
+		&self,
+	) -> Result<FloatTensorBuffer<'static>, TfLiteRunInferenceError> {
 		let mut output_container = Vec::<f32>::new();
 		let output_tensor = self
 			.interpreter
@@ -295,9 +286,9 @@ impl<'a> TfLiteRuntime<'a> {
 			output_tensor_data.len() / std::mem::size_of::<f32>(),
 			0.0f32,
 		);
-		self.run_inference(input_tensor.data(), &mut output_container)?;
-		Ok(FloatTensorBuffer::<'_, OUTPUT_FORMAT>::new(
+		Ok(FloatTensorBuffer::new(
 			output_container,
+			self.model_output_format,
 		))
 	}
 }
