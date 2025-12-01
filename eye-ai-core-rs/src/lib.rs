@@ -24,3 +24,6 @@ pub use object_tracker::{ObjectTracker, TrackedObject};
 
 mod profiling;
 pub use profiling::ProfilingFrame;
+
+mod colormap;
+pub use colormap::inferno_colormap;

@@ -58,7 +58,7 @@ class AudioDeviceManager(private val context: Context) : BroadcastReceiver() {
 	}
 
 	fun restartSpatialAudio() {
-		NativeLib.destroySpatialAudio()
+		uniffi.NativeLib.destroySpatialAudio() //NativeLib.destroySpatialAudio()
 	}
 
 	fun register() {

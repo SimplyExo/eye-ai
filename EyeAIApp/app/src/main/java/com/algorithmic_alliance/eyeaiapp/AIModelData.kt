@@ -8,5 +8,5 @@ import java.util.concurrent.atomic.AtomicReference
 object AIModelData {
 	val detectedObjects = AtomicReference<Array<UniffiDetectedObject>?>()
 	val ocrBoxes = AtomicReference<Array<TextBoundingBox>?>()
-	val depthEstimationData = AtomicReference<FloatBuffer>()
+	val depthEstimationData = AtomicReference<NativeLib.NativeFloatBuffer>()
 }

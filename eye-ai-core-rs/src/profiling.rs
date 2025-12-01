@@ -55,7 +55,6 @@ pub struct ProfilingFrame {
 	start: RwLock<Instant>,
 	profile_scopes: SegQueue<ProfileScopeRecord>,
 	current_scope_depth: AtomicUsize,
-	pub formatted_info: RwLock<String>,
 }
 
 impl ProfilingFrame {
@@ -65,7 +64,6 @@ impl ProfilingFrame {
 			start: RwLock::new(Instant::now()),
 			profile_scopes: SegQueue::new(),
 			current_scope_depth: AtomicUsize::new(0),
-			formatted_info: RwLock::new(String::new()),
 		}
 	}
 
@@ -77,17 +75,16 @@ impl ProfilingFrame {
 	/// This is only public so that `ProfileScope` can submit its records when being dropped.
 	/// Don't call this directly!
 	pub(crate) fn _internal_submit_scope(&self, record: ProfileScopeRecord) {
-		let previous_scope_depth = self.current_scope_depth.fetch_sub(1, Ordering::Relaxed);
+		self.current_scope_depth.fetch_sub(1, Ordering::Relaxed);
 		self.profile_scopes.push(record);
-
-		// in other words: if the top most scope finished -> finish this frame
-		if previous_scope_depth == 1 {
-			*self.formatted_info.write().unwrap() = self.finish();
-		}
 	}
 
-	// gets called, when the top most scope ends
-	fn finish(&self) -> String {
+	/// Returns None if the frame is not yet finished, i.e. current_scope_depth != 0
+	pub fn finish(&self) -> Option<String> {
+		if self.current_scope_depth.load(Ordering::Relaxed) != 0 {
+			return None;
+		}
+
 		// TODO: tracy framemark!
 		let end = Instant::now();
 
@@ -120,12 +117,12 @@ impl ProfilingFrame {
 		self.current_scope_depth.store(0, Ordering::Relaxed);
 		*self.start.write().unwrap() = Instant::now();
 
-		format!(
+		Some(format!(
 			"{} Frame: {:.2} fps ({:.2})\n{}",
 			self.name,
 			frame_fps,
 			dur::Duration::from_std(frame_duration),
 			profile_scopes_formatted
-		)
+		))
 	}
 }

@@ -50,7 +50,7 @@ class ObjectDetectionHandler() {
 			val depthEstimationData = AIModelData.depthEstimationData.get()
 
 			Log.d(EyeAIApp.Companion.APP_LOG_TAG, "Object detection boxes: ${objectDetectionBoxes?.size}")
-			Log.d(EyeAIApp.Companion.APP_LOG_TAG, "Depth data size: ${depthEstimationData?.capacity()}")
+			Log.d(EyeAIApp.Companion.APP_LOG_TAG, "Depth data size: ${depthEstimationData.floatBuffer.capacity()}")
 
 			if (objectDetectionBoxes.isNullOrEmpty()) {
 				Log.w(EyeAIApp.Companion.APP_LOG_TAG, "No object detection boxes - returning NoObjectsFound")
@@ -62,8 +62,8 @@ class ObjectDetectionHandler() {
 				return ObjectDetectionResult.DepthDataUnavailable
 			}*/
 
-			if (depthEstimationData.capacity() != DEPTH_WIDTH * DEPTH_HEIGHT) {
-				Log.w(EyeAIApp.Companion.APP_LOG_TAG, "Depth data has unexpected size: ${depthEstimationData.capacity()} (expected: ${DEPTH_WIDTH * DEPTH_HEIGHT})")
+			if (depthEstimationData.floatBuffer.capacity() != DEPTH_WIDTH * DEPTH_HEIGHT) {
+				Log.w(EyeAIApp.Companion.APP_LOG_TAG, "Depth data has unexpected size: ${depthEstimationData.floatBuffer.capacity()} (expected: ${DEPTH_WIDTH * DEPTH_HEIGHT})")
 				return ObjectDetectionResult.DepthDataInvalid
 			}
 
@@ -82,8 +82,8 @@ class ObjectDetectionHandler() {
 					val depthY = (box.cy * (DEPTH_HEIGHT - 1)).toInt().coerceIn(0, DEPTH_HEIGHT - 1)
 					val depthIndex = depthY * DEPTH_WIDTH + depthX
 
-					val distance = if (depthIndex < depthEstimationData.capacity()) {
-						depthEstimationData[depthIndex]
+					val distance = if (depthIndex < depthEstimationData.floatBuffer.capacity()) {
+						depthEstimationData.floatBuffer[depthIndex]
 					} else {
 						Log.w(EyeAIApp.Companion.APP_LOG_TAG, "Depth-Index out of bounds")
 						-1f

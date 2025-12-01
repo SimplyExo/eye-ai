@@ -1,9 +1,9 @@
 use eye_ai_core_rs::{
-	BoundingBox, DetectedObject, ProfilingFrame,
+	BoundingBox, DetectedObject, ProfilingFrame, TrackedObject,
 	audio::{SpatialAudio, SpatialAudioSettings, Vec2},
 };
 use std::{
-	sync::{Arc, RwLock},
+	sync::Arc,
 	time::{Duration, Instant},
 };
 
@@ -16,19 +16,12 @@ fn main() {
 	let coco_labels_audio_file_content =
 		std::fs::read("../EyeAIApp/app/src/main/assets/coco_labels_english.wav")
 			.expect("failed to read coco labels audio file");
-	let log_info_callback = |message: &str| println!("INFO: {}", message);
-	let log_error_callback = |message: &str| eprintln!("ERROR: {}", message);
-	let spatial_audio_settings = SpatialAudioSettings::new(
-		coco_labels_audio_file_content,
-		coco_labels_json_content,
-		log_info_callback,
-		log_error_callback,
-	);
-	let mut spatial_audio = SpatialAudio::new(
-		Arc::new(RwLock::new(spatial_audio_settings)),
-		audio_profiling_frame,
-	)
-	.unwrap();
+	let log_info_callback = Arc::new(move |message: &str| println!("INFO: {}", message));
+	let log_error_callback = Arc::new(move |message: &str| eprintln!("ERROR: {}", message));
+	let spatial_audio_settings =
+		SpatialAudioSettings::new(coco_labels_audio_file_content, coco_labels_json_content);
+	let mut spatial_audio =
+		SpatialAudio::new(spatial_audio_settings, audio_profiling_frame).unwrap();
 
 	let mut depth_estimation_data = [0.0; 256 * 256];
 
@@ -49,19 +42,22 @@ fn main() {
 			width: 0.25,
 			height: 0.4,
 		};
-		let object_detection_data = vec![DetectedObject {
-			class_name: if flip_flop {
-				"cat".to_string()
-			} else {
-				"dog".to_string()
+		let object_detection_data = vec![TrackedObject {
+			object: DetectedObject {
+				class_name: if flip_flop {
+					"cat".to_string()
+				} else {
+					"dog".to_string()
+				},
+				class_id: if flip_flop {
+					15 // line 16 "cat" in coco.names
+				} else {
+					16 // line 17 "dog" in coco.names
+				},
+				confidence: 0.7,
+				bbox: cat_bbox.clone(),
 			},
-			class_id: if flip_flop {
-				15 // line 16 "cat" in coco.names
-			} else {
-				16 // line 17 "dog" in coco.names
-			},
-			confidence: 0.7,
-			bbox: cat_bbox.clone(),
+			tracking_id: 0,
 		}];
 
 		// dummy depth data
@@ -82,7 +78,12 @@ fn main() {
 			}
 		}
 
-		spatial_audio.update(&depth_estimation_data, &object_detection_data);
+		spatial_audio.update(
+			&depth_estimation_data,
+			&object_detection_data,
+			log_info_callback.clone(),
+			log_error_callback.clone(),
+		);
 
 		std::thread::sleep(Duration::from_millis(100));
 

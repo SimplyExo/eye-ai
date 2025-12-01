@@ -53,21 +53,6 @@ android {
 			applicationIdSuffix = ".dev"
 			versionNameSuffix = "-dev"
 		}
-		create("profiling") {
-			initWith(getByName("release"))
-			matchingFallbacks += listOf("release")
-
-			buildConfigField("String", "BUILD_VARIANT", "\"Profiling\"")
-
-			applicationIdSuffix = ".dev"
-			versionNameSuffix = "-dev"
-
-			externalNativeBuild {
-				cmake {
-					arguments += "-DEYE_AI_CORE_ENABLE_TRACY_PROFILER=ON"
-				}
-			}
-		}
 
 		create("production") {
 			initWith(getByName("release"))
@@ -150,7 +135,6 @@ dependencies {
 
 	// OCR
 	implementation(libs.text.recognition)
-	implementation(libs.oboe)
 }
 
 

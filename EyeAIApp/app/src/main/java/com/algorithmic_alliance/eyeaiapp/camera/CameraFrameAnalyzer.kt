@@ -75,13 +75,13 @@ class CameraFrameAnalyzer(
 				val frame = getFrame()
 				if (frame != null && metricDepthModel != null) {
 					val inferenceDuration = measureTime {
-						//uniffi.NativeLib.newDepthFrame()
+						uniffi.NativeLib.newDepthFrame()
 						val predictionOutput = metricDepthModel.predictDepth(frame)
 						eyeAIApp.aiData.depthEstimationData.set(predictionOutput)
 						val inputWidth = frame.width
 						val inputHeight = frame.height
 						colorMappedImage = NativeLib.metricDepthColormap(
-							predictionOutput,
+							predictionOutput.asUniffiWrapper(),
 							metricDepthModel.inputDim
 						)
 
@@ -117,7 +117,7 @@ class CameraFrameAnalyzer(
 				val frame = getFrame()
 				if (frame != null) {
 					val inferenceDuration = measureTime {
-						//uniffi.NativeLib.newObjectFrame()
+						uniffi.NativeLib.newObjectFrame()
 						// analyzing the frame
 						val objects = eyeAIApp.yoloModel.runInference(frame)
 						eyeAIApp.aiData.detectedObjects.set(objects)

@@ -1,8 +1,6 @@
 use crate::audio::IVec2;
 
-pub type LogCallback = fn(&str);
-
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct SpatialAudioSettings {
 	pub coco_labels_audio_file_content: Vec<u8>,
 	pub coco_labels_json_content: String,
@@ -11,9 +9,6 @@ pub struct SpatialAudioSettings {
 	pub object_audio_paused: bool,
 	pub frequency: f32,
 	pub buffer_duration: f32,
-
-	pub log_info_callback: LogCallback,
-	pub log_error_callback: LogCallback,
 }
 
 impl SpatialAudioSettings {
@@ -28,12 +23,7 @@ impl SpatialAudioSettings {
 	pub const ROLLOFF_FACTOR: f32 = 1.0;
 	pub const REFERENCE_DISTANCE: f32 = 1.0;
 
-	pub fn new(
-		coco_labels_audio_file_content: Vec<u8>,
-		coco_labels_json_content: String,
-		log_info_callback: LogCallback,
-		log_error_callback: LogCallback,
-	) -> Self {
+	pub fn new(coco_labels_audio_file_content: Vec<u8>, coco_labels_json_content: String) -> Self {
 		Self {
 			coco_labels_json_content,
 			coco_labels_audio_file_content,
@@ -41,8 +31,6 @@ impl SpatialAudioSettings {
 			object_audio_paused: false,
 			frequency: Self::DEFAULT_FREQUENCY,
 			buffer_duration: Self::DEFAULT_BUFFER_DURATION,
-			log_info_callback,
-			log_error_callback,
 		}
 	}
 }

@@ -16,7 +16,6 @@ vosk = "0.3.47"
 preference = "1.2.1"
 appcompat = "1.7.1"
 mlkit-text = "16.0.1"
-oboe = "1.9.3"
 activity = "1.8.0"
 
 [libraries]
@@ -48,7 +47,6 @@ text-recognition = { module = "com.google.mlkit:text-recognition", version.ref =
 vosk = { group = "com.alphacephei", name = "vosk-android", version.ref = "vosk" }
 androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-oboe = {module = "com.google.oboe:oboe", version.ref = "oboe"}
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 
 # Nicht mehr benötigt

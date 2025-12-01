@@ -92,11 +92,6 @@ class EyeAIApp : Application() {
 		// does not load model or start listening
 		voskModel = VoskModel(context, "model-de")
 
-		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
-		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
-		NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
-
-
 		npuQnnDelegateDirectory = applicationInfo.nativeLibraryDir
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
@@ -142,14 +137,14 @@ class EyeAIApp : Application() {
 
 		if (oldSettings.depthAudioFrequency != settings.depthAudioFrequency) {
 			NativeLib.setAudioSettings(
-				settings.depthAudioFrequency,
+				settings.depthAudioFrequency.toFloat(),
 				settings.depthAudioClickIncidence
 			)
 		}
 
 		if (oldSettings.depthAudioClickIncidence != settings.depthAudioClickIncidence) {
 			NativeLib.setAudioSettings(
-				settings.depthAudioFrequency,
+				settings.depthAudioFrequency.toFloat(),
 				settings.depthAudioClickIncidence
 			)
 		}

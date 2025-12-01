@@ -16,12 +16,14 @@ use thiserror::Error;
 use tracing_tracy::client::secondary_frame_mark;
 
 use crate::{
-	DetectedObject, ProfilingFrame,
+	ProfilingFrame, TrackedObject,
 	audio::{
 		CalculateSoundOrigin, DepthAudioSourceData, IVec2, ObjectAudioSourceData,
 		SpatialAudioSettings, Vec3, read_audio_file,
 	},
 };
+
+pub type AudioLogCallback = Arc<dyn Fn(&str)>;
 
 #[derive(Debug, Error)]
 pub enum SpatialAudioError {
@@ -75,8 +77,7 @@ pub struct SpatialAudio {
 	object_audio_sources_data: Arc<RwLock<VecDeque<ObjectAudioSourceData>>>,
 	_object_audio_thread: std::thread::JoinHandle<()>,
 	object_audio_running: Arc<AtomicBool>,
-	processing_finished: bool,
-	audio_settings: Arc<RwLock<SpatialAudioSettings>>,
+	pub settings: Arc<RwLock<SpatialAudioSettings>>,
 	object_label_data: HashMap<String, ObjectLabelData>,
 	profiling_frame: Arc<ProfilingFrame>,
 }
@@ -89,20 +90,19 @@ impl Drop for SpatialAudio {
 impl SpatialAudio {
 	#[profile_function("profiling_frame")]
 	pub fn new(
-		audio_settings: Arc<RwLock<SpatialAudioSettings>>,
+		settings: SpatialAudioSettings,
 		profiling_frame: Arc<ProfilingFrame>,
 	) -> Result<Self, SpatialAudioError> {
 		let profiling_frame_clone1 = profiling_frame.clone();
 		let profiling_frame_clone2 = profiling_frame.clone();
 		let profiling_frame_clone3 = profiling_frame.clone();
 
-		let audio_settings_clone1 = audio_settings.clone();
-		let audio_settings_clone2 = audio_settings.clone();
+		let object_label_data =
+			read_object_label_data(&settings.coco_labels_json_content, &profiling_frame)?;
 
-		let object_label_data = read_object_label_data(
-			&audio_settings.read().unwrap().coco_labels_json_content,
-			&profiling_frame,
-		)?;
+		let settings = Arc::new(RwLock::new(settings));
+		let settings_clone1 = settings.clone();
+		let settings_clone2 = settings.clone();
 
 		let depth_audio_running = Arc::new(AtomicBool::new(true));
 		let depth_audio_running_clone = depth_audio_running.clone();
@@ -144,7 +144,7 @@ impl SpatialAudio {
 						depth_audio_running_clone,
 						context_clone1,
 						depth_audio_sources_data_clone,
-						audio_settings_clone1,
+						settings_clone1,
 						&profiling_frame_clone2,
 					)
 				})
@@ -156,7 +156,7 @@ impl SpatialAudio {
 				.spawn(move || {
 					object_audio_thread(
 						object_audio_running_clone,
-						audio_settings_clone2,
+						settings_clone2,
 						context_clone2,
 						object_audio_sources_data_clone,
 						&profiling_frame_clone3,
@@ -164,8 +164,7 @@ impl SpatialAudio {
 				})
 				.expect("failed to spawn object audio thread"),
 			object_audio_running,
-			processing_finished: false,
-			audio_settings,
+			settings,
 			object_label_data,
 			profiling_frame: profiling_frame_clone1,
 		})
@@ -175,24 +174,26 @@ impl SpatialAudio {
 	pub fn update(
 		&mut self,
 		depth_estimation_data: &[f32; 256 * 256],
-		object_detection_data: &[DetectedObject],
+		object_detection_data: &[TrackedObject],
+		log_info_callback: AudioLogCallback,
+		log_error_callback: AudioLogCallback,
 	) {
-		self.processing_finished = false;
-		let audio_settings = self.audio_settings.read().unwrap();
-		if !audio_settings.depth_audio_paused {
+		let settings = self.settings.read().unwrap();
+		if !settings.depth_audio_paused {
 			*self.depth_audio_sources_data.write().unwrap() = process_depth_estimation_data(
 				depth_estimation_data,
-				&audio_settings,
+				&settings,
 				&self.profiling_frame,
 			);
 		}
-		if !audio_settings.object_audio_paused {
+		if !settings.object_audio_paused {
 			let new_audio_sources_data = process_object_detection_data(
 				depth_estimation_data,
 				object_detection_data,
 				&self.object_label_data,
-				&audio_settings,
 				&self.profiling_frame,
+				log_info_callback,
+				log_error_callback,
 			);
 			let mut object_audio_sources_data = self.object_audio_sources_data.write().unwrap();
 			for new_source_data in new_audio_sources_data {
@@ -213,7 +214,6 @@ impl SpatialAudio {
 				}
 			}
 		}
-		self.processing_finished = true;
 	}
 }
 
@@ -333,14 +333,14 @@ fn object_audio_thread(
 		.expect("failed to load coco labels audio file");
 
 	let coco_audio_samples: Vec<i16> = audio_file_data.samples;
-	let info_callback = settings.read().unwrap().log_info_callback;
+	/*let info_callback = settings.read().unwrap().log_info_callback;
 	(info_callback)(
 		format!(
 			"[LoadAudioLabelsFile] File sample rate: {}",
 			audio_file_data.sample_rate
 		)
 		.as_str(),
-	);
+	);*/
 
 	let mut source = context.new_static_source().unwrap();
 	source.set_gain(0.5).unwrap();
@@ -435,18 +435,21 @@ fn process_depth_estimation_data(
 #[profile_function("profiling_frame")]
 fn process_object_detection_data(
 	depth_estimation_data: &[f32; 256 * 256],
-	object_detection_data: &[DetectedObject],
+	object_detection_data: &[TrackedObject],
 	object_label_data: &HashMap<String, ObjectLabelData>,
-	settings: &SpatialAudioSettings,
 	profiling_frame: &ProfilingFrame,
+	log_info_callback: AudioLogCallback,
+	log_error_callback: AudioLogCallback,
 ) -> VecDeque<ObjectAudioSourceData> {
 	let mut audio_source_data = VecDeque::new();
 
-	for object in object_detection_data {
+	for tracked_object in object_detection_data {
+		let object = &tracked_object.object;
+
 		let object_name = object.class_name.to_lowercase().trim().to_owned();
 
 		let Some(object_label_data) = object_label_data.get(&object_name) else {
-			(settings.log_error_callback)(format!(
+			log_error_callback(format!(
 					"[ProcessObjectDetectionData] Could not find object {} in the object_label_data. Skipping to next one ...",
 					object_name
 				).as_str());
@@ -460,7 +463,7 @@ fn process_object_detection_data(
 				as i32,
 		};
 
-		(settings.log_info_callback)(
+		log_info_callback(
 			format!(
 				"Object {}: Start: {} End: {}",
 				object_name, object_label_data.sample_begin, object_label_data.sample_end

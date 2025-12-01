@@ -233,7 +233,7 @@ class SettingsHandler(
 						val frequency = setting.getInt("frequency")
 						val clampedFreq = frequency.coerceIn(100, 4000)
 						val currentBps = settings.depthAudioClickIncidence
-						NativeLib.setAudioSettings(clampedFreq, currentBps)
+						NativeLib.setAudioSettings(clampedFreq.toFloat(), currentBps)
 
 						// Save settings
 						settings.depthAudioFrequency = clampedFreq
@@ -246,7 +246,7 @@ class SettingsHandler(
 						val bps = setting.getInt("bps")
 						val clampedBps = bps.coerceIn(1, 10)
 						val currentFreq = settings.depthAudioFrequency
-						NativeLib.setAudioSettings(currentFreq, clampedBps)
+						NativeLib.setAudioSettings(currentFreq.toFloat(), clampedBps)
 
 						// Save settings
 						settings.depthAudioClickIncidence = clampedBps

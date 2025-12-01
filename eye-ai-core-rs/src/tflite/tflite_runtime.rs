@@ -122,7 +122,7 @@ impl<'a> TfLiteRuntime<'a> {
 		let tflite_api = Arc::new(
 			TfLite::load(
 				create_info.tflite_lib_filepath,
-				VersionReq::parse(">=2.19.0, <=2.20.0-dev0").unwrap(),
+				VersionReq::parse(">=2.16.0, <=2.20.0-dev0").unwrap(),
 			)
 			.map_err(TfLiteRuntimeCreateError::TfLiteDyn)?,
 		);

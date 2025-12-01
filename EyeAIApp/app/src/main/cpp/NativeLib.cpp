@@ -1,61 +1,125 @@
-#include "EyeAICore/audio/SpatialAudioSettings.hpp"
-#include <EyeAICore/ObjectTracker.hpp>
-#include <EyeAICore/audio/AudioMain.hpp>
-#include <EyeAICore/audio/SpatialAudio.hpp>
 #include <jni.h>
+#include <android/log.h>
+#include <android/bitmap.h>
 #include <memory>
-#include <nlohmann/json.hpp>
+#include <span>
+#include <format>
 
-#include "EyeAICore/DepthModel.hpp"
-#include "EyeAICore/MetricDepthModel.hpp"
-#include "EyeAICore/YoloModel.hpp"
-#include "EyeAICore/utils/DepthColormap.hpp"
-#include "EyeAICore/utils/MutexGuard.hpp"
-#include "EyeAICore/utils/Profiling.hpp"
-#include "ImageUtils.hpp"
-#include "Log.hpp"
-#include "NativeJavaScopes.hpp"
+template<typename... Args>
+void formatted_log(int priority, const char* format, Args... args) {
+	const std::string formatted =
+		std::vformat(format, std::make_format_args(args...));
 
-// the global variables are using MutexGuard, so they are thread-safe
-// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+	__android_log_write(priority, "Native Lib", formatted.c_str());
+}
 
-// Logging functions for spatial audio
-void spatial_audio_log_error_callback(std::string msg);
-void spatial_audio_log_info_callback(std::string msg);
+#define LOG_INFO(...) formatted_log(ANDROID_LOG_INFO, __VA_ARGS__)
+#define LOG_ERROR(...) formatted_log(ANDROID_LOG_ERROR, __VA_ARGS__)
 
-namespace {
-MutexGuard<std::unique_ptr<SpatialAudio>> spatial_audio{
-	std::unique_ptr<SpatialAudio>(nullptr)
+
+constexpr uint8_t red_channel_from_argb_color(int color) {
+	return (color >> 16) & 255;
+}
+constexpr uint8_t green_channel_from_argb_color(int color) {
+	return (color >> 8) & 255;
+}
+constexpr uint8_t blue_channel_from_argb_color(int color) {
+	return color & 255;
+}
+
+struct [[nodiscard]] BitmapError {
+	std::string error_msg;
+
+	[[nodiscard]] std::string to_string() const { return error_msg; }
+
+	template<typename... Args>
+	[[nodiscard]] static BitmapError
+	fmt(const std::format_string<Args...> fmt, Args&&... args) {
+		return BitmapError(
+			std::vformat(fmt.get(), std::make_format_args(args...))
+		);
+	}
 };
 
-MutexGuard<SpatialAudioSettings> spatial_audio_settings =
-	MutexGuard<SpatialAudioSettings>(SpatialAudioSettings(
-		spatial_audio_log_error_callback,
-		spatial_audio_log_info_callback
-	));
-
-} // namespace
-// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
-
-/// see NativeLib.kt, must be Int!
-// NOLINTNEXTLINE(performance-enum-size)
-enum class ProfilingFrameType : jint { Depth = 0, Object = 1 };
-
-static ProfilingFrame& get_profiling_frame(ProfilingFrameType type) {
-	switch (type) {
+[[nodiscard]] std::optional<BitmapError> check_android_bitmap_result(int result) {
+	switch (result) {
+	case ANDROID_BITMAP_RESULT_SUCCESS:
+		return std::nullopt;
+	case ANDROID_BITMAP_RESULT_BAD_PARAMETER:
+		return BitmapError("Android Bitmap error: Bad Parameter");
+	case ANDROID_BITMAP_RESULT_JNI_EXCEPTION:
+		return BitmapError("Android Bitmap error: JNI Exception");
+	case ANDROID_BITMAP_RESULT_ALLOCATION_FAILED:
+		return BitmapError("Android Bitmap error: Allocation failed");
 	default:
-	case ProfilingFrameType::Depth:
-		return get_depth_profiling_frame();
-	case ProfilingFrameType::Object:
-		return get_object_profiling_frame();
+		return BitmapError::fmt(
+			"Android Bitmap error: Unknown code: {}", result
+		);
 	}
+}
+
+/// converts pixel from bitmap into float array with (height, width, channel)
+/// shape and 3 rgb-channels each in the range of 0.0f to 255.0f
+/// often the right format for use with tflite models
+[[nodiscard]] std::optional<BitmapError> bitmap_to_rgb_hwc_255_float_array(
+	JNIEnv* env,
+	jobject bitmap,
+	std::span<float> out_float_array
+) {
+	AndroidBitmapInfo info;
+
+	if (const auto error = check_android_bitmap_result(
+			AndroidBitmap_getInfo(env, bitmap, &info)
+		)) {
+		return error;
+	}
+
+	if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+		return BitmapError::fmt(
+			"bitmap has format {}, but RGBA_8888 was expected", info.format
+		);
+	}
+
+	if (out_float_array.size() != (size_t)info.width * (size_t)info.height * 3)
+		throw std::invalid_argument("out_float_array");
+
+	void* address_ptr = nullptr;
+	if (const auto error = check_android_bitmap_result(
+			AndroidBitmap_lockPixels(env, bitmap, &address_ptr)
+		)) {
+		return error;
+	}
+	if (address_ptr == nullptr) {
+		return BitmapError("failed to lock bitmap pixels");
+	}
+	// RGBA 8888 -> one int for each pixel, lint supression needed because of c
+	// api
+	// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
+	const auto pixel_ptr = std::span<int>(
+		reinterpret_cast<int*>(address_ptr),
+		(size_t)info.width * (size_t)info.height
+	);
+	// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
+
+	size_t i = 0;
+	size_t j = 0;
+	for (; i < (size_t)info.width * (size_t)info.height; i++) {
+		const int pixel_color = pixel_ptr[i];
+		out_float_array[j++] = (float)red_channel_from_argb_color(pixel_color);
+		out_float_array[j++] =
+			(float)green_channel_from_argb_color(pixel_color);
+		out_float_array[j++] = (float)blue_channel_from_argb_color(pixel_color);
+	}
+
+	return check_android_bitmap_result(AndroidBitmap_unlockPixels(env, bitmap));
 }
 
 // NOLINTBEGIN(readability-identifier-naming,
 // bugprone-easily-swappable-parameters)
 
 // TODO: move to rust?
-extern "C" JNIEXPORT jlong JNICALL Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getByteBufferPtr(
+extern "C" JNIEXPORT jlong JNICALL
+Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getByteBufferPtr(
 	JNIEnv* env,
 	jobject /*_this*/,
 	jobject byteBuffer
@@ -64,271 +128,22 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_algorithmic_1alliance_eyeaiapp_Nativ
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_metricDepthColormap(
-	JNIEnv* env,
-	jobject /*thiz*/,
-	jobject depth_buffer,
-	jintArray colormapped_pixels
-) {
-	std::span<float> depth_span{(float*)env->GetDirectBufferAddress(depth_buffer), (size_t)env->GetDirectBufferCapacity(depth_buffer)};
-	NativeIntArrayScope colormapped_pixel_array(env, colormapped_pixels);
-
-	if (depth_span.size() == colormapped_pixel_array.size()) {
-		if (const auto error = metric_depth_colormap(
-				depth_span, colormapped_pixel_array
-			))
-			LOG_ERROR("depthColormap failed: {}", error->to_string());
-	} else {
-		LOG_ERROR(
-			"depth and colormapped pixel array should have the same length! "
-			"({} and {})",
-			depth_span.size(), colormapped_pixel_array.size()
-		);
-	}
-}
-
-extern "C" JNIEXPORT void JNICALL
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 	JNIEnv* env,
 	jobject /*thiz*/,
 	jobject bitmap,
-	jobject out_float_buffer,
-	jint profiling_frame_type
+	jobject out_float_buffer
 ) {
 	std::span<float> out_float_span{
 		(float*)env->GetDirectBufferAddress(out_float_buffer),
 		(size_t)env->GetDirectBufferCapacity(out_float_buffer)
 	};
-	//NativeFloatArrayScope out_float_array_scope(env, out_float_array);
+	// NativeFloatArrayScope out_float_array_scope(env, out_float_array);
 
 	if (const auto error = bitmap_to_rgb_hwc_255_float_array(
-			env, bitmap, out_float_span,
-			get_profiling_frame(
-				static_cast<ProfilingFrameType>(profiling_frame_type)
-			)
+			env, bitmap, out_float_span
 		)) {
 		LOG_ERROR("bitmapToRgbHwc255FloatArray failed: {}", error->to_string());
-	}
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_newDepthFrame(
-	JNIEnv* /*env*/,
-	jobject /*this*/
-) {
-	set_last_depth_profiling_frame_formatted(
-		std::move(get_depth_profiling_frame().finish())
-	);
-}
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatDepthFrame(
-	JNIEnv* env,
-	jobject /*this*/
-) {
-	return env->NewStringUTF(
-		get_last_depth_profiling_frame_formatted().c_str()
-	);
-}
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_newCameraFrame(
-	JNIEnv* /*env*/,
-	jobject /*this*/
-) {
-	set_last_camera_profiling_frame_formatted(
-		std::move(get_camera_profiling_frame().finish())
-	);
-}
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatCameraFrame(
-	JNIEnv* env,
-	jobject /*this*/
-) {
-	return env->NewStringUTF(
-		get_last_camera_profiling_frame_formatted().c_str()
-	);
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_newObjectFrame(
-	JNIEnv* /*env*/,
-	jobject /*this*/
-) {
-	set_last_object_profiling_frame_formatted(
-		std::move(get_object_profiling_frame().finish())
-	);
-}
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_formatObjectFrame(
-	JNIEnv* env,
-	jobject /*this*/
-) {
-	return env->NewStringUTF(
-		get_last_object_profiling_frame_formatted().c_str()
-	);
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setupAudioSettings(
-	JNIEnv* env,
-	jobject /*this*/,
-	jbyteArray coco_labels_audio,
-	jbyteArray coco_labels_data
-) {
-	LOG_INFO("[SpatialAudio] Setting up AudioSettings ... ");
-	jbyte* coco_labels_audio_ptr =
-		env->GetByteArrayElements(coco_labels_audio, nullptr);
-	if (coco_labels_audio_ptr == nullptr) {
-		LOG_ERROR("[SpatialAudio] Failed to get coco_labels_audio elements.");
-		return;
-	}
-
-	jsize coco_labels_audio_size = env->GetArrayLength(coco_labels_audio);
-
-	std::vector<std::byte> coco_labels_audio_vector(coco_labels_audio_size);
-	std::memcpy(
-		coco_labels_audio_vector.data(), coco_labels_audio_ptr,
-		coco_labels_audio_size
-	);
-
-	jbyte* coco_labels_data_ptr =
-		env->GetByteArrayElements(coco_labels_data, nullptr);
-	if (coco_labels_data_ptr == nullptr) {
-		LOG_ERROR("[SpatialAudio] Failed to get coco_labels_data elements.");
-		env->ReleaseByteArrayElements(
-			coco_labels_audio, coco_labels_audio_ptr, JNI_ABORT
-		); // Freigeben bei Fehler
-		return;
-	}
-	jsize coco_labels_data_size = env->GetArrayLength(coco_labels_data);
-
-	std::vector<std::byte> coco_labels_data_vector(coco_labels_data_size);
-	std::memcpy(
-		coco_labels_data_vector.data(), coco_labels_data_ptr,
-		coco_labels_data_size
-	);
-	auto audio_setting_scope = spatial_audio_settings.lock();
-
-	audio_setting_scope->coco_labels_audio.clear();
-	audio_setting_scope->coco_labels_audio =
-		std::move(coco_labels_audio_vector);
-	audio_setting_scope->coco_labels_data.clear();
-	audio_setting_scope->coco_labels_data = std::move(coco_labels_data_vector);
-
-	env->ReleaseByteArrayElements(
-		coco_labels_audio, coco_labels_audio_ptr, JNI_ABORT
-	);
-	env->ReleaseByteArrayElements(
-		coco_labels_data, coco_labels_data_ptr, JNI_ABORT
-	);
-	LOG_INFO("[SpatialAudio] Set up AudioSettings ... ");
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setAudioSettings(
-	JNIEnv* env,
-	jobject /*this*/,
-	jint frequency,
-	jint incidence
-) {
-	LOG_INFO("[SpatialAudio] Updating audio settings...");
-
-	auto audio_setting_scope = spatial_audio_settings.lock();
-
-	audio_setting_scope->FREQUENCY = (float)frequency;
-	audio_setting_scope->BUFFER_DURATION = ((float)1) / incidence;
-}
-
-void spatial_audio_log_error_callback(std::string msg) {
-	LOG_ERROR("[SpatialAudio] {}", msg);
-};
-
-void spatial_audio_log_info_callback(std::string msg) {
-	LOG_INFO("[SpatialAudio] {}", msg);
-};
-
-static SpatialAudio& get_or_create_spatial_audio() {
-	auto spatial_audio_scope = spatial_audio.lock();
-	auto audio_setting_scope = spatial_audio_settings.lock();
-
-	if (*spatial_audio_scope == nullptr) {
-		LOG_INFO("[SpatialAudio] Initializing SpatialAudio instance...");
-		*spatial_audio_scope =
-			std::make_unique<SpatialAudio>(*audio_setting_scope);
-	}
-
-	return *(*spatial_audio_scope);
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setDepthAudioPaused(
-	JNIEnv* env,
-	jobject /*this*/,
-	jboolean paused
-) {
-	LOG_INFO("[SpatialAudio] Setting depth audio playback. Paused: {}", paused);
-
-	auto audio_setting_scope = spatial_audio_settings.lock();
-
-	audio_setting_scope->depth_audio_paused = paused;
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_setObjectAudioPaused(
-	JNIEnv* env,
-	jobject /*this*/,
-	jboolean paused
-) {
-	LOG_INFO(
-		"[SpatialAudio] Setting object audio playback. Paused: {}", paused
-	);
-
-	auto audio_setting_scope = spatial_audio_settings.lock();
-
-	audio_setting_scope->object_audio_paused = paused;
-}
-
-// NOTE: since tracked objects are in rust/kotlin, while we port audio to rust, objects is always empty, function will be removed by then
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_sendAIData(
-	JNIEnv* env,
-	jobject /*this*/,
-	jobject depth_data_buffer
-) {
-	std::span<float> depth_data_span{
-		(float*)env->GetDirectBufferAddress(depth_data_buffer),
-		(size_t)env->GetDirectBufferCapacity(depth_data_buffer)
-	};
-
-	assert(depth_estimation_data.size() == (256 * 256));
-	// EMPTY!
-	std::vector<ObjectTracker::TrackedBoundingBox> object_detection_data{};
-	get_or_create_spatial_audio().getAIData(
-		static_cast<std::span<float, 256 * 256>>(depth_data_span),
-		object_detection_data
-	);
-}
-
-extern "C" JNIEXPORT jboolean JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getProcessingStatus(
-	JNIEnv* env,
-	jobject /*this*/
-) {
-	return get_or_create_spatial_audio().getProcessingStatus();
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_destroySpatialAudio(
-	JNIEnv* /*env*/,
-	jobject /*this*/
-) {
-	auto spatial_audio_scope = spatial_audio.lock();
-	std::this_thread::sleep_for(std::chrono::seconds(3));
-	if (*spatial_audio_scope != nullptr) {
-		LOG_INFO("[SpatialAudio] Destroying SpatialAudio instance...");
-		spatial_audio_scope->reset(nullptr);
-		LOG_INFO("[SpatialAudio] SpatialAudio destroyed!");
-	} else {
-		LOG_INFO("[SpatialAudio] SpatialAudio already destroyed!");
 	}
 }
 
