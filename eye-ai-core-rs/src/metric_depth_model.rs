@@ -81,11 +81,20 @@ fn rel2abs_operator<'a>(
 /// coeffs: {a0, a1, a2, a3, a4}
 ///
 /// polynomial_4(x) = a0 + a1 * x + a2 * x² + a3 * x³ + a4 * x⁴
-fn polynomial_n4(x: f32, coeffs: &[f32; 5]) -> f32 {
+const fn polynomial_n4(x: f32, coeffs: &[f32; 5]) -> f32 {
 	let mut y = coeffs[4];
 	y = y * x + coeffs[3];
 	y = y * x + coeffs[2];
 	y = y * x + coeffs[1];
 	y = y * x + coeffs[0];
+	y
+}
+
+#[allow(unused)]
+fn polynomial_n<const N: usize>(x: f32, coeffs: &[f32; N]) -> f32 {
+	let mut y = coeffs[N - 1];
+	for i in 0..(N - 2) {
+		y = y * x + coeffs[(N - 2) - i];
+	}
 	y
 }

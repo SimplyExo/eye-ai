@@ -2,9 +2,6 @@ use crate::audio::IVec2;
 
 #[derive(Clone)]
 pub struct SpatialAudioSettings {
-	pub coco_labels_audio_file_content: Vec<u8>,
-	pub coco_labels_json_content: String,
-
 	pub depth_audio_paused: bool,
 	pub object_audio_paused: bool,
 	pub frequency: f32,
@@ -23,14 +20,17 @@ impl SpatialAudioSettings {
 	pub const ROLLOFF_FACTOR: f32 = 1.0;
 	pub const REFERENCE_DISTANCE: f32 = 1.0;
 
-	pub fn new(coco_labels_audio_file_content: Vec<u8>, coco_labels_json_content: String) -> Self {
+	pub fn new(frequency: f32, buffer_duration: f32) -> Self {
 		Self {
-			coco_labels_json_content,
-			coco_labels_audio_file_content,
 			depth_audio_paused: false,
 			object_audio_paused: false,
-			frequency: Self::DEFAULT_FREQUENCY,
-			buffer_duration: Self::DEFAULT_BUFFER_DURATION,
+			frequency,
+			buffer_duration,
 		}
+	}
+}
+impl Default for SpatialAudioSettings {
+	fn default() -> Self {
+		Self::new(Self::DEFAULT_FREQUENCY, Self::DEFAULT_BUFFER_DURATION)
 	}
 }

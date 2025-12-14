@@ -10,5 +10,7 @@ mod spatial_audio;
 pub use spatial_audio::SpatialAudio;
 mod spatial_audio_settings;
 pub use spatial_audio_settings::SpatialAudioSettings;
-mod audio_file;
-pub use audio_file::{AudioFileData, read_audio_file};
+mod spatial_audio_content;
+pub use spatial_audio_content::{
+	AudioFileData, ObjectLabelData, SpatialAudioContent, read_audio_file, read_object_label_data,
+};

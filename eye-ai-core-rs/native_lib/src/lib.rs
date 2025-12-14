@@ -4,7 +4,10 @@ use eye_ai_core_rs::{
 	BoundingBox, CreateDepthModelInfo, CreateYoloModelInfo, DepthModelNpuConfig, DetectedObject,
 	FloatTensorBuffer, FloatTensorFormat, MetricDepthModel, ObjectTracker, ProfilingFrame,
 	TrackedObject, YoloModel, YoloModelNpuConfig,
-	audio::{SpatialAudio, SpatialAudioSettings},
+	audio::{
+		SpatialAudio, SpatialAudioContent, SpatialAudioSettings, read_audio_file,
+		read_object_label_data,
+	},
 	inferno_colormap,
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
@@ -36,6 +39,10 @@ static LAST_FORMATTED_OBJECT_PROFILING_INFO: LazyLock<RwLock<String>> =
 	LazyLock::new(|| RwLock::new(String::new()));
 
 static SPATIAL_AUDIO: LazyLock<RwLock<Option<SpatialAudio>>> = LazyLock::new(|| RwLock::new(None));
+static SPATIAL_AUDIO_SETTINGS: LazyLock<Arc<RwLock<SpatialAudioSettings>>> =
+	LazyLock::new(|| Arc::new(RwLock::new(SpatialAudioSettings::default())));
+static SPATIAL_AUDIO_CONTENT: LazyLock<RwLock<Option<Arc<SpatialAudioContent>>>> =
+	LazyLock::new(|| RwLock::new(None));
 // TODO: Display audio profiling frame info in EyeAIApp
 static AUDIO_PROFILING_FRAME: LazyLock<Arc<ProfilingFrame>> =
 	LazyLock::new(|| Arc::new(ProfilingFrame::new("Audio")));
@@ -49,10 +56,8 @@ fn wait_for_model<M, R>(
 ) -> R {
 	let waiting_scope = profiling_frame.scope(profiling_scope_name);
 
-	let mut model = model.write().unwrap();
-
 	loop {
-		if let Some(model) = &mut (*model) {
+		if let Some(model) = &mut (*model.write().unwrap()) {
 			drop(waiting_scope); // the 'waiting_scope' scope only shows the waiting time
 			return f(model);
 		}
@@ -81,12 +86,24 @@ fn wait_for_yolo_model<R>(f: impl FnOnce(&mut YoloModel) -> R) -> R {
 
 fn try_change_spatial_audio<R>(f: impl FnOnce(&mut SpatialAudio) -> R) -> Option<R> {
 	let waiting_scope = AUDIO_PROFILING_FRAME.scope("try_mutate_spatial_audio");
-	(*SPATIAL_AUDIO.write().unwrap())
-		.as_mut()
-		.map(|spatial_audio| {
-			drop(waiting_scope);
-			f(spatial_audio)
-		})
+
+	// first, wait for the spatial audio content to be loaded
+	if let Some(content) = &(*SPATIAL_AUDIO_CONTENT.read().unwrap()) {
+		// then wait for the spatial audio lock (also: create it, if it does not exist yet)
+		let spatial_audio = &mut (*SPATIAL_AUDIO.write().unwrap());
+		let spatial_audio = spatial_audio.get_or_insert_with(|| {
+			SpatialAudio::new(
+				SPATIAL_AUDIO_SETTINGS.clone(),
+				content.clone(),
+				AUDIO_PROFILING_FRAME.clone(),
+			)
+			.unwrap()
+		});
+		drop(waiting_scope);
+		Some(f(spatial_audio))
+	} else {
+		None
+	}
 }
 
 /*
@@ -112,11 +129,11 @@ pub extern "system" fn Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getByte
 
 // Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getFloatArrayPtr
 #[derive(uniffi::Record)]
-struct UniffiFloatBufferWrapper {
+pub struct UniffiFloatBufferWrapper {
 	/// i64 ^= Long, direct pointer address of an FloatBuffer
-	ptr_address: i64,
+	pub ptr_address: i64,
 	/// length of the FloatArray
-	length: i32,
+	pub length: i32,
 }
 impl UniffiFloatBufferWrapper {
 	fn as_slice_mut(&mut self) -> &mut [f32] {
@@ -127,11 +144,11 @@ impl UniffiFloatBufferWrapper {
 }
 
 #[derive(uniffi::Record)]
-struct UniffiIntBufferWrapper {
+pub struct UniffiIntBufferWrapper {
 	/// i64 ^= Long, direct pointer address of an IntBuffer
-	ptr_address: i64,
+	pub ptr_address: i64,
 	/// length of the IntArray
-	length: i32,
+	pub length: i32,
 }
 impl UniffiIntBufferWrapper {
 	fn as_slice_mut(&mut self) -> &mut [i32] {
@@ -142,7 +159,7 @@ impl UniffiIntBufferWrapper {
 }
 
 #[uniffi::export(callback_interface)]
-trait LogCallbacks: Send + Sync {
+pub trait LogCallbacks: Send + Sync {
 	fn log_info_callback(&self, msg: String);
 	fn log_warning_callback(&self, msg: String);
 	fn log_error_callback(&self, msg: String);
@@ -150,7 +167,7 @@ trait LogCallbacks: Send + Sync {
 
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
-fn initMetricDepthModel(
+pub fn initMetricDepthModel(
 	relative_depth_model: Vec<u8>,
 	gpu_delegate_serialization_dir: String,
 	relative_depth_model_token: String,
@@ -201,19 +218,17 @@ fn initMetricDepthModel(
 
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
-fn shutdownMetricDepthModel() {
+pub fn shutdownMetricDepthModel() {
 	*METRIC_DEPTH_MODEL.write().unwrap() = None;
 }
 
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
-fn runMetricDepthModelInference(
+pub fn runMetricDepthModelInference(
 	mut input: UniffiFloatBufferWrapper,
 	mut output: UniffiFloatBufferWrapper,
 	logger: Box<dyn LogCallbacks>,
 ) {
-	logger.log_info_callback("running metric depth model".to_string());
-
 	wait_for_metric_depth_model(|metric_depth_model| {
 		match metric_depth_model.run(
 			&mut FloatTensorBuffer::new(input.as_slice_mut(), FloatTensorFormat::MiDaSImageRgb),
@@ -232,7 +247,7 @@ fn runMetricDepthModelInference(
 
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
-fn getMetricDepthModelInputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
+pub fn getMetricDepthModelInputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
 	wait_for_metric_depth_model(
 		|metric_depth_model| match metric_depth_model.get_input_shape() {
 			Some(input_shape) => input_shape,
@@ -248,7 +263,7 @@ fn getMetricDepthModelInputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
 
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
-fn getMetricDepthModelOutputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
+pub fn getMetricDepthModelOutputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
 	wait_for_metric_depth_model(
 		|metric_depth_model| match metric_depth_model.get_output_shape() {
 			Some(output_shape) => output_shape,
@@ -264,7 +279,7 @@ fn getMetricDepthModelOutputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
 
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
-fn metricDepthColormap(
+pub fn metricDepthColormap(
 	mut depth_buffer: UniffiFloatBufferWrapper,
 	mut colormapped_pixels: UniffiIntBufferWrapper,
 	logger: Box<dyn LogCallbacks>,
@@ -288,7 +303,7 @@ fn metricDepthColormap(
 
 #[uniffi::export]
 #[profile_function("OBJECT_PROFILING_FRAME")]
-fn initYoloRuntime(
+pub fn initYoloRuntime(
 	model: Vec<u8>,
 	labels: Vec<String>,
 	gpu_delegate_serialization_dir: String,
@@ -340,7 +355,7 @@ fn initYoloRuntime(
 }
 
 #[derive(uniffi::Record)]
-struct UniffiDetectedObject {
+pub struct UniffiDetectedObject {
 	x1: f32,
 	y1: f32,
 	x2: f32,
@@ -390,12 +405,10 @@ impl From<UniffiDetectedObject> for TrackedObject {
 
 #[uniffi::export]
 #[profile_function("OBJECT_PROFILING_FRAME")]
-fn runYoloOperation(
+pub fn runYoloOperation(
 	mut input: UniffiFloatBufferWrapper,
 	logger: Box<dyn LogCallbacks>,
 ) -> Vec<UniffiDetectedObject> {
-	logger.log_info_callback("running Yolo Operation...".to_string());
-
 	wait_for_yolo_model(|yolo_model| {
 		match yolo_model.run(&mut FloatTensorBuffer::new(
 			input.as_slice_mut(),
@@ -426,7 +439,7 @@ fn runYoloOperation(
 
 #[uniffi::export]
 #[profile_function("OBJECT_PROFILING_FRAME")]
-fn getYoloInputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
+pub fn getYoloInputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
 	wait_for_yolo_model(|yolo_model| match yolo_model.get_input_shape() {
 		Some(input_shape) => input_shape,
 		None => {
@@ -440,7 +453,7 @@ fn getYoloInputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
 
 #[uniffi::export]
 #[profile_function("OBJECT_PROFILING_FRAME")]
-fn getYoloOutputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
+pub fn getYoloOutputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
 	wait_for_yolo_model(|yolo_model| match yolo_model.get_output_shape() {
 		Some(output_shape) => output_shape,
 		None => {
@@ -453,80 +466,112 @@ fn getYoloOutputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
 }
 
 #[uniffi::export]
-fn newDepthFrame() {
+pub fn newDepthFrame() {
 	if let Some(new_formatted_info) = DEPTH_PROFILING_FRAME.finish() {
 		*LAST_FORMATTED_DEPTH_PROFILING_INFO.write().unwrap() = new_formatted_info;
 	}
 }
 #[uniffi::export]
-fn formattedDepthFrame() -> String {
+pub fn formattedDepthFrame() -> String {
 	LAST_FORMATTED_DEPTH_PROFILING_INFO.read().unwrap().clone()
 }
 
 #[uniffi::export]
-fn newObjectFrame() {
+pub fn newObjectFrame() {
 	if let Some(new_formatted_info) = OBJECT_PROFILING_FRAME.finish() {
 		*LAST_FORMATTED_OBJECT_PROFILING_INFO.write().unwrap() = new_formatted_info;
 	}
 }
 #[uniffi::export]
-fn formattedObjectFrame() -> String {
+pub fn formattedObjectFrame() -> String {
 	LAST_FORMATTED_OBJECT_PROFILING_INFO.read().unwrap().clone()
 }
 
-// TODO: rewrite entire spatial audio from scratch in a better, rust aligned way...
-
 #[uniffi::export]
-fn setupAudioSettings(coco_labels_audio_file_content: Vec<u8>, coco_labels_json_content: String) {
-	let settings =
-		SpatialAudioSettings::new(coco_labels_audio_file_content, coco_labels_json_content);
-	*SPATIAL_AUDIO.write().unwrap() =
-		Some(SpatialAudio::new(settings, AUDIO_PROFILING_FRAME.clone()).unwrap());
+pub fn setupAudioContent(
+	coco_labels_audio_file_content: Vec<u8>,
+	coco_labels_json_content: String,
+	logger: Box<dyn LogCallbacks>,
+) {
+	logger.log_info_callback("loading audio content...".to_string());
+
+	let coco_audio_file = match read_audio_file(
+		coco_labels_audio_file_content.into_boxed_slice(),
+		&AUDIO_PROFILING_FRAME,
+	) {
+		Ok(coco_audio_file) => coco_audio_file,
+		Err(e) => {
+			logger.log_error_callback(format!("Failed to read coco labels audio file: {e}"));
+			return;
+		}
+	};
+
+	let coco_labels_data =
+		match read_object_label_data(&coco_labels_json_content, &AUDIO_PROFILING_FRAME) {
+			Ok(coco_labels_data) => coco_labels_data,
+			Err(e) => {
+				logger.log_error_callback(format!("Failed to read object label json data: {e}"));
+				return;
+			}
+		};
+
+	let content = Arc::new(SpatialAudioContent::new(coco_audio_file, coco_labels_data));
+
+	SPATIAL_AUDIO_CONTENT
+		.write()
+		.unwrap()
+		.replace(content.clone());
+}
+
+fn createSpatialAudio_impl(logger: &dyn LogCallbacks) {
+	logger.log_info_callback("creating spatial audio...".to_string());
+
+	let Some(spatial_audio_content) = &(*SPATIAL_AUDIO_CONTENT.read().unwrap()) else {
+		logger.log_error_callback("SPATIAL_AUDIO_CONTENT needs to be setup by calling setupAudioContent before calling createSpatialAudio".to_string());
+		return;
+	};
+
+	let spatial_audio = SpatialAudio::new(
+		SPATIAL_AUDIO_SETTINGS.clone(),
+		spatial_audio_content.clone(),
+		AUDIO_PROFILING_FRAME.clone(),
+	)
+	.expect("failed to create spatial audio");
+
+	SPATIAL_AUDIO.write().unwrap().replace(spatial_audio);
+}
+
+/// This requires the SPATIAL_AUDIO_CONTENT to be set by calling setupAudioContent before this function
+#[uniffi::export]
+pub fn createSpatialAudio(logger: Box<dyn LogCallbacks>) {
+	createSpatialAudio_impl(logger.as_ref());
 }
 
 #[uniffi::export]
-fn setAudioSettings(frequency: f32, incidence: i32, logger: Box<dyn LogCallbacks>) {
+pub fn setAudioSettings(frequency: f32, incidence: i32, logger: Box<dyn LogCallbacks>) {
 	logger.log_info_callback("Updating audio settings".to_string());
 
-	if try_change_spatial_audio(|spatial_audio| {
-		let mut spatial_audio_settings = spatial_audio.settings.write().unwrap();
-		spatial_audio_settings.frequency = frequency;
-		spatial_audio_settings.buffer_duration = 1.0 / (incidence as f32);
-	})
-	.is_none()
-	{
-		logger.log_error_callback("NOT SETTING AUDIO SETTINGS PAUSED!!".to_string());
-	}
+	let mut settings = SPATIAL_AUDIO_SETTINGS.write().unwrap();
+	settings.frequency = frequency;
+	settings.buffer_duration = 1.0 / (incidence as f32);
 }
 
 #[uniffi::export]
-fn setDepthAudioPaused(paused: bool, logger: Box<dyn LogCallbacks>) {
+pub fn setDepthAudioPaused(paused: bool, logger: Box<dyn LogCallbacks>) {
 	logger.log_info_callback(format!("Setting depth audio playback. Paused: {}", paused));
 
-	if try_change_spatial_audio(|spatial_audio| {
-		spatial_audio.settings.write().unwrap().depth_audio_paused = paused;
-	})
-	.is_none()
-	{
-		logger.log_error_callback("NOT SETTING DEPTH AUDIO PAUSED!!".to_string());
-	}
+	SPATIAL_AUDIO_SETTINGS.write().unwrap().depth_audio_paused = paused;
 }
 
 #[uniffi::export]
-fn setObjectAudioPaused(paused: bool, logger: Box<dyn LogCallbacks>) {
+pub fn setObjectAudioPaused(paused: bool, logger: Box<dyn LogCallbacks>) {
 	logger.log_info_callback(format!("Setting object audio playback. Paused: {}", paused));
 
-	if try_change_spatial_audio(|spatial_audio| {
-		spatial_audio.settings.write().unwrap().object_audio_paused = paused;
-	})
-	.is_none()
-	{
-		logger.log_error_callback("NOT SETTING OBJECT AUDIO PAUSED!!".to_string());
-	}
+	SPATIAL_AUDIO_SETTINGS.write().unwrap().object_audio_paused = paused;
 }
 
 #[uniffi::export]
-fn sendAIDataForSpatialAudio(
+pub fn sendAIDataForSpatialAudio(
 	mut depth_data_buffer: UniffiFloatBufferWrapper,
 	object_data_buffer: Vec<UniffiDetectedObject>,
 	logger: Box<dyn LogCallbacks>,
@@ -538,23 +583,33 @@ fn sendAIDataForSpatialAudio(
 		.expect("depth_data_buffer needs to be 256x256!");
 
 	let logger = Arc::new(logger);
-	let logger_clone = logger.clone();
+	let logger_clone1 = logger.clone();
+	let logger_clone2 = logger.clone();
 
-	try_change_spatial_audio(|spatial_audio| {
+	let object_detection_data = object_data_buffer
+		.into_iter()
+		.map(|o| o.into())
+		.collect::<Vec<TrackedObject>>();
+
+	let should_restart = try_change_spatial_audio(|spatial_audio| {
 		spatial_audio.update(
 			depth_estimation_data,
-			&object_data_buffer
-				.into_iter()
-				.map(|o| o.into())
-				.collect::<Vec<TrackedObject>>(),
+			&object_detection_data,
 			Arc::new(move |msg| logger.log_info_callback(msg.to_string())),
-			Arc::new(move |msg| logger_clone.log_error_callback(msg.to_string())),
-		);
+			Arc::new(move |msg| logger_clone1.log_error_callback(msg.to_string())),
+		)
 	});
+	if let Some(should_restart) = should_restart
+		&& should_restart
+	{
+		createSpatialAudio_impl(logger_clone2.as_ref().as_ref());
+	}
 }
 
 #[uniffi::export]
-fn destroySpatialAudio() {
+pub fn destroySpatialAudio(logger: Box<dyn LogCallbacks>) {
+	logger.log_info_callback("shutting down spatial audio...".to_string());
+
 	*SPATIAL_AUDIO.write().unwrap() = None;
 }
 

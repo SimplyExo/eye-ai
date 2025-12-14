@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
-import com.algorithmic_alliance.eyeaiapp.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.isActive
@@ -23,7 +22,10 @@ object SpatialAudio {
 
 	fun start() {
 		if (!::scope.isInitialized) return
+
 		scope.launch {
+			NativeLib.createSpatialAudio()
+
 			while (isActive) {
 				val depthData = eyeAIApp.aiData.depthEstimationData.get()
 				val objectData = eyeAIApp.aiData.detectedObjects.get()
@@ -53,10 +55,10 @@ object SpatialAudio {
 		}
 	}
 
-	fun destroy() {
+	fun stop() {
 		if (::scope.isInitialized) scope.cancel()
 		if (::executor.isInitialized) executor.shutdown()
-		uniffi.NativeLib.destroySpatialAudio()
+		NativeLib.destroySpatialAudio()
 	}
 
 	fun loadFileFromAssets(context: Context, fileName: String): ByteArray? {
@@ -137,7 +139,7 @@ object SpatialAudio {
 
 
 		if (cocoLabelsData != null && cocoLabelsAudio != null) {
-			uniffi.NativeLib.setupAudioSettings(cocoLabelsAudio, cocoLabelsData)
+			NativeLib.setupAudioContent(cocoLabelsAudio, cocoLabelsData)
 			Log.d(
 				"SpatialAudio",
 				"[SpatialAudio] Loaded coco data from $fileNameWav and $fileNameJson"

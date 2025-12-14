@@ -114,12 +114,6 @@ class EyeAIApp : Application() {
 			if (settings.enableOCR)
 				ocrModel.create()
 		}
-
-		CoroutineScope(Dispatchers.IO).launch {
-			Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
-			SpatialAudio.setup(this@EyeAIApp)
-			SpatialAudio.start()
-		}
 	}
 
 	fun updateSettings() {
@@ -150,7 +144,8 @@ class EyeAIApp : Application() {
 		}
 
 		if (oldSettings.objectAudioPlaybackLanguage != settings.objectAudioPlaybackLanguage) {
-			SpatialAudio.destroy()
+			// TODO: move this somewhere else?
+			SpatialAudio.stop()
 			CoroutineScope(Dispatchers.IO).launch {
 				SpatialAudio.setup(this@EyeAIApp)
 				SpatialAudio.start()

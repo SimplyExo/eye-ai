@@ -161,6 +161,18 @@ object NativeLib {
 		uniffi.NativeLib.setAudioSettings(frequency, incidence, logger)
 	}
 
+	fun setupAudioContent(cocoLabelsAudioFileContent: ByteArray, cocoLabelsJsonContent: String) {
+		uniffi.NativeLib.setupAudioContent(cocoLabelsAudioFileContent, cocoLabelsJsonContent, logger)
+	}
+
+	fun createSpatialAudio() {
+		uniffi.NativeLib.createSpatialAudio(logger)
+	}
+
+	fun destroySpatialAudio() {
+		uniffi.NativeLib.destroySpatialAudio(logger)
+	}
+
 
 	/** @param input values should be between 0.0f and 1.0f */
 	fun metricDepthColormap(input: UniffiFloatBufferWrapper, inputImageSize: Size): Bitmap {

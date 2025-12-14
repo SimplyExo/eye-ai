@@ -3,7 +3,6 @@ use alto::{
 	SourceState, ext::Alc,
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
-use json::JsonValue;
 use std::{
 	collections::{HashMap, VecDeque},
 	sync::{
@@ -18,8 +17,8 @@ use tracing_tracy::client::secondary_frame_mark;
 use crate::{
 	ProfilingFrame, TrackedObject,
 	audio::{
-		CalculateSoundOrigin, DepthAudioSourceData, IVec2, ObjectAudioSourceData,
-		SpatialAudioSettings, Vec3, read_audio_file,
+		CalculateSoundOrigin, DepthAudioSourceData, IVec2, ObjectAudioSourceData, ObjectLabelData,
+		SpatialAudioContent, SpatialAudioSettings, Vec3, spatial_audio_content::AudioFileData,
 	},
 };
 
@@ -33,40 +32,6 @@ pub enum SpatialAudioError {
 	JsonError(#[from] json::Error),
 }
 
-struct ObjectLabelData {
-	sample_begin: usize,
-	sample_end: usize,
-}
-#[profile_function("profiling_frame")]
-fn read_object_label_data(
-	json_content: &str,
-	profiling_frame: &ProfilingFrame,
-) -> Result<HashMap<String, ObjectLabelData>, json::Error> {
-	let json = json::parse(json_content)?;
-	let JsonValue::Array(json_array) = json else {
-		return Err(json::Error::WrongType("json should be array!".to_string()));
-	};
-	let mut map = HashMap::<String, ObjectLabelData>::new();
-	for json_data in json_array {
-		let JsonValue::Object(data_object) = json_data else {
-			return Err(json::Error::wrong_type("array element should be object!"));
-		};
-		let object_label_data = ObjectLabelData {
-			sample_begin: data_object["start"]
-				.as_usize()
-				.ok_or(json::Error::wrong_type("usize"))?,
-			sample_end: data_object["end"]
-				.as_usize()
-				.ok_or(json::Error::wrong_type("usize"))?,
-		};
-		let label = data_object["text"]
-			.as_str()
-			.ok_or(json::Error::wrong_type("string"))?;
-		map.insert(label.to_string().to_lowercase(), object_label_data);
-	}
-	Ok(map)
-}
-
 pub struct SpatialAudio {
 	_alto: Alto,
 	_device: OutputDevice,
@@ -78,7 +43,7 @@ pub struct SpatialAudio {
 	_object_audio_thread: std::thread::JoinHandle<()>,
 	object_audio_running: Arc<AtomicBool>,
 	pub settings: Arc<RwLock<SpatialAudioSettings>>,
-	object_label_data: HashMap<String, ObjectLabelData>,
+	content: Arc<SpatialAudioContent>,
 	profiling_frame: Arc<ProfilingFrame>,
 }
 impl Drop for SpatialAudio {
@@ -90,19 +55,18 @@ impl Drop for SpatialAudio {
 impl SpatialAudio {
 	#[profile_function("profiling_frame")]
 	pub fn new(
-		settings: SpatialAudioSettings,
+		settings: Arc<RwLock<SpatialAudioSettings>>,
+		content: Arc<SpatialAudioContent>,
 		profiling_frame: Arc<ProfilingFrame>,
 	) -> Result<Self, SpatialAudioError> {
 		let profiling_frame_clone1 = profiling_frame.clone();
 		let profiling_frame_clone2 = profiling_frame.clone();
 		let profiling_frame_clone3 = profiling_frame.clone();
 
-		let object_label_data =
-			read_object_label_data(&settings.coco_labels_json_content, &profiling_frame)?;
-
-		let settings = Arc::new(RwLock::new(settings));
 		let settings_clone1 = settings.clone();
 		let settings_clone2 = settings.clone();
+
+		let content_clone = content.clone();
 
 		let depth_audio_running = Arc::new(AtomicBool::new(true));
 		let depth_audio_running_clone = depth_audio_running.clone();
@@ -157,6 +121,7 @@ impl SpatialAudio {
 					object_audio_thread(
 						object_audio_running_clone,
 						settings_clone2,
+						&content_clone.coco_labels_audio_file,
 						context_clone2,
 						object_audio_sources_data_clone,
 						&profiling_frame_clone3,
@@ -165,32 +130,61 @@ impl SpatialAudio {
 				.expect("failed to spawn object audio thread"),
 			object_audio_running,
 			settings,
-			object_label_data,
+			content,
 			profiling_frame: profiling_frame_clone1,
 		})
 	}
 
-	#[profile_function("self.profiling_frame")]
+	/// returns whether it needs to be recreated, as the output device changed
 	pub fn update(
 		&mut self,
 		depth_estimation_data: &[f32; 256 * 256],
 		object_detection_data: &[TrackedObject],
 		log_info_callback: AudioLogCallback,
 		log_error_callback: AudioLogCallback,
-	) {
+	) -> bool {
+		let mut should_restart = false;
+
+		#[allow(unused)]
+		let profiling_scope = self.profiling_frame.scope("update");
+
+		// this extension is implemented on android, such that we can restart SpatialAudio when the output device changes
+		// on desktop (linux at least), this is not needed and the extension is not implemented, as output switching happens automatically
+		if self._device.is_extension_present(Alc::Disconnect) {
+			match self._device.connected() {
+				Ok(connected) => {
+					if !connected {
+						log_error_callback("NO DEVICE CONNECTED RIGHT NOW!");
+						should_restart = true;
+					}
+				}
+				Err(e) => {
+					log_error_callback(
+						format!(
+							"Failed to retrieve if device is connected, even though ALC_EXT_disconnect is present: {e}"
+						)
+						.as_str(),
+					);
+				}
+			}
+		}
+
 		let settings = self.settings.read().unwrap();
-		if !settings.depth_audio_paused {
+		let depth_audio_paused = settings.depth_audio_paused;
+		let object_audio_paused = settings.object_audio_paused;
+
+		if !depth_audio_paused {
 			*self.depth_audio_sources_data.write().unwrap() = process_depth_estimation_data(
 				depth_estimation_data,
 				&settings,
 				&self.profiling_frame,
 			);
 		}
-		if !settings.object_audio_paused {
+		if !object_audio_paused {
 			let new_audio_sources_data = process_object_detection_data(
 				depth_estimation_data,
 				object_detection_data,
-				&self.object_label_data,
+				&self.content.object_label_data,
 				&self.profiling_frame,
 				log_info_callback,
 				log_error_callback,
@@ -214,6 +208,8 @@ impl SpatialAudio {
 				}
 			}
 		}
+
+		should_restart
 	}
 }
 
@@ -318,21 +314,12 @@ fn depth_audio_thread(
 fn object_audio_thread(
 	running: Arc<AtomicBool>,
 	settings: Arc<RwLock<SpatialAudioSettings>>,
+	coco_audio_file: &AudioFileData,
 	context: Arc<Context>,
 	object_audio_sources_data: Arc<RwLock<VecDeque<ObjectAudioSourceData>>>,
 	profiling_frame: &ProfilingFrame,
 ) {
-	let audio_file_content = settings
-		.read()
-		.unwrap()
-		.coco_labels_audio_file_content
-		.clone()
-		.into_boxed_slice();
-
-	let audio_file_data = read_audio_file(audio_file_content, profiling_frame)
-		.expect("failed to load coco labels audio file");
-
-	let coco_audio_samples: Vec<i16> = audio_file_data.samples;
+	let coco_audio_samples: &[i16] = &coco_audio_file.samples;
 	/*let info_callback = settings.read().unwrap().log_info_callback;
 	(info_callback)(
 		format!(
@@ -356,7 +343,7 @@ fn object_audio_thread(
 			std::thread::sleep(Duration::from_millis(250));
 			continue;
 		};
-		let sample_rate_ms = audio_file_data.sample_rate as usize / 1000;
+		let sample_rate_ms = coco_audio_file.sample_rate as usize / 1000;
 		let duration_ms = source_data.sound_end - source_data.sound_begin;
 		sound_buffer.resize(sample_rate_ms * duration_ms, Mono::<i16> { center: 0 });
 		let begin_sample = sample_rate_ms * source_data.sound_begin;
@@ -370,7 +357,7 @@ fn object_audio_thread(
 		);
 		let buffer = Arc::new(
 			context
-				.new_buffer(&sound_buffer, audio_file_data.sample_rate as i32)
+				.new_buffer(&sound_buffer, coco_audio_file.sample_rate as i32)
 				.unwrap(),
 		);
 		source.set_buffer(buffer).unwrap();
