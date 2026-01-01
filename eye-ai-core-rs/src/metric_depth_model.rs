@@ -7,6 +7,7 @@ use crate::{
 	tflite::{TfLiteRunInferenceError, TfLiteRuntimeCreateError},
 };
 
+#[derive(Debug)]
 pub struct MetricDepthModel<'a> {
 	relative_depth_model: DepthModel<'a>,
 	profiling_frame: &'a ProfilingFrame,

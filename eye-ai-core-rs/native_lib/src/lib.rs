@@ -16,6 +16,12 @@ use std::{
 	path::PathBuf,
 	sync::{Arc, LazyLock, RwLock},
 };
+use tracing::{debug, error, trace, warn};
+
+#[cfg(target_os = "android")]
+mod android_logging;
+#[cfg(target_os = "android")]
+use android_logging::AndroidLogLayer;
 
 const TFLITE_LIB_FILEPATH: &str = "libtensorflowlite_jni.so";
 const TFLITE_GPU_DELEGATE_LIB_FILEPATH: &str = "libtensorflowlite_gpu_jni.so";
@@ -43,7 +49,6 @@ static SPATIAL_AUDIO_SETTINGS: LazyLock<Arc<RwLock<SpatialAudioSettings>>> =
 	LazyLock::new(|| Arc::new(RwLock::new(SpatialAudioSettings::default())));
 static SPATIAL_AUDIO_CONTENT: LazyLock<RwLock<Option<Arc<SpatialAudioContent>>>> =
 	LazyLock::new(|| RwLock::new(None));
-// TODO: Display audio profiling frame info in EyeAIApp
 static AUDIO_PROFILING_FRAME: LazyLock<Arc<ProfilingFrame>> =
 	LazyLock::new(|| Arc::new(ProfilingFrame::new("Audio")));
 
@@ -142,8 +147,24 @@ impl UniffiFloatBufferWrapper {
 		}
 	}
 }
+impl std::fmt::Debug for UniffiFloatBufferWrapper {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("UniffiFloatBufferWrapper")
+			.field("ptr", &(self.ptr_address as *mut f32))
+			.field("len", &self.length)
+			.finish()
+	}
+}
+impl<const N: usize> From<&mut [f32; N]> for UniffiFloatBufferWrapper {
+	fn from(value: &mut [f32; N]) -> Self {
+		Self {
+			ptr_address: value.as_mut_ptr() as i64,
+			length: N as i32,
+		}
+	}
+}
 
-#[derive(uniffi::Record)]
+#[derive(Debug, uniffi::Record)]
 pub struct UniffiIntBufferWrapper {
 	/// i64 ^= Long, direct pointer address of an IntBuffer
 	pub ptr_address: i64,
@@ -158,11 +179,18 @@ impl UniffiIntBufferWrapper {
 	}
 }
 
-#[uniffi::export(callback_interface)]
-pub trait LogCallbacks: Send + Sync {
-	fn log_info_callback(&self, msg: String);
-	fn log_warning_callback(&self, msg: String);
-	fn log_error_callback(&self, msg: String);
+// TODO: maybe put this into JNI_OnLoad?
+/// MUST BE CALLED AT THE START OF YOUR ANDROID APP!
+#[cfg(target_os = "android")]
+#[uniffi::export]
+pub fn initAndroidLogging() {
+	use tracing_subscriber::Registry;
+	use tracing_subscriber::layer::SubscriberExt;
+
+	tracing::subscriber::set_global_default(Registry::default().with(AndroidLogLayer)).unwrap();
+
+	#[cfg(feature = "enable_tracy_profiling")]
+	tracing_tracy::client::Client::start();
 }
 
 #[uniffi::export]
@@ -173,7 +201,6 @@ pub fn initMetricDepthModel(
 	relative_depth_model_token: String,
 	enable_npu: bool,
 	skel_directory: String,
-	logger: Box<dyn LogCallbacks>,
 ) {
 	let metric_depth_model = MetricDepthModel::new(
 		CreateDepthModelInfo {
@@ -182,16 +209,12 @@ pub fn initMetricDepthModel(
 			model_data: relative_depth_model,
 			gpu_delegate_serialization_dir: CString::new(gpu_delegate_serialization_dir).unwrap(),
 			model_token: CString::new(relative_depth_model_token).unwrap(),
-			log_warning_callback: Arc::new(move |msg| {
-				logger.log_warning_callback(format!("[TFLITE] {}", msg))
-			}),
-			// TODO: use logger.log_error_callback instead of eprintln,
-			// Problem: error callback needs to be fn(*const std::os::raw::c_char) for interop with c/c++
+			log_warning_callback: Arc::new(move |msg| warn!("[TFLITE] {}", msg)),
 			log_error_callback: |msg| unsafe {
 				match CStr::from_ptr(msg).to_str() {
-					Ok(msg) => eprintln!("[ERROR] {}", msg),
-					Err(_) => eprintln!(
-						"[ERROR] Failed to convert CString to String in order to log tflite error message"
+					Ok(msg) => error!("[TFLITE] {}", msg),
+					Err(e) => error!(
+						"[TFLITE] Failed to convert CString to String in order to log tflite error message: {e}"
 					),
 				}
 			},
@@ -210,8 +233,7 @@ pub fn initMetricDepthModel(
 	)
 	.expect("failed to create metric depth model");
 
-	// TODO: add this back some day if needed, currently problem with moved `logger`
-	// logger.log_info_callback("created metric depth model".to_string());
+	debug!("created metric depth model");
 
 	*METRIC_DEPTH_MODEL.write().unwrap() = Some(metric_depth_model);
 }
@@ -227,7 +249,6 @@ pub fn shutdownMetricDepthModel() {
 pub fn runMetricDepthModelInference(
 	mut input: UniffiFloatBufferWrapper,
 	mut output: UniffiFloatBufferWrapper,
-	logger: Box<dyn LogCallbacks>,
 ) {
 	wait_for_metric_depth_model(|metric_depth_model| {
 		match metric_depth_model.run(
@@ -236,10 +257,10 @@ pub fn runMetricDepthModelInference(
 		) {
 			Ok(()) => {}
 			Err(e) => {
-				logger.log_error_callback(format!(
+				error!(
 					"Failed to run metric depth model: {}, output will not be changed",
 					e
-				));
+				);
 			}
 		}
 	})
@@ -247,14 +268,12 @@ pub fn runMetricDepthModelInference(
 
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
-pub fn getMetricDepthModelInputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
+pub fn getMetricDepthModelInputShape() -> Vec<i32> {
 	wait_for_metric_depth_model(
 		|metric_depth_model| match metric_depth_model.get_input_shape() {
 			Some(input_shape) => input_shape,
 			None => {
-				logger.log_error_callback(
-					"could not get input shape (returning empty vector)".to_string(),
-				);
+				error!("could not get input shape (returning empty vector)");
 				vec![]
 			}
 		},
@@ -263,14 +282,12 @@ pub fn getMetricDepthModelInputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> 
 
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
-pub fn getMetricDepthModelOutputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
+pub fn getMetricDepthModelOutputShape() -> Vec<i32> {
 	wait_for_metric_depth_model(
 		|metric_depth_model| match metric_depth_model.get_output_shape() {
 			Some(output_shape) => output_shape,
 			None => {
-				logger.log_error_callback(
-					"could not get output shape (returning empty vector)".to_string(),
-				);
+				error!("could not get output shape (returning empty vector)");
 				vec![]
 			}
 		},
@@ -282,7 +299,6 @@ pub fn getMetricDepthModelOutputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32>
 pub fn metricDepthColormap(
 	mut depth_buffer: UniffiFloatBufferWrapper,
 	mut colormapped_pixels: UniffiIntBufferWrapper,
-	logger: Box<dyn LogCallbacks>,
 ) {
 	const MAX_METRIC_DISTANCE: f32 = 5.0;
 
@@ -293,11 +309,11 @@ pub fn metricDepthColormap(
 			colormapped_pixels[i] = inferno_colormap(depth_value / MAX_METRIC_DISTANCE);
 		}
 	} else {
-		logger.log_error_callback(format!(
+		error!(
 			"depth_buffer and colormapped_pixels have different sizes: {} and {} (not changing colormapped_pixels!)",
 			depth_buffer.len(),
 			colormapped_pixels.len()
-		));
+		);
 	}
 }
 
@@ -310,7 +326,6 @@ pub fn initYoloRuntime(
 	model_token: String,
 	enable_npu: bool,
 	skel_directory: String,
-	logger: Box<dyn LogCallbacks>,
 ) {
 	let yolo_model = YoloModel::new(
 		CreateYoloModelInfo {
@@ -320,16 +335,12 @@ pub fn initYoloRuntime(
 			model_data: model,
 			gpu_delegate_serialization_dir: CString::new(gpu_delegate_serialization_dir).unwrap(),
 			model_token: CString::new(model_token).unwrap(),
-			log_warning_callback: Arc::new(move |msg| {
-				logger.log_warning_callback(format!("[TFLITE] {}", msg))
-			}),
-			// TODO: use logger.log_error_callback instead of eprintln,
-			// Problem: error callback needs to be fn(*const std::os::raw::c_char) for interop with c/c++
+			log_warning_callback: Arc::new(move |msg| warn!("[TFLITE] {}", msg)),
 			log_error_callback: |msg| unsafe {
 				match CStr::from_ptr(msg).to_str() {
-					Ok(msg) => eprintln!("[ERROR] {}", msg),
-					Err(_) => eprintln!(
-						"[ERROR] Failed to convert CString to String in order to log tflite error message"
+					Ok(msg) => error!("[TFLITE] {}", msg),
+					Err(e) => error!(
+						"[TFLITE] Failed to convert CString to String in order to log tflite error message: {e}"
 					),
 				}
 			},
@@ -348,13 +359,15 @@ pub fn initYoloRuntime(
 	)
 	.expect("failed to create yolo model");
 
+	debug!("created yolo model");
+
 	*YOLO_MODEL.write().unwrap() = Some(yolo_model);
 
 	let object_tracker = ObjectTracker::new(labels, &OBJECT_PROFILING_FRAME);
 	*OBJECT_TRACKER.write().unwrap() = Some(object_tracker);
 }
 
-#[derive(uniffi::Record)]
+#[derive(uniffi::Record, Clone, Debug)]
 pub struct UniffiDetectedObject {
 	x1: f32,
 	y1: f32,
@@ -405,10 +418,7 @@ impl From<UniffiDetectedObject> for TrackedObject {
 
 #[uniffi::export]
 #[profile_function("OBJECT_PROFILING_FRAME")]
-pub fn runYoloOperation(
-	mut input: UniffiFloatBufferWrapper,
-	logger: Box<dyn LogCallbacks>,
-) -> Vec<UniffiDetectedObject> {
+pub fn runYoloOperation(mut input: UniffiFloatBufferWrapper) -> Vec<UniffiDetectedObject> {
 	wait_for_yolo_model(|yolo_model| {
 		match yolo_model.run(&mut FloatTensorBuffer::new(
 			input.as_slice_mut(),
@@ -427,10 +437,10 @@ pub fn runYoloOperation(
 					.collect::<Vec<_>>()
 			}
 			Err(e) => {
-				logger.log_error_callback(format!(
+				error!(
 					"Failed to run yolo model: {}, returning empty float array",
 					e
-				));
+				);
 				vec![]
 			}
 		}
@@ -439,13 +449,11 @@ pub fn runYoloOperation(
 
 #[uniffi::export]
 #[profile_function("OBJECT_PROFILING_FRAME")]
-pub fn getYoloInputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
+pub fn getYoloInputShape() -> Vec<i32> {
 	wait_for_yolo_model(|yolo_model| match yolo_model.get_input_shape() {
 		Some(input_shape) => input_shape,
 		None => {
-			logger.log_error_callback(
-				"could not get input shape (returning empty vector)".to_string(),
-			);
+			error!("could not get input shape (returning empty vector)");
 			vec![]
 		}
 	})
@@ -453,13 +461,11 @@ pub fn getYoloInputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
 
 #[uniffi::export]
 #[profile_function("OBJECT_PROFILING_FRAME")]
-pub fn getYoloOutputShape(logger: Box<dyn LogCallbacks>) -> Vec<i32> {
+pub fn getYoloOutputShape() -> Vec<i32> {
 	wait_for_yolo_model(|yolo_model| match yolo_model.get_output_shape() {
 		Some(output_shape) => output_shape,
 		None => {
-			logger.log_error_callback(
-				"could not get output shape (returning empty vector)".to_string(),
-			);
+			error!("could not get output shape (returning empty vector)");
 			vec![]
 		}
 	})
@@ -488,12 +494,12 @@ pub fn formattedObjectFrame() -> String {
 }
 
 #[uniffi::export]
+#[profile_function("AUDIO_PROFILING_FRAME")]
 pub fn setupAudioContent(
 	coco_labels_audio_file_content: Vec<u8>,
 	coco_labels_json_content: String,
-	logger: Box<dyn LogCallbacks>,
 ) {
-	logger.log_info_callback("loading audio content...".to_string());
+	debug!("loading audio content...");
 
 	let coco_audio_file = match read_audio_file(
 		coco_labels_audio_file_content.into_boxed_slice(),
@@ -501,7 +507,7 @@ pub fn setupAudioContent(
 	) {
 		Ok(coco_audio_file) => coco_audio_file,
 		Err(e) => {
-			logger.log_error_callback(format!("Failed to read coco labels audio file: {e}"));
+			error!("Failed to read coco labels audio file: {e}");
 			return;
 		}
 	};
@@ -510,7 +516,7 @@ pub fn setupAudioContent(
 		match read_object_label_data(&coco_labels_json_content, &AUDIO_PROFILING_FRAME) {
 			Ok(coco_labels_data) => coco_labels_data,
 			Err(e) => {
-				logger.log_error_callback(format!("Failed to read object label json data: {e}"));
+				error!("Failed to read object label json data: {e}");
 				return;
 			}
 		};
@@ -523,11 +529,16 @@ pub fn setupAudioContent(
 		.replace(content.clone());
 }
 
-fn createSpatialAudio_impl(logger: &dyn LogCallbacks) {
-	logger.log_info_callback("creating spatial audio...".to_string());
+/// This requires the SPATIAL_AUDIO_CONTENT to be set by calling setupAudioContent before this function
+#[uniffi::export]
+#[profile_function("AUDIO_PROFILING_FRAME")]
+fn createSpatialAudio() {
+	debug!("creating spatial audio...");
 
 	let Some(spatial_audio_content) = &(*SPATIAL_AUDIO_CONTENT.read().unwrap()) else {
-		logger.log_error_callback("SPATIAL_AUDIO_CONTENT needs to be setup by calling setupAudioContent before calling createSpatialAudio".to_string());
+		error!(
+			"SPATIAL_AUDIO_CONTENT needs to be setup by calling setupAudioContent before calling createSpatialAudio"
+		);
 		return;
 	};
 
@@ -541,15 +552,10 @@ fn createSpatialAudio_impl(logger: &dyn LogCallbacks) {
 	SPATIAL_AUDIO.write().unwrap().replace(spatial_audio);
 }
 
-/// This requires the SPATIAL_AUDIO_CONTENT to be set by calling setupAudioContent before this function
 #[uniffi::export]
-pub fn createSpatialAudio(logger: Box<dyn LogCallbacks>) {
-	createSpatialAudio_impl(logger.as_ref());
-}
-
-#[uniffi::export]
-pub fn setAudioSettings(frequency: f32, incidence: i32, logger: Box<dyn LogCallbacks>) {
-	logger.log_info_callback("Updating audio settings".to_string());
+#[profile_function("AUDIO_PROFILING_FRAME")]
+pub fn setAudioSettings(frequency: f32, incidence: i32) {
+	trace!("Updating audio settings");
 
 	let mut settings = SPATIAL_AUDIO_SETTINGS.write().unwrap();
 	settings.frequency = frequency;
@@ -557,24 +563,26 @@ pub fn setAudioSettings(frequency: f32, incidence: i32, logger: Box<dyn LogCallb
 }
 
 #[uniffi::export]
-pub fn setDepthAudioPaused(paused: bool, logger: Box<dyn LogCallbacks>) {
-	logger.log_info_callback(format!("Setting depth audio playback. Paused: {}", paused));
+#[profile_function("AUDIO_PROFILING_FRAME")]
+pub fn setDepthAudioPaused(paused: bool) {
+	trace!("Setting depth audio playback. Paused: {}", paused);
 
 	SPATIAL_AUDIO_SETTINGS.write().unwrap().depth_audio_paused = paused;
 }
 
 #[uniffi::export]
-pub fn setObjectAudioPaused(paused: bool, logger: Box<dyn LogCallbacks>) {
-	logger.log_info_callback(format!("Setting object audio playback. Paused: {}", paused));
+#[profile_function("AUDIO_PROFILING_FRAME")]
+pub fn setObjectAudioPaused(paused: bool) {
+	trace!("Setting object audio playback. Paused: {}", paused);
 
 	SPATIAL_AUDIO_SETTINGS.write().unwrap().object_audio_paused = paused;
 }
 
 #[uniffi::export]
+#[profile_function("AUDIO_PROFILING_FRAME")]
 pub fn sendAIDataForSpatialAudio(
 	mut depth_data_buffer: UniffiFloatBufferWrapper,
 	object_data_buffer: Vec<UniffiDetectedObject>,
-	logger: Box<dyn LogCallbacks>,
 ) {
 	let depth_data_buffer = depth_data_buffer.as_slice_mut();
 	let depth_estimation_data: &[f32; 256 * 256] = depth_data_buffer
@@ -582,33 +590,25 @@ pub fn sendAIDataForSpatialAudio(
 		.try_into()
 		.expect("depth_data_buffer needs to be 256x256!");
 
-	let logger = Arc::new(logger);
-	let logger_clone1 = logger.clone();
-	let logger_clone2 = logger.clone();
-
 	let object_detection_data = object_data_buffer
 		.into_iter()
 		.map(|o| o.into())
 		.collect::<Vec<TrackedObject>>();
 
 	let should_restart = try_change_spatial_audio(|spatial_audio| {
-		spatial_audio.update(
-			depth_estimation_data,
-			&object_detection_data,
-			Arc::new(move |msg| logger.log_info_callback(msg.to_string())),
-			Arc::new(move |msg| logger_clone1.log_error_callback(msg.to_string())),
-		)
+		spatial_audio.update(depth_estimation_data, &object_detection_data)
 	});
 	if let Some(should_restart) = should_restart
 		&& should_restart
 	{
-		createSpatialAudio_impl(logger_clone2.as_ref().as_ref());
+		createSpatialAudio();
 	}
 }
 
 #[uniffi::export]
-pub fn destroySpatialAudio(logger: Box<dyn LogCallbacks>) {
-	logger.log_info_callback("shutting down spatial audio...".to_string());
+#[profile_function("AUDIO_PROFILING_FRAME")]
+pub fn destroySpatialAudio() {
+	debug!("shutting down spatial audio...");
 
 	*SPATIAL_AUDIO.write().unwrap() = None;
 }

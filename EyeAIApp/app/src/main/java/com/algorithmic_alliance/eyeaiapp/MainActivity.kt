@@ -24,8 +24,6 @@ import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.algorithmic_alliance.eyeaiapp.NativeLib.setDepthAudioPaused
-import com.algorithmic_alliance.eyeaiapp.NativeLib.setObjectAudioPaused
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
@@ -280,8 +278,8 @@ class MainActivity : AppCompatActivity() {
 
 		// re-enabling the audio playback in accordance to the settings
 		val settings = Settings.load(this@MainActivity)
-		setObjectAudioPaused(!settings.objectAudioPlayback)
-		setDepthAudioPaused(!settings.depthAudioPlayback)
+		uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -297,8 +295,8 @@ class MainActivity : AppCompatActivity() {
 		mediaPlayer?.shutdown()
 
 		// stopping audio playback
-		setObjectAudioPaused(true)
-		setDepthAudioPaused(true)
+		uniffi.NativeLib.setObjectAudioPaused(true)
+		uniffi.NativeLib.setDepthAudioPaused(true)
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -722,8 +720,8 @@ class MainActivity : AppCompatActivity() {
 	private fun startVoskListening() {
 		if (voskUserStart.get()) return // Check whether already started
 
-		setObjectAudioPaused(true)
-		setDepthAudioPaused(true)
+		uniffi.NativeLib.setObjectAudioPaused(true)
+		uniffi.NativeLib.setDepthAudioPaused(true)
 		voskUserStart.set(true)
 		eyeAIApp().voskModel.startListening()
 		Log.d(EyeAIApp.APP_LOG_TAG, "User started Vosk Model")
@@ -734,8 +732,8 @@ class MainActivity : AppCompatActivity() {
 	private fun stopVoskListening() {
 		if (!voskUserStart.get()) return // Check whether already stopped
 
-		setObjectAudioPaused(false)
-		setDepthAudioPaused(false)
+		uniffi.NativeLib.setObjectAudioPaused(false)
+		uniffi.NativeLib.setDepthAudioPaused(false)
 		voskUserStart.set(false)
 		eyeAIApp().voskModel.stopListening()
 		Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")

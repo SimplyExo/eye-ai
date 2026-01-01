@@ -6,6 +6,8 @@ use std::{
 	},
 	time::Instant,
 };
+#[cfg(feature = "enable_tracy_profiling")]
+use tracing_tracy::client::FrameName;
 
 #[derive(Debug, Clone)]
 pub struct ProfileScopeRecord {
@@ -52,15 +54,26 @@ impl<'a> Drop for ProfileScope<'a> {
 
 pub struct ProfilingFrame {
 	name: String,
+	#[cfg(feature = "enable_tracy_profiling")]
+	frame_name: FrameName,
 	start: RwLock<Instant>,
 	profile_scopes: SegQueue<ProfileScopeRecord>,
 	current_scope_depth: AtomicUsize,
 }
-
+impl std::fmt::Debug for ProfilingFrame {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("ProfilingFrame")
+			.field("name", &self.name)
+			.finish_non_exhaustive()
+	}
+}
 impl ProfilingFrame {
 	pub fn new(name: impl Into<String>) -> Self {
+		let name = name.into();
 		Self {
-			name: name.into(),
+			name: name.clone(),
+			#[cfg(feature = "enable_tracy_profiling")]
+			frame_name: FrameName::new_leak(name),
 			start: RwLock::new(Instant::now()),
 			profile_scopes: SegQueue::new(),
 			current_scope_depth: AtomicUsize::new(0),
@@ -85,16 +98,13 @@ impl ProfilingFrame {
 			return None;
 		}
 
-		// TODO: tracy framemark!
+		#[cfg(feature = "enable_tracy_profiling")]
+		tracing_tracy::client::Client::running()
+			.expect("tracy client not running")
+			.secondary_frame_mark(self.frame_name);
+
 		let end = Instant::now();
 
-		/*if self.current_scope_depth.load(Ordering::Relaxed) != 0 {
-			panic!(
-				"frame {}: finish called, but current_scope_depth is {}",
-				self.name,
-				self.current_scope_depth.load(Ordering::Relaxed)
-			);
-		}*/
 		let mut profile_scopes = Vec::with_capacity(self.profile_scopes.len());
 		while let Some(scope_record) = self.profile_scopes.pop() {
 			profile_scopes.push(scope_record);

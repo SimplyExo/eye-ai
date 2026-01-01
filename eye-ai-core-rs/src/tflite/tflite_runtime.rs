@@ -63,11 +63,13 @@ pub enum TfLiteRuntimeCreateError {
 	LoadQnnDelegateAPI(#[from] LoadQnnDelegateLibError),
 }
 
+#[derive(Debug)]
 pub enum NpuConfigType {
 	MiDaS,
 	Yolo,
 }
 
+#[derive(Debug)]
 pub struct NpuConfig {
 	pub config_type: NpuConfigType,
 	pub tflite_qnn_npu_delegate_lib_filepath: PathBuf,
@@ -110,6 +112,21 @@ pub struct TfLiteRuntime<'a> {
 	model_token: std::ffi::CString,
 	skel_library_dir: Option<std::ffi::CString>,
 	profiling_frame: &'a ProfilingFrame,
+}
+impl<'a> std::fmt::Debug for TfLiteRuntime<'a> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("TfLiteRuntime")
+			.field("model_input_format", &self.model_input_format)
+			.field("model_output_format", &self.model_output_format)
+			.field(
+				"gpu_delegate_serialization_dir",
+				&self.gpu_delegate_serialization_dir,
+			)
+			.field("model_token", &self.model_token)
+			.field("skel_library_dir", &self.skel_library_dir)
+			.field("profiling_frame", &self.profiling_frame)
+			.finish_non_exhaustive()
+	}
 }
 impl<'a> TfLiteRuntime<'a> {
 	pub fn new(

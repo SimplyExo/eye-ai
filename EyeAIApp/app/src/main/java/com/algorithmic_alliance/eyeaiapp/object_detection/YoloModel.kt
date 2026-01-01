@@ -25,16 +25,16 @@ class YoloModel(var info: YoloModelInfo) {
 		val modelBytes = info.getAsBytes(context)
 		labels = info.readLinesFromAsset(context).toList()
 
-		NativeLib.initYoloRuntime(
+		uniffi.NativeLib.initYoloRuntime(
 			modelBytes, labels,
 			createSerializedGpuDelegateCacheDirectory(context).path,
 			getModelToken(context, info.tfliteFilename), enableNpu, skelDirectory
 		)
 
-		val inputShape = NativeLib.getYoloInputShape()
+		val inputShape = uniffi.NativeLib.getYoloInputShape()
 		tensorWidth = inputShape[1]
 		tensorHeight = inputShape[2]
-		val outputShape = NativeLib.getYoloOutputShape()
+		val outputShape = uniffi.NativeLib.getYoloOutputShape()
 		numChannel = outputShape[1]
 		numElements = outputShape[2]
 
@@ -53,7 +53,7 @@ class YoloModel(var info: YoloModelInfo) {
 		val resizedBitmap = frame.scale(tensorWidth, tensorHeight, false)
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(resizedBitmap)
 
-		return NativeLib.runYoloOperation(input.asUniffiWrapper()).toTypedArray()
+		return uniffi.NativeLib.runYoloOperation(input.asUniffiWrapper()).toTypedArray()
 	}
 
 	fun createSerializedGpuDelegateCacheDirectory(context: Context): File {

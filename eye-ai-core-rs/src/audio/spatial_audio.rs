@@ -12,6 +12,7 @@ use std::{
 	time::Duration,
 };
 use thiserror::Error;
+use tracing::{error, trace};
 use tracing_tracy::client::secondary_frame_mark;
 
 use crate::{
@@ -21,8 +22,6 @@ use crate::{
 		SpatialAudioContent, SpatialAudioSettings, Vec3, spatial_audio_content::AudioFileData,
 	},
 };
-
-pub type AudioLogCallback = Arc<dyn Fn(&str)>;
 
 #[derive(Debug, Error)]
 pub enum SpatialAudioError {
@@ -61,7 +60,6 @@ impl SpatialAudio {
 	) -> Result<Self, SpatialAudioError> {
 		let profiling_frame_clone1 = profiling_frame.clone();
 		let profiling_frame_clone2 = profiling_frame.clone();
-		let profiling_frame_clone3 = profiling_frame.clone();
 
 		let settings_clone1 = settings.clone();
 		let settings_clone2 = settings.clone();
@@ -124,7 +122,6 @@ impl SpatialAudio {
 						&content_clone.coco_labels_audio_file,
 						context_clone2,
 						object_audio_sources_data_clone,
-						&profiling_frame_clone3,
 					)
 				})
 				.expect("failed to spawn object audio thread"),
@@ -140,8 +137,6 @@ impl SpatialAudio {
 		&mut self,
 		depth_estimation_data: &[f32; 256 * 256],
 		object_detection_data: &[TrackedObject],
-		log_info_callback: AudioLogCallback,
-		log_error_callback: AudioLogCallback,
 	) -> bool {
 		let mut should_restart = false;
 
@@ -154,16 +149,13 @@ impl SpatialAudio {
 			match self._device.connected() {
 				Ok(connected) => {
 					if !connected {
-						log_error_callback("NO DEVICE CONNECTED RIGHT NOW!");
+						error!("No audio device connected right now!");
 						should_restart = true;
 					}
 				}
 				Err(e) => {
-					log_error_callback(
-						format!(
-							"Failed to retrieve if device is connected, even though ALC_EXT_disconnect is present: {e}"
-						)
-						.as_str(),
+					error!(
+						"Failed to retrieve if device is connected, even though ALC_EXT_disconnect is present: {e}"
 					);
 				}
 			}
@@ -186,8 +178,6 @@ impl SpatialAudio {
 				object_detection_data,
 				&self.content.object_label_data,
 				&self.profiling_frame,
-				log_info_callback,
-				log_error_callback,
 			);
 			let mut object_audio_sources_data = self.object_audio_sources_data.write().unwrap();
 			for new_source_data in new_audio_sources_data {
@@ -213,7 +203,6 @@ impl SpatialAudio {
 	}
 }
 
-#[profile_function("profiling_frame")]
 fn depth_audio_thread(
 	running: Arc<AtomicBool>,
 	context: Arc<Context>,
@@ -310,14 +299,12 @@ fn depth_audio_thread(
 	}
 }
 
-#[profile_function("profiling_frame")]
 fn object_audio_thread(
 	running: Arc<AtomicBool>,
 	settings: Arc<RwLock<SpatialAudioSettings>>,
 	coco_audio_file: &AudioFileData,
 	context: Arc<Context>,
 	object_audio_sources_data: Arc<RwLock<VecDeque<ObjectAudioSourceData>>>,
-	profiling_frame: &ProfilingFrame,
 ) {
 	let coco_audio_samples: &[i16] = &coco_audio_file.samples;
 	/*let info_callback = settings.read().unwrap().log_info_callback;
@@ -425,8 +412,6 @@ fn process_object_detection_data(
 	object_detection_data: &[TrackedObject],
 	object_label_data: &HashMap<String, ObjectLabelData>,
 	profiling_frame: &ProfilingFrame,
-	log_info_callback: AudioLogCallback,
-	log_error_callback: AudioLogCallback,
 ) -> VecDeque<ObjectAudioSourceData> {
 	let mut audio_source_data = VecDeque::new();
 
@@ -436,10 +421,10 @@ fn process_object_detection_data(
 		let object_name = object.class_name.to_lowercase().trim().to_owned();
 
 		let Some(object_label_data) = object_label_data.get(&object_name) else {
-			log_error_callback(format!(
-					"[ProcessObjectDetectionData] Could not find object {} in the object_label_data. Skipping to next one ...",
-					object_name
-				).as_str());
+			error!(
+				"[ProcessObjectDetectionData] Could not find object {} in the object_label_data. Skipping to next one ...",
+				object_name
+			);
 			continue;
 		};
 
@@ -450,12 +435,9 @@ fn process_object_detection_data(
 				as i32,
 		};
 
-		log_info_callback(
-			format!(
-				"Object {}: Start: {} End: {}",
-				object_name, object_label_data.sample_begin, object_label_data.sample_end
-			)
-			.as_str(),
+		trace!(
+			"Object {}: Start: {} End: {}",
+			object_name, object_label_data.sample_begin, object_label_data.sample_end
 		);
 
 		let distance = depth_estimation_data

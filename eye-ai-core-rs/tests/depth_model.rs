@@ -7,9 +7,23 @@ use std::{
 	path::PathBuf,
 	sync::Arc,
 };
+use tracing::{Level, error, warn};
+use tracing_subscriber::fmt::format::Format;
 
 #[test]
 fn run_midas_depth_model() {
+	tracing_subscriber::fmt()
+		.event_format(
+			Format::default()
+				.compact()
+				.with_target(false)
+				.with_source_location(true)
+				.without_time(),
+		)
+		.with_max_level(Level::DEBUG)
+		.init();
+
+	#[cfg(feature = "enable_tracy_profiling")]
 	tracing_tracy::client::Client::start();
 
 	let input_image = image::ImageReader::open("tests/00022_00193_outdoor_010_030.png")
@@ -49,12 +63,12 @@ fn run_midas_depth_model() {
 			.expect("failed to load midas.tflite model file"),
 		gpu_delegate_serialization_dir: tmp_dir_str,
 		model_token,
-		log_warning_callback: Arc::new(|message| println!("[WARN] {}", message)),
+		log_warning_callback: Arc::new(|message| warn!("{}", message)),
 		log_error_callback: |message| unsafe {
 			match CStr::from_ptr(message).to_str() {
-				Ok(msg) => println!("[ERROR] {}", msg),
-				Err(_) => println!(
-					"[ERROR] Failed to convert CString to String in order to log tflite error message"
+				Ok(msg) => error!("{}", msg),
+				Err(_) => error!(
+					"Failed to convert CString to String in order to log tflite error message"
 				),
 			}
 		},

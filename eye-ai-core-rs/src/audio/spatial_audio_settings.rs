@@ -1,6 +1,6 @@
 use crate::audio::IVec2;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct SpatialAudioSettings {
 	pub depth_audio_paused: bool,
 	pub object_audio_paused: bool,

@@ -2,6 +2,7 @@ use crate::{ProfilingFrame, audio::Vec3};
 use alto::Mono;
 use eye_ai_core_rs_profiling_attribute::profile_function;
 
+#[derive(Debug, Clone)]
 pub struct DepthAudioSourceData {
 	pub frequency: f32,
 	pub duration: f32,

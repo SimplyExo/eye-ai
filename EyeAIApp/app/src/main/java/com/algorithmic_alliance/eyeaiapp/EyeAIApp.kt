@@ -85,6 +85,8 @@ class EyeAIApp : Application() {
 	override fun onCreate() {
 		super.onCreate()
 
+		uniffi.NativeLib.initAndroidLogging()
+
 		val context = this
 
 		settings = Settings.load(context)
@@ -122,22 +124,22 @@ class EyeAIApp : Application() {
 		settings = Settings.load(context)
 
 		if (oldSettings.depthAudioPlayback != settings.depthAudioPlayback) {
-			NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+			uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		}
 
 		if (oldSettings.objectAudioPlayback != settings.objectAudioPlayback) {
-			NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+			uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		}
 
 		if (oldSettings.depthAudioFrequency != settings.depthAudioFrequency) {
-			NativeLib.setAudioSettings(
+			uniffi.NativeLib.setAudioSettings(
 				settings.depthAudioFrequency.toFloat(),
 				settings.depthAudioClickIncidence
 			)
 		}
 
 		if (oldSettings.depthAudioClickIncidence != settings.depthAudioClickIncidence) {
-			NativeLib.setAudioSettings(
+			uniffi.NativeLib.setAudioSettings(
 				settings.depthAudioFrequency.toFloat(),
 				settings.depthAudioClickIncidence
 			)

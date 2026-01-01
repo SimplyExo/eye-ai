@@ -30,6 +30,7 @@ pub struct CreateYoloModelInfo {
 	pub npu_config: Option<YoloModelNpuConfig>,
 }
 
+#[derive(Debug)]
 pub struct YoloModel<'a> {
 	runtime: TfLiteRuntime<'a>,
 	labels: Vec<String>,

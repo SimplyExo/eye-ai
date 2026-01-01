@@ -21,88 +21,6 @@ object NativeLib {
 		System.loadLibrary("NativeLib")
 	}
 
-	val logger = object : uniffi.NativeLib.LogCallbacks {
-		override fun logInfoCallback(msg: String) {
-			Log.i("eye-ai-core-rs", msg)
-		}
-
-		override fun logWarningCallback(msg: String) {
-			Log.w("eye-ai-core-rs", msg)
-		}
-
-		override fun logErrorCallback(msg: String) {
-			Log.e("eye-ai-core-rs", msg)
-		}
-	}
-
-	// Depth (wrapper functions to provide the logging interface to rust)
-	fun initMetricDepthModel(
-		relativeDepthModel: ByteArray,
-		gpuDelegateSerializationDir: String,
-		relativeDepthModelToken: String,
-		enableNpu: Boolean,
-		skelDirectory: String
-	) {
-		return uniffi.NativeLib.initMetricDepthModel(
-			relativeDepthModel,
-			gpuDelegateSerializationDir,
-			relativeDepthModelToken,
-			enableNpu,
-			skelDirectory,
-			logger
-		)
-	}
-
-	fun runMetricDepthModelInference(
-		input: UniffiFloatBufferWrapper,
-		output: UniffiFloatBufferWrapper
-	) {
-		return uniffi.NativeLib.runMetricDepthModelInference(input, output, logger)
-	}
-
-	fun getMetricDepthModelInputShape(): List<Int> {
-		return uniffi.NativeLib.getMetricDepthModelInputShape(logger)
-	}
-
-	fun getMetricDepthModelOutputShape(): List<Int> {
-		return uniffi.NativeLib.getMetricDepthModelOutputShape(logger)
-	}
-
-	fun metricDepthColormap(
-		depthBuffer: UniffiFloatBufferWrapper,
-		colorMappedPixels: UniffiIntBufferWrapper
-	) {
-		uniffi.NativeLib.metricDepthColormap(depthBuffer, colorMappedPixels, logger)
-	}
-
-	// Yolo (wrapper functions to provide the logging interface to rust)
-	fun initYoloRuntime(
-		model: ByteArray,
-		labels: List<String>,
-		gpuDelegateSerializationDir: String,
-		modelToken: String,
-		enableNpu: Boolean,
-		skelDirectory: String
-	) {
-		return uniffi.NativeLib.initYoloRuntime(
-			model,
-			labels,
-			gpuDelegateSerializationDir,
-			modelToken,
-			enableNpu,
-			skelDirectory,
-			logger
-		)
-	}
-
-	fun runYoloOperation(input: UniffiFloatBufferWrapper): List<uniffi.NativeLib.UniffiDetectedObject> {
-		return uniffi.NativeLib.runYoloOperation(input, logger)
-	}
-
-	fun getYoloInputShape(): List<Int> = uniffi.NativeLib.getYoloInputShape(logger)
-
-	fun getYoloOutputShape(): List<Int> = uniffi.NativeLib.getYoloOutputShape(logger)
-
 	// uniffi Float-/ByteArray zero-copy helper functions:
 	external fun getByteBufferPtr(buffer: ByteBuffer): Long
 
@@ -142,37 +60,6 @@ object NativeLib {
 		outFloatBuffer: FloatBuffer
 	)
 
-	fun sendAiDataForSpatialAudio(
-		depthDataBuffer: UniffiFloatBufferWrapper,
-		objectDataBuffer: List<UniffiDetectedObject>
-	) {
-		uniffi.NativeLib.sendAiDataForSpatialAudio(depthDataBuffer, objectDataBuffer, logger)
-	}
-
-	fun setDepthAudioPaused(paused: Boolean) {
-		uniffi.NativeLib.setDepthAudioPaused(paused, logger)
-	}
-
-	fun setObjectAudioPaused(paused: Boolean) {
-		uniffi.NativeLib.setObjectAudioPaused(paused, logger)
-	}
-
-	fun setAudioSettings(frequency: Float, incidence: Int) {
-		uniffi.NativeLib.setAudioSettings(frequency, incidence, logger)
-	}
-
-	fun setupAudioContent(cocoLabelsAudioFileContent: ByteArray, cocoLabelsJsonContent: String) {
-		uniffi.NativeLib.setupAudioContent(cocoLabelsAudioFileContent, cocoLabelsJsonContent, logger)
-	}
-
-	fun createSpatialAudio() {
-		uniffi.NativeLib.createSpatialAudio(logger)
-	}
-
-	fun destroySpatialAudio() {
-		uniffi.NativeLib.destroySpatialAudio(logger)
-	}
-
 
 	/** @param input values should be between 0.0f and 1.0f */
 	fun metricDepthColormap(input: UniffiFloatBufferWrapper, inputImageSize: Size): Bitmap {
@@ -188,8 +75,7 @@ object NativeLib {
 
 		uniffi.NativeLib.metricDepthColormap(
 			input,
-			colormappedPixels.asUniffiWrapper(),
-			logger
+			colormappedPixels.asUniffiWrapper()
 		)
 		//metricDepthColormap(input, colormappedPixels)
 

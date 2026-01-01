@@ -27,6 +27,7 @@ pub struct CreateDepthModelInfo {
 	pub npu_config: Option<DepthModelNpuConfig>,
 }
 
+#[derive(Debug)]
 pub struct DepthModel<'a> {
 	runtime: TfLiteRuntime<'a>,
 	profiling_frame: &'a ProfilingFrame,

@@ -26,6 +26,19 @@ pub struct ObjectTracker<'a> {
 	tracked_object_valid_score: HashMap<i32, f32>,
 	profiling_frame: &'a ProfilingFrame,
 }
+impl<'a> std::fmt::Debug for ObjectTracker<'a> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("ObjectTracker")
+			.field("labels", &self.labels)
+			.field("last_update", &self.last_update)
+			.field(
+				"tracked_object_valid_score",
+				&self.tracked_object_valid_score,
+			)
+			.field("profiling_frame", &self.profiling_frame)
+			.finish_non_exhaustive()
+	}
+}
 impl<'a> ObjectTracker<'a> {
 	/// For how many seconds a 100% confident prediction needs to be tracked in
 	/// order to be considered valid

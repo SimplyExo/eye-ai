@@ -1,6 +1,5 @@
 #include <cstdarg>
 #include <cstdio>
-#include <format>
 #include <string>
 #include <vector>
 
@@ -27,8 +26,5 @@ extern "C" void tflite_error_callback(void *user_data_ptr, const char *format,
   // NOLINTEND(cppcoreguidelines-pro-type-vararg,
   // cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
-  std::string msg =
-      std::format("[TfLiteRuntime Error] {}", formatted_error_msg);
-
-  user_data(msg.c_str());
+  user_data(formatted_error_msg.c_str());
 }

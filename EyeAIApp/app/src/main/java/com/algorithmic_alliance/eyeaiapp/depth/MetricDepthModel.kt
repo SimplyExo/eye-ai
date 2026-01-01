@@ -61,12 +61,12 @@ class MetricDepthModel(
 			}
 		}
 
-		NativeLib.initMetricDepthModel(
+		uniffi.NativeLib.initMetricDepthModel(
 			relativeDepthModelData, 	gpuDelegateCacheDirectory.path,
 			relativeDepthModelToken, enableNpu, skelDirectory
 		)
 
-		val inputShape = NativeLib.getMetricDepthModelInputShape()
+		val inputShape = uniffi.NativeLib.getMetricDepthModelInputShape()
 		inputDim = if (inputShape.size == 4) {
 			if (inputShape[0] != 1) {
 				Log.e(
@@ -89,7 +89,7 @@ class MetricDepthModel(
 			Size(256, 256)
 		}
 
-		val outputShape = NativeLib.getMetricDepthModelOutputShape().toIntArray()
+		val outputShape = uniffi.NativeLib.getMetricDepthModelOutputShape().toIntArray()
 		val expectedOutputShape = intArrayOf(1, inputDim.height, inputDim.width, 1)
 		if (!outputShape.contentEquals(expectedOutputShape)) {
 			Log.e(
@@ -112,7 +112,7 @@ class MetricDepthModel(
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled)
 		val output = NativeLib.NativeFloatBuffer(inputDim.width * inputDim.height)
 
-		NativeLib.runMetricDepthModelInference(
+		uniffi.NativeLib.runMetricDepthModelInference(
 			input.asUniffiWrapper(),
 			output.asUniffiWrapper(),
 		)

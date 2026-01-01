@@ -8,6 +8,7 @@ use symphonia::core::{
 	io::MediaSourceStream, meta::MetadataOptions, probe::Hint,
 };
 
+#[derive(Debug)]
 pub struct SpatialAudioContent {
 	pub coco_labels_audio_file: AudioFileData,
 	pub object_label_data: HashMap<String, ObjectLabelData>,
@@ -24,6 +25,7 @@ impl SpatialAudioContent {
 	}
 }
 
+#[derive(Debug)]
 pub struct ObjectLabelData {
 	pub sample_begin: usize,
 	pub sample_end: usize,
@@ -61,6 +63,17 @@ pub fn read_object_label_data(
 pub struct AudioFileData {
 	pub samples: Vec<i16>,
 	pub sample_rate: u32,
+}
+impl std::fmt::Debug for AudioFileData {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("AudioFileData")
+			.field("sample_rate", &self.sample_rate)
+			.field(
+				"samples",
+				&format!("(hidden Vec<i16>) len={}", self.samples.len()),
+			)
+			.finish_non_exhaustive()
+	}
 }
 
 #[profile_function("profiling_frame")]

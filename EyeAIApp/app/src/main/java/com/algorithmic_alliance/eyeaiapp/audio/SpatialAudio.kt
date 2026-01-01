@@ -24,13 +24,13 @@ object SpatialAudio {
 		if (!::scope.isInitialized) return
 
 		scope.launch {
-			NativeLib.createSpatialAudio()
+			uniffi.NativeLib.createSpatialAudio()
 
 			while (isActive) {
 				val depthData = eyeAIApp.aiData.depthEstimationData.get()
 				val objectData = eyeAIApp.aiData.detectedObjects.get()
 				if (depthData != null) {
-					NativeLib.sendAiDataForSpatialAudio(
+					uniffi.NativeLib.sendAiDataForSpatialAudio(
 						depthData.asUniffiWrapper(),
 						objectData?.toList() ?: emptyList()
 					)
@@ -45,9 +45,9 @@ object SpatialAudio {
 		val settings = eyeAIApp.settings
 		loadAudioDataFiles(context, settings.objectAudioPlaybackLanguage)
 
-		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
-		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
-		NativeLib.setAudioSettings(settings.depthAudioFrequency.toFloat(), settings.depthAudioClickIncidence)
+		uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+		uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		uniffi.NativeLib.setAudioSettings(settings.depthAudioFrequency.toFloat(), settings.depthAudioClickIncidence)
 
 		if (!::executor.isInitialized || executor.isShutdown) {
 			executor = Executors.newSingleThreadExecutor()
@@ -58,7 +58,7 @@ object SpatialAudio {
 	fun stop() {
 		if (::scope.isInitialized) scope.cancel()
 		if (::executor.isInitialized) executor.shutdown()
-		NativeLib.destroySpatialAudio()
+		uniffi.NativeLib.destroySpatialAudio()
 	}
 
 	fun loadFileFromAssets(context: Context, fileName: String): ByteArray? {
@@ -139,7 +139,7 @@ object SpatialAudio {
 
 
 		if (cocoLabelsData != null && cocoLabelsAudio != null) {
-			NativeLib.setupAudioContent(cocoLabelsAudio, cocoLabelsData)
+			uniffi.NativeLib.setupAudioContent(cocoLabelsAudio, cocoLabelsData)
 			Log.d(
 				"SpatialAudio",
 				"[SpatialAudio] Loaded coco data from $fileNameWav and $fileNameJson"
