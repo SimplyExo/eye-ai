@@ -304,10 +304,9 @@ checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 [[package]]
 name = "bytetrack-cpp-rs"
 version = "0.1.0"
+source = "git+https://github.com/Peanutt42/bytetrack-cpp-rs?tag=v0.1.0#3b8178539d7b5311b9c4f11a331f1db6f825e347"
 dependencies = [
  "cmake",
- "serde",
- "serde_json",
 ]
 
 [[package]]
