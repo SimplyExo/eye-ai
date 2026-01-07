@@ -15,6 +15,9 @@
 cargo doc --no-deps
 ```
 
-The resulting static doc site files will be generated to `target/doc/eye_ai_core_rs/`.
+The resulting static doc site files will be generated to `target/doc/`.
 
 Simply copy this directory into the gh-pages repo.
+
+Leave the root index.html file as is, dont remove it,
+it automatically redirects to `eye_ai_core_rs/index.html`
