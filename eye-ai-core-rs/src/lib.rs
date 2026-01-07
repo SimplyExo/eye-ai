@@ -1,3 +1,40 @@
+//! # eye-ai-core-rs
+//!
+//! The core multi-platform library that implements most of EyeAI's features.
+//!
+//! Used by the Android App ("EyeAIApp"), as well as desktop tests,
+//! which makes supporting new platforms super simple.
+//!
+//! See [Additional Documentation](additional_documentation) for more information.
+
+#[cfg(any(doc, doctest))]
+#[doc = include_str!("../doc/Additional Documentation.md")]
+pub mod additional_documentation {
+	#[doc = include_str!("../../README.md")]
+	pub mod eye_ai_readme {}
+
+	#[doc = include_str!("../README.md")]
+	pub mod eye_ai_core_rs_readme {}
+
+	#[doc = include_str!("../doc/GoogleAIStudioReadMe.md")]
+	pub mod google_ai_studio_readme {}
+
+	#[doc = include_str!("../doc/OCRReadMe.md")]
+	pub mod ocr_readme {}
+
+	#[doc = include_str!("../doc/SpatialAudioReadMe.md")]
+	pub mod spatial_audio_readme {}
+
+	#[doc = include_str!("../doc/SpeechRecognitionReadMe.md")]
+	pub mod speech_recognition_readme {}
+
+	#[doc = include_str!("../doc/StateMachineReadMe.md")]
+	pub mod state_machine_readme {}
+
+	#[doc = include_str!("../doc/TTSEngineReadMe.md")]
+	pub mod tts_engine_readme {}
+}
+
 pub mod audio;
 
 pub mod tflite;

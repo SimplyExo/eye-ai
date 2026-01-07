@@ -1,4 +1,4 @@
-# GoogleAIStudio
+# Google AI Studio
 
 Generating responses with Gemini API (gemini-2.5-flash-lite)
 
@@ -10,7 +10,6 @@ We are using gemini-2.5-flash-lite to generate two types of responses:
 
 1. Human readable text
 2. JSON
-
 
 ### Classes
 
@@ -26,16 +25,15 @@ Other required objects are:
 1. RequestBuilder
 2. SpeechManager
 
-
 ### GoogleAIStudioLLM.kt
 
 This class features the two most important functions:
+
 1. generate(command: String, structured: Boolean) which returns a String
 2. generateStream(command: String,
-		onChunk: (String) -> Unit,
-		onComplete: () -> Unit,
-		onError: (Exception) -> Unit)
-
+   onChunk: (String) -> Unit,
+   onComplete: () -> Unit,
+   onError: (Exception) -> Unit)
 
 The generate function is crucial for JSON communication as its Boolean "structured" argument allows us to switch between requests in JSON and human readable text.
 

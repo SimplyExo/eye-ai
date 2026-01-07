@@ -2,6 +2,7 @@
 name = "eye-ai-core-rs"
 version = "0.1.0"
 edition = "2024"
+documentation = "https://simplyexo.github.io/eye-ai-docs/"
 
 [workspace]
 members = [
