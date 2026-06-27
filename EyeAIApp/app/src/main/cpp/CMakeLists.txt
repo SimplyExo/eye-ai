@@ -24,3 +24,10 @@ target_link_libraries(
 	log
 	jnigraphics
 )
+
+# use 16 KB ELF aligment
+# (see https://developer.android.com/guide/practices/page-sizes)
+target_link_options(NativeLib PRIVATE
+	"-Wl,-z,max-page-size=16384"
+	"-Wl,-z,common-page-size=16384"
+)

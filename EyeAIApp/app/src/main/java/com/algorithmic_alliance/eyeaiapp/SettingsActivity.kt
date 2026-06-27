@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
@@ -29,8 +30,30 @@ class SettingsActivity : AppCompatActivity() {
 	}
 
 	class SettingsFragment : PreferenceFragmentCompat() {
-		private val OPEN_FILE_REQUEST_CODE = 100
 		private var mediaPref: Preference? = null
+
+		private val openDocument = registerForActivityResult(
+			ActivityResultContracts.StartActivityForResult()
+		) { result ->
+			if (result.resultCode == Activity.RESULT_OK) {
+				result.data?.data?.let { uri ->
+					try {
+						requireContext().contentResolver.takePersistableUriPermission(
+							uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+						)
+					} catch (e: SecurityException) {
+						e.printStackTrace()
+					}
+
+					val path = uri.toString()
+					preferenceManager.sharedPreferences
+						?.edit()
+						?.putString(getString(R.string.media_path_setting), path)
+						?.apply()
+					mediaPref?.summary = path
+				}
+			}
+		}
 
 		override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 			setPreferencesFromResource(R.xml.settings_preferences, rootKey)
@@ -111,35 +134,10 @@ class SettingsActivity : AppCompatActivity() {
 		private fun openFile() {
 			val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
 				addCategory(Intent.CATEGORY_OPENABLE)
-				type = "*/*" // MIME-Types
+				type = "*/*"
 				putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "video/*"))
 			}
-			startActivityForResult(intent, OPEN_FILE_REQUEST_CODE)
-		}
-
-		override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-			super.onActivityResult(requestCode, resultCode, data)
-
-			if (requestCode == OPEN_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-				data?.data?.let { uri ->
-					try {
-						requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-					} catch (e: SecurityException) {
-						e.printStackTrace()
-					}
-
-					val path = uri.toString()
-
-					// Pfad speichern
-					preferenceManager.sharedPreferences
-						?.edit()
-						?.putString(getString(R.string.media_path_setting), path)
-						?.apply()
-
-					// Summary aktualisieren
-					mediaPref?.summary = path
-				}
-			}
+			openDocument.launch(intent)
 		}
 
 	}

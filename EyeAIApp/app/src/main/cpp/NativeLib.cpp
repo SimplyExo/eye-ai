@@ -6,24 +6,35 @@
 #include <format>
 
 template<typename... Args>
-void formatted_log(int priority, const char* format, Args... args) {
-	const std::string formatted =
+static void formatted_log(int priority, const char* format, Args... args) {
+	constexpr static const char* TAG = "Native Lib";
+
+#if __ANDROID_API__ >= 30
+	if (!__android_log_is_loggable(priority, TAG, ANDROID_LOG_INFO))
+		return;
+#endif
+
+	try {
+		const std::string formatted =
 		std::vformat(format, std::make_format_args(args...));
 
-	__android_log_write(priority, "Native Lib", formatted.c_str());
+		__android_log_write(priority, TAG, formatted.c_str());
+	} catch (const std::format_error& e) {
+		__android_log_write(ANDROID_LOG_ERROR, TAG, e.what());
+	}
 }
 
 #define LOG_INFO(...) formatted_log(ANDROID_LOG_INFO, __VA_ARGS__)
 #define LOG_ERROR(...) formatted_log(ANDROID_LOG_ERROR, __VA_ARGS__)
 
 
-constexpr uint8_t red_channel_from_argb_color(int color) {
+constexpr static uint8_t red_channel_from_argb_color(int color) {
 	return (color >> 16) & 255;
 }
-constexpr uint8_t green_channel_from_argb_color(int color) {
+constexpr static uint8_t green_channel_from_argb_color(int color) {
 	return (color >> 8) & 255;
 }
-constexpr uint8_t blue_channel_from_argb_color(int color) {
+constexpr static uint8_t blue_channel_from_argb_color(int color) {
 	return color & 255;
 }
 
@@ -34,14 +45,14 @@ struct [[nodiscard]] BitmapError {
 
 	template<typename... Args>
 	[[nodiscard]] static BitmapError
-	fmt(const std::format_string<Args...> fmt, Args&&... args) {
+	fmt(const std::format_string<Args...> fmt, Args... args) {
 		return BitmapError(
 			std::vformat(fmt.get(), std::make_format_args(args...))
 		);
 	}
 };
 
-[[nodiscard]] std::optional<BitmapError> check_android_bitmap_result(int result) {
+[[nodiscard]] static std::optional<BitmapError> check_android_bitmap_result(int result) {
 	switch (result) {
 	case ANDROID_BITMAP_RESULT_SUCCESS:
 		return std::nullopt;
@@ -61,7 +72,7 @@ struct [[nodiscard]] BitmapError {
 /// converts pixel from bitmap into float array with (height, width, channel)
 /// shape and 3 rgb-channels each in the range of 0.0f to 255.0f
 /// often the right format for use with tflite models
-[[nodiscard]] std::optional<BitmapError> bitmap_to_rgb_hwc_255_float_array(
+[[nodiscard]] static std::optional<BitmapError> bitmap_to_rgb_hwc_255_float_array(
 	JNIEnv* env,
 	jobject bitmap,
 	std::span<float> out_float_array
@@ -80,7 +91,7 @@ struct [[nodiscard]] BitmapError {
 		);
 	}
 
-	if (out_float_array.size() != (size_t)info.width * (size_t)info.height * 3)
+	if (out_float_array.size() != static_cast<size_t>(info.width) * static_cast<size_t>(info.height) * 3)
 		throw std::invalid_argument("out_float_array");
 
 	void* address_ptr = nullptr;
@@ -97,18 +108,18 @@ struct [[nodiscard]] BitmapError {
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
 	const auto pixel_ptr = std::span<int>(
 		reinterpret_cast<int*>(address_ptr),
-		(size_t)info.width * (size_t)info.height
+		static_cast<size_t>(info.width) * static_cast<size_t>(info.height)
 	);
 	// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
 	size_t i = 0;
 	size_t j = 0;
-	for (; i < (size_t)info.width * (size_t)info.height; i++) {
+	for (; i < static_cast<size_t>(info.width) * (size_t)info.height; i++) {
 		const int pixel_color = pixel_ptr[i];
-		out_float_array[j++] = (float)red_channel_from_argb_color(pixel_color);
+		out_float_array[j++] = static_cast<float>(red_channel_from_argb_color(pixel_color));
 		out_float_array[j++] =
-			(float)green_channel_from_argb_color(pixel_color);
-		out_float_array[j++] = (float)blue_channel_from_argb_color(pixel_color);
+			static_cast<float>(green_channel_from_argb_color(pixel_color));
+		out_float_array[j++] = static_cast<float>(blue_channel_from_argb_color(pixel_color));
 	}
 
 	return check_android_bitmap_result(AndroidBitmap_unlockPixels(env, bitmap));
