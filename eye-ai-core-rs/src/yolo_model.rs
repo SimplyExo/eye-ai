@@ -4,8 +4,8 @@ use crate::{
 	check_float_tensor_format,
 	tensor_buffer::WrongFloatTensorFormatError,
 	tflite::{
-		CreateTfLiteRuntimeInfo, NpuConfig, NpuConfigType, TfLiteRunInferenceError, TfLiteRuntime,
-		TfLiteRuntimeCreateError,
+		CreateLiteRtRuntimeInfo, LiteRtRunInferenceError, LiteRtRuntime, LiteRtRuntimeCreateError,
+		NpuConfig, NpuConfigType,
 	},
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
@@ -19,20 +19,14 @@ pub struct YoloModelNpuConfig {
 
 pub struct CreateYoloModelInfo {
 	pub labels: Vec<String>,
-	pub tflite_lib_filepath: PathBuf,
-	/// if None, we try to load gpu delegate api from the tflite_lib_filepath library
-	pub tflite_gpu_delegate_lib_filepath: Option<PathBuf>,
 	pub model_data: Vec<u8>,
-	pub gpu_delegate_serialization_dir: std::ffi::CString,
-	pub model_token: std::ffi::CString,
 	pub log_warning_callback: Arc<dyn Fn(&str) + Send + Sync>,
-	pub log_error_callback: fn(msg: *const std::os::raw::c_char),
 	pub npu_config: Option<YoloModelNpuConfig>,
 }
 
 #[derive(Debug)]
 pub struct YoloModel<'a> {
-	runtime: TfLiteRuntime<'a>,
+	runtime: LiteRtRuntime<'a>,
 	labels: Vec<String>,
 	num_elements: usize,
 	num_channel: usize,
@@ -125,17 +119,12 @@ impl<'a> YoloModel<'a> {
 	pub fn new(
 		create_info: CreateYoloModelInfo,
 		profiling_frame: &'a ProfilingFrame,
-	) -> Result<Self, TfLiteRuntimeCreateError> {
-		let runtime_create_info = CreateTfLiteRuntimeInfo {
-			tflite_lib_filepath: create_info.tflite_lib_filepath,
-			tflite_gpu_delegate_lib_filepath: create_info.tflite_gpu_delegate_lib_filepath,
+	) -> Result<Self, LiteRtRuntimeCreateError> {
+		let runtime_create_info = CreateLiteRtRuntimeInfo {
 			model_data: create_info.model_data,
-			gpu_delegate_serialization_dir: create_info.gpu_delegate_serialization_dir,
-			model_token: create_info.model_token,
 			model_input_format: FloatTensorFormat::YoloImageRgb,
 			model_output_format: FloatTensorFormat::YoloOutput,
 			log_warning_callback: create_info.log_warning_callback,
-			log_error_callback: create_info.log_error_callback,
 			npu_config: create_info.npu_config.map(|depth_npu_config| NpuConfig {
 				tflite_qnn_npu_delegate_lib_filepath: depth_npu_config
 					.tflite_qnn_npu_delegate_lib_filepath,
@@ -144,14 +133,13 @@ impl<'a> YoloModel<'a> {
 			}),
 		};
 
-		let runtime = TfLiteRuntime::new(runtime_create_info, profiling_frame)?;
+		let runtime = LiteRtRuntime::new(runtime_create_info, profiling_frame)?;
 
-		let output_shape =
-			runtime
-				.get_output_shape()
-				.ok_or(TfLiteRuntimeCreateError::TfLiteDyn(
-					tflite_dyn::Error::Generic,
-				))?;
+		let output_shape = runtime
+			.get_output_shape()
+			.ok_or(LiteRtRuntimeCreateError::LiteRt(
+				litert::Error::Unsupported("no output shape"),
+			))?;
 
 		let num_channel = output_shape[1] as usize;
 		let num_elements = output_shape[2] as usize;
@@ -170,7 +158,7 @@ impl<'a> YoloModel<'a> {
 	pub fn run(
 		&mut self,
 		input_tensor: &mut FloatTensorBuffer,
-	) -> Result<Vec<DetectedObject>, TfLiteRunInferenceError> {
+	) -> Result<Vec<DetectedObject>, LiteRtRunInferenceError> {
 		check_float_tensor_format!(input_tensor, FloatTensorFormat::ImageRgb255);
 
 		yolo_image_operator(input_tensor, self.profiling_frame)?;
@@ -183,7 +171,7 @@ impl<'a> YoloModel<'a> {
 	pub fn run_no_preprocessing(
 		&mut self,
 		input_tensor: &mut FloatTensorBuffer,
-	) -> Result<Vec<DetectedObject>, TfLiteRunInferenceError> {
+	) -> Result<Vec<DetectedObject>, LiteRtRunInferenceError> {
 		check_float_tensor_format!(input_tensor, FloatTensorFormat::YoloImageRgb);
 
 		let mut output_tensor = self.runtime.allocate_output_tensor()?;

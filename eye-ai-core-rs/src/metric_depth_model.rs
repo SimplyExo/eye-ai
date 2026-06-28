@@ -4,7 +4,7 @@ use crate::{
 	CreateDepthModelInfo, DepthModel, FloatTensorBuffer, FloatTensorFormat, ProfilingFrame,
 	check_float_tensor_format,
 	tensor_buffer::WrongFloatTensorFormatError,
-	tflite::{TfLiteRunInferenceError, TfLiteRuntimeCreateError},
+	tflite::{LiteRtRunInferenceError, LiteRtRuntimeCreateError},
 };
 
 #[derive(Debug)]
@@ -18,7 +18,7 @@ impl<'a> MetricDepthModel<'a> {
 	pub fn new(
 		relative_depth_model_create_info: CreateDepthModelInfo,
 		profiling_frame: &'a ProfilingFrame,
-	) -> Result<Self, TfLiteRuntimeCreateError> {
+	) -> Result<Self, LiteRtRuntimeCreateError> {
 		let relative_depth_model =
 			DepthModel::new(relative_depth_model_create_info, profiling_frame)?;
 
@@ -34,7 +34,7 @@ impl<'a> MetricDepthModel<'a> {
 		&mut self,
 		input_tensor: &mut FloatTensorBuffer,
 		output_tensor: &mut FloatTensorBuffer,
-	) -> Result<(), TfLiteRunInferenceError> {
+	) -> Result<(), LiteRtRunInferenceError> {
 		check_float_tensor_format!(input_tensor, FloatTensorFormat::MiDaSImageRgb);
 
 		self.relative_depth_model

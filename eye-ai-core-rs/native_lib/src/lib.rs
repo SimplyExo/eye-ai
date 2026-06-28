@@ -12,8 +12,7 @@ use eye_ai_core_rs::{
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::{
-	ffi::{CStr, CString},
-	path::PathBuf,
+	ffi::CString,
 	sync::{Arc, LazyLock, RwLock},
 };
 use tracing::{debug, error, trace, warn};
@@ -22,10 +21,6 @@ use tracing::{debug, error, trace, warn};
 mod android_logging;
 #[cfg(target_os = "android")]
 use android_logging::AndroidLogLayer;
-
-const TFLITE_LIB_FILEPATH: &str = "libtensorflowlite_jni.so";
-const TFLITE_GPU_DELEGATE_LIB_FILEPATH: &str = "libtensorflowlite_gpu_jni.so";
-const TFLITE_QNN_NPU_DELEGATE_LIB_FILEPATH: &str = "libqnn_delegate_jni.so";
 
 static METRIC_DEPTH_MODEL: LazyLock<RwLock<Option<MetricDepthModel>>> =
 	LazyLock::new(|| RwLock::new(None));
@@ -197,32 +192,16 @@ pub fn initAndroidLogging() {
 #[profile_function("DEPTH_PROFILING_FRAME")]
 pub fn initMetricDepthModel(
 	relative_depth_model: Vec<u8>,
-	gpu_delegate_serialization_dir: String,
-	relative_depth_model_token: String,
 	enable_npu: bool,
 	skel_directory: String,
 ) {
 	let metric_depth_model = MetricDepthModel::new(
 		CreateDepthModelInfo {
-			tflite_lib_filepath: PathBuf::from(TFLITE_LIB_FILEPATH),
-			tflite_gpu_delegate_lib_filepath: Some(PathBuf::from(TFLITE_GPU_DELEGATE_LIB_FILEPATH)),
 			model_data: relative_depth_model,
-			gpu_delegate_serialization_dir: CString::new(gpu_delegate_serialization_dir).unwrap(),
-			model_token: CString::new(relative_depth_model_token).unwrap(),
-			log_warning_callback: Arc::new(move |msg| warn!("[TFLITE] {}", msg)),
-			log_error_callback: |msg| unsafe {
-				match CStr::from_ptr(msg).to_str() {
-					Ok(msg) => error!("[TFLITE] {}", msg),
-					Err(e) => error!(
-						"[TFLITE] Failed to convert CString to String in order to log tflite error message: {e}"
-					),
-				}
-			},
+			log_warning_callback: Arc::new(move |msg| warn!("[LiteRT] {}", msg)),
 			npu_config: if enable_npu {
 				Some(DepthModelNpuConfig {
-					tflite_qnn_npu_delegate_lib_filepath: PathBuf::from(
-						TFLITE_QNN_NPU_DELEGATE_LIB_FILEPATH,
-					),
+					tflite_qnn_npu_delegate_lib_filepath: "".into(),
 					skel_library_dir: CString::new(skel_directory).unwrap(),
 				})
 			} else {
@@ -322,33 +301,17 @@ pub fn metricDepthColormap(
 pub fn initYoloRuntime(
 	model: Vec<u8>,
 	labels: Vec<String>,
-	gpu_delegate_serialization_dir: String,
-	model_token: String,
 	enable_npu: bool,
 	skel_directory: String,
 ) {
 	let yolo_model = YoloModel::new(
 		CreateYoloModelInfo {
 			labels: labels.clone(),
-			tflite_lib_filepath: PathBuf::from(TFLITE_LIB_FILEPATH),
-			tflite_gpu_delegate_lib_filepath: Some(PathBuf::from(TFLITE_GPU_DELEGATE_LIB_FILEPATH)),
 			model_data: model,
-			gpu_delegate_serialization_dir: CString::new(gpu_delegate_serialization_dir).unwrap(),
-			model_token: CString::new(model_token).unwrap(),
-			log_warning_callback: Arc::new(move |msg| warn!("[TFLITE] {}", msg)),
-			log_error_callback: |msg| unsafe {
-				match CStr::from_ptr(msg).to_str() {
-					Ok(msg) => error!("[TFLITE] {}", msg),
-					Err(e) => error!(
-						"[TFLITE] Failed to convert CString to String in order to log tflite error message: {e}"
-					),
-				}
-			},
+			log_warning_callback: Arc::new(move |msg| warn!("[LiteRT] {}", msg)),
 			npu_config: if enable_npu {
 				Some(YoloModelNpuConfig {
-					tflite_qnn_npu_delegate_lib_filepath: PathBuf::from(
-						TFLITE_QNN_NPU_DELEGATE_LIB_FILEPATH,
-					),
+					tflite_qnn_npu_delegate_lib_filepath: "".into(),
 					skel_library_dir: CString::new(skel_directory).unwrap(),
 				})
 			} else {

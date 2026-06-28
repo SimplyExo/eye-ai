@@ -2,12 +2,8 @@ use eye_ai_core_rs::{
 	CreateDepthModelInfo, DepthModel, FloatTensorBuffer, FloatTensorFormat, ProfilingFrame,
 	image_rgb_255_to_midas_image,
 };
-use std::{
-	ffi::{CStr, CString},
-	path::PathBuf,
-	sync::Arc,
-};
-use tracing::{Level, error, warn};
+use std::sync::Arc;
+use tracing::{Level, warn};
 use tracing_subscriber::fmt::format::Format;
 
 #[test]
@@ -47,31 +43,12 @@ fn run_midas_depth_model() {
 	.expect("failed to read expected output file");
 	let flat_expected_output = expected_output.flatten();
 
-	let tmp_dir = std::env::temp_dir().join("eye-ai-core-rs-testing-serialization-cache");
-	std::fs::create_dir_all(&tmp_dir)
-		.expect("failed to create tmp cache directory for delegate serialization");
-	let tmp_dir_str = CString::new(tmp_dir.to_string_lossy().into_owned()).unwrap();
-
-	let model_token = CString::new("midas_model_token").unwrap();
-
 	let depth_profiling_frame = ProfilingFrame::new("Depth");
 
 	let depth_model_create_info = CreateDepthModelInfo {
-		tflite_lib_filepath: PathBuf::from("libtensorflow-lite.so"),
-		tflite_gpu_delegate_lib_filepath: None,
 		model_data: std::fs::read("../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite")
 			.expect("failed to load midas.tflite model file"),
-		gpu_delegate_serialization_dir: tmp_dir_str,
-		model_token,
 		log_warning_callback: Arc::new(|message| warn!("{}", message)),
-		log_error_callback: |message| unsafe {
-			match CStr::from_ptr(message).to_str() {
-				Ok(msg) => error!("{}", msg),
-				Err(_) => error!(
-					"Failed to convert CString to String in order to log tflite error message"
-				),
-			}
-		},
 		npu_config: None,
 	};
 

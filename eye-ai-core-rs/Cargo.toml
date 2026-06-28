@@ -24,25 +24,21 @@ bytetrack-cpp-rs = { git = "https://github.com/Peanutt42/bytetrack-cpp-rs", tag 
 crossbeam = "0.8.4"
 eye-ai-core-rs-profiling_attribute = { path = "profiling_attribute" }
 json = "0.12.4"
-libloading = "0.7.2"
-semver = "1.0.4"
-symphonia = { version = "0.5.4", features = ["all"] }
-tflite-dyn = { git = "https://github.com/Peanutt42/tflite-dyn", tag = "0.2.1", version = "=0.2.1" }
-thiserror = "2.0"
+litert = "0.2.1"
+symphonia = { version = "0.5.5", features = ["all"] }
+thiserror = "2.0.18"
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 tracing-tracy = { workspace = true }
-va_list = "0.2.1"
-zerocopy = "0.8.27"
 dur = "0.5.3"
 
 [dev-dependencies]
 image = "0.25"
-ndarray = "0.16.1"
-ndarray-npy = "0.9.1"
+ndarray = "0.17.2"
+ndarray-npy = "0.10.0"
 
 [build-dependencies]
-cc = "1.2.39"
+dirs = "6.0"
 
 [features]
 enable_tracy_profiling = [

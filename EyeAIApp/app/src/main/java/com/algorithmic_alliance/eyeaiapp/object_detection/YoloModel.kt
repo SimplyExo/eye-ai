@@ -19,16 +19,17 @@ class YoloModel(var info: YoloModelInfo) {
 
 	private var initialized = false
 
-	fun create(context: Context, skelDirectory: String,
-	           enableNpu: Boolean) {
+	fun create(
+		context: Context, skelDirectory: String,
+		enableNpu: Boolean
+	) {
 		// Erstellen einer Yolo-Instanz
 		val modelBytes = info.getAsBytes(context)
 		labels = info.readLinesFromAsset(context).toList()
 
 		uniffi.NativeLib.initYoloRuntime(
 			modelBytes, labels,
-			createSerializedGpuDelegateCacheDirectory(context).path,
-			getModelToken(context, info.tfliteFilename), enableNpu, skelDirectory
+			enableNpu, skelDirectory
 		)
 
 		val inputShape = uniffi.NativeLib.getYoloInputShape()

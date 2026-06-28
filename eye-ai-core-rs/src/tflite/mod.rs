@@ -1,5 +1,5 @@
-mod tflite_runtime;
-pub use tflite_runtime::{
-	CreateTfLiteRuntimeInfo, NpuConfig, NpuConfigType, TfLiteRunInferenceError, TfLiteRuntime,
-	TfLiteRuntimeCreateError,
+mod litert_runtime;
+pub use litert_runtime::{
+	CreateLiteRtRuntimeInfo, LiteRtRunInferenceError, LiteRtRuntime, LiteRtRuntimeCreateError,
+	NpuConfig, NpuConfigType,
 };

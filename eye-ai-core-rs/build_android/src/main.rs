@@ -1,8 +1,12 @@
 use camino::Utf8Path;
+use std::env;
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, exit};
 use uniffi::KotlinBindingGenerator;
 use uniffi_bindgen::EmptyCrateConfigSupplier;
+
+const TARGET: &str = "aarch64-linux-android";
 
 fn main() {
 	println!("Building eye-ai-core-rs-native-lib...");
@@ -37,6 +41,16 @@ fn main() {
 		cargo_ndk_command.env("NDK_HOME", ndk_path);
 	}
 
+	// cargo-ndk's cc_env() falls back to the plain CC/CXX variable when
+	// it is already set in the environment, and then overwrites it with
+	// the NDK path.  This pollutes the build for host-target build-deps
+	// (e.g. ring, bzip2-sys) which then try to compile with the NDK
+	// clang and fail on missing host headers like <assert.h> and <stdlib.h>.
+	// Strip CC/CXX so cargo-ndk uses target-specific variables instead
+	// (e.g. CC_aarch64-linux-android) which only affect the Android target.
+	cargo_ndk_command.env_remove("CC");
+	cargo_ndk_command.env_remove("CXX");
+
 	let cargo_ndk_successfull = cargo_ndk_command
 		.status()
 		.expect("failed to run cargo ndk")
@@ -60,6 +74,21 @@ fn main() {
 
 			std::fs::copy(src_path, dst_path)
 				.expect("failed to copy third party library from eye-ai-core-rs to EyeAIApp");
+		}
+	}
+
+	println!("\nCopying LiteRT libraries from litert-sys cache...");
+	let litert_cache_root = find_litert_cache_dir().expect("failed to determine litert cache dir");
+	for lib in &["libLiteRt.so", "libLiteRtClGlAccelerator.so"] {
+		let src = litert_cache_root.join(lib);
+		if src.exists() {
+			let dst = eye_ai_app_libraries_dir.join(lib);
+			std::fs::copy(&src, &dst).unwrap_or_else(|e| {
+				eprintln!("  ERROR: failed to copy {}: {}", lib, e);
+				exit(1);
+			});
+		} else {
+			eprintln!("  WARNING: {} not found at {}", lib, src.display());
 		}
 	}
 
@@ -92,4 +121,47 @@ fn project_root() -> PathBuf {
 		.nth(1)
 		.unwrap()
 		.to_path_buf()
+}
+
+/// see https://docs.rs/crate/litert-sys/0.2.1/source/build.rs for more detail
+fn find_litert_cache_dir() -> Option<PathBuf> {
+	if let Ok(dir) = std::env::var("LITERT_LIB_DIR") {
+		return Some(PathBuf::from(dir));
+	}
+	if let Ok(dir) = std::env::var("LITERT_CACHE_DIR") {
+		return Some(PathBuf::from(dir));
+	}
+
+	let dir = cache_dir_for(TARGET);
+
+	if dir.join("libLiteRt.so").exists() {
+		return Some(dir);
+	}
+
+	None
+}
+
+fn cache_root() -> PathBuf {
+	if let Some(dir) = env::var_os("LITERT_CACHE_DIR") {
+		return PathBuf::from(dir);
+	}
+	// Prefer the user-level cache. If we can't actually create it (e.g.,
+	// running inside a container where `$HOME` points somewhere read-only,
+	// as is the case in some cross-rs images), fall through to OUT_DIR so
+	// the build doesn't panic before even attempting a download.
+	if let Some(dir) = dirs::cache_dir()
+		&& fs::create_dir_all(&dir).is_ok()
+	{
+		return dir;
+	}
+	PathBuf::from(env::var("OUT_DIR").unwrap()).join("litert-cache")
+}
+
+const LITERT_LM_TAG: &str = "v0.10.2";
+
+fn cache_dir_for(target: &str) -> PathBuf {
+	cache_root()
+		.join("litert-sys")
+		.join(LITERT_LM_TAG)
+		.join(target)
 }

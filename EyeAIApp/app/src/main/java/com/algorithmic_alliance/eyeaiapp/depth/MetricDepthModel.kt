@@ -17,7 +17,11 @@ class MetricDepthModelInfo(
 	val relativeDepthFileName: String
 ) {
 	/** @return null if model type is not supported */
-	fun createDepthModel(context: Context, skelDirectory: String, enableNpu: Boolean): MetricDepthModel {
+	fun createDepthModel(
+		context: Context,
+		skelDirectory: String,
+		enableNpu: Boolean
+	): MetricDepthModel {
 		return MetricDepthModel(
 			context,
 			name,
@@ -62,8 +66,7 @@ class MetricDepthModel(
 		}
 
 		uniffi.NativeLib.initMetricDepthModel(
-			relativeDepthModelData, 	gpuDelegateCacheDirectory.path,
-			relativeDepthModelToken, enableNpu, skelDirectory
+			relativeDepthModelData, enableNpu, skelDirectory
 		)
 
 		val inputShape = uniffi.NativeLib.getMetricDepthModelInputShape()

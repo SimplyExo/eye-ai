@@ -2,8 +2,8 @@ use crate::{
 	FloatTensorBuffer, FloatTensorFormat, ProfilingFrame, check_float_tensor_format,
 	tensor_buffer::WrongFloatTensorFormatError,
 	tflite::{
-		CreateTfLiteRuntimeInfo, NpuConfig, NpuConfigType, TfLiteRunInferenceError, TfLiteRuntime,
-		TfLiteRuntimeCreateError,
+		CreateLiteRtRuntimeInfo, LiteRtRunInferenceError, LiteRtRuntime, LiteRtRuntimeCreateError,
+		NpuConfig, NpuConfigType,
 	},
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
@@ -16,20 +16,14 @@ pub struct DepthModelNpuConfig {
 }
 
 pub struct CreateDepthModelInfo {
-	pub tflite_lib_filepath: PathBuf,
-	/// if None, we try to load gpu delegate api from the tflite_lib_filepath library
-	pub tflite_gpu_delegate_lib_filepath: Option<PathBuf>,
 	pub model_data: Vec<u8>,
-	pub gpu_delegate_serialization_dir: std::ffi::CString,
-	pub model_token: std::ffi::CString,
 	pub log_warning_callback: Arc<dyn Fn(&str) + Send + Sync>,
-	pub log_error_callback: fn(msg: *const std::os::raw::c_char),
 	pub npu_config: Option<DepthModelNpuConfig>,
 }
 
 #[derive(Debug)]
 pub struct DepthModel<'a> {
-	runtime: TfLiteRuntime<'a>,
+	runtime: LiteRtRuntime<'a>,
 	profiling_frame: &'a ProfilingFrame,
 }
 
@@ -37,17 +31,12 @@ impl<'a> DepthModel<'a> {
 	pub fn new(
 		create_info: CreateDepthModelInfo,
 		profiling_frame: &'a ProfilingFrame,
-	) -> Result<Self, TfLiteRuntimeCreateError> {
-		let runtime_create_info = CreateTfLiteRuntimeInfo {
-			tflite_lib_filepath: create_info.tflite_lib_filepath,
-			tflite_gpu_delegate_lib_filepath: create_info.tflite_gpu_delegate_lib_filepath,
+	) -> Result<Self, LiteRtRuntimeCreateError> {
+		let runtime_create_info = CreateLiteRtRuntimeInfo {
 			model_data: create_info.model_data,
-			gpu_delegate_serialization_dir: create_info.gpu_delegate_serialization_dir,
-			model_token: create_info.model_token,
 			model_input_format: FloatTensorFormat::MiDaSImageRgb,
 			model_output_format: FloatTensorFormat::RawRelativeDepth,
 			log_warning_callback: create_info.log_warning_callback,
-			log_error_callback: create_info.log_error_callback,
 			npu_config: create_info.npu_config.map(|depth_npu_config| NpuConfig {
 				tflite_qnn_npu_delegate_lib_filepath: depth_npu_config
 					.tflite_qnn_npu_delegate_lib_filepath,
@@ -56,7 +45,7 @@ impl<'a> DepthModel<'a> {
 			}),
 		};
 
-		let runtime = TfLiteRuntime::new(runtime_create_info, profiling_frame)?;
+		let runtime = LiteRtRuntime::new(runtime_create_info, profiling_frame)?;
 
 		Ok(Self {
 			runtime,
@@ -70,7 +59,7 @@ impl<'a> DepthModel<'a> {
 		&mut self,
 		input_tensor: &FloatTensorBuffer,
 		output_tensor: &mut FloatTensorBuffer,
-	) -> Result<(), TfLiteRunInferenceError> {
+	) -> Result<(), LiteRtRunInferenceError> {
 		check_float_tensor_format!(input_tensor, FloatTensorFormat::MiDaSImageRgb);
 
 		self.runtime.run_inference(input_tensor, output_tensor)?;
@@ -86,7 +75,7 @@ impl<'a> DepthModel<'a> {
 		&mut self,
 		input_tensor: &mut FloatTensorBuffer,
 		output_tensor: &mut FloatTensorBuffer,
-	) -> Result<(), TfLiteRunInferenceError> {
+	) -> Result<(), LiteRtRunInferenceError> {
 		let profiling_frame = self.profiling_frame;
 
 		self.run_raw(input_tensor, output_tensor)?;
@@ -99,7 +88,7 @@ impl<'a> DepthModel<'a> {
 	#[profile_function("self.profiling_frame")]
 	pub fn allocate_output_tensor(
 		&self,
-	) -> Result<FloatTensorBuffer<'static>, TfLiteRunInferenceError> {
+	) -> Result<FloatTensorBuffer<'static>, LiteRtRunInferenceError> {
 		self.runtime.allocate_output_tensor()
 	}
 
