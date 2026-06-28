@@ -27,6 +27,10 @@
           targets = [ "aarch64-linux-android" ];
           extensions = [ "rust-src" ];
         };
+        androidComposition = pkgs.androidenv.composeAndroidPackages {
+          includeNDK = true;
+          ndkVersions = [ "29.0.14206865" ];
+        };
       in
       {
         devShells.default = pkgs.mkShell.override { stdenv = pkgs.gccStdenv; } {
@@ -37,7 +41,7 @@
             rust-analyzer
             cargo-ndk
 
-            androidenv.androidPkgs.androidsdk
+            androidComposition.androidsdk
 
             pkg-config
             cmake
@@ -48,6 +52,12 @@
 
             tracy_0_12 # for profling
           ];
+
+          shellHook = ''
+            export ANDROID_SDK_ROOT="${androidComposition.androidsdk}/libexec/android-sdk"
+            export ANDROID_NDK_ROOT="$ANDROID_SDK_ROOT/ndk-bundle"
+            export NDK_HOME="$ANDROID_NDK_ROOT"
+          '';
         };
       }
     );
