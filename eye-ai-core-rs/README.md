@@ -73,3 +73,11 @@ This allows tracy to send the tracing packets over tcp through adb right back to
 4. Launch tracy and connect to EyeAIApp while its running
 
 (the correct tracy version gets automatically installed when you use `nix develop`, you can just run `tracy` to start it)
+
+If you dont want to use the tracy GUI, there is also the `tracy-capture` headless cli command. Just run:
+
+```bash
+tracy-capture -o output.tracy
+```
+
+instead. You can view the `output.tracy` in the GUI app or in a browser by going to <https://tracy.nereid.pl/> and opening that file.
