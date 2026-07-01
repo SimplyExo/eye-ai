@@ -9,6 +9,12 @@ use uniffi_bindgen::EmptyCrateConfigSupplier;
 const TARGET: &str = "aarch64-linux-android";
 
 fn main() {
+	let additional_args: Vec<String> = std::env::args().skip(1).collect();
+
+	if !additional_args.is_empty() {
+		println!("Additional args: {}", additional_args.join(" "));
+	}
+
 	println!("Building eye-ai-core-rs-native-lib...");
 
 	// root dir of eye-ai-core-rs, not the entire eye-ai git repo
@@ -24,15 +30,18 @@ fn main() {
 
 	let mut cargo_ndk_command = Command::new("cargo");
 
-	cargo_ndk_command.current_dir(native_lib_path).args([
-		"ndk",
-		"-t",
-		arch,
-		"-o",
-		eye_ai_app_output_dir.to_str().unwrap(),
-		"build",
-		"--release",
-	]);
+	cargo_ndk_command
+		.current_dir(native_lib_path)
+		.args([
+			"ndk",
+			"-t",
+			arch,
+			"-o",
+			eye_ai_app_output_dir.to_str().unwrap(),
+			"build",
+			"--release",
+		])
+		.args(additional_args);
 
 	if !ndk_home_set {
 		let ndk_path = std::env::var("ANDROID_NDK_ROOT").expect(

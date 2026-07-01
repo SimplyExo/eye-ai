@@ -48,3 +48,28 @@ Thats it.
     ```bash
     cargo build-android
     ```
+
+
+## Profiling eye-ai-core-rs with tracy
+
+1. Install tracy version `0.12.2` (not needed when using `nix develop`, see 4.)
+
+2. Compile with `enable_tracy_profiling` feature on
+
+```bash
+cargo build-android -- --features enable_tracy_profiling
+```
+
+(Now upload the EyeAIApp to your phone)
+
+3. Forward port 8086 for tracy over adb
+
+```bash
+adb forward tcp:8086 tcp:8086
+```
+
+This allows tracy to send the tracing packets over tcp through adb right back to your PC running the tracy gui app.
+
+4. Launch tracy and connect to EyeAIApp while its running
+
+(the correct tracy version gets automatically installed when you use `nix develop`, you can just run `tracy` to start it)
