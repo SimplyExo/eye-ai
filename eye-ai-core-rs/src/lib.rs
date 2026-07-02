@@ -37,7 +37,7 @@ pub mod additional_documentation {
 
 pub mod audio;
 
-pub mod tflite;
+pub mod litert;
 
 mod tensor_buffer;
 pub use tensor_buffer::{

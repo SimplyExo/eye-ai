@@ -12,7 +12,7 @@ use std::{
 	time::Duration,
 };
 use thiserror::Error;
-use tracing::{error, trace};
+use tracing::{debug, error, trace};
 use tracing_tracy::client::secondary_frame_mark;
 
 use crate::{
@@ -58,6 +58,11 @@ impl SpatialAudio {
 		content: Arc<SpatialAudioContent>,
 		profiling_frame: Arc<ProfilingFrame>,
 	) -> Result<Self, SpatialAudioError> {
+		debug!(
+			settings = ?settings,
+			"new()"
+		);
+
 		let profiling_frame_clone1 = profiling_frame.clone();
 		let profiling_frame_clone2 = profiling_frame.clone();
 
@@ -210,6 +215,12 @@ fn depth_audio_thread(
 	settings: Arc<RwLock<SpatialAudioSettings>>,
 	profiling_frame: &ProfilingFrame,
 ) {
+	debug!(
+		sample_rate = SpatialAudioSettings::SAMPLE_RATE,
+		buffer_duration = settings.read().unwrap().buffer_duration,
+		"depth_audio_thread()"
+	);
+
 	let mut sources = (0..SpatialAudioSettings::NUMBER_OF_SOURCES)
 		.map(|_| context.new_streaming_source().unwrap())
 		.collect::<Vec<_>>();
@@ -307,14 +318,11 @@ fn object_audio_thread(
 	object_audio_sources_data: Arc<RwLock<VecDeque<ObjectAudioSourceData>>>,
 ) {
 	let coco_audio_samples: &[i16] = &coco_audio_file.samples;
-	/*let info_callback = settings.read().unwrap().log_info_callback;
-	(info_callback)(
-		format!(
-			"[LoadAudioLabelsFile] File sample rate: {}",
-			audio_file_data.sample_rate
-		)
-		.as_str(),
-	);*/
+
+	debug!(
+		sample_rate = coco_audio_file.sample_rate,
+		"object_audio_thread()"
+	);
 
 	let mut source = context.new_static_source().unwrap();
 	source.set_gain(0.5).unwrap();
@@ -373,7 +381,7 @@ fn process_depth_estimation_data(
 	let mut audio_source_data = Vec::with_capacity(
 		(SpatialAudioSettings::PICTURE_RESOLUTION.x as f32 / step_size as f32) as usize,
 	);
-	let mut calculate_sound_origin = CalculateSoundOrigin::new(profiling_frame);
+	let mut calculate_sound_origin = CalculateSoundOrigin::new();
 
 	let mut i: i32 = 0;
 	while i < SpatialAudioSettings::PICTURE_RESOLUTION.x {
@@ -442,7 +450,7 @@ fn process_object_detection_data(
 
 		let distance = depth_estimation_data
 			[(coord.x + (coord.y * SpatialAudioSettings::PICTURE_RESOLUTION.x)) as usize];
-		let mut calculate_sound_origin = CalculateSoundOrigin::new(profiling_frame);
+		let mut calculate_sound_origin = CalculateSoundOrigin::new();
 		let sound_origin = calculate_sound_origin.calculate_sound_origin(coord, distance);
 
 		audio_source_data.push_back(ObjectAudioSourceData {

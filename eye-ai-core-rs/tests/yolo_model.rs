@@ -1,8 +1,7 @@
 use eye_ai_core_rs::{
 	CreateYoloModelInfo, FloatTensorBuffer, FloatTensorFormat, ProfilingFrame, YoloModel,
 };
-use std::sync::Arc;
-use tracing::{Level, warn};
+use tracing::Level;
 use tracing_subscriber::fmt::format::Format;
 
 #[test]
@@ -40,10 +39,10 @@ fn run_yolo_model() {
 		.collect::<Vec<_>>();
 
 	let yolo_model_create_info = CreateYoloModelInfo {
+		model_name: "YOLO".to_string(),
 		model_data: std::fs::read("../EyeAIApp/app/src/main/assets/model.tflite")
 			.expect("failed to load yolo model.tflite file"),
 		labels,
-		log_warning_callback: Arc::new(|message| warn!("{}", message)),
 		npu_config: None,
 	};
 

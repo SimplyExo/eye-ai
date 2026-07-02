@@ -2,8 +2,7 @@ use eye_ai_core_rs::{
 	CreateDepthModelInfo, DepthModel, FloatTensorBuffer, FloatTensorFormat, ProfilingFrame,
 	image_rgb_255_to_midas_image,
 };
-use std::sync::Arc;
-use tracing::{Level, warn};
+use tracing::Level;
 use tracing_subscriber::fmt::format::Format;
 
 #[test]
@@ -46,9 +45,9 @@ fn run_midas_depth_model() {
 	let depth_profiling_frame = ProfilingFrame::new("Depth");
 
 	let depth_model_create_info = CreateDepthModelInfo {
+		model_name: "MiDaS 256x256".to_string(),
 		model_data: std::fs::read("../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite")
 			.expect("failed to load midas.tflite model file"),
-		log_warning_callback: Arc::new(|message| warn!("{}", message)),
 		npu_config: None,
 	};
 

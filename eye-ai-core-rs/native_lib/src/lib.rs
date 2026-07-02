@@ -15,7 +15,7 @@ use std::{
 	ffi::CString,
 	sync::{Arc, LazyLock, RwLock},
 };
-use tracing::{debug, error, trace, warn};
+use tracing::{debug, error, trace};
 
 #[cfg(target_os = "android")]
 mod android_logging;
@@ -191,17 +191,24 @@ pub fn initAndroidLogging() {
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
 pub fn initMetricDepthModel(
+	model_name: String,
 	relative_depth_model: Vec<u8>,
 	enable_npu: bool,
 	skel_directory: String,
 ) {
+	debug!(
+		model_name = ?model_name,
+		enable_npu = ?enable_npu,
+		skel_directory = ?skel_directory,
+		"initMetricDepthModel()",
+	);
+
 	let metric_depth_model = MetricDepthModel::new(
 		CreateDepthModelInfo {
+			model_name,
 			model_data: relative_depth_model,
-			log_warning_callback: Arc::new(move |msg| warn!("[LiteRT] {}", msg)),
 			npu_config: if enable_npu {
 				Some(DepthModelNpuConfig {
-					tflite_qnn_npu_delegate_lib_filepath: "".into(),
 					skel_library_dir: CString::new(skel_directory).unwrap(),
 				})
 			} else {
@@ -212,7 +219,7 @@ pub fn initMetricDepthModel(
 	)
 	.expect("failed to create metric depth model");
 
-	debug!("created metric depth model");
+	debug!("finished creating metric depth model");
 
 	*METRIC_DEPTH_MODEL.write().unwrap() = Some(metric_depth_model);
 }
@@ -220,6 +227,8 @@ pub fn initMetricDepthModel(
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
 pub fn shutdownMetricDepthModel() {
+	debug!("shutdownMetricDepthModel()");
+
 	*METRIC_DEPTH_MODEL.write().unwrap() = None;
 }
 
@@ -242,7 +251,7 @@ pub fn runMetricDepthModelInference(
 				);
 			}
 		}
-	})
+	});
 }
 
 #[uniffi::export]
@@ -299,19 +308,26 @@ pub fn metricDepthColormap(
 #[uniffi::export]
 #[profile_function("OBJECT_PROFILING_FRAME")]
 pub fn initYoloRuntime(
+	model_name: String,
 	model: Vec<u8>,
 	labels: Vec<String>,
 	enable_npu: bool,
 	skel_directory: String,
 ) {
+	debug!(
+		model_name = ?model_name,
+		enable_npu = ?enable_npu,
+		skel_directory = ?skel_directory,
+		"initYoloRuntime"
+	);
+
 	let yolo_model = YoloModel::new(
 		CreateYoloModelInfo {
+			model_name,
 			labels: labels.clone(),
 			model_data: model,
-			log_warning_callback: Arc::new(move |msg| warn!("[LiteRT] {}", msg)),
 			npu_config: if enable_npu {
 				Some(YoloModelNpuConfig {
-					tflite_qnn_npu_delegate_lib_filepath: "".into(),
 					skel_library_dir: CString::new(skel_directory).unwrap(),
 				})
 			} else {
@@ -462,7 +478,7 @@ pub fn setupAudioContent(
 	coco_labels_audio_file_content: Vec<u8>,
 	coco_labels_json_content: String,
 ) {
-	debug!("loading audio content...");
+	debug!("setupAudioContent()");
 
 	let coco_audio_file = match read_audio_file(
 		coco_labels_audio_file_content.into_boxed_slice(),
@@ -496,7 +512,7 @@ pub fn setupAudioContent(
 #[uniffi::export]
 #[profile_function("AUDIO_PROFILING_FRAME")]
 fn createSpatialAudio() {
-	debug!("creating spatial audio...");
+	debug!("createSpatialAudio()");
 
 	let Some(spatial_audio_content) = &(*SPATIAL_AUDIO_CONTENT.read().unwrap()) else {
 		error!(
@@ -518,7 +534,11 @@ fn createSpatialAudio() {
 #[uniffi::export]
 #[profile_function("AUDIO_PROFILING_FRAME")]
 pub fn setAudioSettings(frequency: f32, incidence: i32) {
-	trace!("Updating audio settings");
+	trace!(
+		frequency = ?frequency,
+		incidence = ?incidence,
+		"setAudioSettings()"
+	);
 
 	let mut settings = SPATIAL_AUDIO_SETTINGS.write().unwrap();
 	settings.frequency = frequency;
@@ -528,7 +548,7 @@ pub fn setAudioSettings(frequency: f32, incidence: i32) {
 #[uniffi::export]
 #[profile_function("AUDIO_PROFILING_FRAME")]
 pub fn setDepthAudioPaused(paused: bool) {
-	trace!("Setting depth audio playback. Paused: {}", paused);
+	trace!(paused = ?paused, "setDepthAudioPaused()");
 
 	SPATIAL_AUDIO_SETTINGS.write().unwrap().depth_audio_paused = paused;
 }
@@ -536,7 +556,7 @@ pub fn setDepthAudioPaused(paused: bool) {
 #[uniffi::export]
 #[profile_function("AUDIO_PROFILING_FRAME")]
 pub fn setObjectAudioPaused(paused: bool) {
-	trace!("Setting object audio playback. Paused: {}", paused);
+	trace!(paused = ?paused, "setObjectAudioPaused()");
 
 	SPATIAL_AUDIO_SETTINGS.write().unwrap().object_audio_paused = paused;
 }
@@ -571,7 +591,7 @@ pub fn sendAIDataForSpatialAudio(
 #[uniffi::export]
 #[profile_function("AUDIO_PROFILING_FRAME")]
 pub fn destroySpatialAudio() {
-	debug!("shutting down spatial audio...");
+	debug!("destroySpatialAudio()");
 
 	*SPATIAL_AUDIO.write().unwrap() = None;
 }

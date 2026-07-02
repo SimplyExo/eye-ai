@@ -7,9 +7,8 @@ use litert::{
 	Accelerators, CompilationOptions, CompiledModel, ElementType, Environment, Model, TensorBuffer,
 	TensorShape,
 };
-use std::path::PathBuf;
-use std::sync::Arc;
 use thiserror::Error;
+use tracing::debug;
 
 #[derive(Debug, Error)]
 pub enum LiteRtRunInferenceError {
@@ -59,27 +58,24 @@ pub enum NpuConfigType {
 #[derive(Debug)]
 pub struct NpuConfig {
 	pub config_type: NpuConfigType,
-	/// QNN NPU delegate lib path — retained for reference;
-	/// LiteRT handles NPU via Accelerators::NPU.
-	pub tflite_qnn_npu_delegate_lib_filepath: PathBuf,
 	pub skel_library_dir: std::ffi::CString,
 }
 
 pub struct CreateLiteRtRuntimeInfo {
+	pub model_name: String,
 	pub model_data: Vec<u8>,
 	pub model_input_format: FloatTensorFormat,
 	pub model_output_format: FloatTensorFormat,
-	pub log_warning_callback: Arc<dyn Fn(&str) + Send + Sync>,
 	pub npu_config: Option<NpuConfig>,
 }
 
 pub struct LiteRtRuntime<'a> {
 	_env: Environment,
 	_model: Model,
+	model_name: String,
 	compiled: CompiledModel,
 	model_input_format: FloatTensorFormat,
 	model_output_format: FloatTensorFormat,
-	_log_warning_callback: Arc<dyn Fn(&str) + Send + Sync>,
 	_profiling_frame: &'a ProfilingFrame,
 	input_shape: Vec<i32>,
 	output_shape: Vec<i32>,
@@ -89,6 +85,7 @@ pub struct LiteRtRuntime<'a> {
 impl<'a> std::fmt::Debug for LiteRtRuntime<'a> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("LiteRtRuntime")
+			.field("model_name", &self.model_name)
 			.field("model_input_format", &self.model_input_format)
 			.field("model_output_format", &self.model_output_format)
 			.field("input_shape", &self.input_shape)
@@ -104,6 +101,7 @@ impl<'a> std::fmt::Debug for LiteRtRuntime<'a> {
 unsafe impl<'a> Sync for LiteRtRuntime<'a> {}
 
 impl<'a> LiteRtRuntime<'a> {
+	#[profile_function("profiling_frame")]
 	pub fn new(
 		create_info: CreateLiteRtRuntimeInfo,
 		profiling_frame: &'a ProfilingFrame,
@@ -111,10 +109,11 @@ impl<'a> LiteRtRuntime<'a> {
 		let env = Environment::new()?;
 		let model = Model::from_bytes(create_info.model_data)?;
 
-		let (compiled, accelerator) = compile_with_fallback(
+		let compiled = compile_model(
+			&create_info.model_name,
 			&model,
 			create_info.npu_config.is_some(),
-			&*create_info.log_warning_callback,
+			profiling_frame,
 		)?;
 
 		let sig = model
@@ -126,15 +125,13 @@ impl<'a> LiteRtRuntime<'a> {
 		let input_num_elements = in_shape.num_elements();
 		let output_num_elements = out_shape.num_elements();
 
-		let _ = accelerator; // kept for future introspection
-
 		Ok(Self {
 			_env: env,
 			_model: model,
+			model_name: create_info.model_name,
 			compiled,
 			model_input_format: create_info.model_input_format,
 			model_output_format: create_info.model_output_format,
-			_log_warning_callback: create_info.log_warning_callback,
 			_profiling_frame: profiling_frame,
 			input_shape: in_shape.dims,
 			output_shape: out_shape.dims,
@@ -218,6 +215,7 @@ impl<'a> LiteRtRuntime<'a> {
 		&self,
 	) -> Result<FloatTensorBuffer<'static>, LiteRtRunInferenceError> {
 		let output_container = vec![0.0f32; self.output_num_elements];
+
 		Ok(FloatTensorBuffer::new(
 			output_container,
 			self.model_output_format,
@@ -225,54 +223,42 @@ impl<'a> LiteRtRuntime<'a> {
 	}
 }
 
-fn compile_with_fallback(
+#[profile_function("profiling_frame")]
+fn compile_model(
+	model_name: &str,
 	model: &Model,
 	npu_requested: bool,
-	log_warning: &dyn Fn(&str),
-) -> Result<(CompiledModel, Accelerators), LiteRtRuntimeCreateError> {
+	profiling_frame: &ProfilingFrame,
+) -> Result<CompiledModel, LiteRtRuntimeCreateError> {
+	let mut accelerators = Accelerators::CPU | Accelerators::GPU;
 	if npu_requested {
-		log_warning("Trying NPU + GPU + CPU compilation...");
-		match try_compile(
-			model,
-			Accelerators::NPU | Accelerators::GPU | Accelerators::CPU,
-		) {
-			Ok(compiled) => {
-				log_warning("NPU compilation succeeded");
-				return Ok((
-					compiled,
-					Accelerators::NPU | Accelerators::GPU | Accelerators::CPU,
-				));
-			}
-			Err(e) => {
-				log_warning("NPU compilation failed, trying GPU + CPU next");
-				let _ = e;
-			}
-		}
+		accelerators = accelerators | Accelerators::NPU;
 	}
 
-	log_warning("Trying GPU + CPU compilation...");
-	match try_compile(model, Accelerators::GPU | Accelerators::CPU) {
-		Ok(compiled) => {
-			log_warning("GPU compilation succeeded");
-			return Ok((compiled, Accelerators::GPU | Accelerators::CPU));
-		}
-		Err(e) => {
-			log_warning("GPU compilation failed, falling back to CPU-only");
-			let _ = e;
-		}
-	}
+	debug!(
+		model_name = ?model_name,
+		accelerators = ?format_accelerators(accelerators),
+		"compile_model()",
+	);
 
-	log_warning("Trying CPU-only compilation...");
-	let compiled = try_compile(model, Accelerators::CPU)?;
-	log_warning("CPU-only compilation succeeded");
-	Ok((compiled, Accelerators::CPU))
+	let env = Environment::new()?;
+
+	// FIX: add needed options when npu is enabled!
+	let options = CompilationOptions::new()?.with_accelerators(accelerators)?;
+
+	Ok(CompiledModel::new(env, model.clone(), &options)?)
 }
 
-fn try_compile(
-	model: &Model,
-	accelerators: Accelerators,
-) -> Result<CompiledModel, LiteRtRuntimeCreateError> {
-	let env = Environment::new()?;
-	let options = CompilationOptions::new()?.with_accelerators(accelerators)?;
-	Ok(CompiledModel::new(env, model.clone(), &options)?)
+fn format_accelerators(accelerators: Accelerators) -> String {
+	let mut accelerators_str = Vec::new();
+	if accelerators.contains(Accelerators::CPU) {
+		accelerators_str.push("CPU");
+	}
+	if accelerators.contains(Accelerators::GPU) {
+		accelerators_str.push("GPU");
+	}
+	if accelerators.contains(Accelerators::NPU) {
+		accelerators_str.push("NPU");
+	}
+	accelerators_str.join(", ")
 }

@@ -1,23 +1,23 @@
 use crate::{
 	FloatTensorBuffer, FloatTensorFormat, ProfilingFrame, check_float_tensor_format,
-	tensor_buffer::WrongFloatTensorFormatError,
-	tflite::{
+	litert::{
 		CreateLiteRtRuntimeInfo, LiteRtRunInferenceError, LiteRtRuntime, LiteRtRuntimeCreateError,
 		NpuConfig, NpuConfigType,
 	},
+	tensor_buffer::WrongFloatTensorFormatError,
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
-use std::path::PathBuf;
-use std::sync::Arc;
+use tracing::debug;
 
+#[derive(Debug)]
 pub struct DepthModelNpuConfig {
-	pub tflite_qnn_npu_delegate_lib_filepath: PathBuf,
 	pub skel_library_dir: std::ffi::CString,
 }
 
+#[derive(Debug)]
 pub struct CreateDepthModelInfo {
+	pub model_name: String,
 	pub model_data: Vec<u8>,
-	pub log_warning_callback: Arc<dyn Fn(&str) + Send + Sync>,
 	pub npu_config: Option<DepthModelNpuConfig>,
 }
 
@@ -28,18 +28,23 @@ pub struct DepthModel<'a> {
 }
 
 impl<'a> DepthModel<'a> {
+	#[profile_function("profiling_frame")]
 	pub fn new(
 		create_info: CreateDepthModelInfo,
 		profiling_frame: &'a ProfilingFrame,
 	) -> Result<Self, LiteRtRuntimeCreateError> {
+		debug!(
+			model_name = ?create_info.model_name,
+			npu_config = ?create_info.npu_config,
+			"new()"
+		);
+
 		let runtime_create_info = CreateLiteRtRuntimeInfo {
+			model_name: create_info.model_name,
 			model_data: create_info.model_data,
 			model_input_format: FloatTensorFormat::MiDaSImageRgb,
 			model_output_format: FloatTensorFormat::RawRelativeDepth,
-			log_warning_callback: create_info.log_warning_callback,
 			npu_config: create_info.npu_config.map(|depth_npu_config| NpuConfig {
-				tflite_qnn_npu_delegate_lib_filepath: depth_npu_config
-					.tflite_qnn_npu_delegate_lib_filepath,
 				skel_library_dir: depth_npu_config.skel_library_dir,
 				config_type: NpuConfigType::MiDaS,
 			}),

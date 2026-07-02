@@ -1,10 +1,11 @@
 use eye_ai_core_rs_profiling_attribute::profile_function;
+use tracing::debug;
 
 use crate::{
 	CreateDepthModelInfo, DepthModel, FloatTensorBuffer, FloatTensorFormat, ProfilingFrame,
 	check_float_tensor_format,
+	litert::{LiteRtRunInferenceError, LiteRtRuntimeCreateError},
 	tensor_buffer::WrongFloatTensorFormatError,
-	tflite::{LiteRtRunInferenceError, LiteRtRuntimeCreateError},
 };
 
 #[derive(Debug)]
@@ -15,10 +16,17 @@ pub struct MetricDepthModel<'a> {
 impl<'a> MetricDepthModel<'a> {
 	const REL2ABS_COEFFS: [f32; 5] = [4.30595, -6.5995E-03, 5.25059E-6, -2.7962E-9, 9.28594E-13];
 
+	#[profile_function("profiling_frame")]
 	pub fn new(
 		relative_depth_model_create_info: CreateDepthModelInfo,
 		profiling_frame: &'a ProfilingFrame,
 	) -> Result<Self, LiteRtRuntimeCreateError> {
+		debug!(
+			model_name = ?relative_depth_model_create_info.model_name,
+			npu_config = ?relative_depth_model_create_info.npu_config,
+			"new()"
+		);
+
 		let relative_depth_model =
 			DepthModel::new(relative_depth_model_create_info, profiling_frame)?;
 

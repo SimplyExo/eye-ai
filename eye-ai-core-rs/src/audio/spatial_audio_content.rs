@@ -7,6 +7,7 @@ use symphonia::core::{
 	audio::SampleBuffer, codecs::DecoderOptions, errors::Error, formats::FormatOptions,
 	io::MediaSourceStream, meta::MetadataOptions, probe::Hint,
 };
+use tracing::debug;
 
 #[derive(Debug)]
 pub struct SpatialAudioContent {
@@ -35,6 +36,8 @@ pub fn read_object_label_data(
 	json_content: &str,
 	profiling_frame: &ProfilingFrame,
 ) -> Result<HashMap<String, ObjectLabelData>, json::Error> {
+	debug!("read_object_label_data()");
+
 	let json = json::parse(json_content)?;
 	let JsonValue::Array(json_array) = json else {
 		return Err(json::Error::WrongType("json should be array!".to_string()));
@@ -81,6 +84,8 @@ pub fn read_audio_file(
 	audio_file_content: Box<[u8]>,
 	profiling_frame: &ProfilingFrame,
 ) -> Result<AudioFileData, Error> {
+	debug!("read_audio_file()");
+
 	let mss = MediaSourceStream::new(
 		Box::new(Cursor::new(audio_file_content)),
 		Default::default(),

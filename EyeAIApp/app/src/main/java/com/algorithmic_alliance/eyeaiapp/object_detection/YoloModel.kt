@@ -28,7 +28,7 @@ class YoloModel(var info: YoloModelInfo) {
 		labels = info.readLinesFromAsset(context).toList()
 
 		uniffi.NativeLib.initYoloRuntime(
-			modelBytes, labels,
+			info.tfliteFilename, modelBytes, labels,
 			enableNpu, skelDirectory
 		)
 

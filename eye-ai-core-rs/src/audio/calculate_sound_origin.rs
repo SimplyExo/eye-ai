@@ -1,8 +1,4 @@
-use crate::{
-	ProfilingFrame,
-	audio::{IVec2, SpatialAudioSettings, Vec3},
-};
-use eye_ai_core_rs_profiling_attribute::profile_function;
+use crate::audio::{IVec2, SpatialAudioSettings, Vec3};
 
 fn get_vector_to_origin(pixel_angle: f32) -> Vec3 {
 	let pixel_angle_radians = pixel_angle * (std::f32::consts::PI / 180.0);
@@ -13,25 +9,27 @@ fn get_vector_to_origin(pixel_angle: f32) -> Vec3 {
 	}
 }
 
-pub struct CalculateSoundOrigin<'a> {
+pub struct CalculateSoundOrigin {
 	max_angle: f32,
 	distance_to_object: f32,
 	pixel_coord_x: i32,
 	picture_resolution_x: i32,
-	profiling_frame: &'a ProfilingFrame,
 }
-impl<'a> CalculateSoundOrigin<'a> {
-	pub fn new(profiling_frame: &'a ProfilingFrame) -> Self {
+impl Default for CalculateSoundOrigin {
+	fn default() -> Self {
+		Self::new()
+	}
+}
+impl CalculateSoundOrigin {
+	pub fn new() -> Self {
 		Self {
 			max_angle: 80.0,
 			distance_to_object: 0.0,
 			pixel_coord_x: 0,
 			picture_resolution_x: 0,
-			profiling_frame,
 		}
 	}
 
-	#[profile_function("self.profiling_frame")]
 	pub fn calculate_sound_origin(&mut self, pixel_coords: IVec2, distance_to_object: f32) -> Vec3 {
 		self.picture_resolution_x = SpatialAudioSettings::PICTURE_RESOLUTION.x;
 		self.pixel_coord_x = pixel_coords.x;

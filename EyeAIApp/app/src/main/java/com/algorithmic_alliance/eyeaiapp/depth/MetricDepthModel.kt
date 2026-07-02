@@ -66,7 +66,7 @@ class MetricDepthModel(
 		}
 
 		uniffi.NativeLib.initMetricDepthModel(
-			relativeDepthModelData, enableNpu, skelDirectory
+			relativeDepthFileName, relativeDepthModelData, enableNpu, skelDirectory
 		)
 
 		val inputShape = uniffi.NativeLib.getMetricDepthModelInputShape()
