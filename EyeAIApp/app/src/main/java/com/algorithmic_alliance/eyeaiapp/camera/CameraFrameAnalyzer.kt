@@ -13,7 +13,6 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
-import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +27,8 @@ import androidx.core.view.isVisible
 import kotlinx.coroutines.delay
 import java.util.concurrent.ExecutorService
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
+import kotlin.time.TimeSource
 import kotlin.time.measureTime
 
 /**
@@ -42,6 +43,8 @@ class CameraFrameAnalyzer(
 	private var debugInputBitmapPreview: ImageView,
 	private var mediaImageView: ImageView
 ) : ImageAnalysis.Analyzer {
+	private var lastCameraFrameTime = TimeSource.Monotonic.markNow()
+	private var formattedCameraFrame = ""
 
 	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
 	private var objectDetectionProcessingExecutor: ExecutorService? = null
@@ -72,13 +75,13 @@ class CameraFrameAnalyzer(
 				val frame = getFrame()
 				if (frame != null && metricDepthModel != null) {
 					val inferenceDuration = measureTime {
-						NativeLib.newDepthFrame()
+						uniffi.NativeLib.newDepthFrame()
 						val predictionOutput = metricDepthModel.predictDepth(frame)
 						eyeAIApp.aiData.depthEstimationData.set(predictionOutput)
 						val inputWidth = frame.width
 						val inputHeight = frame.height
 						colorMappedImage = NativeLib.metricDepthColormap(
-							predictionOutput,
+							predictionOutput.asUniffiWrapper(),
 							metricDepthModel.inputDim
 						)
 
@@ -92,7 +95,7 @@ class CameraFrameAnalyzer(
 								val formattedDepthModelInputSize =
 									"${metricDepthModel.inputDim.width}x${metricDepthModel.inputDim.height}"
 								performanceText.text =
-									"Metric Depth model: ${metricDepthModel.name}\nCamera resolution: $formattedInputResolution -> Depth model input: $formattedDepthModelInputSize\n\n${NativeLib.formatDepthFrame()}\n${NativeLib.formatCameraFrame()}\n${NativeLib.formatObjectFrame()}"
+									"Metric Depth model: ${metricDepthModel.name}\nCamera resolution: $formattedInputResolution -> Depth model input: $formattedDepthModelInputSize\n\n${uniffi.NativeLib.formattedDepthFrame()}\n$formattedCameraFrame\n${uniffi.NativeLib.formattedObjectFrame()}"
 							} else {
 								performanceText.text = ""
 							}
@@ -114,15 +117,15 @@ class CameraFrameAnalyzer(
 				val frame = getFrame()
 				if (frame != null) {
 					val inferenceDuration = measureTime {
-						NativeLib.newObjectFrame()
+						uniffi.NativeLib.newObjectFrame()
 						// analyzing the frame
-						val boxes = eyeAIApp.yoloModel.runInference(frame)
-						eyeAIApp.aiData.objectDetectionBoxes.set(boxes)
+						val objects = eyeAIApp.yoloModel.runInference(frame)
+						eyeAIApp.aiData.detectedObjects.set(objects)
 
-						// showing boxes
+						// showing objects
 						withContext(Dispatchers.Main) {
-							if (boxes != null) {
-								overlayOD.setResults(boxes)
+							if (objects != null) {
+								overlayOD.setResults(objects)
 								overlayOD.setCameraResolution(Size(frame.width, frame.height))
 							} else {
 								overlayOD.reset()
@@ -179,7 +182,15 @@ class CameraFrameAnalyzer(
 	@OptIn(ExperimentalGetImage::class)
 	override fun analyze(image: ImageProxy) {
 		if (image.image != null) {
-			NativeLib.newCameraFrame()
+			//uniffi.NativeLib.newCameraFrame()
+			val now = TimeSource.Monotonic.markNow()
+			val lastCameraFrameDuration = now - lastCameraFrameTime
+			lastCameraFrameTime = now
+			val fps = 1.0 / (lastCameraFrameDuration.inWholeMilliseconds.toFloat() / 1000.0)
+			val fpsFormatted = String.format("%.2f", fps)
+			val durationMillisFormatted = lastCameraFrameDuration.toString(DurationUnit.MILLISECONDS, 2)
+			formattedCameraFrame = "Camera Frame: $fpsFormatted fps ($durationMillisFormatted ms)\n"
+
 			val inputBitmap =
 				NativeLib.imageToBitmap(image.image!!, image.imageInfo.rotationDegrees.toFloat())
 			latestCameraFrame.set(inputBitmap)

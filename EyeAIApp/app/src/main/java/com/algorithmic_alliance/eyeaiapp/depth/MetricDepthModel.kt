@@ -8,8 +8,8 @@ import android.util.Log
 import androidx.core.graphics.scale
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
-import com.algorithmic_alliance.eyeaiapp.ProfilingFrameType
 import com.algorithmic_alliance.eyeaiapp.getLastAppUpdateTime
+import uniffi.NativeLib.shutdownMetricDepthModel
 
 /** All needed information to create and use a depth model */
 class MetricDepthModelInfo(
@@ -17,7 +17,11 @@ class MetricDepthModelInfo(
 	val relativeDepthFileName: String
 ) {
 	/** @return null if model type is not supported */
-	fun createDepthModel(context: Context, skelDirectory: String, enableNpu: Boolean): MetricDepthModel {
+	fun createDepthModel(
+		context: Context,
+		skelDirectory: String,
+		enableNpu: Boolean
+	): MetricDepthModel {
 		return MetricDepthModel(
 			context,
 			name,
@@ -61,12 +65,11 @@ class MetricDepthModel(
 			}
 		}
 
-		NativeLib.initMetricDepthModel(
-			relativeDepthModelData, 	gpuDelegateCacheDirectory.path,
-			relativeDepthModelToken, enableNpu, skelDirectory
+		uniffi.NativeLib.initMetricDepthModel(
+			relativeDepthFileName, relativeDepthModelData, enableNpu, skelDirectory
 		)
 
-		val inputShape = NativeLib.getMetricDepthModelInputShape()
+		val inputShape = uniffi.NativeLib.getMetricDepthModelInputShape()
 		inputDim = if (inputShape.size == 4) {
 			if (inputShape[0] != 1) {
 				Log.e(
@@ -89,7 +92,7 @@ class MetricDepthModel(
 			Size(256, 256)
 		}
 
-		val outputShape = NativeLib.getMetricDepthModelOutputShape()
+		val outputShape = uniffi.NativeLib.getMetricDepthModelOutputShape().toIntArray()
 		val expectedOutputShape = intArrayOf(1, inputDim.height, inputDim.width, 1)
 		if (!outputShape.contentEquals(expectedOutputShape)) {
 			Log.e(
@@ -100,21 +103,21 @@ class MetricDepthModel(
 	}
 
 	override fun close() {
-		NativeLib.shutdownMetricDepthModel()
+		/*NativeLib.*/shutdownMetricDepthModel()
 	}
 
 	/**
 	 * @param input is not enforced to match [inputDim], but should be at least a bit larger
 	 * @return relative depth for each pixel between 0.0f and 1.0f
 	 */
-	fun predictDepth(input: Bitmap): FloatArray {
+	fun predictDepth(input: Bitmap): NativeLib.NativeFloatBuffer {
 		val scaled = input.scale(inputDim.width, inputDim.height)
-		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled, ProfilingFrameType.Depth)
-		val output = FloatArray(inputDim.width * inputDim.height)
+		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled)
+		val output = NativeLib.NativeFloatBuffer(inputDim.width * inputDim.height)
 
-		NativeLib.runMetricDepthModelInference(
-			input,
-			output,
+		uniffi.NativeLib.runMetricDepthModelInference(
+			input.asUniffiWrapper(),
+			output.asUniffiWrapper(),
 		)
 
 		return output

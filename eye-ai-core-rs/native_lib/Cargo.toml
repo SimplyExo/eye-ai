@@ -1,0 +1,19 @@
+[package]
+name = "eye-ai-core-rs-native-lib"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+eye-ai-core-rs = { path = "../" }
+eye-ai-core-rs-profiling_attribute = { path = "../profiling_attribute" }
+uniffi = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+tracing-tracy = { workspace = true }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]
+enable_tracy_profiling = ["eye-ai-core-rs/enable_tracy_profiling"]

@@ -1,0 +1,10 @@
+[package]
+name = "eye-ai-core-rs-build-android"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+camino = "1.2.4"
+uniffi = { workspace = true }
+uniffi_bindgen = { workspace = true }
+dirs = "6.0"

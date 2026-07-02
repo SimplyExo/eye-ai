@@ -1,6 +1,5 @@
 package com.algorithmic_alliance.eyeaiapp
 
-import android.R
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.PixelFormat
@@ -8,12 +7,13 @@ import android.media.Image
 import android.util.Log
 import android.util.Size
 import androidx.core.graphics.createBitmap
+import uniffi.NativeLib.UniffiDetectedObject
+import uniffi.NativeLib.UniffiFloatBufferWrapper
+import uniffi.NativeLib.UniffiIntBufferWrapper
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.FloatBuffer
 
-// see NativeLib.cpp
-enum class ProfilingFrameType(val id: Int) {
-	Depth(0), Object(1)
-}
 
 /** Kotlin interface with NativeLib c++ code */
 object NativeLib {
@@ -21,82 +21,70 @@ object NativeLib {
 		System.loadLibrary("NativeLib")
 	}
 
-	// Yolo
-	external fun initYoloRuntime(
-		model: ByteArray,
-		labels: Array<String>,
-		gpuDelegateSerializationDir: String,
-		modelToken: String,
-		enableNpu: Boolean,
-		skelDirectory: String
-	): Boolean
+	// uniffi Float-/ByteArray zero-copy helper functions:
+	external fun getByteBufferPtr(buffer: ByteBuffer): Long
 
-	external fun runYoloOperation(input: FloatArray): String
+	class NativeFloatBuffer(length: Int) {
+		var byteBuffer = ByteBuffer
+			.allocateDirect(length * Float.SIZE_BYTES)
+			.order(ByteOrder.nativeOrder())
 
-	external fun getYoloInputShape(): IntArray
+		var floatBuffer = byteBuffer.asFloatBuffer()
 
-	external fun getYoloOutputShape(): IntArray
+		fun asUniffiWrapper(): UniffiFloatBufferWrapper {
+			return UniffiFloatBufferWrapper(
+				getByteBufferPtr(byteBuffer),
+				floatBuffer.capacity()
+			)
+		}
+	}
 
-	external fun newDepthFrame()
-	external fun formatDepthFrame(): String
-	external fun newCameraFrame()
-	external fun formatCameraFrame(): String
-	external fun newObjectFrame()
-	external fun formatObjectFrame(): String
+	class NativeIntBuffer(length: Int) {
+		var byteBuffer = ByteBuffer
+			.allocateDirect(length * Int.SIZE_BYTES)
+			.order(ByteOrder.nativeOrder())
 
-	external fun initMetricDepthModel(
-		relativeDepthModel: ByteArray,
-		gpuDelegateSerializationDir: String,
-		relativeDepthModelToken: String,
-		enableNpu: Boolean,
-		skelDirectory: String
-	)
+		var intBuffer = byteBuffer.asIntBuffer()
 
-	external fun shutdownMetricDepthModel()
+		fun asUniffiWrapper(): UniffiIntBufferWrapper {
+			return UniffiIntBufferWrapper(
+				getByteBufferPtr(byteBuffer),
+				intBuffer.capacity()
+			)
+		}
+	}
 
-	external fun runMetricDepthModelInference(
-		input: FloatArray,
-		output: FloatArray
-	)
-
-	external fun getMetricDepthModelInputShape(): IntArray
-
-	external fun getMetricDepthModelOutputShape(): IntArray
-
-	external fun metricDepthColormap(depthValues: FloatArray, colormappedPixels: IntArray)
 
 	external fun bitmapToRgbHwc255FloatArray(
 		bitmap: Bitmap,
-		outFloatArray: FloatArray,
-		profilingFrameType: Int
+		outFloatBuffer: FloatBuffer
 	)
 
-	external fun setupAudioSettings(cocoLabelsAudio: ByteArray, cocoLabelsData: ByteArray)
-	external fun setAudioSettings(frequency: Int, incidence: Int)
-	external fun sendAIData(array: FloatArray)
-	external fun setDepthAudioPaused(paused: Boolean)
-	external fun setObjectAudioPaused(paused: Boolean)
-	external fun getProcessingStatus(): Boolean
-	external fun destroySpatialAudio()
-
-	//external fun playSound(frequency: Float, duration: Float)
 
 	/** @param input values should be between 0.0f and 1.0f */
-	fun metricDepthColormap(input: FloatArray, inputImageSize: Size): Bitmap {
-		if (input.size != inputImageSize.width * inputImageSize.height) {
+	fun metricDepthColormap(input: UniffiFloatBufferWrapper, inputImageSize: Size): Bitmap {
+		if (input.length != inputImageSize.width * inputImageSize.height) {
 			Log.e(
 				EyeAIApp.APP_LOG_TAG,
-				"input depth array length does not match output bitmap size"
+				"input depth array length ${input.length} does not match output bitmap size $inputImageSize"
 			)
 			return createBitmap(inputImageSize.width, inputImageSize.height)
 		}
 
-		val colormappedPixels = IntArray(input.size)
+		val colormappedPixels = NativeIntBuffer(input.length)
 
-		metricDepthColormap(input, colormappedPixels)
+		uniffi.NativeLib.metricDepthColormap(
+			input,
+			colormappedPixels.asUniffiWrapper()
+		)
+		//metricDepthColormap(input, colormappedPixels)
+
+		// TODO: improve Bitmap/Buffer/Array conversions...
+		val colormappedPixelsArray = IntArray(colormappedPixels.intBuffer.remaining())
+		colormappedPixels.intBuffer.get(colormappedPixelsArray)
 
 		return Bitmap.createBitmap(
-			colormappedPixels,
+			colormappedPixelsArray,
 			inputImageSize.width,
 			inputImageSize.height,
 			Bitmap.Config.ARGB_8888
@@ -104,14 +92,13 @@ object NativeLib {
 	}
 
 	fun bitmapToRgbHwc255FloatArray(
-		bitmap: Bitmap,
-		profilingFrameType: ProfilingFrameType
-	): FloatArray {
-		val floatArray = FloatArray(bitmap.width * bitmap.height * 3)
+		bitmap: Bitmap
+	): NativeFloatBuffer {
+		val floatBuffer = NativeFloatBuffer(bitmap.width * bitmap.height * 3)
 
-		bitmapToRgbHwc255FloatArray(bitmap, floatArray, profilingFrameType.id)
+		bitmapToRgbHwc255FloatArray(bitmap, floatBuffer.floatBuffer)
 
-		return floatArray
+		return floatBuffer
 	}
 
 	fun imageToBitmap(image: Image, rotationDegrees: Float): Bitmap {

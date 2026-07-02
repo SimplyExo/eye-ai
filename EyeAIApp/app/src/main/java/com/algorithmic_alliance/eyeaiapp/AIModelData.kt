@@ -1,11 +1,12 @@
 package com.algorithmic_alliance.eyeaiapp
 
-import com.algorithmic_alliance.eyeaiapp.object_detection.BoundingBox
 import com.algorithmic_alliance.eyeaiapp.ocr.TextBoundingBox
+import uniffi.NativeLib.UniffiDetectedObject
+import java.nio.FloatBuffer
 import java.util.concurrent.atomic.AtomicReference
 
 object AIModelData {
-	val objectDetectionBoxes = AtomicReference<Array<BoundingBox>?>()
+	val detectedObjects = AtomicReference<Array<UniffiDetectedObject>?>()
 	val ocrBoxes = AtomicReference<Array<TextBoundingBox>?>()
-	val depthEstimationData = AtomicReference<FloatArray>()
+	val depthEstimationData = AtomicReference<NativeLib.NativeFloatBuffer>()
 }

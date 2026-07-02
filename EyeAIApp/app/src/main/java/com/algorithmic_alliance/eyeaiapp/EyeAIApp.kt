@@ -85,17 +85,14 @@ class EyeAIApp : Application() {
 	override fun onCreate() {
 		super.onCreate()
 
+		uniffi.NativeLib.initAndroidLogging()
+
 		val context = this
 
 		settings = Settings.load(context)
 
 		// does not load model or start listening
 		voskModel = VoskModel(context, "model-de")
-
-		NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
-		NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
-		NativeLib.setAudioSettings(settings.depthAudioFrequency, settings.depthAudioClickIncidence)
-
 
 		npuQnnDelegateDirectory = applicationInfo.nativeLibraryDir
 
@@ -119,12 +116,6 @@ class EyeAIApp : Application() {
 			if (settings.enableOCR)
 				ocrModel.create()
 		}
-
-		CoroutineScope(Dispatchers.IO).launch {
-			Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
-			SpatialAudio.setup(this@EyeAIApp)
-			SpatialAudio.start()
-		}
 	}
 
 	fun updateSettings() {
@@ -133,29 +124,30 @@ class EyeAIApp : Application() {
 		settings = Settings.load(context)
 
 		if (oldSettings.depthAudioPlayback != settings.depthAudioPlayback) {
-			NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+			uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		}
 
 		if (oldSettings.objectAudioPlayback != settings.objectAudioPlayback) {
-			NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+			uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		}
 
 		if (oldSettings.depthAudioFrequency != settings.depthAudioFrequency) {
-			NativeLib.setAudioSettings(
-				settings.depthAudioFrequency,
+			uniffi.NativeLib.setAudioSettings(
+				settings.depthAudioFrequency.toFloat(),
 				settings.depthAudioClickIncidence
 			)
 		}
 
 		if (oldSettings.depthAudioClickIncidence != settings.depthAudioClickIncidence) {
-			NativeLib.setAudioSettings(
-				settings.depthAudioFrequency,
+			uniffi.NativeLib.setAudioSettings(
+				settings.depthAudioFrequency.toFloat(),
 				settings.depthAudioClickIncidence
 			)
 		}
 
 		if (oldSettings.objectAudioPlaybackLanguage != settings.objectAudioPlaybackLanguage) {
-			SpatialAudio.destroy()
+			// TODO: move this somewhere else?
+			SpatialAudio.stop()
 			CoroutineScope(Dispatchers.IO).launch {
 				SpatialAudio.setup(this@EyeAIApp)
 				SpatialAudio.start()

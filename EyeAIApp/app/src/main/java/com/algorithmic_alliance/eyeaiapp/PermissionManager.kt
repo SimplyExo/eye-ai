@@ -14,8 +14,7 @@ import androidx.core.content.ContextCompat
 class PermissionManager(
 	var activity: ComponentActivity,
 	onCameraPermissionResult: (isGranted: Boolean) -> Unit,
-	onMicrophonePermissionResult: (isGranted: Boolean) -> Unit,
-	onBluetoothPermissionsResult: (isGranted: Boolean) -> Unit
+	onMicrophonePermissionResult: (isGranted: Boolean) -> Unit
 ) {
 	private val requestPermissionsLauncher =
 		activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -35,20 +34,6 @@ class PermissionManager(
 					)
 				)
 			}
-			if (permissions.containsKey(Manifest.permission.BLUETOOTH) || permissions.containsKey(
-					Manifest.permission.BLUETOOTH_CONNECT
-				)
-			) {
-				onBluetoothPermissionsResult(
-					permissions.getOrDefault(
-						Manifest.permission.BLUETOOTH,
-						false
-					) && permissions.getOrDefault(
-						Manifest.permission.BLUETOOTH_CONNECT,
-						false
-					)
-				)
-			}
 		}
 
 	fun requestCameraPermission() {
@@ -59,15 +44,6 @@ class PermissionManager(
 		requestPermissionsLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO))
 	}
 
-	fun requestBluetoothPermissions() {
-		requestPermissionsLauncher.launch(
-			arrayOf(
-				Manifest.permission.BLUETOOTH,
-				Manifest.permission.BLUETOOTH_CONNECT
-			)
-		)
-	}
-
 	fun isCameraPermissionGranted(): Boolean {
 		return ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) ==
 			PackageManager.PERMISSION_GRANTED
@@ -75,13 +51,6 @@ class PermissionManager(
 
 	fun isMicrophonePermissionGranted(): Boolean {
 		return ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) ==
-			PackageManager.PERMISSION_GRANTED
-	}
-
-	fun areBluetoothPermissionsGranted(): Boolean {
-		return ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH) ==
-			PackageManager.PERMISSION_GRANTED &&
-			ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) ==
 			PackageManager.PERMISSION_GRANTED
 	}
 

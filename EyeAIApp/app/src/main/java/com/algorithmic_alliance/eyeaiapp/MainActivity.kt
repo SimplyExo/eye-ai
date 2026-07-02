@@ -24,12 +24,9 @@ import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.algorithmic_alliance.eyeaiapp.NativeLib.setDepthAudioPaused
-import com.algorithmic_alliance.eyeaiapp.NativeLib.setObjectAudioPaused
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
-import com.algorithmic_alliance.eyeaiapp.audio.AudioDeviceManager
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
@@ -48,13 +45,12 @@ import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 
-
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	private var permissionManager =
-		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult, ::onBluetoothPermissionsResult)
+		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult)
 
 	private var cameraPreviewView: PreviewView? = null
 	private var ungrantedPermissionsNotice: LinearLayout? = null
@@ -112,8 +108,6 @@ class MainActivity : AppCompatActivity() {
 
 	private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
 	private var mediaPlayer: MediaPlayer? = null
-
-	private lateinit var audioDeviceManager : AudioDeviceManager
 
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -249,10 +243,6 @@ class MainActivity : AppCompatActivity() {
 		}
 
 		SpeechManager.tts = textToSpeechInstance
-
-
-		audioDeviceManager = AudioDeviceManager(this@MainActivity)
-		audioDeviceManager.register()
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -260,6 +250,12 @@ class MainActivity : AppCompatActivity() {
 		super.onResume()
 
 		eyeAIApp().updateSettings()
+
+		CoroutineScope(Dispatchers.IO).launch {
+			Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
+			SpatialAudio.setup(this@MainActivity)
+			SpatialAudio.start()
+		}
 
 		updateSpeechRecognitionUIVisibility()
 
@@ -282,15 +278,15 @@ class MainActivity : AppCompatActivity() {
 
 		// re-enabling the audio playback in accordance to the settings
 		val settings = Settings.load(this@MainActivity)
-		setObjectAudioPaused(!settings.objectAudioPlayback)
-		setDepthAudioPaused(!settings.depthAudioPlayback)
-
-
+		uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onPause() {
 		super.onPause()
+
+		SpatialAudio.stop()
 
 		eyeAIApp().voskModel.stopListening()
 
@@ -299,8 +295,8 @@ class MainActivity : AppCompatActivity() {
 		mediaPlayer?.shutdown()
 
 		// stopping audio playback
-		setObjectAudioPaused(true)
-		setDepthAudioPaused(true)
+		uniffi.NativeLib.setObjectAudioPaused(true)
+		uniffi.NativeLib.setDepthAudioPaused(true)
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
@@ -310,8 +306,7 @@ class MainActivity : AppCompatActivity() {
 		textToSpeechInstance.shutdown()
 		mediaFrameAnalyzer?.shutdown()
 		mediaPlayer?.shutdown()
-		SpatialAudio.destroy()
-		unregisterReceiver(audioDeviceManager)
+		SpatialAudio.stop()
 
 		eyeAIApp().voskModel.closeService()
 	}
@@ -323,12 +318,6 @@ class MainActivity : AppCompatActivity() {
 			initCamera()
 		} else {
 			ungrantedPermissionsNotice!!.visibility = VISIBLE
-		}
-	}
-
-	private fun onBluetoothPermissionsResult(isGranted: Boolean){
-		if(!isGranted){
-			Log.w(EyeAIApp.APP_LOG_TAG, "Bluetooth permissions are not all granted")
 		}
 	}
 
@@ -731,8 +720,8 @@ class MainActivity : AppCompatActivity() {
 	private fun startVoskListening() {
 		if (voskUserStart.get()) return // Check whether already started
 
-		setObjectAudioPaused(true)
-		setDepthAudioPaused(true)
+		uniffi.NativeLib.setObjectAudioPaused(true)
+		uniffi.NativeLib.setDepthAudioPaused(true)
 		voskUserStart.set(true)
 		eyeAIApp().voskModel.startListening()
 		Log.d(EyeAIApp.APP_LOG_TAG, "User started Vosk Model")
@@ -743,8 +732,8 @@ class MainActivity : AppCompatActivity() {
 	private fun stopVoskListening() {
 		if (!voskUserStart.get()) return // Check whether already stopped
 
-		setObjectAudioPaused(false)
-		setDepthAudioPaused(false)
+		uniffi.NativeLib.setObjectAudioPaused(false)
+		uniffi.NativeLib.setDepthAudioPaused(false)
 		voskUserStart.set(false)
 		eyeAIApp().voskModel.stopListening()
 		Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")

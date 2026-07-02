@@ -19,14 +19,13 @@ import androidx.core.content.edit
 class TutorialScreen : AppCompatActivity() {
 	enum class State {
 		CameraPermissionExplanation,
-		MicrophonePermissionExplanation,
-		BluetoothPermissionExplanation
+		MicrophonePermissionExplanation
 	}
 
 	private var currentState = State.CameraPermissionExplanation
 
 	private var permissionManager =
-		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult, ::onBluetoothPermissionsResult)
+		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult)
 
 	private var acceptBtn: Button? = null
 	private var skipBtn: Button? = null
@@ -62,10 +61,8 @@ class TutorialScreen : AppCompatActivity() {
 
 		skipBtn = findViewById(R.id.tutorial_screen_skip_btn)
 		skipBtn?.setOnClickListener {
-			when (currentState) {
-				State.MicrophonePermissionExplanation -> continueTutorial(true)
-				State.BluetoothPermissionExplanation -> continueTutorial(true)
-				else -> {}
+			if (currentState == State.MicrophonePermissionExplanation) {
+				continueTutorial(true)
 			}
 		}
 
@@ -84,21 +81,15 @@ class TutorialScreen : AppCompatActivity() {
 			}
 
 			State.MicrophonePermissionExplanation -> {
-				if (skip)
+				if (skip) {
 					PreferenceManager.getDefaultSharedPreferences(this).edit(true) {
 						putBoolean(getString(R.string.enable_speech_recognition_setting), false)
 					}
-				else
-					permissionManager.requestMicrophonePermission()
-				changeState(State.BluetoothPermissionExplanation)
-			}
-			State.BluetoothPermissionExplanation -> {
-				if (skip) {
 					exitTutorial()
 				}
 				else {
 					// will exit with callback
-					permissionManager.requestBluetoothPermissions()
+					permissionManager.requestMicrophonePermission()
 				}
 			}
 		}
@@ -130,12 +121,6 @@ class TutorialScreen : AppCompatActivity() {
 					getString(R.string.tutorial_microphone_permission_explanation)
 				skipBtn?.visibility = VISIBLE
 			}
-
-			State.BluetoothPermissionExplanation -> {
-				explanationIcon?.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.headphones_24px))
-				explanationText?.text = getString(R.string.tutorial_bluetooth_permission_explanation)
-				skipBtn?.visibility = VISIBLE
-			}
 		}
 	}
 
@@ -159,10 +144,6 @@ class TutorialScreen : AppCompatActivity() {
 
 	@Suppress("unused")
 	private fun onMicrophonePermissionResult(isGranted: Boolean) {
-		// nothing to do
-	}
-
-	private fun onBluetoothPermissionsResult(isGranted: Boolean) {
 		exitTutorial()
 	}
 }

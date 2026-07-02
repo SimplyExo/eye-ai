@@ -1,0 +1,79 @@
+use eye_ai_core_rs::{
+	CreateDepthModelInfo, DepthModel, FloatTensorBuffer, FloatTensorFormat, ProfilingFrame,
+	image_rgb_255_to_midas_image,
+};
+use tracing::Level;
+use tracing_subscriber::fmt::format::Format;
+
+#[test]
+fn run_midas_depth_model() {
+	tracing_subscriber::fmt()
+		.event_format(
+			Format::default()
+				.compact()
+				.with_target(false)
+				.with_source_location(true)
+				.without_time(),
+		)
+		.with_max_level(Level::DEBUG)
+		.init();
+
+	#[cfg(feature = "enable_tracy_profiling")]
+	tracing_tracy::client::Client::start();
+
+	let input_image = image::ImageReader::open("tests/00022_00193_outdoor_010_030.png")
+		.unwrap()
+		.decode()
+		.unwrap()
+		.resize_exact(256, 256, image::imageops::FilterType::Nearest);
+	let input_image_rgb8 = input_image.into_rgb8();
+	let input_buffer_255f = input_image_rgb8
+		.as_flat_samples()
+		.as_slice()
+		.iter()
+		.map(|x| *x as f32)
+		.collect::<Vec<_>>();
+	let mut input = FloatTensorBuffer::new(input_buffer_255f, FloatTensorFormat::ImageRgb255);
+	image_rgb_255_to_midas_image(&mut input).expect("failed to convert rgb255 to midas image");
+
+	let expected_output = ndarray_npy::read_npy::<_, ndarray::Array2<f32>>(
+		"tests/00022_00193_outdoor_010_030_expected.npy",
+	)
+	.expect("failed to read expected output file");
+	let flat_expected_output = expected_output.flatten();
+
+	let depth_profiling_frame = ProfilingFrame::new("Depth");
+
+	let depth_model_create_info = CreateDepthModelInfo {
+		model_name: "MiDaS 256x256".to_string(),
+		model_data: std::fs::read("../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite")
+			.expect("failed to load midas.tflite model file"),
+		npu_config: None,
+	};
+
+	let mut depth_model = DepthModel::new(depth_model_create_info, &depth_profiling_frame)
+		.expect("failed to create interpreter");
+
+	let mut output_tensor_buffer = depth_model
+		.allocate_output_tensor()
+		.expect("failed to allocate output tensor");
+
+	depth_model
+		.run(&mut input, &mut output_tensor_buffer)
+		.expect("failed to run inference on midas model");
+	let output_tensor_buffer_data = output_tensor_buffer.data();
+
+	let tolerance: f32 = 0.05;
+	assert_eq!(output_tensor_buffer_data.len(), flat_expected_output.len());
+	for i in 0..flat_expected_output.len() {
+		let error = flat_expected_output[i] - output_tensor_buffer_data[i];
+		assert!(
+			error.abs() < tolerance,
+			"error of {} at index {} (expected: {}, got: {})",
+			error,
+			i,
+			flat_expected_output[i],
+			output_tensor_buffer_data[i]
+		);
+	}
+}

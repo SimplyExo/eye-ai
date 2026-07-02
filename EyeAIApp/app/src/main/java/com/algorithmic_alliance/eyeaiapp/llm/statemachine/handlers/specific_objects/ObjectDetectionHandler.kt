@@ -4,7 +4,6 @@ import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.AIModelData
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects.TranslateEnglishToGerman
 
 class ObjectDetectionHandler() {
 	companion object {
@@ -22,7 +21,7 @@ class ObjectDetectionHandler() {
 
 
 		fun getGermanObjectLabelsForLLM(): List<String> {
-			val objectDetectionBoxes = AIModelData.objectDetectionBoxes.get()
+			val objectDetectionBoxes = AIModelData.detectedObjects.get()
 
 			if (objectDetectionBoxes.isNullOrEmpty()) {
 				return emptyList()
@@ -47,24 +46,24 @@ class ObjectDetectionHandler() {
 				return ObjectDetectionResult.NoQueryProvided
 			}
 
-			val objectDetectionBoxes = AIModelData.objectDetectionBoxes.get()
+			val objectDetectionBoxes = AIModelData.detectedObjects.get()
 			val depthEstimationData = AIModelData.depthEstimationData.get()
 
 			Log.d(EyeAIApp.Companion.APP_LOG_TAG, "Object detection boxes: ${objectDetectionBoxes?.size}")
-			Log.d(EyeAIApp.Companion.APP_LOG_TAG, "Depth data size: ${depthEstimationData?.size}")
+			Log.d(EyeAIApp.Companion.APP_LOG_TAG, "Depth data size: ${depthEstimationData.floatBuffer.capacity()}")
 
 			if (objectDetectionBoxes.isNullOrEmpty()) {
 				Log.w(EyeAIApp.Companion.APP_LOG_TAG, "No object detection boxes - returning NoObjectsFound")
 				return ObjectDetectionResult.NoObjectsFound
 			}
 
-			if (depthEstimationData.isEmpty()) {
+			/*if (depthEstimationData.isEmpty()) {
 				Log.w(EyeAIApp.Companion.APP_LOG_TAG, "Depth data is empty - returning DepthDataUnavailable")
 				return ObjectDetectionResult.DepthDataUnavailable
-			}
+			}*/
 
-			if (depthEstimationData.size != DEPTH_WIDTH * DEPTH_HEIGHT) {
-				Log.w(EyeAIApp.Companion.APP_LOG_TAG, "Depth data has unexpected size: ${depthEstimationData.size} (expected: ${DEPTH_WIDTH * DEPTH_HEIGHT})")
+			if (depthEstimationData.floatBuffer.capacity() != DEPTH_WIDTH * DEPTH_HEIGHT) {
+				Log.w(EyeAIApp.Companion.APP_LOG_TAG, "Depth data has unexpected size: ${depthEstimationData.floatBuffer.capacity()} (expected: ${DEPTH_WIDTH * DEPTH_HEIGHT})")
 				return ObjectDetectionResult.DepthDataInvalid
 			}
 
@@ -83,8 +82,8 @@ class ObjectDetectionHandler() {
 					val depthY = (box.cy * (DEPTH_HEIGHT - 1)).toInt().coerceIn(0, DEPTH_HEIGHT - 1)
 					val depthIndex = depthY * DEPTH_WIDTH + depthX
 
-					val distance = if (depthIndex < depthEstimationData.size) {
-						depthEstimationData[depthIndex]
+					val distance = if (depthIndex < depthEstimationData.floatBuffer.capacity()) {
+						depthEstimationData.floatBuffer[depthIndex]
 					} else {
 						Log.w(EyeAIApp.Companion.APP_LOG_TAG, "Depth-Index out of bounds")
 						-1f

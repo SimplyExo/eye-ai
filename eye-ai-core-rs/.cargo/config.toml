@@ -1,0 +1,2 @@
+[alias]
+build-android = "run --release -p eye-ai-core-rs-build-android"

@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
-import com.algorithmic_alliance.eyeaiapp.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.isActive
@@ -17,29 +16,38 @@ import java.util.concurrent.ExecutorService
 
 
 object SpatialAudio {
-	private lateinit var  executor: ExecutorService
+	private lateinit var executor: ExecutorService
 	private lateinit var scope: CoroutineScope
-	private lateinit var eyeAIApp: EyeAIApp;
+	private lateinit var eyeAIApp: EyeAIApp
 
 	fun start() {
 		if (!::scope.isInitialized) return
+
 		scope.launch {
+			uniffi.NativeLib.createSpatialAudio()
+
 			while (isActive) {
-				if(NativeLib.getProcessingStatus()){
-					val data = eyeAIApp.aiData.depthEstimationData.get()
-					if(data != null){
-						NativeLib.sendAIData(data)
-					}
-					delay(50)
+				val depthData = eyeAIApp.aiData.depthEstimationData.get()
+				val objectData = eyeAIApp.aiData.detectedObjects.get()
+				if (depthData != null) {
+					uniffi.NativeLib.sendAiDataForSpatialAudio(
+						depthData.asUniffiWrapper(),
+						objectData?.toList() ?: emptyList()
+					)
 				}
+				delay(50)
 			}
 		}
 	}
 
-	fun setup(context: Context){
+	fun setup(context: Context) {
 		eyeAIApp = context.applicationContext as EyeAIApp
-		val settings = Settings.load(context)
+		val settings = eyeAIApp.settings
 		loadAudioDataFiles(context, settings.objectAudioPlaybackLanguage)
+
+		uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+		uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		uniffi.NativeLib.setAudioSettings(settings.depthAudioFrequency.toFloat(), settings.depthAudioClickIncidence)
 
 		if (!::executor.isInitialized || executor.isShutdown) {
 			executor = Executors.newSingleThreadExecutor()
@@ -47,14 +55,13 @@ object SpatialAudio {
 		}
 	}
 
-	fun destroy() {
+	fun stop() {
 		if (::scope.isInitialized) scope.cancel()
 		if (::executor.isInitialized) executor.shutdown()
-		NativeLib.destroySpatialAudio()
-		NativeLib.destroySpatialAudio()
+		uniffi.NativeLib.destroySpatialAudio()
 	}
 
-	fun loadFileFromAssets(context: Context, fileName: String): ByteArray?{
+	fun loadFileFromAssets(context: Context, fileName: String): ByteArray? {
 		try {
 			val assetManager = context.assets
 
@@ -65,33 +72,60 @@ object SpatialAudio {
 			val buffer = ByteArray(1024)
 			var bytesRead: Int
 
-			while(inputStream.read(buffer).also{bytesRead = it} != -1){
+			while (inputStream.read(buffer).also { bytesRead = it } != -1) {
 				byteArrayOutputStream.write(buffer, 0, bytesRead)
 			}
 
 			inputStream.close()
 			return byteArrayOutputStream.toByteArray()
 
-		} catch (e: Exception){
+		} catch (e: Exception) {
 			e.printStackTrace()
 			return null
 		}
 	}
-	fun loadAudioDataFiles(context: Context, language: String?){
+
+	fun loadTextFileFromAssets(context: Context, fileName: String): String? {
+		try {
+			val assetManager = context.assets
+
+			val inputStream: InputStream = assetManager.open(fileName)
+
+			val byteArrayOutputStream = ByteArrayOutputStream()
+
+			val buffer = ByteArray(1024)
+			var bytesRead: Int
+
+			while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+				byteArrayOutputStream.write(buffer, 0, bytesRead)
+			}
+
+			inputStream.close()
+			return byteArrayOutputStream.toString()
+
+		} catch (e: Exception) {
+			e.printStackTrace()
+			return null
+		}
+	}
+
+	fun loadAudioDataFiles(context: Context, language: String?) {
 		Log.d("Spatial Audio", "[LoadAudioDataFiles] Loading files...")
 		var fileNameWav: String
 		var fileNameJson: String
-		when(language){
+		when (language) {
 			"english" -> {
 				Log.d("SpatialAudio", "[SpatialAudio] Selected english language")
 				fileNameWav = "coco_labels_english.wav"
 				fileNameJson = "coco_labels_data_english.json"
 			}
-			"german" ->{
+
+			"german" -> {
 				Log.d("SpatialAudio", "[SpatialAudio] Selected german language")
 				fileNameWav = "coco_labels_german.wav"
 				fileNameJson = "coco_labels_data_german.json"
 			}
+
 			else -> {
 				Log.d("SpatialAudio", "[SpatialAudio] Selected no language, loading default")
 				fileNameWav = "coco_labels_english.wav"
@@ -100,16 +134,17 @@ object SpatialAudio {
 		}
 
 		val cocoLabelsAudio = loadFileFromAssets(context, fileNameWav)
-		val cocoLabelsData = loadFileFromAssets(context, fileNameJson)
+		val cocoLabelsData = loadTextFileFromAssets(context, fileNameJson)
 
 
 
-		if(cocoLabelsData != null  && cocoLabelsAudio != null){
-			NativeLib.setupAudioSettings(cocoLabelsAudio, cocoLabelsData)
-			Log.d("SpatialAudio",
+		if (cocoLabelsData != null && cocoLabelsAudio != null) {
+			uniffi.NativeLib.setupAudioContent(cocoLabelsAudio, cocoLabelsData)
+			Log.d(
+				"SpatialAudio",
 				"[SpatialAudio] Loaded coco data from $fileNameWav and $fileNameJson"
 			)
-		}else{
+		} else {
 			Log.e("SpatialAudio", "[SpatialAudio] Could not load coco data")
 		}
 	}
