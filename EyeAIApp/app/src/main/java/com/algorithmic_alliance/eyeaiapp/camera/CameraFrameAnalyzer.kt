@@ -46,14 +46,18 @@ class CameraFrameAnalyzer(
 	private var lastCameraFrameTime = TimeSource.Monotonic.markNow()
 	private var formattedCameraFrame = ""
 
-	private var depthProcessingExecutor = Executors.newSingleThreadExecutor()
+	private var depthProcessingExecutor = Executors.newSingleThreadExecutor { r ->
+		Thread(r, "Depth inference")
+	}
 	private var objectDetectionProcessingExecutor: ExecutorService? = null
 
 	private val depthScope: CoroutineScope =
 		CoroutineScope(depthProcessingExecutor.asCoroutineDispatcher())
 
 	private val objectScope: CoroutineScope? = if (eyeAIApp.settings.enableObjectDetection) {
-		objectDetectionProcessingExecutor = Executors.newSingleThreadExecutor()
+		objectDetectionProcessingExecutor = Executors.newSingleThreadExecutor { r ->
+			Thread(r, "YOLO inference")
+		}
 		CoroutineScope(objectDetectionProcessingExecutor!!.asCoroutineDispatcher())
 	} else {
 		null

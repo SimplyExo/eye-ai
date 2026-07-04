@@ -8,7 +8,6 @@ import android.util.Log
 import androidx.core.graphics.scale
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
-import com.algorithmic_alliance.eyeaiapp.getLastAppUpdateTime
 import uniffi.NativeLib.shutdownMetricDepthModel
 
 /** All needed information to create and use a depth model */
@@ -43,27 +42,6 @@ class MetricDepthModel(
 
 	init {
 		val relativeDepthModelData = context.assets.open(relativeDepthFileName).readBytes()
-
-		val gpuDelegateCacheDirectory =
-			createSerializedGpuDelegateCacheDirectory(context)
-		val relativeDepthModelToken = getModelToken(context, relativeDepthFileName)
-
-		// cleanup old cached gpu delegate files
-		if (gpuDelegateCacheDirectory.exists()) {
-			for (file in gpuDelegateCacheDirectory.listFiles()!!) {
-				if (file.name.contains(relativeDepthModelToken))
-					continue
-
-				try {
-					Log.i(
-						EyeAIApp.APP_LOG_TAG,
-						"Deleting old gpu delegate cache file: ${file.name}"
-					)
-					file.delete()
-				} catch (_: SecurityException) {
-				}
-			}
-		}
 
 		uniffi.NativeLib.initMetricDepthModel(
 			relativeDepthFileName, relativeDepthModelData, enableNpu, skelDirectory
@@ -122,18 +100,4 @@ class MetricDepthModel(
 
 		return output
 	}
-}
-
-fun createSerializedGpuDelegateCacheDirectory(context: Context): File {
-	val gpuDelegateCacheDirectory = File(context.cacheDir, "gpu_delegate_cache")
-	if (!gpuDelegateCacheDirectory.exists()) gpuDelegateCacheDirectory.mkdirs()
-	return gpuDelegateCacheDirectory
-}
-
-/**
- * generates a unique token based on the model file name and last install/update time of this app
- */
-fun getModelToken(context: Context, modelFilename: String): String {
-	val lastUpdateTime = getLastAppUpdateTime(context)
-	return "${modelFilename}_${lastUpdateTime}"
 }

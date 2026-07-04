@@ -32,7 +32,15 @@ class EyeAIApp : Application() {
 	lateinit var settings: Settings
 		private set
 
-	private var loadAIModelExecutor = Executors.newSingleThreadExecutor()
+	private var loadDepthModelExecutor = Executors.newSingleThreadExecutor { r ->
+		Thread(r, "Depth loader")
+	}
+	private var loadYoloModelExecutor = Executors.newSingleThreadExecutor { r ->
+		Thread(r, "Yolo loader")
+	}
+	private var loadNlpModelExecutor = Executors.newSingleThreadExecutor { r ->
+		Thread(r, "Nlp loader")
+	}
 
 	var metricDepthModel: MetricDepthModel? = null
 		private set
@@ -46,12 +54,10 @@ class EyeAIApp : Application() {
 		private set
 
 	/* will not be fully created if enableObjectDetection is disabled in settings */
-	var yoloModel: YoloModel =
-		YoloModel(YoloModelInfo("model.tflite", "coco.names", 640))
+	var yoloModel: YoloModel = YoloModel(YoloModelInfo("model.tflite", "coco.names", 640))
 		private set
 
-	var nlpModel: NLPModel =
-		NLPModel(NLPModelInfo("nlp_model_float32.tflite"))
+	var nlpModel: NLPModel = NLPModel(NLPModelInfo("nlp_model_float32.tflite"))
 		private set
 
 	/* will not be fully initialized when enableOCR is disabled in settings */
@@ -67,17 +73,13 @@ class EyeAIApp : Application() {
 
 		const val DEFAULT_DEPTH_MODEL_NAME = "MiDaS V2.1"
 
-		val DEPTH_MODELS =
-			arrayOf(
-				MetricDepthModelInfo(
-					DEFAULT_DEPTH_MODEL_NAME,
-					"midas_v2_1_256x256.tflite"
-				),
-				MetricDepthModelInfo(
-					"MiDaS V2.1 (quantized)",
-					"midas_v2_1_256x256_quantized.tflite"
-				)
+		val DEPTH_MODELS = arrayOf(
+			MetricDepthModelInfo(
+				DEFAULT_DEPTH_MODEL_NAME, "midas_v2_1_256x256.tflite"
+			), MetricDepthModelInfo(
+				"MiDaS V2.1 (quantized)", "midas_v2_1_256x256_quantized.tflite"
 			)
+		)
 
 		val PREFERRED_CAMERA_RESOLUTION = Size(640, 640)
 	}
@@ -94,28 +96,31 @@ class EyeAIApp : Application() {
 		// does not load model or start listening
 		voskModel = VoskModel(context, "model-de")
 
+		settings.googleAiStudioApiKey?.let { apiKey ->
+			if (!apiKey.isEmpty()) llm =
+				GoogleAIStudioLLM(apiKey, settings.customGoogleGenAIStudioEndpoint)
+		}
+
 		npuQnnDelegateDirectory = applicationInfo.nativeLibraryDir
 
-		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
+		CoroutineScope(loadDepthModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
+		}
 
-			settings.googleAiStudioApiKey?.let { apiKey ->
-				if (!apiKey.isEmpty())
-					llm = GoogleAIStudioLLM(apiKey, settings.customGoogleGenAIStudioEndpoint)
-			}
-
+		CoroutineScope(loadYoloModelExecutor.asCoroutineDispatcher()).launch {
 			// Yolo Model erstellen
 			if (settings.enableObjectDetection) {
 				yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
 			}
+		}
 
+		CoroutineScope(loadNlpModelExecutor.asCoroutineDispatcher()).launch {
 			// NLP erstellen
 			nlpModel.create(baseContext)
-
-			// Google ML Kit initialisieren
-			if (settings.enableOCR)
-				ocrModel.create()
 		}
+
+		// Google ML Kit initialisieren
+		if (settings.enableOCR) ocrModel.create()
 	}
 
 	fun updateSettings() {
@@ -133,15 +138,13 @@ class EyeAIApp : Application() {
 
 		if (oldSettings.depthAudioFrequency != settings.depthAudioFrequency) {
 			uniffi.NativeLib.setAudioSettings(
-				settings.depthAudioFrequency.toFloat(),
-				settings.depthAudioClickIncidence
+				settings.depthAudioFrequency.toFloat(), settings.depthAudioClickIncidence
 			)
 		}
 
 		if (oldSettings.depthAudioClickIncidence != settings.depthAudioClickIncidence) {
 			uniffi.NativeLib.setAudioSettings(
-				settings.depthAudioFrequency.toFloat(),
-				settings.depthAudioClickIncidence
+				settings.depthAudioFrequency.toFloat(), settings.depthAudioClickIncidence
 			)
 		}
 
@@ -156,37 +159,40 @@ class EyeAIApp : Application() {
 
 		val enableNpuChanged = oldSettings.enableNpu != settings.enableNpu
 
-		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
+		CoroutineScope(loadDepthModelExecutor.asCoroutineDispatcher()).launch {
 			if (oldSettings.depthModel != settings.depthModel || enableNpuChanged) {
 				switchDepthModel(settings.depthModel)
 			}
+		}
 
-			if (oldSettings.enableSpeechRecognition != settings.enableSpeechRecognition) {
-				if (!settings.enableSpeechRecognition) {
-					voskModel.closeService()
-				}
+		if (oldSettings.enableSpeechRecognition != settings.enableSpeechRecognition) {
+			if (!settings.enableSpeechRecognition) {
+				voskModel.closeService()
 			}
+		}
 
-			if (oldSettings.googleAiStudioApiKey != settings.googleAiStudioApiKey || oldSettings.customGoogleGenAIStudioEndpoint != settings.customGoogleGenAIStudioEndpoint) {
-				val apiKey = settings.googleAiStudioApiKey
-				val customEndpoint = settings.customGoogleGenAIStudioEndpoint
-				llm = if (apiKey != null && !apiKey.isEmpty()) {
-					GoogleAIStudioLLM(apiKey, customEndpoint)
-				} else {
-					null
-				}
+		if (oldSettings.googleAiStudioApiKey != settings.googleAiStudioApiKey || oldSettings.customGoogleGenAIStudioEndpoint != settings.customGoogleGenAIStudioEndpoint) {
+			val apiKey = settings.googleAiStudioApiKey
+			val customEndpoint = settings.customGoogleGenAIStudioEndpoint
+			llm = if (!apiKey.isNullOrEmpty()) {
+				GoogleAIStudioLLM(apiKey, customEndpoint)
+			} else {
+				null
 			}
+		}
 
+
+		CoroutineScope(loadDepthModelExecutor.asCoroutineDispatcher()).launch {
 			if (oldSettings.enableObjectDetection != settings.enableObjectDetection || enableNpuChanged) {
 				if (settings.enableObjectDetection) {
 					yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
 				}
 			}
+		}
 
-			if (oldSettings.enableOCR != settings.enableOCR) {
-				if (settings.enableOCR) {
-					ocrModel.create()
-				}
+		if (oldSettings.enableOCR != settings.enableOCR) {
+			if (settings.enableOCR) {
+				ocrModel.create()
 			}
 		}
 	}
@@ -197,27 +203,13 @@ class EyeAIApp : Application() {
 		metricDepthModel?.close()
 		metricDepthModel = null
 
-		metricDepthModel = findDepthModelInfo(modelName)
-			.createDepthModel(this, npuQnnDelegateDirectory!!, settings.enableNpu)
+		metricDepthModel = findDepthModelInfo(modelName).createDepthModel(
+			this, npuQnnDelegateDirectory!!, settings.enableNpu
+		)
 	}
 
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {
 		return DEPTH_MODELS.find { it.name == modelName }
 			?: (DEPTH_MODELS.find { it.name == DEFAULT_DEPTH_MODEL_NAME } ?: DEPTH_MODELS[0])
-	}
-}
-
-fun getLastAppUpdateTime(context: Context): Long {
-	try {
-		val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-			packageInfo.lastUpdateTime
-		} else {
-			// Fallback
-			File(context.packageCodePath).lastModified()
-		}
-	} catch (e: PackageManager.NameNotFoundException) {
-		e.printStackTrace()
-		return 0L
 	}
 }

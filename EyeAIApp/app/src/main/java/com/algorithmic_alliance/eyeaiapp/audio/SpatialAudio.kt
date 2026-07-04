@@ -50,7 +50,9 @@ object SpatialAudio {
 		uniffi.NativeLib.setAudioSettings(settings.depthAudioFrequency.toFloat(), settings.depthAudioClickIncidence)
 
 		if (!::executor.isInitialized || executor.isShutdown) {
-			executor = Executors.newSingleThreadExecutor()
+			executor = Executors.newSingleThreadExecutor { r ->
+				Thread(r, "Spatial Audio")
+			}
 			scope = CoroutineScope(executor.asCoroutineDispatcher())
 		}
 	}
