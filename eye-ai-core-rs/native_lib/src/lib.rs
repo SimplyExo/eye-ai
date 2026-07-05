@@ -182,7 +182,15 @@ pub fn initAndroidLogging() {
 	use tracing_subscriber::Registry;
 	use tracing_subscriber::layer::SubscriberExt;
 
-	tracing::subscriber::set_global_default(Registry::default().with(AndroidLogLayer)).unwrap();
+	#[cfg(not(feature = "enable_tracy_profiling"))]
+	let registry = Registry::default().with(AndroidLogLayer);
+
+	#[cfg(feature = "enable_tracy_profiling")]
+	let registry = Registry::default()
+		.with(AndroidLogLayer)
+		.with(tracing_tracy::TracyLayer::default());
+
+	tracing::subscriber::set_global_default(registry).unwrap();
 
 	#[cfg(feature = "enable_tracy_profiling")]
 	tracing_tracy::client::Client::start();
