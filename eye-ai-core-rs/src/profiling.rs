@@ -1,13 +1,23 @@
+use arc_swap::ArcSwap;
 use crossbeam::queue::SegQueue;
 use std::{
 	sync::{
-		RwLock,
+		Arc, RwLock,
 		atomic::{AtomicUsize, Ordering},
 	},
 	time::Instant,
 };
 #[cfg(feature = "enable_tracy_profiling")]
 use tracing_tracy::client::FrameName;
+
+#[macro_export]
+macro_rules! profile_scope {
+	($frame:expr, $name:literal) => {
+		let ___scope = $frame._internal_scope(concat!(concat!(module_path!(), "::"), $name));
+		#[cfg(feature = "enable_tracy_profiling")]
+		let ___tracy_scope = tracing_tracy::client::span!($name);
+	};
+}
 
 #[derive(Debug, Clone)]
 pub struct ProfileScopeRecord {
@@ -80,7 +90,9 @@ impl ProfilingFrame {
 		}
 	}
 
-	pub fn scope(&self, name: impl Into<String>) -> ProfileScope<'_> {
+	/// This is only public so that the profile_scope macro can call it.
+	/// Don't call this directly!
+	pub fn _internal_scope(&self, name: impl Into<String>) -> ProfileScope<'_> {
 		let scope_depth = self.current_scope_depth.fetch_add(1, Ordering::Relaxed);
 		ProfileScope::new(name.into(), scope_depth, self)
 	}
@@ -134,5 +146,36 @@ impl ProfilingFrame {
 			dur::Duration::from_std(frame_duration),
 			profile_scopes_formatted
 		))
+	}
+}
+
+/// ProfilingFrame that also stores the resulting formatted frame info
+/// useful when where the frame starts and where the info is displayed are seperate
+pub struct FormattedProfilingFrame {
+	profiling_frame: ProfilingFrame,
+	last_formatted_info: arc_swap::ArcSwap<String>,
+}
+impl FormattedProfilingFrame {
+	pub fn new(name: impl Into<String>) -> Self {
+		Self {
+			profiling_frame: ProfilingFrame::new(name),
+			last_formatted_info: ArcSwap::new(Arc::new(String::new())),
+		}
+	}
+
+	pub fn get_last_formatted_info(&self) -> String {
+		self.last_formatted_info.load().to_string()
+	}
+
+	/// This is only public so that the profile_scope macro can call it.
+	/// Don't call this directly!
+	pub fn _internal_scope(&self, name: impl Into<String>) -> ProfileScope<'_> {
+		self.profiling_frame._internal_scope(name)
+	}
+
+	pub fn finish(&self) {
+		if let Some(new_formatted_info) = self.profiling_frame.finish() {
+			self.last_formatted_info.store(Arc::new(new_formatted_info));
+		}
 	}
 }

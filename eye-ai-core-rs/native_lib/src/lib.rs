@@ -1,19 +1,20 @@
 #![allow(non_snake_case)]
 
+use arc_swap::ArcSwap;
 use eye_ai_core_rs::{
 	BoundingBox, CreateDepthModelInfo, CreateYoloModelInfo, DepthModelNpuConfig, DetectedObject,
-	FloatTensorBuffer, FloatTensorFormat, MetricDepthModel, ObjectTracker, ProfilingFrame,
-	TrackedObject, YoloModel, YoloModelNpuConfig,
+	FloatTensorBuffer, FloatTensorFormat, FormattedProfilingFrame, MetricDepthModel, ObjectTracker,
+	ProfilingFrame, TrackedObject, YoloModel, YoloModelNpuConfig,
 	audio::{
 		SpatialAudio, SpatialAudioContent, SpatialAudioSettings, read_audio_file,
 		read_object_label_data,
 	},
-	inferno_colormap,
+	inferno_colormap, profile_scope,
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::{
 	ffi::CString,
-	sync::{Arc, LazyLock, RwLock},
+	sync::{Arc, LazyLock, OnceLock, RwLock},
 };
 use tracing::{debug, error, trace};
 
@@ -22,88 +23,95 @@ mod android_logging;
 #[cfg(target_os = "android")]
 use android_logging::AndroidLogLayer;
 
-static METRIC_DEPTH_MODEL: LazyLock<RwLock<Option<MetricDepthModel>>> =
-	LazyLock::new(|| RwLock::new(None));
+static METRIC_DEPTH_MODEL: OnceLock<RwLock<MetricDepthModel>> = OnceLock::new();
 
-static YOLO_MODEL: LazyLock<RwLock<Option<YoloModel>>> = LazyLock::new(|| RwLock::new(None));
-static OBJECT_TRACKER: LazyLock<RwLock<Option<ObjectTracker>>> =
-	LazyLock::new(|| RwLock::new(None));
+static YOLO_MODEL: OnceLock<RwLock<YoloModel>> = OnceLock::new();
+static OBJECT_TRACKER: OnceLock<RwLock<ObjectTracker>> = OnceLock::new();
 
 static DEPTH_PROFILING_FRAME: LazyLock<ProfilingFrame> =
 	LazyLock::new(|| ProfilingFrame::new("Depth"));
-static LAST_FORMATTED_DEPTH_PROFILING_INFO: LazyLock<RwLock<String>> =
-	LazyLock::new(|| RwLock::new(String::new()));
+static LAST_FORMATTED_DEPTH_PROFILING_INFO: LazyLock<ArcSwap<String>> =
+	LazyLock::new(|| ArcSwap::new(Arc::new(String::new())));
 
 static OBJECT_PROFILING_FRAME: LazyLock<ProfilingFrame> =
 	LazyLock::new(|| ProfilingFrame::new("Object"));
-static LAST_FORMATTED_OBJECT_PROFILING_INFO: LazyLock<RwLock<String>> =
-	LazyLock::new(|| RwLock::new(String::new()));
+static LAST_FORMATTED_OBJECT_PROFILING_INFO: LazyLock<ArcSwap<String>> =
+	LazyLock::new(|| ArcSwap::new(Arc::new(String::new())));
 
-static SPATIAL_AUDIO: LazyLock<RwLock<Option<SpatialAudio>>> = LazyLock::new(|| RwLock::new(None));
+static SPATIAL_AUDIO: OnceLock<RwLock<SpatialAudio>> = OnceLock::new();
 static SPATIAL_AUDIO_SETTINGS: LazyLock<Arc<RwLock<SpatialAudioSettings>>> =
 	LazyLock::new(|| Arc::new(RwLock::new(SpatialAudioSettings::default())));
-static SPATIAL_AUDIO_CONTENT: LazyLock<RwLock<Option<Arc<SpatialAudioContent>>>> =
-	LazyLock::new(|| RwLock::new(None));
-static AUDIO_PROFILING_FRAME: LazyLock<Arc<ProfilingFrame>> =
-	LazyLock::new(|| Arc::new(ProfilingFrame::new("Audio")));
+static SPATIAL_AUDIO_CONTENT: OnceLock<Arc<SpatialAudioContent>> = OnceLock::new();
+static AUDIO_PROFILING_FRAME: LazyLock<Arc<FormattedProfilingFrame>> =
+	LazyLock::new(|| Arc::new(FormattedProfilingFrame::new("Audio")));
+static DEPTH_AUDIO_THREAD_PROFILING_FRAME: LazyLock<Arc<FormattedProfilingFrame>> =
+	LazyLock::new(|| Arc::new(FormattedProfilingFrame::new("Depth Audio")));
+static OBJECT_AUDIO_THREAD_PROFILING_FRAME: LazyLock<Arc<FormattedProfilingFrame>> =
+	LazyLock::new(|| Arc::new(FormattedProfilingFrame::new("Object Audio")));
 
-/// Waits for the RwLock to be free and also waits for the Option to be Some ^= "waits for the model to be loaded"
-fn wait_for_model<M, R>(
-	profiling_scope_name: &'static str,
-	model: &RwLock<Option<M>>,
-	f: impl FnOnce(&mut M) -> R,
-	profiling_frame: &ProfilingFrame,
-) -> R {
-	let waiting_scope = profiling_frame.scope(profiling_scope_name);
-
-	loop {
-		if let Some(model) = &mut (*model.write().unwrap()) {
-			drop(waiting_scope); // the 'waiting_scope' scope only shows the waiting time
-			return f(model);
-		}
-	}
-}
+static LLM_PROFILING_FRAME: LazyLock<FormattedProfilingFrame> =
+	LazyLock::new(|| FormattedProfilingFrame::new("LLM"));
 
 /// Waits for the RwLock to be free and also waits for the Option to be Some ^= "waits for the model to be loaded"
 fn wait_for_metric_depth_model<R>(f: impl FnOnce(&mut MetricDepthModel) -> R) -> R {
-	wait_for_model(
-		"wait_for_metric_depth_model",
-		&METRIC_DEPTH_MODEL,
-		f,
-		&DEPTH_PROFILING_FRAME,
-	)
+	let mut model = {
+		profile_scope!(DEPTH_PROFILING_FRAME, "wait_for_metric_depth_model");
+
+		METRIC_DEPTH_MODEL.wait().write().unwrap()
+	};
+
+	f(&mut model)
 }
 
 /// Waits for the RwLock to be free and also waits for the Option to be Some ^= "waits for the model to be loaded"
 fn wait_for_yolo_model<R>(f: impl FnOnce(&mut YoloModel) -> R) -> R {
-	wait_for_model(
-		"wait_for_yolo_model",
-		&YOLO_MODEL,
-		f,
-		&OBJECT_PROFILING_FRAME,
-	)
+	let mut model = {
+		profile_scope!(OBJECT_PROFILING_FRAME, "wait_for_yolo_model");
+
+		YOLO_MODEL.wait().write().unwrap()
+	};
+
+	f(&mut model)
 }
 
 fn try_change_spatial_audio<R>(f: impl FnOnce(&mut SpatialAudio) -> R) -> Option<R> {
-	let waiting_scope = AUDIO_PROFILING_FRAME.scope("try_mutate_spatial_audio");
+	let mut spatial_audio = {
+		profile_scope!(AUDIO_PROFILING_FRAME, "try_mutate_spatial_audio");
 
-	// first, wait for the spatial audio content to be loaded
-	if let Some(content) = &(*SPATIAL_AUDIO_CONTENT.read().unwrap()) {
-		// then wait for the spatial audio lock (also: create it, if it does not exist yet)
-		let spatial_audio = &mut (*SPATIAL_AUDIO.write().unwrap());
-		let spatial_audio = spatial_audio.get_or_insert_with(|| {
-			SpatialAudio::new(
-				SPATIAL_AUDIO_SETTINGS.clone(),
-				content.clone(),
-				AUDIO_PROFILING_FRAME.clone(),
-			)
-			.unwrap()
-		});
-		drop(waiting_scope);
-		Some(f(spatial_audio))
-	} else {
-		None
-	}
+		// first, wait for the spatial audio content to be loaded
+		if let Some(content) = SPATIAL_AUDIO_CONTENT.get() {
+			// then wait for the spatial audio lock (also: create it, if it does not exist yet)
+			SPATIAL_AUDIO
+				.get_or_init(|| {
+					RwLock::new(
+						SpatialAudio::new(
+							SPATIAL_AUDIO_SETTINGS.clone(),
+							content.clone(),
+							AUDIO_PROFILING_FRAME.clone(),
+							DEPTH_AUDIO_THREAD_PROFILING_FRAME.clone(),
+							OBJECT_AUDIO_THREAD_PROFILING_FRAME.clone(),
+						)
+						.unwrap(),
+					)
+				})
+				.write()
+				.unwrap()
+		} else {
+			return None;
+		}
+	};
+
+	Some(f(&mut spatial_audio))
+}
+
+fn wait_for_audio_settings<R>(f: impl FnOnce(&mut SpatialAudioSettings) -> R) -> R {
+	let mut settings = {
+		profile_scope!(AUDIO_PROFILING_FRAME, "wait_for_audio_settings");
+
+		SPATIAL_AUDIO_SETTINGS.write().unwrap()
+	};
+
+	f(&mut settings)
 }
 
 /*
@@ -221,15 +229,9 @@ pub fn initMetricDepthModel(
 
 	debug!("finished creating metric depth model");
 
-	*METRIC_DEPTH_MODEL.write().unwrap() = Some(metric_depth_model);
-}
-
-#[uniffi::export]
-#[profile_function("DEPTH_PROFILING_FRAME")]
-pub fn shutdownMetricDepthModel() {
-	debug!("shutdownMetricDepthModel()");
-
-	*METRIC_DEPTH_MODEL.write().unwrap() = None;
+	METRIC_DEPTH_MODEL
+		.set(RwLock::new(metric_depth_model))
+		.expect("already set METRIC_DEPTH_MODEL");
 }
 
 #[uniffi::export]
@@ -340,10 +342,14 @@ pub fn initYoloRuntime(
 
 	debug!("created yolo model");
 
-	*YOLO_MODEL.write().unwrap() = Some(yolo_model);
+	YOLO_MODEL
+		.set(RwLock::new(yolo_model))
+		.expect("already set YOLO_MODEL");
 
 	let object_tracker = ObjectTracker::new(labels, &OBJECT_PROFILING_FRAME);
-	*OBJECT_TRACKER.write().unwrap() = Some(object_tracker);
+	OBJECT_TRACKER
+		.set(RwLock::new(object_tracker))
+		.expect("already set OBJECT_TRACKER");
 }
 
 #[derive(uniffi::Record, Clone, Debug)]
@@ -405,10 +411,10 @@ pub fn runYoloOperation(mut input: UniffiFloatBufferWrapper) -> Vec<UniffiDetect
 		)) {
 			Ok(detected_objects) => {
 				let tracked_objects = OBJECT_TRACKER
+					.get()
+					.expect("OBJECT_TRACKER should have been created when yolo model was created")
 					.write()
 					.unwrap()
-					.as_mut()
-					.expect("OBJECT_TRACKER should have been created when yolo model was created")
 					.update(detected_objects);
 				tracked_objects
 					.into_iter()
@@ -453,23 +459,38 @@ pub fn getYoloOutputShape() -> Vec<i32> {
 #[uniffi::export]
 pub fn newDepthFrame() {
 	if let Some(new_formatted_info) = DEPTH_PROFILING_FRAME.finish() {
-		*LAST_FORMATTED_DEPTH_PROFILING_INFO.write().unwrap() = new_formatted_info;
+		LAST_FORMATTED_DEPTH_PROFILING_INFO.store(Arc::new(new_formatted_info));
 	}
 }
 #[uniffi::export]
 pub fn formattedDepthFrame() -> String {
-	LAST_FORMATTED_DEPTH_PROFILING_INFO.read().unwrap().clone()
+	LAST_FORMATTED_DEPTH_PROFILING_INFO.load().to_string()
 }
 
 #[uniffi::export]
 pub fn newObjectFrame() {
 	if let Some(new_formatted_info) = OBJECT_PROFILING_FRAME.finish() {
-		*LAST_FORMATTED_OBJECT_PROFILING_INFO.write().unwrap() = new_formatted_info;
+		LAST_FORMATTED_OBJECT_PROFILING_INFO.store(Arc::new(new_formatted_info));
 	}
 }
 #[uniffi::export]
 pub fn formattedObjectFrame() -> String {
-	LAST_FORMATTED_OBJECT_PROFILING_INFO.read().unwrap().clone()
+	LAST_FORMATTED_OBJECT_PROFILING_INFO.load().to_string()
+}
+
+#[uniffi::export]
+pub fn formattedAudioFrame() -> String {
+	AUDIO_PROFILING_FRAME.get_last_formatted_info()
+}
+
+#[uniffi::export]
+pub fn formattedDepthAudioThreadFrame() -> String {
+	DEPTH_AUDIO_THREAD_PROFILING_FRAME.get_last_formatted_info()
+}
+
+#[uniffi::export]
+pub fn formattedObjectAudioThreadFrame() -> String {
+	OBJECT_AUDIO_THREAD_PROFILING_FRAME.get_last_formatted_info()
 }
 
 #[uniffi::export]
@@ -503,9 +524,8 @@ pub fn setupAudioContent(
 	let content = Arc::new(SpatialAudioContent::new(coco_audio_file, coco_labels_data));
 
 	SPATIAL_AUDIO_CONTENT
-		.write()
-		.unwrap()
-		.replace(content.clone());
+		.set(content.clone())
+		.expect("already set SPATIAL_AUDIO_CONTENT");
 }
 
 /// This requires the SPATIAL_AUDIO_CONTENT to be set by calling setupAudioContent before this function
@@ -514,7 +534,7 @@ pub fn setupAudioContent(
 fn createSpatialAudio() {
 	debug!("createSpatialAudio()");
 
-	let Some(spatial_audio_content) = &(*SPATIAL_AUDIO_CONTENT.read().unwrap()) else {
+	let Some(spatial_audio_content) = SPATIAL_AUDIO_CONTENT.get() else {
 		error!(
 			"SPATIAL_AUDIO_CONTENT needs to be setup by calling setupAudioContent before calling createSpatialAudio"
 		);
@@ -525,10 +545,14 @@ fn createSpatialAudio() {
 		SPATIAL_AUDIO_SETTINGS.clone(),
 		spatial_audio_content.clone(),
 		AUDIO_PROFILING_FRAME.clone(),
+		DEPTH_AUDIO_THREAD_PROFILING_FRAME.clone(),
+		OBJECT_AUDIO_THREAD_PROFILING_FRAME.clone(),
 	)
 	.expect("failed to create spatial audio");
 
-	SPATIAL_AUDIO.write().unwrap().replace(spatial_audio);
+	SPATIAL_AUDIO
+		.set(RwLock::new(spatial_audio))
+		.expect("already set SPATIAL_AUDIO");
 }
 
 #[uniffi::export]
@@ -540,9 +564,10 @@ pub fn setAudioSettings(frequency: f32, incidence: i32) {
 		"setAudioSettings()"
 	);
 
-	let mut settings = SPATIAL_AUDIO_SETTINGS.write().unwrap();
-	settings.frequency = frequency;
-	settings.buffer_duration = 1.0 / (incidence as f32);
+	wait_for_audio_settings(|settings| {
+		settings.frequency = frequency;
+		settings.buffer_duration = 1.0 / (incidence as f32);
+	});
 }
 
 #[uniffi::export]
@@ -550,7 +575,9 @@ pub fn setAudioSettings(frequency: f32, incidence: i32) {
 pub fn setDepthAudioPaused(paused: bool) {
 	trace!(paused = ?paused, "setDepthAudioPaused()");
 
-	SPATIAL_AUDIO_SETTINGS.write().unwrap().depth_audio_paused = paused;
+	wait_for_audio_settings(|settings| {
+		settings.depth_audio_paused = paused;
+	});
 }
 
 #[uniffi::export]
@@ -558,7 +585,9 @@ pub fn setDepthAudioPaused(paused: bool) {
 pub fn setObjectAudioPaused(paused: bool) {
 	trace!(paused = ?paused, "setObjectAudioPaused()");
 
-	SPATIAL_AUDIO_SETTINGS.write().unwrap().object_audio_paused = paused;
+	wait_for_audio_settings(|settings| {
+		settings.object_audio_paused = paused;
+	});
 }
 
 #[uniffi::export]
@@ -589,11 +618,7 @@ pub fn sendAIDataForSpatialAudio(
 }
 
 #[uniffi::export]
-#[profile_function("AUDIO_PROFILING_FRAME")]
-pub fn destroySpatialAudio() {
-	debug!("destroySpatialAudio()");
-
-	*SPATIAL_AUDIO.write().unwrap() = None;
-}
+#[profile_function("LLM_PROFILING_FRAME")]
+pub fn configureLlm() {}
 
 uniffi::setup_scaffolding!("NativeLib");

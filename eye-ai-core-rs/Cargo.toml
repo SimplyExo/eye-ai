@@ -17,6 +17,7 @@ uniffi_bindgen = "0.29"
 tracing = "0.1.44"
 tracing-subscriber = "0.3.22"
 tracing-tracy = { version = "0.11.4", default-features = false }
+arc-swap = "1.9.2"
 
 [dependencies]
 alto = { git = "https://github.com/Peanutt42/alto", tag = "3.1.0", version = "=3.1.0" }
@@ -31,6 +32,7 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 tracing-tracy = { workspace = true }
 dur = "0.5.3"
+arc-swap = { workspace = true }
 
 [dev-dependencies]
 image = "0.25"

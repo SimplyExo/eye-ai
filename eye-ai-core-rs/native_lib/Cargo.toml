@@ -13,6 +13,7 @@ uniffi = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 tracing-tracy = { workspace = true }
+arc-swap = { workspace = true }
 
 [features]
 ffi-trace = ["uniffi/ffi-trace"]

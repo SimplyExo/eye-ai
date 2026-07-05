@@ -60,7 +60,7 @@ mod object_tracker;
 pub use object_tracker::{ObjectTracker, TrackedObject};
 
 mod profiling;
-pub use profiling::ProfilingFrame;
+pub use profiling::{FormattedProfilingFrame, ProfilingFrame};
 
 mod colormap;
 pub use colormap::inferno_colormap;

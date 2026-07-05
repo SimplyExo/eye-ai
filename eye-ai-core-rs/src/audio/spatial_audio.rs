@@ -13,14 +13,15 @@ use std::{
 };
 use thiserror::Error;
 use tracing::{debug, error, trace};
-use tracing_tracy::client::secondary_frame_mark;
+use tracing_tracy::client::set_thread_name;
 
 use crate::{
-	ProfilingFrame, TrackedObject,
+	FormattedProfilingFrame, TrackedObject,
 	audio::{
 		CalculateSoundOrigin, DepthAudioSourceData, IVec2, ObjectAudioSourceData, ObjectLabelData,
 		SpatialAudioContent, SpatialAudioSettings, Vec3, spatial_audio_content::AudioFileData,
 	},
+	profile_scope,
 };
 
 #[derive(Debug, Error)]
@@ -43,7 +44,14 @@ pub struct SpatialAudio {
 	object_audio_running: Arc<AtomicBool>,
 	pub settings: Arc<RwLock<SpatialAudioSettings>>,
 	content: Arc<SpatialAudioContent>,
-	profiling_frame: Arc<ProfilingFrame>,
+	profiling_frame: Arc<FormattedProfilingFrame>,
+}
+impl std::fmt::Debug for SpatialAudio {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("SpatialAudio")
+			.field("settings", &self.settings)
+			.finish_non_exhaustive()
+	}
 }
 impl Drop for SpatialAudio {
 	fn drop(&mut self) {
@@ -56,15 +64,16 @@ impl SpatialAudio {
 	pub fn new(
 		settings: Arc<RwLock<SpatialAudioSettings>>,
 		content: Arc<SpatialAudioContent>,
-		profiling_frame: Arc<ProfilingFrame>,
+		profiling_frame: Arc<FormattedProfilingFrame>,
+		depth_audio_thread_profiling_frame: Arc<FormattedProfilingFrame>,
+		object_audio_thread_profiling_frame: Arc<FormattedProfilingFrame>,
 	) -> Result<Self, SpatialAudioError> {
 		debug!(
 			settings = ?settings,
 			"new()"
 		);
 
-		let profiling_frame_clone1 = profiling_frame.clone();
-		let profiling_frame_clone2 = profiling_frame.clone();
+		let profiling_frame_clone = profiling_frame.clone();
 
 		let settings_clone1 = settings.clone();
 		let settings_clone2 = settings.clone();
@@ -112,7 +121,7 @@ impl SpatialAudio {
 						context_clone1,
 						depth_audio_sources_data_clone,
 						settings_clone1,
-						&profiling_frame_clone2,
+						depth_audio_thread_profiling_frame,
 					)
 				})
 				.expect("failed to spawn depth audio thread"),
@@ -127,13 +136,14 @@ impl SpatialAudio {
 						&content_clone.coco_labels_audio_file,
 						context_clone2,
 						object_audio_sources_data_clone,
+						object_audio_thread_profiling_frame,
 					)
 				})
 				.expect("failed to spawn object audio thread"),
 			object_audio_running,
 			settings,
 			content,
-			profiling_frame: profiling_frame_clone1,
+			profiling_frame: profiling_frame_clone,
 		})
 	}
 
@@ -145,8 +155,7 @@ impl SpatialAudio {
 	) -> bool {
 		let mut should_restart = false;
 
-		#[allow(unused)]
-		let profiling_scope = self.profiling_frame.scope("update");
+		profile_scope!(self.profiling_frame, "update");
 
 		// this extension is implemented on android, such that we can restart SpatialAudio when the output device changes
 		// on desktop (linux at least), this is not needed and the extension is not implemented, as output switching happens automatically
@@ -213,8 +222,10 @@ fn depth_audio_thread(
 	context: Arc<Context>,
 	depth_audio_sources_data: Arc<RwLock<Vec<DepthAudioSourceData>>>,
 	settings: Arc<RwLock<SpatialAudioSettings>>,
-	profiling_frame: &ProfilingFrame,
+	profiling_frame: Arc<FormattedProfilingFrame>,
 ) {
+	set_thread_name!("Depth Audio");
+
 	debug!(
 		sample_rate = SpatialAudioSettings::SAMPLE_RATE,
 		buffer_duration = settings.read().unwrap().buffer_duration,
@@ -243,7 +254,7 @@ fn depth_audio_thread(
 		settings.read().unwrap().buffer_duration,
 		SpatialAudioSettings::SAMPLE_RATE,
 		Vec3::default(),
-		profiling_frame,
+		&profiling_frame,
 	);
 
 	{
@@ -267,12 +278,17 @@ fn depth_audio_thread(
 	}
 
 	while running.load(Ordering::Relaxed) {
-		if settings.read().unwrap().depth_audio_paused {
-			std::thread::sleep(Duration::from_millis(500));
-			continue;
+		{
+			profile_scope!(profiling_frame, "Wait for resume");
+
+			while settings.read().unwrap().depth_audio_paused {
+				std::thread::sleep(Duration::from_millis(500));
+			}
 		}
 
 		{
+			profile_scope!(profiling_frame, "Filling buffers");
+
 			let depth_audio_sources_data = depth_audio_sources_data.read().unwrap();
 
 			for (i, source) in sources.iter_mut().enumerate() {
@@ -304,9 +320,13 @@ fn depth_audio_thread(
 			}
 		}
 
-		std::thread::sleep(Duration::from_millis(2));
+		{
+			profile_scope!(profiling_frame, "Sleep 2ms");
 
-		secondary_frame_mark!("Depth Audio Frame");
+			std::thread::sleep(Duration::from_millis(2));
+		}
+
+		profiling_frame.finish();
 	}
 }
 
@@ -316,7 +336,10 @@ fn object_audio_thread(
 	coco_audio_file: &AudioFileData,
 	context: Arc<Context>,
 	object_audio_sources_data: Arc<RwLock<VecDeque<ObjectAudioSourceData>>>,
+	profiling_frame: Arc<FormattedProfilingFrame>,
 ) {
+	set_thread_name!("Object Audio");
+
 	let coco_audio_samples: &[i16] = &coco_audio_file.samples;
 
 	debug!(
@@ -330,43 +353,67 @@ fn object_audio_thread(
 	let mut sound_buffer: Vec<Mono<i16>> = Vec::new();
 
 	while running.load(Ordering::Relaxed) {
-		if settings.read().unwrap().object_audio_paused {
-			std::thread::sleep(Duration::from_millis(500));
-			continue;
-		}
-		let Some(source_data) = object_audio_sources_data.write().unwrap().pop_front() else {
-			std::thread::sleep(Duration::from_millis(250));
-			continue;
-		};
-		let sample_rate_ms = coco_audio_file.sample_rate as usize / 1000;
-		let duration_ms = source_data.sound_end - source_data.sound_begin;
-		sound_buffer.resize(sample_rate_ms * duration_ms, Mono::<i16> { center: 0 });
-		let begin_sample = sample_rate_ms * source_data.sound_begin;
-		let end_sample = sample_rate_ms * source_data.sound_end;
-		sound_buffer.copy_from_slice(
-			coco_audio_samples[begin_sample..end_sample]
-				.iter()
-				.map(|sample| Mono::<i16> { center: *sample })
-				.collect::<Vec<Mono<i16>>>()
-				.as_slice(),
-		);
-		let buffer = Arc::new(
-			context
-				.new_buffer(&sound_buffer, coco_audio_file.sample_rate as i32)
-				.unwrap(),
-		);
-		source.set_buffer(buffer).unwrap();
-		source.set_position(source_data.position).unwrap();
-		source.play();
+		{
+			profile_scope!(profiling_frame, "Wait for resume");
 
-		while source.state() == SourceState::Playing {
-			std::thread::sleep(Duration::from_millis(100));
+			while settings.read().unwrap().object_audio_paused {
+				if !running.load(Ordering::Relaxed) {
+					return;
+				}
+				std::thread::sleep(Duration::from_millis(500));
+			}
+		}
+
+		let source_data = {
+			profile_scope!(profiling_frame, "Wait for objects");
+
+			loop {
+				if !running.load(Ordering::Relaxed) {
+					return;
+				}
+				if let Some(source_data) = object_audio_sources_data.write().unwrap().pop_front() {
+					break source_data;
+				}
+				std::thread::sleep(Duration::from_millis(250));
+			}
+		};
+
+		{
+			profile_scope!(profiling_frame, "Fill audio buffers");
+
+			let sample_rate_ms = coco_audio_file.sample_rate as usize / 1000;
+			let duration_ms = source_data.sound_end - source_data.sound_begin;
+			sound_buffer.resize(sample_rate_ms * duration_ms, Mono::<i16> { center: 0 });
+			let begin_sample = sample_rate_ms * source_data.sound_begin;
+			let end_sample = sample_rate_ms * source_data.sound_end;
+			sound_buffer.copy_from_slice(
+				coco_audio_samples[begin_sample..end_sample]
+					.iter()
+					.map(|sample| Mono::<i16> { center: *sample })
+					.collect::<Vec<Mono<i16>>>()
+					.as_slice(),
+			);
+			let buffer = Arc::new(
+				context
+					.new_buffer(&sound_buffer, coco_audio_file.sample_rate as i32)
+					.unwrap(),
+			);
+			source.set_buffer(buffer).unwrap();
+			source.set_position(source_data.position).unwrap();
+			source.play();
+		}
+
+		{
+			profile_scope!(profiling_frame, "wait for audio to finish");
+			while source.state() == SourceState::Playing {
+				std::thread::sleep(Duration::from_millis(100));
+			}
 		}
 
 		source.stop();
 		source.clear_buffer();
 
-		secondary_frame_mark!("Object Audio Frame");
+		profiling_frame.finish();
 	}
 }
 
@@ -374,7 +421,7 @@ fn object_audio_thread(
 fn process_depth_estimation_data(
 	depth_estimation_data: &[f32; 256 * 256],
 	settings: &SpatialAudioSettings,
-	profiling_frame: &ProfilingFrame,
+	profiling_frame: &FormattedProfilingFrame,
 ) -> Vec<DepthAudioSourceData> {
 	let step_size = (SpatialAudioSettings::PICTURE_RESOLUTION.x as f32
 		/ (SpatialAudioSettings::NUMBER_OF_SOURCES as f32 - 1.0)) as usize;
@@ -419,7 +466,7 @@ fn process_object_detection_data(
 	depth_estimation_data: &[f32; 256 * 256],
 	object_detection_data: &[TrackedObject],
 	object_label_data: &HashMap<String, ObjectLabelData>,
-	profiling_frame: &ProfilingFrame,
+	profiling_frame: &FormattedProfilingFrame,
 ) -> VecDeque<ObjectAudioSourceData> {
 	let mut audio_source_data = VecDeque::new();
 

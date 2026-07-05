@@ -194,7 +194,6 @@ class EyeAIApp : Application() {
 	private fun switchDepthModel(modelName: String) {
 		if (metricDepthModel?.name == modelName && metricDepthModel?.enableNpu == settings.enableNpu) return
 
-		metricDepthModel?.close()
 		metricDepthModel = null
 
 		metricDepthModel = findDepthModelInfo(modelName)

@@ -58,7 +58,6 @@ object SpatialAudio {
 	fun stop() {
 		if (::scope.isInitialized) scope.cancel()
 		if (::executor.isInitialized) executor.shutdown()
-		uniffi.NativeLib.destroySpatialAudio()
 	}
 
 	fun loadFileFromAssets(context: Context, fileName: String): ByteArray? {

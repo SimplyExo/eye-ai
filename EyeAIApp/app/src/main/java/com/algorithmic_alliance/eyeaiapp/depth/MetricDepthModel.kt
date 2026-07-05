@@ -9,7 +9,6 @@ import androidx.core.graphics.scale
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.getLastAppUpdateTime
-import uniffi.NativeLib.shutdownMetricDepthModel
 
 /** All needed information to create and use a depth model */
 class MetricDepthModelInfo(
@@ -38,7 +37,7 @@ class MetricDepthModel(
 	relativeDepthFileName: String,
 	skelDirectory: String,
 	val enableNpu: Boolean
-) : AutoCloseable {
+) {
 	val inputDim: Size
 
 	init {
@@ -100,10 +99,6 @@ class MetricDepthModel(
 				"depth model has invalid output shape, expected [1, ${inputDim.height}, ${inputDim.width}, 1] but is [${outputShape}]"
 			)
 		}
-	}
-
-	override fun close() {
-		/*NativeLib.*/shutdownMetricDepthModel()
 	}
 
 	/**
