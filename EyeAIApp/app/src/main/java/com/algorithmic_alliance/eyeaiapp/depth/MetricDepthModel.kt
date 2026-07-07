@@ -2,6 +2,9 @@ package com.algorithmic_alliance.eyeaiapp.depth
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
 import android.util.Size
 import java.io.File
 import android.util.Log
@@ -40,6 +43,11 @@ class MetricDepthModel(
 	val enableNpu: Boolean
 ) : AutoCloseable {
 	val inputDim: Size
+
+	private var reuseScaledBitmap: Bitmap? = null
+	private var reuseInputBuffer: NativeLib.NativeFloatBuffer? = null
+	private var reuseOutputBuffer: NativeLib.NativeFloatBuffer? = null
+	private val scalePaint = Paint(Paint.FILTER_BITMAP_FLAG)
 
 	init {
 		val relativeDepthModelData = context.assets.open(relativeDepthFileName).readBytes()
@@ -111,12 +119,21 @@ class MetricDepthModel(
 	 * @return relative depth for each pixel between 0.0f and 1.0f
 	 */
 	fun predictDepth(input: Bitmap): NativeLib.NativeFloatBuffer {
-		val scaled = input.scale(inputDim.width, inputDim.height)
-		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled)
-		val output = NativeLib.NativeFloatBuffer(inputDim.width * inputDim.height)
+		val scaled = reuseScaledBitmap?.let {
+			if (it.width == inputDim.width && it.height == inputDim.height) {
+				Canvas(it).drawBitmap(input, null, Rect(0, 0, inputDim.width, inputDim.height), scalePaint)
+				it
+			} else null
+		} ?: input.scale(inputDim.width, inputDim.height).also { reuseScaledBitmap = it }
+
+		val inputBuf = NativeLib.bitmapToRgbHwc255FloatArray(scaled, reuseInputBuffer)
+		reuseInputBuffer = inputBuf
+
+		val output = reuseOutputBuffer?.takeIf { it.capacity >= inputDim.width * inputDim.height }
+			?: NativeLib.NativeFloatBuffer(inputDim.width * inputDim.height).also { reuseOutputBuffer = it }
 
 		uniffi.NativeLib.runMetricDepthModelInference(
-			input.asUniffiWrapper(),
+			inputBuf.asUniffiWrapper(),
 			output.asUniffiWrapper(),
 		)
 

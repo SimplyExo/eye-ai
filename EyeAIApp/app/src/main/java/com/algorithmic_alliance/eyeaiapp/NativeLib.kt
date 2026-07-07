@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.PixelFormat
 import android.media.Image
@@ -30,12 +31,18 @@ object NativeLib {
 			.order(ByteOrder.nativeOrder())
 
 		var floatBuffer = byteBuffer.asFloatBuffer()
+		val capacity: Int get() = floatBuffer.capacity()
 
 		fun asUniffiWrapper(): UniffiFloatBufferWrapper {
 			return UniffiFloatBufferWrapper(
 				getByteBufferPtr(byteBuffer),
 				floatBuffer.capacity()
 			)
+		}
+
+		fun rewind() {
+			byteBuffer.rewind()
+			floatBuffer.rewind()
 		}
 	}
 
@@ -45,12 +52,18 @@ object NativeLib {
 			.order(ByteOrder.nativeOrder())
 
 		var intBuffer = byteBuffer.asIntBuffer()
+		val capacity: Int get() = intBuffer.capacity()
 
 		fun asUniffiWrapper(): UniffiIntBufferWrapper {
 			return UniffiIntBufferWrapper(
 				getByteBufferPtr(byteBuffer),
 				intBuffer.capacity()
 			)
+		}
+
+		fun rewind() {
+			byteBuffer.rewind()
+			intBuffer.rewind()
 		}
 	}
 
@@ -61,86 +74,128 @@ object NativeLib {
 	)
 
 
+	fun bitmapToRgbHwc255FloatArray(
+		bitmap: Bitmap,
+		reuseBuffer: NativeFloatBuffer? = null
+	): NativeFloatBuffer {
+		val size = bitmap.width * bitmap.height * 3
+		val floatBuffer = reuseBuffer?.takeIf { it.capacity >= size }
+			?: NativeFloatBuffer(size)
+		floatBuffer.rewind()
+		bitmapToRgbHwc255FloatArray(bitmap, floatBuffer.floatBuffer)
+		return floatBuffer
+	}
+
+
 	/** @param input values should be between 0.0f and 1.0f */
-	fun metricDepthColormap(input: UniffiFloatBufferWrapper, inputImageSize: Size): Bitmap {
+	fun metricDepthColormap(
+		input: UniffiFloatBufferWrapper,
+		inputImageSize: Size,
+		reuseIntBuffer: NativeIntBuffer? = null,
+		reuseIntArray: IntArray? = null,
+		reuseBitmap: Bitmap? = null
+	): Bitmap {
 		if (input.length != inputImageSize.width * inputImageSize.height) {
 			Log.e(
 				EyeAIApp.APP_LOG_TAG,
 				"input depth array length ${input.length} does not match output bitmap size $inputImageSize"
 			)
-			return createBitmap(inputImageSize.width, inputImageSize.height)
+			return reuseBitmap?.takeIf {
+				it.width == inputImageSize.width && it.height == inputImageSize.height
+			} ?: createBitmap(inputImageSize.width, inputImageSize.height)
 		}
 
-		val colormappedPixels = NativeIntBuffer(input.length)
+		val colormappedPixels = reuseIntBuffer?.takeIf { it.capacity >= input.length }
+			?: NativeIntBuffer(input.length)
+		colormappedPixels.rewind()
 
 		uniffi.NativeLib.metricDepthColormap(
 			input,
 			colormappedPixels.asUniffiWrapper()
 		)
-		//metricDepthColormap(input, colormappedPixels)
 
-		// TODO: improve Bitmap/Buffer/Array conversions...
-		val colormappedPixelsArray = IntArray(colormappedPixels.intBuffer.remaining())
-		colormappedPixels.intBuffer.get(colormappedPixelsArray)
+		colormappedPixels.intBuffer.rewind()
+		val colormappedPixelsArray = reuseIntArray?.takeIf { it.size >= input.length }
+			?: IntArray(colormappedPixels.capacity)
+		colormappedPixels.intBuffer.get(colormappedPixelsArray, 0, input.length)
 
-		return Bitmap.createBitmap(
-			colormappedPixelsArray,
-			inputImageSize.width,
-			inputImageSize.height,
-			Bitmap.Config.ARGB_8888
+		val result = reuseBitmap?.takeIf { it.isMutable }
+			?: createBitmap(inputImageSize.width, inputImageSize.height)
+		result.setPixels(
+			colormappedPixelsArray, 0, inputImageSize.width,
+			0, 0, inputImageSize.width, inputImageSize.height
 		)
+		return result
 	}
 
-	fun bitmapToRgbHwc255FloatArray(
-		bitmap: Bitmap
-	): NativeFloatBuffer {
-		val floatBuffer = NativeFloatBuffer(bitmap.width * bitmap.height * 3)
 
-		bitmapToRgbHwc255FloatArray(bitmap, floatBuffer.floatBuffer)
-
-		return floatBuffer
-	}
-
-	fun imageToBitmap(image: Image, rotationDegrees: Float): Bitmap {
+	fun copyImagePixels(image: Image, destBitmap: Bitmap) {
 		require(image.format == PixelFormat.RGBA_8888) {
 			"Unsupported image format: ${image.format}. Expected RGBA_8888"
+		}
+		require(destBitmap.width == image.width && destBitmap.height == image.height) {
+			"destBitmap ${destBitmap.width}x${destBitmap.height} != image ${image.width}x${image.height}"
 		}
 
 		val plane = image.planes[0]
 		val buffer = plane.buffer
 		val pixelStride = plane.pixelStride
 		val rowStride = plane.rowStride
-
 		val width = image.width
 		val height = image.height
 
-		val bitmap = createBitmap(width, height)
-
-		// If there's no padding between rows, we can do a direct copy
 		if (pixelStride == 4 && rowStride == width * 4) {
-			bitmap.copyPixelsFromBuffer(buffer)
+			buffer.rewind()
+			destBitmap.copyPixelsFromBuffer(buffer)
 		} else {
-			// Handle cases with padding between rows
 			val rgbaBytes = ByteArray(width * height * 4)
 			for (row in 0 until height) {
 				val startPos = row * rowStride
 				buffer.position(startPos)
 				buffer.get(rgbaBytes, row * width * 4, width * 4)
 			}
-			bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(rgbaBytes))
+			destBitmap.copyPixelsFromBuffer(ByteBuffer.wrap(rgbaBytes))
 		}
-
-		return rotateBitmap(bitmap, rotationDegrees)
 	}
 
-	fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Float): Bitmap =
-		Bitmap.createBitmap(
-			bitmap,
-			0,
-			0,
-			bitmap.width,
-			bitmap.height,
-			Matrix().apply { postRotate(rotationDegrees) },
-			false
+
+	fun imageToBitmap(image: Image, rotationDegrees: Float): Bitmap {
+		val width = image.width
+		val height = image.height
+		val rawBitmap = createBitmap(width, height)
+		copyImagePixels(image, rawBitmap)
+		return rotateBitmap(rawBitmap, rotationDegrees)
+	}
+
+
+	fun rotateBitmap(
+		bitmap: Bitmap,
+		rotationDegrees: Float,
+		reuseBitmap: Bitmap? = null
+	): Bitmap {
+		if (rotationDegrees == 0f) return bitmap
+
+		val rotatedW: Int
+		val rotatedH: Int
+		if (rotationDegrees == 90f || rotationDegrees == 270f) {
+			rotatedW = bitmap.height
+			rotatedH = bitmap.width
+		} else {
+			rotatedW = bitmap.width
+			rotatedH = bitmap.height
+		}
+
+		val result = reuseBitmap?.takeIf {
+			it.width == rotatedW && it.height == rotatedH && it.isMutable
+		} ?: createBitmap(rotatedW, rotatedH)
+
+		val matrix = Matrix().apply { postRotate(rotationDegrees) }
+		val rect = android.graphics.RectF(
+			0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat()
 		)
+		matrix.mapRect(rect)
+		matrix.postTranslate(-rect.left, -rect.top)
+		Canvas(result).drawBitmap(bitmap, matrix, null)
+		return result
+	}
 }

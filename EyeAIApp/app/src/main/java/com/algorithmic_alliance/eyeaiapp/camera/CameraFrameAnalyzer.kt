@@ -11,6 +11,7 @@ import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
+import androidx.core.graphics.createBitmap
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
@@ -60,7 +61,13 @@ class CameraFrameAnalyzer(
 	}
 
 	private var latestCameraFrame = AtomicReference<Bitmap?>(null)
-	private lateinit var colorMappedImage: Bitmap
+	private var reuseRawCameraBitmap: Bitmap? = null
+	// Ping-pong buffers to avoid race with depth/OD readers
+	private var rotatedCameraBitmaps = arrayOfNulls<Bitmap>(2)
+	private var rotatedCameraIndex = 0
+	private var reuseColormapIntBuffer: NativeLib.NativeIntBuffer? = null
+	private var reuseColormapIntArray: IntArray? = null
+	private var reuseColormapBitmap: Bitmap? = null
 
 	var started = false
 		private set
@@ -74,19 +81,32 @@ class CameraFrameAnalyzer(
 				val metricDepthModel = eyeAIApp.metricDepthModel
 				val frame = getFrame()
 				if (frame != null && metricDepthModel != null) {
+					val depthSize = metricDepthModel.inputDim.width *
+						metricDepthModel.inputDim.height
+					if (reuseColormapIntBuffer?.capacity != depthSize) {
+						reuseColormapIntBuffer = NativeLib.NativeIntBuffer(depthSize)
+						reuseColormapIntArray = IntArray(depthSize)
+					}
+
 					val inferenceDuration = measureTime {
 						uniffi.NativeLib.newDepthFrame()
 						val predictionOutput = metricDepthModel.predictDepth(frame)
 						eyeAIApp.aiData.depthEstimationData.set(predictionOutput)
 						val inputWidth = frame.width
 						val inputHeight = frame.height
-						colorMappedImage = NativeLib.metricDepthColormap(
+						val colormappedBitmap = NativeLib.metricDepthColormap(
 							predictionOutput.asUniffiWrapper(),
-							metricDepthModel.inputDim
+							metricDepthModel.inputDim,
+							reuseColormapIntBuffer,
+							reuseColormapIntArray,
+							reuseColormapBitmap
 						)
+						if (reuseColormapBitmap == null || colormappedBitmap !== reuseColormapBitmap) {
+							reuseColormapBitmap = colormappedBitmap
+						}
 
 						withContext(Dispatchers.Main) {
-							depthView.setImageBitmap(colorMappedImage)
+							depthView.setImageBitmap(colormappedBitmap)
 							if (debugInputBitmapPreview.isVisible)
 								debugInputBitmapPreview.setImageBitmap(frame)
 
@@ -191,9 +211,23 @@ class CameraFrameAnalyzer(
 			val durationMillisFormatted = lastCameraFrameDuration.toString(DurationUnit.MILLISECONDS, 2)
 			formattedCameraFrame = "Camera Frame: $fpsFormatted fps ($durationMillisFormatted ms)\n"
 
-			val inputBitmap =
-				NativeLib.imageToBitmap(image.image!!, image.imageInfo.rotationDegrees.toFloat())
-			latestCameraFrame.set(inputBitmap)
+			val img = image.image!!
+			val rotation = image.imageInfo.rotationDegrees.toFloat()
+			val width = img.width
+			val height = img.height
+
+			val rawBitmap = reuseRawCameraBitmap?.takeIf {
+				it.width == width && it.height == height && it.isMutable
+			} ?: createBitmap(width, height).also { reuseRawCameraBitmap = it }
+
+			NativeLib.copyImagePixels(img, rawBitmap)
+
+			rotatedCameraIndex = (rotatedCameraIndex + 1) % 2
+			val rotatedBitmap = NativeLib.rotateBitmap(
+				rawBitmap, rotation, rotatedCameraBitmaps[rotatedCameraIndex]
+			)
+			rotatedCameraBitmaps[rotatedCameraIndex] = rotatedBitmap
+			latestCameraFrame.set(rotatedBitmap)
 		}
 		image.close()
 	}
