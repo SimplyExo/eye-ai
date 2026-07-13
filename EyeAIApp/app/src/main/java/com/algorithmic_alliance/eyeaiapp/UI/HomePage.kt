@@ -1,6 +1,5 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
-import android.view.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text

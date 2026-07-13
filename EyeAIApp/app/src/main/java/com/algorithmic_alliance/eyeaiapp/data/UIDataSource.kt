@@ -3,7 +3,6 @@ package com.algorithmic_alliance.eyeaiapp.data
 import com.algorithmic_alliance.eyeaiapp.R
 
 object UIDataSource {
-
     val NEEDED_PERMISSIONS = listOf<Map<String, Any>>(
         /* EXPLANATION HOW TO ADD NEW PERMISSION
         mapOf(
@@ -39,6 +38,7 @@ object UIDataSource {
             "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf das Mikrophon ablehnen, können sie die App nicht benutzen.",
             "confirmPermissionDeclineSemantic" to "Zugriff auf Mikrophon trotzdem ablehnen. Die App wird geschlossen."
         )
+        //TODO implement the rest of the permissions
     )
 
     const val INFORMATION_NOT_FOUND = "Die Information konnte nicht geladen werden. Wir bitten um Entschuldigung."
