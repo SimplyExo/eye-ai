@@ -2,11 +2,13 @@
 agp = "9.2.1"
 kotlin = "2.4.0"
 coreKtx = "1.19.0"
+kotlinxSerializationJson = "1.11.0"
 lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
 composeBom = "2026.06.00"
 cameraX = "1.6.1"
 litertGpu = "1.4.2"
+navigationCompose = "2.9.8"
 preferenceKtx = "1.2.1"
 constraintlayout = "2.2.1"
 material = "1.14.0"
@@ -25,6 +27,7 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
@@ -41,6 +44,7 @@ androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", 
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "cameraX" }
 androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "cameraX" }
 androidx-camera-extensions = { group = "androidx.camera", name = "camera-extensions", version.ref = "cameraX" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 litert-gpu = { module = "com.google.ai.edge.litert:litert-gpu", version.ref = "litertGpu" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 

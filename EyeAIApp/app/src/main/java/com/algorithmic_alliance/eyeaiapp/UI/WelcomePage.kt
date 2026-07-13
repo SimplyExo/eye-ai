@@ -15,6 +15,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,7 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun WelcomePage(modifier: Modifier = Modifier) {
+fun WelcomePage(modifier: Modifier = Modifier, onGetStarted: () -> Unit) {
     Surface(
         modifier = modifier,
         color = MaterialTheme.colorScheme.surface
@@ -35,26 +39,32 @@ fun WelcomePage(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(painter = painterResource(R.drawable.ic_launcher_web), contentDescription = "App-Logo")
+            Image(
+                painter = painterResource(R.drawable.ic_launcher_web),
+                contentDescription = "App-Logo"
+            )
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(24.dp)
                     .semantics { contentDescription = "Startet die Eye-Ai Anwendung" },
-                onClick = {},
+                onClick = {
+
+                    onGetStarted()
+                },
+
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 )
-            ) { Text("App Starten", modifier = Modifier.clearAndSetSemantics{}) }
+            ) { Text("App Starten", modifier = Modifier.clearAndSetSemantics {}) }
         }
     }
 
 }
 
-@Preview(showBackground = true, name = "EyeAI-Preview")
+@Preview(showBackground = true, name = "WelcomePage Preview")
 @Composable
-fun EyeAIPreview() {
-    MaterialTheme { WelcomePage(modifier = Modifier.fillMaxSize()) }
-
+fun Preview() {
+    MaterialTheme { WelcomePage(Modifier.fillMaxSize(), onGetStarted = {}) }
 }

@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
 	alias(libs.plugins.android.application)
 	alias(libs.plugins.kotlin.compose)
+	id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0"
 }
 
 android {
@@ -133,6 +134,10 @@ dependencies {
 
 	// OCR
 	implementation(libs.text.recognition)
+
+	//UI
+	implementation(libs.androidx.navigation.compose)
+	implementation(libs.kotlinx.serialization.json)
 
 	debugImplementation(libs.androidx.ui.tooling)
 	debugImplementation(libs.androidx.ui.test.manifest)
