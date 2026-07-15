@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.Serializable
 
 
+
 @Serializable
 object WelcomeRoute
 
@@ -24,12 +25,16 @@ object PermissionRoute
 @Serializable
 object HomeRoute
 
+@Serializable object ConnectionRoute
+
+
 @Composable
 fun EyeAIAppUI() {
     val navController = rememberNavController()
 
     //TODO implement if permissions are granted
     var permissionsGranted by remember { mutableStateOf(false) }
+    var devicesSelected by remember { mutableStateOf(false) }
 
     NavHost(
         navController = navController,
@@ -42,8 +47,10 @@ fun EyeAIAppUI() {
                 onGetStarted = {
                     if (!permissionsGranted)
                         navController.navigate(PermissionRoute)
+                    else if(!devicesSelected)
+                        navController.navigate(ConnectionRoute)
                     else
-                        navController.navigate(HomeRoute)
+                        navController.navigate((HomeRoute))
                 },
 
                 )
@@ -54,10 +61,18 @@ fun EyeAIAppUI() {
                 onPermissionsDeclined = { navController.popBackStack() },
                 onPermissionsGranted = {
                     permissionsGranted = true
-                    navController.navigate(HomeRoute)
+                    if(!devicesSelected)
+                        navController.navigate(ConnectionRoute)
+                    else
+                        navController.navigate(HomeRoute)
                 })
         }
+        composable<ConnectionRoute>{
+            ConnectionPage(modifier = Modifier.fillMaxSize(), onConnectionSuccessful = {navController.navigate(
+                HomeRoute)})
+        }
         composable<HomeRoute> { HomePage(modifier = Modifier.fillMaxSize()) }
+
     }
 }
 
