@@ -71,7 +71,7 @@ fun EyeAIAppUI() {
             ConnectionPage(modifier = Modifier.fillMaxSize(), onConnectionSuccessful = {navController.navigate(
                 HomeRoute)})
         }
-        composable<HomeRoute> { HomePage(modifier = Modifier.fillMaxSize()) }
+        composable<HomeRoute> { HomePage(modifier = Modifier.fillMaxSize(), onOpenSettings = {}) }
 
     }
 }
