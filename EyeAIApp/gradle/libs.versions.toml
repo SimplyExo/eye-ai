@@ -20,6 +20,8 @@ preference = "1.2.1"
 appcompat = "1.7.1"
 mlkit-text = "16.0.1"
 activity = "1.13.0"
+remoteCreationCore = "1.0.0-alpha14"
+material3 = "1.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -55,6 +57,8 @@ tensorflow-lite-select-tf-ops = { module = "org.tensorflow:tensorflow-lite-selec
 qnn-litert-delegate = { module = "com.qualcomm.qti:qnn-litert-delegate", version.ref = "qnnLitertDelegate" }
 
 text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "mlkit-text" }
+androidx-compose-remote-creation-core = { group = "androidx.compose.remote", name = "remote-creation-core", version.ref = "remoteCreationCore" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

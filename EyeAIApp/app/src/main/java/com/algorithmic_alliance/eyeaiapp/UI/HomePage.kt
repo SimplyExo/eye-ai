@@ -46,8 +46,7 @@ fun HomePage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit) {
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
-
-                )
+            )
         },
         floatingActionButton = {
             FloatingActionButton(

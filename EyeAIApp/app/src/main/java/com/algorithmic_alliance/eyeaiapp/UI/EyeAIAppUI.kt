@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.UI
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.remote.creation.dsl.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +16,6 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.Serializable
 
 
-
 @Serializable
 object WelcomeRoute
 
@@ -25,8 +25,11 @@ object PermissionRoute
 @Serializable
 object HomeRoute
 
-@Serializable object ConnectionRoute
+@Serializable
+object ConnectionRoute
 
+@Serializable
+object SettingsRoute
 
 @Composable
 fun EyeAIAppUI() {
@@ -47,7 +50,7 @@ fun EyeAIAppUI() {
                 onGetStarted = {
                     if (!permissionsGranted)
                         navController.navigate(PermissionRoute)
-                    else if(!devicesSelected)
+                    else if (!devicesSelected)
                         navController.navigate(ConnectionRoute)
                     else
                         navController.navigate((HomeRoute))
@@ -61,18 +64,33 @@ fun EyeAIAppUI() {
                 onPermissionsDeclined = { navController.popBackStack() },
                 onPermissionsGranted = {
                     permissionsGranted = true
-                    if(!devicesSelected)
+                    if (!devicesSelected)
                         navController.navigate(ConnectionRoute)
                     else
                         navController.navigate(HomeRoute)
                 })
         }
-        composable<ConnectionRoute>{
-            ConnectionPage(modifier = Modifier.fillMaxSize(), onConnectionSuccessful = {navController.navigate(
-                HomeRoute)})
+        composable<ConnectionRoute> {
+            ConnectionPage(modifier = Modifier.fillMaxSize(), onConnectionSuccessful = {
+                navController.navigate(
+                    HomeRoute
+                )
+            })
         }
-        composable<HomeRoute> { HomePage(modifier = Modifier.fillMaxSize(), onOpenSettings = {}) }
-
+        composable<HomeRoute> {
+            HomePage(modifier = Modifier.fillMaxSize(), onOpenSettings = {
+                navController.navigate(
+                    SettingsRoute
+                )
+            })
+        }
+        composable<SettingsRoute> {
+            SettingsPage(modifier = Modifier.fillMaxSize(), onReturn = {
+                navController.navigate(
+                    HomeRoute
+                ) { popUpTo(HomeRoute) { inclusive = false } }
+            })
+        }
     }
 }
 
