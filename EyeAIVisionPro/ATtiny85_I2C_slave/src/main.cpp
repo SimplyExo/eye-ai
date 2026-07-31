@@ -1,15 +1,18 @@
+#include "LEDController.hpp"
 #include <Arduino.h>
+
+LEDController * led;
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(1, OUTPUT);   // Onboard-LED
+  led = new LEDController();
+  led->init();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  digitalWrite(1, HIGH); // LED on
-  delay(500);           // delay
-
-  digitalWrite(1, LOW);  // LED off
-  delay(500);           // delay
+  led->set_led(LEDController::GREEN_ON);
+  delay(500);
+  led->set_led(LEDController::RED_ON);
+  delay(500);
 }
