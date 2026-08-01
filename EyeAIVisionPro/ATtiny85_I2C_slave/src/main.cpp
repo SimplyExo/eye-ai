@@ -6,7 +6,6 @@ LEDController * led;
 void setup() {
   // put your setup code here, to run once:
   led = new LEDController();
-  led->init();
 }
 
 void loop() {

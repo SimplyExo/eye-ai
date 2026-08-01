@@ -4,6 +4,7 @@
 #include <LEDController.hpp>
 
 LEDController::LEDController() {
+    init();
 }
 
 void LEDController::init() {
