@@ -1,11 +1,16 @@
+#ifndef PIO_UNIT_TESTING
+
 #include "LEDController.hpp"
+#include "HoldTransistorController.hpp"
 #include <Arduino.h>
 
 LEDController * led;
+HoldTransistorController * bjt;
 
 void setup() {
   // put your setup code here, to run once:
-  led = new LEDController();
+  bjt = new HoldTransistorController();
+  led = new LEDController();  
 }
 
 void loop() {
@@ -15,3 +20,5 @@ void loop() {
   led->set_led(LEDController::RED_ON);
   delay(500);
 }
+
+#endif
