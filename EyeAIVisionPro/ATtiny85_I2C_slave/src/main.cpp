@@ -15,10 +15,10 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  delay(500);
   led->set_led(LEDController::GREEN_ON);
   delay(500);
   led->set_led(LEDController::RED_ON);
-  delay(500);
 }
 
 #endif

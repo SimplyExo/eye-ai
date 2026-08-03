@@ -16,8 +16,4 @@ void loop()
     // Red
     led.set_led(LEDController::RED_ON);
     delay(2000);
-
-    // Off
-    led.set_led(LEDController::OFF);
-    delay(2000);
 }

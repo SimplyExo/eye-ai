@@ -6,8 +6,7 @@ class LEDController {
     public: 
         enum LED_STATE {
             RED_ON,
-            GREEN_ON,
-            OFF
+            GREEN_ON
         };
         LEDController();
        

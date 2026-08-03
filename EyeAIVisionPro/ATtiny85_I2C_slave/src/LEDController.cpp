@@ -8,8 +8,7 @@ LEDController::LEDController() {
 }
 
 void LEDController::init() {
-    pinMode(LED_R, OUTPUT);
-    pinMode(LED_G, OUTPUT);
+    pinMode(LED_GREEN_ENABLE, OUTPUT);
 
     set_led(current_state);
 }
@@ -19,18 +18,11 @@ void LEDController::set_led(LED_STATE new_state) {
 
     switch (current_state) {
         case GREEN_ON:       // only green on
-            digitalWrite(LED_R, LOW);
-            digitalWrite(LED_G, HIGH);
+            digitalWrite(LED_GREEN_ENABLE, HIGH);
             break;
 
         case RED_ON:         // only red on
-            digitalWrite(LED_G, LOW);
-            digitalWrite(LED_R, HIGH);
-            break;
-            
-        case OFF:            // completely off
-            digitalWrite(LED_R, LOW);
-            digitalWrite(LED_G, LOW);
+            digitalWrite(LED_GREEN_ENABLE, LOW);
             break;
     }
 }
