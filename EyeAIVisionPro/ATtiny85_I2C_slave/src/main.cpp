@@ -1,24 +1,87 @@
 #ifndef PIO_UNIT_TESTING
 
-#include "LEDController.hpp"
-#include "HoldTransistorController.hpp"
+#include <configuration.h>
+#include <LEDController.hpp>
+#include <BatteryState.hpp>
+#include <HoldTransistorController.hpp>
 #include <Arduino.h>
+#include <TinyWireS.h>
 
-LEDController * led;
-HoldTransistorController * bjt;
+
+LEDController led;
+HoldTransistorController bjt;
+BatteryState battery;
+
+
+volatile byte receivedCommand = 0;
+
+volatile byte responseValue = 0;
+volatile bool responseReady = false;
+
+
+void receive(uint8_t count);
+void send_response();
+
 
 void setup() {
-  // put your setup code here, to run once:
-  bjt = new HoldTransistorController();
-  led = new LEDController();  
+  TinyWireS.begin(SLAVE_ADDR);
+
+  TinyWireS.onReceive(receive);
+  TinyWireS.onRequest(send_response);
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-  delay(500);
-  led->set_led(LEDController::GREEN_ON);
-  delay(500);
-  led->set_led(LEDController::RED_ON);
+
+void receive(uint8_t count) {
+  if (TinyWireS.available()) {
+    receivedCommand = TinyWireS.receive();
+  }
+}
+
+void send_response()
+{
+  if (responseReady) {
+    TinyWireS.send(responseValue);
+    responseReady = false;
+  }
+  else {
+    TinyWireS.send(0);
+  }
+}
+
+void loop()
+{
+  TinyWireS_stop_check();
+
+  byte command = receivedCommand;
+
+  if (command == 0) {
+    return;
+  }
+
+  receivedCommand = 0;
+
+  switch (command) {
+    case SET_LED_RED:
+      led.set_led(LEDController::RED_ON);
+      break;
+
+
+    case SET_LED_GREEN:
+      led.set_led(LEDController::GREEN_ON);
+      break;
+
+    case DISABLE_TRANSISTOR:
+      bjt.set_transistor(
+        HoldTransistorController::TRANSISTOR_OFF
+      );
+      break;
+
+    case READ_BATTERY_STATE:
+      // 10 Bit ADC -> 8 Bit
+      responseValue = battery.read_analog() >> 2;
+      responseReady = true;
+      break;
+  }
 }
 
 #endif
