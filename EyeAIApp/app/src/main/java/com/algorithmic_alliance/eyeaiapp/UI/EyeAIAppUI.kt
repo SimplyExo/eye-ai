@@ -74,7 +74,7 @@ fun EyeAIAppUI() {
             ConnectionPage(modifier = Modifier.fillMaxSize(), onConnectionSuccessful = {
                 navController.navigate(
                     HomeRoute
-                )
+                ) { popUpTo(WelcomeRoute) { inclusive = false } }
             })
         }
         composable<HomeRoute> {
