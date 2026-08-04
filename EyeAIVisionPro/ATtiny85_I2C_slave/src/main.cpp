@@ -15,7 +15,7 @@ BatteryState battery;
 
 volatile byte receivedCommand = 0;
 
-volatile byte responseValue = 0;
+volatile uint16_t responseValue = 0;
 volatile bool responseReady = false;
 
 
@@ -40,7 +40,8 @@ void receive(uint8_t count) {
 void send_response()
 {
   if (responseReady) {
-    TinyWireS.send(responseValue);
+    TinyWireS.send(highByte(responseValue));
+    TinyWireS.send(lowByte(responseValue));
     responseReady = false;
   }
   else {
@@ -77,8 +78,7 @@ void loop()
       break;
 
     case READ_BATTERY_STATE:
-      // 10 Bit ADC -> 8 Bit
-      responseValue = battery.read_analog() >> 2;
+      responseValue = battery.read_analog();  // 16-Bit Value
       responseReady = true;
       break;
   }

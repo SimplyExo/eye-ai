@@ -137,12 +137,15 @@ void read_battery_state()
 
 
   // Antwort anfordern
-  Wire.requestFrom(SLAVE_ADDR, (uint8_t)1);
+  Wire.requestFrom(SLAVE_ADDR, (uint8_t)2);
 
 
   if (Wire.available())
   {
-    byte batteryValue = Wire.read();
+    uint8_t high = Wire.read();
+    uint8_t low  = Wire.read();
+
+    uint16_t batteryValue = ((uint16_t)high << 8) | low;
 
     Serial.print("Battery ADC: ");
     Serial.println(batteryValue);
