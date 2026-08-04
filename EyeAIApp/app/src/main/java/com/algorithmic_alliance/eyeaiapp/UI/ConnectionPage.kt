@@ -48,6 +48,7 @@ import kotlin.collections.emptyList
 fun ConnectionPage(
     modifier: Modifier = Modifier,
     onConnectionSuccessful: () -> Unit,
+    onExitSelection: () -> Unit
 ) {
 
 
@@ -73,7 +74,7 @@ fun ConnectionPage(
                 currentlyDisplayedDevices++
             else onConnectionSuccessful()
         },
-        goBack = { if (currentlyDisplayedDevices != 0) currentlyDisplayedDevices-- },
+        goBack = { if (currentlyDisplayedDevices != 0) currentlyDisplayedDevices-- else onExitSelection()},
         devicesData = devices[currentlyDisplayedDevices]
     )
 
@@ -235,6 +236,7 @@ fun ConnectionPagePreview() {
         ConnectionPage(
             Modifier.fillMaxSize(),
             onConnectionSuccessful = {},
+            onExitSelection = {}
         )
     }
 }
