@@ -67,7 +67,7 @@ import kotlin.math.roundToInt
 fun SettingsPage(modifier: Modifier = Modifier, onReturn: () -> Unit) {
 
     val settingsData = UIDataSource.APP_SETTINGS
-
+    var developerSettingsEnabled by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -83,7 +83,7 @@ fun SettingsPage(modifier: Modifier = Modifier, onReturn: () -> Unit) {
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = {onReturn()}) {
+                        IconButton(onClick = { onReturn() }) {
                             Icon(
                                 painter = painterResource(R.drawable.arrow_back_24px),
                                 contentDescription = "Zurück"
@@ -102,10 +102,32 @@ fun SettingsPage(modifier: Modifier = Modifier, onReturn: () -> Unit) {
                     items(
                         items = settingsData.entries.toList(),
                         key = { entry -> entry.key }) { entry ->
-                        SettingsCategoryCard(
-                            categorySettings = entry.value as List<Any>,
-                            category = entry.key
-                        )
+                        if ((entry.key != "Developer Settings") || (entry.key == "Developer Settings" && developerSettingsEnabled))
+                            SettingsCategoryCard(
+                                categorySettings = entry.value as List<Any>,
+                                category = entry.key
+                            )
+                        else
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                                    .clickable { developerSettingsEnabled = true }
+                                    .clearAndSetSemantics {}
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        "Enable Developer Settings",
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
                     }
                 }
             }
@@ -368,7 +390,7 @@ fun FileSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
             Text(settingData.getValue("title") as String, fontSize = 18.sp)
             if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
         }
-        IconButton(onClick = { filePickerLauncher.launch("*/*")}) {
+        IconButton(onClick = { filePickerLauncher.launch("*/*") }) {
             Icon(
                 painter = painterResource(R.drawable.upload_file_24px),
                 contentDescription = ""
