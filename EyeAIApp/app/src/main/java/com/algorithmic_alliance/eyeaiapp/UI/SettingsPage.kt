@@ -4,6 +4,7 @@ package com.algorithmic_alliance.eyeaiapp.UI
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Checkbox
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.remote.core.operations.layout.modifiers.ModifierOperation
 import androidx.compose.remote.core.operations.layout.modifiers.ShapeType.getString
 import androidx.compose.remote.creation.toFloat
 import androidx.compose.runtime.Composable
@@ -67,7 +69,7 @@ import kotlin.math.roundToInt
 fun SettingsPage(modifier: Modifier = Modifier, onReturn: () -> Unit) {
 
     val settingsData = UIDataSource.APP_SETTINGS
-    var developerSettingsEnabled by rememberSaveable { mutableStateOf(false) }
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -102,37 +104,61 @@ fun SettingsPage(modifier: Modifier = Modifier, onReturn: () -> Unit) {
                     items(
                         items = settingsData.entries.toList(),
                         key = { entry -> entry.key }) { entry ->
-                        if ((entry.key != "Developer Settings") || (entry.key == "Developer Settings" && developerSettingsEnabled))
+                        if (entry.key != "Developer Setting")
                             SettingsCategoryCard(
                                 categorySettings = entry.value as List<Any>,
                                 category = entry.key
                             )
                         else
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp)
-                                    .clickable { developerSettingsEnabled = true }
-                                    .clearAndSetSemantics {}
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Text(
-                                        "Enable Developer Settings",
-                                        fontSize = 22.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
+                            DeveloperSettingsCard(
+                                categorySettings = entry.value as List<Any>,
+                                category = entry.key
+                            )
                     }
                 }
             }
         })
 
+}
+
+@Composable
+fun DeveloperSettingsCard(
+    modifier: Modifier = Modifier,
+    categorySettings: List<Any>,
+    category: String
+) {
+    var developerSettingsEnabled by rememberSaveable { mutableStateOf(false) }
+    AnimatedContent(
+        targetState = developerSettingsEnabled,
+        label = "developer_settings_transition"
+    ) { isEnabled ->
+        if (isEnabled)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .clickable { developerSettingsEnabled = true }
+                    .clearAndSetSemantics {}
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        "Enable Developer Settings",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        else
+            SettingsCategoryCard(
+                categorySettings = categorySettings,
+                category = category
+            )
+    }
 }
 
 @Composable

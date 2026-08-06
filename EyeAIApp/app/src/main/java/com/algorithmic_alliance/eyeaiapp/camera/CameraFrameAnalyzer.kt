@@ -37,11 +37,11 @@ import kotlin.time.measureTime
 @SuppressLint("SetTextI18n")
 class CameraFrameAnalyzer(
 	private var eyeAIApp: EyeAIApp,
-	private var depthView: ImageView,
-	private var performanceText: TextView,
-	private var overlayOD: OverlayViewOD,
-	private var debugInputBitmapPreview: ImageView,
-	private var mediaImageView: ImageView
+	private var depthView: ImageView?,
+	private var performanceText: TextView?,
+	private var overlayOD: OverlayViewOD?,
+	private var debugInputBitmapPreview: ImageView?,
+	private var mediaImageView: ImageView?
 ) : ImageAnalysis.Analyzer {
 	private var lastCameraFrameTime = TimeSource.Monotonic.markNow()
 	private var formattedCameraFrame = ""
@@ -85,10 +85,11 @@ class CameraFrameAnalyzer(
 							metricDepthModel.inputDim
 						)
 
+						/*
 						withContext(Dispatchers.Main) {
-							depthView.setImageBitmap(colorMappedImage)
-							if (debugInputBitmapPreview.isVisible)
-								debugInputBitmapPreview.setImageBitmap(frame)
+							depthView?.setImageBitmap(colorMappedImage)
+							if (debugInputBitmapPreview?.isVisible ?: false)
+								debugInputBitmapPreview!!.setImageBitmap(frame)
 
 							if (eyeAIApp.settings.showProfilingInfo) {
 								val formattedInputResolution = "${inputWidth}x${inputHeight}"
@@ -100,6 +101,7 @@ class CameraFrameAnalyzer(
 								performanceText.text = ""
 							}
 						}
+						 */
 					}
 
 					val maxFrameRate = eyeAIApp.settings.maxDepthFrameRate
@@ -123,6 +125,7 @@ class CameraFrameAnalyzer(
 						eyeAIApp.aiData.detectedObjects.set(objects)
 
 						// showing objects
+						/*
 						withContext(Dispatchers.Main) {
 							if (objects != null) {
 								overlayOD.setResults(objects)
@@ -131,6 +134,7 @@ class CameraFrameAnalyzer(
 								overlayOD.reset()
 							}
 						}
+						 */
 					}
 
 					val maxFrameRate = eyeAIApp.settings.maxObjectDetectionFrameRate
@@ -167,7 +171,7 @@ class CameraFrameAnalyzer(
 		return if (eyeAIApp.settings.inputSource == "camera") {
 			latestCameraFrame.get()
 		} else {
-			(mediaImageView.drawable as? BitmapDrawable)?.bitmap
+			(mediaImageView?.drawable as? BitmapDrawable)?.bitmap
 		}
 	}
 

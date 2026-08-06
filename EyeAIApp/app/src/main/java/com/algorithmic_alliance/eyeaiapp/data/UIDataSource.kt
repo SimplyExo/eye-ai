@@ -40,14 +40,14 @@ object UIDataSource {
             "confirmPermissionDeclineSemantic" to "Zugriff auf Kamera trotzdem ablehnen. Die App wird geschlossen."
         ),
         mapOf(
-            "permissionName" to "Mikrophon",
-            "permissionExplanation" to "Um per Sprachbefehl mit der App zu interagieren, ist es notwendig, zugriff auf das System-Mikrophon zu erteilen.",
+            "permissionName" to "Mikrofon",
+            "permissionExplanation" to "Um per Sprachbefehl mit der App zu interagieren, ist es notwendig, zugriff auf das System-Mikrofon zu erteilen.",
             "icon" to R.drawable.mic_24px,
-            "iconDescription" to "Mikrophon Icon",
-            "permissionDeclineSemantic" to "Zugriff auf Mikrophon ablehnen.",
-            "permissionAcceptSemantic" to "Zugriff auf Mikrophon gestatten.",
-            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf das Mikrophon ablehnen, können sie die App nicht benutzen.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf Mikrophon trotzdem ablehnen. Die App wird geschlossen."
+            "iconDescription" to "Mikrofon Icon",
+            "permissionDeclineSemantic" to "Zugriff auf Mikrofon ablehnen.",
+            "permissionAcceptSemantic" to "Zugriff auf Mikrofon gestatten.",
+            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf das Mikrofon ablehnen, können sie die App nicht benutzen.",
+            "confirmPermissionDeclineSemantic" to "Zugriff auf Mikrofon trotzdem ablehnen. Die App wird geschlossen."
         )
         //TODO implement the rest of the permissions
     )

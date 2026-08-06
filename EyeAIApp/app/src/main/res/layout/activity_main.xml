@@ -4,15 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/white">
+    android:background="@color/white"
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/ungranted_permissions_notice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
         android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="40dp"
         android:orientation="horizontal"
         android:visibility="gone"
         tools:visibility="visible">
@@ -59,17 +59,17 @@
             android:id="@+id/media_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:contentDescription="@string/media_view_description"
             app:implementationMode="performance"
-            app:scaleType="fitCenter"
-            android:contentDescription="@string/media_view_description" />
+            app:scaleType="fitCenter" />
 
         <ImageView
             android:id="@+id/debug_input_bitmap"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:contentDescription="@string/debug_input_bitmap_image_description" />
+            android:contentDescription="@string/debug_input_bitmap_image_description"
+            android:scaleType="fitCenter" />
 
         <com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
             android:id="@+id/overlay_object_detection"
@@ -97,12 +97,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="40dp"
+                android:background="@color/black"
+                android:contentDescription="@string/speech_recognition_partial_result_description"
+                android:text=""
                 android:textAlignment="center"
                 android:textColor="@color/white"
-                android:background="@color/black"
-                android:textSize="25sp"
-                android:text=""
-                android:contentDescription="@string/speech_recognition_partial_result_description" />
+                android:textSize="25sp" />
 
             <TextView
                 android:id="@+id/speech_recognition_final_output"
@@ -110,24 +110,24 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="40dp"
                 android:layout_marginBottom="20dp"
+                android:background="@color/black"
+                android:contentDescription="@string/speech_recognition_final_result_description"
+                android:text=""
                 android:textAlignment="center"
                 android:textColor="@color/final_speech_recognition"
-                android:background="@color/black"
-                android:text=""
-                android:textSize="25sp"
-                android:contentDescription="@string/speech_recognition_final_result_description" />
+                android:textSize="25sp" />
 
             <TextView
                 android:id="@+id/llm_response"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="40dp"
+                android:background="@color/black"
+                android:contentDescription="@string/llm_response_description"
+                android:text=""
                 android:textAlignment="center"
                 android:textColor="@color/llm_response"
-                android:background="@color/black"
-                android:text=""
-                android:textSize="25sp"
-                android:contentDescription="@string/llm_response_description" />
+                android:textSize="25sp" />
 
         </LinearLayout>
 
@@ -147,9 +147,9 @@
                 android:id="@+id/depth_preview_image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="fitCenter"
                 android:adjustViewBounds="true"
-                android:contentDescription="@string/depth_preview_image_description" />
+                android:contentDescription="@string/depth_preview_image_description"
+                android:scaleType="fitCenter" />
 
         </FrameLayout>
 
@@ -171,19 +171,19 @@
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/stop_tts_button"
-            android:contentDescription="@string/stop_tts_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/stop_square"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="120dp"
             android:layout_marginBottom="30dp"
             android:backgroundTint="@color/red"
+            android:contentDescription="@string/stop_tts_description"
+            android:src="@drawable/stop_square"
             android:tint="@android:color/white"
-            app:rippleColor="@color/ripple_red"
-            app:borderWidth="0dp" />
+            app:borderWidth="0dp"
+            app:rippleColor="@color/ripple_red" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/settings_button"
@@ -197,8 +197,8 @@
             android:contentDescription="@string/settings_button_description"
             android:foregroundTint="@color/white"
             android:src="@android:drawable/ic_menu_preferences"
-            app:rippleColor="@android:color/transparent"
-            app:borderWidth="0dp" />
+            app:borderWidth="0dp"
+            app:rippleColor="@android:color/transparent" />
 
     </RelativeLayout>
 

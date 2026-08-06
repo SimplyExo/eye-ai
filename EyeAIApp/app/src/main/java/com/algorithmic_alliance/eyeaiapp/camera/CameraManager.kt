@@ -70,7 +70,7 @@ class CameraManager {
 						cameraPreview
 					)
 
-					cameraPreview.surfaceProvider = cameraPreviewView!!.surfaceProvider
+					//cameraPreview.surfaceProvider = cameraPreviewView!!.surfaceProvider
 				} catch (e: ExecutionException) {
 					Log.e(APP_LOG_TAG, e.message!!)
 				} catch (e: InterruptedException) {
