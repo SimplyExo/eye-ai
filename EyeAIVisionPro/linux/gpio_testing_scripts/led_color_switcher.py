@@ -29,9 +29,9 @@ def main():
                 send_command(bus, SET_LED_GREEN)
                 time.sleep(1)
 
-                print("Rot")
+                print("Red")
                 send_command(bus, SET_LED_RED)
-                time.sleep(10)
+                time.sleep(1)
 
         except KeyboardInterrupt:
             print("\nTest beendet.")
