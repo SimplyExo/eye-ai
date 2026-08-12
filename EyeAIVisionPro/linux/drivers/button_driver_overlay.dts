@@ -1,0 +1,17 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2711";
+
+    fragment@0 {
+        target-path = "/";
+
+        __overlay__ {
+            my_gpio_device {
+                compatible = "mycompany,mygpio";
+                my-gpios = <&gpio 22 0>;
+            };
+        };
+    };
+};
