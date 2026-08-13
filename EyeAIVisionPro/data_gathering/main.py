@@ -6,7 +6,7 @@ from pathlib import Path
 from CameraThread import CameraThread
 
 app = Flask(__name__)
-cameraThread = CameraThread("Cam", 1280, 720, Path("./output"), 0.5)
+cameraThread = CameraThread("Cam", 1280, 720, Path("./output"), 3)
 
 @app.route("/")
 def index():
@@ -16,6 +16,15 @@ def index():
 @app.route("/cam")
 def camera():
     return Response(gather_img(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route("/toggle_recording")
+def toggle_recording():
+    cameraThread.save_frames = not cameraThread.save_frames
+
+    if cameraThread.save_frames:
+        return "Started recording!"
+    else:
+        return "Stopped recording!"
 
 def gather_img():
     while True:

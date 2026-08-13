@@ -16,8 +16,9 @@ class CameraThread(threading.Thread):
         self.capture_delay = capture_delay
 
         self.image_ready = False        # TODO: find better solution for this
-        self.save_frames = True
+        self.save_frames = False
         self.image_count = 0
+        self.fps = 30
 
         self.next_image_time = time.time()
 
@@ -36,13 +37,10 @@ class CameraThread(threading.Thread):
             _, self.frame = cv2.imencode('.jpg', raw_frame)
             self.image_ready = True
 
-            if self.save_frame and time.time() >= self.next_image_time:
-                self.next_image_time += 3
-                with open(self.output_dir / f"{self.image_count}.jpg", "wb") as file:
-                    file.write(self.frame.tobytes())
-                self.image_count += 1
+            if self.save_frames and time.time() >= self.next_image_time:
+                self.save_frame()
 
-            time.sleep(1/30)
+            time.sleep(1 / self.fps)
 
         self.cam.release()
         print("[Camera] Kameraprozess beendet!")
@@ -54,6 +52,9 @@ class CameraThread(threading.Thread):
         self.image_ready = False
         return self.frame
 
-    def save_frame(self, jpeg):
-        pass
+    def save_frame(self):
+        self.next_image_time += self.capture_delay
+        with open(self.output_dir / f"{self.image_count}.jpg", "wb") as file:
+            file.write(self.frame.tobytes())
+        self.image_count += 1
     
