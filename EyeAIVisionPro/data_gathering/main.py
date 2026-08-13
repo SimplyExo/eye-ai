@@ -1,12 +1,12 @@
 import time
 
-import cv2
 from flask import Flask, Response
+from pathlib import Path
 
 from CameraThread import CameraThread
 
 app = Flask(__name__)
-cameraThread = CameraThread("Cam", 1280, 720)
+cameraThread = CameraThread("Cam", 1280, 720, Path("./output"), 3)
 
 @app.route("/")
 def index():
@@ -18,7 +18,7 @@ def camera():
 
 def gather_img():
     while True:
-        _, frame = cv2.imencode('.jpg', cameraThread.frame)
+        frame = cameraThread.frame
         yield b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + frame.tobytes() + b'\r\n'
 
 def main():
