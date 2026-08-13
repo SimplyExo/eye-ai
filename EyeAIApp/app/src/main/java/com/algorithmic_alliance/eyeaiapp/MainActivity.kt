@@ -104,6 +104,7 @@ class MainActivity : AppCompatActivity() {
 		SETTINGS_MENU,
 		SETTINGS_CHOICE,
 		SETTINGS_ACTION,
+		SETTINGS_EXTERNAL_CONFIRMATION,
 	}
 
 	private var currentState: State = State.IDLE
@@ -742,6 +743,8 @@ class MainActivity : AppCompatActivity() {
 			State.SETTINGS_MENU -> stateMachine.handleSettingsMenu(final)
 			State.SETTINGS_CHOICE -> stateMachine.handleSettingsChoice(final)
 			State.SETTINGS_ACTION -> stateMachine.handleSettingsAction(final)
+			State.SETTINGS_EXTERNAL_CONFIRMATION ->
+				stateMachine.handleSettingsExternalConfirmation(final)
 		}
 
 		if (update.voskRestartPolicy == VoskRestartPolicy.REQUIRE_MANUAL_RESTART) {

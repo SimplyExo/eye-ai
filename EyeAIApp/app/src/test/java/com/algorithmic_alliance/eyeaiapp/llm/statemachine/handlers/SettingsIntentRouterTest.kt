@@ -63,13 +63,6 @@ class SettingsIntentRouterTest {
 		assertEquals(SettingsCancellationDestination.GUIDED_MENU, SettingsFlow.GUIDED.cancellationDestination())
 	}
 
-	@Test
-	fun abortPhraseIsRecognizedByExistingKeywordPath() {
-		assertTrue(SettingsExitCommandDetector.matches("Abbrechen."))
-		assertTrue(SettingsExitCommandDetector.matches("Bitte stopp den Vorgang"))
-		assertEquals(false, SettingsExitCommandDetector.matches("Ja, bitte ausführen."))
-	}
-
 	private fun intentResult(intent: Intent, originalText: String): IntentResult {
 		val probabilities = FloatArray(Intent.CLASS_ORDER.size)
 		probabilities[intent.ordinal] = 1f

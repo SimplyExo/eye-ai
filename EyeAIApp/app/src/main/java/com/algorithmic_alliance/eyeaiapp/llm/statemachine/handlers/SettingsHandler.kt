@@ -138,17 +138,6 @@ class SettingsHandler(
 		}
 	}
 
-	fun isDirectSettingsFlow(currentJson: String?): Boolean =
-		jsonParser.parseSettingsFlow(currentJson) == SettingsFlow.DIRECT
-
-	suspend fun cancelDirectSettings(
-		onJsonUpdate: (String?) -> Unit
-	): StateUpdate {
-		speakAndHandleUi("Okay, ich habe die Einstellungsänderung abgebrochen.")
-		onJsonUpdate(null)
-		return StateUpdate(State.IDLE, null)
-	}
-
 	suspend fun handleSettingsAction(
 		input: String,
 		currentJson: String?,
@@ -156,24 +145,15 @@ class SettingsHandler(
 	): StateUpdate {
 
 		if (currentJson != null && jsonParser.isLeaveRequest(currentJson)) {
-
 			val confirmationPrompt = """
-            Der Nutzer wurde gefragt: "Möchten Sie die Einstellungen wirklich verlassen?"
-            Die Antwort des Nutzers war: "$input"
-            
-            Analysiere ob der Nutzer das Verlassen der Einstellungen bestätigt hat.
-            Berücksichtige verschiedene Bestätigungsformen wie:
-            - "ja", "yes", "okay", "ok", "bestätigen"
-            - "auf jeden Fall", "sicher", "klar"
-            - "verlassen", "raus", "weg"
-            
-            Oder Ablehnungen wie:
-            - "nein", "no", "nicht"
-            - "abbrechen", "stopp", "bleiben"
-            - "zurück", "doch nicht"
-            
-            Antworte mit einer JSON-Antwort mit dem Feld "approval" (true/false).
-        """.trimIndent()
+				Der Nutzer wurde gefragt: "Möchten Sie die Einstellungen wirklich verlassen?"
+				Die Antwort des Nutzers war: "$input"
+				Unterscheide genau diese Fälle:
+				- Verlassen bestätigen: approval=1 und abort_settings_flow=false.
+				- Verlassen nur ablehnen und im Menü bleiben: approval=0 und abort_settings_flow=false.
+				- Den gesamten Einstellungsdialog ausdrücklich abbrechen: approval=0 und
+				  abort_settings_flow=true.
+			""".trimIndent()
 
 			Log.d(
 				EyeAIApp.APP_LOG_TAG,
@@ -188,20 +168,37 @@ class SettingsHandler(
 				return StateUpdate(State.IDLE, null)
 			}
 
-			val approved = jsonParser.isApproved(jsonResponse)
+			val abortSettingsFlow = jsonParser.isSettingsFlowAbort(jsonResponse)
+			val approved = jsonParser.parseApproval(jsonResponse)
 			Log.d(
 				EyeAIApp.APP_LOG_TAG,
 				"[DecisionTrace][Gemini API][RESULT] " +
-					"role=LEAVE_SETTINGS_CONFIRMATION approved=$approved"
+					"role=LEAVE_SETTINGS_CONFIRMATION approved=$approved " +
+					"abortSettingsFlow=$abortSettingsFlow"
 			)
-			return if (approved) {
-				speakAndHandleUi("Die Einstellungen werden verlassen.")
-				onJsonUpdate(null)
-				StateUpdate(State.IDLE, null)
-			} else {
-				speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
-				onJsonUpdate(null)
-				StateUpdate(State.SETTINGS_MENU, null)
+			return when {
+				abortSettingsFlow -> {
+					speakAndHandleUi("Okay, ich habe den Einstellungsdialog abgebrochen.")
+					onJsonUpdate(null)
+					StateUpdate(State.IDLE, null)
+				}
+
+				approved == true -> {
+					speakAndHandleUi("Die Einstellungen werden verlassen.")
+					onJsonUpdate(null)
+					StateUpdate(State.IDLE, null)
+				}
+
+				approved == false -> {
+					speakAndHandleUi("Okay, Sie bleiben in den Einstellungen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
+					onJsonUpdate(null)
+					StateUpdate(State.SETTINGS_MENU, null)
+				}
+
+				else -> {
+					speakAndHandleUi("Die Bestätigung konnte nicht ausgewertet werden.")
+					StateUpdate(State.SETTINGS_ACTION, currentJson)
+				}
 			}
 		}
 
@@ -232,6 +229,12 @@ class SettingsHandler(
 					speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
 					StateUpdate(State.SETTINGS_MENU, null)
 				}
+			}
+
+			SettingsConfirmationResult.ABORTED -> {
+				speakAndHandleUi("Okay, ich habe den Einstellungsdialog abgebrochen.")
+				onJsonUpdate(null)
+				StateUpdate(State.IDLE, null)
 			}
 
 			SettingsConfirmationResult.FAILED -> {

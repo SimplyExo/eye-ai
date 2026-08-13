@@ -49,20 +49,3 @@ object SettingsIntentRouter {
 		intentResult: IntentResult
 	) = SettingsIntentRoute.Direct(settingIntent, intentResult)
 }
-
-/** Existing keyword-based settings abort detection, shared by guided and direct flows. */
-object SettingsExitCommandDetector {
-	private val exitKeywords = setOf(
-		"verlassen", "stopp", "abbruch", "stop", "exit", "quit",
-		"beenden", "raus", "zurück", "abbrechen", "cancel", "zumachen",
-		"verlasse einstellungen", "schließ das", "home", "startseite",
-		"ich will raus", "will hier raus"
-	)
-
-	fun matches(input: String): Boolean {
-		val normalizedInput = input.lowercase().trim()
-		return exitKeywords.any { keyword ->
-			normalizedInput.contains(keyword) || normalizedInput == keyword
-		}
-	}
-}

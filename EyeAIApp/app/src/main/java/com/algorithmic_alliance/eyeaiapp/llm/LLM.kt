@@ -200,7 +200,7 @@ Verwende NUR Objektnamen aus der obigen Liste! Wenn der Benutzer nach etwas frag
 		- 'tts_speed': Wenn der Nutzer die Sprechgeschwindigkeit ändern will (z.B. "schneller sprechen").
 		- 'voice': Wenn der Nutzer die Stimme des Assistenten ändern will (z.B. "Stimme ändern", "andere Stimme", "Assistentenagenten anpassen").
 		- 'frequency': Wenn der Nutzer die Audio-Frequenz ändern will (z.B. "Frequenz anpassen", "Tonhöhe ändern").
-		- 'bps': Wenn der Nutzer die BPS (Beats per Second) ändern will (z.B. "BPS ändern", "Schläge pro Sekunde").
+		- 'bps': Wenn der Nutzer die BPS bzw. Signalrate (Beats per Second) ändern will (z.B. "BPS ändern", "Signalrate", "Schläge pro Sekunde").
 		- 'leave': Wenn der Nutzer die Einstellungen verlassen will.
 		- 'none': Wenn keine der obigen Absichten klar erkennbar ist.
 		

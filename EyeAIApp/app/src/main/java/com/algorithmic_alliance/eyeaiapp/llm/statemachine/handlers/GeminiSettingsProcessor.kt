@@ -152,6 +152,7 @@ class GeminiSettingsExtractor(
 enum class SettingsConfirmationResult {
 	APPLIED,
 	REJECTED,
+	ABORTED,
 	FAILED
 }
 
@@ -169,14 +170,24 @@ class GeminiSettingsConfirmation(
 		trace(
 			"[DecisionTrace][Gemini API][EVALUATE] role=SETTINGS_CONFIRMATION input='$input'"
 		)
-		val prompt = "Würdest du sagen der Nutzer hat diesen Command bestätigt? " +
-			"Die Antwort des Nutzers war $input. " +
-			"Antworte bitte mit einer JSON-Antwort in approval."
+		val prompt = """
+			Der Nutzer wurde gefragt, ob eine konkrete Einstellungsänderung ausgeführt werden soll.
+			Die Antwort des Nutzers war: '$input'.
+			Unterscheide genau diese Fälle:
+			- Zustimmung zur Änderung: approval=1 und abort_settings_flow=false.
+			- Nur Ablehnung dieser Änderung, zum Beispiel "Nein": approval=0 und abort_settings_flow=false.
+			- Ausdrücklicher Abbruch des gesamten Einstellungsdialogs, zum Beispiel "Abbrechen" oder "Stopp":
+			  approval=0 und abort_settings_flow=true.
+		""".trimIndent()
 		val jsonResponse = generateLlmResponse(prompt, true) ?: run {
 			trace("[DecisionTrace][Gemini API][RESULT] role=SETTINGS_CONFIRMATION outcome=FAILED")
 			return SettingsConfirmationResult.FAILED
 		}
 
+		if (jsonParser.isSettingsFlowAbort(jsonResponse)) {
+			trace("[DecisionTrace][Gemini API][RESULT] role=SETTINGS_CONFIRMATION outcome=ABORTED")
+			return SettingsConfirmationResult.ABORTED
+		}
 		if (!jsonParser.isApproved(jsonResponse)) {
 			trace("[DecisionTrace][Gemini API][RESULT] role=SETTINGS_CONFIRMATION outcome=REJECTED")
 			return SettingsConfirmationResult.REJECTED

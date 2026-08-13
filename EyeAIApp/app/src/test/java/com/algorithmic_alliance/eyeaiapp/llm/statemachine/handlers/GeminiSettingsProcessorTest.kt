@@ -211,4 +211,23 @@ class GeminiSettingsProcessorTest {
 		assertEquals(1, requestCount)
 		assertEquals(0, applyCount)
 	}
+
+	@Test
+	fun explicitAbortIsDistinguishedFromSimpleRejectionWithoutApplying() = runBlocking {
+		var applyCount = 0
+		val confirmation = GeminiSettingsConfirmation(parser) { _, _ ->
+			"""{"approval":0,"abort_settings_flow":true}"""
+		}
+
+		val result = confirmation.confirmAndApply(
+			"Abbrechen.",
+			"""{"changed_settings":[{"frequency":700}]}"""
+		) {
+			applyCount++
+			true
+		}
+
+		assertEquals(SettingsConfirmationResult.ABORTED, result)
+		assertEquals(0, applyCount)
+	}
 }

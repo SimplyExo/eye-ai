@@ -70,6 +70,21 @@ DIRECT_SETTINGS_UTTERANCES = [
     ("Nimm die andere Stimme.", "CHANGE_SPEAKER"),
     ("Mach die Abstandssignale langsamer.", "SET_BPS"),
 ]
+SETTINGS_MENU_UTTERANCES = [
+    ("Frequenz.", "SET_FREQUENCY"),
+    ("Die Stimme.", "CHANGE_SPEAKER"),
+    ("Sprechgeschwindigkeit.", "CHANGE_SPEECH_SPEED"),
+    ("Lies das Schild.", "TEXT_RECOGNITION"),
+    ("Was ist vor mir?", "OBJECT_DETECTION"),
+    ("Wie weit ist die Wand entfernt?", "MEASURE_DISTANCE"),
+    ("Doch nicht.", "ABORT"),
+    ("Lass gut sein.", "ABORT"),
+]
+KNOWN_SETTINGS_MENU_FALLBACKS = [
+    # The unchanged M0_T1 model has no confident top-1 for this isolated noun.
+    # Android therefore keeps the existing 0.60 path to Gemini settings routing.
+    ("Signalrate.", "OPEN_SETTINGS", 0.60),
+]
 FROZEN_ENCODINGS = {
     "  ÖFFNE, die Einstellungen!  ": {
         "T1": [142, 2, 37],
@@ -240,7 +255,11 @@ def verify_default_pipeline(tokenizer: FrozenTokenizer) -> None:
     model_path = ASSET_ROOT / "models/m0_t1_seed_20260812.tflite"
     interpreter, input_tensor, output_tensor = create_interpreter(model_path)
     print("Default M0_T1 pipeline:")
-    utterances = KNOWN_UTTERANCES + DIRECT_SETTINGS_UTTERANCES
+    utterances = (
+        KNOWN_UTTERANCES
+        + DIRECT_SETTINGS_UTTERANCES
+        + SETTINGS_MENU_UTTERANCES
+    )
     for original_text, expected_intent in utterances:
         probabilities = infer(
             interpreter,
@@ -253,6 +272,24 @@ def verify_default_pipeline(tokenizer: FrozenTokenizer) -> None:
         assert actual_intent == expected_intent, (original_text, actual_intent)
         print(f"  {actual_intent:22} {probabilities[top_index]:.6f}  {original_text!r}")
 
+    for original_text, expected_top_intent, confidence_threshold in (
+        KNOWN_SETTINGS_MENU_FALLBACKS
+    ):
+        probabilities = infer(
+            interpreter,
+            input_tensor,
+            output_tensor,
+            tokenizer.encode(original_text),
+        )
+        top_index = int(np.argmax(probabilities))
+        actual_intent = LABELS[top_index]
+        assert actual_intent == expected_top_intent, (original_text, actual_intent)
+        assert probabilities[top_index] < confidence_threshold
+        print(
+            f"  {'GEMINI_FALLBACK':22} {probabilities[top_index]:.6f}  "
+            f"{original_text!r} (NLP top-1: {actual_intent})"
+        )
+
 
 def main() -> int:
     labels_t1 = json.loads((ASSET_ROOT / "tokenizers/T1/labels.json").read_text())
@@ -263,7 +300,12 @@ def main() -> int:
     verify_frozen_encodings(tokenizers)
     verify_models(tokenizers)
     verify_default_pipeline(tokenizers["T1"])
-    formulation_count = len(KNOWN_UTTERANCES) + len(DIRECT_SETTINGS_UTTERANCES)
+    formulation_count = (
+        len(KNOWN_UTTERANCES)
+        + len(DIRECT_SETTINGS_UTTERANCES)
+        + len(SETTINGS_MENU_UTTERANCES)
+        + len(KNOWN_SETTINGS_MENU_FALLBACKS)
+    )
     print(
         f"Validated 8 models, 2 frozen tokenizers, and "
         f"{formulation_count} end-to-end formulations."

@@ -199,10 +199,34 @@ class JsonParser {
 	}
 
 	fun isApproved(jsonString: String): Boolean {
+		return parseApproval(jsonString) == true
+	}
+
+	fun parseApproval(jsonString: String): Boolean? {
 		return try {
-			JSONObject(jsonString).optInt("approval", 0) == 1
+			val json = JSONObject(jsonString)
+			if (!json.has("approval")) return null
+			val approval = json.opt("approval")
+			when {
+				approval is Boolean -> approval
+				approval is Number -> when (approval.toInt()) {
+					1 -> true
+					0 -> false
+					else -> null
+				}
+				else -> null
+			}
 		} catch (e: JSONException) {
-			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in isApproved", e)
+			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseApproval", e)
+			null
+		}
+	}
+
+	fun isSettingsFlowAbort(jsonString: String): Boolean {
+		return try {
+			JSONObject(jsonString).optBoolean("abort_settings_flow", false)
+		} catch (e: JSONException) {
+			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in isSettingsFlowAbort", e)
 			false
 		}
 	}
