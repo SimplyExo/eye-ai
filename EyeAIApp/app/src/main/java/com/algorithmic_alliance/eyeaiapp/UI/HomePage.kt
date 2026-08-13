@@ -1,5 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,6 +35,7 @@ import com.algorithmic_alliance.eyeaiapp.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit) {
+    Log.d("EyeAIUI", "[HomePage] Loading HomePage")
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {

@@ -1,5 +1,9 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
+import android.content.Context
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.util.Log
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,6 +18,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -25,11 +30,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -40,6 +48,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
+import androidx.preference.PreferenceManager
+import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import kotlin.collections.emptyList
 
@@ -50,23 +61,56 @@ fun ConnectionPage(
     onConnectionSuccessful: () -> Unit,
     onExitSelection: () -> Unit
 ) {
+    Log.d("EyeAIUI", "[PermissionPage] Loading ConnectionPage")
 
+    val context = LocalContext.current
+    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    val availableAudioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+    val displayAudioDevices = mutableListOf<String>()
 
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+    for (device in availableAudioDevices) {
+        val audioDeviceType = audioDeviceTypeName(device.type)
+        val audioDeviceName = device.productName
+        if (audioDeviceType != "Unbekannt")
+            displayAudioDevices.add("$audioDeviceName ($audioDeviceType)")
+    }
     //TODO connection to Backend
-    val devices: List<Map<String, Any>> = listOf(
+    val devices: List<Any> = listOf(
         mapOf(
             "name" to "Audio-Gerät",
-            "devices" to listOf("Wireless Earbuds", "AirPods", "Headphone Jack")
+            "type" to "audio",
+            "rememberKey" to R.string.remember_audio_device,
+            "remember" to sharedPreferences.getBoolean(
+                stringResource(R.string.remember_audio_device),
+                false
+            ),
+            "selectedKey" to R.string.selected_audio_device,
+            "selected" to sharedPreferences.getString(
+                stringResource(R.string.selected_audio_device),
+                ""
+            ),
+            "devices" to displayAudioDevices
         ),
         mapOf(
             "name" to "EyeAI-Vision",
+            "type" to "eye-ai-vision",
+            "rememberKey" to R.string.remember_eye_ai_vision,
+            "remember" to sharedPreferences.getBoolean(
+                stringResource(R.string.remember_eye_ai_vision),
+                false
+            ),
+            "selectedKey" to R.string.selected_eye_ai_vision,
+            "selected" to sharedPreferences.getString(
+                stringResource(R.string.selected_eye_ai_vision),
+                ""
+            ),
             "devices" to listOf("EyeAI-Vision 1", "EyeAI-Vision von Robert")
         )
     )
 
     var currentlyDisplayedDevices by remember { mutableIntStateOf(0) }
-
-
 
     ChooseConnectionPage(
         onConnectionSuccessful = {
@@ -74,8 +118,8 @@ fun ConnectionPage(
                 currentlyDisplayedDevices++
             else onConnectionSuccessful()
         },
-        goBack = { if (currentlyDisplayedDevices != 0) currentlyDisplayedDevices-- else onExitSelection()},
-        devicesData = devices[currentlyDisplayedDevices]
+        goBack = { if (currentlyDisplayedDevices != 0) currentlyDisplayedDevices-- else onExitSelection() },
+        devicesData = devices[currentlyDisplayedDevices] as Map<Any, Any>
     )
 
 }
@@ -85,29 +129,35 @@ fun ChooseConnectionPage(
     modifier: Modifier = Modifier,
     onConnectionSuccessful: () -> Unit,
     goBack: () -> Unit,
-    devicesData: Map<String, Any>
+    devicesData: Map<Any, Any>
 ) {
-
-    var announcement by remember { mutableStateOf("") }
-
+    val context = LocalContext.current
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    var shouldRememberDevice by rememberSaveable { mutableStateOf(false) }
     var selectedDevice by remember { mutableIntStateOf(0) }
     var showConnectionFailedDialog by remember { mutableStateOf(false) }
 
+    val shouldRememberKey = stringResource(devicesData["rememberKey"] as Int)
+    val selectedDeviceKey = stringResource(devicesData["selectedKey"] as Int)
     val deviceCategory = devicesData["name"] ?: UIDataSource.INFORMATION_NOT_FOUND
     val devices = devicesData["devices"] as? List<*> ?: emptyList<String>()
 
 
-    announcement =
-        if (deviceCategory == "Audio-Gerät")
-            "Auf dieser Seite können Sie das Audio-Gerät für die Audio-Ausgabe wählen."
-        else
-            "Auf dieser Seite können sie die EyeAI-Vision zum Verbinden auswählen."
+    Log.d("EyeAIUI", "[ConnectionPage] Choosing connection for $deviceCategory")
+    LaunchedEffect(devicesData) {
+        if (devicesData["remember"] == true && devices.contains(devicesData["selected"])) {
+            Log.d("EyeAIUI", "[ConnectionPage] Attempting to connect to remembered ${devicesData["type"]} device")
+            if (connect(devicesData["type"] as String, devicesData["selected"] as String)) {
+                Log.d("EyeAIUI", "[ConnectionPage] Connection to remembered device successful")
+                onConnectionSuccessful()
+            }
+        }
+    }
 
 
     Surface(
         modifier = Modifier
-            .fillMaxSize()
-            .semantics { paneTitle = announcement },
+            .fillMaxSize(),
         color = MaterialTheme.colorScheme.surface
     ) {
         Column(verticalArrangement = Arrangement.Center) {
@@ -149,10 +199,23 @@ fun ChooseConnectionPage(
                             val index = devices.indexOf(item)
                             DeviceListEntry(
                                 item as String,
-                                onSelected = { selectedDevice = index },
+                                onSelected = {
+                                    selectedDevice = index
+                                },
                                 isSelected = index == selectedDevice
                             )
                         }
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                    ) {
+                        Checkbox(
+                            checked = shouldRememberDevice,
+                            onCheckedChange = { shouldRememberDevice = !shouldRememberDevice })
+                        Text("Als Standardgerät festlegen")
                     }
                     HorizontalDivider(modifier = Modifier.padding(8.dp))
                     Row(
@@ -171,9 +234,32 @@ fun ChooseConnectionPage(
                                     contentDescription =
                                         "Mit Gerät " + devices[selectedDevice] + " verbinden"
                                 }, onClick = {
-                                //TODO Verbindung mit Backend
-                                //check here if connection attempt was successful
-                                if (true) {
+                                if (connect(
+                                        devicesData["type"] as String,
+                                        devices[selectedDevice] as String
+                                    )
+                                ) {
+                                    Log.d(
+                                        "EyeAIUI",
+                                        "[ConnectionPage] Setting SharedPreferences ShouldRememberDevice: $shouldRememberDevice"
+                                    )
+                                    sharedPreferences.edit(commit = true) {
+                                        putBoolean(
+                                            shouldRememberKey,
+                                            shouldRememberDevice
+                                        )
+                                    }
+                                    Log.d(
+                                        "EyeAIUI",
+                                        "[ConnectionPage] Setting SharedPreferences SelectedDevice: ${devices[selectedDevice]}"
+                                    )
+                                    sharedPreferences.edit(commit = true) {
+                                        putString(
+                                            selectedDeviceKey,
+                                            devices[selectedDevice] as String
+                                        )
+                                    }
+                                    shouldRememberDevice = false
                                     selectedDevice = 0
                                     onConnectionSuccessful()
                                 } else
@@ -239,4 +325,42 @@ fun ConnectionPagePreview() {
             onExitSelection = {}
         )
     }
+}
+
+fun connect(deviceCategory: String, selectedDevice: String): Boolean {
+    when (deviceCategory) {
+        "audio" -> {
+            //TODO Backend zu OpenAL
+            Log.d(
+                "EyeAIUI",
+                "[ConnectionPage.connect] Attempting to connect to audio device: '$selectedDevice'"
+            )
+            return true
+        }
+
+        "eye-ai-vision" -> {
+            //TODO Backend zu EyeAIVision
+            Log.d(
+                "EyeAIUI",
+                "[ConnectionPage.connect] Attempting to connect to eye-ai-vision device '$selectedDevice'"
+            )
+            return true
+        }
+
+        else -> return false
+    }
+}
+
+fun audioDeviceTypeName(type: Int): String = when (type) {
+    AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> "Eingebauter Lautsprecher"
+    AudioDeviceInfo.TYPE_WIRED_HEADSET -> "Kabelgebundenes Headset (mit Mikrofon)"
+    AudioDeviceInfo.TYPE_WIRED_HEADPHONES -> "Kabelgebundene Kopfhörer (Klinke)"
+    AudioDeviceInfo.TYPE_BLUETOOTH_A2DP -> "Bluetooth-Kopfhörer/Lautsprecher (Media)"
+    AudioDeviceInfo.TYPE_BLE_HEADSET -> "Bluetooth LE Kopfhörer"
+    AudioDeviceInfo.TYPE_USB_HEADSET -> "USB-Kopfhörer"
+    AudioDeviceInfo.TYPE_USB_DEVICE -> "USB-Audiogerät"
+    AudioDeviceInfo.TYPE_HEARING_AID -> "Hörgerät"
+    AudioDeviceInfo.TYPE_DOCK -> "Dockingstation"
+    AudioDeviceInfo.TYPE_HDMI -> "HDMI"
+    else -> "Unbekannt"
 }

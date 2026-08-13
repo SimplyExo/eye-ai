@@ -62,10 +62,6 @@ fun PermissionPage(
             context,
             map["permission"] as String
         ) == PackageManager.PERMISSION_GRANTED
-        Log.d(
-            "EyeAIUI",
-            "[PermissionPage] ${map["permission"]} = $hasPermission"
-        )
         if(!hasPermission)
             notGrantedPermissions.add(map)
     }

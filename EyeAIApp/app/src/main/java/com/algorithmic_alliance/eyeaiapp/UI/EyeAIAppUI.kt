@@ -65,17 +65,7 @@ fun EyeAIAppUI() {
     val navController = rememberNavController()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-    val connectionTutorialKey =
-        stringResource(R.string.connection_tutorial_completed_setting)
 
-    var devicesSelected by remember {
-        mutableStateOf(
-            sharedPreferences.getBoolean(
-                connectionTutorialKey,
-                false
-            )
-        )
-    }
 
     NavHost(
         navController = navController,
@@ -97,22 +87,15 @@ fun EyeAIAppUI() {
                     navController.popBackStack()
                 },
                 onPermissionsGranted = {
-                    if (!devicesSelected)
+
                         navController.navigate(ConnectionRoute)
-                    else
-                        navController.navigate(HomeRoute)
+
                 })
         }
         composable<ConnectionRoute> {
             ConnectionPage(
                 modifier = Modifier.fillMaxSize(),
                 onConnectionSuccessful = {
-                    sharedPreferences.edit(commit = true) {
-                        putBoolean(
-                            connectionTutorialKey,
-                            false
-                        )
-                    }
                     navController.navigate(
                         HomeRoute
                     ) { popUpTo(WelcomeRoute) { inclusive = false } }

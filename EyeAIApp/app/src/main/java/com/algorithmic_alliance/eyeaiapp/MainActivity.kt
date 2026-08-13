@@ -120,8 +120,6 @@ class MainActivity : AppCompatActivity() {
     private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
     private var mediaPlayer: MediaPlayer? = null
 
-    private var showPermissionOverlay by mutableStateOf(false)
-
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
