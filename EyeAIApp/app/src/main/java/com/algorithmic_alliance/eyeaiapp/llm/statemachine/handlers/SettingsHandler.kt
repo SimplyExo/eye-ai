@@ -4,10 +4,10 @@ import android.content.Context
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.MainActivity.State
-import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.Settings
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateUpdate
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.VoskRestartPolicy
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import org.json.JSONArray
 import org.json.JSONException
@@ -20,6 +20,20 @@ class SettingsHandler(
 	private val generateLlmResponse: suspend (String, Boolean) -> String?,
 	private val speakAndHandleUi: suspend (String) -> Unit
 ) {
+	private val settingsExtractor = GeminiSettingsExtractor(
+		jsonParser = jsonParser,
+		trace = ::logDecisionTrace,
+		generateLlmResponse = generateLlmResponse
+	)
+	private val settingsConfirmation = GeminiSettingsConfirmation(
+		jsonParser = jsonParser,
+		trace = ::logDecisionTrace,
+		generateLlmResponse = generateLlmResponse
+	)
+
+	private fun logDecisionTrace(message: String) {
+		Log.d(EyeAIApp.APP_LOG_TAG, message)
+	}
 
 	suspend fun handleSettingsMenu(
 		input: String,
@@ -29,6 +43,10 @@ class SettingsHandler(
 		// Method when NLP fails
 		// NLP logic majorly in StateMachine.kt
 
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][Gemini API][CLASSIFY] role=GUIDED_SETTINGS_INTENT input='$input'"
+		)
 		val intentPrompt = eyeAIApp.llm!!.buildSettingsMenuPrompt(input)
 		val jsonResponse = generateLlmResponse(intentPrompt, true)
 
@@ -37,7 +55,14 @@ class SettingsHandler(
 			return StateUpdate(State.SETTINGS_MENU, currentJson)
 		}
 
-		return when (jsonParser.parseSettingIntent(jsonResponse)) {
+		val settingIntent = jsonParser.parseSettingIntent(jsonResponse)
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][Gemini API][RESULT] role=GUIDED_SETTINGS_INTENT " +
+				"settingIntent=$settingIntent"
+		)
+
+		return when (settingIntent) {
 			SettingIntent.TTS_SPEED -> {
 				speakAndHandleUi(LLM.Companion.SNIPPET_TTS_SPEED)
 				onJsonUpdate(jsonResponse)
@@ -81,42 +106,47 @@ class SettingsHandler(
 		currentJson: String?,
 		onJsonUpdate: (String?) -> Unit
 	): StateUpdate {
-		val currentIntent = currentJson?.let { jsonParser.parseSettingIntent(it) }
-		val settings = Settings.load(eyeAIApp) // Settings-Instanz laden
+		val currentIntent = currentJson?.let { jsonParser.parseSettingIntent(it) } ?: SettingIntent.NONE
+		val settings = Settings.load(eyeAIApp)
+		val voicePreferences = eyeAIApp.getSharedPreferences("tts_settings", Context.MODE_PRIVATE)
+		val snapshot = CurrentSettingsSnapshot(
+			speechRate = textToSpeechInstance.speechRate,
+			voice = voicePreferences.getInt("tts_voice", 0),
+			frequency = settings.depthAudioFrequency,
+			bps = settings.depthAudioClickIncidence
+		)
 
-		val prompt = when (currentIntent) {
-			SettingIntent.TTS_SPEED -> {
-				"Die aktuelle Sprechgeschwindigkeit ist ${textToSpeechInstance.speechRate}. Der Nutzer möchte folgendes: '$input'. Passe die Geschwindigkeit entsprechend an und erstelle eine JSON mit 'changed_settings' Array mit 'tts_speed' Feld."
+		return when (
+			val result = settingsExtractor.extract(currentIntent, input, currentJson, snapshot)
+		) {
+			SettingsExtractionResult.Failed -> {
+				speakAndHandleUi("LLM-Antwort konnte nicht generiert werden.")
+				StateUpdate(State.SETTINGS_CHOICE, currentJson)
 			}
 
-			SettingIntent.VOICE -> {
-				"Der Nutzer möchte die Assistentenstimme ändern: '$input'. Wenn der Nutzer 'männlich' oder ähnliches sagt, setze 'voice' auf 0. Wenn 'weiblich' oder ähnliches, setze 'voice' auf 1. Erstelle eine JSON mit 'changed_settings' Array mit 'voice' Feld."
+			is SettingsExtractionResult.MissingValue -> {
+				speakAndHandleUi(result.targetedQuestion)
+				onJsonUpdate(currentJson)
+				StateUpdate(State.SETTINGS_CHOICE, currentJson)
 			}
 
-			SettingIntent.FREQUENCY -> {
-				"Der Nutzer möchte die Audio-Frequenz ändern: '$input'. Die Frequenz muss zwischen 100 und 4000 Hz liegen. Aktuelle Frequenz ist ${settings.depthAudioFrequency} Hz. Erstelle eine JSON mit 'changed_settings' Array mit 'frequency' Feld."
-			}
-
-			SettingIntent.BPS -> {
-				"Der Nutzer möchte die BPS (Beats per Second) ändern: '$input'. Die BPS müssen zwischen 1 und 10 liegen. Aktuelle BPS ist ${settings.depthAudioClickIncidence}. Erstelle eine JSON mit 'changed_settings' Array mit 'bps' Feld."
-			}
-
-			else -> {
-				"Führe die folgende Aktion aus: '$input'."
+			is SettingsExtractionResult.Complete -> {
+				speakAndHandleUi(result.confirmationQuestion)
+				onJsonUpdate(result.json)
+				StateUpdate(State.SETTINGS_ACTION, result.json)
 			}
 		}
+	}
 
-		val jsonResponse = generateLlmResponse(prompt, true)
+	fun isDirectSettingsFlow(currentJson: String?): Boolean =
+		jsonParser.parseSettingsFlow(currentJson) == SettingsFlow.DIRECT
 
-		if (jsonResponse == null) {
-			speakAndHandleUi("LLM-Antwort konnte nicht generiert werden.")
-			return StateUpdate(State.SETTINGS_CHOICE, currentJson)
-		}
-
-		val confirmationQuestion = jsonParser.createConfirmationQuestion(jsonResponse)
-		speakAndHandleUi(confirmationQuestion)
-		onJsonUpdate(jsonResponse)
-		return StateUpdate(State.SETTINGS_ACTION, jsonResponse)
+	suspend fun cancelDirectSettings(
+		onJsonUpdate: (String?) -> Unit
+	): StateUpdate {
+		speakAndHandleUi("Okay, ich habe die Einstellungsänderung abgebrochen.")
+		onJsonUpdate(null)
+		return StateUpdate(State.IDLE, null)
 	}
 
 	suspend fun handleSettingsAction(
@@ -145,6 +175,11 @@ class SettingsHandler(
             Antworte mit einer JSON-Antwort mit dem Feld "approval" (true/false).
         """.trimIndent()
 
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"[DecisionTrace][Gemini API][EVALUATE] " +
+					"role=LEAVE_SETTINGS_CONFIRMATION input='$input'"
+			)
 			val jsonResponse = generateLlmResponse(confirmationPrompt, true)
 
 			if (jsonResponse == null) {
@@ -153,7 +188,13 @@ class SettingsHandler(
 				return StateUpdate(State.IDLE, null)
 			}
 
-			return if (jsonParser.isApproved(jsonResponse)) {
+			val approved = jsonParser.isApproved(jsonResponse)
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"[DecisionTrace][Gemini API][RESULT] " +
+					"role=LEAVE_SETTINGS_CONFIRMATION approved=$approved"
+			)
+			return if (approved) {
 				speakAndHandleUi("Die Einstellungen werden verlassen.")
 				onJsonUpdate(null)
 				StateUpdate(State.IDLE, null)
@@ -164,34 +205,40 @@ class SettingsHandler(
 			}
 		}
 
-		val prompt = "Würdest du sagen der Nutzer hat diesen Command bestätigt? Die Antwort des Nutzers war $input. Antworte bitte mit einer JSON-Antwort in approval."
-		val jsonResponse = generateLlmResponse(prompt, true)
+		val settingsFlow = jsonParser.parseSettingsFlow(currentJson)
+		return when (
+			settingsConfirmation.confirmAndApply(input, currentJson, ::applySettings)
+		) {
+			SettingsConfirmationResult.APPLIED -> {
+				Log.i(
+					EyeAIApp.APP_LOG_TAG,
+					"[DecisionTrace][SettingsHandler][APPLY] outcome=SUCCESS; " +
+						"Vosk will require a button press before listening again"
+				)
+				onJsonUpdate(null)
+				StateUpdate(
+					newState = State.IDLE,
+					newJson = null,
+					voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART
+				)
+			}
 
-		if (jsonResponse == null) {
-			speakAndHandleUi("Fehler bei der Verarbeitung.")
-			onJsonUpdate(null)
-			return StateUpdate(State.IDLE, null)
-		}
+			SettingsConfirmationResult.REJECTED -> {
+				onJsonUpdate(null)
+				if (settingsFlow.cancellationDestination() == SettingsCancellationDestination.IDLE) {
+					speakAndHandleUi("Okay, ich habe die Einstellungsänderung abgebrochen.")
+					StateUpdate(State.IDLE, null)
+				} else {
+					speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
+					StateUpdate(State.SETTINGS_MENU, null)
+				}
+			}
 
-		return if (jsonParser.isApproved(jsonResponse) && currentJson != null) {
-			// Adapt settings and save JSON
-			applySettings(currentJson)
-			onJsonUpdate(null)
-			StateUpdate(State.IDLE, null) // No further message needed.
-		} else {
-			speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
-			onJsonUpdate(null)
-			StateUpdate(State.SETTINGS_MENU, null)
-		}
-	}
-
-	fun createSyntheticSettingsJson(settingType: String): String {
-		return when (settingType) {
-			"tts_speed" -> """{"setting_intent": "TTS_SPEED"}"""
-			"voice" -> """{"setting_intent": "VOICE"}"""
-			"frequency" -> """{"setting_intent": "FREQUENCY"}"""
-			"bps" -> """{"setting_intent": "BPS"}"""
-			else -> """{"setting_intent": "NONE"}"""
+			SettingsConfirmationResult.FAILED -> {
+				speakAndHandleUi("Fehler bei der Verarbeitung.")
+				onJsonUpdate(null)
+				StateUpdate(State.IDLE, null)
+			}
 		}
 	}
 
@@ -213,7 +260,11 @@ class SettingsHandler(
 						textToSpeechInstance.setSpeechRate(newSpeed)
 						// Save TTS settings
 						ttsEditor.putFloat("tts_speech_rate", newSpeed)
-						Log.d(EyeAIApp.APP_LOG_TAG, "TTS-Geschwindigkeit wird auf $newSpeed gesetzt.")
+						Log.d(
+							EyeAIApp.APP_LOG_TAG,
+							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " +
+								"setting=TTS_SPEED value=$newSpeed"
+						)
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
 
@@ -222,7 +273,11 @@ class SettingsHandler(
 						textToSpeechInstance.setVoice(voice)
 						// Save TTS settings
 						ttsEditor.putInt("tts_voice", voice)
-						Log.d(EyeAIApp.APP_LOG_TAG, "Stimme wird auf $voice gesetzt.")
+						Log.d(
+							EyeAIApp.APP_LOG_TAG,
+							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " +
+								"setting=VOICE value=$voice"
+						)
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
 
@@ -235,7 +290,11 @@ class SettingsHandler(
 						// Save settings
 						settings.depthAudioFrequency = clampedFreq
 						settings.save(eyeAIApp)
-						Log.d(EyeAIApp.APP_LOG_TAG, "Audio-Frequenz wird auf $clampedFreq Hz gesetzt.")
+						Log.d(
+							EyeAIApp.APP_LOG_TAG,
+							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " +
+								"setting=FREQUENCY value=${clampedFreq}Hz"
+						)
 						speakAndHandleUi("Die Audio-Frequenz wurde erfolgreich auf $clampedFreq Hz geändert.")
 					}
 
@@ -248,7 +307,11 @@ class SettingsHandler(
 						// Save settings
 						settings.depthAudioClickIncidence = clampedBps
 						settings.save(eyeAIApp)
-						Log.d(EyeAIApp.APP_LOG_TAG, "Audio-BPS wird auf $clampedBps gesetzt.")
+						Log.d(
+							EyeAIApp.APP_LOG_TAG,
+							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " +
+								"setting=BPS value=$clampedBps"
+						)
 						speakAndHandleUi("Die BPS wurde erfolgreich auf $clampedBps geändert.")
 					}
 				}

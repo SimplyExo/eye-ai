@@ -35,12 +35,21 @@ class GoogleAIStudioLLM(apiKey: String, customEndpoint: String?) : LLM {
 		var reader: java.io.BufferedReader? = null
 
 		return try {
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"[DecisionTrace][Gemini API][HTTP_REQUEST] model=$MODEL_NAME " +
+					"mode=NON_STREAMING structured=$structured"
+			)
 			val requestBody = RequestBuilder.createRequestBody(command, structured).toString()
 			reader = networkClient.postJson("/v1beta/models/$MODEL_NAME:generateContent", requestBody)
 			val response = reader.readText()
 			val parsed = parseResponse(response)
 
-			Log.d(EyeAIApp.APP_LOG_TAG, "Total LLM HTTP roundtrip: ${elapsedMs(totalStart)} ms")
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"[DecisionTrace][Gemini API][HTTP_RESPONSE] model=$MODEL_NAME " +
+					"mode=NON_STREAMING duration=${elapsedMs(totalStart)}ms"
+			)
 			parsed
 
 		} catch (e: GeminiApiExceptionHandler) {
@@ -74,7 +83,11 @@ class GoogleAIStudioLLM(apiKey: String, customEndpoint: String?) : LLM {
 				synchronized(this@GoogleAIStudioLLM) {
 					if (!hasCalledComplete) {
 						hasCalledComplete = true
-						Log.d(EyeAIApp.APP_LOG_TAG, "Stream completion signalled after ${elapsedMs(totalStart)} ms")
+						Log.d(
+							EyeAIApp.APP_LOG_TAG,
+							"[DecisionTrace][Gemini API][HTTP_RESPONSE] model=$MODEL_NAME " +
+								"mode=STREAMING duration=${elapsedMs(totalStart)}ms"
+						)
 						onComplete()
 					}
 				}
@@ -91,6 +104,11 @@ class GoogleAIStudioLLM(apiKey: String, customEndpoint: String?) : LLM {
 			}
 
 			try {
+				Log.d(
+					EyeAIApp.APP_LOG_TAG,
+					"[DecisionTrace][Gemini API][HTTP_REQUEST] model=$MODEL_NAME " +
+						"mode=STREAMING structured=false"
+				)
 				val requestBody = RequestBuilder.createRequestBody(command, structured = false).toString()
 				val reader = networkClient.postJson("/v1beta/models/$MODEL_NAME:streamGenerateContent", requestBody, acceptStream = true)
 

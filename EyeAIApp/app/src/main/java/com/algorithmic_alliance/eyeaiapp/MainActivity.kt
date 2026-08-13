@@ -29,6 +29,7 @@ import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.VoskRestartPolicy
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
@@ -64,6 +65,7 @@ class MainActivity : AppCompatActivity() {
 	private val voskStarting = AtomicBoolean(false)
 
 	private val voskUserStart = AtomicBoolean(false)
+	private val voskManualRestartRequired = AtomicBoolean(false)
 
 
 	private var depthPreviewImage: ImageView? = null
@@ -182,10 +184,19 @@ class MainActivity : AppCompatActivity() {
 			CoroutineScope(Dispatchers.Main).launch {
 				try {
 					//Announcing that the global callback has been fired.
-					Log.d(EyeAIApp.APP_LOG_TAG, "GLOBAL TTS CALLBACK: Fired.")
+					Log.d(EyeAIApp.APP_LOG_TAG, "[DecisionTrace][Vosk][TTS_FINISHED] callback=fired")
 
 					if(!voskUserStart.get()){
-						Log.d(EyeAIApp.APP_LOG_TAG,"User hasn't started Vosk yet - skipping")
+						val skipReason = if (voskManualRestartRequired.get()) {
+							"SETTINGS_APPLIED_BUTTON_PRESS_REQUIRED"
+						} else {
+							"LISTENING_NOT_ARMED_BY_USER"
+						}
+						Log.d(
+							EyeAIApp.APP_LOG_TAG,
+							"[DecisionTrace][Vosk][AUTO_RESTART] outcome=SKIPPED " +
+								"reason=$skipReason"
+						)
 						return@launch
 					}
 
@@ -208,11 +219,24 @@ class MainActivity : AppCompatActivity() {
 					//avoiding prallel starts
 					if (voskStarting.compareAndSet(false, true)) {
 						try {
-							eyeAIApp().voskModel.startListening()
-							Log.d(
-								EyeAIApp.APP_LOG_TAG,
-								"GLOBAL TTS CALLBACK: Vosk startListening() invoked."
-							)
+							if (voskUserStart.get()) {
+								eyeAIApp().voskModel.startListening()
+								Log.d(
+									EyeAIApp.APP_LOG_TAG,
+									"[DecisionTrace][Vosk][AUTO_RESTART] outcome=STARTED"
+								)
+							} else {
+								val skipReason = if (voskManualRestartRequired.get()) {
+									"SETTINGS_APPLIED_BUTTON_PRESS_REQUIRED"
+								} else {
+									"LISTENING_NOT_ARMED_BY_USER"
+								}
+								Log.d(
+									EyeAIApp.APP_LOG_TAG,
+									"[DecisionTrace][Vosk][AUTO_RESTART] outcome=SKIPPED " +
+										"reason=$skipReason"
+								)
+							}
 						} catch (e: Exception) {
 							Log.e(
 								EyeAIApp.APP_LOG_TAG,
@@ -429,7 +453,7 @@ class MainActivity : AppCompatActivity() {
 						State.IDLE
 
 						if (!voskUserStart.get()) {
-							startVoskListening()
+								startVoskListening(trigger = "EYEAIVISION_BUTTON")
 						}
 
 
@@ -601,7 +625,8 @@ class MainActivity : AppCompatActivity() {
 		val receiveTs = System.nanoTime()
 		Log.d(
 			EyeAIApp.APP_LOG_TAG,
-			"SR final RECEIVED at ${System.currentTimeMillis()} (ms), text='${final.take(200)}'"
+			"[DecisionTrace][Vosk][RECOGNIZED] originalText='${final.take(200)}' " +
+				"next=STATE_MACHINE currentState=$currentState"
 		)
 
 
@@ -623,7 +648,10 @@ class MainActivity : AppCompatActivity() {
 
 				//start after onTTSFinished speaking
 				//Logging when Vosk is stopped.
-				Log.d(EyeAIApp.APP_LOG_TAG, "Stopping Vosk to process command.")
+				Log.d(
+					EyeAIApp.APP_LOG_TAG,
+					"[DecisionTrace][Vosk][PAUSE_FOR_PROCESSING] autoRestartAfterTts=true"
+				)
 				eyeAIApp().voskModel.stopListening()
 
 				// vibrate for 100ms
@@ -631,23 +659,23 @@ class MainActivity : AppCompatActivity() {
 
 				Log.d(
 					EyeAIApp.APP_LOG_TAG,
-					"Dispatching to LLM worker at ${System.currentTimeMillis()} (ms); latency since SR receive = ${
+					"[DecisionTrace][StateMachine][DISPATCH] state=$currentState; latencySinceVosk=${
 						elapsedMs(receiveTs)
-					} ms"
+					}ms"
 				)
 
 				withContext(llmThreadExecutor.asCoroutineDispatcher()) {
 					val workerStart = System.nanoTime()
 					Log.d(
 						EyeAIApp.APP_LOG_TAG,
-						"LLM worker START processing at ${System.currentTimeMillis()} (ms)"
+						"[DecisionTrace][StateMachine][WORKER] phase=START state=$currentState"
 					)
 					onSpeechResult(final)
 					Log.d(
 						EyeAIApp.APP_LOG_TAG,
-						"LLM worker FINISHED processing at ${System.currentTimeMillis()} (ms); duration=${
+						"[DecisionTrace][StateMachine][WORKER] phase=FINISH duration=${
 							elapsedMs(workerStart)
-						} ms"
+						}ms"
 					)
 				}
 
@@ -673,6 +701,9 @@ class MainActivity : AppCompatActivity() {
 				voskUserStart.get() ->
 					getString(R.string.speech_recognition_ready)
 
+				voskManualRestartRequired.get() ->
+					"Einstellung geändert – Button klicken zum erneuten Zuhören"
+
 				else ->
 					"Vosk bereit - Button klicken zum Starten"
 			}
@@ -682,7 +713,10 @@ class MainActivity : AppCompatActivity() {
 
 
 	private suspend fun onSpeechResult(final: String) {
-		Log.d(EyeAIApp.APP_LOG_TAG, "onSpeechResult: Creating new StateMachine for input: '$final'")
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][StateMachine][INPUT] state=$currentState originalText='$final'"
+		)
 
 		val stateMachine = StateMachine(
 			eyeAIApp(),
@@ -710,33 +744,64 @@ class MainActivity : AppCompatActivity() {
 			State.SETTINGS_ACTION -> stateMachine.handleSettingsAction(final)
 		}
 
+		if (update.voskRestartPolicy == VoskRestartPolicy.REQUIRE_MANUAL_RESTART) {
+			Log.i(
+				EyeAIApp.APP_LOG_TAG,
+				"[DecisionTrace][Vosk][POLICY] source=SETTINGS_APPLIED " +
+					"policy=REQUIRE_MANUAL_RESTART"
+			)
+			stopVoskListening(
+				trigger = "SETTINGS_APPLIED",
+				requireManualRestart = true
+			)
+		}
+
 		// Logging der state transition
-		Log.d(EyeAIApp.APP_LOG_TAG, "State transition: $currentState -> ${update.newState}")
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][StateMachine][TRANSITION] $currentState -> ${update.newState}; " +
+				"voskRestartPolicy=${update.voskRestartPolicy}"
+		)
 		currentState = update.newState
 		lastLlmJsonResponse = update.newJson
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
-	private fun startVoskListening() {
+	private fun startVoskListening(trigger: String = "USER_BUTTON") {
 		if (voskUserStart.get()) return // Check whether already started
 
 		uniffi.NativeLib.setObjectAudioPaused(true)
 		uniffi.NativeLib.setDepthAudioPaused(true)
+		voskManualRestartRequired.set(false)
 		voskUserStart.set(true)
 		eyeAIApp().voskModel.startListening()
-		Log.d(EyeAIApp.APP_LOG_TAG, "User started Vosk Model")
+		Log.i(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][Vosk][START] trigger=$trigger outcome=LISTENING"
+		)
 		updateVoskStatusText()
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
-	private fun stopVoskListening() {
-		if (!voskUserStart.get()) return // Check whether already stopped
+	private fun stopVoskListening(
+		trigger: String = "USER_BUTTON",
+		requireManualRestart: Boolean = false
+	) {
+		voskManualRestartRequired.set(requireManualRestart)
+		if (!voskUserStart.get()) {
+			updateVoskStatusText()
+			return
+		}
 
 		uniffi.NativeLib.setObjectAudioPaused(false)
 		uniffi.NativeLib.setDepthAudioPaused(false)
 		voskUserStart.set(false)
 		eyeAIApp().voskModel.stopListening()
-		Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
+		Log.i(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][Vosk][STOP] trigger=$trigger outcome=STOPPED " +
+				"autoRestartArmed=false"
+		)
 		updateVoskStatusText()
 	}
 

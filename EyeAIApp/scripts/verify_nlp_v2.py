@@ -56,6 +56,20 @@ KNOWN_UTTERANCES = [
     ("Wie weit ist die Tür entfernt", "MEASURE_DISTANCE"),
     ("Brich den Vorgang ab", "ABORT"),
 ]
+DIRECT_SETTINGS_UTTERANCES = [
+    ("Öffne die Einstellungen.", "OPEN_SETTINGS"),
+    ("Setze die Frequenz auf 700 Hertz.", "SET_FREQUENCY"),
+    ("Ändere die Frequenz.", "SET_FREQUENCY"),
+    ("Stell die Stimme auf männlich.", "CHANGE_SPEAKER"),
+    ("Ändere die Stimme.", "CHANGE_SPEAKER"),
+    ("Sprich schneller.", "CHANGE_SPEECH_SPEED"),
+    ("Setze die Signalrate auf 4 BPS.", "SET_BPS"),
+    ("Frequenz", "SET_FREQUENCY"),
+    ("Abbrechen.", "ABORT"),
+    ("Mach die Frequenz höher.", "SET_FREQUENCY"),
+    ("Nimm die andere Stimme.", "CHANGE_SPEAKER"),
+    ("Mach die Abstandssignale langsamer.", "SET_BPS"),
+]
 FROZEN_ENCODINGS = {
     "  ÖFFNE, die Einstellungen!  ": {
         "T1": [142, 2, 37],
@@ -226,7 +240,8 @@ def verify_default_pipeline(tokenizer: FrozenTokenizer) -> None:
     model_path = ASSET_ROOT / "models/m0_t1_seed_20260812.tflite"
     interpreter, input_tensor, output_tensor = create_interpreter(model_path)
     print("Default M0_T1 pipeline:")
-    for original_text, expected_intent in KNOWN_UTTERANCES:
+    utterances = KNOWN_UTTERANCES + DIRECT_SETTINGS_UTTERANCES
+    for original_text, expected_intent in utterances:
         probabilities = infer(
             interpreter,
             input_tensor,
@@ -248,7 +263,11 @@ def main() -> int:
     verify_frozen_encodings(tokenizers)
     verify_models(tokenizers)
     verify_default_pipeline(tokenizers["T1"])
-    print("Validated 8 models, 2 frozen tokenizers, and 10 end-to-end formulations.")
+    formulation_count = len(KNOWN_UTTERANCES) + len(DIRECT_SETTINGS_UTTERANCES)
+    print(
+        f"Validated 8 models, 2 frozen tokenizers, and "
+        f"{formulation_count} end-to-end formulations."
+    )
     return 0
 
 

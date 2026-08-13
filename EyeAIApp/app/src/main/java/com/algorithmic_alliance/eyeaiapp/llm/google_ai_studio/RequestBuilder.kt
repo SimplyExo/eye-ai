@@ -100,6 +100,13 @@ object RequestBuilder {
 			put("setting_intent", createSettingIntentProperty())
 			put("requested_functions", createRequestedFunctionsProperty())
 			put("changed_settings", createChangedSettingsProperty())
+			put("settings_parameter_complete", JSONObject().apply {
+				put("type", "BOOLEAN")
+				put(
+					"description",
+					"Nur true, wenn ein konkreter Wert oder eine eindeutige relative Settings-Änderung vorliegt."
+				)
+			})
 			put("approval", JSONObject().apply {
 				put("type", "NUMBER")
 			})

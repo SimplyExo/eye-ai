@@ -35,7 +35,11 @@ class LLMStreamingHandler(
 
 	suspend fun generateAndStreamResponse(llm: GoogleAIStudioLLM, prompt: String) {
 		shouldStop = false
-		Log.d(EyeAIApp.APP_LOG_TAG, "Starting stream with prompt: '${prompt.take(100)}...'")
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][Gemini API][EVALUATE] role=NATURAL_LANGUAGE_RESPONSE " +
+				"mode=STREAMING promptPreview='${prompt.take(100)}'"
+		)
 		isCurrentlyStreaming = true
 		synchronized(sentenceBuffer) { sentenceBuffer.clear() }
 		isFirstStreamChunk = true
