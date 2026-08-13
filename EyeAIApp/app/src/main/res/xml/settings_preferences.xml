@@ -47,6 +47,11 @@
             app:defaultValue="true"
             app:key="@string/enable_speech_recognition_setting"
             app:title="Enabled" />
+
+		<ListPreference
+			app:key="@string/nlp_model_setting"
+			app:summary="%s"
+			app:title="NLP V2 Baseline Model" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Audio Playback">

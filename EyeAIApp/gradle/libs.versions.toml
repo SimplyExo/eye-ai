@@ -18,6 +18,7 @@ preference = "1.2.1"
 appcompat = "1.7.1"
 mlkit-text = "16.0.1"
 activity = "1.13.0"
+junit = "4.13.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +52,7 @@ tensorflow-lite-select-tf-ops = { module = "org.tensorflow:tensorflow-lite-selec
 qnn-litert-delegate = { module = "com.qualcomm.qti:qnn-litert-delegate", version.ref = "qnnLitertDelegate" }
 
 text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "mlkit-text" }
+junit = { module = "junit:junit", version.ref = "junit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

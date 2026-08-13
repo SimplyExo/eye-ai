@@ -10,6 +10,7 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
+import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -76,6 +77,16 @@ class SettingsActivity : AppCompatActivity() {
 				list.setDefaultValue(EyeAIApp.DEFAULT_DEPTH_MODEL_NAME)
 				if (list.value == null || list.value?.equals("") == true) {
 					list.value = EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
+				}
+			}
+
+			// NLP V2 baseline selector
+			findPreference<ListPreference>(getString(R.string.nlp_model_setting))?.let { list ->
+				list.entries = NLPModelInfo.BASELINE_MODELS.map { it.displayName }.toTypedArray()
+				list.entryValues = NLPModelInfo.BASELINE_MODELS.map { it.id }.toTypedArray()
+				list.setDefaultValue(NLPModelInfo.DEFAULT_MODEL_ID)
+				if (list.value.isNullOrEmpty()) {
+					list.value = NLPModelInfo.DEFAULT_MODEL_ID
 				}
 			}
 

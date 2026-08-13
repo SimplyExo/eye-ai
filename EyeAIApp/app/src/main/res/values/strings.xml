@@ -22,6 +22,7 @@
     <string name="show_profiling_info_setting">show_profiling_info</string>
     <string name="show_debug_input_bitmap_setting">show_debug_input_bitmap</string>
     <string name="enable_speech_recognition_setting">enable_speech_recognition</string>
+    <string name="nlp_model_setting">nlp_model</string>
     <string name="enable_ocr_setting">enable_ocr_setting</string>
     <string name="input_source_setting">input_source_setting</string>
     <string name="input_is_camera">camera</string>

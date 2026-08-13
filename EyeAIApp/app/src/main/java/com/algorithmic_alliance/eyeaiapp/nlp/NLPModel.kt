@@ -1,14 +1,12 @@
 package com.algorithmic_alliance.eyeaiapp.nlp
 
 import android.content.Context
-import android.util.Log
-import com.algorithmic_alliance.eyeaiapp.EyeAIApp
+import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 
-class NLPModel(var info: NLPModelInfo) {
-	private var SEQUENCE_LENGTH = 250
-
-	private var vocabFile = emptyArray<String>()
+class NLPModel(initialInfo: NLPModelInfo) : AutoCloseable {
+	var info: NLPModelInfo = initialInfo
+		private set
 
 	enum class NLPClasses {
 		TEXT_RECOGNITION,
@@ -36,93 +34,102 @@ class NLPModel(var info: NLPModelInfo) {
 		val ABORT: Float
 	)
 
-	private var initialized = false
+	private var interpreter: Interpreter? = null
+	private var tokenizer: IntentTokenizer? = null
 
-	private lateinit var interpreter: Interpreter
+	val isInitialized: Boolean
+		@Synchronized get() = interpreter != null && tokenizer != null
 
-
-	fun create(context: Context) {
-		// Creating NLP
-		val modelBytes = info.loadModelFile(context)
-		vocabFile = info.getVocab(context)
-
-		interpreter = Interpreter(modelBytes)
-
-		initialized = true
-	}
-
-	fun vectorizePrompt(prompt: String): FloatArray {
-		val outputArray = FloatArray(SEQUENCE_LENGTH)
-
-		prompt.split(" ").forEachIndexed { i, word ->
-			if (i < outputArray.size) {
-				var index = vocabFile.indexOf(word.lowercase())
-				if (index == -1)
-					index = 1
-				outputArray[i] = index.toFloat()
-			}
+	@Synchronized
+	fun create(context: Context, modelInfo: NLPModelInfo = info) {
+		val loadedTokenizer = modelInfo.loadTokenizer(context)
+		val expectedLabels = NLPClasses.entries.map { it.name }
+		require(loadedTokenizer.labels == expectedLabels) {
+			"NLP labels do not match the app's intent order"
 		}
 
-		return outputArray
+		val newInterpreter = Interpreter(
+			modelInfo.loadModelFile(context),
+			Interpreter.Options().setNumThreads(2)
+		)
+		try {
+			validateModel(newInterpreter, loadedTokenizer.tokenizer)
+		} catch (error: Throwable) {
+			newInterpreter.close()
+			throw error
+		}
+
+		interpreter?.close()
+		interpreter = newInterpreter
+		tokenizer = loadedTokenizer.tokenizer
+		info = modelInfo
 	}
 
+	@Synchronized
+	fun vectorizePrompt(prompt: String): IntArray =
+		requireNotNull(tokenizer) { "NLP model is not initialized" }.encode(prompt)
+
+	@Synchronized
 	fun runInferenceWithAllResults(prompt: String): NLPResults {
-		require(
-			interpreter.getInputTensor(0).shape()[1] == SEQUENCE_LENGTH
-		) {
-			"input model: ${
-				interpreter.getInputTensor(0).shape()[1]
-			} input sequence: $SEQUENCE_LENGTH"
-		}
-		require(interpreter.getOutputTensor(0).shape()[1] == NLPClasses.entries.size) {
-			"output model: ${
-				interpreter.getOutputTensor(0).shape()[1]
-			} output classes: ${NLPClasses.entries.size}"
-		}
-
+		val activeInterpreter = requireNotNull(interpreter) { "NLP model is not initialized" }
+		val input = vectorizePrompt(prompt)
 		val output = FloatArray(NLPClasses.entries.size)
-		interpreter.run(Array(1) { vectorizePrompt(prompt) }, Array(1) { output })
+		activeInterpreter.run(arrayOf(input), arrayOf(output))
 
 		return NLPResults(
-			output[0],
-			output[1],
-			output[2],
-			output[3],
-			output[4],
-			output[5],
-			output[6],
-			output[7],
-			output[8],
-			output[9],
+			TEXT_RECOGNITION = output[0],
+			OBJECT_DETECTION = output[1],
+			CHANGE_SPEECH_SPEED = output[2],
+			CHANGE_SPEAKER = output[3],
+			REDIRECT_TO_LLM = output[4],
+			OPEN_SETTINGS = output[5],
+			SET_FREQUENCY = output[6],
+			SET_BPS = output[7],
+			MEASURE_DISTANCE = output[8],
+			ABORT = output[9]
 		)
 	}
 
+	@Synchronized
 	fun runInference(prompt: String): NLPClasses {
-		require(
-			interpreter.getInputTensor(0).shape()[1] == SEQUENCE_LENGTH
-		) {
-			"input model: ${
-				interpreter.getInputTensor(0).shape()[1]
-			} input sequence: $SEQUENCE_LENGTH"
-		}
-		require(interpreter.getOutputTensor(0).shape()[1] == NLPClasses.entries.size) {
-			"output model: ${
-				interpreter.getOutputTensor(0).shape()[1]
-			} output classes: ${NLPClasses.entries.size}"
-		}
+		val results = runInferenceWithAllResults(prompt)
+		val probabilities = floatArrayOf(
+			results.TEXT_RECOGNITION,
+			results.OBJECT_DETECTION,
+			results.CHANGE_SPEECH_SPEED,
+			results.CHANGE_SPEAKER,
+			results.REDIRECT_TO_LLM,
+			results.OPEN_SETTINGS,
+			results.SET_FREQUENCY,
+			results.SET_BPS,
+			results.MEASURE_DISTANCE,
+			results.ABORT
+		)
+		val bestIndex = probabilities.indices.maxBy { probabilities[it] }
+		return NLPClasses.entries[bestIndex]
+	}
 
-		val output = FloatArray(NLPClasses.entries.size)
-		interpreter.run(Array(1) { vectorizePrompt(prompt) }, Array(1) { output })
+	@Synchronized
+	override fun close() {
+		interpreter?.close()
+		interpreter = null
+		tokenizer = null
+	}
 
-		var choice = 0
-		var mostConfidence = 0.0f
-		output.forEachIndexed { index, value ->
-			if (value > mostConfidence) {
-				mostConfidence = value
-				choice = index
-			}
+	private fun validateModel(interpreter: Interpreter, tokenizer: IntentTokenizer) {
+		val inputTensor = interpreter.getInputTensor(0)
+		val outputTensor = interpreter.getOutputTensor(0)
+		require(inputTensor.shape().contentEquals(intArrayOf(1, tokenizer.maxLength))) {
+			"Unexpected NLP input shape: ${inputTensor.shape().contentToString()}"
 		}
-
-		return NLPClasses.entries[choice]
+		require(inputTensor.dataType() == DataType.INT32) {
+			"Unexpected NLP input type: ${inputTensor.dataType()}"
+		}
+		require(outputTensor.shape().contentEquals(intArrayOf(1, NLPClasses.entries.size))) {
+			"Unexpected NLP output shape: ${outputTensor.shape().contentToString()}"
+		}
+		require(outputTensor.dataType() == DataType.FLOAT32) {
+			"Unexpected NLP output type: ${outputTensor.dataType()}"
+		}
 	}
 }

@@ -51,7 +51,7 @@ class EyeAIApp : Application() {
 		private set
 
 	var nlpModel: NLPModel =
-		NLPModel(NLPModelInfo("nlp_model_float32.tflite"))
+		NLPModel(NLPModelInfo.findById(NLPModelInfo.DEFAULT_MODEL_ID))
 		private set
 
 	/* will not be fully initialized when enableOCR is disabled in settings */
@@ -110,7 +110,7 @@ class EyeAIApp : Application() {
 			}
 
 			// NLP erstellen
-			nlpModel.create(baseContext)
+			switchNlpModel(settings.nlpModel)
 
 			// Google ML Kit initialisieren
 			if (settings.enableOCR)
@@ -157,6 +157,10 @@ class EyeAIApp : Application() {
 		val enableNpuChanged = oldSettings.enableNpu != settings.enableNpu
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
+			if (oldSettings.nlpModel != settings.nlpModel) {
+				switchNlpModel(settings.nlpModel)
+			}
+
 			if (oldSettings.depthModel != settings.depthModel || enableNpuChanged) {
 				switchDepthModel(settings.depthModel)
 			}
@@ -199,6 +203,12 @@ class EyeAIApp : Application() {
 
 		metricDepthModel = findDepthModelInfo(modelName)
 			.createDepthModel(this, npuQnnDelegateDirectory!!, settings.enableNpu)
+	}
+
+	private fun switchNlpModel(modelId: String) {
+		val modelInfo = NLPModelInfo.findById(modelId)
+		if (nlpModel.info.id == modelInfo.id && nlpModel.isInitialized) return
+		nlpModel.create(this, modelInfo)
 	}
 
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {
