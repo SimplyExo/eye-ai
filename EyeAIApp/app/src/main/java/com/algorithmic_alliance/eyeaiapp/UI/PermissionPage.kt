@@ -19,6 +19,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import android.Manifest
+import android.content.pm.PackageManager
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -33,6 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import com.algorithmic_alliance.eyeaiapp.PermissionManager
 
 @Composable
 fun PermissionPage(
@@ -41,17 +51,37 @@ fun PermissionPage(
     onPermissionsDeclined: () -> Unit,
 
 ) {
+    Log.d("EyeAIUI", "[PermissionPage] Loading PermissionPage")
+    val context = LocalContext.current
 
     val neededPermissions = UIDataSource.NEEDED_PERMISSIONS
+    val notGrantedPermissions = mutableListOf<Map<String, Any>>()
 
+    for (map in neededPermissions) {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            map["permission"] as String
+        ) == PackageManager.PERMISSION_GRANTED
+        Log.d(
+            "EyeAIUI",
+            "[PermissionPage] ${map["permission"]} = $hasPermission"
+        )
+        if(!hasPermission)
+            notGrantedPermissions.add(map)
+    }
+    if(notGrantedPermissions.isEmpty()){
+        Log.d("EyeAIUI", "[PermissionPage] All permissions already granted. Exiting PermissionPage")
+        onPermissionsGranted()
+        return
+    }
     var currentPermission by rememberSaveable { mutableIntStateOf(0) }
 
     Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
         Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
             AskForPermission(
                 modifier,
-                neededPermissions[currentPermission],
-                onPermissionAccepted = { if (currentPermission < neededPermissions.size - 1) currentPermission++ else onPermissionsGranted() },
+                notGrantedPermissions[currentPermission],
+                onPermissionAccepted = { if (currentPermission < notGrantedPermissions.size - 1) currentPermission++ else onPermissionsGranted() },
                 onPermissionDeclined = { onPermissionsDeclined() }
             )
         }
@@ -67,6 +97,18 @@ fun AskForPermission(
     onPermissionAccepted: () -> Unit,
     onPermissionDeclined: () -> Unit
 ) {
+    Log.d("EyeAIUI", "[PermissionPage.AskForPermission] Asking for permission ${permissionData["permission"]}")
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            onPermissionAccepted()
+            Log.d("EyeAIUI", "[PermissionPage.AskForPermission] Permission ${permissionData["permission"]} granted")
+        } else{
+            Log.d("EyeAIUI", "[PermissionPage.AskForPermission] Permission ${permissionData["permission"]} declined")
+            onPermissionDeclined()
+        }
+    }
 
     var showDeclineDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -74,6 +116,7 @@ fun AskForPermission(
         permissionData["permissionExplanation"] ?: UIDataSource.INFORMATION_NOT_FOUND
     val permissionIcon = permissionData["icon"] ?: UIDataSource.ICON_NOT_FOUND
     val iconDescription = permissionData["iconDescription"] ?: UIDataSource.INFORMATION_NOT_FOUND
+    val permission = permissionData["permission"]
 
 
     Card(
@@ -134,7 +177,9 @@ fun AskForPermission(
                                 (permissionData["permissionAcceptSemantic"]
                                     ?: UIDataSource.INFORMATION_NOT_FOUND) as String
                         },
-                    onClick = { onPermissionAccepted() }) {
+                    onClick = {
+                        permissionLauncher.launch(permission as String)
+                    }) {
                     Text("Annehmen", modifier = Modifier.clearAndSetSemantics {}, fontSize = 16.sp)
                 }
 
@@ -184,6 +229,7 @@ fun ConfirmPermissionDecline(
                 contentDescription = (permissionData["confirmPermissionDeclineSemantic"]
                     ?: UIDataSource.INFORMATION_NOT_FOUND) as String
             }, onClick = {
+                Log.d("EyeAIUI", "[PermissionPage.ConfirmPermissionDecline] Permission ${permissionData["permission"]}declined")
                 onDialogDismissed()
                 onPermissionDeclined() }) {
                 Text("Trotzdem Ablehnen", modifier = Modifier.clearAndSetSemantics {})

@@ -1,5 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
+import android.Manifest
+import android.content.Context
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.remote.creation.dsl.fillMaxSize
@@ -13,7 +15,33 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.preference.PreferenceManager
+import com.algorithmic_alliance.eyeaiapp.R
 import kotlinx.serialization.Serializable
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.util.Log
+import androidx.compose.ui.res.stringResource
+import android.view.View.GONE
+import android.view.View.VISIBLE
+import android.widget.Button
+import android.widget.ImageView
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.platform.LocalContext
+import android.widget.TextView
+import androidx.activity.compose.LocalActivity
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.content.edit
+import com.algorithmic_alliance.eyeaiapp.PermissionManager
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 
 
 @Serializable
@@ -33,11 +61,21 @@ object SettingsRoute
 
 @Composable
 fun EyeAIAppUI() {
+    Log.d("EyeAIUI", "Starting UI")
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    val connectionTutorialKey =
+        stringResource(R.string.connection_tutorial_completed_setting)
 
-    //TODO implement if permissions are granted
-    var permissionsGranted by remember { mutableStateOf(false) }
-    var devicesSelected by remember { mutableStateOf(false) }
+    var devicesSelected by remember {
+        mutableStateOf(
+            sharedPreferences.getBoolean(
+                connectionTutorialKey,
+                false
+            )
+        )
+    }
 
     NavHost(
         navController = navController,
@@ -48,22 +86,17 @@ fun EyeAIAppUI() {
             WelcomePage(
                 modifier = Modifier.fillMaxSize(),
                 onGetStarted = {
-                    if (!permissionsGranted)
-                        navController.navigate(PermissionRoute)
-                    else if (!devicesSelected)
-                        navController.navigate(ConnectionRoute)
-                    else
-                        navController.navigate((HomeRoute))
+                    navController.navigate(PermissionRoute)
                 },
-
                 )
         }
         composable<PermissionRoute> {
             PermissionPage(
                 modifier = Modifier.fillMaxSize(),
-                onPermissionsDeclined = { navController.popBackStack() },
+                onPermissionsDeclined = {
+                    navController.popBackStack()
+                },
                 onPermissionsGranted = {
-                    permissionsGranted = true
                     if (!devicesSelected)
                         navController.navigate(ConnectionRoute)
                     else
@@ -74,6 +107,12 @@ fun EyeAIAppUI() {
             ConnectionPage(
                 modifier = Modifier.fillMaxSize(),
                 onConnectionSuccessful = {
+                    sharedPreferences.edit(commit = true) {
+                        putBoolean(
+                            connectionTutorialKey,
+                            false
+                        )
+                    }
                     navController.navigate(
                         HomeRoute
                     ) { popUpTo(WelcomeRoute) { inclusive = false } }
@@ -101,6 +140,10 @@ fun EyeAIAppUI() {
             })
         }
     }
+}
+
+fun showPermissionPage(){
+
 }
 
 @Preview(showBackground = true, name = "Navigation-Preview")

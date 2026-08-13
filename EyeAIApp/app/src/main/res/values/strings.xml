@@ -43,7 +43,8 @@
     <string name="depth_playback_setting">depth_playback_setting</string>
     <string name="audio_frequency_range_setting">audio_frequency_range</string>
     <string name="audio_playback_rate_setting">audio_playback_rate</string>
-    <string name="tutorial_completed_setting">tutorial_completed_setting</string>
+    <string name="permission_tutorial_completed_setting">permission_tutorial_completed_setting</string>
+    <string name="connection_tutorial_completed_setting">connection_tutorial_completed_setting</string>
     <string name="tutorial_camera_permission_explanation">For EyeAI to analyze your surroundings,
         it needs access to your camera while using the app.
 Every camera frame is processed offline locally on your device,

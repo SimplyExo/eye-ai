@@ -1,5 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.data
 
+import android.Manifest
 import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
 import com.algorithmic_alliance.eyeaiapp.R
 import kotlin.collections.listOf
@@ -18,6 +19,7 @@ object UIDataSource {
         /* EXPLANATION HOW TO ADD NEW PERMISSION
         mapOf(
             "permissionName": Name of the permission (String)
+            "permission": The permission
             "permissionExplanation": Explain to the user why the app needs that permission (String)
             "icon": Icon matching that permission (Int)
             "iconDescription": Describing the Icon for the semantics (String)
@@ -29,6 +31,7 @@ object UIDataSource {
          */
         mapOf(
             "permissionName" to "Kamera",
+            "permission" to Manifest.permission.CAMERA,
             "permissionExplanation" to """Damit die KI die Umgebung analysieren kann, ist es notwendig, dass die App auf die System-Kamera zugreifen kann. 
                 |Die Kamerabilder werden genutzt, um Entfernungen zu Objekten zu bestimmen und um vorhandene Objekte im Raum zu erkennen. 
                 |Diese Informationen werden dann per Audio ausgegeben.""".trimMargin(),
@@ -41,6 +44,7 @@ object UIDataSource {
         ),
         mapOf(
             "permissionName" to "Mikrofon",
+            "permission" to Manifest.permission.RECORD_AUDIO,
             "permissionExplanation" to "Um per Sprachbefehl mit der App zu interagieren, ist es notwendig, zugriff auf das System-Mikrofon zu erteilen.",
             "icon" to R.drawable.mic_24px,
             "iconDescription" to "Mikrofon Icon",

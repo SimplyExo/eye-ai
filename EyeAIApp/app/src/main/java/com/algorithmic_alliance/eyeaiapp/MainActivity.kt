@@ -1,5 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp
 
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
@@ -21,6 +22,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
@@ -29,6 +36,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.EyeAIAppUI
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
+import com.algorithmic_alliance.eyeaiapp.UI.PermissionPage
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
@@ -112,6 +120,7 @@ class MainActivity : AppCompatActivity() {
     private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
     private var mediaPlayer: MediaPlayer? = null
 
+    private var showPermissionOverlay by mutableStateOf(false)
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -265,12 +274,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         updateSpeechRecognitionUIVisibility()
-
+        /*
         permissionManager.requestCameraPermission()
         if (eyeAIApp().settings.enableSpeechRecognition)
             permissionManager.requestMicrophonePermission()
         updateUngrantedPermissionsNotice()
-
+         */
         /*
         debugInputBitmapPreview?.visibility = if (eyeAIApp().settings.showDebugInputBitmap) {
             VISIBLE
