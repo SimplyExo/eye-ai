@@ -1,11 +1,13 @@
 import time
 
 from flask import Flask, Response
+from flask_socketio import SocketIO
 from pathlib import Path
 
 from CameraThread import CameraThread
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 cameraThread = CameraThread("Cam", 1280, 720, Path("./output"), 3)
 
 @app.route("/")
@@ -26,6 +28,18 @@ def toggle_recording():
     else:
         return "Stopped recording!"
 
+def send_stats():
+    while True:
+        stats = {
+            "status": "idle",
+            "image_dir": "/mnt/images",
+            "images_taken": 0,
+            "storage_left": "1.0 GB" 
+        }
+
+        socketio.emit("stats_update", stats)
+        socketio.sleep(1)
+
 def gather_img():
     while True:
         frame = cameraThread.get_frame()
@@ -34,6 +48,9 @@ def gather_img():
 def main():
     # start camera thread
     cameraThread.start()
+
+    socketio.start_background_task(send_stats)
+    socketio.run(app)
 
     app.run()
 
