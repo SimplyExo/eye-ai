@@ -123,9 +123,8 @@ dependencies {
 	implementation(libs.androidx.appcompat)
 	implementation(libs.androidx.activity)
 
-	// TFLite Select Ops for NLU
+	// TFLite runtime for NLP V2 BaselineCNN
 	implementation(libs.tensorflow.lite)
-	implementation(libs.tensorflow.lite.select.tf.ops)
 
 	// runtime only libs for tflite gpu/npu delegates
 	runtimeOnly(libs.litert.gpu)

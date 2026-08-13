@@ -6,6 +6,7 @@ import org.json.JSONObject
 import java.io.FileInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
+import java.security.MessageDigest
 
 data class LoadedIntentTokenizer(
 	val tokenizer: IntentTokenizer,
@@ -50,6 +51,7 @@ data class NLPModelInfo(
 		} else {
 			emptyList()
 		}
+		validateTokenizerArtifacts(config, tokenizerType, vocabulary, merges)
 
 		return LoadedIntentTokenizer(
 			tokenizer = IntentTokenizer(
@@ -60,6 +62,81 @@ data class NLPModelInfo(
 			),
 			labels = labels
 		)
+	}
+
+	private fun validateTokenizerArtifacts(
+		config: JSONObject,
+		tokenizerType: IntentTokenizerType,
+		vocabulary: List<String>,
+		merges: List<BpeMerge>
+	) {
+		require(config.getInt("version") == TOKENIZER_ARTIFACT_VERSION) {
+			"Unsupported NLP V2 tokenizer artifact version"
+		}
+		require(config.getString("normalization") == IntentTokenizer.NORMALIZATION_ID) {
+			"Unexpected NLP V2 normalization contract"
+		}
+		require(config.getString("padding") == "post") {
+			"NLP V2 tokenizer must use post-padding"
+		}
+		require(config.getString("truncating") == "post") {
+			"NLP V2 tokenizer must use post-truncation"
+		}
+		require(config.getInt("max_length") == NLPModel.INPUT_LENGTH) {
+			"NLP V2 tokenizer max_length must be ${NLPModel.INPUT_LENGTH}"
+		}
+
+		val reservedTokens = config.getJSONObject("reserved_tokens")
+		val padding = reservedTokens.getJSONObject("PAD")
+		val unknown = reservedTokens.getJSONObject("UNK")
+		require(
+			padding.getString("token") == IntentTokenizer.PAD_TOKEN &&
+				padding.getInt("id") == IntentTokenizer.PAD_TOKEN_ID
+		) { "Unexpected NLP V2 padding token contract" }
+		require(
+			unknown.getString("token") == IntentTokenizer.UNKNOWN_TOKEN &&
+				unknown.getInt("id") == IntentTokenizer.UNKNOWN_TOKEN_ID
+		) { "Unexpected NLP V2 unknown token contract" }
+
+		val expectedVocabularySize = when (tokenizerType) {
+			IntentTokenizerType.WORD -> {
+				require(config.getString("split") == "normalized whitespace") {
+					"Unexpected NLP V2 word-tokenizer split rule"
+				}
+				require(merges.isEmpty()) { "Word tokenizer must not contain BPE merges" }
+				config.getInt("vocabulary_size")
+			}
+
+			IntentTokenizerType.BPE -> {
+				require(
+					config.getString("word_boundary_symbol") == IntentTokenizer.WORD_BOUNDARY_SYMBOL
+				) { "Unexpected NLP V2 BPE word-boundary symbol" }
+				require(merges.size == config.getInt("merge_count")) {
+					"NLP V2 BPE merge count does not match its artifact"
+				}
+				config.getInt("actual_vocabulary_size")
+			}
+		}
+		require(vocabulary.size == expectedVocabularySize) {
+			"NLP V2 vocabulary size ${vocabulary.size} does not match $expectedVocabularySize"
+		}
+		require(vocabularyChecksum(vocabulary) == config.getString("vocabulary_checksum_sha256")) {
+			"NLP V2 vocabulary checksum does not match its frozen artifact"
+		}
+	}
+
+	private fun vocabularyChecksum(vocabulary: List<String>): String {
+		// The training exporter hashes the compact, UTF-8 JSON representation.
+		val canonicalJson = JSONArray(vocabulary).toString()
+		val digest = MessageDigest.getInstance("SHA-256")
+			.digest(canonicalJson.toByteArray(Charsets.UTF_8))
+		return buildString(digest.size * 2) {
+			digest.forEach { byte ->
+				val value = byte.toInt() and 0xff
+				append(HEX_DIGITS[value ushr 4])
+				append(HEX_DIGITS[value and 0x0f])
+			}
+		}
 	}
 
 	private fun readJsonObject(context: Context, filename: String): JSONObject =
@@ -81,6 +158,9 @@ data class NLPModelInfo(
 			.use { it.readText() }
 
 	companion object {
+		private const val TOKENIZER_ARTIFACT_VERSION = 1
+		private const val HEX_DIGITS = "0123456789abcdef"
+
 		const val DEFAULT_MODEL_ID = "M0_T1"
 
 		val BASELINE_MODELS = listOf(

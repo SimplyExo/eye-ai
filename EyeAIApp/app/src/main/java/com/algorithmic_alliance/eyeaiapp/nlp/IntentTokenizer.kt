@@ -25,7 +25,9 @@ data class BpeMerge(
  * Deterministic tokenizer used by the NLP V2 training pipeline.
  *
  * Both padding and truncation happen at the end of the sequence. Token ID 0 is
- * reserved for padding and token ID 1 for unknown input.
+ * reserved for padding and token ID 1 for unknown input. Its rules are loaded
+ * from and validated against the frozen tokenizer artifacts; they must not be
+ * changed independently from the training pipeline.
  */
 class IntentTokenizer(
 	vocabulary: List<String>,
@@ -41,11 +43,11 @@ class IntentTokenizer(
 
 	init {
 		require(maxLength > 0) { "Tokenizer maxLength must be positive" }
-		require(this.vocabulary.firstOrNull() == "[PAD]") {
-			"Vocabulary ID 0 must be [PAD]"
+		require(this.vocabulary.firstOrNull() == PAD_TOKEN) {
+			"Vocabulary ID $PAD_TOKEN_ID must be $PAD_TOKEN"
 		}
-		require(unknownToken == "[UNK]" || unknownToken == "[OOV]") {
-			"Vocabulary ID 1 must be [UNK] or [OOV]"
+		require(unknownToken == UNKNOWN_TOKEN) {
+			"Vocabulary ID $UNKNOWN_TOKEN_ID must be $UNKNOWN_TOKEN"
 		}
 		require(this.vocabulary.size == tokenToId.size) {
 			"Vocabulary must not contain duplicate tokens"
@@ -125,8 +127,12 @@ class IntentTokenizer(
 	}
 
 	companion object {
-		private const val UNKNOWN_TOKEN_ID = 1
-		private const val WORD_BOUNDARY_SYMBOL = "▁"
+		const val NORMALIZATION_ID = "shared_intent_nfkc_lower_punctuation_whitespace_v1"
+		const val PAD_TOKEN = "[PAD]"
+		const val PAD_TOKEN_ID = 0
+		const val UNKNOWN_TOKEN = "[UNK]"
+		const val UNKNOWN_TOKEN_ID = 1
+		const val WORD_BOUNDARY_SYMBOL = "▁"
 
 		private val punctuationTypes = setOf(
 			Character.CONNECTOR_PUNCTUATION.toInt(),
@@ -138,7 +144,7 @@ class IntentTokenizer(
 			Character.OTHER_PUNCTUATION.toInt()
 		)
 
-		/** Mirrors shared_intent_nfkc_lower_punctuation_whitespace_v1. */
+		/** Exact Android port of [NORMALIZATION_ID] from the training pipeline. */
 		fun normalize(text: String): String {
 			val normalized = Normalizer.normalize(text, Normalizer.Form.NFKC)
 				.lowercase(Locale.ROOT)

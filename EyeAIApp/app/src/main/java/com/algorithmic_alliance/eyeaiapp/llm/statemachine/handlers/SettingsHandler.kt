@@ -9,7 +9,6 @@ import com.algorithmic_alliance.eyeaiapp.Settings
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateUpdate
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
-import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -21,8 +20,6 @@ class SettingsHandler(
 	private val generateLlmResponse: suspend (String, Boolean) -> String?,
 	private val speakAndHandleUi: suspend (String) -> Unit
 ) {
-
-	private val nlpModel: NLPModel? = eyeAIApp.nlpModel
 
 	suspend fun handleSettingsMenu(
 		input: String,

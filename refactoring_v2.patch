@@ -1,0 +1,224 @@
+diff --git a/eye-ai-core-rs/src/audio/depth_audio_source_data.rs b/eye-ai-core-rs/src/audio/depth_audio_source_data.rs
+index 0bf1dbf..95966a8 100644
+--- a/eye-ai-core-rs/src/audio/depth_audio_source_data.rs
++++ b/eye-ai-core-rs/src/audio/depth_audio_source_data.rs
+@@ -1,6 +1,7 @@
+ use crate::{ProfilingFrame, audio::Vec3};
+ use alto::Mono;
+ use eye_ai_core_rs_profiling_attribute::profile_function;
++use std::sync::Arc;
+ 
+ #[derive(Debug, Clone)]
+ pub struct DepthAudioSourceData {
+@@ -8,7 +9,7 @@ pub struct DepthAudioSourceData {
+ 	pub duration: f32,
+ 	pub sample_rate: usize,
+ 	pub position: Vec3,
+-	pub samples: Vec<Mono<i16>>,
++	pub samples: Arc<Vec<Mono<i16>>>,
+ }
+ 
+ impl DepthAudioSourceData {
+@@ -24,9 +25,26 @@ impl DepthAudioSourceData {
+ 			duration,
+ 			sample_rate,
+ 			position,
+-			samples: create_audio_data(frequency, duration, sample_rate, profiling_frame),
++			samples: Self::generate_samples(frequency, duration, sample_rate, profiling_frame),
+ 		}
+ 	}
++
++	/// Synthesises the (position-independent) beep waveform for the given
++	/// frequency / duration / sample-rate.
++	///
++	/// The samples do NOT depend on the source position, yet `process_depth_estimation_data`
++	/// builds `NUMBER_OF_SOURCES` (9) sources per `update()` call. Regenerating the waveform
++	/// per source per frame previously cost ~9 × 12000 × (3 `sin` + 1 `exp`) ops every update
++	/// (~20 Hz) for byte-identical buffers. Callers should cache the returned `Arc` keyed on
++	/// (frequency, duration, sample_rate) and `Arc::clone` it into every source instead.
++	pub fn generate_samples(
++		frequency: f32,
++		duration: f32,
++		sample_rate: usize,
++		profiling_frame: &ProfilingFrame,
++	) -> Arc<Vec<Mono<i16>>> {
++		Arc::new(create_audio_data(frequency, duration, sample_rate, profiling_frame))
++	}
+ }
+ 
+ #[profile_function("profiling_frame")]
+diff --git a/eye-ai-core-rs/src/audio/math_vector.rs b/eye-ai-core-rs/src/audio/math_vector.rs
+index f7fcb2a..882888c 100644
+--- a/eye-ai-core-rs/src/audio/math_vector.rs
++++ b/eye-ai-core-rs/src/audio/math_vector.rs
+@@ -3,7 +3,7 @@ pub struct IVec2 {
+ 	pub y: i32,
+ }
+ 
+-#[derive(Debug, Clone, Copy, Default)]
++#[derive(Debug, Clone, Copy, Default, PartialEq)]
+ pub struct Vec3 {
+ 	pub x: f32,
+ 	pub y: f32,
+diff --git a/eye-ai-core-rs/src/audio/spatial_audio.rs b/eye-ai-core-rs/src/audio/spatial_audio.rs
+index c4b1c32..b05d72c 100644
+--- a/eye-ai-core-rs/src/audio/spatial_audio.rs
++++ b/eye-ai-core-rs/src/audio/spatial_audio.rs
+@@ -31,6 +31,16 @@ pub enum SpatialAudioError {
+ 	JsonError(#[from] json::Error),
+ }
+ 
++/// Cached, position-independent depth-beep waveform. The samples depend only on
++/// (frequency, duration, sample_rate); they are shared (via `Arc`) across all
++/// `NUMBER_OF_SOURCES` depth sources and regenerated only when the audio settings
++/// change, instead of resynthesising 9 byte-identical buffers on every `update()`.
++struct CachedDepthSamples {
++	frequency: f32,
++	duration: f32,
++	samples: Arc<Vec<Mono<i16>>>,
++}
++
+ pub struct SpatialAudio {
+ 	_alto: Alto,
+ 	_device: OutputDevice,
+@@ -44,6 +54,7 @@ pub struct SpatialAudio {
+ 	pub settings: Arc<RwLock<SpatialAudioSettings>>,
+ 	content: Arc<SpatialAudioContent>,
+ 	profiling_frame: Arc<ProfilingFrame>,
++	cached_depth_samples: Option<CachedDepthSamples>,
+ }
+ impl Drop for SpatialAudio {
+ 	fn drop(&mut self) {
+@@ -134,6 +145,7 @@ impl SpatialAudio {
+ 			settings,
+ 			content,
+ 			profiling_frame: profiling_frame_clone1,
++			cached_depth_samples: None,
+ 		})
+ 	}
+ 
+@@ -171,9 +183,36 @@ impl SpatialAudio {
+ 		let object_audio_paused = settings.object_audio_paused;
+ 
+ 		if !depth_audio_paused {
++			// The beep waveform is position-independent, so it is shared across all
++			// sources and only regenerated when frequency/duration actually change.
++			let cached_samples = {
++				let needs_regen = match self.cached_depth_samples.as_ref() {
++					Some(c) => {
++						c.frequency != settings.frequency || c.duration != settings.buffer_duration
++					}
++					None => true,
++				};
++				if needs_regen {
++					let samples = DepthAudioSourceData::generate_samples(
++						settings.frequency,
++						settings.buffer_duration,
++						SpatialAudioSettings::SAMPLE_RATE,
++						&self.profiling_frame,
++					);
++					self.cached_depth_samples = Some(CachedDepthSamples {
++						frequency: settings.frequency,
++						duration: settings.buffer_duration,
++						samples: samples.clone(),
++					});
++					samples
++				} else {
++					self.cached_depth_samples.as_ref().unwrap().samples.clone()
++				}
++			};
+ 			*self.depth_audio_sources_data.write().unwrap() = process_depth_estimation_data(
+ 				depth_estimation_data,
+ 				&settings,
++				&cached_samples,
+ 				&self.profiling_frame,
+ 			);
+ 		}
+@@ -246,6 +285,13 @@ fn depth_audio_thread(
+ 		profiling_frame,
+ 	);
+ 
++	// Last position pushed per source via alSourcefv. Positions only refresh at the
++	// update() rate (~20 Hz), so without this check the 40 Hz poll loop would re-push an
++	// identical position ~half of the time. The real<->silent fallback is handled
++	// implicitly: a real position differs from the silent [0,0,0], so the transition
++	// always fires exactly one set_position.
++	let mut last_positions = [Vec3::default(); SpatialAudioSettings::NUMBER_OF_SOURCES];
++
+ 	{
+ 		let depth_audio_sources_data = depth_audio_sources_data.read().unwrap();
+ 
+@@ -262,6 +308,7 @@ fn depth_audio_thread(
+ 				source.queue_buffer(buffer).unwrap();
+ 			}
+ 			source.set_position(source_data.position).unwrap();
++			last_positions[i] = source_data.position;
+ 			source.play();
+ 		}
+ 	}
+@@ -287,16 +334,13 @@ fn depth_audio_thread(
+ 						.unwrap();
+ 					source.queue_buffer(unqueued_buffer).unwrap();
+ 				}
+-				source.set_position(source_data.position).unwrap();
+-				source
+-					.set_max_distance(SpatialAudioSettings::MAX_DISTANCE)
+-					.unwrap();
+-				source
+-					.set_rolloff_factor(SpatialAudioSettings::ROLLOFF_FACTOR)
+-					.unwrap();
+-				source
+-					.set_reference_distance(SpatialAudioSettings::REFERENCE_DISTANCE)
+-					.unwrap();
++				if last_positions[i] != source_data.position {
++					source.set_position(source_data.position).unwrap();
++					last_positions[i] = source_data.position;
++				}
++				// MAX_DISTANCE / ROLLOFF_FACTOR / REFERENCE_DISTANCE are immutable consts
++				// already set once per source at init (see above). Re-setting them on every
++				// poll iteration was pure OpenAL-syscall waste.
+ 
+ 				if source.state() == SourceState::Stopped {
+ 					source.play();
+@@ -304,7 +348,11 @@ fn depth_audio_thread(
+ 			}
+ 		}
+ 
+-		std::thread::sleep(Duration::from_millis(2));
++		// 25 ms (40 Hz) is ample: each source has BUFFERS_PER_SOURCE (3) queued buffers
++		// of buffer_duration (0.25 s) each = 0.75 s of headroom, and source positions only
++		// refresh at the update() rate (~20 Hz). The previous 2 ms sleep woke this thread
++		// ~500x/s to re-check rarely-changing state, keeping a core permanently hot.
++		std::thread::sleep(Duration::from_millis(25));
+ 
+ 		secondary_frame_mark!("Depth Audio Frame");
+ 	}
+@@ -374,6 +422,7 @@ fn object_audio_thread(
+ fn process_depth_estimation_data(
+ 	depth_estimation_data: &[f32; 256 * 256],
+ 	settings: &SpatialAudioSettings,
++	cached_samples: &Arc<Vec<Mono<i16>>>,
+ 	profiling_frame: &ProfilingFrame,
+ ) -> Vec<DepthAudioSourceData> {
+ 	let step_size = (SpatialAudioSettings::PICTURE_RESOLUTION.x as f32
+@@ -395,13 +444,13 @@ fn process_depth_estimation_data(
+ 		let sound_origin = calculate_sound_origin
+ 			.calculate_sound_origin(IVec2 { x: i + 1, y: 0 }, nearest_distance);
+ 
+-		audio_source_data.push(DepthAudioSourceData::new(
+-			settings.frequency,
+-			settings.buffer_duration,
+-			SpatialAudioSettings::SAMPLE_RATE,
+-			sound_origin,
+-			profiling_frame,
+-		));
++		audio_source_data.push(DepthAudioSourceData {
++			frequency: settings.frequency,
++			duration: settings.buffer_duration,
++			sample_rate: SpatialAudioSettings::SAMPLE_RATE,
++			position: sound_origin,
++			samples: Arc::clone(cached_samples),
++		});
+ 
+ 		// TODO: Why was that here? see old c++ code!
+ 		if i == 0 {
