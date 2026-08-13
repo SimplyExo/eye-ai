@@ -15,8 +15,11 @@ class CameraThread(threading.Thread):
         self.height = height
         self.capture_delay = capture_delay
 
+        self.image_ready = False        # TODO: find better solution for this
         self.save_frames = True
         self.image_count = 0
+
+        self.next_image_time = time.time()
 
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
@@ -31,16 +34,25 @@ class CameraThread(threading.Thread):
         while self.is_running:
             ret, raw_frame = self.cam.read()
             _, self.frame = cv2.imencode('.jpg', raw_frame)
+            self.image_ready = True
 
-            if self.save_frame:
+            if self.save_frame and time.time() >= self.next_image_time:
+                self.next_image_time += 3
                 with open(self.output_dir / f"{self.image_count}.jpg", "wb") as file:
                     file.write(self.frame.tobytes())
                 self.image_count += 1
 
-            time.sleep(self.capture_delay)
+            time.sleep(1/30)
 
         self.cam.release()
         print("[Camera] Kameraprozess beendet!")
+
+    def get_frame(self):
+        while not self.image_ready:
+            pass
+
+        self.image_ready = False
+        return self.frame
 
     def save_frame(self, jpeg):
         pass
