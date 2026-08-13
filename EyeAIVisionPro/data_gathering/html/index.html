@@ -8,19 +8,34 @@
         <div><img src="cam" alt="Camera Image" style="width: 640px; height: auto;"></div>
 
         <div><h2>Controls</h2></div>
-        <div><button onclick="hello()">Start recording</button></div>
-        <div>Status: Idle</div>
-        <div>Image directory: /mnt/images</div>
-        <div>Images taken: 0</div>
-        <div>Storage left: 1.0 GB</div>
+        <div><button onclick="toggle_recording()">Start / Stop recording</button></div>
+        <p>Status: <span id="status">0</span></p>
+        <p>Image directory: <span id="image_dir">0</span></p>
+        <p>Images taken: <span id="images_taken">0</span></p>
+        <p>Storage left: <span id="storage_left">0</span></p>
     </body>
 </html>
 
+<!-- Socket.IO TODO: make this a local file -->
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+
 <script>
-    function hello() {
-        fetch("/toggle_recording", {
+    function toggle_recording() {
+        const response = fetch("/toggle_recording", {
             method: "GET" // default, so we can ignore
         })
-        alert("Hallo")
+
+        alert(response)
     }
+
+    const socket = io();
+
+    socket.on("stats_update", (data) => {
+        console.log(data);
+
+        document.getElementById("status").textContent = data.status;
+        document.getElementById("image_dir").textContent = data.image_dir;
+        document.getElementById("images_taken").textContent = data.images_taken;
+        document.getElementById("storage_left").textContent = data.storage_left;
+    });
 </script>

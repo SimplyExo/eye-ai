@@ -30,10 +30,15 @@ def toggle_recording():
 
 def send_stats():
     while True:
+        if cameraThread.save_frames:
+            status = "Recording"
+        else:
+            status = "Idle"
+
         stats = {
-            "status": "idle",
-            "image_dir": "/mnt/images",
-            "images_taken": 0,
+            "status": status,
+            "image_dir": str(cameraThread.output_dir.absolute()),
+            "images_taken": cameraThread.image_count,
             "storage_left": "1.0 GB" 
         }
 
