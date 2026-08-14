@@ -9,7 +9,10 @@ import java.io.File
 import androidx.core.graphics.scale
 import uniffi.NativeLib.UniffiDetectedObject
 
-class YoloModel(var info: YoloModelInfo) {
+class YoloModel(initialInfo: YoloModelInfo) {
+	var info: YoloModelInfo = initialInfo
+		private set
+
 	private lateinit var labels: List<String>
 
 	private var tensorWidth = 0
@@ -19,16 +22,18 @@ class YoloModel(var info: YoloModelInfo) {
 
 	private var initialized = false
 
+	@Synchronized
 	fun create(
 		context: Context, skelDirectory: String,
-		enableNpu: Boolean
+		enableNpu: Boolean,
+		modelInfo: YoloModelInfo = info
 	) {
 		// Erstellen einer Yolo-Instanz
-		val modelBytes = info.getAsBytes(context)
-		labels = info.readLinesFromAsset(context).toList()
+		val modelBytes = modelInfo.getAsBytes(context)
+		val newLabels = modelInfo.readLinesFromAsset(context).toList()
 
 		uniffi.NativeLib.initYoloRuntime(
-			info.tfliteFilename, modelBytes, labels,
+			modelInfo.tfliteFilename, modelBytes, newLabels,
 			enableNpu, skelDirectory
 		)
 
@@ -39,9 +44,12 @@ class YoloModel(var info: YoloModelInfo) {
 		numChannel = outputShape[1]
 		numElements = outputShape[2]
 
+		labels = newLabels
+		info = modelInfo
 		initialized = true
 	}
 
+	@Synchronized
 	fun runInference(frame: Bitmap): Array<UniffiDetectedObject>? {
 		if (!initialized) {
 			/*Log.e(

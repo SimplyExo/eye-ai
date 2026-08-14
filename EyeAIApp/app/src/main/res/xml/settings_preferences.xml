@@ -96,6 +96,11 @@
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Object Detection">
+        <ListPreference
+            app:key="@string/object_detection_model_setting"
+            app:summary="%s"
+            app:title="Object Detection Model" />
+
         <CheckBoxPreference
             app:defaultValue="true"
             app:key="@string/enable_object_detection_setting"

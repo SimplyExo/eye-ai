@@ -79,6 +79,18 @@ class SettingsActivity : AppCompatActivity() {
 				}
 			}
 
+			// Object Detection Model selector
+			findPreference<ListPreference>(getString(R.string.object_detection_model_setting))?.let { list ->
+				val modelNames = EyeAIApp.YOLO_MODELS.map { it.name }.toTypedArray()
+
+				list.entries = modelNames
+				list.entryValues = modelNames
+				list.setDefaultValue(EyeAIApp.DEFAULT_YOLO_MODEL_NAME)
+				if (list.value !in modelNames) {
+					list.value = EyeAIApp.DEFAULT_YOLO_MODEL_NAME
+				}
+			}
+
 			// Custom Google Gen Ai Studio Endpoint
 			findPreference<EditTextPreference>(getString(R.string.custom_google_gen_ai_studio_endpoint_setting))?.let { endpointPreference ->
 				updateCustomGoogleGenAIStudioEndpointPreferenceSummary(

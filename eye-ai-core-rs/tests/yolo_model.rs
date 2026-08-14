@@ -1,12 +1,12 @@
 use eye_ai_core_rs::{
-	CreateYoloModelInfo, FloatTensorBuffer, FloatTensorFormat, ProfilingFrame, YoloModel,
+	CreateYoloModelInfo, DetectedObject, FloatTensorBuffer, FloatTensorFormat, ProfilingFrame,
+	YoloModel,
 };
 use tracing::Level;
 use tracing_subscriber::fmt::format::Format;
 
-#[test]
-fn run_yolo_model() {
-	tracing_subscriber::fmt()
+fn run_yolo_model(model_filename: &str) -> Vec<DetectedObject> {
+	let _ = tracing_subscriber::fmt()
 		.event_format(
 			Format::default()
 				.compact()
@@ -15,7 +15,7 @@ fn run_yolo_model() {
 				.without_time(),
 		)
 		.with_max_level(Level::DEBUG)
-		.init();
+		.try_init();
 
 	#[cfg(feature = "enable_tracy_profiling")]
 	tracing_tracy::client::Client::start();
@@ -40,8 +40,8 @@ fn run_yolo_model() {
 
 	let yolo_model_create_info = CreateYoloModelInfo {
 		model_name: "YOLO".to_string(),
-		model_data: std::fs::read("../EyeAIApp/app/src/main/assets/model.tflite")
-			.expect("failed to load yolo model.tflite file"),
+		model_data: std::fs::read(format!("../EyeAIApp/app/src/main/assets/{model_filename}"))
+			.expect("failed to load yolo model file"),
 		labels,
 		npu_config: None,
 	};
@@ -51,10 +51,27 @@ fn run_yolo_model() {
 	let mut yolo_model = YoloModel::new(yolo_model_create_info, &object_profiling_frame)
 		.expect("failed to create interpreter");
 
-	let detected_objects = yolo_model
+	yolo_model
 		.run_no_preprocessing(&mut input)
-		.expect("failed to run inference on yolo model");
+		.expect("failed to run inference on yolo model")
+}
+
+#[test]
+fn run_float_yolo_model() {
+	let detected_objects = run_yolo_model("model.tflite");
 
 	assert_eq!(detected_objects.len(), 1);
 	assert_eq!(detected_objects[0].class_name, "cat");
+}
+
+#[test]
+fn run_quantized_yolo_model() {
+	let detected_objects = run_yolo_model("yolov8n_int8.tflite");
+	let cat = detected_objects
+		.iter()
+		.find(|object| object.class_name == "cat")
+		.expect("quantized YOLO model did not detect the cat");
+
+	assert!(cat.confidence >= 0.5);
+	assert!(cat.bbox.is_valid());
 }

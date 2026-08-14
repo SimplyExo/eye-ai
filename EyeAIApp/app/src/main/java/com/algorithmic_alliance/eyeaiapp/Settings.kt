@@ -13,6 +13,7 @@ data class Settings(
 	var googleAiStudioApiKey: String?,
 	var customGoogleGenAIStudioEndpoint: String?,
 	var enableObjectDetection: Boolean,
+	var objectDetectionModel: String,
 	var maxObjectDetectionFrameRate: Int?,
 	var enableOCR: Boolean,
 	val inputSource: String?,
@@ -82,6 +83,11 @@ data class Settings(
 				true
 			)
 
+			val objectDetectionModel = sharedPreferences.getString(
+				context.getString(R.string.object_detection_model_setting),
+				EyeAIApp.DEFAULT_YOLO_MODEL_NAME
+			).toString()
+
 			val objectDetectionFrameRateLimitEnabled = sharedPreferences.getBoolean(
 				context.getString(R.string.enable_object_detection_frame_rate_limit_setting),
 				true
@@ -150,6 +156,7 @@ data class Settings(
 				googleAiStudioApiKey,
 				customGoogleGenAIStudioEndpoint,
 				enableObjectDetection,
+				objectDetectionModel,
 				maxObjectDetectionFrameRate,
 				enableOCR,
 				inputSource,
@@ -175,6 +182,7 @@ data class Settings(
 		googleAiStudioApiKey,
 		customGoogleGenAIStudioEndpoint,
 		enableObjectDetection,
+		objectDetectionModel,
 		maxObjectDetectionFrameRate,
 		enableOCR,
 		inputSource,
@@ -212,6 +220,10 @@ data class Settings(
 			putBoolean(
 				context.getString(R.string.enable_object_detection_setting),
 				enableObjectDetection
+			)
+			putString(
+				context.getString(R.string.object_detection_model_setting),
+				objectDetectionModel
 			)
 			putBoolean(context.getString(R.string.enable_ocr_setting), enableOCR)
 			putBoolean(context.getString(R.string.depth_playback_setting), depthAudioPlayback)

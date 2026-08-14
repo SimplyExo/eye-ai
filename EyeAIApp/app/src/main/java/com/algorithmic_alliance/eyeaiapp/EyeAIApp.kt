@@ -47,7 +47,7 @@ class EyeAIApp : Application() {
 
 	/* will not be fully created if enableObjectDetection is disabled in settings */
 	var yoloModel: YoloModel =
-		YoloModel(YoloModelInfo("model.tflite", "coco.names", 640))
+		YoloModel(YOLO_MODELS.first())
 		private set
 
 	var nlpModel: NLPModel =
@@ -64,6 +64,24 @@ class EyeAIApp : Application() {
 
 	companion object {
 		const val APP_LOG_TAG = "Eye AI"
+		const val DEFAULT_YOLO_MODEL_NAME = "YOLOv8n (INT8 quantized)"
+		const val DEFAULT_YOLO_MODEL_FILENAME = "yolov8n_int8.tflite"
+
+		val YOLO_MODELS =
+			arrayOf(
+				YoloModelInfo(
+					DEFAULT_YOLO_MODEL_NAME,
+					DEFAULT_YOLO_MODEL_FILENAME,
+					"coco.names",
+					640
+				),
+				YoloModelInfo(
+					"YOLOv8n (Float32)",
+					"model.tflite",
+					"coco.names",
+					640
+				)
+			)
 
 		const val DEFAULT_DEPTH_MODEL_NAME = "MiDaS V2.1"
 
@@ -106,7 +124,7 @@ class EyeAIApp : Application() {
 
 			// Yolo Model erstellen
 			if (settings.enableObjectDetection) {
-				yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
+				switchYoloModel(settings.objectDetectionModel)
 			}
 
 			// NLP erstellen
@@ -155,6 +173,7 @@ class EyeAIApp : Application() {
 		}
 
 		val enableNpuChanged = oldSettings.enableNpu != settings.enableNpu
+		val yoloModelChanged = oldSettings.objectDetectionModel != settings.objectDetectionModel
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			if (oldSettings.depthModel != settings.depthModel || enableNpuChanged) {
@@ -177,9 +196,9 @@ class EyeAIApp : Application() {
 				}
 			}
 
-			if (oldSettings.enableObjectDetection != settings.enableObjectDetection || enableNpuChanged) {
+			if (oldSettings.enableObjectDetection != settings.enableObjectDetection || enableNpuChanged || yoloModelChanged) {
 				if (settings.enableObjectDetection) {
-					yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
+					switchYoloModel(settings.objectDetectionModel)
 				}
 			}
 
@@ -204,6 +223,20 @@ class EyeAIApp : Application() {
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {
 		return DEPTH_MODELS.find { it.name == modelName }
 			?: (DEPTH_MODELS.find { it.name == DEFAULT_DEPTH_MODEL_NAME } ?: DEPTH_MODELS[0])
+	}
+
+	private fun switchYoloModel(modelName: String) {
+		yoloModel.create(
+			baseContext,
+			npuQnnDelegateDirectory!!,
+			settings.enableNpu,
+			findYoloModelInfo(modelName)
+		)
+	}
+
+	private fun findYoloModelInfo(modelName: String): YoloModelInfo {
+		return YOLO_MODELS.find { it.name == modelName }
+			?: (YOLO_MODELS.find { it.name == DEFAULT_YOLO_MODEL_NAME } ?: YOLO_MODELS[0])
 	}
 }
 
