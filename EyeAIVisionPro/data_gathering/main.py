@@ -1,4 +1,4 @@
-import time
+import ConfigManager
 
 from flask import Flask, Response, jsonify
 from flask_socketio import SocketIO
@@ -8,7 +8,14 @@ from CameraThread import CameraThread
 
 app = Flask(__name__)
 socketio = SocketIO(app)
-cameraThread = CameraThread("Cam", 1280, 720, Path("./output"), 3)
+config = ConfigManager.ConfigManager()
+cameraThread = CameraThread(
+    "Cam", 
+    config.get_width(), 
+    config.get_height(), 
+    config.get_outputdir(), 
+    config.get_capturedelay()
+)
 
 @app.route("/")
 def index():
@@ -51,6 +58,8 @@ def get_stats():
 
 def main():
     # start camera thread
+
+
     cameraThread.start()
 
     socketio.start_background_task(send_stats)
