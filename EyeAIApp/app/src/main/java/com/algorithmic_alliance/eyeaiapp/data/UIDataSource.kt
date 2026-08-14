@@ -1,6 +1,8 @@
 package com.algorithmic_alliance.eyeaiapp.data
 
 import android.Manifest
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
 import com.algorithmic_alliance.eyeaiapp.R
 import kotlin.collections.listOf
@@ -15,6 +17,7 @@ object UIDataSource {
 
     const val RETURN_SEMANTIC = "Zurück."
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     val NEEDED_PERMISSIONS = listOf<Map<String, Any>>(
         /* EXPLANATION HOW TO ADD NEW PERMISSION
         mapOf(
@@ -31,7 +34,7 @@ object UIDataSource {
          */
         mapOf(
             "permissionName" to "Kamera",
-            "permission" to Manifest.permission.CAMERA,
+            "permissions" to listOf(Manifest.permission.CAMERA),
             "permissionExplanation" to """Damit die KI die Umgebung analysieren kann, ist es notwendig, dass die App auf die System-Kamera zugreifen kann. 
                 |Die Kamerabilder werden genutzt, um Entfernungen zu Objekten zu bestimmen und um vorhandene Objekte im Raum zu erkennen. 
                 |Diese Informationen werden dann per Audio ausgegeben.""".trimMargin(),
@@ -44,7 +47,7 @@ object UIDataSource {
         ),
         mapOf(
             "permissionName" to "Mikrofon",
-            "permission" to Manifest.permission.RECORD_AUDIO,
+            "permissions" to listOf(Manifest.permission.RECORD_AUDIO),
             "permissionExplanation" to "Um per Sprachbefehl mit der App zu interagieren, ist es notwendig, zugriff auf das System-Mikrofon zu erteilen.",
             "icon" to R.drawable.mic_24px,
             "iconDescription" to "Mikrofon Icon",
@@ -52,8 +55,30 @@ object UIDataSource {
             "permissionAcceptSemantic" to "Zugriff auf Mikrofon gestatten.",
             "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf das Mikrofon ablehnen, können sie die App nicht benutzen.",
             "confirmPermissionDeclineSemantic" to "Zugriff auf Mikrofon trotzdem ablehnen. Die App wird geschlossen."
+        ),
+        mapOf(
+            "permissionName" to "WLAN-Netzwerke erkennen",
+            "permissions" to listOf(Manifest.permission.NEARBY_WIFI_DEVICES),
+            "permissionExplanation" to "Um sich mir der EyeAI-Vision zu verbinden, ist es notwendig, dass die App zugriff auf nah gelegene WLAN-Geräte hat.  ",
+            "icon" to R.drawable.wifi_24px,
+            "iconDescription" to "WLAN Icon",
+            "permissionDeclineSemantic" to "Zugriff auf nahe WLAN-Geräte ablehnen.",
+            "permissionAcceptSemantic" to "Zugriff auf nahe WLAN-Geräte gestatten.",
+            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf nahe WLAN-Geräte, können sie die App nicht benutzen.",
+            "confirmPermissionDeclineSemantic" to "Zugriff auf nahe WLAN-Geräte trotzdem ablehnen. Die App wird geschlossen."
+        ),
+        mapOf(
+            "permissionName" to "Standort",
+            "permissions" to listOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            "permissionExplanation" to "Da bei einem Scan der WLAN-Netzwerke über diese Informationen zum Standort anfallen können, muss die Berechtigung erteilt werden." +
+                    "Die App speichert oder verwertet zu keinem Zeitpunkt Standortdaten.",
+            "icon" to R.drawable.location_on_24px,
+            "iconDescription" to "Standort Icon",
+            "permissionDeclineSemantic" to "Zugriff auf Standort ablehnen.",
+            "permissionAcceptSemantic" to "Zugriff auf Standort gestatten.",
+            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf den Standort, können sie die App nicht benutzen.",
+            "confirmPermissionDeclineSemantic" to "Zugriff auf den Standort trotzdem ablehnen. Die App wird geschlossen."
         )
-        //TODO implement the rest of the permissions
     )
 
     /* EXPLANATION HOW TO ADD NEW SETTING

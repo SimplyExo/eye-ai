@@ -1,9 +1,19 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
+import android.net.wifi.ScanResult
+import android.net.wifi.WifiManager
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +35,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
@@ -67,6 +79,58 @@ fun ConnectionPage(
     val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     val availableAudioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
     val displayAudioDevices = mutableListOf<String>()
+    val wifiManager = remember { context.getSystemService(Context.WIFI_SERVICE) as WifiManager }
+    var scanResults by remember { mutableStateOf<List<ScanResult>>(emptyList()) }
+
+    if (ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
+        Log.d(
+            "EyeAIUI",
+            "[ConnectionPage] Canceling WIFI-Scan due to permissions not being granted."
+        )
+        return
+    }
+    val displayScanResults = scanResults
+        .filter { it.SSID.contains("EyeAI-Vision") }
+        .map { it.SSID }
+
+    DisposableEffect(Unit) {
+        val receiver = object : BroadcastReceiver() {
+            @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+            override fun onReceive(ctx: Context, intent: Intent) {
+                if (ActivityCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    Log.d(
+                        "EyeAIUI",
+                        "[ConnectionPage] Canceling WIFI-Scan due to permissions not being granted."
+                    )
+                    return
+                }
+                scanResults = wifiManager.scanResults
+                Log.d("EyeAIUI", "[ConnectionPage] Found WIFI-Networks: ${wifiManager.scanResults}")
+            }
+        }
+        val filter = IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            context.registerReceiver(receiver, filter)
+        }
+        val started = wifiManager.startScan()
+        if (!started) {
+            Log.d("EyeAIUI", "[ConnectionPage] Scan throttled, showing cached results")
+        }
+
+        onDispose {
+            context.unregisterReceiver(receiver)
+        }
+    }
 
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -106,7 +170,7 @@ fun ConnectionPage(
                 stringResource(R.string.selected_eye_ai_vision),
                 ""
             ),
-            "devices" to listOf("EyeAI-Vision 1", "EyeAI-Vision von Robert")
+            "devices" to displayScanResults
         )
     )
 
@@ -146,7 +210,10 @@ fun ChooseConnectionPage(
     Log.d("EyeAIUI", "[ConnectionPage] Choosing connection for $deviceCategory")
     LaunchedEffect(devicesData) {
         if (devicesData["remember"] == true && devices.contains(devicesData["selected"])) {
-            Log.d("EyeAIUI", "[ConnectionPage] Attempting to connect to remembered ${devicesData["type"]} device")
+            Log.d(
+                "EyeAIUI",
+                "[ConnectionPage] Attempting to connect to remembered ${devicesData["type"]} device"
+            )
             if (connect(devicesData["type"] as String, devicesData["selected"] as String)) {
                 Log.d("EyeAIUI", "[ConnectionPage] Connection to remembered device successful")
                 onConnectionSuccessful()
@@ -190,34 +257,55 @@ fun ChooseConnectionPage(
                         modifier = Modifier
                             .padding(8.dp)
                             .clearAndSetSemantics {})
-                    LazyColumn(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .fillMaxWidth()
-                    ) {
-                        items(items = devices) { item ->
-                            val index = devices.indexOf(item)
-                            DeviceListEntry(
-                                item as String,
-                                onSelected = {
-                                    selectedDevice = index
-                                },
-                                isSelected = index == selectedDevice
-                            )
+                    if (devices.isNotEmpty()) {
+                        LazyColumn(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth()
+                        ) {
+                            items(items = devices) { item ->
+                                val index = devices.indexOf(item)
+                                DeviceListEntry(
+                                    item as String,
+                                    onSelected = {
+                                        selectedDevice = index
+                                    },
+                                    isSelected = index == selectedDevice
+                                )
+                            }
                         }
+                    } else {
+                        Row(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth()
+                        ) { Text("Lade...") }
+
                     }
-                    HorizontalDivider(modifier = Modifier.padding(8.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(
+                            top = 8.dp,
+                            start = 8.dp,
+                            end = 8.dp
+                        )
+                    )
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(4.dp), verticalAlignment = Alignment.CenterVertically
                     ) {
                         Checkbox(
                             checked = shouldRememberDevice,
                             onCheckedChange = { shouldRememberDevice = !shouldRememberDevice })
                         Text("Als Standardgerät festlegen")
                     }
-                    HorizontalDivider(modifier = Modifier.padding(8.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(
+                            bottom = 8.dp,
+                            start = 8.dp,
+                            end = 8.dp
+                        )
+                    )
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -232,7 +320,7 @@ fun ChooseConnectionPage(
                                 .weight(1f)
                                 .semantics {
                                     contentDescription =
-                                        "Mit Gerät " + devices[selectedDevice] + " verbinden"
+                                        "Mit Gerät " + if (devices.isNotEmpty()) devices[selectedDevice] else "" + " verbinden"
                                 }, onClick = {
                                 if (connect(
                                         devicesData["type"] as String,
