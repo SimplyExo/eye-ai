@@ -37,6 +37,7 @@ import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.SpeechManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -66,6 +67,8 @@ class MainActivity : AppCompatActivity() {
 
 	private val voskUserStart = AtomicBoolean(false)
 	private val voskManualRestartRequired = AtomicBoolean(false)
+	@Volatile
+	private var resumeSpatialAudioAfterTtsJob: Job? = null
 
 
 	private var depthPreviewImage: ImageView? = null
@@ -310,6 +313,7 @@ class MainActivity : AppCompatActivity() {
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onPause() {
 		super.onPause()
+		cancelPendingSpatialAudioResume()
 
 		SpatialAudio.stop()
 
@@ -327,6 +331,7 @@ class MainActivity : AppCompatActivity() {
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onDestroy() {
 		super.onDestroy()
+		cancelPendingSpatialAudioResume()
 		cameraManager.shutdown()
 		textToSpeechInstance.shutdown()
 		mediaFrameAnalyzer?.shutdown()
@@ -755,7 +760,8 @@ class MainActivity : AppCompatActivity() {
 			)
 			stopVoskListening(
 				trigger = "SETTINGS_APPLIED",
-				requireManualRestart = true
+				requireManualRestart = true,
+				spatialAudioResume = SpatialAudioResume.AFTER_TTS
 			)
 		}
 
@@ -773,6 +779,7 @@ class MainActivity : AppCompatActivity() {
 	private fun startVoskListening(trigger: String = "USER_BUTTON") {
 		if (voskUserStart.get()) return // Check whether already started
 
+		cancelPendingSpatialAudioResume()
 		uniffi.NativeLib.setObjectAudioPaused(true)
 		uniffi.NativeLib.setDepthAudioPaused(true)
 		voskManualRestartRequired.set(false)
@@ -788,28 +795,100 @@ class MainActivity : AppCompatActivity() {
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun stopVoskListening(
 		trigger: String = "USER_BUTTON",
-		requireManualRestart: Boolean = false
+		requireManualRestart: Boolean = false,
+		spatialAudioResume: SpatialAudioResume = SpatialAudioResume.IMMEDIATE
 	) {
 		voskManualRestartRequired.set(requireManualRestart)
-		if (!voskUserStart.get()) {
-			updateVoskStatusText()
-			return
+		val wasArmedByUser = voskUserStart.getAndSet(false)
+
+		if (wasArmedByUser) {
+			eyeAIApp().voskModel.stopListening()
 		}
 
-		uniffi.NativeLib.setObjectAudioPaused(false)
-		uniffi.NativeLib.setDepthAudioPaused(false)
-		voskUserStart.set(false)
-		eyeAIApp().voskModel.stopListening()
+		when (spatialAudioResume) {
+			SpatialAudioResume.IMMEDIATE -> {
+				cancelPendingSpatialAudioResume()
+				restoreSpatialAudioFromSettings(trigger)
+			}
+
+			SpatialAudioResume.AFTER_TTS -> scheduleSpatialAudioResumeAfterTts(trigger)
+		}
+
 		Log.i(
 			EyeAIApp.APP_LOG_TAG,
 			"[DecisionTrace][Vosk][STOP] trigger=$trigger outcome=STOPPED " +
-				"autoRestartArmed=false"
+				"autoRestartArmed=false spatialAudioResume=$spatialAudioResume"
 		)
 		updateVoskStatusText()
 	}
 
+	private fun scheduleSpatialAudioResumeAfterTts(trigger: String) {
+		cancelPendingSpatialAudioResume()
+
+		// Keep both spatial output channels muted until Android TTS has really
+		// finished the acknowledgement sentence (including its quiet window).
+		uniffi.NativeLib.setObjectAudioPaused(true)
+		uniffi.NativeLib.setDepthAudioPaused(true)
+
+		val job = lifecycleScope.launch {
+			val silent = textToSpeechInstance.awaitSilence(
+				quietMs = 500L,
+				maxWaitMs = 30_000L
+			)
+
+			if (!silent) {
+				Log.w(
+					EyeAIApp.APP_LOG_TAG,
+					"[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=SKIPPED " +
+						"reason=TTS_SILENCE_TIMEOUT"
+				)
+				return@launch
+			}
+
+			if (voskUserStart.get() || !voskManualRestartRequired.get()) {
+				Log.d(
+					EyeAIApp.APP_LOG_TAG,
+					"[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=SKIPPED " +
+						"reason=LISTENING_STATE_CHANGED"
+				)
+				return@launch
+			}
+
+			restoreSpatialAudioFromSettings(trigger)
+		}
+
+		resumeSpatialAudioAfterTtsJob = job
+		job.invokeOnCompletion {
+			if (resumeSpatialAudioAfterTtsJob === job) {
+				resumeSpatialAudioAfterTtsJob = null
+			}
+		}
+	}
+
+	private fun restoreSpatialAudioFromSettings(trigger: String) {
+		val settings = Settings.load(this)
+		uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+		Log.i(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=RESTORED " +
+				"objectAudioEnabled=${settings.objectAudioPlayback} " +
+				"depthAudioEnabled=${settings.depthAudioPlayback}"
+		)
+	}
+
+	private fun cancelPendingSpatialAudioResume() {
+		resumeSpatialAudioAfterTtsJob?.cancel()
+		resumeSpatialAudioAfterTtsJob = null
+	}
+
 
 	fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
+
+	private enum class SpatialAudioResume {
+		IMMEDIATE,
+		AFTER_TTS
+	}
 
 	companion object
 
