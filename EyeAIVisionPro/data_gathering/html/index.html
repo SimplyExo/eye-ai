@@ -3,7 +3,7 @@
     <head>
         <title>Data Gathering</title>
     </head>
-    <body>
+    <body onload="on_page_load()">
         <div><h1>Data Gathering</h1></div>
         <div><img src="cam" alt="Camera Image" style="width: 640px; height: auto;"></div>
 
@@ -32,6 +32,14 @@
         document.getElementById("image_dir").textContent = data.image_dir;
         document.getElementById("images_taken").textContent = data.images_taken;
         document.getElementById("storage_left").textContent = data.storage_left;
+    }
+
+    async function on_page_load() {
+        const response = await fetch("/stats", {
+            method: "GET"
+        })
+
+        update_stats(await response.json());
     }
 
     async function toggle_recording() {

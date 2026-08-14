@@ -25,6 +25,10 @@ def toggle_recording():
 
     return jsonify(get_stats())
 
+@app.route("/stats")
+def stats():
+    return get_stats()
+
 def send_stats():
     while True:
         socketio.emit("stats_update", get_stats())
