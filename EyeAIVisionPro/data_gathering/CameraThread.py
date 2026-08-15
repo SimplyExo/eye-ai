@@ -1,19 +1,18 @@
 import threading
 import time
 import os
-
 import cv2
 
+from ConfigManager import ConfigManager
+
 class CameraThread(threading.Thread):
-    def __init__(self, name, width, height, output_dir, capture_delay):
+    def __init__(self, name, config: ConfigManager):
         super().__init__()
         self.cam = cv2.VideoCapture(0)
+        self.config = config
         self.frame = None
         self.is_running = True
         self.name = name
-        self.width = width
-        self.height = height
-        self.capture_delay = capture_delay
 
         self.image_ready = False        # TODO: find better solution for this
         self.save_frames = False
@@ -22,12 +21,11 @@ class CameraThread(threading.Thread):
 
         self.next_image_time = time.time()
 
-        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
-        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
+        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, config.get_width())
+        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, config.get_height())
 
         # setup output directory
-        self.output_dir = output_dir
-        os.makedirs(self.output_dir, exist_ok=True)
+        os.makedirs(config.get_outputdir(), exist_ok=True)
 
     def run(self):
         print("[Camera] Kameraprozess gestartet!")
@@ -53,8 +51,8 @@ class CameraThread(threading.Thread):
         return self.frame
 
     def save_frame(self):
-        self.next_image_time += self.capture_delay
-        with open(self.output_dir / f"{self.image_count}.jpg", "wb") as file:
+        self.next_image_time += self.config.get_capturedelay()
+        with open(self.config.get_outputdir() / f"{self.image_count}.jpg", "wb") as file:
             file.write(self.frame.tobytes())
         self.image_count += 1
     

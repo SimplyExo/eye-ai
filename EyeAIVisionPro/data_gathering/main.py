@@ -1,9 +1,10 @@
 import ConfigManager
 
-from flask import Flask, Response, jsonify
+from flask import Flask, Response, jsonify, request
 from flask_socketio import SocketIO
 from pathlib import Path
 import shutil
+import os
 
 from CameraThread import CameraThread
 
@@ -12,10 +13,7 @@ socketio = SocketIO(app)
 config = ConfigManager.ConfigManager()
 cameraThread = CameraThread(
     "Cam", 
-    config.get_width(), 
-    config.get_height(), 
-    config.get_outputdir(), 
-    config.get_capturedelay()
+    config
 )
 
 @app.route("/")
@@ -37,6 +35,25 @@ def toggle_recording():
 def stats():
     return get_stats()
 
+@app.route("/update_settings", methods=["POST"])
+def update_settings():
+    json_dict = request.json
+
+    try:
+        integer_value = int(json_dict["capture_delay"])
+    except ValueError:
+        return jsonify({"message": f"Error: Cannot set {json_dict["capture_delay"]} as capture delay!"}), 400
+
+    if not os.path.exists(json_dict["output_dir"]):
+        return jsonify({"message": f"Error: Cannot set '{json_dict["output_dir"]}' as output directory!"}), 400
+
+    config.set_capturedelay(integer_value)
+    config.set_outputdir(Path(json_dict["output_dir"]))
+    config.save()
+
+    return jsonify({"message": f"Saved all settings successfully!"})
+    
+
 def send_stats():
     while True:
         socketio.emit("stats_update", get_stats())
@@ -50,15 +67,16 @@ def gather_img():
 def get_stats():
     stats = {
         "recording": cameraThread.save_frames,
-        "image_dir": str(cameraThread.output_dir.absolute()),
+        "image_dir": str(cameraThread.config.get_outputdir().absolute()),
         "images_taken": cameraThread.image_count,
-        "storage_left": free_space_formatted()
+        "storage_left": free_space_formatted(),
+        "capture_delay": cameraThread.config.get_capturedelay()
     }
 
     return stats
 
 def free_space_formatted():
-    total, used, free = shutil.disk_usage(cameraThread.output_dir.absolute())
+    total, used, free = shutil.disk_usage(cameraThread.config.get_outputdir().absolute())
     return f"{free // (2**30)} GiB"
 
 def main():

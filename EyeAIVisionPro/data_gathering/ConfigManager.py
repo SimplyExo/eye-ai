@@ -19,8 +19,7 @@ class ConfigManager:
             'ImageHeight': 720
         }
 
-        with open("config.conf", "w") as f:
-            self.config.write(f)
+        self.save()
 
     def get_outputdir(self):
         return Path(self.config['SETTINGS']["OutputDir"])
@@ -33,4 +32,14 @@ class ConfigManager:
 
     def get_height(self):
         return int(self.config['SETTINGS']["ImageHeight"])
+
+    def set_capturedelay(self, value: int):
+        self.config['SETTINGS']["CaptureDelay"] = str(value)
+
+    def set_outputdir(self, value: Path):
+        self.config['SETTINGS']["OutputDir"] = str(value.absolute())
+
+    def save(self):
+        with open("config.conf", "w") as f:
+            self.config.write(f)
     
