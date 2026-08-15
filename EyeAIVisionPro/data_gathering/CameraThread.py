@@ -19,7 +19,7 @@ class CameraThread(threading.Thread):
         self.image_count = 0
         self.fps = 30
 
-        self.next_image_time = time.time()
+        self.next_image_time = 0
 
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, config.get_width())
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, config.get_height())
@@ -51,7 +51,7 @@ class CameraThread(threading.Thread):
         return self.frame
 
     def save_frame(self):
-        self.next_image_time += self.config.get_capturedelay()
+        self.next_image_time = time.time() + self.config.get_capturedelay()
         with open(self.config.get_outputdir() / f"{self.image_count}.jpg", "wb") as file:
             file.write(self.frame.tobytes())
         self.image_count += 1
