@@ -1,7 +1,6 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -9,10 +8,18 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
+import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +29,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -45,15 +51,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,6 +68,7 @@ import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import kotlin.collections.emptyList
 
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ConnectionPage(
     modifier: Modifier = Modifier,
@@ -96,6 +98,7 @@ fun ConnectionPage(
     val displayScanResults = scanResults
         .filter { it.SSID.contains("EyeAI-Vision") }
         .map { it.SSID }
+
 
     DisposableEffect(Unit) {
         val receiver = object : BroadcastReceiver() {
@@ -188,6 +191,7 @@ fun ConnectionPage(
 
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ChooseConnectionPage(
     modifier: Modifier = Modifier,
@@ -214,9 +218,17 @@ fun ChooseConnectionPage(
                 "EyeAIUI",
                 "[ConnectionPage] Attempting to connect to remembered ${devicesData["type"]} device"
             )
-            if (connect(devicesData["type"] as String, devicesData["selected"] as String)) {
-                Log.d("EyeAIUI", "[ConnectionPage] Connection to remembered device successful")
-                onConnectionSuccessful()
+            connect(
+                context,
+                devicesData["type"] as String,
+                devicesData["selected"] as String
+            )
+            { success ->
+                if (success) {
+                    Log.d("EyeAIUI", "[ConnectionPage] Connection to remembered device successful")
+                    onConnectionSuccessful()
+                }
+
             }
         }
     }
@@ -322,36 +334,39 @@ fun ChooseConnectionPage(
                                     contentDescription =
                                         "Mit Gerät " + if (devices.isNotEmpty()) devices[selectedDevice] else "" + " verbinden"
                                 }, onClick = {
-                                if (connect(
-                                        devicesData["type"] as String,
-                                        devices[selectedDevice] as String
-                                    )
-                                ) {
-                                    Log.d(
-                                        "EyeAIUI",
-                                        "[ConnectionPage] Setting SharedPreferences ShouldRememberDevice: $shouldRememberDevice"
-                                    )
-                                    sharedPreferences.edit(commit = true) {
-                                        putBoolean(
-                                            shouldRememberKey,
-                                            shouldRememberDevice
+                                connect(
+                                    context,
+                                    devicesData["type"] as String,
+                                    devices[selectedDevice] as String
+                                )
+                                { success ->
+                                    if (success) {
+                                        Log.d(
+                                            "EyeAIUI",
+                                            "[ConnectionPage] Setting SharedPreferences ShouldRememberDevice: $shouldRememberDevice"
                                         )
-                                    }
-                                    Log.d(
-                                        "EyeAIUI",
-                                        "[ConnectionPage] Setting SharedPreferences SelectedDevice: ${devices[selectedDevice]}"
-                                    )
-                                    sharedPreferences.edit(commit = true) {
-                                        putString(
-                                            selectedDeviceKey,
-                                            devices[selectedDevice] as String
+                                        sharedPreferences.edit(commit = true) {
+                                            putBoolean(
+                                                shouldRememberKey,
+                                                shouldRememberDevice
+                                            )
+                                        }
+                                        Log.d(
+                                            "EyeAIUI",
+                                            "[ConnectionPage] Setting SharedPreferences SelectedDevice: ${devices[selectedDevice]}"
                                         )
-                                    }
-                                    shouldRememberDevice = false
-                                    selectedDevice = 0
-                                    onConnectionSuccessful()
-                                } else
-                                    showConnectionFailedDialog = true
+                                        sharedPreferences.edit(commit = true) {
+                                            putString(
+                                                selectedDeviceKey,
+                                                devices[selectedDevice] as String
+                                            )
+                                        }
+                                        shouldRememberDevice = false
+                                        selectedDevice = 0
+                                        onConnectionSuccessful()
+                                    } else
+                                        showConnectionFailedDialog = true
+                                }
                             }) { Text("Verbinden", modifier = Modifier.clearAndSetSemantics {}) }
                     }
                 }
@@ -403,6 +418,7 @@ fun ConnectionFailedDialog(onDismissed: () -> Unit) {
 
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Preview(showBackground = true, name = "ConnectionPagePreview")
 @Composable
 fun ConnectionPagePreview() {
@@ -415,7 +431,14 @@ fun ConnectionPagePreview() {
     }
 }
 
-fun connect(deviceCategory: String, selectedDevice: String): Boolean {
+
+@RequiresApi(Build.VERSION_CODES.Q)
+fun connect(
+    context: Context,
+    deviceCategory: String,
+    selectedDevice: String,
+    onResult: (Boolean) -> Unit
+) {
     when (deviceCategory) {
         "audio" -> {
             //TODO Backend zu OpenAL
@@ -423,20 +446,69 @@ fun connect(deviceCategory: String, selectedDevice: String): Boolean {
                 "EyeAIUI",
                 "[ConnectionPage.connect] Attempting to connect to audio device: '$selectedDevice'"
             )
-            return true
+            onResult(true)
         }
 
         "eye-ai-vision" -> {
-            //TODO Backend zu EyeAIVision
             Log.d(
                 "EyeAIUI",
                 "[ConnectionPage.connect] Attempting to connect to eye-ai-vision device '$selectedDevice'"
             )
-            return true
+            connectToWifiNetwork(
+                context, selectedDevice, "12345678",
+                onConnected = {
+                    Log.d("EyeAIUI", "[ConnectionPage.connect] Connection successful")
+                    onResult(true)
+                },
+                onFailed = {
+                    Log.d("EyeAIUI", "[ConnectionPage.connect] Connection failed")
+                    onResult(false)
+                }
+            )
         }
 
-        else -> return false
+        else -> onResult(false)
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+fun connectToWifiNetwork(
+    context: Context,
+    ssid: String,
+    password: String,
+    onConnected: () -> Unit,
+    onFailed: () -> Unit
+) {
+    val mainHandler = Handler(Looper.getMainLooper())
+
+    val specifier = WifiNetworkSpecifier.Builder()
+        .setSsid(ssid)
+        .setWpa2Passphrase(password)
+        .build()
+
+    val request = NetworkRequest.Builder()
+        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        .setNetworkSpecifier(specifier)
+        .build()
+
+    val connectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            Log.d("WifiConnect", "Verbunden mit $ssid")
+            connectivityManager.bindProcessToNetwork(network)
+            mainHandler.post { onConnected() }
+        }
+
+        override fun onUnavailable() {
+            Log.d("WifiConnect", "Verbindung zu $ssid fehlgeschlagen")
+            mainHandler.post { onFailed() }
+        }
+    }
+
+    connectivityManager.requestNetwork(request, networkCallback)
 }
 
 fun audioDeviceTypeName(type: Int): String = when (type) {
