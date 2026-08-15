@@ -6,18 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.media.AudioDeviceInfo
 import android.media.AudioManager
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
-import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
@@ -64,6 +56,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.UI.audioDeviceTypeName
+import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
+import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import kotlin.collections.emptyList
 
@@ -95,45 +90,8 @@ fun ConnectionPage(
         )
         return
     }
-    val displayScanResults = scanResults
-        .filter { it.SSID.contains("EyeAI-Vision") }
-        .map { it.SSID }
 
-
-    DisposableEffect(Unit) {
-        val receiver = object : BroadcastReceiver() {
-            @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-            override fun onReceive(ctx: Context, intent: Intent) {
-                if (ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    Log.d(
-                        "EyeAIUI",
-                        "[ConnectionPage] Canceling WIFI-Scan due to permissions not being granted."
-                    )
-                    return
-                }
-                scanResults = wifiManager.scanResults
-                Log.d("EyeAIUI", "[ConnectionPage] Found WIFI-Networks: ${wifiManager.scanResults}")
-            }
-        }
-        val filter = IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            context.registerReceiver(receiver, filter)
-        }
-        val started = wifiManager.startScan()
-        if (!started) {
-            Log.d("EyeAIUI", "[ConnectionPage] Scan throttled, showing cached results")
-        }
-
-        onDispose {
-            context.unregisterReceiver(receiver)
-        }
-    }
+    val wifiScanState = rememberWifiScanState(context)
 
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -173,7 +131,7 @@ fun ConnectionPage(
                 stringResource(R.string.selected_eye_ai_vision),
                 ""
             ),
-            "devices" to displayScanResults
+            "devices" to wifiScanState.networks
         )
     )
 
@@ -218,7 +176,7 @@ fun ChooseConnectionPage(
                 "EyeAIUI",
                 "[ConnectionPage] Attempting to connect to remembered ${devicesData["type"]} device"
             )
-            connect(
+            connectToDevice(
                 context,
                 devicesData["type"] as String,
                 devicesData["selected"] as String
@@ -334,7 +292,7 @@ fun ChooseConnectionPage(
                                     contentDescription =
                                         "Mit Gerät " + if (devices.isNotEmpty()) devices[selectedDevice] else "" + " verbinden"
                                 }, onClick = {
-                                connect(
+                                connectToDevice(
                                     context,
                                     devicesData["type"] as String,
                                     devices[selectedDevice] as String
@@ -418,6 +376,11 @@ fun ConnectionFailedDialog(onDismissed: () -> Unit) {
 
 }
 
+data class WifiScanState(
+    val networks: List<String>,
+    val rescan: () -> Unit
+)
+
 @RequiresApi(Build.VERSION_CODES.Q)
 @Preview(showBackground = true, name = "ConnectionPagePreview")
 @Composable
@@ -432,95 +395,3 @@ fun ConnectionPagePreview() {
 }
 
 
-@RequiresApi(Build.VERSION_CODES.Q)
-fun connect(
-    context: Context,
-    deviceCategory: String,
-    selectedDevice: String,
-    onResult: (Boolean) -> Unit
-) {
-    when (deviceCategory) {
-        "audio" -> {
-            //TODO Backend zu OpenAL
-            Log.d(
-                "EyeAIUI",
-                "[ConnectionPage.connect] Attempting to connect to audio device: '$selectedDevice'"
-            )
-            onResult(true)
-        }
-
-        "eye-ai-vision" -> {
-            Log.d(
-                "EyeAIUI",
-                "[ConnectionPage.connect] Attempting to connect to eye-ai-vision device '$selectedDevice'"
-            )
-            connectToWifiNetwork(
-                context, selectedDevice, "12345678",
-                onConnected = {
-                    Log.d("EyeAIUI", "[ConnectionPage.connect] Connection successful")
-                    onResult(true)
-                },
-                onFailed = {
-                    Log.d("EyeAIUI", "[ConnectionPage.connect] Connection failed")
-                    onResult(false)
-                }
-            )
-        }
-
-        else -> onResult(false)
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.Q)
-fun connectToWifiNetwork(
-    context: Context,
-    ssid: String,
-    password: String,
-    onConnected: () -> Unit,
-    onFailed: () -> Unit
-) {
-    val mainHandler = Handler(Looper.getMainLooper())
-
-    val specifier = WifiNetworkSpecifier.Builder()
-        .setSsid(ssid)
-        .setWpa2Passphrase(password)
-        .build()
-
-    val request = NetworkRequest.Builder()
-        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-        .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        .setNetworkSpecifier(specifier)
-        .build()
-
-    val connectivityManager =
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-    val networkCallback = object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) {
-            Log.d("WifiConnect", "Verbunden mit $ssid")
-            connectivityManager.bindProcessToNetwork(network)
-            mainHandler.post { onConnected() }
-        }
-
-        override fun onUnavailable() {
-            Log.d("WifiConnect", "Verbindung zu $ssid fehlgeschlagen")
-            mainHandler.post { onFailed() }
-        }
-    }
-
-    connectivityManager.requestNetwork(request, networkCallback)
-}
-
-fun audioDeviceTypeName(type: Int): String = when (type) {
-    AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> "Eingebauter Lautsprecher"
-    AudioDeviceInfo.TYPE_WIRED_HEADSET -> "Kabelgebundenes Headset (mit Mikrofon)"
-    AudioDeviceInfo.TYPE_WIRED_HEADPHONES -> "Kabelgebundene Kopfhörer (Klinke)"
-    AudioDeviceInfo.TYPE_BLUETOOTH_A2DP -> "Bluetooth-Kopfhörer/Lautsprecher (Media)"
-    AudioDeviceInfo.TYPE_BLE_HEADSET -> "Bluetooth LE Kopfhörer"
-    AudioDeviceInfo.TYPE_USB_HEADSET -> "USB-Kopfhörer"
-    AudioDeviceInfo.TYPE_USB_DEVICE -> "USB-Audiogerät"
-    AudioDeviceInfo.TYPE_HEARING_AID -> "Hörgerät"
-    AudioDeviceInfo.TYPE_DOCK -> "Dockingstation"
-    AudioDeviceInfo.TYPE_HDMI -> "HDMI"
-    else -> "Unbekannt"
-}
