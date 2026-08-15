@@ -3,6 +3,7 @@ import ConfigManager
 from flask import Flask, Response, jsonify
 from flask_socketio import SocketIO
 from pathlib import Path
+import shutil
 
 from CameraThread import CameraThread
 
@@ -51,15 +52,17 @@ def get_stats():
         "recording": cameraThread.save_frames,
         "image_dir": str(cameraThread.output_dir.absolute()),
         "images_taken": cameraThread.image_count,
-        "storage_left": "1.0 GB"
+        "storage_left": free_space_formatted()
     }
 
     return stats
 
+def free_space_formatted():
+    total, used, free = shutil.disk_usage(cameraThread.output_dir.absolute())
+    return f"{free // (2**30)} GiB"
+
 def main():
     # start camera thread
-
-
     cameraThread.start()
 
     socketio.start_background_task(send_stats)
