@@ -13,8 +13,10 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -28,10 +30,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.remote.core.operations.layout.Container
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -58,6 +63,8 @@ import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.audioDeviceTypeName
 import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
+import com.algorithmic_alliance.eyeaiapp.UI.getAvailableAudioDevices
+import com.algorithmic_alliance.eyeaiapp.UI.rememberAudioDeviceState
 import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import kotlin.collections.emptyList
@@ -73,11 +80,6 @@ fun ConnectionPage(
     Log.d("EyeAIUI", "[PermissionPage] Loading ConnectionPage")
 
     val context = LocalContext.current
-    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    val availableAudioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-    val displayAudioDevices = mutableListOf<String>()
-    val wifiManager = remember { context.getSystemService(Context.WIFI_SERVICE) as WifiManager }
-    var scanResults by remember { mutableStateOf<List<ScanResult>>(emptyList()) }
 
     if (ActivityCompat.checkSelfPermission(
             context,
@@ -91,16 +93,11 @@ fun ConnectionPage(
         return
     }
 
-    val wifiScanState = rememberWifiScanState(context)
+    val wifiScanState = rememberWifiScanState(context, autoScanOnStart = false)
+    //wifiScanState.rescan()
 
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
-    for (device in availableAudioDevices) {
-        val audioDeviceType = audioDeviceTypeName(device.type)
-        val audioDeviceName = device.productName
-        if (audioDeviceType != "Unbekannt")
-            displayAudioDevices.add("$audioDeviceName ($audioDeviceType)")
-    }
     //TODO connection to Backend
     val devices: List<Any> = listOf(
         mapOf(
@@ -116,7 +113,6 @@ fun ConnectionPage(
                 stringResource(R.string.selected_audio_device),
                 ""
             ),
-            "devices" to displayAudioDevices
         ),
         mapOf(
             "name" to "EyeAI-Vision",
@@ -131,7 +127,6 @@ fun ConnectionPage(
                 stringResource(R.string.selected_eye_ai_vision),
                 ""
             ),
-            "devices" to wifiScanState.networks
         )
     )
 
@@ -166,10 +161,22 @@ fun ChooseConnectionPage(
     val shouldRememberKey = stringResource(devicesData["rememberKey"] as Int)
     val selectedDeviceKey = stringResource(devicesData["selectedKey"] as Int)
     val deviceCategory = devicesData["name"] ?: UIDataSource.INFORMATION_NOT_FOUND
-    val devices = devicesData["devices"] as? List<*> ?: emptyList<String>()
-
+    val wifiScanState = rememberWifiScanState(context, autoScanOnStart = false)
+    val (audioDevices, refreshAudioDevices) = rememberAudioDeviceState(context)
+    val devices: List<String> = when (devicesData["type"]) {
+        "audio" -> audioDevices
+        "eye-ai-vision" -> wifiScanState.networks
+        else -> emptyList()
+    }
 
     Log.d("EyeAIUI", "[ConnectionPage] Choosing connection for $deviceCategory")
+
+    LaunchedEffect(devicesData["type"]) {
+        if (devicesData["type"] == "eye-ai-vision") {
+            wifiScanState.rescan()
+        }
+    }
+
     LaunchedEffect(devicesData) {
         if (devicesData["remember"] == true && devices.contains(devicesData["selected"])) {
             Log.d(
@@ -262,12 +269,32 @@ fun ChooseConnectionPage(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(4.dp), verticalAlignment = Alignment.CenterVertically
+                            .padding(start = 8.dp, end = 32.dp, top = 4.dp, bottom = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Checkbox(
-                            checked = shouldRememberDevice,
-                            onCheckedChange = { shouldRememberDevice = !shouldRememberDevice })
-                        Text("Als Standardgerät festlegen")
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = shouldRememberDevice,
+                                onCheckedChange = { shouldRememberDevice = !shouldRememberDevice })
+                            Text("Als Standardgerät festlegen")
+                        }
+                        Box(modifier = Modifier.clickable {
+                            when (devicesData["type"]) {
+                                "audio" -> {
+                                    refreshAudioDevices()
+                                }
+
+                                "eye-ai-vision" -> {
+                                    wifiScanState.rescan()
+                                }
+                            }
+                        }) {
+                            Icon(
+                                painter = painterResource(R.drawable.refresh_24px),
+                                contentDescription = ""
+                            )
+                        }
                     }
                     HorizontalDivider(
                         modifier = Modifier.padding(
@@ -291,7 +318,8 @@ fun ChooseConnectionPage(
                                 .semantics {
                                     contentDescription =
                                         "Mit Gerät " + if (devices.isNotEmpty()) devices[selectedDevice] else "" + " verbinden"
-                                }, onClick = {
+                                }, enabled = devices.isNotEmpty(),
+                            onClick = {
                                 connectToDevice(
                                     context,
                                     devicesData["type"] as String,

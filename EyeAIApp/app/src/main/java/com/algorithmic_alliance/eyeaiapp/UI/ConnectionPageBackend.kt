@@ -15,6 +15,7 @@ import android.content.BroadcastReceiver
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
 import android.os.Build
@@ -26,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -93,13 +95,13 @@ fun connectToWifiNetwork(
 
     val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            Log.d("WifiConnect", "Verbunden mit $ssid")
+            Log.d("EyeAIUI", "[ConnectToWifiNetwork] Verbunden mit $ssid")
             connectivityManager.bindProcessToNetwork(network)
             mainHandler.post { onConnected() }
         }
 
         override fun onUnavailable() {
-            Log.d("WifiConnect", "Verbindung zu $ssid fehlgeschlagen")
+            Log.d("EyeAIUI", "[ConnectToWifiNetwork] Verbindung zu $ssid fehlgeschlagen")
             mainHandler.post { onFailed() }
         }
     }
@@ -113,7 +115,7 @@ data class WifiScanState(
 )
 
 @Composable
-fun rememberWifiScanState(context: Context): WifiScanState {
+fun rememberWifiScanState(context: Context, autoScanOnStart: Boolean = true): WifiScanState {
     val wifiManager = remember { context.getSystemService(Context.WIFI_SERVICE) as WifiManager }
     var scanResults by remember { mutableStateOf<List<ScanResult>>(emptyList()) }
 
@@ -140,7 +142,7 @@ fun rememberWifiScanState(context: Context): WifiScanState {
             context.registerReceiver(receiver, filter)
         }
 
-        rescan()
+        if(autoScanOnStart) rescan()
 
         onDispose {
             context.unregisterReceiver(receiver)
@@ -189,4 +191,24 @@ fun audioDeviceTypeName(type: Int): String = when (type) {
     AudioDeviceInfo.TYPE_DOCK -> "Dockingstation"
     AudioDeviceInfo.TYPE_HDMI -> "HDMI"
     else -> "Unbekannt"
+}
+
+@Composable
+fun rememberAudioDeviceState(context: Context): Pair<List<String>, () -> Unit> {
+    var devices by remember { mutableStateOf(getAvailableAudioDevices(context)) }
+    val refresh: () -> Unit = { devices = getAvailableAudioDevices(context) }
+    return devices to refresh
+}
+
+fun getAvailableAudioDevices(context: Context): List<String>{
+    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    val availableAudioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+    val displayAudioDevices = mutableListOf<String>()
+    for (device in availableAudioDevices) {
+        val audioDeviceType = audioDeviceTypeName(device.type)
+        val audioDeviceName = device.productName
+        if (audioDeviceType != "Unbekannt")
+            displayAudioDevices.add("$audioDeviceName ($audioDeviceType)")
+    }
+    return displayAudioDevices
 }
