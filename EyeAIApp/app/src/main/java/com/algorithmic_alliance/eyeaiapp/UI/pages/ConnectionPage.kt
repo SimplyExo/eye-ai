@@ -1,18 +1,12 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.Manifest
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.media.AudioManager
-import android.net.wifi.ScanResult
-import android.net.wifi.WifiManager
+import android.location.LocationManager
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
@@ -35,9 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.remote.core.operations.layout.Container
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -61,9 +53,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.UI.audioDeviceTypeName
 import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
-import com.algorithmic_alliance.eyeaiapp.UI.getAvailableAudioDevices
 import com.algorithmic_alliance.eyeaiapp.UI.rememberAudioDeviceState
 import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
@@ -155,8 +145,9 @@ fun ChooseConnectionPage(
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     var shouldRememberDevice by rememberSaveable { mutableStateOf(false) }
-    var selectedDevice by remember { mutableIntStateOf(0) }
+    var selectedDevice by remember { mutableStateOf("") }
     var showConnectionFailedDialog by remember { mutableStateOf(false) }
+    var showLocationDisabledDialog by remember { mutableStateOf(false) }
 
     val shouldRememberKey = stringResource(devicesData["rememberKey"] as Int)
     val selectedDeviceKey = stringResource(devicesData["selectedKey"] as Int)
@@ -173,7 +164,18 @@ fun ChooseConnectionPage(
 
     LaunchedEffect(devicesData["type"]) {
         if (devicesData["type"] == "eye-ai-vision") {
-            wifiScanState.rescan()
+            val locationManager =
+                context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (locationManager.isLocationEnabled)
+                wifiScanState.rescan()
+            else {
+                Log.d(
+                    "EyeAIUI",
+                    "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
+                )
+                showLocationDisabledDialog = true
+            }
+
         }
     }
 
@@ -245,18 +247,32 @@ fun ChooseConnectionPage(
                                 DeviceListEntry(
                                     item as String,
                                     onSelected = {
-                                        selectedDevice = index
+                                        selectedDevice = item
                                     },
-                                    isSelected = index == selectedDevice
+                                    isSelected = item == selectedDevice
                                 )
+                            }
+                            if (devicesData["type"] == "eye-ai-vision") {
+                                item {
+                                    DeviceListEntry(
+                                        "Handykamera verwenden",
+                                        onSelected = { selectedDevice = "Handykamera verwenden" },
+                                        isSelected = "Handykamera verwenden" == selectedDevice
+                                    )
+                                }
                             }
                         }
                     } else {
                         Row(
                             modifier = Modifier
                                 .padding(8.dp)
-                                .fillMaxWidth()
                         ) { Text("Lade...") }
+                        DeviceListEntry(
+                            "Handykamera verwenden",
+                            onSelected = { selectedDevice = "Handykamera verwenden" },
+                            isSelected = "Handykamera verwenden" == selectedDevice
+                        )
+
 
                     }
                     HorizontalDivider(
@@ -286,7 +302,17 @@ fun ChooseConnectionPage(
                                 }
 
                                 "eye-ai-vision" -> {
-                                    wifiScanState.rescan()
+                                    val locationManager =
+                                        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                                    if (locationManager.isLocationEnabled)
+                                        wifiScanState.rescan()
+                                    else {
+                                        Log.d(
+                                            "EyeAIUI",
+                                            "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
+                                        )
+                                        showLocationDisabledDialog = true
+                                    }
                                 }
                             }
                         }) {
@@ -317,13 +343,14 @@ fun ChooseConnectionPage(
                                 .weight(1f)
                                 .semantics {
                                     contentDescription =
-                                        "Mit Gerät " + if (devices.isNotEmpty()) devices[selectedDevice] else "" + " verbinden"
-                                }, enabled = devices.isNotEmpty(),
+                                        "Mit Gerät $selectedDevice verbinden"
+                                }, enabled = selectedDevice != "",
                             onClick = {
+
                                 connectToDevice(
                                     context,
                                     devicesData["type"] as String,
-                                    devices[selectedDevice] as String
+                                    selectedDevice
                                 )
                                 { success ->
                                     if (success) {
@@ -339,16 +366,16 @@ fun ChooseConnectionPage(
                                         }
                                         Log.d(
                                             "EyeAIUI",
-                                            "[ConnectionPage] Setting SharedPreferences SelectedDevice: ${devices[selectedDevice]}"
+                                            "[ConnectionPage] Setting SharedPreferences SelectedDevice: $selectedDevice"
                                         )
                                         sharedPreferences.edit(commit = true) {
                                             putString(
                                                 selectedDeviceKey,
-                                                devices[selectedDevice] as String
+                                                selectedDevice
                                             )
                                         }
                                         shouldRememberDevice = false
-                                        selectedDevice = 0
+                                        selectedDevice = ""
                                         onConnectionSuccessful()
                                     } else
                                         showConnectionFailedDialog = true
@@ -361,7 +388,18 @@ fun ChooseConnectionPage(
     }
 
     if (showConnectionFailedDialog) {
-        ConnectionFailedDialog(onDismissed = { showConnectionFailedDialog = false })
+        ErrorDialog(
+            titel = "Verbindung fehlgeschlagen",
+            content = "",
+            onDismissed = { showConnectionFailedDialog = false })
+    }
+
+    if (showLocationDisabledDialog) {
+        ErrorDialog(
+            titel = "Standortdienste sind ausgeschaltet",
+            content = "Da durch einen Scan der WLAN-Netzwerke in der nähe Informationen zu ihrem Standort anfallen könnten, muss laut Android-Richtlinien der Standort angeschaltet sein. Die App nutzt ihren Standort jedoch nicht.",
+            onDismissed = { showLocationDisabledDialog = false }
+        )
     }
 }
 
@@ -381,17 +419,16 @@ fun DeviceListEntry(deviceName: String, isSelected: Boolean = false, onSelected:
         }, onClick = { onSelected() }, selected = isSelected)
         Text(
             deviceName, Modifier
-                .fillMaxHeight()
                 .clearAndSetSemantics {})
     }
 }
 
 @Composable
-fun ConnectionFailedDialog(onDismissed: () -> Unit) {
+fun ErrorDialog(titel: String, content: String, onDismissed: () -> Unit) {
     AlertDialog(
         onDismissRequest = { onDismissed() },
-        title = { Text("Verbindung fehlgeschlagen") },
-        text = { Text("Die Verbindung mit dem Gerät konnte nicht hergestellt werden. Versuchen Sie es noch einmal, oder wählen Sie ein anderes Gerät aus.") },
+        title = { Text(titel) },
+        text = { Text(content) },
         confirmButton = {
             Button(onClick = { onDismissed() }) {
                 Text(
@@ -404,7 +441,7 @@ fun ConnectionFailedDialog(onDismissed: () -> Unit) {
 
 }
 
-data class WifiScanState(
+class WifiScanState(
     val networks: List<String>,
     val rescan: () -> Unit
 )

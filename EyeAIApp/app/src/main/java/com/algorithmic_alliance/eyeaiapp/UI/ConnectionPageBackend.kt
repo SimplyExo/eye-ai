@@ -48,21 +48,28 @@ fun connectToDevice(
         }
 
         "eye-ai-vision" -> {
-            Log.d(
-                "EyeAIUI",
-                "[ConnectionPage.connect] Attempting to connect to eye-ai-vision device '$selectedDevice'"
-            )
-            connectToWifiNetwork(
-                context, selectedDevice, "12345678",
-                onConnected = {
-                    Log.d("EyeAIUI", "[ConnectionPage.connect] Connection successful")
-                    onResult(true)
-                },
-                onFailed = {
-                    Log.d("EyeAIUI", "[ConnectionPage.connect] Connection failed")
-                    onResult(false)
-                }
-            )
+            //TODO input device setting
+            if(selectedDevice != "Handykamera verwenden"){
+                Log.d(
+                    "EyeAIUI",
+                    "[ConnectionPage.connect] Attempting to connect to eye-ai-vision device '$selectedDevice'"
+                )
+                connectToWifiNetwork(
+                    context, selectedDevice, "12345678",
+                    onConnected = {
+                        Log.d("EyeAIUI", "[ConnectionPage.connect] Connection successful")
+                        onResult(true)
+                    },
+                    onFailed = {
+                        Log.d("EyeAIUI", "[ConnectionPage.connect] Connection failed")
+                        onResult(false)
+                    }
+                )
+            } else{
+                Log.d("EyeAIUI", "[ConnectionPage.connect] User choose phone camera over eye-ai-vison")
+                onResult(true)
+            }
+
         }
 
         else -> onResult(false)
