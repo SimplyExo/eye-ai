@@ -1,805 +1,0 @@
---- t=1s 16:06:29 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 73 total,   1 running,  72 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10023M used,     1089M free,        1M buffers
- Swap:    12287M total,     5046M used,     7241M free,     1497M cached
-800%cpu 293%user  31%nice 369%sys  48%idle  10%iow  41%irq   7%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-11158 u0_a498      20   0  19G 688M 246M S 58.6   6.1   0:05.74 pool-6-thread-1
-10073 u0_a498      20   0  19G 688M 246M S 37.9   6.1   0:05.11 pool-10-thread-
-10070 u0_a498      20   0  19G 688M 246M S 27.5   6.1   0:03.20 pool-9-thread-1
- 9991 u0_a498      10 -10  19G 687M 246M S 17.2   6.1   0:01.68 ce.eyeaiapp.dev
-10098 u0_a498      20   0  19G 688M 246M S 13.7   6.1   0:00.82 pool-13-thread-
- 9997 u0_a498      24   4  19G 687M 246M S 13.7   6.1   0:01.58 HeapTaskDaemon 
-11156 u0_a498      12  -8  19G 688M 246M S  6.8   6.1   0:00.50 CameraX-camerax
-10336 u0_a498      -3   0  19G 688M 246M S  6.8   6.1   0:00.49 AAudio_1       
-10034 u0_a498      10 -10  19G 687M 246M S  6.8   6.1   0:00.54 RenderThread   
- 9998 u0_a498      24   4  19G 687M 246M S  6.8   6.1   0:00.74 ReferenceQueueD
-11200 u0_a498      20   0  19G 688M 247M S  3.4   6.1   0:00.00 binder:9991_8  
-11157 u0_a498      20   0  19G 688M 246M S  3.4   6.1   0:00.08 binder:9991_6  
-11150 u0_a498      20   0  19G 688M 246M S  3.4   6.1   0:00.03 AdrenoOsLib    
-10112 u0_a498      17  -3  19G 688M 246M S  3.4   6.1   0:00.26 CXCP-Camera-H  
-10094 u0_a498      20   0  19G 688M 246M S  3.4   6.1   0:00.00 binder:9991_4  
- 9996 u0_a498      29   9  19G 687M 246M S  3.4   6.1   0:00.71 Jit thread pool
-11189 u0_a498      20   0  19G 688M 246M S  0.0   6.1   0:00.00 pool-4-thread-1
---- t=2s 16:06:30 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 73 total,   7 running,  66 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10424M used,      689M free,        1M buffers
- Swap:    12287M total,     4799M used,     7488M free,     1567M cached
-800%cpu 404%user  14%nice 346%sys   7%idle   0%iow  25%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 733M 247M R 64.2   6.5   0:05.97 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 732M 247M R 50.0   6.5   0:05.28 pool-10-thread-[m
-[1m10070 u0_a498      20   0  19G 732M 247M R 25.0   6.5   0:03.30 pool-9-thread-1[m
- 9991 u0_a498      10 -10  19G 732M 247M S 17.8   6.5   0:01.75 ce.eyeaiapp.dev
- 9997 u0_a498      24   4  19G 732M 247M S 14.2   6.5   0:01.63 HeapTaskDaemon 
-[1m10098 u0_a498      20   0  19G 733M 247M R 10.7   6.5   0:00.87 pool-13-thread-[m
-11156 u0_a498      12  -8  19G 733M 247M S  7.1   6.5   0:00.52 CameraX-camerax
-10336 u0_a498      -3   0  19G 733M 247M S  7.1   6.5   0:00.52 AAudio_1       
- 9998 u0_a498      24   4  19G 732M 247M S  7.1   6.5   0:00.77 ReferenceQueueD
-11172 u0_a498      20   0  19G 733M 247M S  3.5   6.5   0:00.01 AdrenoOsLib    
-10201 u0_a498      20   0  19G 733M 247M S  3.5   6.5   0:00.07 binder:9991_5  
-10112 u0_a498      17  -3  19G 733M 247M S  3.5   6.5   0:00.28 CXCP-Camera-H  
-[1m10034 u0_a498      10 -10  19G 732M 247M R  3.5   6.5   0:00.58 RenderThread   [m
-[1m10002 u0_a498      20   0  19G 732M 247M R  3.5   6.5   0:00.05 binder:9991_1  [m
-11200 u0_a498      20   0  19G 733M 247M S  0.0   6.5   0:00.02 binder:9991_8  
-11192 u0_a498      20   0  19G 733M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 733M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
---- t=3s 16:06:30 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 73 total,   7 running,  66 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10481M used,      632M free,        1M buffers
- Swap:    12287M total,     4583M used,     7704M free,     1601M cached
-800%cpu 407%user  37%nice 296%sys  30%idle   4%iow  22%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 750M 247M R 74.0   6.7   0:06.20 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 748M 247M R 51.8   6.7   0:05.48 pool-10-thread-[m
-[1m 9997 u0_a498      24   4  19G 747M 247M R 25.9   6.7   0:01.70 HeapTaskDaemon [m
-[1m10070 u0_a498      20   0  19G 748M 247M R 22.2   6.7   0:03.39 pool-9-thread-1[m
-[1m10098 u0_a498      20   0  19G 749M 247M R 11.1   6.7   0:00.92 pool-13-thread-[m
- 9991 u0_a498      10 -10  19G 747M 247M S 11.1   6.7   0:01.82 ce.eyeaiapp.dev
-10336 u0_a498      -3   0  19G 749M 247M S  7.4   6.7   0:00.55 AAudio_1       
-10034 u0_a498      10 -10  19G 748M 247M S  7.4   6.7   0:00.60 RenderThread   
- 9998 u0_a498      24   4  19G 747M 247M S  7.4   6.7   0:00.80 ReferenceQueueD
-11200 u0_a498      20   0  19G 755M 247M S  3.7   6.7   0:00.02 binder:9991_8  
-11179 u0_a498      20   0  19G 750M 247M S  3.7   6.7   0:00.06 binder:9991_7  
-11156 u0_a498      12  -8  19G 750M 247M S  3.7   6.7   0:00.55 CameraX-camerax
-[1m10330 u0_a498      20   0  19G 749M 247M R  3.7   6.7   0:00.06 CameraDeviceExe[m
-10112 u0_a498      17  -3  19G 749M 247M S  3.7   6.7   0:00.29 CXCP-Camera-H  
-[1m10012 u0_a498      20   0  19G 748M 247M R  3.7   6.7   0:00.02 binder:9991_4  [m
-11192 u0_a498      20   0  19G 754M 247M S  0.0   6.7   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 755M 247M S  0.0   6.7   0:00.00 pool-4-thread-1
---- t=4s 16:06:31 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 73 total,   3 running,  70 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10517M used,      595M free,        1M buffers
- Swap:    12287M total,     4540M used,     7747M free,     1606M cached
-800%cpu 430%user 100%nice 219%sys  30%idle   0%iow  19%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 713M 247M R 85.1   6.4   0:06.49 pool-6-thread-1[m
-10073 u0_a498      20   0  19G 710M 247M S 62.9   6.3   0:05.69 pool-10-thread-
-[1m10070 u0_a498      20   0  19G 710M 247M R 29.6   6.3   0:03.48 pool-9-thread-1[m
- 9997 u0_a498      24   4  19G 709M 247M S 22.2   6.3   0:01.79 HeapTaskDaemon 
-[1m 9991 u0_a498      10 -10  19G 709M 247M R 18.5   6.3   0:01.88 ce.eyeaiapp.dev[m
-10098 u0_a498      20   0  19G 711M 247M S 14.8   6.3   0:00.96 pool-13-thread-
- 9998 u0_a498      24   4  19G 709M 247M S 11.1   6.3   0:00.84 ReferenceQueueD
-11156 u0_a498      12  -8  19G 713M 247M S  7.4   6.4   0:00.57 CameraX-camerax
-10336 u0_a498      -3   0  19G 712M 247M S  7.4   6.4   0:00.58 AAudio_1       
-10034 u0_a498      10 -10  19G 710M 247M S  7.4   6.3   0:00.64 RenderThread   
-10407 u0_a498      20   0  19G 712M 247M S  3.7   6.4   0:00.08 Depth Audio    
-10330 u0_a498      20   0  19G 712M 247M S  3.7   6.4   0:00.07 CameraDeviceExe
-10201 u0_a498      20   0  19G 712M 247M S  3.7   6.4   0:00.09 binder:9991_5  
-10112 u0_a498      17  -3  19G 712M 247M S  3.7   6.4   0:00.31 CXCP-Camera-H  
-10108 u0_a498      17  -3  19G 711M 247M S  3.7   6.4   0:00.02 CameraX-core_ca
-10078 u0_a498      17  -3  19G 711M 247M S  3.7   6.3   0:00.05 CameraX-core_ca
-10012 u0_a498      20   0  19G 710M 247M S  3.7   6.3   0:00.03 binder:9991_4  
---- t=5s 16:06:31 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 73 total,   5 running,  68 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10455M used,      657M free,        1M buffers
- Swap:    12287M total,     4534M used,     7753M free,     1616M cached
-800%cpu 389%user  68%nice 175%sys 150%idle   0%iow  18%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 721M 247M R 82.1   6.4   0:06.85 pool-6-thread-1[m
-10073 u0_a498      20   0  19G 721M 247M S 64.2   6.4   0:05.94 pool-10-thread-
-10070 u0_a498      20   0  19G 721M 247M S 25.0   6.4   0:03.60 pool-9-thread-1
- 9997 u0_a498      24   4  19G 721M 247M S 25.0   6.4   0:01.90 HeapTaskDaemon 
- 9991 u0_a498      10 -10  19G 721M 247M S 14.2   6.4   0:01.96 ce.eyeaiapp.dev
-10098 u0_a498      20   0  19G 721M 247M S 10.7   6.4   0:01.02 pool-13-thread-
-[1m 9998 u0_a498      24   4  19G 721M 247M R 10.7   6.4   0:00.88 ReferenceQueueD[m
-11156 u0_a498      12  -8  19G 721M 247M S  7.1   6.4   0:00.60 CameraX-camerax
-10336 u0_a498      -3   0  19G 721M 247M S  7.1   6.4   0:00.61 AAudio_1       
-10034 u0_a498      10 -10  19G 721M 247M S  7.1   6.4   0:00.68 RenderThread   
-11200 u0_a498      20   0  19G 723M 247M S  3.5   6.5   0:00.04 binder:9991_8  
-[1m10112 u0_a498      17  -3  19G 721M 247M R  3.5   6.4   0:00.32 CXCP-Camera-H  [m
-[1m10015 u0_a498      20   0  19G 721M 247M R  3.5   6.4   0:00.31 JNA Cleaner    [m
-10002 u0_a498      20   0  19G 721M 247M S  3.5   6.4   0:00.07 binder:9991_1  
-11192 u0_a498      20   0  19G 721M 247M S  0.0   6.4   0:00.00 pool-4-thread-1
-11195 u0_a498      20   0  19G 722M 247M S  0.0   6.4   0:00.00 pool-4-thread-1
-11188 u0_a498      20   0  19G 721M 247M S  0.0   6.4   0:00.00 pool-4-thread-1
---- t=6s 16:06:32 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 73 total,   4 running,  69 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10498M used,      614M free,        1M buffers
- Swap:    12287M total,     4534M used,     7753M free,     1616M cached
-800%cpu 326%user   7%nice 174%sys 278%idle   0%iow  15%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 677M 247M R 81.4   6.0   0:07.18 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 677M 247M R 59.2   6.0   0:06.18 pool-10-thread-[m
-[1m10070 u0_a498      20   0  19G 677M 247M R 29.6   6.0   0:03.69 pool-9-thread-1[m
- 9991 u0_a498      10 -10  19G 676M 247M S 18.5   6.0   0:02.02 ce.eyeaiapp.dev
-10098 u0_a498      20   0  19G 677M 247M S 14.8   6.0   0:01.07 pool-13-thread-
- 9997 u0_a498      24   4  19G 676M 247M S 14.8   6.0   0:02.01 HeapTaskDaemon 
-11156 u0_a498      12  -8  19G 677M 247M S 11.1   6.0   0:00.63 CameraX-camerax
-10034 u0_a498      10 -10  19G 677M 247M S 11.1   6.0   0:00.70 RenderThread   
- 9998 u0_a498      24   4  19G 676M 247M S 11.1   6.0   0:00.92 ReferenceQueueD
-10336 u0_a498      -3   0  19G 677M 247M S  7.4   6.0   0:00.63 AAudio_1       
-[1m10002 u0_a498      20   0  19G 676M 247M R  7.4   6.0   0:00.08 binder:9991_1  [m
-11172 u0_a498      20   0  19G 677M 247M S  3.7   6.0   0:00.03 AdrenoOsLib    
-10407 u0_a498      20   0  19G 677M 247M S  3.7   6.0   0:00.09 Depth Audio    
-10112 u0_a498      17  -3  19G 677M 247M S  3.7   6.0   0:00.34 CXCP-Camera-H  
-10094 u0_a498      20   0  19G 677M 247M S  3.7   6.0   0:00.01 binder:9991_4  
-10012 u0_a498      20   0  19G 676M 247M S  3.7   6.0   0:00.05 binder:9991_4  
-11200 u0_a498      20   0  19G 678M 247M S  0.0   6.0   0:00.05 binder:9991_8  
---- t=7s 16:06:32 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   3 running,  69 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10452M used,      660M free,        1M buffers
- Swap:    12287M total,     4508M used,     7779M free,     1617M cached
-800%cpu 311%user  26%nice 204%sys 237%idle   0%iow  19%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-11157 u0_a498      20   0  19G 746M 247M S 2829   6.7   0:00.09 binder:9991_6  
-10067 u0_a498      20   0  19G 746M 247M S 1444   6.7   0:00.00 SurfaceSyncGrou
-[1m10070 u0_a498      20   0  19G 746M 247M R 1029   6.7   0:03.81 pool-9-thread-1[m
-10016 u0_a498      20   0  19G 746M 247M S  922   6.7   0:00.00 SharedPreferenc
-10094 u0_a498      20   0  19G 746M 247M S  425   6.7   0:00.02 binder:9991_4  
-11151 u0_a498      20   0  19G 746M 247M S  259   6.7   0:00.00 AdrenoOsLib    
-10330 u0_a498      20   0  19G 746M 247M S  225   6.7   0:00.08 CameraDeviceExe
-10111 u0_a498      17  -3  19G 746M 247M S  133   6.7   0:00.00 CXCP-06        
-10352 u0_a498      20   0  19G 746M 247M S 40.7   6.7   0:00.00 pool-13-thread-
-10194 u0_a498      19  -1  19G 746M 247M S 37.0   6.7   0:00.00 CXCP-BG-01     
-10221 u0_a498      19  -1  19G 746M 247M S 29.6   6.7   0:00.00 CXCP-BG-04     
-11176 u0_a498      20   0  19G 746M 247M S 25.9   6.7   0:00.00 AdrenoOsLib    
- 9997 u0_a498      24   4  19G 745M 247M S 25.9   6.7   0:02.08 HeapTaskDaemon 
-10075 u0_a498      30  10  19G 746M 247M S 22.2   6.7   0:00.00 CameraX-schedul
-11196 u0_a498      20   0  19G 747M 247M S 18.5   6.7   0:00.00 pool-4-thread-1
-10044 u0_a498      20   0  19G 746M 247M S 18.5   6.7   0:00.00 DefaultDispatch
-[1m 9991 u0_a498      10 -10  19G 745M 247M R 18.5   6.7   0:02.10 ce.eyeaiapp.dev[m
---- t=8s 16:06:32 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   5 running,  67 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10450M used,      663M free,        1M buffers
- Swap:    12287M total,     4506M used,     7781M free,     1617M cached
-800%cpu 300%user  11%nice 159%sys 311%idle   0%iow  15%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 709M 247M R 77.7   6.3   0:07.80 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 707M 247M R 66.6   6.3   0:06.66 pool-10-thread-[m
-[1m10070 u0_a498      20   0  19G 707M 247M R 29.6   6.3   0:03.95 pool-9-thread-1[m
-[1m 9997 u0_a498      24   4  19G 706M 247M R 29.6   6.3   0:02.17 HeapTaskDaemon [m
-10034 u0_a498      10 -10  19G 707M 247M S 18.5   6.3   0:00.78 RenderThread   
- 9991 u0_a498      10 -10  19G 706M 247M S 18.5   6.3   0:02.19 ce.eyeaiapp.dev
- 9998 u0_a498      24   4  19G 706M 247M S 14.8   6.3   0:01.01 ReferenceQueueD
-[1m10098 u0_a498      20   0  19G 708M 247M R 11.1   6.3   0:01.19 pool-13-thread-[m
-11156 u0_a498      12  -8  19G 709M 247M S  7.4   6.3   0:00.70 CameraX-camerax
-10336 u0_a498      -3   0  19G 708M 247M S  7.4   6.3   0:00.70 AAudio_1       
-10330 u0_a498      20   0  19G 708M 247M S  3.7   6.3   0:00.08 CameraDeviceExe
-10201 u0_a498      20   0  19G 708M 247M S  3.7   6.3   0:00.10 binder:9991_5  
-10112 u0_a498      17  -3  19G 708M 247M S  3.7   6.3   0:00.36 CXCP-Camera-H  
-10107 u0_a498      17  -3  19G 708M 247M S  3.7   6.3   0:00.04 CameraX-core_ca
-10012 u0_a498      20   0  19G 706M 247M S  3.7   6.3   0:00.06 binder:9991_4  
-11200 u0_a498      20   0  19G 709M 247M S  0.0   6.3   0:00.05 binder:9991_8  
-11190 u0_a498      20   0  19G 709M 247M S  0.0   6.3   0:00.00 pool-4-thread-1
---- t=9s 16:06:33 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   3 running,  69 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10458M used,      654M free,        1M buffers
- Swap:    12287M total,     4506M used,     7781M free,     1617M cached
-800%cpu 256%user  11%nice 174%sys 341%idle   0%iow  15%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 720M 247M R 88.8   6.4   0:08.08 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 719M 247M R 62.9   6.4   0:06.88 pool-10-thread-[m
-10070 u0_a498      20   0  19G 719M 247M S 33.3   6.4   0:04.05 pool-9-thread-1
- 9997 u0_a498      24   4  19G 718M 247M S 25.9   6.4   0:02.26 HeapTaskDaemon 
- 9991 u0_a498      10 -10  19G 718M 247M S 22.2   6.4   0:02.25 ce.eyeaiapp.dev
-[1m10098 u0_a498      20   0  19G 719M 247M R 18.5   6.4   0:01.23 pool-13-thread-[m
-10034 u0_a498      10 -10  19G 718M 247M S 11.1   6.4   0:00.83 RenderThread   
- 9998 u0_a498      24   4  19G 718M 247M S 11.1   6.4   0:01.06 ReferenceQueueD
-11156 u0_a498      12  -8  19G 720M 247M S  7.4   6.4   0:00.73 CameraX-camerax
-10336 u0_a498      -3   0  19G 720M 247M S  7.4   6.4   0:00.72 AAudio_1       
-10112 u0_a498      17  -3  19G 719M 247M S  3.7   6.4   0:00.38 CXCP-Camera-H  
-10015 u0_a498      20   0  19G 718M 247M S  3.7   6.4   0:00.33 JNA Cleaner    
- 9996 u0_a498      29   9  19G 718M 247M S  3.7   6.4   0:00.72 Jit thread pool
-11200 u0_a498      20   0  19G 720M 247M S  0.0   6.4   0:00.05 binder:9991_8  
-11193 u0_a498      20   0  19G 720M 247M S  0.0   6.4   0:00.00 pool-4-thread-1
-11195 u0_a498      20   0  19G 720M 247M S  0.0   6.4   0:00.00 pool-4-thread-1
-11188 u0_a498      20   0  19G 720M 247M S  0.0   6.4   0:00.00 pool-4-thread-1
---- t=10s 16:06:33 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   2 running,  70 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10514M used,      599M free,        1M buffers
- Swap:    12287M total,     4506M used,     7781M free,     1617M cached
-800%cpu 267%user  11%nice 152%sys 356%idle   0%iow  15%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-11158 u0_a498      20   0  19G 705M 247M S 81.4   6.3   0:08.41 pool-6-thread-1
-10073 u0_a498      20   0  19G 706M 247M S 66.6   6.3   0:07.11 pool-10-thread-
-10070 u0_a498      20   0  19G 706M 247M S 33.3   6.3   0:04.17 pool-9-thread-1
- 9997 u0_a498      24   4  19G 707M 247M S 22.2   6.3   0:02.35 HeapTaskDaemon 
-[1m10098 u0_a498      20   0  19G 704M 247M R 18.5   6.3   0:01.29 pool-13-thread-[m
- 9991 u0_a498      10 -10  19G 707M 247M S 18.5   6.3   0:02.32 ce.eyeaiapp.dev
-10034 u0_a498      10 -10  19G 707M 247M S 11.1   6.3   0:00.86 RenderThread   
-[1m 9998 u0_a498      24   4  19G 707M 247M R 11.1   6.3   0:01.10 ReferenceQueueD[m
-11156 u0_a498      12  -8  19G 705M 247M S  7.4   6.3   0:00.76 CameraX-camerax
-10336 u0_a498      -3   0  19G 705M 247M S  7.4   6.3   0:00.75 AAudio_1       
-10201 u0_a498      20   0  19G 704M 247M S  3.7   6.3   0:00.11 binder:9991_5  
-10112 u0_a498      17  -3  19G 704M 247M S  3.7   6.3   0:00.39 CXCP-Camera-H  
-10012 u0_a498      20   0  19G 707M 247M S  3.7   6.3   0:00.08 binder:9991_4  
-10002 u0_a498      20   0  19G 707M 247M S  3.7   6.3   0:00.14 binder:9991_1  
-11200 u0_a498      20   0  19G 706M 247M S  0.0   6.3   0:00.05 binder:9991_8  
-11192 u0_a498      20   0  19G 706M 247M S  0.0   6.3   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 706M 247M S  0.0   6.3   0:00.00 pool-4-thread-1
---- t=11s 16:06:34 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   3 running,  69 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10468M used,      644M free,        1M buffers
- Swap:    12287M total,     4506M used,     7781M free,     1617M cached
-800%cpu 304%user   7%nice 181%sys 293%idle   0%iow  15%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 760M 247M R 88.8   6.8   0:08.71 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 758M 247M R 62.9   6.8   0:07.34 pool-10-thread-[m
-10070 u0_a498      20   0  19G 758M 247M S 29.6   6.8   0:04.29 pool-9-thread-1
-[1m 9997 u0_a498      24   4  19G 757M 247M R 22.2   6.8   0:02.43 HeapTaskDaemon [m
-10201 u0_a498      20   0  19G 759M 247M S 18.5   6.8   0:00.12 binder:9991_5  
- 9991 u0_a498      10 -10  19G 756M 247M S 18.5   6.8   0:02.39 ce.eyeaiapp.dev
-11156 u0_a498      12  -8  19G 760M 247M S 11.1   6.8   0:00.79 CameraX-camerax
-10098 u0_a498      20   0  19G 758M 247M S 11.1   6.8   0:01.36 pool-13-thread-
-10034 u0_a498      10 -10  19G 757M 247M S 11.1   6.8   0:00.90 RenderThread   
- 9998 u0_a498      24   4  19G 757M 247M S 11.1   6.8   0:01.14 ReferenceQueueD
-10336 u0_a498      -3   0  19G 759M 247M S  7.4   6.8   0:00.77 AAudio_1       
-10409 u0_a498      20   0  19G 759M 247M S  3.7   6.8   0:00.03 DefaultExecutor
-10407 u0_a498      20   0  19G 759M 247M S  3.7   6.8   0:00.12 Depth Audio    
-10112 u0_a498      17  -3  19G 759M 247M S  3.7   6.8   0:00.41 CXCP-Camera-H  
-11200 u0_a498      20   0  19G 761M 247M S  0.0   6.8   0:00.05 binder:9991_8  
-11188 u0_a498      20   0  19G 760M 247M S  0.0   6.8   0:00.00 pool-4-thread-1
-11195 u0_a498      20   0  19G 760M 247M S  0.0   6.8   0:00.00 pool-4-thread-1
---- t=12s 16:06:34 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   5 running,  67 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10470M used,      642M free,        1M buffers
- Swap:    12287M total,     4506M used,     7781M free,     1617M cached
-800%cpu 278%user  11%nice 170%sys 326%idle   0%iow  11%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 733M 247M R 85.1   6.5   0:09.03 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 731M 247M R 66.6   6.5   0:07.56 pool-10-thread-[m
-[1m10070 u0_a498      20   0  19G 731M 247M R 33.3   6.5   0:04.40 pool-9-thread-1[m
-[1m 9997 u0_a498      24   4  19G 729M 247M R 25.9   6.5   0:02.50 HeapTaskDaemon [m
-10098 u0_a498      20   0  19G 731M 247M S 18.5   6.5   0:01.41 pool-13-thread-
-[1m 9991 u0_a498      10 -10  19G 729M 247M R 18.5   6.5   0:02.47 ce.eyeaiapp.dev[m
- 9998 u0_a498      24   4  19G 729M 247M S 11.1   6.5   0:01.18 ReferenceQueueD
-11156 u0_a498      12  -8  19G 733M 247M S  7.4   6.5   0:00.83 CameraX-camerax
-10336 u0_a498      -3   0  19G 733M 247M S  7.4   6.5   0:00.80 AAudio_1       
-10034 u0_a498      10 -10  19G 730M 247M S  7.4   6.5   0:00.94 RenderThread   
-10002 u0_a498      20   0  19G 729M 247M S  7.4   6.5   0:00.15 binder:9991_1  
-11172 u0_a498      20   0  19G 734M 247M S  3.7   6.6   0:00.04 AdrenoOsLib    
-10112 u0_a498      17  -3  19G 732M 247M S  3.7   6.5   0:00.42 CXCP-Camera-H  
-11200 u0_a498      20   0  19G 735M 247M S  0.0   6.6   0:00.05 binder:9991_8  
-11196 u0_a498      20   0  19G 734M 247M S  0.0   6.6   0:00.00 pool-4-thread-1
-11193 u0_a498      20   0  19G 734M 247M S  0.0   6.6   0:00.00 pool-4-thread-1
-11195 u0_a498      20   0  19G 734M 247M S  0.0   6.6   0:00.00 pool-4-thread-1
---- t=13s 16:06:34 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   2 running,  70 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10457M used,      655M free,        1M buffers
- Swap:    12287M total,     4502M used,     7785M free,     1620M cached
-800%cpu 281%user  19%nice 189%sys 289%idle   0%iow  15%irq   7%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 726M 247M R 81.4   6.5   0:09.35 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 728M 247M R 62.9   6.5   0:07.80 pool-10-thread-[m
-10070 u0_a498      20   0  19G 728M 247M S 29.6   6.5   0:04.52 pool-9-thread-1
- 9997 u0_a498      24   4  19G 728M 247M S 29.6   6.5   0:02.60 HeapTaskDaemon 
- 9991 u0_a498      10 -10  19G 728M 247M S 22.2   6.5   0:02.53 ce.eyeaiapp.dev
-10098 u0_a498      20   0  19G 726M 247M S 14.8   6.5   0:01.48 pool-13-thread-
- 9998 u0_a498      24   4  19G 728M 247M S 14.8   6.5   0:01.22 ReferenceQueueD
-11156 u0_a498      12  -8  19G 726M 247M S 11.1   6.5   0:00.85 CameraX-camerax
-10034 u0_a498      10 -10  19G 728M 247M S 11.1   6.5   0:00.97 RenderThread   
-10336 u0_a498      -3   0  19G 726M 247M S  7.4   6.5   0:00.83 AAudio_1       
-11179 u0_a498      20   0  19G 726M 247M S  3.7   6.5   0:00.07 binder:9991_7  
-10330 u0_a498      20   0  19G 726M 247M S  3.7   6.5   0:00.10 CameraDeviceExe
-10012 u0_a498      20   0  19G 728M 247M S  3.7   6.5   0:00.11 binder:9991_4  
-11200 u0_a498      20   0  19G 727M 247M S  0.0   6.5   0:00.05 binder:9991_8  
-11188 u0_a498      20   0  19G 726M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 727M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
-11196 u0_a498      20   0  19G 727M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
---- t=14s 16:06:35 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   4 running,  68 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10523M used,      590M free,        1M buffers
- Swap:    12287M total,     4502M used,     7785M free,     1620M cached
-800%cpu 278%user  15%nice 170%sys 319%idle   0%iow  15%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 687M 247M R 88.8   6.1   0:09.65 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 686M 247M R 70.3   6.1   0:08.02 pool-10-thread-[m
-[1m10070 u0_a498      20   0  19G 686M 247M R 33.3   6.1   0:04.63 pool-9-thread-1[m
- 9997 u0_a498      24   4  19G 685M 247M S 25.9   6.1   0:02.70 HeapTaskDaemon 
-10098 u0_a498      20   0  19G 687M 247M S 18.5   6.1   0:01.54 pool-13-thread-
- 9991 u0_a498      10 -10  19G 685M 247M S 18.5   6.1   0:02.61 ce.eyeaiapp.dev
-11156 u0_a498      12  -8  19G 687M 247M S 11.1   6.1   0:00.89 CameraX-camerax
-10034 u0_a498      10 -10  19G 686M 247M S 11.1   6.1   0:01.01 RenderThread   
-10336 u0_a498      -3   0  19G 687M 247M S  7.4   6.1   0:00.85 AAudio_1       
- 9998 u0_a498      24   4  19G 685M 247M S  7.4   6.1   0:01.28 ReferenceQueueD
-11179 u0_a498      20   0  19G 687M 247M S  3.7   6.1   0:00.08 binder:9991_7  
-10112 u0_a498      17  -3  19G 687M 247M S  3.7   6.1   0:00.45 CXCP-Camera-H  
-10078 u0_a498      17  -3  19G 687M 247M S  3.7   6.1   0:00.07 CameraX-core_ca
-[1m10015 u0_a498      20   0  19G 686M 247M R  3.7   6.1   0:00.35 JNA Cleaner    [m
-10012 u0_a498      20   0  19G 686M 247M S  3.7   6.1   0:00.12 binder:9991_4  
-11200 u0_a498      20   0  19G 688M 247M S  0.0   6.1   0:00.05 binder:9991_8  
-11192 u0_a498      20   0  19G 688M 247M S  0.0   6.1   0:00.00 pool-4-thread-1
---- t=15s 16:06:35 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   8 running,  64 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10279M used,      833M free,        1M buffers
- Swap:    12287M total,     4512M used,     7775M free,     1544M cached
-800%cpu 257%user  11%nice 189%sys 325%idle   0%iow  14%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 739M 247M R 89.2   6.6   0:09.98 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 738M 247M R 67.8   6.6   0:08.26 pool-10-thread-[m
-[1m10070 u0_a498      20   0  19G 738M 247M R 28.5   6.6   0:04.76 pool-9-thread-1[m
- 9997 u0_a498      24   4  19G 743M 247M S 25.0   6.6   0:02.81 HeapTaskDaemon 
-[1m 9991 u0_a498      10 -10  19G 753M 247M R 17.8   6.7   0:02.68 ce.eyeaiapp.dev[m
-10098 u0_a498      20   0  19G 739M 247M S 14.2   6.6   0:01.61 pool-13-thread-
-[1m10034 u0_a498      10 -10  19G 739M 247M R 10.7   6.6   0:01.05 RenderThread   [m
-[1m 9998 u0_a498      24   4  19G 743M 247M R 10.7   6.6   0:01.31 ReferenceQueueD[m
-11156 u0_a498      12  -8  19G 739M 247M S  7.1   6.6   0:00.93 CameraX-camerax
-10336 u0_a498      -3   0  19G 740M 247M S  7.1   6.6   0:00.88 AAudio_1       
-[1m10407 u0_a498      20   0  19G 741M 247M R  3.5   6.6   0:00.13 Depth Audio    [m
-10330 u0_a498      20   0  19G 740M 247M S  3.5   6.6   0:00.11 CameraDeviceExe
-10112 u0_a498      17  -3  19G 740M 247M S  3.5   6.6   0:00.46 CXCP-Camera-H  
-10002 u0_a498      20   0  19G 743M 247M S  3.5   6.6   0:00.17 binder:9991_1  
-11200 u0_a498      20   0  19G 734M 247M S  0.0   6.6   0:00.05 binder:9991_8  
-11190 u0_a498      20   0  19G 735M 247M S  0.0   6.6   0:00.00 pool-4-thread-1
-11193 u0_a498      20   0  19G 734M 247M S  0.0   6.6   0:00.00 pool-4-thread-1
---- t=16s 16:06:35 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   3 running,  69 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10346M used,      767M free,        1M buffers
- Swap:    12287M total,     4512M used,     7775M free,     1544M cached
-800%cpu 300%user  11%nice 167%sys 304%idle   0%iow  15%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 741M 247M R 88.8   6.6   0:10.30 pool-6-thread-1[m
-10073 u0_a498      20   0  19G 746M 247M S 62.9   6.7   0:08.51 pool-10-thread-
-[1m10070 u0_a498      20   0  19G 746M 247M R 33.3   6.7   0:04.87 pool-9-thread-1[m
- 9997 u0_a498      24   4  19G 752M 247M S 22.2   6.7   0:02.91 HeapTaskDaemon 
- 9991 u0_a498      10 -10  19G 752M 247M S 18.5   6.7   0:02.76 ce.eyeaiapp.dev
-10098 u0_a498      20   0  19G 744M 247M S 14.8   6.6   0:01.67 pool-13-thread-
-[1m 9998 u0_a498      24   4  19G 752M 247M R 14.8   6.7   0:01.35 ReferenceQueueD[m
-11156 u0_a498      12  -8  19G 741M 247M S 11.1   6.6   0:00.96 CameraX-camerax
-10034 u0_a498      10 -10  19G 750M 247M S 11.1   6.7   0:01.09 RenderThread   
-10336 u0_a498      -3   0  19G 741M 247M S  7.4   6.6   0:00.91 AAudio_1       
-11172 u0_a498      20   0  19G 741M 247M S  3.7   6.6   0:00.05 AdrenoOsLib    
-10407 u0_a498      20   0  19G 741M 247M S  3.7   6.6   0:00.14 Depth Audio    
-10112 u0_a498      17  -3  19G 741M 247M S  3.7   6.6   0:00.48 CXCP-Camera-H  
-10002 u0_a498      20   0  19G 752M 247M S  3.7   6.7   0:00.18 binder:9991_1  
-11200 u0_a498      20   0  19G 742M 247M S  0.0   6.6   0:00.05 binder:9991_8  
-11190 u0_a498      20   0  19G 741M 247M S  0.0   6.6   0:00.00 pool-4-thread-1
-11193 u0_a498      20   0  19G 741M 247M S  0.0   6.6   0:00.00 pool-4-thread-1
---- t=17s 16:06:36 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   3 running,  69 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10162M used,      951M free,        1M buffers
- Swap:    12287M total,     4512M used,     7775M free,     1458M cached
-800%cpu 289%user  14%nice 168%sys 311%idle   0%iow  14%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 779M 247M R 85.7   7.0   0:10.63 pool-6-thread-1[m
-10073 u0_a498      20   0  19G 779M 247M S 60.7   7.0   0:08.74 pool-10-thread-
-10070 u0_a498      20   0  19G 779M 247M S 32.1   7.0   0:04.99 pool-9-thread-1
-[1m 9997 u0_a498      24   4  19G 778M 247M R 25.0   7.0   0:02.99 HeapTaskDaemon [m
-10002 u0_a498      20   0  19G 778M 247M S 17.8   7.0   0:00.19 binder:9991_1  
- 9991 u0_a498      10 -10  19G 778M 247M S 17.8   7.0   0:02.83 ce.eyeaiapp.dev
-10098 u0_a498      20   0  19G 779M 247M S 14.2   7.0   0:01.73 pool-13-thread-
- 9998 u0_a498      24   4  19G 778M 247M S 14.2   7.0   0:01.40 ReferenceQueueD
-[1m10034 u0_a498      10 -10  19G 778M 247M R 10.7   7.0   0:01.13 RenderThread   [m
-11156 u0_a498      12  -8  19G 779M 247M S  7.1   7.0   0:01.00 CameraX-camerax
-10336 u0_a498      -3   0  19G 779M 247M S  7.1   7.0   0:00.94 AAudio_1       
-10330 u0_a498      20   0  19G 779M 247M S  3.5   7.0   0:00.12 CameraDeviceExe
-11200 u0_a498      20   0  19G 780M 247M S  0.0   7.0   0:00.05 binder:9991_8  
-11188 u0_a498      20   0  19G 780M 247M S  0.0   7.0   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 780M 247M S  0.0   7.0   0:00.00 pool-4-thread-1
-11196 u0_a498      20   0  19G 780M 247M S  0.0   7.0   0:00.00 pool-4-thread-1
-11189 u0_a498      20   0  19G 780M 247M S  0.0   7.0   0:00.00 pool-4-thread-1
---- t=18s 16:06:36 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   2 running,  70 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10216M used,      896M free,        1M buffers
- Swap:    12287M total,     4512M used,     7775M free,     1421M cached
-800%cpu 281%user  15%nice 159%sys 326%idle   0%iow  15%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 728M 247M R 81.4   6.5   0:10.96 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 727M 247M R 70.3   6.5   0:08.97 pool-10-thread-[m
-10070 u0_a498      20   0  19G 727M 247M S 33.3   6.5   0:05.11 pool-9-thread-1
- 9997 u0_a498      24   4  19G 727M 247M S 29.6   6.5   0:03.09 HeapTaskDaemon 
- 9991 u0_a498      10 -10  19G 727M 247M S 18.5   6.5   0:02.90 ce.eyeaiapp.dev
-10098 u0_a498      20   0  19G 727M 247M S 14.8   6.5   0:01.79 pool-13-thread-
-10034 u0_a498      10 -10  19G 727M 247M S 11.1   6.5   0:01.17 RenderThread   
- 9998 u0_a498      24   4  19G 727M 247M S 11.1   6.5   0:01.45 ReferenceQueueD
-11156 u0_a498      12  -8  19G 728M 247M S  7.4   6.5   0:01.03 CameraX-camerax
-10336 u0_a498      -3   0  19G 728M 247M S  7.4   6.5   0:00.97 AAudio_1       
-10112 u0_a498      17  -3  19G 728M 247M S  7.4   6.5   0:00.51 CXCP-Camera-H  
-10407 u0_a498      20   0  19G 728M 247M S  3.7   6.5   0:00.15 Depth Audio    
-10002 u0_a498      20   0  19G 727M 247M S  3.7   6.5   0:00.24 binder:9991_1  
-11200 u0_a498      20   0  19G 729M 247M S  0.0   6.5   0:00.05 binder:9991_8  
-11196 u0_a498      20   0  19G 728M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
-11193 u0_a498      20   0  19G 728M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
-11195 u0_a498      20   0  19G 728M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
---- t=19s 16:06:37 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   2 running,  70 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10193M used,      920M free,        1M buffers
- Swap:    12287M total,     4510M used,     7777M free,     1424M cached
-800%cpu 319%user  30%nice 196%sys 237%idle   4%iow  15%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 768M 247M R 88.8   6.9   0:11.27 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 767M 247M R 59.2   6.8   0:09.21 pool-10-thread-[m
- 9997 u0_a498      24   4  19G 766M 247M S 33.3   6.8   0:03.18 HeapTaskDaemon 
-10070 u0_a498      20   0  19G 767M 247M S 22.2   6.8   0:05.23 pool-9-thread-1
-10098 u0_a498      20   0  19G 767M 247M S 18.5   6.9   0:01.85 pool-13-thread-
- 9991 u0_a498      10 -10  19G 766M 247M S 14.8   6.8   0:02.97 ce.eyeaiapp.dev
-11156 u0_a498      12  -8  19G 768M 247M S 11.1   6.9   0:01.06 CameraX-camerax
-10336 u0_a498      -3   0  19G 768M 247M S 11.1   6.9   0:00.99 AAudio_1       
- 9998 u0_a498      24   4  19G 766M 247M S 11.1   6.8   0:01.49 ReferenceQueueD
-10034 u0_a498      10 -10  19G 767M 247M S  7.4   6.8   0:01.20 RenderThread   
-11179 u0_a498      20   0  19G 768M 247M S  3.7   6.9   0:00.12 binder:9991_7  
-10409 u0_a498      20   0  19G 768M 247M S  3.7   6.9   0:00.04 DefaultExecutor
-10112 u0_a498      17  -3  19G 767M 247M S  3.7   6.9   0:00.53 CXCP-Camera-H  
-10015 u0_a498      20   0  19G 766M 247M S  3.7   6.8   0:00.37 JNA Cleaner    
-11200 u0_a498      20   0  19G 768M 247M S  0.0   6.9   0:00.05 binder:9991_8  
-11196 u0_a498      20   0  19G 768M 247M S  0.0   6.9   0:00.00 pool-4-thread-1
-11193 u0_a498      20   0  19G 768M 247M S  0.0   6.9   0:00.00 pool-4-thread-1
---- t=20s 16:06:37 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   3 running,  69 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10219M used,      894M free,        1M buffers
- Swap:    12287M total,     4510M used,     7777M free,     1432M cached
-800%cpu 311%user  14%nice 157%sys 296%idle   4%iow  14%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 751M 247M R 85.7   6.7   0:11.60 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 752M 247M R 53.5   6.7   0:09.43 pool-10-thread-[m
-[1m 9997 u0_a498      24   4  19G 749M 247M R 32.1   6.7   0:03.30 HeapTaskDaemon [m
-10070 u0_a498      20   0  19G 752M 247M S 21.4   6.7   0:05.31 pool-9-thread-1
-10098 u0_a498      20   0  19G 752M 247M S 17.8   6.7   0:01.92 pool-13-thread-
- 9998 u0_a498      24   4  19G 749M 247M S 14.2   6.7   0:01.53 ReferenceQueueD
- 9991 u0_a498      10 -10  19G 749M 247M S 14.2   6.7   0:03.03 ce.eyeaiapp.dev
-11156 u0_a498      12  -8  19G 753M 247M S 10.7   6.7   0:01.09 CameraX-camerax
-10336 u0_a498      -3   0  19G 753M 247M S  7.1   6.7   0:01.02 AAudio_1       
-10034 u0_a498      10 -10  19G 750M 247M S  7.1   6.7   0:01.23 RenderThread   
-11179 u0_a498      20   0  19G 750M 247M S  3.5   6.7   0:00.13 binder:9991_7  
-10330 u0_a498      20   0  19G 753M 247M S  3.5   6.7   0:00.13 CameraDeviceExe
-10112 u0_a498      17  -3  19G 752M 247M S  3.5   6.7   0:00.54 CXCP-Camera-H  
-10002 u0_a498      20   0  19G 749M 247M S  3.5   6.7   0:00.25 binder:9991_1  
- 9996 u0_a498      29   9  19G 749M 247M S  3.5   6.7   0:00.73 Jit thread pool
-11200 u0_a498      20   0  19G 750M 247M S  0.0   6.7   0:00.05 binder:9991_8  
-11193 u0_a498      20   0  19G 750M 247M S  0.0   6.7   0:00.00 pool-4-thread-1
---- t=21s 16:06:37 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   4 running,  68 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10128M used,      985M free,        1M buffers
- Swap:    12287M total,     4510M used,     7777M free,     1353M cached
-800%cpu 271%user  11%nice 154%sys 354%idle   0%iow  11%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 701M 247M R 82.1   6.3   0:11.94 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 702M 247M R 53.5   6.3   0:09.65 pool-10-thread-[m
-10098 u0_a498      20   0  19G 700M 247M S 21.4   6.2   0:01.99 pool-13-thread-
-10070 u0_a498      20   0  19G 701M 247M S 21.4   6.3   0:05.38 pool-9-thread-1
- 9997 u0_a498      24   4  19G 703M 247M S 21.4   6.3   0:03.41 HeapTaskDaemon 
-11156 u0_a498      12  -8  19G 701M 247M S 10.7   6.3   0:01.13 CameraX-camerax
-[1m10034 u0_a498      10 -10  19G 704M 247M R 10.7   6.3   0:01.26 RenderThread   [m
-[1m 9998 u0_a498      24   4  19G 704M 247M R 10.7   6.3   0:01.58 ReferenceQueueD[m
- 9991 u0_a498      10 -10  19G 703M 247M S 10.7   6.3   0:03.09 ce.eyeaiapp.dev
-10336 u0_a498      -3   0  19G 701M 247M S  7.1   6.3   0:01.06 AAudio_1       
-11179 u0_a498      20   0  19G 702M 247M S  3.5   6.3   0:00.14 binder:9991_7  
-10330 u0_a498      20   0  19G 701M 247M S  3.5   6.3   0:00.14 CameraDeviceExe
-10112 u0_a498      17  -3  19G 700M 247M S  3.5   6.3   0:00.56 CXCP-Camera-H  
-11200 u0_a498      20   0  19G 702M 247M S  0.0   6.3   0:00.05 binder:9991_8  
-11188 u0_a498      20   0  19G 702M 247M S  0.0   6.3   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 702M 247M S  0.0   6.3   0:00.00 pool-4-thread-1
-11196 u0_a498      20   0  19G 702M 247M S  0.0   6.3   0:00.00 pool-4-thread-1
---- t=22s 16:06:38 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   3 running,  69 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10064M used,     1048M free,        1M buffers
- Swap:    12287M total,     4510M used,     7777M free,     1310M cached
-800%cpu 259%user  19%nice 189%sys 311%idle   4%iow  19%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 726M 247M R 85.1   6.5   0:12.27 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 725M 247M R 55.5   6.5   0:09.86 pool-10-thread-[m
- 9997 u0_a498      24   4  19G 724M 247M S 25.9   6.5   0:03.50 HeapTaskDaemon 
-[1m10070 u0_a498      20   0  19G 725M 247M R 22.2   6.5   0:05.45 pool-9-thread-1[m
-10098 u0_a498      20   0  19G 725M 247M S 18.5   6.5   0:02.06 pool-13-thread-
-11156 u0_a498      12  -8  19G 726M 247M S 11.1   6.5   0:01.16 CameraX-camerax
-10336 u0_a498      -3   0  19G 726M 247M S 11.1   6.5   0:01.08 AAudio_1       
- 9998 u0_a498      24   4  19G 724M 247M S 11.1   6.5   0:01.62 ReferenceQueueD
- 9991 u0_a498      10 -10  19G 724M 247M S 11.1   6.5   0:03.14 ce.eyeaiapp.dev
-10034 u0_a498      10 -10  19G 724M 247M S  7.4   6.5   0:01.30 RenderThread   
-10012 u0_a498      20   0  19G 724M 247M S  7.4   6.5   0:00.16 binder:9991_4  
-10112 u0_a498      17  -3  19G 726M 247M S  3.7   6.5   0:00.57 CXCP-Camera-H  
-11200 u0_a498      20   0  19G 726M 247M S  0.0   6.5   0:00.05 binder:9991_8  
-11196 u0_a498      20   0  19G 726M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 726M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
-11188 u0_a498      20   0  19G 726M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
-11189 u0_a498      20   0  19G 726M 247M S  0.0   6.5   0:00.00 pool-4-thread-1
---- t=23s 16:06:38 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   4 running,  68 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10113M used,      999M free,        1M buffers
- Swap:    12287M total,     4510M used,     7777M free,     1313M cached
-800%cpu 267%user   4%nice 152%sys 363%idle   0%iow  11%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 710M 246M R 92.5   6.3   0:12.57 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 709M 246M R 59.2   6.3   0:10.06 pool-10-thread-[m
-10070 u0_a498      20   0  19G 709M 246M S 22.2   6.3   0:05.52 pool-9-thread-1
-10098 u0_a498      20   0  19G 709M 246M S 18.5   6.3   0:02.12 pool-13-thread-
- 9997 u0_a498      24   4  19G 708M 246M S 18.5   6.3   0:03.57 HeapTaskDaemon 
- 9991 u0_a498      10 -10  19G 708M 246M S 14.8   6.3   0:03.18 ce.eyeaiapp.dev
-11156 u0_a498      12  -8  19G 710M 246M S 11.1   6.3   0:01.20 CameraX-camerax
- 9998 u0_a498      24   4  19G 708M 246M S 11.1   6.3   0:01.66 ReferenceQueueD
-10034 u0_a498      10 -10  19G 709M 246M S  7.4   6.3   0:01.32 RenderThread   
-[1m10336 u0_a498      -3   0  19G 710M 246M R  3.7   6.3   0:01.12 AAudio_1       [m
-10112 u0_a498      17  -3  19G 709M 246M S  3.7   6.3   0:00.58 CXCP-Camera-H  
-10012 u0_a498      20   0  19G 709M 246M S  3.7   6.3   0:00.22 binder:9991_4  
-11200 u0_a498      20   0  19G 710M 246M S  0.0   6.3   0:00.05 binder:9991_8  
-11196 u0_a498      20   0  19G 710M 246M S  0.0   6.3   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 710M 246M S  0.0   6.3   0:00.00 pool-4-thread-1
-11188 u0_a498      20   0  19G 710M 246M S  0.0   6.3   0:00.00 pool-4-thread-1
-11189 u0_a498      20   0  19G 710M 246M S  0.0   6.3   0:00.00 pool-4-thread-1
---- t=24s 16:06:38 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   4 running,  68 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10066M used,     1046M free,        1M buffers
- Swap:    12287M total,     4510M used,     7777M free,     1313M cached
-800%cpu 236%user  11%nice 161%sys 379%idle   0%iow  11%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 679M 246M R 85.7   6.1   0:12.91 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 678M 246M R 57.1   6.1   0:10.26 pool-10-thread-[m
- 9997 u0_a498      24   4  19G 686M 246M S 25.0   6.1   0:03.65 HeapTaskDaemon 
-[1m10098 u0_a498      20   0  19G 679M 246M R 21.4   6.1   0:02.18 pool-13-thread-[m
-10070 u0_a498      20   0  19G 678M 246M S 17.8   6.1   0:05.60 pool-9-thread-1
- 9991 u0_a498      10 -10  19G 689M 246M S 14.2   6.1   0:03.23 ce.eyeaiapp.dev
-11156 u0_a498      12  -8  19G 679M 246M S 10.7   6.1   0:01.23 CameraX-camerax
-10336 u0_a498      -3   0  19G 679M 246M S 10.7   6.1   0:01.14 AAudio_1       
-[1m 9998 u0_a498      24   4  19G 684M 246M R 10.7   6.1   0:01.70 ReferenceQueueD[m
-10034 u0_a498      10 -10  19G 683M 246M S  7.1   6.1   0:01.35 RenderThread   
-11200 u0_a498      20   0  19G 680M 246M S  3.5   6.1   0:00.05 binder:9991_8  
-11189 u0_a498      20   0  19G 680M 246M S  0.0   6.1   0:00.00 pool-4-thread-1
-11195 u0_a498      20   0  19G 680M 246M S  0.0   6.1   0:00.00 pool-4-thread-1
-11188 u0_a498      20   0  19G 680M 246M S  0.0   6.1   0:00.00 pool-4-thread-1
-11190 u0_a498      20   0  19G 680M 246M S  0.0   6.1   0:00.00 pool-4-thread-1
-11191 u0_a498      20   0  19G 680M 246M S  0.0   6.1   0:00.00 pool-4-thread-1
-11192 u0_a498      20   0  19G 680M 246M S  0.0   6.1   0:00.00 pool-4-thread-1
---- t=25s 16:06:39 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   4 running,  68 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10128M used,      985M free,        1M buffers
- Swap:    12287M total,     4510M used,     7777M free,     1313M cached
-800%cpu 278%user  15%nice 141%sys 348%idle   0%iow  15%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 703M 246M R 92.5   6.3   0:13.24 pool-6-thread-1[m
-10073 u0_a498      20   0  19G 702M 246M S 59.2   6.3   0:10.45 pool-10-thread-
- 9997 u0_a498      24   4  19G 702M 246M S 22.2   6.3   0:03.73 HeapTaskDaemon 
-[1m10098 u0_a498      20   0  19G 703M 246M R 18.5   6.3   0:02.25 pool-13-thread-[m
-[1m10070 u0_a498      20   0  19G 702M 246M R 18.5   6.3   0:05.67 pool-9-thread-1[m
-11156 u0_a498      12  -8  19G 703M 246M S 11.1   6.3   0:01.27 CameraX-camerax
-[1m 9991 u0_a498      10 -10  19G 702M 246M R 11.1   6.3   0:03.28 ce.eyeaiapp.dev[m
-10336 u0_a498      -3   0  19G 703M 246M S  7.4   6.3   0:01.17 AAudio_1       
- 9998 u0_a498      24   4  19G 702M 246M S  7.4   6.3   0:01.75 ReferenceQueueD
-11179 u0_a498      20   0  19G 703M 246M S  3.7   6.3   0:00.16 binder:9991_7  
-11150 u0_a498      20   0  19G 703M 246M S  3.7   6.3   0:00.08 AdrenoOsLib    
-10330 u0_a498      20   0  19G 703M 246M S  3.7   6.3   0:00.15 CameraDeviceExe
-10201 u0_a498      20   0  19G 703M 246M S  3.7   6.3   0:00.18 binder:9991_5  
-10112 u0_a498      17  -3  19G 703M 246M S  3.7   6.3   0:00.61 CXCP-Camera-H  
-10034 u0_a498      10 -10  19G 702M 246M S  3.7   6.3   0:01.37 RenderThread   
-11200 u0_a498      20   0  19G 703M 246M S  0.0   6.3   0:00.06 binder:9991_8  
-11188 u0_a498      20   0  19G 703M 246M S  0.0   6.3   0:00.00 pool-4-thread-1
---- t=26s 16:06:39 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   3 running,  69 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10153M used,      960M free,        1M buffers
- Swap:    12287M total,     4510M used,     7777M free,     1313M cached
-800%cpu 271%user   7%nice 136%sys 368%idle   0%iow  14%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 739M 246M R 89.2   6.6   0:13.58 pool-6-thread-1[m
-10073 u0_a498      20   0  19G 738M 246M S 53.5   6.6   0:10.67 pool-10-thread-
-10070 u0_a498      20   0  19G 738M 246M S 21.4   6.6   0:05.74 pool-9-thread-1
-[1m 9997 u0_a498      20   0  19G 738M 246M R 21.4   6.6   0:03.82 HeapTaskDaemon [m
-10098 u0_a498      20   0  19G 738M 246M S 14.2   6.6   0:02.32 pool-13-thread-
- 9991 u0_a498      10 -10  19G 737M 246M S 14.2   6.6   0:03.32 ce.eyeaiapp.dev
-11156 u0_a498      12  -8  19G 739M 246M S 10.7   6.6   0:01.31 CameraX-camerax
- 9998 u0_a498      24   4  19G 738M 246M S 10.7   6.6   0:01.78 ReferenceQueueD
-10336 u0_a498      -3   0  19G 739M 246M S  7.1   6.6   0:01.20 AAudio_1       
-10034 u0_a498      10 -10  19G 738M 246M S  7.1   6.6   0:01.40 RenderThread   
-10201 u0_a498      20   0  19G 739M 246M S  3.5   6.6   0:00.19 binder:9991_5  
-10108 u0_a498      17  -3  19G 738M 246M S  3.5   6.6   0:00.04 CameraX-core_ca
-10112 u0_a498      17  -3  19G 738M 246M S  3.5   6.6   0:00.62 CXCP-Camera-H  
-10107 u0_a498      17  -3  19G 738M 246M S  3.5   6.6   0:00.06 CameraX-core_ca
-10078 u0_a498      17  -3  19G 738M 246M S  3.5   6.6   0:00.08 CameraX-core_ca
-10015 u0_a498      20   0  19G 738M 246M S  3.5   6.6   0:00.39 JNA Cleaner    
- 9999 u0_a498      24   4  19G 738M 246M S  3.5   6.6   0:00.02 FinalizerDaemon
---- t=27s 16:06:40 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   2 running,  70 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10120M used,      992M free,        1M buffers
- Swap:    12287M total,     4510M used,     7777M free,     1313M cached
-800%cpu 244%user   7%nice 167%sys 363%idle   0%iow  15%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 778M 246M R 85.1   6.9   0:13.93 pool-6-thread-1[m
-10073 u0_a498      20   0  19G 777M 246M S 55.5   6.9   0:10.86 pool-10-thread-
- 9997 u0_a498      24   4  19G 777M 246M S 25.9   6.9   0:03.89 HeapTaskDaemon 
-10098 u0_a498      20   0  19G 777M 246M S 14.8   6.9   0:02.38 pool-13-thread-
-10070 u0_a498      20   0  19G 777M 246M S 14.8   6.9   0:05.82 pool-9-thread-1
-11156 u0_a498      12  -8  19G 778M 246M S 11.1   6.9   0:01.34 CameraX-camerax
- 9991 u0_a498      10 -10  19G 777M 246M S 11.1   6.9   0:03.37 ce.eyeaiapp.dev
-10336 u0_a498      -3   0  19G 777M 246M S  7.4   6.9   0:01.23 AAudio_1       
- 9998 u0_a498      24   4  19G 777M 246M S  7.4   6.9   0:01.83 ReferenceQueueD
-11179 u0_a498      20   0  19G 778M 246M S  3.7   6.9   0:00.17 binder:9991_7  
-10034 u0_a498      10 -10  19G 777M 246M S  3.7   6.9   0:01.43 RenderThread   
-10012 u0_a498      20   0  19G 777M 246M S  3.7   6.9   0:00.24 binder:9991_4  
-11200 u0_a498      20   0  19G 778M 246M S  0.0   6.9   0:00.06 binder:9991_8  
-11188 u0_a498      20   0  19G 778M 246M S  0.0   6.9   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 778M 246M S  0.0   6.9   0:00.00 pool-4-thread-1
-11196 u0_a498      20   0  19G 778M 246M S  0.0   6.9   0:00.00 pool-4-thread-1
-11189 u0_a498      20   0  19G 778M 246M S  0.0   6.9   0:00.00 pool-4-thread-1
---- t=28s 16:06:40 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   2 running,  70 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,     9958M used,     1155M free,        1M buffers
- Swap:    12287M total,     4508M used,     7779M free,     1223M cached
-800%cpu 281%user   7%nice 219%sys 274%idle   0%iow  15%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 773M 246M R 85.1   6.9   0:14.26 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 772M 246M R 44.4   6.9   0:11.07 pool-10-thread-[m
-10070 u0_a498      20   0  19G 772M 246M S 22.2   6.9   0:05.88 pool-9-thread-1
-10098 u0_a498      20   0  19G 773M 246M S 18.5   6.9   0:02.44 pool-13-thread-
- 9998 u0_a498      24   4  19G 772M 246M S 18.5   6.9   0:01.86 ReferenceQueueD
-11179 u0_a498      20   0  19G 773M 246M S 14.8   6.9   0:00.18 binder:9991_7  
- 9997 u0_a498      24   4  19G 772M 246M S 14.8   6.9   0:03.98 HeapTaskDaemon 
-11156 u0_a498      12  -8  19G 773M 246M S 11.1   6.9   0:01.37 CameraX-camerax
-10034 u0_a498      10 -10  19G 772M 246M S 11.1   6.9   0:01.44 RenderThread   
- 9991 u0_a498      10 -10  19G 772M 246M S 11.1   6.9   0:03.42 ce.eyeaiapp.dev
-10336 u0_a498      -3   0  19G 773M 246M S  7.4   6.9   0:01.26 AAudio_1       
-10409 u0_a498      20   0  19G 773M 246M S  3.7   6.9   0:00.05 DefaultExecutor
-10407 u0_a498      20   0  19G 773M 246M S  3.7   6.9   0:00.20 Depth Audio    
-10112 u0_a498      17  -3  19G 773M 246M S  3.7   6.9   0:00.66 CXCP-Camera-H  
-10012 u0_a498      20   0  19G 772M 246M S  3.7   6.9   0:00.25 binder:9991_4  
-11200 u0_a498      20   0  19G 774M 246M S  0.0   6.9   0:00.06 binder:9991_8  
-11196 u0_a498      20   0  19G 774M 246M S  0.0   6.9   0:00.00 pool-4-thread-1
---- t=29s 16:06:40 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   2 running,  70 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,     9973M used,     1140M free,        1M buffers
- Swap:    12287M total,     4508M used,     7779M free,     1197M cached
-800%cpu 281%user  11%nice 137%sys 352%idle   0%iow  15%irq   4%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 737M 249M R 85.1   6.6   0:14.59 pool-6-thread-1[m
-10073 u0_a498      20   0  19G 735M 249M S 55.5   6.6   0:11.24 pool-10-thread-
- 9997 u0_a498      24   4  19G 734M 249M S 25.9   6.6   0:04.04 HeapTaskDaemon 
-10098 u0_a498      20   0  19G 736M 249M S 22.2   6.6   0:02.51 pool-13-thread-
-10070 u0_a498      20   0  19G 735M 249M S 14.8   6.6   0:05.97 pool-9-thread-1
- 9991 u0_a498      10 -10  19G 734M 249M S 14.8   6.6   0:03.46 ce.eyeaiapp.dev
-11156 u0_a498      12  -8  19G 737M 249M S 11.1   6.6   0:01.40 CameraX-camerax
- 9998 u0_a498      24   4  19G 734M 249M S 11.1   6.6   0:01.91 ReferenceQueueD
-11179 u0_a498      20   0  19G 737M 249M S  7.4   6.6   0:00.22 binder:9991_7  
-10336 u0_a498      -3   0  19G 737M 249M S  7.4   6.6   0:01.29 AAudio_1       
-10034 u0_a498      10 -10  19G 735M 249M S  7.4   6.6   0:01.49 RenderThread   
-10015 u0_a498      20   0  19G 735M 249M S  3.7   6.6   0:00.40 JNA Cleaner    
-[1m11200 u0_a498      20   0  19G 738M 249M R  0.0   6.6   0:00.06 binder:9991_8  [m
-11188 u0_a498      20   0  19G 737M 249M S  0.0   6.6   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 738M 249M S  0.0   6.6   0:00.00 pool-4-thread-1
-11196 u0_a498      20   0  19G 738M 249M S  0.0   6.6   0:00.00 pool-4-thread-1
-11189 u0_a498      20   0  19G 737M 249M S  0.0   6.6   0:00.00 pool-4-thread-1
---- t=30s 16:06:41 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   2 running,  70 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,     9968M used,     1144M free,        1M buffers
- Swap:    12287M total,     4508M used,     7779M free,     1197M cached
-800%cpu 256%user  11%nice 156%sys 363%idle   0%iow  15%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 746M 249M R 88.8   6.7   0:14.91 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 744M 249M R 55.5   6.6   0:11.45 pool-10-thread-[m
- 9997 u0_a498      24   4  19G 742M 249M S 25.9   6.6   0:04.12 HeapTaskDaemon 
-10070 u0_a498      20   0  19G 743M 249M S 22.2   6.6   0:06.03 pool-9-thread-1
-10098 u0_a498      20   0  19G 744M 249M S 18.5   6.6   0:02.58 pool-13-thread-
- 9991 u0_a498      10 -10  19G 742M 249M S 14.8   6.6   0:03.51 ce.eyeaiapp.dev
- 9998 u0_a498      24   4  19G 742M 249M S 11.1   6.6   0:01.96 ReferenceQueueD
-11156 u0_a498      12  -8  19G 746M 249M S  7.4   6.7   0:01.44 CameraX-camerax
-10034 u0_a498      10 -10  19G 743M 249M S  7.4   6.6   0:01.51 RenderThread   
-11200 u0_a498      20   0  19G 747M 249M S  3.7   6.7   0:00.07 binder:9991_8  
-11179 u0_a498      20   0  19G 746M 249M S  3.7   6.7   0:00.24 binder:9991_7  
-11150 u0_a498      20   0  19G 746M 249M S  3.7   6.7   0:00.09 AdrenoOsLib    
-10336 u0_a498      -3   0  19G 745M 249M S  3.7   6.7   0:01.32 AAudio_1       
-10112 u0_a498      17  -3  19G 744M 249M S  3.7   6.6   0:00.69 CXCP-Camera-H  
-10012 u0_a498      20   0  19G 743M 249M S  3.7   6.6   0:00.26 binder:9991_4  
- 9999 u0_a498      24   4  19G 743M 249M S  3.7   6.6   0:00.03 FinalizerDaemon
-11193 u0_a498      20   0  19G 747M 249M S  0.0   6.7   0:00.00 pool-4-thread-1
---- t=31s 16:06:41 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   2 running,  70 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10018M used,     1094M free,        1M buffers
- Swap:    12287M total,     4508M used,     7779M free,     1197M cached
-800%cpu 285%user  11%nice 133%sys 356%idle   0%iow  15%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 732M 249M R 88.8   6.5   0:15.24 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 731M 249M R 59.2   6.5   0:11.65 pool-10-thread-[m
- 9997 u0_a498      24   4  19G 731M 249M S 25.9   6.5   0:04.22 HeapTaskDaemon 
-10098 u0_a498      20   0  19G 731M 249M S 22.2   6.5   0:02.64 pool-13-thread-
-10070 u0_a498      20   0  19G 731M 249M S 18.5   6.5   0:06.11 pool-9-thread-1
-11156 u0_a498      12  -8  19G 732M 249M S 11.1   6.5   0:01.47 CameraX-camerax
-10336 u0_a498      -3   0  19G 732M 249M S 11.1   6.5   0:01.34 AAudio_1       
- 9991 u0_a498      10 -10  19G 731M 249M S 11.1   6.5   0:03.56 ce.eyeaiapp.dev
-10034 u0_a498      10 -10  19G 731M 249M S  7.4   6.5   0:01.54 RenderThread   
- 9998 u0_a498      24   4  19G 731M 249M S  7.4   6.5   0:02.00 ReferenceQueueD
-11172 u0_a498      20   0  19G 732M 249M S  3.7   6.5   0:00.07 AdrenoOsLib    
-10409 u0_a498      20   0  19G 732M 249M S  3.7   6.5   0:00.06 DefaultExecutor
-10330 u0_a498      20   0  19G 732M 249M S  3.7   6.5   0:00.18 CameraDeviceExe
-10112 u0_a498      17  -3  19G 732M 249M S  3.7   6.5   0:00.70 CXCP-Camera-H  
-10012 u0_a498      20   0  19G 731M 249M S  3.7   6.5   0:00.27 binder:9991_4  
-11200 u0_a498      20   0  19G 732M 249M S  0.0   6.5   0:00.08 binder:9991_8  
-11196 u0_a498      20   0  19G 732M 249M S  0.0   6.5   0:00.00 pool-4-thread-1
---- t=32s 16:06:42 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   5 running,  67 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,     9975M used,     1137M free,        1M buffers
- Swap:    12287M total,     4507M used,     7780M free,     1197M cached
-800%cpu 278%user  11%nice 152%sys 344%idle   0%iow  15%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 720M 249M R 85.1   6.4   0:15.57 pool-6-thread-1[m
-10073 u0_a498      20   0  19G 727M 249M S 62.9   6.5   0:11.85 pool-10-thread-
- 9997 u0_a498      24   4  19G 729M 249M S 22.2   6.5   0:04.31 HeapTaskDaemon 
-10098 u0_a498      20   0  19G 726M 249M S 18.5   6.5   0:02.72 pool-13-thread-
-[1m10070 u0_a498      20   0  19G 727M 249M R 18.5   6.5   0:06.18 pool-9-thread-1[m
-[1m 9998 u0_a498      24   4  19G 727M 249M R 11.1   6.5   0:02.04 ReferenceQueueD[m
-[1m 9991 u0_a498      10 -10  19G 731M 249M R 11.1   6.5   0:03.61 ce.eyeaiapp.dev[m
-11156 u0_a498      12  -8  19G 720M 249M S  7.4   6.4   0:01.51 CameraX-camerax
-10034 u0_a498      10 -10  19G 727M 249M S  7.4   6.5   0:01.57 RenderThread   
-11200 u0_a498      20   0  19G 721M 249M S  3.7   6.4   0:00.08 binder:9991_8  
-[1m11179 u0_a498      20   0  19G 720M 249M R  3.7   6.4   0:00.25 binder:9991_7  [m
-10407 u0_a498      20   0  19G 720M 249M S  3.7   6.4   0:00.22 Depth Audio    
-10336 u0_a498      -3   0  19G 721M 249M S  3.7   6.4   0:01.38 AAudio_1       
-10112 u0_a498      17  -3  19G 724M 249M S  3.7   6.5   0:00.71 CXCP-Camera-H  
-11188 u0_a498      20   0  19G 720M 249M S  0.0   6.4   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 720M 249M S  0.0   6.4   0:00.00 pool-4-thread-1
-11196 u0_a498      20   0  19G 721M 249M S  0.0   6.4   0:00.00 pool-4-thread-1
---- t=33s 16:06:42 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   3 running,  69 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,     9915M used,     1197M free,        1M buffers
- Swap:    12287M total,     4507M used,     7780M free,     1197M cached
-800%cpu 274%user  19%nice 185%sys 307%idle   0%iow  15%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 758M 249M R 92.5   6.8   0:15.90 pool-6-thread-1[m
-[1m10073 u0_a498      20   0  19G 757M 249M R 55.5   6.8   0:12.07 pool-10-thread-[m
-[1m 9997 u0_a498      20   0  19G 756M 249M R 25.9   6.8   0:04.40 HeapTaskDaemon [m
-10070 u0_a498      20   0  19G 757M 249M S 18.5   6.8   0:06.25 pool-9-thread-1
-10098 u0_a498      20   0  19G 757M 249M S 14.8   6.8   0:02.79 pool-13-thread-
- 9998 u0_a498      24   4  19G 756M 249M S 14.8   6.8   0:02.08 ReferenceQueueD
- 9991 u0_a498      10 -10  19G 756M 249M S 14.8   6.8   0:03.65 ce.eyeaiapp.dev
-11156 u0_a498      12  -8  19G 758M 249M S  7.4   6.8   0:01.54 CameraX-camerax
-10336 u0_a498      -3   0  19G 757M 249M S  7.4   6.8   0:01.41 AAudio_1       
-10034 u0_a498      10 -10  19G 756M 249M S  7.4   6.8   0:01.60 RenderThread   
-10330 u0_a498      20   0  19G 757M 249M S  3.7   6.8   0:00.19 CameraDeviceExe
-10112 u0_a498      17  -3  19G 757M 249M S  3.7   6.8   0:00.72 CXCP-Camera-H  
-10015 u0_a498      20   0  19G 756M 249M S  3.7   6.8   0:00.41 JNA Cleaner    
-11200 u0_a498      20   0  19G 758M 249M S  0.0   6.8   0:00.09 binder:9991_8  
-11196 u0_a498      20   0  19G 758M 249M S  0.0   6.8   0:00.00 pool-4-thread-1
-11193 u0_a498      20   0  19G 758M 249M S  0.0   6.8   0:00.00 pool-4-thread-1
-11195 u0_a498      20   0  19G 758M 249M S  0.0   6.8   0:00.00 pool-4-thread-1
---- t=34s 16:06:42 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   6 running,  66 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10052M used,     1060M free,        1M buffers
- Swap:    12287M total,     4507M used,     7780M free,     1197M cached
-800%cpu 279%user  11%nice 139%sys 361%idle   0%iow  11%irq   0%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 725M 249M R 82.1   6.5   0:16.24 pool-6-thread-1[m
-10073 u0_a498      20   0  19G 722M 249M S 53.5   6.5   0:12.27 pool-10-thread-
-10070 u0_a498      20   0  19G 722M 249M S 17.8   6.5   0:06.32 pool-9-thread-1
-[1m10098 u0_a498      20   0  19G 723M 249M R 14.2   6.5   0:02.85 pool-13-thread-[m
- 9997 u0_a498      24   4  19G 721M 249M S 14.2   6.4   0:04.48 HeapTaskDaemon 
- 9991 u0_a498      10 -10  19G 721M 249M S 14.2   6.4   0:03.70 ce.eyeaiapp.dev
-11156 u0_a498      12  -8  19G 725M 249M S 10.7   6.5   0:01.57 CameraX-camerax
-[1m10336 u0_a498      -3   0  19G 724M 249M R 10.7   6.5   0:01.43 AAudio_1       [m
-[1m10201 u0_a498      20   0  19G 724M 249M R 10.7   6.5   0:00.23 binder:9991_5  [m
- 9998 u0_a498      24   4  19G 721M 249M S 10.7   6.4   0:02.13 ReferenceQueueD
-10034 u0_a498      10 -10  19G 722M 249M S  7.1   6.4   0:01.63 RenderThread   
-11179 u0_a498      20   0  19G 725M 249M S  3.5   6.5   0:00.27 binder:9991_7  
-10112 u0_a498      17  -3  19G 724M 249M S  3.5   6.5   0:00.74 CXCP-Camera-H  
-11200 u0_a498      20   0  19G 726M 249M S  0.0   6.5   0:00.09 binder:9991_8  
-11188 u0_a498      20   0  19G 725M 249M S  0.0   6.5   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 726M 249M S  0.0   6.5   0:00.00 pool-4-thread-1
-11196 u0_a498      20   0  19G 726M 249M S  0.0   6.5   0:00.00 pool-4-thread-1
---- t=35s 16:06:43 ---
-[s[999C[999B[6n[u[H[J[?25l[H[J[s[999C[999B[6n[uThreads: 72 total,   1 running,  71 sleeping,   0 stopped,   0 zombie
-  Mem:    11113M total,    10016M used,     1097M free,        1M buffers
- Swap:    12287M total,     4507M used,     7780M free,     1197M cached
-800%cpu 245%user   7%nice 152%sys 379%idle   0%iow  14%irq   3%sirq   0%host
-[7m  TID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ THREAD          [0m
-[1m11158 u0_a498      20   0  19G 768M 249M R 82.7   6.9   0:16.58 pool-6-thread-1[m
-10073 u0_a498      20   0  19G 768M 249M S 51.7   6.9   0:12.50 pool-10-thread-
- 9997 u0_a498      24   4  19G 767M 249M S 24.1   6.9   0:04.55 HeapTaskDaemon 
-10070 u0_a498      20   0  19G 767M 249M S 17.2   6.9   0:06.39 pool-9-thread-1
- 9991 u0_a498      10 -10  19G 767M 249M S 17.2   6.9   0:03.75 ce.eyeaiapp.dev
-10098 u0_a498      20   0  19G 768M 249M S 13.7   6.9   0:02.91 pool-13-thread-
-11156 u0_a498      12  -8  19G 768M 249M S 10.3   6.9   0:01.61 CameraX-camerax
- 9998 u0_a498      24   4  19G 767M 249M S 10.3   6.9   0:02.17 ReferenceQueueD
-10336 u0_a498      -3   0  19G 768M 249M S  6.8   6.9   0:01.47 AAudio_1       
-10034 u0_a498      10 -10  19G 767M 249M S  6.8   6.9   0:01.66 RenderThread   
-11179 u0_a498      20   0  19G 768M 249M S  3.4   6.9   0:00.28 binder:9991_7  
-10112 u0_a498      17  -3  19G 768M 249M S  3.4   6.9   0:00.76 CXCP-Camera-H  
-10094 u0_a498      20   0  19G 768M 249M S  3.4   6.9   0:00.03 binder:9991_4  
-10078 u0_a498      17  -3  19G 768M 249M S  3.4   6.9   0:00.09 CameraX-core_ca
-11200 u0_a498      20   0  19G 768M 249M S  0.0   6.9   0:00.09 binder:9991_8  
-11193 u0_a498      20   0  19G 768M 249M S  0.0   6.9   0:00.00 pool-4-thread-1
-11194 u0_a498      20   0  19G 768M 249M S  0.0   6.9   0:00.00 pool-4-thread-1
