@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import com.algorithmic_alliance.eyeaiapp.R
 import androidx.compose.foundation.Image

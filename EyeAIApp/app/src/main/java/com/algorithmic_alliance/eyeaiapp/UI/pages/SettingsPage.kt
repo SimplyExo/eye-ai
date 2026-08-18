@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 
 import android.net.Uri
@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -32,41 +31,30 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.remote.core.operations.layout.modifiers.ModifierOperation
-import androidx.compose.remote.core.operations.layout.modifiers.ShapeType.getString
-import androidx.compose.remote.creation.toFloat
+import androidx.compose.remote.creation.dsl.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.preference.Preference
-import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
-import kotlin.math.exp
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsPage(modifier: Modifier = Modifier, onReturn: () -> Unit) {
+fun SettingsPage(modifier: Modifier = Modifier, onReturn: () -> Unit, onOpenDebugPage: () ->Unit) {
 
     val settingsData = UIDataSource.APP_SETTINGS
 
@@ -115,7 +103,28 @@ fun SettingsPage(modifier: Modifier = Modifier, onReturn: () -> Unit) {
                                 category = entry.key
                             )
                     }
+                    item{
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth().padding(16.dp)
+                                    .clickable {onOpenDebugPage()},
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    "DebugPage aktivieren",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
+
             }
         })
 
@@ -429,5 +438,5 @@ fun FileSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
 @Preview(showBackground = true, name = "SettingsPage Preview")
 @Composable
 fun SettingsPagePreview() {
-    SettingsPage(onReturn = {})
+    SettingsPage(onReturn = {}, onOpenDebugPage = {})
 }

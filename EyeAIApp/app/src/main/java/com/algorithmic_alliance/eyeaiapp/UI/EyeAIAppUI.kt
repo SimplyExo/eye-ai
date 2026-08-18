@@ -15,6 +15,11 @@ import android.util.Log
 import androidx.compose.ui.platform.LocalContext
 import androidx.annotation.RequiresApi
 import com.algorithmic_alliance.eyeaiapp.UI.pages.ConnectionPage
+import com.algorithmic_alliance.eyeaiapp.UI.pages.DebugPage
+import com.algorithmic_alliance.eyeaiapp.UI.pages.HomePage
+import com.algorithmic_alliance.eyeaiapp.UI.pages.PermissionPage
+import com.algorithmic_alliance.eyeaiapp.UI.pages.SettingsPage
+import com.algorithmic_alliance.eyeaiapp.UI.pages.WelcomePage
 
 
 @Serializable
@@ -31,6 +36,9 @@ object ConnectionRoute
 
 @Serializable
 object SettingsRoute
+
+@Serializable
+object DebugRoute
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -52,7 +60,7 @@ fun EyeAIAppUI() {
                 onGetStarted = {
                     navController.navigate(PermissionRoute)
                 },
-                )
+            )
         }
         composable<PermissionRoute> {
             PermissionPage(
@@ -62,7 +70,7 @@ fun EyeAIAppUI() {
                 },
                 onPermissionsGranted = {
 
-                        navController.navigate(ConnectionRoute)
+                    navController.navigate(ConnectionRoute)
 
                 })
         }
@@ -91,6 +99,15 @@ fun EyeAIAppUI() {
         }
         composable<SettingsRoute> {
             SettingsPage(modifier = Modifier.fillMaxSize(), onReturn = {
+                navController.popBackStack()
+            }, onOpenDebugPage = {navController.navigate(DebugRoute)})
+        }
+        composable<DebugRoute> {
+            DebugPage(modifier = Modifier.fillMaxSize(), onOpenSettings = {
+                navController.navigate(
+                    SettingsRoute
+                )
+            }, onBack = {
                 navController.navigate(
                     HomeRoute
                 ) { popUpTo(HomeRoute) { inclusive = false } }
@@ -99,7 +116,7 @@ fun EyeAIAppUI() {
     }
 }
 
-fun showPermissionPage(){
+fun showPermissionPage() {
 
 }
 

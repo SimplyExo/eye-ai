@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -6,17 +6,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.remote.creation.dsl.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.algorithmic_alliance.eyeaiapp.R
@@ -37,7 +33,7 @@ import androidx.compose.ui.Alignment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit) {
+fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit, onBack: () -> Unit) {
 
     var ttsEnabled by rememberSaveable() { mutableStateOf(true) }
 
@@ -47,7 +43,7 @@ fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit) {
             TopAppBar(
                 title = {
                     Row (verticalAlignment = Alignment.CenterVertically){
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = {onBack()}) {
                             Icon(
                                 painter = painterResource(R.drawable.arrow_back_24px),
                                 contentDescription = ""
@@ -75,10 +71,10 @@ fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit) {
                         painter = if (ttsEnabled) painterResource(R.drawable.stop_24px) else painterResource(
                             R.drawable.play_arrow_24px
                         ),
-                        contentDescription = "Open Settings"
+                        contentDescription = "Start Vosk"
                     )
                 }
-                FloatingActionButton(onClick = {}) {
+                FloatingActionButton(onClick = {onOpenSettings()}) {
                     Icon(
                         painter = painterResource(R.drawable.settings_24px),
                         contentDescription = "Open Settings"
@@ -121,5 +117,5 @@ fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit) {
 @Preview(showBackground = true, name = "DebugPagePreview")
 @Composable
 fun DebugPagePreview() {
-    DebugPage(modifier = Modifier.fillMaxSize(), onOpenSettings = {})
+    DebugPage(modifier = Modifier.fillMaxSize(), onOpenSettings = {}, onBack = {})
 }
