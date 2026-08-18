@@ -2,6 +2,7 @@ import threading
 import time
 import os
 import cv2
+from datetime import datetime
 
 from ConfigManager import ConfigManager
 
@@ -43,6 +44,14 @@ class CameraThread(threading.Thread):
         self.cam.release()
         print("[Camera] Kameraprozess beendet!")
 
+    def get_taken_images(self):
+        i = 0
+        for file in os.listdir(self.config.get_outputdir().absolute()):
+            if file.endswith(".jpeg") or file.endswith(".jpg"):
+                i += 1
+
+        return i
+
     def get_frame(self):
         while not self.image_ready:
             pass
@@ -52,7 +61,8 @@ class CameraThread(threading.Thread):
 
     def save_frame(self):
         self.next_image_time = time.time() + self.config.get_capturedelay()
-        with open(self.config.get_outputdir() / f"{self.image_count}.jpg", "wb") as file:
+        new_filename = f"{datetime.now().strftime("%d%m%y_%H%M%S.%f")}.jpg"
+        with open(self.config.get_outputdir() / new_filename, "wb") as file:
             file.write(self.frame.tobytes())
         self.image_count += 1
     

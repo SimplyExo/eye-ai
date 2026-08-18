@@ -68,7 +68,7 @@ def get_stats():
     stats = {
         "recording": cameraThread.save_frames,
         "image_dir": str(cameraThread.config.get_outputdir().absolute()),
-        "images_taken": cameraThread.image_count,
+        "images_taken": cameraThread.get_taken_images(),
         "storage_left": free_space_formatted(),
         "capture_delay": cameraThread.config.get_capturedelay()
     }
