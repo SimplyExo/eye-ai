@@ -164,7 +164,8 @@ fun ChooseConnectionPage(
     Log.d(LOG_TAG, "[ConnectionPage] Choosing connection for $deviceCategory")
 
     LaunchedEffect(devicesData["type"]) {
-        if (devicesData["type"] == "eye-ai-vision") {
+        Log.d(LOG_TAG, "${devicesData["type"] } ${devicesData["remember"]} ${devicesData["selected"]}")
+        if (devicesData["type"] == "eye-ai-vision" && (devicesData["remember"] == true && devicesData["selected"] != "Handykamera verwenden")) {
             val locationManager =
                 context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             if (locationManager.isLocationEnabled)
@@ -181,7 +182,7 @@ fun ChooseConnectionPage(
     }
 
     LaunchedEffect(devicesData) {
-        if (devicesData["remember"] == true && devices.contains(devicesData["selected"])) {
+        if (devicesData["remember"] == true && (devices.contains(devicesData["selected"]) || devicesData["selected"] == "Handykamera verwenden")) {
             Log.d(
                 LOG_TAG,
                 "[ConnectionPage] Attempting to connect to remembered ${devicesData["type"]} device"
