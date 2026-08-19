@@ -1,5 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -42,8 +44,8 @@ fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit, onBack:
         topBar = {
             TopAppBar(
                 title = {
-                    Row (verticalAlignment = Alignment.CenterVertically){
-                        IconButton(onClick = {onBack()}) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { onBack() }) {
                             Icon(
                                 painter = painterResource(R.drawable.arrow_back_24px),
                                 contentDescription = ""
@@ -66,7 +68,9 @@ fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit, onBack:
                     .fillMaxWidth(0.35f),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                FloatingActionButton(onClick = { ttsEnabled = !ttsEnabled }) {
+                FloatingActionButton(onClick = {
+                    Log.d(LOG_TAG, "[DebugPage] Vosk enabled")
+                    ttsEnabled = !ttsEnabled }) {
                     Icon(
                         painter = if (ttsEnabled) painterResource(R.drawable.stop_24px) else painterResource(
                             R.drawable.play_arrow_24px
@@ -74,7 +78,7 @@ fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit, onBack:
                         contentDescription = "Start Vosk"
                     )
                 }
-                FloatingActionButton(onClick = {onOpenSettings()}) {
+                FloatingActionButton(onClick = { onOpenSettings() }) {
                     Icon(
                         painter = painterResource(R.drawable.settings_24px),
                         contentDescription = "Open Settings"
@@ -96,7 +100,7 @@ fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit, onBack:
                     painter = painterResource(R.drawable.ic_launcher_web),
                     contentDescription = ""
                 )
-                Column(){
+                Column() {
                     Text("speech recognition partial output")
                     Text("speech recognition final output")
                     Text("llm response")

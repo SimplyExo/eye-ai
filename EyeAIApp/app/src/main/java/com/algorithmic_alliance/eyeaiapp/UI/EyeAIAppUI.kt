@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
@@ -43,7 +44,7 @@ object DebugRoute
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun EyeAIAppUI() {
-    Log.d("EyeAIUI", "Starting UI")
+    Log.d(LOG_TAG, "Starting UI")
     val navController = rememberNavController()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)

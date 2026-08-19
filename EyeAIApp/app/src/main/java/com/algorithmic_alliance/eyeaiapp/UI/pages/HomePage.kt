@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -29,7 +30,7 @@ import com.algorithmic_alliance.eyeaiapp.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit) {
-    Log.d("EyeAIUI", "[HomePage] Loading HomePage")
+    Log.d(LOG_TAG, "[HomePage] Loading HomePage")
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {

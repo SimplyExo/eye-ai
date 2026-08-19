@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -67,7 +68,7 @@ fun ConnectionPage(
     onConnectionSuccessful: () -> Unit,
     onExitSelection: () -> Unit
 ) {
-    Log.d("EyeAIUI", "[PermissionPage] Loading ConnectionPage")
+    Log.d(LOG_TAG, "[PermissionPage] Loading ConnectionPage")
 
     val context = LocalContext.current
 
@@ -77,7 +78,7 @@ fun ConnectionPage(
         ) != PackageManager.PERMISSION_GRANTED
     ) {
         Log.d(
-            "EyeAIUI",
+            LOG_TAG,
             "[ConnectionPage] Canceling WIFI-Scan due to permissions not being granted."
         )
         return
@@ -160,7 +161,7 @@ fun ChooseConnectionPage(
         else -> emptyList()
     }
 
-    Log.d("EyeAIUI", "[ConnectionPage] Choosing connection for $deviceCategory")
+    Log.d(LOG_TAG, "[ConnectionPage] Choosing connection for $deviceCategory")
 
     LaunchedEffect(devicesData["type"]) {
         if (devicesData["type"] == "eye-ai-vision") {
@@ -170,7 +171,7 @@ fun ChooseConnectionPage(
                 wifiScanState.rescan()
             else {
                 Log.d(
-                    "EyeAIUI",
+                    LOG_TAG,
                     "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
                 )
                 showLocationDisabledDialog = true
@@ -182,7 +183,7 @@ fun ChooseConnectionPage(
     LaunchedEffect(devicesData) {
         if (devicesData["remember"] == true && devices.contains(devicesData["selected"])) {
             Log.d(
-                "EyeAIUI",
+                LOG_TAG,
                 "[ConnectionPage] Attempting to connect to remembered ${devicesData["type"]} device"
             )
             connectToDevice(
@@ -192,7 +193,7 @@ fun ChooseConnectionPage(
             )
             { success ->
                 if (success) {
-                    Log.d("EyeAIUI", "[ConnectionPage] Connection to remembered device successful")
+                    Log.d(LOG_TAG, "[ConnectionPage] Connection to remembered device successful")
                     onConnectionSuccessful()
                 }
 
@@ -308,7 +309,7 @@ fun ChooseConnectionPage(
                                         wifiScanState.rescan()
                                     else {
                                         Log.d(
-                                            "EyeAIUI",
+                                            LOG_TAG,
                                             "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
                                         )
                                         showLocationDisabledDialog = true
@@ -355,7 +356,7 @@ fun ChooseConnectionPage(
                                 { success ->
                                     if (success) {
                                         Log.d(
-                                            "EyeAIUI",
+                                            LOG_TAG,
                                             "[ConnectionPage] Setting SharedPreferences ShouldRememberDevice: $shouldRememberDevice"
                                         )
                                         sharedPreferences.edit(commit = true) {
@@ -365,7 +366,7 @@ fun ChooseConnectionPage(
                                             )
                                         }
                                         Log.d(
-                                            "EyeAIUI",
+                                            LOG_TAG,
                                             "[ConnectionPage] Setting SharedPreferences SelectedDevice: $selectedDevice"
                                         )
                                         sharedPreferences.edit(commit = true) {

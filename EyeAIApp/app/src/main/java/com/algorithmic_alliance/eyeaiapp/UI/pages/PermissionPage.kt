@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -50,7 +51,7 @@ fun PermissionPage(
     onPermissionsDeclined: () -> Unit,
 
     ) {
-    Log.d("EyeAIUI", "[PermissionPage] Loading PermissionPage")
+    Log.d(LOG_TAG, "[PermissionPage] Loading PermissionPage")
     val context = LocalContext.current
 
     val neededPermissions = UIDataSource.NEEDED_PERMISSIONS
@@ -63,16 +64,16 @@ fun PermissionPage(
                 permission as String
             ) == PackageManager.PERMISSION_GRANTED
             if (!hasPermission) {
-                Log.d("EyeAIUI", "[PermissionPage] App does not have permission for $permission")
+                Log.d(LOG_TAG, "[PermissionPage] App does not have permission for $permission")
                 notGrantedPermissions.add(map)
                 continue
             }else{
-                Log.d("EyeAIUI", "[PermissionPage] App already has permission for $permission")
+                Log.d(LOG_TAG, "[PermissionPage] App already has permission for $permission")
             }
         }
     }
     if (notGrantedPermissions.isEmpty()) {
-        Log.d("EyeAIUI", "[PermissionPage] All permissions already granted. Exiting PermissionPage")
+        Log.d(LOG_TAG, "[PermissionPage] All permissions already granted. Exiting PermissionPage")
         onPermissionsGranted()
         return
     }
@@ -100,7 +101,7 @@ fun AskForPermission(
     onPermissionDeclined: () -> Unit
 ) {
     Log.d(
-        "EyeAIUI",
+        LOG_TAG,
         "[PermissionPage.AskForPermission] Asking for permission ${permissionData["permissions"]}"
     )
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -109,12 +110,12 @@ fun AskForPermission(
         if (isGranted) {
             onPermissionAccepted()
             Log.d(
-                "EyeAIUI",
+                LOG_TAG,
                 "[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} granted"
             )
         } else {
             Log.d(
-                "EyeAIUI",
+                LOG_TAG,
                 "[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} declined"
             )
             onPermissionDeclined()
@@ -245,7 +246,7 @@ fun ConfirmPermissionDecline(
                     ?: UIDataSource.INFORMATION_NOT_FOUND) as String
             }, onClick = {
                 Log.d(
-                    "EyeAIUI",
+                    LOG_TAG,
                     "[PermissionPage.ConfirmPermissionDecline] Permission ${permissionData["permissions"]}declined"
                 )
                 onDialogDismissed()

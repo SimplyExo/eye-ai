@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp.UI
 import android.content.Context
 import android.media.AudioDeviceInfo
 import android.net.ConnectivityManager
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
@@ -41,7 +42,7 @@ fun connectToDevice(
         "audio" -> {
             //TODO Backend zu OpenAL
             Log.d(
-                "EyeAIUI",
+                LOG_TAG,
                 "[ConnectionPage.connect] Attempting to connect to audio device: '$selectedDevice'"
             )
             onResult(true)
@@ -51,22 +52,22 @@ fun connectToDevice(
             //TODO input device setting
             if(selectedDevice != "Handykamera verwenden"){
                 Log.d(
-                    "EyeAIUI",
+                    LOG_TAG,
                     "[ConnectionPage.connect] Attempting to connect to eye-ai-vision device '$selectedDevice'"
                 )
                 connectToWifiNetwork(
                     context, selectedDevice, "12345678",
                     onConnected = {
-                        Log.d("EyeAIUI", "[ConnectionPage.connect] Connection successful")
+                        Log.d(LOG_TAG, "[ConnectionPage.connect] Connection successful")
                         onResult(true)
                     },
                     onFailed = {
-                        Log.d("EyeAIUI", "[ConnectionPage.connect] Connection failed")
+                        Log.d(LOG_TAG, "[ConnectionPage.connect] Connection failed")
                         onResult(false)
                     }
                 )
             } else{
-                Log.d("EyeAIUI", "[ConnectionPage.connect] User choose phone camera over eye-ai-vison")
+                Log.d(LOG_TAG, "[ConnectionPage.connect] User choose phone camera over eye-ai-vison")
                 onResult(true)
             }
 
@@ -102,13 +103,13 @@ fun connectToWifiNetwork(
 
     val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            Log.d("EyeAIUI", "[ConnectToWifiNetwork] Verbunden mit $ssid")
+            Log.d(LOG_TAG, "[ConnectToWifiNetwork] Verbunden mit $ssid")
             connectivityManager.bindProcessToNetwork(network)
             mainHandler.post { onConnected() }
         }
 
         override fun onUnavailable() {
-            Log.d("EyeAIUI", "[ConnectToWifiNetwork] Verbindung zu $ssid fehlgeschlagen")
+            Log.d(LOG_TAG, "[ConnectToWifiNetwork] Verbindung zu $ssid fehlgeschlagen")
             mainHandler.post { onFailed() }
         }
     }
@@ -138,7 +139,7 @@ fun rememberWifiScanState(context: Context, autoScanOnStart: Boolean = true): Wi
                     != PackageManager.PERMISSION_GRANTED
                 ) return
                 scanResults = wifiManager.scanResults
-                Log.d("EyeAIUI", "[WifiScanState] Found WIFI-Networks: ${wifiManager.scanResults}")
+                Log.d(LOG_TAG, "[WifiScanState] Found WIFI-Networks: ${wifiManager.scanResults}")
             }
         }
 
@@ -171,14 +172,14 @@ fun triggerWifiScan(
 ) {
     val started = wifiManager.startScan()
     if (!started) {
-        Log.d("EyeAIUI", "[WifiScanState] Scan throttled, showing cached results")
+        Log.d(LOG_TAG, "[WifiScanState] Scan throttled, showing cached results")
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             Log.d(
-                "EyeAIUI",
+                LOG_TAG,
                 "[ConnectionPage] Canceling WIFI-Scan due to permissions not being granted."
             )
             return

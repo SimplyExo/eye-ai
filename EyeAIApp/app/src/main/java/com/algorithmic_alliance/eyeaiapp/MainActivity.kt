@@ -1,6 +1,5 @@
 package com.algorithmic_alliance.eyeaiapp
 
-import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
@@ -9,41 +8,21 @@ import android.os.Looper
 import android.util.Log
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.WindowManager
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.core.graphics.createBitmap
-import androidx.core.net.toUri
-import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.algorithmic_alliance.eyeaiapp.UI.EyeAIAppUI
-import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
-import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
-import com.algorithmic_alliance.eyeaiapp.UI.PermissionPage
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.SpeechManager
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -120,7 +99,7 @@ class MainActivity : AppCompatActivity() {
     private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
     private var mediaPlayer: MediaPlayer? = null
 
-    @RequiresApi(Build.VERSION_CODES.P)
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -324,6 +303,25 @@ class MainActivity : AppCompatActivity() {
         SpatialAudio.stop()
 
         eyeAIApp().voskModel.closeService()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    fun onUIChangedVoskListening(listening: Boolean){
+        State.IDLE
+
+        if (!listening){
+
+            SpeechManager.forceStop()
+
+
+            android.os.Handler(Looper.getMainLooper()).postDelayed({
+                stopVoskListening()
+            }, 100)
+
+        }
+        else{
+            startVoskListening()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.P)

@@ -17,6 +17,8 @@ object UIDataSource {
 
     const val RETURN_SEMANTIC = "Zurück."
 
+    const val UI_LOG_TAG = "EyeAIUI"
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     val NEEDED_PERMISSIONS = listOf<Map<String, Any>>(
         /* EXPLANATION HOW TO ADD NEW PERMISSION
