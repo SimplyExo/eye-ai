@@ -7,16 +7,20 @@ import android.os.Build
 import android.util.Log
 import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
+import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
+import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
+import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -58,6 +62,11 @@ class EyeAIApp : Application() {
 	var ocrModel = GoogleOCR()
 		private set
 
+	lateinit var textToSpeechInstance: TextToSpeechInstance
+	var lastLlmJsonResponse: String? = null
+	var cameraManager = CameraManager()
+	var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
+	var currentStateMachine: StateMachine? = null
 	var aiData = AIModelData
 
 	var npuQnnDelegateDirectory: String? = null

@@ -32,12 +32,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
+import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit, onBack: () -> Unit) {
+fun DebugPage(
+    modifier: Modifier = Modifier,
+    onOpenSettings: () -> Unit,
+    onBack: () -> Unit,
+    onEvent: (UIEvent) -> Unit
+) {
 
-    var ttsEnabled by rememberSaveable() { mutableStateOf(true) }
+    var ttsEnabled by rememberSaveable() { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -69,8 +75,10 @@ fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit, onBack:
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 FloatingActionButton(onClick = {
-                    Log.d(LOG_TAG, "[DebugPage] Vosk enabled")
-                    ttsEnabled = !ttsEnabled }) {
+                    onEvent(UIEvent.VoskListeningChanged)
+                    ttsEnabled = !ttsEnabled
+                    Log.d(LOG_TAG, "[DebugPage] Vosk on: $ttsEnabled")
+                }, ) {
                     Icon(
                         painter = if (ttsEnabled) painterResource(R.drawable.stop_24px) else painterResource(
                             R.drawable.play_arrow_24px
@@ -121,5 +129,5 @@ fun DebugPage(modifier: Modifier = Modifier, onOpenSettings: () -> Unit, onBack:
 @Preview(showBackground = true, name = "DebugPagePreview")
 @Composable
 fun DebugPagePreview() {
-    DebugPage(modifier = Modifier.fillMaxSize(), onOpenSettings = {}, onBack = {})
+    DebugPage(modifier = Modifier.fillMaxSize(), onOpenSettings = {}, onBack = {}, onEvent = {})
 }

@@ -43,7 +43,9 @@ object DebugRoute
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun EyeAIAppUI() {
+fun EyeAIAppUI(
+    onEvent: (UIEvent) -> Unit
+) {
     Log.d(LOG_TAG, "Starting UI")
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -96,23 +98,25 @@ fun EyeAIAppUI() {
                 navController.navigate(
                     SettingsRoute
                 )
-            })
+            }, onEvent = onEvent)
         }
         composable<SettingsRoute> {
             SettingsPage(modifier = Modifier.fillMaxSize(), onReturn = {
                 navController.popBackStack()
-            }, onOpenDebugPage = {navController.navigate(DebugRoute)})
+            }, onOpenDebugPage = { navController.navigate(DebugRoute) })
         }
         composable<DebugRoute> {
-            DebugPage(modifier = Modifier.fillMaxSize(), onOpenSettings = {
-                navController.navigate(
-                    SettingsRoute
-                )
-            }, onBack = {
-                navController.navigate(
-                    HomeRoute
-                ) { popUpTo(HomeRoute) { inclusive = false } }
-            })
+            DebugPage(
+                modifier = Modifier.fillMaxSize(), onOpenSettings = {
+                    navController.navigate(
+                        SettingsRoute
+                    )
+                }, onBack = {
+                    navController.navigate(
+                        HomeRoute
+                    ) { popUpTo(HomeRoute) { inclusive = false } }
+                }, onEvent = onEvent
+            )
         }
     }
 }
@@ -126,6 +130,6 @@ fun showPermissionPage() {
 @Composable
 fun EyeAIAppUIPreview() {
     MaterialTheme {
-        EyeAIAppUI()
+        EyeAIAppUI(onEvent = {})
     }
 }

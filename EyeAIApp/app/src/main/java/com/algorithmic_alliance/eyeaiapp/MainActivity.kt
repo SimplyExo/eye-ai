@@ -10,12 +10,14 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.ProgressBar
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.lifecycle.lifecycleScope
 import com.algorithmic_alliance.eyeaiapp.UI.EyeAIAppUI
+import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
@@ -25,6 +27,7 @@ import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.SpeechManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as UI_LOG_TAG
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,11 +38,15 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 
 
 class MainActivity : AppCompatActivity() {
-    var cameraManager = CameraManager()
+    //var cameraManager = CameraManager()
 
     @RequiresApi(Build.VERSION_CODES.P)
     private var permissionManager =
-        PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult)
+        PermissionManager(
+            this,
+            //::onCameraPermissionResult,
+            //::onMicrophonePermissionResult
+        )
 
     /*
     private var cameraPreviewView: PreviewView? = null
@@ -47,8 +54,6 @@ class MainActivity : AppCompatActivity() {
     private var ungrantedPermissionsNoticeText: TextView? = null
     private var allowCameraPermission: Button? = null
     private var startStopVosk: FloatingActionButton? = null
-
-
      */
     private lateinit var eyeAIVision: EyeAIVision
     private var bitmapFlow: MutableSharedFlow<Bitmap>? = null
@@ -75,11 +80,11 @@ class MainActivity : AppCompatActivity() {
     private var lastFinalResultMillis = System.currentTimeMillis()
     private var llmThreadExecutor = Executors.newSingleThreadExecutor()
 
-    private lateinit var textToSpeechInstance: TextToSpeechInstance
+    //private lateinit var textToSpeechInstance: TextToSpeechInstance
 
-    private var lastLlmJsonResponse: String? = null
+    //private var lastLlmJsonResponse: String? = null
 
-    private var currentStateMachine: StateMachine? = null
+    //private var currentStateMachine: StateMachine? = null
 
     private var tcpErrorShowing = false
     private var mjpegErrorShowing = false
@@ -96,15 +101,17 @@ class MainActivity : AppCompatActivity() {
 
     private var currentState: State = State.IDLE
 
-    private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
+    //private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
     private var mediaPlayer: MediaPlayer? = null
+
+    private val viewModel: MainViewModel by viewModels()
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            EyeAIAppUI()
+            EyeAIAppUI(onEvent = viewModel::onEvent)
         }
 
         /*
@@ -168,7 +175,7 @@ class MainActivity : AppCompatActivity() {
 
         //updateSpeechRecognitionUIVisibility()
 
-        textToSpeechInstance = TextToSpeechInstance(this) {
+        eyeAIApp().textToSpeechInstance = TextToSpeechInstance(this) {
             // starting vosk if no stream is active
             CoroutineScope(Dispatchers.Main).launch {
                 try {
@@ -182,7 +189,7 @@ class MainActivity : AppCompatActivity() {
 
                     //checking whether a stream is ongoing
 
-                    val isStreaming = currentStateMachine?.isStreaming() ?: false
+                    val isStreaming = eyeAIApp().currentStateMachine?.isStreaming() ?: false
                     if (isStreaming) {
                         Log.d(
                             EyeAIApp.APP_LOG_TAG,
@@ -233,7 +240,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        SpeechManager.tts = textToSpeechInstance
+        SpeechManager.tts = eyeAIApp().textToSpeechInstance
 
 
     }
@@ -284,8 +291,8 @@ class MainActivity : AppCompatActivity() {
 
         eyeAIApp().voskModel.stopListening()
 
-        cameraManager.pauseAnalyzer()
-        mediaFrameAnalyzer?.shutdown()
+        eyeAIApp().cameraManager.pauseAnalyzer()
+        eyeAIApp().mediaFrameAnalyzer?.shutdown()
         mediaPlayer?.shutdown()
 
         // stopping audio playback
@@ -296,34 +303,16 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onDestroy() {
         super.onDestroy()
-        cameraManager.shutdown()
-        textToSpeechInstance.shutdown()
-        mediaFrameAnalyzer?.shutdown()
+        eyeAIApp().cameraManager.shutdown()
+        eyeAIApp().textToSpeechInstance.shutdown()
+        eyeAIApp().mediaFrameAnalyzer?.shutdown()
         mediaPlayer?.shutdown()
         SpatialAudio.stop()
 
         eyeAIApp().voskModel.closeService()
     }
 
-    @RequiresApi(Build.VERSION_CODES.P)
-    fun onUIChangedVoskListening(listening: Boolean){
-        State.IDLE
-
-        if (!listening){
-
-            SpeechManager.forceStop()
-
-
-            android.os.Handler(Looper.getMainLooper()).postDelayed({
-                stopVoskListening()
-            }, 100)
-
-        }
-        else{
-            startVoskListening()
-        }
-    }
-
+    /*
     @RequiresApi(Build.VERSION_CODES.P)
     private fun onCameraPermissionResult(isGranted: Boolean) {
         if (isGranted) {
@@ -333,7 +322,8 @@ class MainActivity : AppCompatActivity() {
             //ungrantedPermissionsNotice!!.visibility = VISIBLE
         }
     }
-
+     */
+    /*
     @RequiresApi(Build.VERSION_CODES.P)
     private fun onMicrophonePermissionResult(isGranted: Boolean) {
         if (isGranted && eyeAIApp().settings.enableSpeechRecognition) {
@@ -352,6 +342,8 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+     */
+
     private fun eyeAIApp(): EyeAIApp {
         return application as EyeAIApp
     }
@@ -363,8 +355,8 @@ class MainActivity : AppCompatActivity() {
             if (permissionManager.isCameraPermissionGranted()) {
                 //ungrantedPermissionsNotice!!.visibility = GONE
 
-                cameraManager.cameraFrameAnalyzer?.shutdown()
-                cameraManager.cameraFrameAnalyzer =
+                eyeAIApp().cameraManager.cameraFrameAnalyzer?.shutdown()
+                eyeAIApp().cameraManager.cameraFrameAnalyzer =
                     CameraFrameAnalyzer(
                         eyeAIApp(),
                         //depthPreviewImage!!,
@@ -378,9 +370,9 @@ class MainActivity : AppCompatActivity() {
                         //mediaImageView!!,
                         null
                     )
-                cameraManager.cameraFrameAnalyzer?.start()
+                eyeAIApp().cameraManager.cameraFrameAnalyzer?.start()
 
-                cameraManager
+                eyeAIApp().cameraManager
                     .init(
                         this,
                         EyeAIApp.PREFERRED_CAMERA_RESOLUTION,
@@ -401,9 +393,9 @@ class MainActivity : AppCompatActivity() {
                 mediaPlayer?.shutdown()
                 //mediaPlayer = MediaPlayer(this, eyeAIApp().settings.mediaSource!!.toUri(), mediaImageView!!)
 
-                mediaFrameAnalyzer?.shutdown()
+                eyeAIApp().mediaFrameAnalyzer?.shutdown()
 
-                mediaFrameAnalyzer =
+                eyeAIApp().mediaFrameAnalyzer =
                     CameraFrameAnalyzer(
                         eyeAIApp(),
                         //depthPreviewImage!!,
@@ -418,7 +410,7 @@ class MainActivity : AppCompatActivity() {
                         null
                     )
 
-                mediaFrameAnalyzer?.start()
+                eyeAIApp().mediaFrameAnalyzer?.start()
             } else {
                 val builder = AlertDialog.Builder(this)
                 builder.setMessage("No media file has been selected. Please select one in the settings menu")
@@ -450,7 +442,8 @@ class MainActivity : AppCompatActivity() {
                         State.IDLE
 
                         if (!voskUserStart.get()) {
-                            startVoskListening()
+                            //TODO reimplement
+                            //startVoskListening()
                         }
 
 
@@ -462,8 +455,8 @@ class MainActivity : AppCompatActivity() {
 
                         if (voskUserStart.get()) {
                             SpeechManager.forceStop()
-
-                            stopVoskListening()
+                            //TODO reimplement
+                            //stopVoskListening()
                         }
                     },
                     onSocketFailed = { e ->
@@ -549,8 +542,8 @@ class MainActivity : AppCompatActivity() {
 
                  */
 
-                mediaFrameAnalyzer?.shutdown()
-                mediaFrameAnalyzer = CameraFrameAnalyzer(
+                eyeAIApp().mediaFrameAnalyzer?.shutdown()
+                eyeAIApp().mediaFrameAnalyzer = CameraFrameAnalyzer(
                     eyeAIApp(),
                     //depthPreviewImage!!,
                     null,
@@ -563,7 +556,7 @@ class MainActivity : AppCompatActivity() {
                     //mediaImageView!!,
                     null
                 )
-                mediaFrameAnalyzer?.start()
+                eyeAIApp().mediaFrameAnalyzer?.start()
 
             } else {
                 val builder = AlertDialog.Builder(this)
@@ -589,194 +582,20 @@ class MainActivity : AppCompatActivity() {
         //speechRecognitionFinalResultText?.visibility = visibility
     }
 
-    @RequiresApi(Build.VERSION_CODES.P)
-    private fun updateUngrantedPermissionsNotice() {
-        val cameraGranted = permissionManager.isCameraPermissionGranted()
-        val microphoneGranted = permissionManager.isMicrophonePermissionGranted()
 
-        if (cameraGranted && microphoneGranted) {
-            //ungrantedPermissionsNotice?.visibility = GONE
-        } else {
-            //ungrantedPermissionsNotice?.visibility = VISIBLE
-            /*
-            ungrantedPermissionsNoticeText?.text = getString(
-                if (cameraGranted) {
-                    R.string.allow_microphone_permission_notice
-                } else if (microphoneGranted) {
-                    R.string.allow_camera_permission_notice
-                } else {
-                    R.string.allow_camera_and_microphone_permission_notice
-                }
-            )
+    /*All TTS methods start here*/
 
-             */
-        }
-    }
 
 
     /*All TTS methods start here*/
 
-    private fun onPartialSpeechRecognitionResult(partial: String) {
-        CoroutineScope(Dispatchers.Main).launch {
-            //speechRecognitionPartialResultText?.text = partial
-        }
-    }
-
-    /*All TTS methods start here*/
-
-    private fun onFinalSpeechRecognitionResult(final: String) {
-        if (final.isEmpty()) {
-            return
-        }
-
-        val receiveTs = System.nanoTime()
-        Log.d(
-            EyeAIApp.APP_LOG_TAG,
-            "SR final RECEIVED at ${System.currentTimeMillis()} (ms), text='${final.take(200)}'"
-        )
 
 
-        CoroutineScope(Dispatchers.Main).launch {
-            //speechRecognitionFinalResultText?.text = final
-
-            // minimum of 1 second pause between speech commands
-            if (System.currentTimeMillis() - lastFinalResultMillis <= 1000)
-                return@launch
-
-            lastFinalResultMillis = System.currentTimeMillis()
-
-            if (eyeAIApp().llm == null) {
-                if (eyeAIApp().settings.enableSpeechRecognition) {
-                    //llmResponseText?.text = getString(R.string.setup_llm_notice)
-                }
-            } else {
-                //llmResponseText?.text = getString(R.string.llm_responding_notice)
-
-                //start after onTTSFinished speaking
-                //Logging when Vosk is stopped.
-                Log.d(EyeAIApp.APP_LOG_TAG, "Stopping Vosk to process command.")
-                eyeAIApp().voskModel.stopListening()
-
-                // vibrate for 100ms
-                vibrate(eyeAIApp(), 100)
-
-                Log.d(
-                    EyeAIApp.APP_LOG_TAG,
-                    "Dispatching to LLM worker at ${System.currentTimeMillis()} (ms); latency since SR receive = ${
-                        elapsedMs(receiveTs)
-                    } ms"
-                )
-
-                withContext(llmThreadExecutor.asCoroutineDispatcher()) {
-                    val workerStart = System.nanoTime()
-                    Log.d(
-                        EyeAIApp.APP_LOG_TAG,
-                        "LLM worker START processing at ${System.currentTimeMillis()} (ms)"
-                    )
-                    onSpeechResult(final)
-                    Log.d(
-                        EyeAIApp.APP_LOG_TAG,
-                        "LLM worker FINISHED processing at ${System.currentTimeMillis()} (ms); duration=${
-                            elapsedMs(workerStart)
-                        } ms"
-                    )
-                }
-
-            }
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    private fun onSpeechRecognitionLoaded() {
-        updateVoskStatusText()
-    }
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    private fun updateVoskStatusText() {
-        runOnUiThread {
-            /*
-            speechRecognitionFinalResultText?.text = when {
-                !permissionManager.isMicrophonePermissionGranted() ->
-                    "Mikrofon-Berechtigung erforderlich"
-
-                !eyeAIApp().settings.enableSpeechRecognition ->
-                    "Spracherkennung deaktiviert"
-
-                voskUserStart.get() ->
-                    getString(R.string.speech_recognition_ready)
-
-                else ->
-                    "Vosk bereit - Button klicken zum Starten"
-            }
-             */
-
-        }
-    }
 
 
-    private suspend fun onSpeechResult(final: String) {
-        Log.d(EyeAIApp.APP_LOG_TAG, "onSpeechResult: Creating new StateMachine for input: '$final'")
 
-        val stateMachine = StateMachine(
-            eyeAIApp(),
-            textToSpeechInstance,
-            lastLlmJsonResponse,
-            //llmResponseText,
-            null,
-            cameraManager.cameraFrameAnalyzer ?: mediaFrameAnalyzer
-        ) {
-            CoroutineScope(Dispatchers.Main).launch {
-                Log.d(
-                    EyeAIApp.APP_LOG_TAG,
-                    "onStreamingComplete CALLBACK: Fired, but logic is now handled by the global callback."
-                )
-            }
-        }
-
-        SpeechManager.stream = stateMachine.getStreamingHandler()
-
-        currentStateMachine = stateMachine
-
-        val update = when (currentState) {
-            State.IDLE -> stateMachine.handleIdle(final)
-            State.SETTINGS_MENU -> stateMachine.handleSettingsMenu(final)
-            State.SETTINGS_CHOICE -> stateMachine.handleSettingsChoice(final)
-            State.SETTINGS_ACTION -> stateMachine.handleSettingsAction(final)
-        }
-
-        // Logging der state transition
-        Log.d(EyeAIApp.APP_LOG_TAG, "State transition: $currentState -> ${update.newState}")
-        currentState = update.newState
-        lastLlmJsonResponse = update.newJson
-    }
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    private fun startVoskListening() {
-        if (voskUserStart.get()) return // Check whether already started
-
-        uniffi.NativeLib.setObjectAudioPaused(true)
-        uniffi.NativeLib.setDepthAudioPaused(true)
-        voskUserStart.set(true)
-        eyeAIApp().voskModel.startListening()
-        Log.d(EyeAIApp.APP_LOG_TAG, "User started Vosk Model")
-        updateVoskStatusText()
-    }
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    private fun stopVoskListening() {
-        if (!voskUserStart.get()) return // Check whether already stopped
-
-        uniffi.NativeLib.setObjectAudioPaused(false)
-        uniffi.NativeLib.setDepthAudioPaused(false)
-        voskUserStart.set(false)
-        eyeAIApp().voskModel.stopListening()
-        Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
-        updateVoskStatusText()
-    }
-
-
-    fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
 
     companion object
+
 
 }
