@@ -11,6 +11,7 @@ import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.MainActivity
 import com.algorithmic_alliance.eyeaiapp.MainActivity.State
 import com.algorithmic_alliance.eyeaiapp.PermissionManager
+import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.SpeechManager
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
@@ -18,6 +19,10 @@ import com.algorithmic_alliance.eyeaiapp.vibrate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
@@ -26,11 +31,15 @@ import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val _uiState = MutableStateFlow(UIState())
+    val uiState: StateFlow<UIState> = _uiState.asStateFlow()
+
     private val voskUserStart = AtomicBoolean(false)
 
     private var currentState: State = State.IDLE
     private var lastFinalResultMillis = System.currentTimeMillis()
     private var llmThreadExecutor = Executors.newSingleThreadExecutor()
+
     @RequiresApi(Build.VERSION_CODES.P)
     fun onEvent(event: UIEvent) {
         Log.d(LOG_TAG, "[MainViewModel] onEvent called")
@@ -102,7 +111,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    private fun initVoskService(){
+    private fun initVoskService() {
         if (!eyeAIApp().voskModel.isListening()) {
             eyeAIApp()
                 .voskModel
@@ -114,13 +123,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun closeVoskService(){
+    private fun closeVoskService() {
         eyeAIApp().voskModel.closeService()
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
     private fun updateVoskStatusText() {
-
+        _uiState.update {
+            it.copy(
+                speechRecognitionFinalResultText = when {
+                    !eyeAIApp().settings.enableSpeechRecognition -> "Spracherkennung deaktiviert"
+                    voskUserStart.get() -> eyeAIApp().getString(R.string.speech_recognition_ready)
+                    else -> "Vosk bereit - Button klicken zum Starten"
+                }
+            )
+        }
         /*
         speechRecognitionFinalResultText?.text = when {
             !permissionManager.isMicrophonePermissionGranted() ->
@@ -141,12 +158,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun onPartialSpeechRecognitionResult(partial: String) {
-        CoroutineScope(Dispatchers.Main).launch {
-            //speechRecognitionPartialResultText?.text = partial
-            if(partial != "")
-                Log.d(UI_LOG_TAG, "[MainActivity.onPartialSpeechRecognitionResult] $partial")
-        }
+        _uiState.update { it.copy(speechRecognitionPartialResultText = partial) }
+        if (partial != "")
+            Log.d(UI_LOG_TAG, "[MainActivity.onPartialSpeechRecognitionResult] $partial")
     }
+
     @RequiresApi(Build.VERSION_CODES.P)
     private fun onSpeechRecognitionLoaded() {
         updateVoskStatusText()
@@ -165,7 +181,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 
         CoroutineScope(Dispatchers.Main).launch {
-            //speechRecognitionFinalResultText?.text = final
+            _uiState.update { it.copy(speechRecognitionFinalResultText = final) }
 
             // minimum of 1 second pause between speech commands
             if (System.currentTimeMillis() - lastFinalResultMillis <= 1000)
@@ -175,9 +191,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             if (eyeAIApp().llm == null) {
                 if (eyeAIApp().settings.enableSpeechRecognition) {
+                    _uiState.update { it.copy(llmResponseText = eyeAIApp().getString(R.string.setup_llm_notice)) }
                     //llmResponseText?.text = getString(R.string.setup_llm_notice)
                 }
             } else {
+                _uiState.update { it.copy(llmResponseText = eyeAIApp().getString(R.string.llm_responding_notice)) }
                 //llmResponseText?.text = getString(R.string.llm_responding_notice)
 
                 //start after onTTSFinished speaking
@@ -221,8 +239,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             eyeAIApp(),
             eyeAIApp().textToSpeechInstance,
             eyeAIApp().lastLlmJsonResponse,
-            //llmResponseText,
-            null,
+            { text -> _uiState.update { it.copy(llmResponseText =  text) }},
+            {text -> _uiState.update { it.copy(llmResponseText = it.llmResponseText + text ) }},
             eyeAIApp().cameraManager.cameraFrameAnalyzer ?: eyeAIApp().mediaFrameAnalyzer
         ) {
             CoroutineScope(Dispatchers.Main).launch {
@@ -248,6 +266,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(EyeAIApp.APP_LOG_TAG, "State transition: $currentState -> ${update.newState}")
         currentState = update.newState
         eyeAIApp().lastLlmJsonResponse = update.newJson
+    }
+
+    fun updateLlmResponseText(text: String){
+        _uiState.update { it.copy(llmResponseText = text) }
     }
 
     fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000

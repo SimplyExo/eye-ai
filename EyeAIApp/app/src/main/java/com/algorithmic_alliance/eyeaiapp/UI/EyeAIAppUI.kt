@@ -44,6 +44,7 @@ object DebugRoute
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun EyeAIAppUI(
+    uiState: UIState,
     onEvent: (UIEvent) -> Unit
 ) {
     Log.d(LOG_TAG, "Starting UI")
@@ -115,7 +116,7 @@ fun EyeAIAppUI(
                     navController.navigate(
                         HomeRoute
                     ) { popUpTo(HomeRoute) { inclusive = false } }
-                }, onEvent = onEvent
+                }, onEvent = onEvent, uiState = uiState
             )
         }
     }
@@ -130,6 +131,6 @@ fun showPermissionPage() {
 @Composable
 fun EyeAIAppUIPreview() {
     MaterialTheme {
-        EyeAIAppUI(onEvent = {})
+        EyeAIAppUI(onEvent = {}, uiState = UIState())
     }
 }

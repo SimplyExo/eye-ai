@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
+import com.algorithmic_alliance.eyeaiapp.UI.UIState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +41,8 @@ fun DebugPage(
     modifier: Modifier = Modifier,
     onOpenSettings: () -> Unit,
     onBack: () -> Unit,
-    onEvent: (UIEvent) -> Unit
+    onEvent: (UIEvent) -> Unit,
+    uiState: UIState
 ) {
 
     var ttsEnabled by rememberSaveable() { mutableStateOf(false) }
@@ -109,9 +111,9 @@ fun DebugPage(
                     contentDescription = ""
                 )
                 Column() {
-                    Text("speech recognition partial output")
-                    Text("speech recognition final output")
-                    Text("llm response")
+                    Text(uiState.speechRecognitionPartialResultText)
+                    Text(uiState.speechRecognitionFinalResultText)
+                    Text(uiState.llmResponseText)
                 }
                 Image(
                     modifier = Modifier
@@ -129,5 +131,5 @@ fun DebugPage(
 @Preview(showBackground = true, name = "DebugPagePreview")
 @Composable
 fun DebugPagePreview() {
-    DebugPage(modifier = Modifier.fillMaxSize(), onOpenSettings = {}, onBack = {}, onEvent = {})
+    DebugPage(modifier = Modifier.fillMaxSize(), onOpenSettings = {}, onBack = {}, onEvent = {}, uiState = UIState())
 }

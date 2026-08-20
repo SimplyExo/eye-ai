@@ -16,7 +16,9 @@ import java.lang.StringBuilder
 
 class LLMStreamingHandler(
 	private val textToSpeechInstance: TextToSpeechInstance,
-	private val llmResponseText: TextView?,
+	private var setLlmResponseText: (String) -> Unit,
+	private var appendLlmResponseText: (String) -> Unit,
+	//private val llmResponseText: TextView?,
 	private val eyeAIApp: EyeAIApp,
 	private val onStreamingComplete: () -> Unit
 ) {
@@ -39,7 +41,10 @@ class LLMStreamingHandler(
 		isCurrentlyStreaming = true
 		synchronized(sentenceBuffer) { sentenceBuffer.clear() }
 		isFirstStreamChunk = true
-		withContext(Dispatchers.Main) { llmResponseText?.text = "" }
+		withContext(Dispatchers.Main) {
+			//llmResponseText?.text = ""
+			setLlmResponseText("")
+			}
 
 		try {
 			llm.generateStream(
@@ -136,7 +141,10 @@ class LLMStreamingHandler(
 			return
 		}
 
-		CoroutineScope(Dispatchers.Main).launch { llmResponseText?.append("$sentence ") }
+		CoroutineScope(Dispatchers.Main).launch {
+			//llmResponseText?.append("$sentence ")
+			appendLlmResponseText("$sentence ")
+		}
 
 		val queueMode = if (isFirstStreamChunk) {
 			isFirstStreamChunk = false
@@ -166,7 +174,10 @@ class LLMStreamingHandler(
 			return
 		}
 
-		withContext(Dispatchers.Main) { llmResponseText?.text = eyeAIApp.getString(R.string.llm_response, toSpeak) }
+		withContext(Dispatchers.Main) {
+			setLlmResponseText(eyeAIApp.getString(R.string.llm_response, toSpeak))
+			//llmResponseText?.text = eyeAIApp.getString(R.string.llm_response, toSpeak)
+		}
 		textToSpeechInstance.speak(toSpeak) {
 			Log.d(EyeAIApp.APP_LOG_TAG, "TTS finished non-streaming response. Invoking completion callback.")
 			onStreamingComplete()

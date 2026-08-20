@@ -15,6 +15,8 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.algorithmic_alliance.eyeaiapp.UI.EyeAIAppUI
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
@@ -111,8 +113,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            EyeAIAppUI(onEvent = viewModel::onEvent)
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            EyeAIAppUI(onEvent = viewModel::onEvent, uiState = uiState)
         }
+
+        getString(R.string.speech_recognition_ready)
 
         /*
 
@@ -156,9 +161,9 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        speechRecognitionPartialResultText = findViewById(R.id.speech_recognition_partial_output)
-        speechRecognitionFinalResultText = findViewById(R.id.speech_recognition_final_output)
-        llmResponseText = findViewById(R.id.llm_response)
+        done speechRecognitionPartialResultText = findViewById(R.id.speech_recognition_partial_output)
+        done speechRecognitionFinalResultText = findViewById(R.id.speech_recognition_final_output)
+        done llmResponseText = findViewById(R.id.llm_response)
 
         findViewById<FloatingActionButton>(R.id.settings_button).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
@@ -270,13 +275,13 @@ class MainActivity : AppCompatActivity() {
         } else {
             GONE
         }
-
+        */
         val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
-        llmResponseText?.text = if (isLLMConfigured)
+        viewModel.updateLlmResponseText(if (isLLMConfigured)
             ""
         else
-            getString(R.string.setup_llm_notice)
-        */
+            getString(R.string.setup_llm_notice))
+
         // re-enabling the audio playback in accordance to the settings
         val settings = Settings.load(this@MainActivity)
         uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)

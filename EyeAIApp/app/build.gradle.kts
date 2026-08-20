@@ -100,7 +100,8 @@ android {
 }
 
 dependencies {
-	implementation(libs.androidx.compose.foundation.layout)
+	implementation(libs.androidx.benchmark.common)
+    implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.remote.creation.core)
     implementation(libs.androidx.core.ktx)

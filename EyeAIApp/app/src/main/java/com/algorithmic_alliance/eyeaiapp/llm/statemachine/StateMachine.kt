@@ -23,12 +23,13 @@ class StateMachine(
     private val eyeAIApp: EyeAIApp,
     private val textToSpeechInstance: TextToSpeechInstance,
     private var lastLlmJsonResponse: String?,
-    private val llmResponseText: TextView?,
+    private val setLlmResponseText: (String) -> Unit,
+    private val appendLlmResponseText: (String) -> Unit,
     private val cameraFrameAnalyzer: CameraFrameAnalyzer? = null,
     private val onStreamingComplete: () -> Unit = {}
 ) {
 
-    private val streamingHandler = LLMStreamingHandler(textToSpeechInstance, llmResponseText, eyeAIApp, onStreamingComplete)
+    private val streamingHandler = LLMStreamingHandler(textToSpeechInstance, setLlmResponseText,appendLlmResponseText, eyeAIApp, onStreamingComplete)
     private val jsonParser = JsonParser()
 
     // SettingsHandler
