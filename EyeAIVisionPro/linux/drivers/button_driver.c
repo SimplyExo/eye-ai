@@ -6,10 +6,17 @@
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
 
-#define MAX_USER_SIZE 1024
-
 static struct proc_dir_entry * button_proc = NULL;
 struct gpio_desc *gpio;
+
+// ========= Prototypes ==========
+ssize_t on_read(struct file *file,
+                char __user *user,
+                size_t size,
+                loff_t *off);
+
+
+
 
 // ========= Events =========
 ssize_t on_read(struct file *file,
@@ -38,58 +45,55 @@ static const struct proc_ops proc_fops = {
 
 // ======= GPIO ==========
 
-static int mygpio_probe(struct platform_device *pdev)
-{    
-    pr_info("mygpio: probe()\n");
+static int hat_button_driver_probe(struct platform_device *pdev)
+{
+    // setup gpio
+    pr_info("hat_button_driver: probe()\n");
 
-    gpio = devm_gpiod_get(&pdev->dev, "my", GPIOD_IN);
+    gpio = devm_gpiod_get(&pdev->dev, "button", GPIOD_IN);
 
     if (IS_ERR(gpio)) {
-        pr_err("mygpio: konnte GPIO nicht bekommen\n");
+        pr_err("hat_button_driver: couldn't get GPIO\n");
         return PTR_ERR(gpio);
     }
-
-    int value = gpiod_get_value(gpio);
-
-    pr_info("mygpio: GPIO value = %d\n", value);
 
     // create procfs
     button_proc = proc_create("button", 0666, NULL, &proc_fops);
     if (button_proc == NULL) {
-            printk("GPIO: Failed to start driver!");
-            return -1;
+            printk("hat_button_driver: Failed to start driver!");
+            return -EFAULT;
     }
 
-    printk("mygpio: Created procfs in /proc/button!\n");
+    printk("hat_button_driver: Created procfs in /proc/button!\n");
 
     return 0;
 }
 
-static void mygpio_remove(struct platform_device *pdev) {
+static void hat_button_driver_remove(struct platform_device *pdev) {
     proc_remove(button_proc);
 }
 
-static const struct of_device_id mygpio_of_match[] = {
+static const struct of_device_id hat_button_driver_of_match[] = {
     {
-        .compatible = "mycompany,mygpio",
+        .compatible = "eyeaivision,button",
     },
     { }
 };
 
-MODULE_DEVICE_TABLE(of, mygpio_of_match);
+MODULE_DEVICE_TABLE(of, hat_button_driver_of_match);
 
-static struct platform_driver mygpio_driver = {
-    .probe = mygpio_probe,
-    .remove = mygpio_remove,
+static struct platform_driver hat_button_driver_driver = {
+    .probe = hat_button_driver_probe,
+    .remove = hat_button_driver_remove,
 
     .driver = {
-        .name = "mygpio",
-        .of_match_table = mygpio_of_match,
+        .name = "button_driver",
+        .of_match_table = hat_button_driver_of_match,
     },
 };
 
-module_platform_driver(mygpio_driver);
+module_platform_driver(hat_button_driver_driver);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Test");
-MODULE_DESCRIPTION("Simple GPIO input driver");
+MODULE_AUTHOR("Thomas Fritzler");
+MODULE_DESCRIPTION("Driver for accessing on/off button state via /proc/button");

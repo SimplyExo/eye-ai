@@ -8,9 +8,9 @@
         target-path = "/";
 
         __overlay__ {
-            my_gpio_device {
-                compatible = "mycompany,mygpio";
-                my-gpios = <&gpio 22 0>;
+            hat_button {
+                compatible = "eyeaivision,button";
+                button-gpios = <&gpio 22 0>;
             };
         };
     };
