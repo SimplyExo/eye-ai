@@ -30,7 +30,7 @@ ssize_t on_read(struct file *file,
         return 0;
 
     if (copy_to_user(user, &to_copy, sizeof(to_copy))) {
-        pr_err("Could not get button state!\n");
+        pr_err("hat_button_driver: Could not get button state!\n");
         return -EFAULT;
     }
 
