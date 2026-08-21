@@ -1,5 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers
 
+import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModelTestFixture
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -9,6 +10,7 @@ import org.junit.Test
 
 class GeminiSettingsProcessorTest {
 	private val parser = JsonParser()
+	private val confirmationModel by lazy(ConfirmationModelTestFixture::load)
 	private val snapshot = CurrentSettingsSnapshot(
 		speechRate = 1.0f,
 		voice = 0,
@@ -111,6 +113,78 @@ class GeminiSettingsProcessorTest {
 	}
 
 	@Test
+	fun relativeFrequencyAnswerIsExplicitlyDeclaredCompleteInPrompt() = runBlocking {
+		var capturedPrompt = ""
+		val extractor = GeminiSettingsExtractor(parser) { prompt, _ ->
+			capturedPrompt = prompt
+			"""{"settings_parameter_complete":true,"changed_settings":[{"frequency":600}]}"""
+		}
+
+		val result = extractor.extract(
+			SettingIntent.FREQUENCY,
+			"Erhöhe die Frequenz.",
+			parser.createSettingsContext(SettingIntent.FREQUENCY),
+			snapshot
+		)
+
+		assertTrue(result is SettingsExtractionResult.Complete)
+		assertTrue(capturedPrompt.contains("Erhöhe die Frequenz"))
+		assertTrue(capturedPrompt.contains("jeweils vollständig"))
+	}
+
+	@Test
+	fun structurallyInvalidResponseIsRepairedExactlyOnce() = runBlocking {
+		var requestCount = 0
+		var repairPrompt = ""
+		val traces = mutableListOf<String>()
+		val extractor = GeminiSettingsExtractor(parser, traces::add) { prompt, _ ->
+			requestCount++
+			if (requestCount == 1) {
+				"""{"changed_settings":[{"frequency":600}]}"""
+			} else {
+				repairPrompt = prompt
+				"""{"settings_parameter_complete":true,"changed_settings":[{"frequency":600}]}"""
+			}
+		}
+
+		val result = extractor.extract(
+			SettingIntent.FREQUENCY,
+			"Erhöhe die Frequenz.",
+			parser.createSettingsContext(SettingIntent.FREQUENCY),
+			snapshot
+		)
+
+		assertTrue(result is SettingsExtractionResult.Complete)
+		assertEquals(2, requestCount)
+		assertTrue(repairPrompt.contains("MISSING_COMPLETENESS_FLAG"))
+		assertTrue(traces.any { it.contains("outcome=INVALID_RESPONSE") })
+		assertTrue(traces.any { it.contains("[REPAIR_RESULT]") && it.contains("outcome=COMPLETE") })
+	}
+
+	@Test
+	fun invalidRepairResponseReturnsRecoveryQuestionWithoutFurtherApiCalls() = runBlocking {
+		var requestCount = 0
+		val traces = mutableListOf<String>()
+		val extractor = GeminiSettingsExtractor(parser, traces::add) { _, _ ->
+			requestCount++
+			"""{"settings_parameter_complete":true,"changed_settings":[]}"""
+		}
+
+		val result = extractor.extract(
+			SettingIntent.FREQUENCY,
+			"Erhöhe die Frequenz.",
+			parser.createSettingsContext(SettingIntent.FREQUENCY),
+			snapshot
+		)
+
+		assertTrue(result is SettingsExtractionResult.InvalidResponse)
+		result as SettingsExtractionResult.InvalidResponse
+		assertEquals(2, requestCount)
+		assertTrue(result.recoveryQuestion.contains("Frequenz erhöhen"))
+		assertTrue(traces.any { it.contains("furtherRepair=false") })
+	}
+
+	@Test
 	fun allConcreteSettingsUseExistingGeminiExtraction() = runBlocking {
 		val examples = listOf(
 			Triple(SettingIntent.VOICE, "Stell die Stimme auf männlich.", """{"settings_parameter_complete":true,"changed_settings":[{"voice":1}]}"""),
@@ -158,18 +232,14 @@ class GeminiSettingsProcessorTest {
 	}
 
 	@Test
-	fun approvedChangeGeneratesOnceAndAppliesExactlyOnce() = runBlocking {
-		var requestCount = 0
+	fun approvedChangeIsLocalAndAppliesExactlyOnce() = runBlocking {
 		var applyCount = 0
 		val traces = mutableListOf<String>()
-		val confirmation = GeminiSettingsConfirmation(
+		val confirmation = LocalSettingsConfirmation(
+			confirmationModelProvider = { confirmationModel },
 			jsonParser = parser,
 			trace = traces::add
-		) { _, structured ->
-			requestCount++
-			assertTrue(structured)
-			"""{"approval":1}"""
-		}
+		)
 
 		val result = confirmation.confirmAndApply(
 			"Ja.",
@@ -180,8 +250,12 @@ class GeminiSettingsProcessorTest {
 		}
 
 		assertEquals(SettingsConfirmationResult.APPLIED, result)
-		assertEquals(1, requestCount)
 		assertEquals(1, applyCount)
+		assertTrue(traces.none { it.contains("Gemini") })
+		assertTrue(traces.any { it.contains("evaluator=LOCAL_CONFIRMATION_MODEL") })
+		assertTrue(traces.any { it.contains("apiCalled=false") })
+		assertTrue(traces.any { it.contains("decision=ACCEPT") && it.contains("confirmed=true") })
+		assertTrue(traces.any { it.contains("scores=[ACCEPT=1.0000, REJECT=0.0000, UNKNOWN=0.0000]") })
 		assertTrue(
 			traces.any {
 				it.contains("role=SETTINGS_CONFIRMATION") &&
@@ -192,12 +266,8 @@ class GeminiSettingsProcessorTest {
 
 	@Test
 	fun rejectedChangeDoesNotApply() = runBlocking {
-		var requestCount = 0
 		var applyCount = 0
-		val confirmation = GeminiSettingsConfirmation(parser) { _, _ ->
-			requestCount++
-			"""{"approval":0}"""
-		}
+		val confirmation = LocalSettingsConfirmation({ confirmationModel }, parser)
 
 		val result = confirmation.confirmAndApply(
 			"Nein.",
@@ -208,16 +278,40 @@ class GeminiSettingsProcessorTest {
 		}
 
 		assertEquals(SettingsConfirmationResult.REJECTED, result)
-		assertEquals(1, requestCount)
 		assertEquals(0, applyCount)
 	}
 
 	@Test
-	fun explicitAbortIsDistinguishedFromSimpleRejectionWithoutApplying() = runBlocking {
+	fun unknownDoesNotApply() = runBlocking {
 		var applyCount = 0
-		val confirmation = GeminiSettingsConfirmation(parser) { _, _ ->
-			"""{"approval":0,"abort_settings_flow":true}"""
+		val traces = mutableListOf<String>()
+		val confirmation = LocalSettingsConfirmation(
+			{ confirmationModel }, parser, traces::add
+		)
+
+		val result = confirmation.confirmAndApply(
+			"Ich bin unsicher.",
+			"""{"changed_settings":[{"frequency":700}]}"""
+		) {
+			applyCount++
+			true
 		}
+
+		assertEquals(SettingsConfirmationResult.UNKNOWN, result)
+		assertEquals(0, applyCount)
+		assertTrue(
+			traces.any {
+				it.contains("decision=UNKNOWN") &&
+					it.contains("requiresClarification=true")
+			}
+		)
+		assertTrue(traces.any { it.contains("sideEffect=NONE clarificationRequired=true") })
+	}
+
+	@Test
+	fun explicitAbortRemainsDistinctFromSimpleRejectionWithoutApplying() = runBlocking {
+		var applyCount = 0
+		val confirmation = LocalSettingsConfirmation({ confirmationModel }, parser)
 
 		val result = confirmation.confirmAndApply(
 			"Abbrechen.",

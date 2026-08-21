@@ -5,6 +5,8 @@ import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.MainActivity.State
 import com.algorithmic_alliance.eyeaiapp.Settings
+import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationLabel
+import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateUpdate
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.VoskRestartPolicy
@@ -17,6 +19,7 @@ class SettingsHandler(
 	private val textToSpeechInstance: TextToSpeechInstance,
 	private val jsonParser: JsonParser,
 	private val eyeAIApp: EyeAIApp,
+	confirmationModelProvider: () -> ConfirmationModel,
 	private val generateLlmResponse: suspend (String, Boolean) -> String?,
 	private val speakAndHandleUi: suspend (String) -> Unit
 ) {
@@ -25,14 +28,32 @@ class SettingsHandler(
 		trace = ::logDecisionTrace,
 		generateLlmResponse = generateLlmResponse
 	)
-	private val settingsConfirmation = GeminiSettingsConfirmation(
+	private val settingsConfirmation = LocalSettingsConfirmation(
+		confirmationModelProvider = confirmationModelProvider,
 		jsonParser = jsonParser,
-		trace = ::logDecisionTrace,
-		generateLlmResponse = generateLlmResponse
+		trace = ::logDecisionTrace
 	)
 
 	private fun logDecisionTrace(message: String) {
 		Log.d(EyeAIApp.APP_LOG_TAG, message)
+	}
+
+	private fun logConfirmationTransition(
+		role: String,
+		decision: String,
+		action: String,
+		nextState: State,
+		contextRetained: Boolean,
+		modelInvoked: Boolean = true
+	) {
+		val evaluator = if (modelInvoked) "LOCAL_CONFIRMATION_MODEL" else "STATE_MACHINE_CONTROL"
+		Log.i(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][StateMachine][CONFIRMATION_TRANSITION] " +
+				"state=SETTINGS_ACTION role=$role evaluator=$evaluator " +
+				"apiCalled=false modelInvoked=$modelInvoked decision=$decision " +
+				"action=$action nextState=$nextState contextRetained=$contextRetained"
+		)
 	}
 
 	suspend fun handleSettingsMenu(
@@ -130,6 +151,18 @@ class SettingsHandler(
 				StateUpdate(State.SETTINGS_CHOICE, currentJson)
 			}
 
+			is SettingsExtractionResult.InvalidResponse -> {
+				Log.w(
+					EyeAIApp.APP_LOG_TAG,
+					"[DecisionTrace][SettingsHandler][SETTINGS_CHOICE] " +
+						"outcome=INVALID_GEMINI_RESPONSE action=REQUEST_REPHRASE " +
+						"nextState=SETTINGS_CHOICE contextRetained=true"
+				)
+				speakAndHandleUi(result.recoveryQuestion)
+				onJsonUpdate(currentJson)
+				StateUpdate(State.SETTINGS_CHOICE, currentJson)
+			}
+
 			is SettingsExtractionResult.Complete -> {
 				speakAndHandleUi(result.confirmationQuestion)
 				onJsonUpdate(result.json)
@@ -145,58 +178,58 @@ class SettingsHandler(
 	): StateUpdate {
 
 		if (currentJson != null && jsonParser.isLeaveRequest(currentJson)) {
-			val confirmationPrompt = """
-				Der Nutzer wurde gefragt: "Möchten Sie die Einstellungen wirklich verlassen?"
-				Die Antwort des Nutzers war: "$input"
-				Unterscheide genau diese Fälle:
-				- Verlassen bestätigen: approval=1 und abort_settings_flow=false.
-				- Verlassen nur ablehnen und im Menü bleiben: approval=0 und abort_settings_flow=false.
-				- Den gesamten Einstellungsdialog ausdrücklich abbrechen: approval=0 und
-				  abort_settings_flow=true.
-			""".trimIndent()
-
-			Log.d(
-				EyeAIApp.APP_LOG_TAG,
-				"[DecisionTrace][Gemini API][EVALUATE] " +
-					"role=LEAVE_SETTINGS_CONFIRMATION input='$input'"
-			)
-			val jsonResponse = generateLlmResponse(confirmationPrompt, true)
-
-			if (jsonResponse == null) {
-				speakAndHandleUi("Fehler bei der Verarbeitung.")
+			if (ExplicitSettingsFlowAbort.matches(input)) {
+				logConfirmationTransition(
+					role = "LEAVE_SETTINGS_CONFIRMATION",
+					decision = "ABORTED",
+					action = "ABORT_SETTINGS_FLOW",
+					nextState = State.IDLE,
+					contextRetained = false,
+					modelInvoked = false
+				)
+				speakAndHandleUi("Okay, ich habe den Einstellungsdialog abgebrochen.")
 				onJsonUpdate(null)
 				return StateUpdate(State.IDLE, null)
 			}
-
-			val abortSettingsFlow = jsonParser.isSettingsFlowAbort(jsonResponse)
-			val approved = jsonParser.parseApproval(jsonResponse)
-			Log.d(
-				EyeAIApp.APP_LOG_TAG,
-				"[DecisionTrace][Gemini API][RESULT] " +
-					"role=LEAVE_SETTINGS_CONFIRMATION approved=$approved " +
-					"abortSettingsFlow=$abortSettingsFlow"
-			)
-			return when {
-				abortSettingsFlow -> {
-					speakAndHandleUi("Okay, ich habe den Einstellungsdialog abgebrochen.")
-					onJsonUpdate(null)
-					StateUpdate(State.IDLE, null)
-				}
-
-				approved == true -> {
+			return when (settingsConfirmation.evaluate(input, currentJson)) {
+				ConfirmationLabel.ACCEPT -> {
+					logConfirmationTransition(
+						"LEAVE_SETTINGS_CONFIRMATION", "ACCEPT",
+						"LEAVE_SETTINGS", State.IDLE, false
+					)
 					speakAndHandleUi("Die Einstellungen werden verlassen.")
 					onJsonUpdate(null)
 					StateUpdate(State.IDLE, null)
 				}
 
-				approved == false -> {
+				ConfirmationLabel.REJECT -> {
+					logConfirmationTransition(
+						"LEAVE_SETTINGS_CONFIRMATION", "REJECT",
+						"STAY_IN_SETTINGS", State.SETTINGS_MENU, false
+					)
 					speakAndHandleUi("Okay, Sie bleiben in den Einstellungen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
 					onJsonUpdate(null)
 					StateUpdate(State.SETTINGS_MENU, null)
 				}
 
-				else -> {
-					speakAndHandleUi("Die Bestätigung konnte nicht ausgewertet werden.")
+				ConfirmationLabel.UNKNOWN -> {
+					logConfirmationTransition(
+						"LEAVE_SETTINGS_CONFIRMATION", "UNKNOWN",
+						"REQUEST_CLARIFICATION", State.SETTINGS_ACTION, true
+					)
+					speakAndHandleUi(
+						"Ich konnte die Bestätigung nicht eindeutig zuordnen. " +
+							"Bitte antworten Sie mit Ja oder Nein."
+					)
+					StateUpdate(State.SETTINGS_ACTION, currentJson)
+				}
+
+				null -> {
+					logConfirmationTransition(
+						"LEAVE_SETTINGS_CONFIRMATION", "FAILED",
+						"KEEP_CONFIRMATION_PENDING", State.SETTINGS_ACTION, true
+					)
+					speakAndHandleUi("Fehler bei der Verarbeitung.")
 					StateUpdate(State.SETTINGS_ACTION, currentJson)
 				}
 			}
@@ -207,6 +240,10 @@ class SettingsHandler(
 			settingsConfirmation.confirmAndApply(input, currentJson, ::applySettings)
 		) {
 			SettingsConfirmationResult.APPLIED -> {
+				logConfirmationTransition(
+					"SETTINGS_CONFIRMATION", "ACCEPT",
+					"APPLY_SETTINGS", State.IDLE, false
+				)
 				Log.i(
 					EyeAIApp.APP_LOG_TAG,
 					"[DecisionTrace][SettingsHandler][APPLY] outcome=SUCCESS; " +
@@ -223,21 +260,49 @@ class SettingsHandler(
 			SettingsConfirmationResult.REJECTED -> {
 				onJsonUpdate(null)
 				if (settingsFlow.cancellationDestination() == SettingsCancellationDestination.IDLE) {
+					logConfirmationTransition(
+						"SETTINGS_CONFIRMATION", "REJECT",
+						"CANCEL_SETTING_CHANGE", State.IDLE, false
+					)
 					speakAndHandleUi("Okay, ich habe die Einstellungsänderung abgebrochen.")
 					StateUpdate(State.IDLE, null)
 				} else {
+					logConfirmationTransition(
+						"SETTINGS_CONFIRMATION", "REJECT",
+						"RETURN_TO_SETTINGS_MENU", State.SETTINGS_MENU, false
+					)
 					speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
 					StateUpdate(State.SETTINGS_MENU, null)
 				}
 			}
 
 			SettingsConfirmationResult.ABORTED -> {
+				logConfirmationTransition(
+					"SETTINGS_CONFIRMATION", "ABORTED",
+					"ABORT_SETTINGS_FLOW", State.IDLE, false, modelInvoked = false
+				)
 				speakAndHandleUi("Okay, ich habe den Einstellungsdialog abgebrochen.")
 				onJsonUpdate(null)
 				StateUpdate(State.IDLE, null)
 			}
 
+			SettingsConfirmationResult.UNKNOWN -> {
+				logConfirmationTransition(
+					"SETTINGS_CONFIRMATION", "UNKNOWN",
+					"REQUEST_CLARIFICATION", State.SETTINGS_ACTION, true
+				)
+				speakAndHandleUi(
+					"Ich konnte die Bestätigung nicht eindeutig zuordnen. " +
+						"Bitte antworten Sie mit Ja oder Nein."
+				)
+				StateUpdate(State.SETTINGS_ACTION, currentJson)
+			}
+
 			SettingsConfirmationResult.FAILED -> {
+				logConfirmationTransition(
+					"SETTINGS_CONFIRMATION", "FAILED",
+					"RETURN_TO_IDLE", State.IDLE, false
+				)
 				speakAndHandleUi("Fehler bei der Verarbeitung.")
 				onJsonUpdate(null)
 				StateUpdate(State.IDLE, null)

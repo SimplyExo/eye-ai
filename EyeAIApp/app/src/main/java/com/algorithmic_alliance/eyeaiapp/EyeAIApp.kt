@@ -7,6 +7,7 @@ import android.os.Build
 import android.util.Log
 import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
+import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
@@ -22,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.Locale
 import java.util.concurrent.Executors
 
 /**
@@ -53,6 +55,39 @@ class EyeAIApp : Application() {
 	var nlpModel: NLPModel =
 		NLPModel(NLPModelInfo.findById(NLPModelInfo.DEFAULT_MODEL_ID))
 		private set
+
+	/** Loaded lazily and shared across short-lived StateMachine instances. */
+	val confirmationModel: ConfirmationModel by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+		val started = System.nanoTime()
+		Log.i(
+			APP_LOG_TAG,
+			"[DecisionTrace][ConfirmationModel][LOAD] outcome=STARTED " +
+				"model=${ConfirmationModel.MODEL_ID} asset=${ConfirmationModel.ASSET_PATH} " +
+				"execution=LOCAL apiCalled=false"
+		)
+		try {
+			ConfirmationModel.fromAssets(this).also { model ->
+				Log.i(
+					APP_LOG_TAG,
+					"[DecisionTrace][ConfirmationModel][LOAD] outcome=SUCCESS " +
+						"model=${ConfirmationModel.MODEL_ID} featureCount=${model.featureCount} " +
+						"threshold=${String.format(Locale.US, "%.4f", model.confidenceThreshold)} " +
+						"duration=${(System.nanoTime() - started) / 1_000_000}ms " +
+						"execution=LOCAL apiCalled=false"
+				)
+			}
+		} catch (error: Throwable) {
+			Log.e(
+				APP_LOG_TAG,
+				"[DecisionTrace][ConfirmationModel][LOAD] outcome=FAILED " +
+					"model=${ConfirmationModel.MODEL_ID} " +
+					"duration=${(System.nanoTime() - started) / 1_000_000}ms " +
+					"execution=LOCAL apiCalled=false",
+				error
+			)
+			throw error
+		}
+	}
 
 	/* will not be fully initialized when enableOCR is disabled in settings */
 	var ocrModel = GoogleOCR()

@@ -198,6 +198,34 @@ class JsonParser {
 		return "Soll ich die angeforderte Änderung durchführen?"
 	}
 
+	/** Supplies the action segment used by the frozen confirmation-model input. */
+	fun createPendingActionDescription(jsonString: String): String {
+		try {
+			val changedSettings = JSONObject(jsonString).optJSONArray("changed_settings")
+			if (changedSettings != null && changedSettings.length() > 0) {
+				val firstChange = changedSettings.getJSONObject(0)
+				return when {
+					firstChange.has("tts_speed") ->
+						"die Sprachgeschwindigkeit auf ${firstChange.getDouble("tts_speed")} setzen"
+					firstChange.has("voice") -> if (firstChange.getInt("voice") == 1) {
+						"zur männlichen Assistentenstimme wechseln"
+					} else {
+						"zur weiblichen Assistentenstimme wechseln"
+					}
+					firstChange.has("frequency") ->
+						"die Audio-Frequenz auf ${firstChange.getInt("frequency")} Hz setzen"
+					firstChange.has("bps") ->
+						"die BPS auf ${firstChange.getInt("bps")} setzen"
+					firstChange.has("leave") -> "die Einstellungen verlassen"
+					else -> "die angeforderte Änderung durchführen"
+				}
+			}
+		} catch (e: JSONException) {
+			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in createPendingActionDescription", e)
+		}
+		return "die angeforderte Änderung durchführen"
+	}
+
 	fun isApproved(jsonString: String): Boolean {
 		return parseApproval(jsonString) == true
 	}

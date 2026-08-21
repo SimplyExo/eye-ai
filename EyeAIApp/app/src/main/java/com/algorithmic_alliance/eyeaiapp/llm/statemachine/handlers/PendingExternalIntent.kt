@@ -63,14 +63,25 @@ object PendingExternalIntentCodec {
 
 object PendingExternalIntentPresentation {
 	fun confirmationQuestion(intent: Intent): String {
-		val action = when (intent) {
+		val action = actionWithoutSettingsExit(intent)
+		return "Sie befinden sich noch in den Einstellungen. " +
+			"Möchten Sie die Einstellungen verlassen und $action?"
+	}
+
+	fun pendingAction(intent: Intent): String = when (intent) {
+		Intent.TEXT_RECOGNITION -> "die Einstellungen verlassen und die Texterkennung ausführen"
+		Intent.OBJECT_DETECTION -> "die Einstellungen verlassen und die Objekterkennung ausführen"
+		Intent.MEASURE_DISTANCE -> "die Einstellungen verlassen und die Entfernung messen"
+		Intent.REDIRECT_TO_LLM ->
+			"die Einstellungen verlassen und die ursprüngliche Anfrage ausführen"
+		else -> throw IllegalArgumentException("Intent $intent is not external to settings")
+	}
+
+	private fun actionWithoutSettingsExit(intent: Intent): String = when (intent) {
 			Intent.TEXT_RECOGNITION -> "die Texterkennung ausführen"
 			Intent.OBJECT_DETECTION -> "die Objekterkennung ausführen"
 			Intent.MEASURE_DISTANCE -> "die Entfernung messen"
 			Intent.REDIRECT_TO_LLM -> "Ihre ursprüngliche Anfrage ausführen"
 			else -> throw IllegalArgumentException("Intent $intent is not external to settings")
 		}
-		return "Sie befinden sich noch in den Einstellungen. " +
-			"Möchten Sie die Einstellungen verlassen und $action?"
-	}
 }

@@ -1,0 +1,35 @@
+{
+  "review_basis": "human_semantic_assignability_to_original_yes_no_label",
+  "input_generated_nonempty": 300,
+  "kept": 285,
+  "rejected": 15,
+  "kept_by_label": {
+    "NO": 142,
+    "YES": 143
+  },
+  "rejected_by_label": {
+    "NO": 8,
+    "YES": 7
+  },
+  "rejected_by_severity": {
+    "moderate": 15
+  },
+  "rejected_attempt_ids": [
+    "dataset:12:v1",
+    "dataset:24:v1",
+    "dataset:39:v1",
+    "dataset:43:v1",
+    "dataset:94:v1",
+    "dataset:101:v1",
+    "dataset:123:v1",
+    "dataset:139:v1",
+    "dataset:145:v1",
+    "dataset:175:v1",
+    "dataset:202:v1",
+    "dataset:207:v1",
+    "dataset:236:v1",
+    "dataset:256:v1",
+    "dataset:287:v1"
+  ],
+  "policy": "Nur explizit in human_review_rejected.csv aufgefuehrte Saetze wurden aus vosk_human_reviewed.txt entfernt. Rohtranskripte und Manifest bleiben unveraendert."
+}

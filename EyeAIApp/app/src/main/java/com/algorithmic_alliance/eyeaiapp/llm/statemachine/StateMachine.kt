@@ -10,7 +10,7 @@ import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.JsonParser
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.LLMStreamingHandler
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.ContextSwitchConfirmationResult
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.GeminiContextSwitchConfirmation
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.ContextSwitchConfirmation
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.PendingExternalIntent
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.PendingExternalIntentCodec
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.PendingExternalIntentPresentation
@@ -50,13 +50,13 @@ class StateMachine(
         textToSpeechInstance,
         jsonParser,
         eyeAIApp,
+        { eyeAIApp.confirmationModel },
         ::generateLlmResponse,
         streamingHandler::speakAndHandleUi
     )
-    private val contextSwitchConfirmation = GeminiContextSwitchConfirmation(
-        jsonParser = jsonParser,
-        trace = { message -> Log.d(EyeAIApp.APP_LOG_TAG, message) },
-        generateLlmResponse = ::generateLlmResponse
+    private val contextSwitchConfirmation = ContextSwitchConfirmation(
+        confirmationModelProvider = { eyeAIApp.confirmationModel },
+        trace = { message -> Log.d(EyeAIApp.APP_LOG_TAG, message) }
     )
 
     private val objectPositionClassifier = ObjectPositionClassifier()
@@ -214,12 +214,20 @@ class StateMachine(
     private fun classifyAbortForSettingsChoice(input: String): Boolean {
         val result = classifyIntentWithNLP(input)
         val accepted = isConfidentAbort(result)
+        val action = if (accepted) {
+            "ABORT_SETTINGS_FLOW"
+        } else {
+            "FORWARD_TO_GEMINI_PARAMETER_EXTRACTION"
+        }
+        val nextEvaluator = if (accepted) "NONE" else "GEMINI_API"
         Log.d(
             EyeAIApp.APP_LOG_TAG,
             "[DecisionTrace][StateMachine][SETTINGS_ABORT_GATE] classifier=NLP_V2 " +
                 "state=SETTINGS_CHOICE top1=${result?.intent} " +
                 "confidence=${formatPercentage(result?.confidence ?: 0f)} " +
-                "threshold=${formatPercentage(nlpConfidenceThreshold)} accepted=$accepted"
+                "threshold=${formatPercentage(nlpConfidenceThreshold)} accepted=$accepted " +
+                "action=$action nextEvaluator=$nextEvaluator " +
+                "nonAbortIntentIgnored=${result != null && result.intent != Intent.ABORT}"
         )
         return accepted
     }
@@ -585,8 +593,8 @@ class StateMachine(
     }
 
     suspend fun handleSettingsAction(final: String): StateUpdate {
-        // The ten-class CNN has no yes/no classes. Gemini therefore keeps
-        // confirmation ownership and distinguishes approval, rejection, and abort.
+        // This state is an explicit confirmation. It is the only settings path
+        // handled by the local confirmation model instead of Gemini.
         return settingsHandler.handleSettingsAction(final, lastLlmJsonResponse) { newJson ->
             lastLlmJsonResponse = newJson
         }
@@ -607,15 +615,18 @@ class StateMachine(
             return StateUpdate(State.SETTINGS_MENU, null)
         }
 
-        // Do not run yes/no through the ten intent classes: on the frozen model
-        // both answers can appear as ABORT. Gemini owns this confirmation state.
+        // Do not run yes/no through the ten intent classes. This explicit
+        // confirmation state is owned exclusively by the local confirmation model.
         return when (contextSwitchConfirmation.evaluate(final, pendingIntent)) {
             ContextSwitchConfirmationResult.APPROVED -> {
                 Log.d(
                     EyeAIApp.APP_LOG_TAG,
                     "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +
-                        "confirmation=APPROVED intent=${pendingIntent.intentResult.intent} " +
-                        "action=EXECUTE_STORED_RESULT nlpReclassified=false"
+                        "evaluator=LOCAL_CONFIRMATION_MODEL apiCalled=false " +
+                        "decision=ACCEPT confirmation=APPROVED " +
+                        "intent=${pendingIntent.intentResult.intent} " +
+                        "action=EXECUTE_STORED_RESULT pendingContextRetained=false " +
+                        "nlpReclassified=false"
                 )
                 lastLlmJsonResponse = null
                 executePendingExternalIntent(pendingIntent)
@@ -625,7 +636,10 @@ class StateMachine(
                 Log.d(
                     EyeAIApp.APP_LOG_TAG,
                     "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +
-                        "confirmation=REJECTED action=STAY_IN_SETTINGS_MENU pendingExternalIntent=cleared"
+                        "evaluator=LOCAL_CONFIRMATION_MODEL apiCalled=false " +
+                        "decision=REJECT confirmation=REJECTED " +
+                        "action=STAY_IN_SETTINGS_MENU nextState=SETTINGS_MENU " +
+                        "pendingExternalIntent=cleared"
                 )
                 lastLlmJsonResponse = null
                 streamingHandler.speakAndHandleUi(
@@ -638,16 +652,35 @@ class StateMachine(
                 Log.d(
                     EyeAIApp.APP_LOG_TAG,
                     "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +
-                        "confirmation=ABORTED action=RETURN_TO_IDLE pendingExternalIntent=cleared"
+                        "evaluator=STATE_MACHINE_CONTROL apiCalled=false modelInvoked=false " +
+                        "decision=ABORTED confirmation=ABORTED action=RETURN_TO_IDLE " +
+                        "pendingExternalIntent=cleared"
                 )
                 abortSettingsFlow(State.SETTINGS_EXTERNAL_CONFIRMATION)
+            }
+
+            ContextSwitchConfirmationResult.UNKNOWN -> {
+                Log.d(
+                    EyeAIApp.APP_LOG_TAG,
+                    "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +
+                        "evaluator=LOCAL_CONFIRMATION_MODEL apiCalled=false " +
+                        "decision=UNKNOWN confirmation=UNKNOWN action=REQUEST_CLARIFICATION " +
+                        "nextState=SETTINGS_EXTERNAL_CONFIRMATION pendingContextRetained=true"
+                )
+                streamingHandler.speakAndHandleUi(
+                    "Ich konnte die Bestätigung nicht eindeutig zuordnen. " +
+                        "Bitte antworten Sie mit Ja oder Nein."
+                )
+                StateUpdate(State.SETTINGS_EXTERNAL_CONFIRMATION, lastLlmJsonResponse)
             }
 
             ContextSwitchConfirmationResult.FAILED -> {
                 Log.w(
                     EyeAIApp.APP_LOG_TAG,
                     "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +
-                        "confirmation=FAILED action=KEEP_PENDING_CONTEXT"
+                        "evaluator=LOCAL_CONFIRMATION_MODEL apiCalled=false " +
+                        "decision=FAILED confirmation=FAILED action=KEEP_PENDING_CONTEXT " +
+                        "nextState=SETTINGS_EXTERNAL_CONFIRMATION pendingContextRetained=true"
                 )
                 StateUpdate(State.SETTINGS_EXTERNAL_CONFIRMATION, lastLlmJsonResponse)
             }

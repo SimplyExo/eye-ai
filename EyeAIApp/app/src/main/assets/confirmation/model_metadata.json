@@ -1,0 +1,143 @@
+{
+  "format": "eyeai_confirmation_char_ngram_binary",
+  "format_version": 1,
+  "source_model": "models/char_ngram.joblib",
+  "sha256": "73c04487b2fb52c5620f4b3d01c724efaa57d1e4ccbf990e7c08c8c5c4eb6d4d",
+  "size_bytes": 159626,
+  "labels": [
+    "ACCEPT",
+    "REJECT",
+    "UNKNOWN"
+  ],
+  "feature_count": 3987,
+  "ngram_range": [
+    2,
+    5
+  ],
+  "analyzer": "char_wb",
+  "sublinear_tf": true,
+  "norm": "l2",
+  "confidence_unknown_threshold": 0.4,
+  "training_metadata": {
+    "training_mode": "clean_plus_actual_asr",
+    "ngram_range": [
+      2,
+      5
+    ],
+    "C": 4.0,
+    "train_count": 277,
+    "clean_validation": {
+      "n": 45,
+      "accuracy": 0.8888888888888888,
+      "macro_f1": 0.8893557422969187,
+      "macro_f1_present_labels": 0.8893557422969187,
+      "labels": {
+        "ACCEPT": {
+          "precision": 0.7894736842105263,
+          "recall": 1.0,
+          "f1": 0.8823529411764706,
+          "support": 15
+        },
+        "REJECT": {
+          "precision": 1.0,
+          "recall": 0.8666666666666667,
+          "f1": 0.9285714285714286,
+          "support": 15
+        },
+        "UNKNOWN": {
+          "precision": 0.9230769230769231,
+          "recall": 0.8,
+          "f1": 0.8571428571428571,
+          "support": 15
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "ACCEPT",
+          "REJECT",
+          "UNKNOWN"
+        ],
+        "values": [
+          [
+            15,
+            0,
+            0
+          ],
+          [
+            1,
+            13,
+            1
+          ],
+          [
+            3,
+            0,
+            12
+          ]
+        ]
+      },
+      "critical_accept_reject_errors": 1,
+      "critical_accept_reject_error_rate": 0.022222222222222223
+    },
+    "asr_validation": {
+      "n": 44,
+      "accuracy": 0.8636363636363636,
+      "macro_f1": 0.8663826594861077,
+      "macro_f1_present_labels": 0.8663826594861077,
+      "labels": {
+        "ACCEPT": {
+          "precision": 0.7777777777777778,
+          "recall": 0.9333333333333333,
+          "f1": 0.8484848484848485,
+          "support": 15
+        },
+        "REJECT": {
+          "precision": 1.0,
+          "recall": 0.8571428571428571,
+          "f1": 0.9230769230769231,
+          "support": 14
+        },
+        "UNKNOWN": {
+          "precision": 0.8571428571428571,
+          "recall": 0.8,
+          "f1": 0.8275862068965517,
+          "support": 15
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "ACCEPT",
+          "REJECT",
+          "UNKNOWN"
+        ],
+        "values": [
+          [
+            14,
+            0,
+            1
+          ],
+          [
+            1,
+            12,
+            1
+          ],
+          [
+            3,
+            0,
+            12
+          ]
+        ]
+      },
+      "critical_accept_reject_errors": 1,
+      "critical_accept_reject_error_rate": 0.022727272727272728
+    },
+    "selection_score": 0.8778692008915132,
+    "seed": 42,
+    "input_format": "[FRAGE] exact question [AKTION] pending action [ANTWORT] answer",
+    "train_label_counts": {
+      "ACCEPT": 116,
+      "REJECT": 116,
+      "UNKNOWN": 45
+    },
+    "validation_group_overlap": 0
+  }
+}

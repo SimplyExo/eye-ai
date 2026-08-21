@@ -1,0 +1,303 @@
+# AUGMENT_TRAIN — 150 EyeAI-spezifische Sätze (75 YES / 75 NO)
+Ja, ändere die Frequenz.;YES
+Ja, ich möchte, dass du die Frequenz änderst.;YES
+Genau, setze die Frequenz so.;YES
+Ja bitte, übernimm die neue Frequenz.;YES
+Mach das, die Frequenz kann geändert werden.;YES
+Ja, stelle die Frequenz auf den genannten Wert.;YES
+Das passt, ändere die Frequenz entsprechend.;YES
+Bitte bestätige die Frequenzänderung und führe sie aus.;YES
+Ja, die Frequenz soll höher werden.;YES
+Ja, die Frequenz darf niedriger gesetzt werden.;YES
+Richtig, nimm für die Frequenz den neuen Wert.;YES
+Einverstanden, ändere die Tonfrequenz.;YES
+Ja, so möchte ich die Frequenz haben.;YES
+Okay, übernimm diese Frequenzeinstellung.;YES
+Genau so, die Frequenz kannst du einstellen.;YES
+Ja, ändere die BPS.;YES
+Ja bitte, setze die Signalrate so.;YES
+Genau, übernimm den neuen BPS-Wert.;YES
+Mach das, die Signale sollen häufiger kommen.;YES
+Ja, die Abstandssignale dürfen seltener werden.;YES
+Einverstanden, ändere die Wiederholrate.;YES
+Ja, stelle die BPS auf den genannten Wert.;YES
+Okay, ändere die Signalgeschwindigkeit entsprechend.;YES
+Richtig, die Hinweistöne sollen öfter kommen.;YES
+Ja, übernimm diese Einstellung für die Signalrate.;YES
+Bitte führe die Änderung der BPS aus.;YES
+Ja, die Wiederholrate kann so gesetzt werden.;YES
+Das ist richtig, nimm die neue Signalrate.;YES
+Genau so sollen die Abstandshinweise wiederholt werden.;YES
+Ja, passe die BPS wie besprochen an.;YES
+Ja, sprich künftig schneller.;YES
+Ja bitte, ändere die Sprechgeschwindigkeit.;YES
+Genau, das Sprechtempo soll langsamer werden.;YES
+Mach das, erhöhe das Vorlesetempo.;YES
+Einverstanden, reduziere die Geschwindigkeit der Sprachausgabe.;YES
+Ja, setze das Sprechtempo auf den genannten Wert.;YES
+Okay, übernimm die neue Sprechgeschwindigkeit.;YES
+Richtig, lies ab jetzt etwas schneller vor.;YES
+Ja, die Stimme darf langsamer sprechen.;YES
+Bitte führe die Tempoänderung aus.;YES
+Genau so soll die Sprachausgabe künftig sprechen.;YES
+Ja, passe das Vorlesetempo entsprechend an.;YES
+Das passt, stelle die Geschwindigkeit so ein.;YES
+Ja bitte, verwende das neue Sprechtempo.;YES
+Einverstanden, ändere die Geschwindigkeit der Ausgabe.;YES
+Ja, stelle die Stimme auf männlich.;YES
+Ja bitte, nimm die weibliche Stimme.;YES
+Genau, wechsle den Sprecher.;YES
+Mach das, ich möchte die andere Stimme hören.;YES
+Einverstanden, verwende ab jetzt die Männerstimme.;YES
+Ja, nimm künftig die Frauenstimme.;YES
+Okay, ändere die Sprecherstimme.;YES
+Richtig, die aktuelle Stimme soll gewechselt werden.;YES
+Ja bitte, übernimm die ausgewählte Stimme.;YES
+Genau so, verwende den anderen Sprecher.;YES
+Ja, die Stimme darf geändert werden.;YES
+Bitte führe den Stimmenwechsel aus.;YES
+Das passt, stelle die gewünschte Stimme ein.;YES
+Ja, ersetze die aktuelle Sprecherstimme durch die andere.;YES
+Einverstanden, wechsel auf die genannte Stimme.;YES
+Ja, verlasse die Einstellungen und lies den Text.;YES
+Ja bitte, geh aus den Einstellungen und erkenne das Objekt.;YES
+Genau, verlasse das Menü und miss den Abstand.;YES
+Mach das, beende die Einstellungen und beantworte meine Frage.;YES
+Ja, du kannst die Einstellungen verlassen und das Schild lesen.;YES
+Einverstanden, geh zurück und starte die Objekterkennung.;YES
+Ja bitte, verlasse das Einstellungsmenü und bestimme die Entfernung.;YES
+Richtig, schließe die Einstellungen und führe die andere Funktion aus.;YES
+Ja, wechsel aus den Einstellungen zur Texterkennung.;YES
+Okay, verlasse das Menü und schau, was vor mir ist.;YES
+Bitte beende die Einstellungen und führe meinen vorherigen Befehl aus.;YES
+Ja, ich möchte die Einstellungen verlassen und mit der Messung fortfahren.;YES
+Genau, geh aus dem Menü und leite meine Frage an die Assistenz weiter.;YES
+Ja bitte, schließe die Einstellungen und erkenne den Text.;YES
+Einverstanden, verlasse den Einstellungsdialog und führe die gespeicherte Aktion aus.;YES
+Nein, ändere die Frequenz nicht.;NO
+Nein, ich möchte die Frequenz nicht ändern.;NO
+Lass die Frequenz bitte wie sie ist.;NO
+Nein danke, übernimm den neuen Frequenzwert nicht.;NO
+Mach das nicht, die Frequenz soll unverändert bleiben.;NO
+Nein, stelle die Frequenz nicht auf den genannten Wert.;NO
+Das passt so nicht, ändere die Frequenz nicht.;NO
+Bitte verwirf die vorgeschlagene Frequenzänderung.;NO
+Nein, die Frequenz soll nicht höher werden.;NO
+Nein, setze die Frequenz nicht niedriger.;NO
+Lass den bisherigen Frequenzwert bestehen.;NO
+Ich bin dagegen, die Tonfrequenz zu ändern.;NO
+Nein, so möchte ich die Frequenz nicht haben.;NO
+Übernimm diese Frequenzeinstellung bitte nicht.;NO
+Nein, führe die Frequenzänderung nicht aus.;NO
+Nein, ändere die BPS nicht.;NO
+Nein bitte, lass die Signalrate unverändert.;NO
+Übernimm den neuen BPS-Wert nicht.;NO
+Mach das nicht, die Signale sollen nicht häufiger kommen.;NO
+Nein, die Abstandssignale sollen nicht seltener werden.;NO
+Lass die Wiederholrate bitte so wie bisher.;NO
+Nein, stelle die BPS nicht auf den genannten Wert.;NO
+Die Signalrate soll unverändert bleiben.;NO
+Nein, die Hinweistöne sollen nicht öfter kommen.;NO
+Übernimm diese Einstellung für die Signalrate nicht.;NO
+Bitte führe die Änderung der BPS nicht aus.;NO
+Nein, ändere die Wiederholrate nicht.;NO
+Der bisherige BPS-Wert soll bleiben.;NO
+Nein, passe die Abstandshinweise nicht so an.;NO
+Verwirf bitte die Änderung der Signalrate.;NO
+Nein, sprich nicht schneller.;NO
+Nein bitte, ändere die Sprechgeschwindigkeit nicht.;NO
+Das Sprechtempo soll nicht langsamer werden.;NO
+Mach das nicht, erhöhe das Vorlesetempo nicht.;NO
+Nein, reduziere die Geschwindigkeit der Sprachausgabe nicht.;NO
+Setze das Sprechtempo nicht auf den genannten Wert.;NO
+Lass die aktuelle Sprechgeschwindigkeit bestehen.;NO
+Nein, lies nicht schneller vor.;NO
+Die Stimme soll nicht langsamer sprechen.;NO
+Bitte führe die Tempoänderung nicht aus.;NO
+Lass die Sprachausgabe genau so schnell wie bisher.;NO
+Nein, passe das Vorlesetempo nicht an.;NO
+Die Geschwindigkeit soll so bleiben.;NO
+Verwende das neue Sprechtempo bitte nicht.;NO
+Nein, ändere die Geschwindigkeit der Ausgabe nicht.;NO
+Nein, stell die Stimme nicht auf männlich.;NO
+Nein bitte, nimm nicht die weibliche Stimme.;NO
+Wechsle den Sprecher nicht.;NO
+Mach das nicht, ich möchte die aktuelle Stimme behalten.;NO
+Nein, verwende nicht die Männerstimme.;NO
+Nimm künftig nicht die Frauenstimme.;NO
+Lass die Sprecherstimme bitte unverändert.;NO
+Die aktuelle Stimme soll nicht gewechselt werden.;NO
+Übernimm die ausgewählte Stimme nicht.;NO
+Nein, verwende nicht den anderen Sprecher.;NO
+Die Stimme darf nicht geändert werden.;NO
+Bitte führe den Stimmenwechsel nicht aus.;NO
+Nein, stelle die gewünschte Stimme nicht ein.;NO
+Behalte die aktuelle Sprecherstimme.;NO
+Nein, wechsel nicht auf die genannte Stimme.;NO
+Nein, bleib in den Einstellungen und lies den Text nicht.;NO
+Nein, verlasse die Einstellungen nicht für die Objekterkennung.;NO
+Bleib im Menü und miss den Abstand nicht.;NO
+Nein, beende die Einstellungen nicht für meine andere Frage.;NO
+Ich möchte in den Einstellungen bleiben und das Schild nicht lesen.;NO
+Nein, geh nicht zurück zur Objekterkennung.;NO
+Verlasse das Einstellungsmenü nicht für die Entfernungsmessung.;NO
+Nein, schließe die Einstellungen nicht für die andere Funktion.;NO
+Bleib bei den Einstellungen und starte die Texterkennung nicht.;NO
+Nein, geh nicht aus dem Menü, um nach vorne zu schauen.;NO
+Führe meinen vorherigen Befehl jetzt nicht aus.;NO
+Nein, ich möchte die Einstellungen nicht für die Messung verlassen.;NO
+Bleib im Menü und leite meine Frage nicht weiter.;NO
+Nein, schließe die Einstellungen nicht für die Texterkennung.;NO
+Verwirf den gespeicherten Befehl und bleib in den Einstellungen.;NO
+
+# HOLDOUT_TEST — 150 unabhängige EyeAI-Sätze (75 YES / 75 NO)
+Das kannst du so übernehmen, die neue Frequenz ist in Ordnung.;YES
+Von mir aus darfst du die Frequenz jetzt umstellen.;YES
+Ja genau, der vorgeschlagene Frequenzwert soll gelten.;YES
+Die Änderung am Ton passt für mich, führ sie aus.;YES
+Ich bin mit der neuen Frequenz einverstanden.;YES
+So ist es richtig, stell den Frequenzwert entsprechend ein.;YES
+Die Frequenzänderung kannst du bestätigen.;YES
+Nimm ruhig den Wert, den ich eben für die Frequenz genannt habe.;YES
+Bitte setz die Tonhöhe beziehungsweise Frequenz wie besprochen.;YES
+Der neue Frequenzwert passt, mach weiter.;YES
+Ja, diese Anpassung am Signalton ist gewollt.;YES
+Du darfst die Frequenzeinstellung jetzt speichern.;YES
+Das ist die Frequenz, die ich haben möchte.;YES
+Führ genau diese Änderung an der Frequenz aus.;YES
+Für die Frequenz ist das so korrekt.;YES
+Die neue BPS-Einstellung passt, übernimm sie.;YES
+Ja, die Hinweise sollen in diesem Rhythmus kommen.;YES
+Du kannst die Wiederholrate jetzt entsprechend ändern.;YES
+Der vorgeschlagene Abstand zwischen den Signalen ist richtig.;YES
+Genau diese Signalrate möchte ich verwenden.;YES
+Passt, stell die Hinweissignale so ein.;YES
+Die Änderung der BPS ist von mir bestätigt.;YES
+Nimm für die Signale ruhig die eben genannte Rate.;YES
+Ja, so oft sollen die Hinweise ausgegeben werden.;YES
+Der neue Rhythmus der Abstandstöne ist richtig.;YES
+Speichere diese Einstellung für die Wiederholrate.;YES
+Das Intervall der Signale kannst du so übernehmen.;YES
+Ich möchte, dass die BPS wie vorgeschlagen geändert werden.;YES
+Diese Rate für die Signaltöne ist in Ordnung.;YES
+Führe die gerade besprochene BPS-Anpassung aus.;YES
+So schnell darf die Sprachausgabe künftig sein.;YES
+Ja, das neue Lesetempo ist für mich passend.;YES
+Übernimm die vorgeschlagene Geschwindigkeit der Stimme.;YES
+Die Änderung am Sprechtempo kannst du durchführen.;YES
+Genau in diesem Tempo soll vorgelesen werden.;YES
+Von mir aus kannst du die Ausgabe schneller stellen.;YES
+Ja, verlangsame die Sprache wie vorgeschlagen.;YES
+Das neue Vorlesetempo gefällt mir, speichere es.;YES
+Die Geschwindigkeit passt so, mach die Änderung.;YES
+Nimm bitte das eben festgelegte Sprechtempo.;YES
+Ich bestätige die Anpassung der Sprachausgabe.;YES
+So soll EyeAI künftig sprechen.;YES
+Das Tempo der gesprochenen Antworten darf so geändert werden.;YES
+Ja, die vorgeschlagene Sprechgeschwindigkeit ist richtig.;YES
+Führe diese Änderung am Vorlesetempo aus.;YES
+Die Männerstimme passt, stell sie ein.;YES
+Ja, ich möchte künftig die weibliche Stimme hören.;YES
+Der Sprecherwechsel ist so in Ordnung.;YES
+Nimm ruhig die andere Stimme.;YES
+Diese Sprecherstimme möchte ich verwenden.;YES
+Ja, wechsel auf die vorgeschlagene Stimme.;YES
+Die ausgewählte Stimme kannst du übernehmen.;YES
+Genau diese Stimme soll EyeAI benutzen.;YES
+Der Wechsel zur Frauenstimme ist bestätigt.;YES
+Die männliche Ausgabe ist für mich richtig.;YES
+Stell bitte auf den anderen Sprecher um.;YES
+Ich möchte die eben ausgewählte Sprecherstimme behalten.;YES
+Ja, diese Stimme ist die richtige.;YES
+Führe den vorgeschlagenen Stimmenwechsel durch.;YES
+Die Sprachausgabe darf auf diese Stimme wechseln.;YES
+Ja, geh aus dem Einstellungsdialog und führe die Texterkennung aus.;YES
+Du kannst das Menü verlassen und nach dem Gegenstand vor mir schauen.;YES
+Bitte verlasse die Einstellungen und miss anschließend die Entfernung.;YES
+Das ist in Ordnung, schließe das Menü und beantworte die vorherige Frage.;YES
+Ja, wechsel zurück zur normalen Ansicht und lies das Schild.;YES
+Verlasse die Einstellungen ruhig und starte die Objekterkennung.;YES
+Ich bestätige, dass du das Menü für die Distanzmessung verlassen darfst.;YES
+Geh aus den Einstellungen und führe den gespeicherten Befehl aus.;YES
+Ja, beende den Einstellungsdialog und erkenne den Text vor mir.;YES
+Du darfst die Einstellungen verlassen und prüfen, was im Weg steht.;YES
+Bitte führe nach dem Verlassen des Menüs meine ursprüngliche Anfrage aus.;YES
+Ja, geh zurück und bestimme den Abstand zum Hindernis.;YES
+Schließe die Einstellungen und leite die offene Frage weiter.;YES
+Ich möchte jetzt aus dem Menü raus und den Text lesen lassen.;YES
+Bestätigt, verlasse die Einstellungen und starte die zuvor gewünschte Funktion.;YES
+Die vorgeschlagene Frequenz möchte ich doch nicht übernehmen.;NO
+Lass den Ton bitte beim bisherigen Frequenzwert.;NO
+Mit dieser Frequenzänderung bin ich nicht einverstanden.;NO
+Den neuen Frequenzwert bitte verwerfen.;NO
+So soll die Frequenz nicht eingestellt werden.;NO
+Die Anpassung am Ton möchte ich nicht durchführen.;NO
+Nimm für die Frequenz lieber weiterhin den alten Wert.;NO
+Bitte speichere diese Frequenzeinstellung nicht.;NO
+Die Frequenzänderung ist von mir nicht bestätigt.;NO
+Stell den Signalton doch nicht auf diesen Wert.;NO
+Diese Änderung an der Frequenz soll nicht passieren.;NO
+Der bisherige Frequenzwert ist mir lieber.;NO
+Lass die Frequenzeinstellung unangetastet.;NO
+Ich lehne die vorgeschlagene Änderung der Frequenz ab.;NO
+Bitte nimm die letzte Frequenzanpassung nicht vor.;NO
+Die neue BPS-Einstellung möchte ich nicht übernehmen.;NO
+Lass die Hinweise in ihrem bisherigen Rhythmus.;NO
+Ändere die Wiederholrate doch nicht.;NO
+Der vorgeschlagene Signalabstand passt mir nicht.;NO
+Diese Signalrate soll nicht eingestellt werden.;NO
+Bitte lass die BPS auf dem bisherigen Wert.;NO
+Die Anpassung der Hinweistöne möchte ich verwerfen.;NO
+So oft sollen die Signale doch nicht kommen.;NO
+Speichere diese Wiederholrate bitte nicht.;NO
+Der neue Rhythmus der Abstandstöne ist nicht gewünscht.;NO
+Lass das Intervall der Signale unverändert.;NO
+Ich bestätige die Änderung der BPS nicht.;NO
+Nimm nicht die eben vorgeschlagene Rate.;NO
+Die Signalrate soll so bleiben wie vorher.;NO
+Führe die besprochene BPS-Anpassung nicht aus.;NO
+Das neue Sprechtempo möchte ich nicht übernehmen.;NO
+Lass die Sprachausgabe so schnell wie bisher.;NO
+Ändere die Lesegeschwindigkeit doch nicht.;NO
+Das vorgeschlagene Vorlesetempo passt mir nicht.;NO
+Bitte speichere diese Änderung am Sprechtempo nicht.;NO
+Die Stimme soll weiterhin im bisherigen Tempo sprechen.;NO
+Nimm nicht die eben festgelegte Geschwindigkeit.;NO
+Die Anpassung der Sprachausgabe möchte ich verwerfen.;NO
+Mach EyeAI doch nicht schneller.;NO
+Verlangsame die Ausgabe bitte nicht.;NO
+Diese Sprechgeschwindigkeit soll nicht eingestellt werden.;NO
+Der bisherige Wert für das Vorlesetempo soll bleiben.;NO
+Ich lehne die vorgeschlagene Tempoänderung ab.;NO
+Lass die Geschwindigkeit der gesprochenen Antworten unverändert.;NO
+Führe die Änderung am Sprechtempo nicht durch.;NO
+Die Männerstimme möchte ich doch nicht einstellen.;NO
+Bleib bitte bei der aktuellen Stimme.;NO
+Den Sprecherwechsel möchte ich nicht durchführen.;NO
+Nimm doch nicht die andere Stimme.;NO
+Die vorgeschlagene Sprecherstimme passt mir nicht.;NO
+Wechsel nicht auf die Frauenstimme.;NO
+Bitte behalte den bisherigen Sprecher.;NO
+Diese Stimme soll EyeAI nicht verwenden.;NO
+Den Wechsel zur männlichen Stimme bestätige ich nicht.;NO
+Lass die ausgewählte Stimme bitte unverändert.;NO
+Die Sprecherstimme soll nicht gewechselt werden.;NO
+Ich möchte den vorgeschlagenen Stimmenwechsel verwerfen.;NO
+Stell nicht auf die eben genannte Stimme um.;NO
+Die aktuelle Sprachausgabe soll genau diese Stimme behalten.;NO
+Führe den Wechsel der Stimme nicht aus.;NO
+Bleib bitte im Einstellungsdialog und starte die Texterkennung nicht.;NO
+Ich möchte das Menü für die Objekterkennung noch nicht verlassen.;NO
+Verlasse die Einstellungen nicht, um die Entfernung zu messen.;NO
+Führe die vorherige Frage jetzt nicht außerhalb des Menüs aus.;NO
+Bleib in den Einstellungen und lies das Schild noch nicht.;NO
+Die Objekterkennung soll jetzt nicht gestartet werden.;NO
+Verwirf den gespeicherten Distanzbefehl und bleib im Menü.;NO
+Geh nicht aus den Einstellungen, um die andere Aktion auszuführen.;NO
+Ich möchte den Einstellungsdialog für die Texterkennung nicht verlassen.;NO
+Starte die Erkennung des Hindernisses jetzt nicht.;NO
+Den ursprünglichen Befehl bitte noch nicht ausführen.;NO
+Im Einstellungsmenü bleiben, die Abstandsmessung soll nicht starten.;NO
+Leite meine offene Frage jetzt nicht an die Assistenz weiter.;NO
+Schließe die Einstellungen für die Texterkennung bitte nicht.;NO
+Nein, verwerfe die gespeicherte externe Aktion und bleib hier.;NO
