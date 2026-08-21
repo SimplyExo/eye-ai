@@ -1,24 +1,40 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
 import android.app.Application
+import android.content.Intent
 import android.os.Build
 import android.os.Looper
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import android.Manifest
 import android.util.Log
+import android.widget.ProgressBar
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.lifecycleScope
+import androidx.appcompat.app.AlertDialog
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.MainActivity
 import com.algorithmic_alliance.eyeaiapp.MainActivity.State
 import com.algorithmic_alliance.eyeaiapp.PermissionManager
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.SettingsActivity
+import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
+import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.SpeechManager
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
+import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.vibrate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -239,8 +255,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             eyeAIApp(),
             eyeAIApp().textToSpeechInstance,
             eyeAIApp().lastLlmJsonResponse,
-            { text -> _uiState.update { it.copy(llmResponseText =  text) }},
-            {text -> _uiState.update { it.copy(llmResponseText = it.llmResponseText + text ) }},
+            { text -> _uiState.update { it.copy(llmResponseText = text) } },
+            { text -> _uiState.update { it.copy(llmResponseText = it.llmResponseText + text) } },
             eyeAIApp().cameraManager.cameraFrameAnalyzer ?: eyeAIApp().mediaFrameAnalyzer
         ) {
             CoroutineScope(Dispatchers.Main).launch {
@@ -268,8 +284,254 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         eyeAIApp().lastLlmJsonResponse = update.newJson
     }
 
-    fun updateLlmResponseText(text: String){
+    fun updateLlmResponseText(text: String) {
         _uiState.update { it.copy(llmResponseText = text) }
+    }
+
+    private fun hasPermission(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(
+            eyeAIApp(),
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun initCamera() {
+        if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_camera)) {
+            //mediaImageView!!.isVisible = false
+            if (hasPermission(Manifest.permission.CAMERA)) {
+                //ungrantedPermissionsNotice!!.visibility = GONE
+
+                eyeAIApp().cameraManager.cameraFrameAnalyzer?.shutdown()
+                eyeAIApp().cameraManager.cameraFrameAnalyzer =
+                    CameraFrameAnalyzer(
+                        eyeAIApp(),
+                        //depthPreviewImage!!,
+                        null,
+                        //performanceText!!,
+                        null,
+                        //overlayObjectDetection!!,
+                        null,
+                        //debugInputBitmapPreview!!,
+                        null,
+                        //mediaImageView!!,
+                        null
+                    )
+                eyeAIApp().cameraManager.cameraFrameAnalyzer?.start()
+
+                eyeAIApp().cameraManager
+                    .init(
+                        eyeAIApp(),
+                        EyeAIApp.PREFERRED_CAMERA_RESOLUTION,
+                        //cameraPreviewView,
+                        null
+                    )
+            } else {
+                //ungrantedPermissionsNotice!!.visibility = VISIBLE
+            }
+        } else if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_media)) {
+            if (eyeAIApp().settings.mediaSource!!.isNotEmpty()) {
+                //mediaImageView!!.isVisible = true
+                ProcessCameraProvider.getInstance(eyeAIApp()).get().unbindAll()
+                //overlayObjectDetection!!.reset()
+                //overlayOcr!!.reset()
+                //depthPreviewImage!!.setImageBitmap(createBitmap(256, 256))
+
+                eyeAIApp().mediaPlayer?.shutdown()
+                eyeAIApp().mediaPlayer =
+                    MediaPlayer(
+                        eyeAIApp(),
+                        eyeAIApp().settings.mediaSource!!.toUri(),
+                        mediaImageView!!
+                    )
+
+                eyeAIApp().mediaFrameAnalyzer?.shutdown()
+
+                eyeAIApp().mediaFrameAnalyzer =
+                    CameraFrameAnalyzer(
+                        eyeAIApp(),
+                        //depthPreviewImage!!,
+                        null,
+                        //performanceText!!,
+                        null,
+                        //overlayObjectDetection!!,
+                        null,
+                        //debugInputBitmapPreview !!,
+                        null,
+                        //mediaImageView!!
+                        null
+                    )
+
+                eyeAIApp().mediaFrameAnalyzer?.start()
+            } else {
+                //TODO implement Dialog
+                /*
+                val builder = AlertDialog.Builder(eyeAIApp())
+                builder.setMessage("No media file has been selected. Please select one in the settings menu")
+                    .setPositiveButton("Open settings") { dialog, id ->
+                        startActivity(Intent(this, SettingsActivity::class.java))
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    }
+                builder.create().show()
+                 */
+            }
+
+        } else if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_eyeaivision)) {
+            if (!eyeAIApp().settings.eyeAIVisionIP!!.isEmpty()) {
+                eyeAIApp().bitmapFlow = MutableSharedFlow(replay = 1)
+
+                /* TODO reimplement
+                val connectingTCPDialog = AlertDialog.Builder(eyeAIApp())
+                connectingTCPDialog.setMessage("Connecting to Button Server...")
+                connectingTCPDialog.setView(ProgressBar(eyeAIApp()))
+
+                var shownConnectDialog: AlertDialog? = null
+                */
+                eyeAIApp().eyeAIVision = EyeAIVision(
+                    ip = eyeAIApp().settings.eyeAIVisionIP.toString(),
+                    eyeAIApp().settings.jpegCompression,
+                    lifecycleScope = viewModelScope,
+                    bitmapFlow = eyeAIApp().bitmapFlow,
+                    onSingleClick = {
+                        Log.i("CLICK", "SINGLE")
+
+                        State.IDLE
+
+                        if (!voskUserStart.get()) {
+                            startVoskListening()
+                        }
+
+
+                    },
+                    onDoubleClick = {
+                        Log.i("CLICK", "DOUBLE")
+
+                        State.IDLE
+
+                        if (voskUserStart.get()) {
+                            SpeechManager.forceStop()
+                            stopVoskListening()
+                        }
+                    },
+                    onSocketFailed = { e ->
+                        // TODO reimplement
+                        /*
+                        if (!tcpErrorShowing) {
+                            tcpErrorShowing = true
+                            val errorMessage = AlertDialog.Builder(this)
+                            errorMessage.setMessage("TCP connection to EyeAIVision (IP: ${eyeAIApp().settings.eyeAIVisionIP.toString()}) has failed: ${e.message.toString()}")
+                            errorMessage.setPositiveButton("Open settings") { dialog, which ->
+                                tcpErrorShowing = false
+                                startActivity(Intent(this, SettingsActivity::class.java))
+                                dialog.dismiss()
+                                overridePendingTransition(
+                                    android.R.anim.fade_in,
+                                    android.R.anim.fade_out
+                                )
+                            }
+
+                            errorMessage.setNegativeButton("Ignore") { dialog, which ->
+                                tcpErrorShowing = false
+                                dialog.dismiss()
+                            }
+                            errorMessage.show()
+                        }
+                         */
+
+                    },
+
+                    onMjpegError = { e ->
+                        /* TODO reimplement
+                        runOnUiThread {
+                            if (!mjpegErrorShowing && !mjpegErrorIgnored) {
+                                mjpegErrorShowing = true
+                                val errorMessage = AlertDialog.Builder(this)
+                                errorMessage.setMessage("Error while getting camera frame from EyeAIVision (IP: ${eyeAIApp().settings.eyeAIVisionIP.toString()}): ${e.message.toString()}")
+                                errorMessage.setPositiveButton("Open settings") { dialog, which ->
+                                    mjpegErrorShowing = false
+                                    dialog.dismiss()
+                                    startActivity(Intent(this, SettingsActivity::class.java))
+                                    overridePendingTransition(
+                                        android.R.anim.fade_in,
+                                        android.R.anim.fade_out
+                                    )
+                                }
+
+                                errorMessage.setNegativeButton("Ignore") { dialog, which ->
+                                    dialog.dismiss()
+                                    mjpegErrorIgnored = true
+                                    mjpegErrorShowing = false
+                                }
+                                errorMessage.show()
+                            }
+                        }
+                         */
+                    },
+
+                    onConnectingSocket = {
+                        /* TODO reimplement
+                        runOnUiThread {
+                            shownConnectDialog = connectingTCPDialog.show()
+                        }
+                         */
+                    },
+
+                    onSocketConnectionEstablished = {
+                        /* TODO reimplement
+                        runOnUiThread {
+                            shownConnectDialog?.dismiss()
+                        }
+                         */
+                    },
+
+                    onConnectingHTTP = {
+
+                    },
+
+                    onHTTPConnectionEstablished = {
+
+                    }
+                )
+
+                eyeAIApp().mediaPlayer?.shutdown()
+                eyeAIApp().mediaPlayer = MediaPlayer(
+                    context = eyeAIApp(),
+                    uri = null,
+                    targetImageView = mediaImageView!!,
+                    bitmapFlow = eyeAIApp().bitmapFlow
+                )
+
+
+
+                eyeAIApp().mediaFrameAnalyzer?.shutdown()
+                eyeAIApp().mediaFrameAnalyzer = CameraFrameAnalyzer(
+                    eyeAIApp(),
+                    //depthPreviewImage!!,
+                    null,
+                    //performanceText!!,
+                    null,
+                    //overlayObjectDetection!!,
+                    null,
+                    //debugInputBitmapPreview!!,
+                    null,
+                    //mediaImageView!!,
+                    null
+                )
+                eyeAIApp().mediaFrameAnalyzer?.start()
+
+            } else {
+                /* TODO reimplement
+                val builder = AlertDialog.Builder(this)
+                builder.setMessage("No IP address has been entered. Please enter one in the settings menu")
+                    .setPositiveButton("Open settings") { dialog, id ->
+                        startActivity(Intent(this, SettingsActivity::class.java))
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    }
+                builder.create().show()
+
+                 */
+            }
+        }
     }
 
     fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000

@@ -57,8 +57,8 @@ class MainActivity : AppCompatActivity() {
     private var allowCameraPermission: Button? = null
     private var startStopVosk: FloatingActionButton? = null
      */
-    private lateinit var eyeAIVision: EyeAIVision
-    private var bitmapFlow: MutableSharedFlow<Bitmap>? = null
+    //private lateinit var eyeAIVision: EyeAIVision
+    //private var bitmapFlow: MutableSharedFlow<Bitmap>? = null
 
     private val voskStarting = AtomicBoolean(false)
 
@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity() {
     private var currentState: State = State.IDLE
 
     //private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
-    private var mediaPlayer: MediaPlayer? = null
+    //private var mediaPlayer: MediaPlayer? = null
 
     private val viewModel: MainViewModel by viewModels()
 
@@ -298,7 +298,7 @@ class MainActivity : AppCompatActivity() {
 
         eyeAIApp().cameraManager.pauseAnalyzer()
         eyeAIApp().mediaFrameAnalyzer?.shutdown()
-        mediaPlayer?.shutdown()
+        eyeAIApp().mediaPlayer?.shutdown()
 
         // stopping audio playback
         uniffi.NativeLib.setObjectAudioPaused(true)
@@ -311,7 +311,7 @@ class MainActivity : AppCompatActivity() {
         eyeAIApp().cameraManager.shutdown()
         eyeAIApp().textToSpeechInstance.shutdown()
         eyeAIApp().mediaFrameAnalyzer?.shutdown()
-        mediaPlayer?.shutdown()
+        eyeAIApp().mediaPlayer?.shutdown()
         SpatialAudio.stop()
 
         eyeAIApp().voskModel.closeService()
@@ -352,7 +352,7 @@ class MainActivity : AppCompatActivity() {
     private fun eyeAIApp(): EyeAIApp {
         return application as EyeAIApp
     }
-
+    /*
     @RequiresApi(Build.VERSION_CODES.P)
     private fun initCamera() {
         if (eyeAIApp().settings.inputSource == getString(R.string.input_is_camera)) {
@@ -395,7 +395,7 @@ class MainActivity : AppCompatActivity() {
                 //overlayOcr!!.reset()
                 //depthPreviewImage!!.setImageBitmap(createBitmap(256, 256))
 
-                mediaPlayer?.shutdown()
+                eyeAIApp().mediaPlayer?.shutdown()
                 //mediaPlayer = MediaPlayer(this, eyeAIApp().settings.mediaSource!!.toUri(), mediaImageView!!)
 
                 eyeAIApp().mediaFrameAnalyzer?.shutdown()
@@ -536,7 +536,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 )
 
-                mediaPlayer?.shutdown()
+                eyeAIApp().mediaPlayer?.shutdown()
                 /*
                 mediaPlayer = MediaPlayer(
                     context = this,
@@ -574,6 +574,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+     */
 
 
     private fun updateSpeechRecognitionUIVisibility() {

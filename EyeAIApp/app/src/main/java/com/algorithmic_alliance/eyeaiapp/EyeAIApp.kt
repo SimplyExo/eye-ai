@@ -3,17 +3,20 @@ package com.algorithmic_alliance.eyeaiapp
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Build
 import android.util.Log
 import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
+import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
 import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
+import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
@@ -24,6 +27,7 @@ import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
@@ -67,6 +71,9 @@ class EyeAIApp : Application() {
 	var cameraManager = CameraManager()
 	var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
 	var currentStateMachine: StateMachine? = null
+	var mediaPlayer: MediaPlayer? = null
+	var bitmapFlow: MutableSharedFlow<Bitmap>? = null
+	lateinit var eyeAIVision: EyeAIVision
 	var aiData = AIModelData
 
 	var npuQnnDelegateDirectory: String? = null
