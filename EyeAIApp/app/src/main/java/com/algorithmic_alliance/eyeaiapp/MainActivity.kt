@@ -114,10 +114,12 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-            EyeAIAppUI(onEvent = viewModel::onEvent, uiState = uiState)
+            EyeAIAppUI(
+                onEvent = viewModel::onEvent,
+                uiState = uiState,
+                cameraManager = eyeAIApp().cameraManager
+            )
         }
-
-        getString(R.string.speech_recognition_ready)
 
         /*
 
@@ -277,10 +279,12 @@ class MainActivity : AppCompatActivity() {
         }
         */
         val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
-        viewModel.updateLlmResponseText(if (isLLMConfigured)
-            ""
-        else
-            getString(R.string.setup_llm_notice))
+        viewModel.updateLlmResponseText(
+            if (isLLMConfigured)
+                ""
+            else
+                getString(R.string.setup_llm_notice)
+        )
 
         // re-enabling the audio playback in accordance to the settings
         val settings = Settings.load(this@MainActivity)
@@ -593,13 +597,7 @@ class MainActivity : AppCompatActivity() {
     /*All TTS methods start here*/
 
 
-
     /*All TTS methods start here*/
-
-
-
-
-
 
 
     companion object

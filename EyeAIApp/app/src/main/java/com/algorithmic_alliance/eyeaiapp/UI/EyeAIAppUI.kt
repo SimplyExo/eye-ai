@@ -15,12 +15,14 @@ import android.os.Build
 import android.util.Log
 import androidx.compose.ui.platform.LocalContext
 import androidx.annotation.RequiresApi
+import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.UI.pages.ConnectionPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.DebugPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.HomePage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.PermissionPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.SettingsPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.WelcomePage
+import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 
 
 @Serializable
@@ -45,7 +47,8 @@ object DebugRoute
 @Composable
 fun EyeAIAppUI(
     uiState: UIState,
-    onEvent: (UIEvent) -> Unit
+    onEvent: (UIEvent) -> Unit,
+    cameraManager: CameraManager
 ) {
     Log.d(LOG_TAG, "Starting UI")
     val navController = rememberNavController()
@@ -131,6 +134,6 @@ fun showPermissionPage() {
 @Composable
 fun EyeAIAppUIPreview() {
     MaterialTheme {
-        EyeAIAppUI(onEvent = {}, uiState = UIState())
+        EyeAIAppUI(onEvent = {}, uiState = UIState(), cameraManager = CameraManager())
     }
 }

@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import androidx.appcompat.app.AlertDialog
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
@@ -80,6 +81,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             UIEvent.CloseVoskService -> {
 
+            }
+
+            is UIEvent.CameraPreviewReady -> {
+                initCamera(event.previewView)
             }
         }
     }
@@ -296,7 +301,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    private fun initCamera() {
+    private fun initCamera(cameraPreviewView: PreviewView) {
         if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_camera)) {
             //mediaImageView!!.isVisible = false
             if (hasPermission(Manifest.permission.CAMERA)) {
@@ -323,8 +328,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     .init(
                         eyeAIApp(),
                         EyeAIApp.PREFERRED_CAMERA_RESOLUTION,
-                        //cameraPreviewView,
-                        null
+                        cameraPreviewView,
                     )
             } else {
                 //ungrantedPermissionsNotice!!.visibility = VISIBLE
@@ -337,6 +341,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 //overlayOcr!!.reset()
                 //depthPreviewImage!!.setImageBitmap(createBitmap(256, 256))
 
+                /* TODO
                 eyeAIApp().mediaPlayer?.shutdown()
                 eyeAIApp().mediaPlayer =
                     MediaPlayer(
@@ -345,6 +350,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         mediaImageView!!
                     )
 
+
+                 */
                 eyeAIApp().mediaFrameAnalyzer?.shutdown()
 
                 eyeAIApp().mediaFrameAnalyzer =
@@ -494,12 +501,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 )
 
                 eyeAIApp().mediaPlayer?.shutdown()
+                /*
                 eyeAIApp().mediaPlayer = MediaPlayer(
                     context = eyeAIApp(),
                     uri = null,
                     targetImageView = mediaImageView!!,
                     bitmapFlow = eyeAIApp().bitmapFlow
                 )
+
+                 */
 
 
 

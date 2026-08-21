@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.util.Log
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,6 +33,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
 
@@ -42,10 +46,12 @@ fun DebugPage(
     onOpenSettings: () -> Unit,
     onBack: () -> Unit,
     onEvent: (UIEvent) -> Unit,
-    uiState: UIState
+    uiState: UIState,
 ) {
 
     var ttsEnabled by rememberSaveable() { mutableStateOf(false) }
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -103,12 +109,11 @@ fun DebugPage(
                     .padding(paddingValues),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
-                    modifier = Modifier
-                        .height(256.dp)
-                        .width(256.dp),
-                    painter = painterResource(R.drawable.ic_launcher_web),
-                    contentDescription = ""
+                AndroidView(
+                    modifier = modifier,
+                    factory = { context ->
+                        PreviewView(context).also { onEvent(UIEvent.CameraPreviewReady(it)) }
+                    }
                 )
                 Column() {
                     Text(uiState.speechRecognitionPartialResultText)
