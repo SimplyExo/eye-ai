@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
 import androidx.camera.view.PreviewView
+import androidx.lifecycle.LifecycleOwner
 
 
 sealed interface UIEvent {
@@ -12,5 +13,5 @@ sealed interface UIEvent {
 
     data object CloseVoskService: UIEvent
 
-    data class CameraPreviewReady(val previewView: PreviewView): UIEvent
+    data class CameraPreviewReady(val previewView: PreviewView, val lifecycleOwner: LifecycleOwner): UIEvent
 }

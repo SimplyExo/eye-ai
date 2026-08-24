@@ -109,10 +109,11 @@ fun DebugPage(
                     .padding(paddingValues),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                val lifecycleOwner = LocalLifecycleOwner.current
                 AndroidView(
                     modifier = modifier,
                     factory = { context ->
-                        PreviewView(context).also { onEvent(UIEvent.CameraPreviewReady(it)) }
+                        PreviewView(context).also { onEvent(UIEvent.CameraPreviewReady(it, lifecycleOwner)) }
                     }
                 )
                 Column() {

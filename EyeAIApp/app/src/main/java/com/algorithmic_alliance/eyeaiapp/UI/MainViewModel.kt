@@ -16,6 +16,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
@@ -84,7 +85,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             is UIEvent.CameraPreviewReady -> {
-                initCamera(event.previewView)
+                initCamera(event.previewView, event.lifecycleOwner)
             }
         }
     }
@@ -301,7 +302,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    private fun initCamera(cameraPreviewView: PreviewView) {
+    private fun initCamera(cameraPreviewView: PreviewView, lifecycleOwner: LifecycleOwner) {
         if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_camera)) {
             //mediaImageView!!.isVisible = false
             if (hasPermission(Manifest.permission.CAMERA)) {
@@ -327,6 +328,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 eyeAIApp().cameraManager
                     .init(
                         eyeAIApp(),
+                        lifecycleOwner,
                         EyeAIApp.PREFERRED_CAMERA_RESOLUTION,
                         cameraPreviewView,
                     )
