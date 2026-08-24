@@ -2,10 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.camera
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.util.Log
-import android.util.Size
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
@@ -23,7 +20,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
-import androidx.core.view.isVisible
 import kotlinx.coroutines.delay
 import java.util.concurrent.ExecutorService
 import kotlin.time.Duration.Companion.seconds
@@ -40,8 +36,8 @@ class CameraFrameAnalyzer(
 	private var updateDepthView: (Bitmap) -> Unit,
 	private var performanceText: TextView?,
 	private var overlayOD: OverlayViewOD?,
-	private var debugInputBitmapPreview: ImageView?,
-	private var mediaImageView: ImageView?
+	private var updateDebugInputBitmapPreview: (Bitmap) -> Unit,
+	private var mediaImageBitmap: Bitmap?
 ) : ImageAnalysis.Analyzer {
 	private var lastCameraFrameTime = TimeSource.Monotonic.markNow()
 	private var formattedCameraFrame = ""
@@ -87,11 +83,13 @@ class CameraFrameAnalyzer(
 
 						//depthView?.setImageBitmap(colorMappedImage)
 						updateDepthView(colorMappedImage)
+
+						if (eyeAIApp.settings.showDebugInputBitmap)
+							updateDebugInputBitmapPreview(frame)
+							  //debugInputBitmapPreview!!.setImageBitmap(frame)
+
 						/*
 						withContext(Dispatchers.Main) {
-							if (debugInputBitmapPreview?.isVisible ?: false)
-								debugInputBitmapPreview!!.setImageBitmap(frame)
-
 							if (eyeAIApp.settings.showProfilingInfo) {
 								val formattedInputResolution = "${inputWidth}x${inputHeight}"
 								val formattedDepthModelInputSize =
@@ -172,7 +170,7 @@ class CameraFrameAnalyzer(
 		return if (eyeAIApp.settings.inputSource == "camera") {
 			latestCameraFrame.get()
 		} else {
-			(mediaImageView?.drawable as? BitmapDrawable)?.bitmap
+			mediaImageBitmap
 		}
 	}
 

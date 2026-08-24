@@ -119,7 +119,12 @@ fun DebugPage(
                 horizontalAlignment = Alignment.CenterHorizontally,
 
                 ) {
-                CameraPreview(onEvent = onEvent)
+                if(uiState.cameraPreviewVisible)
+                    CameraPreview(onEvent = onEvent)
+                if(uiState.mediaPreviewVisible)
+                    MediaPreview(bitmap = uiState.mediaPreviewBitmap)
+                if(uiState.debugInputPreviewVisible)
+                    DebugInputPreview(bitmap = uiState.debugInputPreviewBitmap)
                 Column() {
                     Text(uiState.speechRecognitionPartialResultText)
                     Text(uiState.speechRecognitionFinalResultText)
@@ -130,6 +135,56 @@ fun DebugPage(
         })
 
 
+}
+
+@Composable
+fun DebugInputPreview(
+    modifier: Modifier = Modifier,
+    bitmap: Bitmap?
+) {
+    Card(modifier = Modifier
+        .padding(8.dp)
+        .aspectRatio(4f / 3f)) {
+        bitmap?.let {
+            Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
+                Image(
+                    bitmap = it.asImageBitmap(),
+                    contentDescription = "Depth preview",
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .aspectRatio(1f / 1f)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MediaPreview(
+    modifier: Modifier = Modifier,
+    bitmap: Bitmap?
+) {
+    Card(modifier = Modifier
+        .padding(8.dp)
+        .aspectRatio(4f / 3f)) {
+        bitmap?.let {
+            Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
+                Image(
+                    bitmap = it.asImageBitmap(),
+                    contentDescription = "Depth preview",
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .aspectRatio(1f / 1f)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+
+                )
+            }
+        }
+    }
 }
 
 @Composable

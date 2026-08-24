@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -302,10 +303,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    fun onResume(){
+
+        _uiState.update { it.copy(debugInputPreviewVisible = eyeAIApp().settings.showDebugInputBitmap) }
+    }
+
     @RequiresApi(Build.VERSION_CODES.P)
     private fun initCamera(cameraPreviewView: PreviewView, lifecycleOwner: LifecycleOwner) {
         if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_camera)) {
             //mediaImageView!!.isVisible = false
+            _uiState.update { it.copy(mediaPreviewVisible = false) }
+            _uiState.update { it.copy(cameraPreviewVisible = !it.debugInputPreviewVisible) }
             if (hasPermission(Manifest.permission.CAMERA)) {
                 //ungrantedPermissionsNotice!!.visibility = GONE
 
@@ -313,16 +321,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 eyeAIApp().cameraManager.cameraFrameAnalyzer =
                     CameraFrameAnalyzer(
                         eyeAIApp(),
-                        //depthPreviewImage!!,
                         {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
                         //performanceText!!,
                         null,
                         //overlayObjectDetection!!,
                         null,
-                        //debugInputBitmapPreview!!,
-                        null,
-                        //mediaImageView!!,
-                        null
+                        {bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) }},
+                        _uiState.value.mediaPreviewBitmap
                     )
                 eyeAIApp().cameraManager.cameraFrameAnalyzer?.start()
 
@@ -339,37 +344,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } else if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_media)) {
             if (eyeAIApp().settings.mediaSource!!.isNotEmpty()) {
                 //mediaImageView!!.isVisible = true
+                _uiState.update { it.copy(mediaPreviewVisible = !it.debugInputPreviewVisible) }
+                _uiState.update { it.copy(cameraPreviewVisible = false) }
                 ProcessCameraProvider.getInstance(eyeAIApp()).get().unbindAll()
                 //overlayObjectDetection!!.reset()
                 //overlayOcr!!.reset()
                 _uiState.update { it.copy(depthPreviewBitmap = createBitmap(256,256)) }
 
-                /* TODO
+
                 eyeAIApp().mediaPlayer?.shutdown()
                 eyeAIApp().mediaPlayer =
                     MediaPlayer(
                         eyeAIApp(),
                         eyeAIApp().settings.mediaSource!!.toUri(),
-                        mediaImageView!!
+                        {bitmap -> _uiState.update { it.copy(mediaPreviewBitmap = bitmap) }}
                     )
 
 
-                 */
                 eyeAIApp().mediaFrameAnalyzer?.shutdown()
 
                 eyeAIApp().mediaFrameAnalyzer =
                     CameraFrameAnalyzer(
                         eyeAIApp(),
-                        //depthPreviewImage!!,
                         {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
                         //performanceText!!,
                         null,
                         //overlayObjectDetection!!,
                         null,
-                        //debugInputBitmapPreview !!,
-                        null,
-                        //mediaImageView!!
-                        null
+                        {bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) }},
+                        _uiState.value.mediaPreviewBitmap
                     )
 
                 eyeAIApp().mediaFrameAnalyzer?.start()
@@ -504,31 +507,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 )
 
                 eyeAIApp().mediaPlayer?.shutdown()
-                /*
+
                 eyeAIApp().mediaPlayer = MediaPlayer(
                     context = eyeAIApp(),
                     uri = null,
-                    targetImageView = mediaImageView!!,
+                    {bitmap -> _uiState.update { it.copy(mediaPreviewBitmap = bitmap) }},
                     bitmapFlow = eyeAIApp().bitmapFlow
                 )
 
-                 */
+
 
 
 
                 eyeAIApp().mediaFrameAnalyzer?.shutdown()
                 eyeAIApp().mediaFrameAnalyzer = CameraFrameAnalyzer(
                     eyeAIApp(),
-                    //depthPreviewImage!!,
                     {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
                     //performanceText!!,
                     null,
                     //overlayObjectDetection!!,
                     null,
-                    //debugInputBitmapPreview!!,
-                    null,
-                    //mediaImageView!!,
-                    null
+                    {bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) }},
+                    _uiState.value.mediaPreviewBitmap
                 )
                 eyeAIApp().mediaFrameAnalyzer?.start()
 
@@ -549,7 +549,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
 
-    private fun eyeAIApp(): EyeAIApp {
+    fun eyeAIApp(): EyeAIApp {
         return getApplication()
     }
 }

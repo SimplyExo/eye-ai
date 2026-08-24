@@ -263,7 +263,6 @@ class MainActivity : AppCompatActivity() {
             SpatialAudio.setup(this@MainActivity)
             SpatialAudio.start()
         }
-
         updateSpeechRecognitionUIVisibility()
         /*
         permissionManager.requestCameraPermission()
@@ -271,13 +270,7 @@ class MainActivity : AppCompatActivity() {
             permissionManager.requestMicrophonePermission()
         updateUngrantedPermissionsNotice()
          */
-        /*
-        debugInputBitmapPreview?.visibility = if (eyeAIApp().settings.showDebugInputBitmap) {
-            VISIBLE
-        } else {
-            GONE
-        }
-        */
+        viewModel.onResume()
         val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
         viewModel.updateLlmResponseText(
             if (isLLMConfigured)
