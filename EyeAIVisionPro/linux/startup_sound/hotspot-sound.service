@@ -1,0 +1,12 @@
+[Unit]
+Description=Play sound after WiFi hotspot starts
+Requires=hostapd.service
+After=hostapd.service
+
+[Service]
+Type=oneshot
+ExecStart=/etc/script/startup_sound.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=hostapd.service
