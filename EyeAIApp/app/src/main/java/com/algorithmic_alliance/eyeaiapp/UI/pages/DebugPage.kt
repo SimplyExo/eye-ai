@@ -29,8 +29,10 @@ import androidx.compose.ui.unit.dp
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Card
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
@@ -82,11 +84,13 @@ fun DebugPage(
                     .fillMaxWidth(0.35f),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                FloatingActionButton(onClick = {
-                    onEvent(UIEvent.VoskListeningChanged)
-                    ttsEnabled = !ttsEnabled
-                    Log.d(LOG_TAG, "[DebugPage] Vosk on: $ttsEnabled")
-                }, ) {
+                FloatingActionButton(
+                    onClick = {
+                        onEvent(UIEvent.VoskListeningChanged)
+                        ttsEnabled = !ttsEnabled
+                        Log.d(LOG_TAG, "[DebugPage] Vosk on: $ttsEnabled")
+                    },
+                ) {
                     Icon(
                         painter = if (ttsEnabled) painterResource(R.drawable.stop_24px) else painterResource(
                             R.drawable.play_arrow_24px
@@ -107,15 +111,25 @@ fun DebugPage(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+
             ) {
                 val lifecycleOwner = LocalLifecycleOwner.current
-                AndroidView(
-                    modifier = modifier,
-                    factory = { context ->
-                        PreviewView(context).also { onEvent(UIEvent.CameraPreviewReady(it, lifecycleOwner)) }
-                    }
-                )
+                Card(modifier = Modifier.padding(8.dp)) {
+                    AndroidView(
+                        modifier = Modifier.aspectRatio(4f / 3f),
+                        factory = { context ->
+                            PreviewView(context).apply{scaleType = PreviewView.ScaleType.FIT_CENTER}.also {
+                                onEvent(
+                                    UIEvent.CameraPreviewReady(
+                                        it,
+                                        lifecycleOwner
+                                    )
+                                )
+                            }
+                        }
+                    )
+                }
                 Column() {
                     Text(uiState.speechRecognitionPartialResultText)
                     Text(uiState.speechRecognitionFinalResultText)
@@ -137,5 +151,11 @@ fun DebugPage(
 @Preview(showBackground = true, name = "DebugPagePreview")
 @Composable
 fun DebugPagePreview() {
-    DebugPage(modifier = Modifier.fillMaxSize(), onOpenSettings = {}, onBack = {}, onEvent = {}, uiState = UIState())
+    DebugPage(
+        modifier = Modifier.fillMaxSize(),
+        onOpenSettings = {},
+        onBack = {},
+        onEvent = {},
+        uiState = UIState()
+    )
 }
