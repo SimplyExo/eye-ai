@@ -37,7 +37,7 @@ import kotlin.time.measureTime
 @SuppressLint("SetTextI18n")
 class CameraFrameAnalyzer(
 	private var eyeAIApp: EyeAIApp,
-	private var depthView: ImageView?,
+	private var updateDepthView: (Bitmap) -> Unit,
 	private var performanceText: TextView?,
 	private var overlayOD: OverlayViewOD?,
 	private var debugInputBitmapPreview: ImageView?,
@@ -85,9 +85,10 @@ class CameraFrameAnalyzer(
 							metricDepthModel.inputDim
 						)
 
+						//depthView?.setImageBitmap(colorMappedImage)
+						updateDepthView(colorMappedImage)
 						/*
 						withContext(Dispatchers.Main) {
-							depthView?.setImageBitmap(colorMappedImage)
 							if (debugInputBitmapPreview?.isVisible ?: false)
 								debugInputBitmapPreview!!.setImageBitmap(frame)
 

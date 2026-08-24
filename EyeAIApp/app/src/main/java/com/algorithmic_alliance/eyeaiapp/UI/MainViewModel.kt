@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.appcompat.app.AlertDialog
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
@@ -313,7 +314,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     CameraFrameAnalyzer(
                         eyeAIApp(),
                         //depthPreviewImage!!,
-                        null,
+                        {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
                         //performanceText!!,
                         null,
                         //overlayObjectDetection!!,
@@ -341,7 +342,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 ProcessCameraProvider.getInstance(eyeAIApp()).get().unbindAll()
                 //overlayObjectDetection!!.reset()
                 //overlayOcr!!.reset()
-                //depthPreviewImage!!.setImageBitmap(createBitmap(256, 256))
+                _uiState.update { it.copy(depthPreviewBitmap = createBitmap(256,256)) }
 
                 /* TODO
                 eyeAIApp().mediaPlayer?.shutdown()
@@ -360,7 +361,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     CameraFrameAnalyzer(
                         eyeAIApp(),
                         //depthPreviewImage!!,
-                        null,
+                        {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
                         //performanceText!!,
                         null,
                         //overlayObjectDetection!!,
@@ -519,7 +520,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 eyeAIApp().mediaFrameAnalyzer = CameraFrameAnalyzer(
                     eyeAIApp(),
                     //depthPreviewImage!!,
-                    null,
+                    {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
                     //performanceText!!,
                     null,
                     //overlayObjectDetection!!,
