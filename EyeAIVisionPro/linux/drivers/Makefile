@@ -1,4 +1,5 @@
 obj-m += button_driver.o
+obj-m += i2c_driver.o
 
 KDIR := /lib/modules/$(shell uname -r)/build
 PWD  := $(shell pwd)
