@@ -129,9 +129,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun onReturnFromSettings(){
-        SpatialAudio.setup(eyeAIApp())
-        SpatialAudio.start()
-
+        eyeAIApp().aiData.detectedObjects.set(emptyArray())
         startSpatialAudio()
     }
 
@@ -211,6 +209,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update {
             it.copy(
                 speechRecognitionFinalResultText = when {
+                    !hasPermission(Manifest.permission.RECORD_AUDIO) -> "Mikrophon-Berechtigung erforderlich"
                     !eyeAIApp().settings.enableSpeechRecognition -> "Spracherkennung deaktiviert"
                     voskUserStart.get() -> eyeAIApp().getString(R.string.speech_recognition_ready)
                     else -> "Vosk bereit - Button klicken zum Starten"
