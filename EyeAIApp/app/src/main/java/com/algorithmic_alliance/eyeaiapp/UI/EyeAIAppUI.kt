@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
 import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -14,8 +15,10 @@ import androidx.preference.PreferenceManager
 import kotlinx.serialization.Serializable
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.LocalActivity
 import androidx.compose.ui.platform.LocalContext
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -57,10 +60,15 @@ fun EyeAIAppUI(
     Log.d(LOG_TAG, "Starting UI")
     val navController = rememberNavController()
     val context = LocalContext.current
+    val activity = LocalActivity.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
 
+    LaunchedEffect(Unit) {
+        activity?.requestedOrientation =
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
+    }
     NavHost(
         navController = navController,
         startDestination = WelcomeRoute,
