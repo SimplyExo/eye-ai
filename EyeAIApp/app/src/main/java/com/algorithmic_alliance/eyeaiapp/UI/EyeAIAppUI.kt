@@ -1,5 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -15,6 +16,8 @@ import android.os.Build
 import android.util.Log
 import androidx.compose.ui.platform.LocalContext
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.UI.pages.ConnectionPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.DebugPage
@@ -46,9 +49,8 @@ object DebugRoute
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun EyeAIAppUI(
-    uiState: UIState,
+    viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit,
-    cameraManager: CameraManager
 ) {
     Log.d(LOG_TAG, "Starting UI")
     val navController = rememberNavController()
@@ -107,9 +109,10 @@ fun EyeAIAppUI(
         composable<SettingsRoute> {
             SettingsPage(modifier = Modifier.fillMaxSize(), onReturn = {
                 navController.popBackStack()
-            }, onOpenDebugPage = { navController.navigate(DebugRoute) })
+            }, onOpenDebugPage = { navController.navigate(DebugRoute)}, onEvent = onEvent)
         }
         composable<DebugRoute> {
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             DebugPage(
                 modifier = Modifier.fillMaxSize(), onOpenSettings = {
                     navController.navigate(
@@ -122,18 +125,5 @@ fun EyeAIAppUI(
                 }, onEvent = onEvent, uiState = uiState
             )
         }
-    }
-}
-
-fun showPermissionPage() {
-
-}
-
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-@Preview(showBackground = true, name = "Navigation-Preview")
-@Composable
-fun EyeAIAppUIPreview() {
-    MaterialTheme {
-        EyeAIAppUI(onEvent = {}, uiState = UIState(), cameraManager = CameraManager())
     }
 }

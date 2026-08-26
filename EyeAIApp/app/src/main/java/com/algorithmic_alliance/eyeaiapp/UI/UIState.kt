@@ -1,6 +1,9 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
 import android.graphics.Bitmap
+import android.util.Size
+import com.algorithmic_alliance.eyeaiapp.ocr.TextBoundingBox
+import uniffi.NativeLib.UniffiDetectedObject
 
 data class UIState(
     val speechRecognitionFinalResultText: String = "",
@@ -9,7 +12,8 @@ data class UIState(
     val depthPreviewBitmap: Bitmap? = null,
     val mediaPreviewBitmap: Bitmap? = null,
     val debugInputPreviewBitmap: Bitmap? = null,
-    val mediaPreviewVisible: Boolean = false,
-    val cameraPreviewVisible: Boolean = true,
-    val debugInputPreviewVisible: Boolean = false
+    val performanceText: String = "",
+    val detectedObjects: Array<UniffiDetectedObject> = emptyArray(),
+    val cameraResolution: Size = Size(720, 1280),
+    val ocrResults: Array<TextBoundingBox> = emptyArray(),
 )

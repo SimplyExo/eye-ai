@@ -113,11 +113,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             EyeAIAppUI(
                 onEvent = viewModel::onEvent,
-                uiState = uiState,
-                cameraManager = eyeAIApp().cameraManager
+                viewModel = viewModel
             )
         }
 
@@ -263,6 +261,7 @@ class MainActivity : AppCompatActivity() {
             SpatialAudio.setup(this@MainActivity)
             SpatialAudio.start()
         }
+
         updateSpeechRecognitionUIVisibility()
         /*
         permissionManager.requestCameraPermission()
@@ -283,6 +282,7 @@ class MainActivity : AppCompatActivity() {
         val settings = Settings.load(this@MainActivity)
         uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
         uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+
     }
 
     @RequiresApi(Build.VERSION_CODES.P)

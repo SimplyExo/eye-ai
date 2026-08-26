@@ -1,13 +1,16 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 
+import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Checkbox
+import androidx.core.content.edit
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,98 +39,114 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.remote.creation.dsl.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.preference.PreferenceManager
+import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
+import uniffi.NativeLib.Disposable
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsPage(modifier: Modifier = Modifier, onReturn: () -> Unit, onOpenDebugPage: () ->Unit) {
+fun SettingsPage(
+    modifier: Modifier = Modifier,
+    onReturn: () -> Unit,
+    onOpenDebugPage: () -> Unit,
+    onEvent: (UIEvent) -> Unit
+) {
 
     val settingsData = UIDataSource.APP_SETTINGS
 
+    DisposableEffect(Unit) {
+        onEvent(UIEvent.OnOpenSettings)
+        onDispose {
+            onEvent(UIEvent.OnReturnFromSettings)
+        }
+    }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                modifier = Modifier.shadow(elevation = 8.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                title = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+        TopAppBar(
+            modifier = Modifier.shadow(elevation = 8.dp),
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ),
+            title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { onReturn() }) {
+                        Icon(
+                            painter = painterResource(R.drawable.arrow_back_24px),
+                            contentDescription = "Zurück"
+                        )
+                    }
+                    Text("Einstellungen")
+                }
+            },
+        )
+    }, content = { innerPadding ->
+        Column(
+            modifier = Modifier.padding(innerPadding),
+        ) {
+            LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
+                items(
+                    items = settingsData.entries.toList(), key = { entry -> entry.key }) { entry ->
+                    if (entry.key != "Developer Setting") SettingsCategoryCard(
+                        categorySettings = entry.value as List<Any>,
+                        category = entry.key,
+                        onEvent = onEvent
+                    )
+                    else DeveloperSettingsCard(
+                        categorySettings = entry.value as List<Any>,
+                        category = entry.key,
+                        onEvent = onEvent
+                    )
+                }
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
                     ) {
-                        IconButton(onClick = { onReturn() }) {
-                            Icon(
-                                painter = painterResource(R.drawable.arrow_back_24px),
-                                contentDescription = "Zurück"
-                            )
-                        }
-                        Text("Einstellungen")
-                    }
-                },
-            )
-        },
-        content = { innerPadding ->
-            Column(
-                modifier = Modifier.padding(innerPadding),
-            ) {
-                LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
-                    items(
-                        items = settingsData.entries.toList(),
-                        key = { entry -> entry.key }) { entry ->
-                        if (entry.key != "Developer Setting")
-                            SettingsCategoryCard(
-                                categorySettings = entry.value as List<Any>,
-                                category = entry.key
-                            )
-                        else
-                            DeveloperSettingsCard(
-                                categorySettings = entry.value as List<Any>,
-                                category = entry.key
-                            )
-                    }
-                    item{
-                        Card(
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp)
+                                .padding(16.dp)
+                                .clickable { onOpenDebugPage() },
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth().padding(16.dp)
-                                    .clickable {onOpenDebugPage()},
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    "DebugPage aktivieren",
-                                    fontSize = 22.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                            Text(
+                                "DebugPage aktivieren",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
-
             }
-        })
+
+        }
+    })
 
 }
 
@@ -135,39 +154,33 @@ fun SettingsPage(modifier: Modifier = Modifier, onReturn: () -> Unit, onOpenDebu
 fun DeveloperSettingsCard(
     modifier: Modifier = Modifier,
     categorySettings: List<Any>,
-    category: String
+    category: String,
+    onEvent: (UIEvent) -> Unit
 ) {
     var developerSettingsEnabled by rememberSaveable { mutableStateOf(false) }
     AnimatedContent(
-        targetState = developerSettingsEnabled,
-        label = "developer_settings_transition"
+        targetState = developerSettingsEnabled, label = "developer_settings_transition"
     ) { isEnabled ->
-        if (isEnabled)
-            Card(
+        if (isEnabled) Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .clickable { developerSettingsEnabled = true }
+                .clearAndSetSemantics {}) {
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
-                    .clickable { developerSettingsEnabled = true }
-                    .clearAndSetSemantics {}
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.Center
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        "Enable Developer Settings",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Text(
+                    "Enable Developer Settings", fontSize = 22.sp, fontWeight = FontWeight.Bold
+                )
             }
-        else
-            SettingsCategoryCard(
-                categorySettings = categorySettings,
-                category = category
-            )
+        }
+        else SettingsCategoryCard(
+            categorySettings = categorySettings, category = category, onEvent = onEvent
+        )
     }
 }
 
@@ -175,7 +188,8 @@ fun DeveloperSettingsCard(
 fun SettingsCategoryCard(
     modifier: Modifier = Modifier,
     categorySettings: List<Any>,
-    category: String
+    category: String,
+    onEvent: (UIEvent) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -185,9 +199,7 @@ fun SettingsCategoryCard(
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(
-                    category,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
+                    category, fontSize = 22.sp, fontWeight = FontWeight.Bold
                 )
             }
             HorizontalDivider()
@@ -196,12 +208,29 @@ fun SettingsCategoryCard(
                 val settingData = item as Map<String, Any>
 
                 when (settingData.getValue("settingsType")) {
-                    "checkbox" -> CheckBoxSetting(modifier = Modifier, settingData = settingData)
-                    "select" -> SelectSetting(modifier = Modifier, settingData = settingData)
-                    "slider" -> SliderSetting(modifier = Modifier, settingData = settingData)
-                    "textInput" -> TextInputSetting(modifier = Modifier, settingData = settingData)
-                    "file" -> FileSetting(modifier = Modifier, settingData = settingData)
-                    "Info" -> InfoSetting(modifier = Modifier, settingData = settingData)
+                    "checkbox" -> CheckBoxSetting(
+                        modifier = Modifier, settingData = settingData, onEvent = onEvent
+                    )
+
+                    "select" -> SelectSetting(
+                        modifier = Modifier, settingData = settingData, onEvent = onEvent
+                    )
+
+                    "slider" -> SliderSetting(
+                        modifier = Modifier, settingData = settingData, onEvent = onEvent
+                    )
+
+                    "textInput" -> TextInputSetting(
+                        modifier = Modifier, settingData = settingData, onEvent = onEvent
+                    )
+
+                    "file" -> FileSetting(
+                        modifier = Modifier, settingData = settingData, onEvent = onEvent
+                    )
+
+                    "Info" -> InfoSetting(
+                        modifier = Modifier, settingData = settingData,
+                    )
                 }
             }
 
@@ -210,10 +239,21 @@ fun SettingsCategoryCard(
 }
 
 @Composable
-fun CheckBoxSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
+fun CheckBoxSetting(
+    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
+) {
 
-    var checked by rememberSaveable { mutableStateOf(settingData.getValue("default") as Boolean) }
 
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val settingKey = stringResource(settingData["string"] as Int)
+
+    var checked by rememberSaveable {
+        mutableStateOf(
+            sharedPreferences.getBoolean(
+                settingKey, settingData["default"] as Boolean
+            )
+        )
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -225,15 +265,36 @@ fun CheckBoxSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>
             Text(settingData.getValue("title") as String, fontSize = 18.sp)
             if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
         }
-        Checkbox(checked = checked, onCheckedChange = { isChecked -> checked = isChecked })
+        Checkbox(checked = checked, onCheckedChange = { isChecked ->
+            Log.d(
+                LOG_TAG, "[SettingsPage.CheckBoxSetting] Setting $settingKey changed to $isChecked"
+            )
+            checked = isChecked
+            sharedPreferences.edit(commit = true) {
+                putBoolean(
+                    settingKey, isChecked
+                )
+            }
+            onEvent(UIEvent.UpdateSettings)
+        })
     }
 }
 
 @Composable
-fun SelectSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
+fun SelectSetting(
+    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
+) {
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val settingKey = stringResource(settingData["string"] as Int)
 
     var dropDownEnabled by rememberSaveable { mutableStateOf(false) }
-    var currentlySelected by rememberSaveable { mutableStateOf((settingData.getValue("settingsOptions") as List<Any>)[0]) }
+    var currentlySelected by rememberSaveable {
+        mutableStateOf(
+            (sharedPreferences.getString(
+                settingKey, settingData["default"] as String?
+            ))
+        )
+    }
 
     Row(
         modifier = Modifier
@@ -250,8 +311,7 @@ fun SelectSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) 
             Row(
                 modifier = Modifier.clickable {
                     dropDownEnabled = true
-                },
-                verticalAlignment = Alignment.CenterVertically
+                }, verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(currentlySelected as String)
                 Icon(
@@ -260,11 +320,18 @@ fun SelectSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) 
                 )
             }
             DropdownMenu(
-                expanded = dropDownEnabled,
-                onDismissRequest = { dropDownEnabled = false }) {
+                expanded = dropDownEnabled, onDismissRequest = { dropDownEnabled = false }) {
                 for (item in (settingData.getValue("settingsOptions") as List<Any>)) {
                     DropdownMenuItem(text = { Text(item as String) }, onClick = {
                         currentlySelected = item as String
+                        Log.d(
+                            LOG_TAG,
+                            "[SettingsPage.SelectSetting] Changed setting $settingKey to $currentlySelected"
+                        )
+                        sharedPreferences.edit(commit = true) {
+                            putString(settingKey, currentlySelected)
+                        }
+                        onEvent(UIEvent.UpdateSettings)
                         dropDownEnabled = false
                     })
                 }
@@ -274,15 +341,24 @@ fun SelectSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) 
 }
 
 @Composable
-fun SliderSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
+fun SliderSetting(
+    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
+) {
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val settingKey = stringResource(settingData["string"] as Int)
 
     val settingsOptions = settingData.getValue("settingsOption") as Map<Any, Any>
 
     val min = (settingsOptions.getValue("min") as Number).toFloat()
     val max = (settingsOptions.getValue("max") as Number).toFloat()
-    val default = (settingsOptions.getValue("default") as Number).toFloat()
 
-    var currentValue by rememberSaveable { mutableFloatStateOf(default) }
+    var currentValue by rememberSaveable {
+        mutableIntStateOf(
+            sharedPreferences.getInt(
+                settingKey, settingData["default"] as Int
+            )
+        )
+    }
 
     Row(
         modifier = Modifier
@@ -305,9 +381,17 @@ fun SliderSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) 
             }
             if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
             Slider(
-                value = currentValue,
-                onValueChange = { currentValue = (it.roundToInt() as Number).toFloat() },
-                valueRange = min..max
+                value = currentValue.toFloat(), onValueChange = {
+                    currentValue = it.roundToInt()
+                    Log.d(
+                        LOG_TAG,
+                        "[SettingsPage.SliderSetting] Changed setting $settingKey to $currentValue"
+                    )
+                    sharedPreferences.edit(commit = true) {
+                        putInt(settingKey, currentValue)
+                    }
+                    onEvent(UIEvent.UpdateSettings)
+                }, valueRange = min..max
             )
         }
 
@@ -315,8 +399,9 @@ fun SliderSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) 
 }
 
 @Composable
-fun TextInputSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
-
+fun TextInputSetting(
+    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
+) {
     var showTextFieldDialog by rememberSaveable { mutableStateOf(false) }
 
     Row(
@@ -334,8 +419,7 @@ fun TextInputSetting(modifier: Modifier = Modifier, settingData: Map<String, Any
 
             IconButton(onClick = { showTextFieldDialog = true }) {
                 Icon(
-                    painter = painterResource(R.drawable.ink_pen_24px),
-                    contentDescription = ""
+                    painter = painterResource(R.drawable.ink_pen_24px), contentDescription = ""
                 )
             }
 
@@ -347,46 +431,59 @@ fun TextInputSetting(modifier: Modifier = Modifier, settingData: Map<String, Any
     if (showTextFieldDialog) {
         TextFieldDialog(
             onDismiss = { showTextFieldDialog = false },
-            settingName = settingData.getValue("title") as String
+            settingName = settingData.getValue("title") as String,
+            settingData = settingData,
+            onEvent = onEvent
         )
     }
 }
 
 @Composable
-fun TextFieldDialog(modifier: Modifier = Modifier, onDismiss: () -> Unit, settingName: String) {
-    var text by rememberSaveable { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = { onDismiss() },
-        title = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { onDismiss() }) {
-                    Icon(
-                        painterResource(R.drawable.arrow_back_24px),
-                        contentDescription = UIDataSource.RETURN_SEMANTIC
-                    )
-                }
-                Text(settingName)
-            }
-        },
-        text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                label = { Text("Eingeben...") }
+fun TextFieldDialog(
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
+    settingName: String,
+    settingData: Map<String, Any>,
+    onEvent: (UIEvent) -> Unit
+) {
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val settingKey = stringResource(settingData["string"] as Int)
+    var text by rememberSaveable {
+        mutableStateOf(
+            sharedPreferences.getString(
+                settingKey, settingData["default"]?.toString()
             )
-        },
-        confirmButton = {
-            Button(onClick = {
-                onDismiss()
-                //TODO backend connection
-            }) {
-                Text("Fertig", modifier = Modifier.clearAndSetSemantics {})
+        )
+    }
+    AlertDialog(onDismissRequest = { onDismiss() }, title = {
+        Row(
+            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { onDismiss() }) {
+                Icon(
+                    painterResource(R.drawable.arrow_back_24px),
+                    contentDescription = UIDataSource.RETURN_SEMANTIC
+                )
             }
+            Text(settingName)
         }
-    )
+    }, text = {
+        OutlinedTextField(
+            value = text ?: "",
+            onValueChange = { text = it },
+            label = { Text("Eingeben...") })
+    }, confirmButton = {
+        Button(onClick = {
+            onDismiss()
+            Log.d(LOG_TAG, "[SettingsPage.TextFieldSetting] Changed setting $settingKey to $text")
+            sharedPreferences.edit(commit = true) {
+                putString(settingKey, text)
+            }
+            onEvent(UIEvent.UpdateSettings)
+        }) {
+            Text("Fertig", modifier = Modifier.clearAndSetSemantics {})
+        }
+    })
 }
 
 @Composable
@@ -406,14 +503,37 @@ fun InfoSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
 }
 
 @Composable
-fun FileSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
+fun FileSetting(
+    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
+) {
+    val context = LocalContext.current
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val settingKey = stringResource(settingData["string"] as Int)
     var selectedFileUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
+        uri ?: return@rememberLauncherForActivityResult
+
+        try {
+            context.contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        } catch (e: SecurityException) {
+            Log.e(LOG_TAG, "Could not persist URI permission", e)
+        }
+
         selectedFileUri = uri
+
+        sharedPreferences.edit {
+            putString(settingKey, uri.toString())
+        }
+        Log.d(LOG_TAG, "[SettingsPage.FileSetting] Changed setting $settingKey to $uri")
+        onEvent(UIEvent.UpdateSettings)
     }
+
 
     Row(
         modifier = Modifier
@@ -426,10 +546,13 @@ fun FileSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
             Text(settingData.getValue("title") as String, fontSize = 18.sp)
             if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
         }
-        IconButton(onClick = { filePickerLauncher.launch("*/*") }) {
+        IconButton(onClick = {
+            filePickerLauncher.launch(
+                arrayOf("image/*", "video/*")
+            )
+        }) {
             Icon(
-                painter = painterResource(R.drawable.upload_file_24px),
-                contentDescription = ""
+                painter = painterResource(R.drawable.upload_file_24px), contentDescription = ""
             )
         }
     }
@@ -439,5 +562,5 @@ fun FileSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
 @Preview(showBackground = true, name = "SettingsPage Preview")
 @Composable
 fun SettingsPagePreview() {
-    SettingsPage(onReturn = {}, onOpenDebugPage = {})
+    SettingsPage(onReturn = {}, onOpenDebugPage = {}, onEvent = {})
 }

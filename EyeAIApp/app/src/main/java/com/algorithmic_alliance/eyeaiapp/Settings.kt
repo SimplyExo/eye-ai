@@ -130,11 +130,11 @@ data class Settings(
 				15
 			)
 
-			val depthAudioClickIncidence = sharedPreferences.getInt("audio_playback_rate", 2)
+			val depthAudioClickIncidence = sharedPreferences.getInt(context.getString(R.string.audio_playback_rate_setting), 2)
 
-			val depthAudioFrequency = sharedPreferences.getInt("audio_frequency_range", 500)
+			val depthAudioFrequency = sharedPreferences.getInt(context.getString(R.string.audio_frequency_range_setting), 500)
 
-			val objectAudioPlaybackLanguage = sharedPreferences.getString("object_playback_language", "english")
+			val objectAudioPlaybackLanguage = sharedPreferences.getString(context.getString(R.string.object_playback_language), "english")
 
 			val enableNpu = sharedPreferences.getBoolean(
 				context.getString(R.string.enable_npu_delegate_setting),

@@ -5,8 +5,12 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
+import android.provider.Contacts
 import android.util.Log
 import android.util.Size
+import androidx.activity.viewModels
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
@@ -24,6 +28,7 @@ import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as UI_LOG_TAG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -31,6 +36,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
+import kotlin.getValue
 
 /**
  * App class that holds everything that should persist when switching to another app, for example
@@ -162,6 +168,7 @@ class EyeAIApp : Application() {
 		}
 
 		if (oldSettings.objectAudioPlaybackLanguage != settings.objectAudioPlaybackLanguage) {
+			Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] ObjectAudioPlaybackLanguage is set to ${settings.objectAudioPlaybackLanguage}")
 			// TODO: move this somewhere else?
 			SpatialAudio.stop()
 			CoroutineScope(Dispatchers.IO).launch {
@@ -174,16 +181,22 @@ class EyeAIApp : Application() {
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			if (oldSettings.depthModel != settings.depthModel || enableNpuChanged) {
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] DepthModel is set to ${settings.depthModel}")
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] Enable NPU is set to ${settings.enableNpu}")
 				switchDepthModel(settings.depthModel)
 			}
 
 			if (oldSettings.enableSpeechRecognition != settings.enableSpeechRecognition) {
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] EnableSpeechRecognition is set to ${settings.enableSpeechRecognition}")
 				if (!settings.enableSpeechRecognition) {
+					Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] Closing Vosk service")
 					voskModel.closeService()
 				}
 			}
 
 			if (oldSettings.googleAiStudioApiKey != settings.googleAiStudioApiKey || oldSettings.customGoogleGenAIStudioEndpoint != settings.customGoogleGenAIStudioEndpoint) {
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] GoogleAIStudioAPIKey is set to ${settings.googleAiStudioApiKey}")
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] CustomGoogleGenAIStudioEndpoint is set to ${settings.customGoogleGenAIStudioEndpoint}")
 				val apiKey = settings.googleAiStudioApiKey
 				val customEndpoint = settings.customGoogleGenAIStudioEndpoint
 				llm = if (apiKey != null && !apiKey.isEmpty()) {
@@ -194,6 +207,8 @@ class EyeAIApp : Application() {
 			}
 
 			if (oldSettings.enableObjectDetection != settings.enableObjectDetection || enableNpuChanged) {
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] EnableObjectDetection is set to ${settings.enableObjectDetection}")
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] Enable NPU is set to ${settings.enableNpu}")
 				if (settings.enableObjectDetection) {
 					yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
 				}

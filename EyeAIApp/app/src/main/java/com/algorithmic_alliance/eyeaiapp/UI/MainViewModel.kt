@@ -1,32 +1,26 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
 import android.app.Application
-import android.content.Intent
 import android.os.Build
 import android.os.Looper
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import android.Manifest
 import android.util.Log
-import android.widget.ProgressBar
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.lifecycleScope
-import androidx.appcompat.app.AlertDialog
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.MainActivity
 import com.algorithmic_alliance.eyeaiapp.MainActivity.State
-import com.algorithmic_alliance.eyeaiapp.PermissionManager
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.SettingsActivity
+import com.algorithmic_alliance.eyeaiapp.Settings
+import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG
@@ -41,7 +35,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -65,6 +58,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(LOG_TAG, "[MainViewModel] onEvent called")
         when (event) {
             is UIEvent.VoskListeningChanged -> {
+                Log.d(LOG_TAG, "[MainViewModel] VoskListeningChanged")
                 State.IDLE
                 if (!voskUserStart.get()) {
                     startVosk()
@@ -74,7 +68,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             UIEvent.UpdateVoskStatusText -> {
-
+                Log.d(LOG_TAG, "[MainViewModel] UpdateVoskStatusText")
+                updateVoskStatusText()
             }
 
             UIEvent.InitVoskService -> {
@@ -83,13 +78,72 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             UIEvent.CloseVoskService -> {
-
+                Log.d(LOG_TAG, "[MainViewModel] CloseVoskService")
+                closeVoskService()
             }
 
-            is UIEvent.CameraPreviewReady -> {
+            UIEvent.UpdateSettings -> {
+                Log.d(LOG_TAG, "[MainViewModel] UpdateSettings")
+                updateSettings()
+            }
+
+            UIEvent.UpdateLlmStatusText ->{
+                Log.d(LOG_TAG, "[MainViewModel] UpdateLlmStatusText")
+                val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
+                updateLlmResponseText(
+                    if (isLLMConfigured)
+                        ""
+                    else
+                        eyeAIApp().getString(R.string.setup_llm_notice)
+                )
+            }
+
+            UIEvent.OnOpenSettings -> {
+                Log.d(LOG_TAG, "[MainViewModel] OnOpenSettings")
+                onOpenSettings()
+            }
+
+            UIEvent.OnReturnFromSettings ->{
+                Log.d(LOG_TAG, "[MainViewModel] OnReturnFromSettings")
+                onReturnFromSettings()
+            }
+
+            is UIEvent.UIinitCamera -> {
+                Log.d(LOG_TAG, "[MainViewModel] UIInitCamera")
                 initCamera(event.previewView, event.lifecycleOwner)
             }
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun onOpenSettings(){
+        SpatialAudio.stop()
+        eyeAIApp().voskModel.stopListening()
+
+        eyeAIApp().cameraManager.pauseAnalyzer()
+        eyeAIApp().mediaFrameAnalyzer?.shutdown()
+        eyeAIApp().mediaPlayer?.shutdown()
+
+        uniffi.NativeLib.setDepthAudioPaused(true)
+        uniffi.NativeLib.setObjectAudioPaused(true)
+    }
+
+    private fun onReturnFromSettings(){
+        SpatialAudio.setup(eyeAIApp())
+        SpatialAudio.start()
+
+        startSpatialAudio()
+    }
+
+    private fun startSpatialAudio(){
+        CoroutineScope(Dispatchers.IO).launch {
+            Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
+            SpatialAudio.setup(eyeAIApp())
+            SpatialAudio.start()
+        }
+        val settings = Settings.load(eyeAIApp())
+        uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+        uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -126,8 +180,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(LOG_TAG, "[MainViewModel.stopVoskListening] StopVoskListening called")
         if (!voskUserStart.get()) return // Check whether already stopped
 
-        uniffi.NativeLib.setObjectAudioPaused(false)
-        uniffi.NativeLib.setDepthAudioPaused(false)
+        val settings = Settings.load(eyeAIApp())
+        uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+        uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
         voskUserStart.set(false)
         eyeAIApp().voskModel.stopListening()
         Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
@@ -152,7 +207,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    private fun updateVoskStatusText() {
+    fun updateVoskStatusText() {
         _uiState.update {
             it.copy(
                 speechRecognitionFinalResultText = when {
@@ -305,15 +360,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onResume(){
 
-        _uiState.update { it.copy(debugInputPreviewVisible = eyeAIApp().settings.showDebugInputBitmap) }
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    private fun initCamera(cameraPreviewView: PreviewView, lifecycleOwner: LifecycleOwner) {
+    private fun initCamera(cameraPreviewView: PreviewView?, lifecycleOwner: LifecycleOwner) {
         if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_camera)) {
-            //mediaImageView!!.isVisible = false
-            _uiState.update { it.copy(mediaPreviewVisible = false) }
-            _uiState.update { it.copy(cameraPreviewVisible = !it.debugInputPreviewVisible) }
             if (hasPermission(Manifest.permission.CAMERA)) {
                 //ungrantedPermissionsNotice!!.visibility = GONE
 
@@ -323,11 +374,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         eyeAIApp(),
                         {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
                         //performanceText!!,
-                        null,
+                        {string -> _uiState.update { it.copy(performanceText = string) }},
                         //overlayObjectDetection!!,
-                        null,
+                        { results -> _uiState.update { it.copy(detectedObjects = results) }},
+                        {size -> _uiState.update { it.copy(cameraResolution = size) }},
                         {bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) }},
-                        _uiState.value.mediaPreviewBitmap
+                        {_uiState.value.mediaPreviewBitmap}
                     )
                 eyeAIApp().cameraManager.cameraFrameAnalyzer?.start()
 
@@ -343,12 +395,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         } else if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_media)) {
             if (eyeAIApp().settings.mediaSource!!.isNotEmpty()) {
-                //mediaImageView!!.isVisible = true
-                _uiState.update { it.copy(mediaPreviewVisible = !it.debugInputPreviewVisible) }
-                _uiState.update { it.copy(cameraPreviewVisible = false) }
+                Log.d(LOG_TAG, "[MainViewModel.initCamera] Input source is media and MediaSource ${eyeAIApp().settings.mediaSource!!.toUri()} is not empty")
                 ProcessCameraProvider.getInstance(eyeAIApp()).get().unbindAll()
-                //overlayObjectDetection!!.reset()
-                //overlayOcr!!.reset()
+                _uiState.update { it.copy(detectedObjects = emptyArray()) }
+                _uiState.update { it.copy(ocrResults = emptyArray()) }
                 _uiState.update { it.copy(depthPreviewBitmap = createBitmap(256,256)) }
 
 
@@ -362,22 +412,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 
                 eyeAIApp().mediaFrameAnalyzer?.shutdown()
-
                 eyeAIApp().mediaFrameAnalyzer =
                     CameraFrameAnalyzer(
                         eyeAIApp(),
                         {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
-                        //performanceText!!,
-                        null,
-                        //overlayObjectDetection!!,
-                        null,
+                        {string -> _uiState.update { it.copy(performanceText = string) }},
+                        { results -> _uiState.update { it.copy(detectedObjects = results) }},
+                        {size -> _uiState.update { it.copy(cameraResolution = size) }},
                         {bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) }},
-                        _uiState.value.mediaPreviewBitmap
+                        {_uiState.value.mediaPreviewBitmap}
                     )
 
                 eyeAIApp().mediaFrameAnalyzer?.start()
             } else {
                 //TODO implement Dialog
+                Log.d(LOG_TAG, "[MainViewModel.initCamera] Input Source is media but selected file is empty")
                 /*
                 val builder = AlertDialog.Builder(eyeAIApp())
                 builder.setMessage("No media file has been selected. Please select one in the settings menu")
@@ -524,11 +573,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     eyeAIApp(),
                     {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
                     //performanceText!!,
-                    null,
+                    {string -> _uiState.update { it.copy(performanceText = string) }},
                     //overlayObjectDetection!!,
-                    null,
+                    { results -> _uiState.update { it.copy(detectedObjects = results) }},
+                    {size -> _uiState.update { it.copy(cameraResolution = size) }},
                     {bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) }},
-                    _uiState.value.mediaPreviewBitmap
+                    {_uiState.value.mediaPreviewBitmap}
                 )
                 eyeAIApp().mediaFrameAnalyzer?.start()
 
@@ -545,6 +595,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                  */
             }
         }
+    }
+
+    fun updateSettings(){
+        eyeAIApp().updateSettings()
     }
 
     fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000

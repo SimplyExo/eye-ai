@@ -1,10 +1,18 @@
 package com.algorithmic_alliance.eyeaiapp.data
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Build
+import android.util.Log
+import androidx.core.content.edit
 import androidx.annotation.RequiresApi
+import androidx.camera.core.impl.utils.ContextUtil.getApplication
+import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
+import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.Settings
 import kotlin.collections.listOf
 
 object UIDataSource {
@@ -94,14 +102,14 @@ object UIDataSource {
             "title"         Title of the setting
             "description"   Description of the setting
             "settingsType"  Which type of setting it is (e.g. checkbox, text input, ...)
-            "function"      Here you add whatever needs to happen if the setting is changed
-        Depending on the setting type, the settings need diffrent map pairs:
+            "string"        String to access SharedPreferences
+        Depending on the setting type, the settings need different map pairs:
             checkbox setting:
-                "default"           Default state of the setting (on/off)
+                    -               Does not need extra pairs
             select setting:
-                "settingsOptions"   List of all the available options (note: 1. enty is the default)
+                "settingsOptions"   List of all the available options
             slider setting:
-                "settingsOptions"   List of minimum, maximum and default value of the slider
+                "settingsOptions"   List of minimum, maximum value of the slider
             textInput setting:
                     -               Does not need extra pairs
             file setting:
@@ -119,8 +127,8 @@ object UIDataSource {
                 "title" to "Use NPU (experimental)",
                 "description" to "Only enable on device with supported Qualcomm NPU. If no supported, performance will be worse!",
                 "settingsType" to "checkbox",
-                "default" to false,
-                "function" to {}
+                "string" to R.string.enable_npu_delegate_setting,
+                "default" to true
             )
         ),
         "Depth Estimation" to listOf(
@@ -128,22 +136,24 @@ object UIDataSource {
                 "title" to "Depth Estimation Model",
                 "description" to "",
                 "settingsType" to "select",
-                "settingsOptions" to listOf("MiDaS V2.1", "MiDaSV2.1 (quantized)"),
-                "function" to {}
+                "settingsOptions" to EyeAIApp.DEPTH_MODELS.map { it.name },     //listOf("MiDaS V2.1", "MiDaS V2.1 (quantized)"),
+                "string" to R.string.depth_model_setting,
+                "default" to EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
             ),
             mapOf(
                 "title" to "Enable Framerate Limiter",
                 "description" to "",
                 "settingsType" to "checkbox",
-                "default" to false,
-                "function" to {}
+                "string" to R.string.enable_depth_frame_rate_limit_setting,
+                "default" to true
             ),
             mapOf(
                 "title" to "Framerate Limit",
                 "description" to "",
                 "settingsType" to "slider",
-                "settingsOption" to mapOf("min" to 1, "max" to 120, "default" to 30),
-                "function" to {}
+                "settingsOption" to mapOf("min" to 1, "max" to 120),
+                "string" to R.string.max_depth_frame_rate_setting,
+                "default" to Settings.DEFAULT_FRAME_RATE_LIMIT
             )
         ),
         "Speech Recognition" to listOf<Map<String, Any>>(
@@ -151,9 +161,8 @@ object UIDataSource {
                 "title" to "Speech Recognition enabled",
                 "description" to "",
                 "settingsType" to "checkbox",
-                "default" to true,
-                "function" to {}
-
+                "string" to R.string.enable_speech_recognition_setting,
+                "default" to true
             )
         ),
         "Audio Playback" to listOf(
@@ -161,36 +170,39 @@ object UIDataSource {
                 "title" to "Enable Depth Playback",
                 "description" to "",
                 "settingsType" to "checkbox",
-                "default" to true,
-                "function" to {}
+                "string" to R.string.depth_playback_setting,
+                "default" to true
             ),
             mapOf(
                 "title" to "Enable Object Playback",
                 "description" to "",
                 "settingsType" to "checkbox",
-                "default" to true,
-                "function" to {}
+                "string" to R.string.object_playback_setting,
+                "default" to true
             ),
             mapOf(
                 "title" to "Frequency",
                 "description" to "Controls frequency used for depth mapping",
                 "settingsType" to "slider",
-                "settingsOption" to mapOf("min" to 100, "max" to 4000, "default" to 500),
-                "function" to {}
+                "settingsOption" to mapOf("min" to 100, "max" to 4000),
+                "string" to R.string.audio_frequency_range_setting,
+                "default" to 500
             ),
             mapOf(
                 "title" to "Frequency",
                 "description" to "How often per second a sound will be audible",
                 "settingsType" to "slider",
-                "settingsOption" to mapOf("min" to 1, "max" to 10, "default" to 3),
-                "function" to {}
+                "settingsOption" to mapOf("min" to 1, "max" to 10),
+                "string" to R.string.audio_playback_rate_setting,
+                "default" to 2
             ),
             mapOf(
                 "title" to "Audio language",
                 "description" to "",
                 "settingsType" to "select",
-                "settingsOptions" to listOf("English", "Deutsch"),
-                "function" to {}
+                "settingsOptions" to listOf("english", "german"),
+                "string" to R.string.object_playback_language,
+                "default" to "english"
             ),
         ),
         "LLM" to listOf(
@@ -198,13 +210,15 @@ object UIDataSource {
                 "title" to "Google AI Studio API Key",
                 "description" to "",
                 "settingsType" to "textInput",
-                "function" to {}
+                "string" to R.string.google_ai_studio_api_key_stetting,
+                "default" to null
             ),
             mapOf(
                 "title" to "Custom Google Gen AI Studio endpoint (for testing/mocking)",
                 "description" to "",
                 "settingsType" to "textInput",
-                "function" to {}
+                "string" to R.string.custom_google_gen_ai_studio_endpoint_setting,
+                "default" to null
             ),
         ),
         "Object Detection" to listOf(
@@ -212,22 +226,23 @@ object UIDataSource {
                 "title" to "Enabled",
                 "description" to "",
                 "settingsType" to "checkbox",
-                "default" to true,
-                "function" to {}
+                "string" to R.string.enable_object_detection_setting,
+                "default" to true
             ),
             mapOf(
                 "title" to "Enable Framerate Limiter",
                 "description" to "",
                 "settingsType" to "checkbox",
-                "default" to true,
-                "function" to {}
+                "string" to R.string.enable_object_detection_frame_rate_limit_setting,
+                "default" to true
             ),
             mapOf(
                 "title" to "Framerate Limit",
                 "description" to "",
                 "settingsType" to "slider",
-                "settingsOption" to mapOf("min" to 1, "max" to 120, "default" to 30),
-                "function" to {}
+                "settingsOption" to mapOf("min" to 1, "max" to 120),
+                "string" to R.string.max_object_detection_frame_rate_setting,
+                "default" to Settings.DEFAULT_FRAME_RATE_LIMIT
             )
         ),
         "OCR" to listOf(
@@ -235,8 +250,8 @@ object UIDataSource {
                 "title" to "Enabled",
                 "description" to "",
                 "settingsType" to "checkbox",
-                "default" to true,
-                "function" to {}
+                "string" to R.string.enable_ocr_setting,
+                "default" to true
             ),
         ),
         "Input Source" to listOf(
@@ -244,27 +259,31 @@ object UIDataSource {
                 "title" to "Input Source",
                 "description" to "",
                 "settingsType" to "select",
-                "settingsOptions" to listOf("Kamera", "Media", "EyeAIVision"),
-                "function" to {}
+                "settingsOptions" to listOf("camera", "media", "eyeaivision"),
+                "string" to R.string.input_source_setting,
+                "default" to "camera"
             ),
             mapOf(
                 "title" to "Select Media File",
                 "description" to "",
                 "settingsType" to "file",
-                "function" to {}
+                "string" to R.string.media_path_setting,
+                "default" to ""
             ),
             mapOf(
                 "title" to "EyeAIVisionIP",
                 "description" to "",
                 "settingsType" to "textInput",
-                "function" to {}
+                "string" to R.string.eyeaivision_ip_setting,
+                "default" to ""
             ),
             mapOf(
                 "title" to "JPEG Compression (only EyeAIVision)",
                 "description" to "",
                 "settingsType" to "slider",
-                "settingsOption" to mapOf("min" to 1, "max" to 64, "default" to 15),
-                "function" to {}
+                "settingsOption" to mapOf("min" to 1, "max" to 64),
+                "string" to R.string.jpeg_compression,
+                "default" to 15
             ),
         ),
         "Developer Settings" to listOf<Map<String, Any>>(
@@ -272,15 +291,15 @@ object UIDataSource {
                 "title" to "Show Profiling Information",
                 "description" to "",
                 "settingsType" to "checkbox",
-                "default" to false,
-                "function" to {}
+                "string" to R.string.show_profiling_info_setting,
+                "default" to false
             ),
             mapOf(
                 "title" to "Show Debug Input Bitmap",
                 "description" to "",
                 "settingsType" to "checkbox",
-                "default" to false,
-                "function" to {}
+                "string" to R.string.show_debug_input_bitmap_setting,
+                "default" to false
             ),
         ),
         "Build Info" to listOf(
@@ -288,25 +307,21 @@ object UIDataSource {
                 "title" to "App Version",
                 "description" to BuildInfoHelper.getVersionInfo(),
                 "settingsType" to "Info",
-                "function" to {}
             ),
             mapOf(
                 "title" to "Build Time",
                 "description" to BuildInfoHelper.getFormattedBuildTime(),
                 "settingsType" to "Info",
-                "function" to {}
             ),
             mapOf(
                 "title" to "Git Information",
                 "description" to BuildInfoHelper.getGitInfo(),
                 "settingsType" to "Info",
-                "function" to {}
             ),
             mapOf(
                 "title" to "Build Variant",
                 "description" to BuildInfoHelper.getBuildVariant(),
                 "settingsType" to "Info",
-                "function" to {}
             )
         )
 
