@@ -95,7 +95,7 @@ class CameraFrameAnalyzer(
                             val formattedDepthModelInputSize =
                                 "${metricDepthModel.inputDim.width}x${metricDepthModel.inputDim.height}"
                             updatePerformanceText(
-                                "Metric Depth model: ${metricDepthModel.name}\nCamera resolution: $formattedInputResolution -> Depth model input: $formattedDepthModelInputSize\n\n${uniffi.NativeLib.formattedDepthFrame()}\n$formattedCameraFrame\n${uniffi.NativeLib.formattedObjectFrame()}")
+                                "Metric Depth model: ${metricDepthModel.name}\nCamera resolution: $formattedInputResolution -> Depth model input: $formattedDepthModelInputSize\n\n${uniffi.NativeLib.formattedDepthFrame()}\n$formattedCameraFrame\n${if(eyeAIApp.settings.enableObjectDetection )uniffi.NativeLib.formattedObjectFrame() else ""}")
                         } else {
                             updatePerformanceText("")
                         }
