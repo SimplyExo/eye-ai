@@ -70,10 +70,15 @@ fun SettingsPage(
     modifier: Modifier = Modifier,
     onReturn: () -> Unit,
     onOpenDebugPage: () -> Unit,
+    onOpenHomePage: () -> Unit,
     onEvent: (UIEvent) -> Unit
 ) {
 
     val settingsData = UIDataSource.APP_SETTINGS
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
+    val debugPageActivated =
+        sharedPreferences.getBoolean(debugPageActivatedKey, false)
 
     DisposableEffect(Unit) {
         onEvent(UIEvent.OnOpenSettings)
@@ -132,11 +137,24 @@ fun SettingsPage(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
-                                .clickable { onOpenDebugPage() },
+                                .clickable {
+                                    if (!debugPageActivated){
+                                        onOpenDebugPage()
+                                        sharedPreferences.edit(commit = true){
+                                            putBoolean(debugPageActivatedKey, true)
+                                        }
+                                    } else{
+                                        onOpenHomePage()
+                                        sharedPreferences.edit(commit = true){
+                                            putBoolean(debugPageActivatedKey, false)
+                                        }
+                                    }
+
+                                },
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                "DebugPage aktivieren",
+                                if (!debugPageActivated) "DebugPage aktivieren" else "DebugPage deaktivieren",
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -562,5 +580,5 @@ fun FileSetting(
 @Preview(showBackground = true, name = "SettingsPage Preview")
 @Composable
 fun SettingsPagePreview() {
-    SettingsPage(onReturn = {}, onOpenDebugPage = {}, onEvent = {})
+    SettingsPage(onReturn = {}, onOpenDebugPage = {}, onEvent = {}, onOpenHomePage = {})
 }

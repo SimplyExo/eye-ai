@@ -64,7 +64,6 @@ import uniffi.NativeLib.UniffiDetectedObject
 fun DebugPage(
     modifier: Modifier = Modifier,
     onOpenSettings: () -> Unit,
-    onBack: () -> Unit,
     onEvent: (UIEvent) -> Unit,
     uiState: UIState,
 ) {
@@ -98,12 +97,6 @@ fun DebugPage(
         TopAppBar(
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { onBack() }) {
-                        Icon(
-                            painter = painterResource(R.drawable.arrow_back_24px),
-                            contentDescription = ""
-                        )
-                    }
                     Text("Debug")
                 }
             },
@@ -350,7 +343,6 @@ fun DebugPagePreview() {
     DebugPage(
         modifier = Modifier.fillMaxSize(),
         onOpenSettings = {},
-        onBack = {},
         onEvent = {},
         uiState = UIState()
     )

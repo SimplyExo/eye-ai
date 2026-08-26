@@ -68,4 +68,5 @@ Every camera frame is processed offline locally on your device,
     <string name="icon_description">Eye AI Icon</string>
     <string name="permission_icon_description">Current Permission Icon</string>
     <string name="stop_tts_description">Stop TTS Button</string>
+    <string name="debug_page_activated">debug_page_activated</string>
 </resources>

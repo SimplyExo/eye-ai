@@ -17,8 +17,10 @@ import android.util.Log
 import androidx.compose.ui.platform.LocalContext
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
+import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.pages.ConnectionPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.DebugPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.HomePage
@@ -56,6 +58,7 @@ fun EyeAIAppUI(
     val navController = rememberNavController()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
 
 
     NavHost(
@@ -72,32 +75,33 @@ fun EyeAIAppUI(
             )
         }
         composable<PermissionRoute> {
-            PermissionPage(
-                modifier = Modifier.fillMaxSize(),
-                onPermissionsDeclined = {
-                    navController.popBackStack()
-                },
-                onPermissionsGranted = {
+            PermissionPage(modifier = Modifier.fillMaxSize(), onPermissionsDeclined = {
+                navController.popBackStack()
+            }, onPermissionsGranted = {
 
-                    navController.navigate(ConnectionRoute)
+                navController.navigate(ConnectionRoute)
 
-                })
+            })
         }
         composable<ConnectionRoute> {
-            ConnectionPage(
-                modifier = Modifier.fillMaxSize(),
-                onConnectionSuccessful = {
+            ConnectionPage(modifier = Modifier.fillMaxSize(), onConnectionSuccessful = {
+                if (!sharedPreferences.getBoolean(debugPageActivatedKey, false)) {
                     navController.navigate(
                         HomeRoute
                     ) { popUpTo(WelcomeRoute) { inclusive = false } }
-                },
-                onExitSelection = {
-                    navController.navigate(WelcomeRoute) {
-                        popUpTo(WelcomeRoute) {
-                            inclusive = false
-                        }
+                } else {
+                    navController.navigate(
+                        DebugRoute
+                    ) { popUpTo(WelcomeRoute) { inclusive = false } }
+                }
+
+            }, onExitSelection = {
+                navController.navigate(WelcomeRoute) {
+                    popUpTo(WelcomeRoute) {
+                        inclusive = false
                     }
-                })
+                }
+            })
         }
         composable<HomeRoute> {
             HomePage(modifier = Modifier.fillMaxSize(), onOpenSettings = {
@@ -109,7 +113,21 @@ fun EyeAIAppUI(
         composable<SettingsRoute> {
             SettingsPage(modifier = Modifier.fillMaxSize(), onReturn = {
                 navController.popBackStack()
-            }, onOpenDebugPage = { navController.navigate(DebugRoute)}, onEvent = onEvent)
+            }, onOpenDebugPage = {
+                navController.navigate(DebugRoute) {
+                    popUpTo(WelcomeRoute) {
+                        inclusive = false
+                    }
+                }
+            }, onOpenHomePage = {
+                navController.navigate(
+                    HomeRoute
+                ) {
+                    popUpTo(WelcomeRoute) {
+                        inclusive = false
+                    }
+                }
+            }, onEvent = onEvent)
         }
         composable<DebugRoute> {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -118,10 +136,6 @@ fun EyeAIAppUI(
                     navController.navigate(
                         SettingsRoute
                     )
-                }, onBack = {
-                    navController.navigate(
-                        HomeRoute
-                    ) { popUpTo(HomeRoute) { inclusive = false } }
                 }, onEvent = onEvent, uiState = uiState
             )
         }
