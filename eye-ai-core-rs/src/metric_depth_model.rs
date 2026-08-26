@@ -4,8 +4,7 @@ use tracing::debug;
 use crate::{
 	CreateDepthModelInfo, DepthModel, FloatTensorBuffer, FloatTensorFormat, ProfilingFrame,
 	check_float_tensor_format,
-	litert::{LiteRtRunInferenceError, LiteRtRuntimeCreateError},
-	tensor_buffer::WrongFloatTensorFormatError,
+	tflite_runtime::{CreateTfLiteRuntimeError, TfLiteError},
 };
 
 #[derive(Debug)]
@@ -20,7 +19,7 @@ impl<'a> MetricDepthModel<'a> {
 	pub fn new(
 		relative_depth_model_create_info: CreateDepthModelInfo,
 		profiling_frame: &'a ProfilingFrame,
-	) -> Result<Self, LiteRtRuntimeCreateError> {
+	) -> Result<Self, CreateTfLiteRuntimeError> {
 		debug!(
 			model_name = ?relative_depth_model_create_info.model_name,
 			npu_config = ?relative_depth_model_create_info.npu_config,
@@ -42,24 +41,24 @@ impl<'a> MetricDepthModel<'a> {
 		&mut self,
 		input_tensor: &mut FloatTensorBuffer,
 		output_tensor: &mut FloatTensorBuffer,
-	) -> Result<(), LiteRtRunInferenceError> {
+	) -> Result<(), TfLiteError> {
 		check_float_tensor_format!(input_tensor, FloatTensorFormat::MiDaSImageRgb);
 
 		self.relative_depth_model
 			.run_raw(input_tensor, output_tensor)?;
 
-		rel2abs_operator(output_tensor, &Self::REL2ABS_COEFFS, self.profiling_frame)?;
+		rel2abs_operator(output_tensor, &Self::REL2ABS_COEFFS, self.profiling_frame);
 
 		check_float_tensor_format!(output_tensor, FloatTensorFormat::MetricDepth);
 
 		Ok(())
 	}
 
-	pub fn get_input_shape(&self) -> Option<Vec<i32>> {
+	pub fn get_input_shape(&self) -> &[i32] {
 		self.relative_depth_model.get_input_shape()
 	}
 
-	pub fn get_output_shape(&self) -> Option<Vec<i32>> {
+	pub fn get_output_shape(&self) -> &[i32] {
 		self.relative_depth_model.get_output_shape()
 	}
 }
@@ -70,7 +69,7 @@ fn rel2abs_operator<'a>(
 	raw_relative_depth_tensor: &mut FloatTensorBuffer<'a>,
 	rel2abs_coeffs: &'a [f32; 5],
 	profiling_frame: &ProfilingFrame,
-) -> Result<(), WrongFloatTensorFormatError> {
+) {
 	check_float_tensor_format!(
 		raw_relative_depth_tensor,
 		FloatTensorFormat::RawRelativeDepth
@@ -81,8 +80,6 @@ fn rel2abs_operator<'a>(
 	for value in raw_relative_depth_tensor.iter_mut() {
 		*value = polynomial_n4(*value, rel2abs_coeffs);
 	}
-
-	Ok(())
 }
 
 /// Polynomial function of degree 4 using Horner's method.

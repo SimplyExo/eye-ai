@@ -193,6 +193,8 @@ pub fn initAndroidLogging() {
 pub fn initMetricDepthModel(
 	model_name: String,
 	relative_depth_model: Vec<u8>,
+	delegate_serialization_dir: String,
+	relative_depth_model_token: String,
 	enable_npu: bool,
 	skel_directory: String,
 ) {
@@ -207,6 +209,8 @@ pub fn initMetricDepthModel(
 		CreateDepthModelInfo {
 			model_name,
 			model_data: relative_depth_model,
+			delegate_serialization_dir,
+			model_token: relative_depth_model_token,
 			npu_config: if enable_npu {
 				Some(DepthModelNpuConfig {
 					skel_library_dir: CString::new(skel_directory).unwrap(),
@@ -257,29 +261,13 @@ pub fn runMetricDepthModelInference(
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
 pub fn getMetricDepthModelInputShape() -> Vec<i32> {
-	wait_for_metric_depth_model(
-		|metric_depth_model| match metric_depth_model.get_input_shape() {
-			Some(input_shape) => input_shape,
-			None => {
-				error!("could not get input shape (returning empty vector)");
-				vec![]
-			}
-		},
-	)
+	wait_for_metric_depth_model(|metric_depth_model| metric_depth_model.get_input_shape().to_vec())
 }
 
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
 pub fn getMetricDepthModelOutputShape() -> Vec<i32> {
-	wait_for_metric_depth_model(
-		|metric_depth_model| match metric_depth_model.get_output_shape() {
-			Some(output_shape) => output_shape,
-			None => {
-				error!("could not get output shape (returning empty vector)");
-				vec![]
-			}
-		},
-	)
+	wait_for_metric_depth_model(|metric_depth_model| metric_depth_model.get_output_shape().to_vec())
 }
 
 #[uniffi::export]
@@ -310,6 +298,8 @@ pub fn metricDepthColormap(
 pub fn initYoloRuntime(
 	model_name: String,
 	model: Vec<u8>,
+	delegate_serialization_dir: String,
+	model_token: String,
 	labels: Vec<String>,
 	enable_npu: bool,
 	skel_directory: String,
@@ -326,6 +316,8 @@ pub fn initYoloRuntime(
 			model_name,
 			labels: labels.clone(),
 			model_data: model,
+			model_token,
+			delegate_serialization_dir,
 			npu_config: if enable_npu {
 				Some(YoloModelNpuConfig {
 					skel_library_dir: CString::new(skel_directory).unwrap(),
@@ -429,25 +421,13 @@ pub fn runYoloOperation(mut input: UniffiFloatBufferWrapper) -> Vec<UniffiDetect
 #[uniffi::export]
 #[profile_function("OBJECT_PROFILING_FRAME")]
 pub fn getYoloInputShape() -> Vec<i32> {
-	wait_for_yolo_model(|yolo_model| match yolo_model.get_input_shape() {
-		Some(input_shape) => input_shape,
-		None => {
-			error!("could not get input shape (returning empty vector)");
-			vec![]
-		}
-	})
+	wait_for_yolo_model(|yolo_model| yolo_model.get_input_shape().to_vec())
 }
 
 #[uniffi::export]
 #[profile_function("OBJECT_PROFILING_FRAME")]
 pub fn getYoloOutputShape() -> Vec<i32> {
-	wait_for_yolo_model(|yolo_model| match yolo_model.get_output_shape() {
-		Some(output_shape) => output_shape,
-		None => {
-			error!("could not get output shape (returning empty vector)");
-			vec![]
-		}
-	})
+	wait_for_yolo_model(|yolo_model| yolo_model.get_output_shape().to_vec())
 }
 
 #[uniffi::export]
