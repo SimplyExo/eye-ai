@@ -72,6 +72,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 updateVoskStatusText()
             }
 
+            UIEvent.OnReloadSettingsPage -> {
+                reloadSettingsPage()
+            }
+
             UIEvent.InitVoskService -> {
                 Log.d(LOG_TAG, "[MainViewModel] InitVoskService")
                 initVoskService()
@@ -87,7 +91,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 updateSettings()
             }
 
-            UIEvent.UpdateLlmStatusText ->{
+            UIEvent.UpdateLlmStatusText -> {
                 Log.d(LOG_TAG, "[MainViewModel] UpdateLlmStatusText")
                 val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
                 updateLlmResponseText(
@@ -103,9 +107,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 onOpenSettings()
             }
 
-            UIEvent.OnReturnFromSettings ->{
+            UIEvent.OnReturnFromSettings -> {
                 Log.d(LOG_TAG, "[MainViewModel] OnReturnFromSettings")
                 onReturnFromSettings()
+            }
+
+            is UIEvent.OnUpdateAppMissingVoskPermission -> {
+                setAppMissingVoskPermission(event.value)
             }
 
             is UIEvent.UIinitCamera -> {
@@ -115,8 +123,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun reloadSettingsPage() {
+        _uiState.update { it.copy(reloadSettingsPageKey = it.reloadSettingsPageKey + 1) }
+    }
+
+    private fun setAppMissingVoskPermission(value: Boolean) {
+        _uiState.update { it.copy(appMissingVoskPermission = value) }
+    }
+
     @RequiresApi(Build.VERSION_CODES.P)
-    private fun onOpenSettings(){
+    private fun onOpenSettings() {
         SpatialAudio.stop()
         eyeAIApp().voskModel.stopListening()
 
@@ -128,12 +144,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         uniffi.NativeLib.setObjectAudioPaused(true)
     }
 
-    private fun onReturnFromSettings(){
+    private fun onReturnFromSettings() {
         eyeAIApp().aiData.detectedObjects.set(emptyArray())
         startSpatialAudio()
     }
 
-    private fun startSpatialAudio(){
+    private fun startSpatialAudio() {
         CoroutineScope(Dispatchers.IO).launch {
             Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
             SpatialAudio.setup(eyeAIApp())
@@ -216,23 +232,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
             )
         }
-        /*
-        speechRecognitionFinalResultText?.text = when {
-            !permissionManager.isMicrophonePermissionGranted() ->
-                "Mikrofon-Berechtigung erforderlich"
-
-            !eyeAIApp().settings.enableSpeechRecognition ->
-                "Spracherkennung deaktiviert"
-
-            voskUserStart.get() ->
-                getString(R.string.speech_recognition_ready)
-
-            else ->
-                "Vosk bereit - Button klicken zum Starten"
-        }
-         */
-
-
     }
 
     private fun onPartialSpeechRecognitionResult(partial: String) {
@@ -357,8 +356,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    fun onResume(){
-
+    @RequiresApi(Build.VERSION_CODES.P)
+    fun onResume() {
+        if (eyeAIApp().settings.enableSpeechRecognition && !hasPermission(Manifest.permission.RECORD_AUDIO)) {
+            _uiState.update { it.copy(appMissingVoskPermission = true) }
+        }
+        updateVoskStatusText()
+        val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
+        updateLlmResponseText(
+            if (isLLMConfigured)
+                ""
+            else
+                eyeAIApp().getString(R.string.setup_llm_notice)
+        )
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -371,14 +381,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 eyeAIApp().cameraManager.cameraFrameAnalyzer =
                     CameraFrameAnalyzer(
                         eyeAIApp(),
-                        {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
+                        { bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) } },
                         //performanceText!!,
-                        {string -> _uiState.update { it.copy(performanceText = string) }},
+                        { string -> _uiState.update { it.copy(performanceText = string) } },
                         //overlayObjectDetection!!,
-                        { results -> _uiState.update { it.copy(detectedObjects = results) }},
-                        {size -> _uiState.update { it.copy(cameraResolution = size) }},
-                        {bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) }},
-                        {_uiState.value.mediaPreviewBitmap}
+                        { results -> _uiState.update { it.copy(detectedObjects = results) } },
+                        { size -> _uiState.update { it.copy(cameraResolution = size) } },
+                        { bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) } },
+                        { _uiState.value.mediaPreviewBitmap }
                     )
                 eyeAIApp().cameraManager.cameraFrameAnalyzer?.start()
 
@@ -394,11 +404,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         } else if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_media)) {
             if (eyeAIApp().settings.mediaSource!!.isNotEmpty()) {
-                Log.d(LOG_TAG, "[MainViewModel.initCamera] Input source is media and MediaSource ${eyeAIApp().settings.mediaSource!!.toUri()} is not empty")
+                Log.d(
+                    LOG_TAG,
+                    "[MainViewModel.initCamera] Input source is media and MediaSource ${eyeAIApp().settings.mediaSource!!.toUri()} is not empty"
+                )
                 ProcessCameraProvider.getInstance(eyeAIApp()).get().unbindAll()
                 _uiState.update { it.copy(detectedObjects = emptyArray()) }
                 _uiState.update { it.copy(ocrResults = emptyArray()) }
-                _uiState.update { it.copy(depthPreviewBitmap = createBitmap(256,256)) }
+                _uiState.update { it.copy(depthPreviewBitmap = createBitmap(256, 256)) }
 
 
                 eyeAIApp().mediaPlayer?.shutdown()
@@ -406,7 +419,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     MediaPlayer(
                         eyeAIApp(),
                         eyeAIApp().settings.mediaSource!!.toUri(),
-                        {bitmap -> _uiState.update { it.copy(mediaPreviewBitmap = bitmap) }}
+                        { bitmap -> _uiState.update { it.copy(mediaPreviewBitmap = bitmap) } }
                     )
 
 
@@ -414,18 +427,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 eyeAIApp().mediaFrameAnalyzer =
                     CameraFrameAnalyzer(
                         eyeAIApp(),
-                        {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
-                        {string -> _uiState.update { it.copy(performanceText = string) }},
-                        { results -> _uiState.update { it.copy(detectedObjects = results) }},
-                        {size -> _uiState.update { it.copy(cameraResolution = size) }},
-                        {bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) }},
-                        {_uiState.value.mediaPreviewBitmap}
+                        { bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) } },
+                        { string -> _uiState.update { it.copy(performanceText = string) } },
+                        { results -> _uiState.update { it.copy(detectedObjects = results) } },
+                        { size -> _uiState.update { it.copy(cameraResolution = size) } },
+                        { bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) } },
+                        { _uiState.value.mediaPreviewBitmap }
                     )
 
                 eyeAIApp().mediaFrameAnalyzer?.start()
             } else {
                 //TODO implement Dialog
-                Log.d(LOG_TAG, "[MainViewModel.initCamera] Input Source is media but selected file is empty")
+                Log.d(
+                    LOG_TAG,
+                    "[MainViewModel.initCamera] Input Source is media but selected file is empty"
+                )
                 /*
                 val builder = AlertDialog.Builder(eyeAIApp())
                 builder.setMessage("No media file has been selected. Please select one in the settings menu")
@@ -559,7 +575,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 eyeAIApp().mediaPlayer = MediaPlayer(
                     context = eyeAIApp(),
                     uri = null,
-                    {bitmap -> _uiState.update { it.copy(mediaPreviewBitmap = bitmap) }},
+                    { bitmap -> _uiState.update { it.copy(mediaPreviewBitmap = bitmap) } },
                     bitmapFlow = eyeAIApp().bitmapFlow
                 )
 
@@ -570,14 +586,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 eyeAIApp().mediaFrameAnalyzer?.shutdown()
                 eyeAIApp().mediaFrameAnalyzer = CameraFrameAnalyzer(
                     eyeAIApp(),
-                    {bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) }},
+                    { bitmap -> _uiState.update { it.copy(depthPreviewBitmap = bitmap) } },
                     //performanceText!!,
-                    {string -> _uiState.update { it.copy(performanceText = string) }},
+                    { string -> _uiState.update { it.copy(performanceText = string) } },
                     //overlayObjectDetection!!,
-                    { results -> _uiState.update { it.copy(detectedObjects = results) }},
-                    {size -> _uiState.update { it.copy(cameraResolution = size) }},
-                    {bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) }},
-                    {_uiState.value.mediaPreviewBitmap}
+                    { results -> _uiState.update { it.copy(detectedObjects = results) } },
+                    { size -> _uiState.update { it.copy(cameraResolution = size) } },
+                    { bitmap -> _uiState.update { it.copy(debugInputPreviewBitmap = bitmap) } },
+                    { _uiState.value.mediaPreviewBitmap }
                 )
                 eyeAIApp().mediaFrameAnalyzer?.start()
 
@@ -596,7 +612,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun updateSettings(){
+    fun updateSettings() {
         eyeAIApp().updateSettings()
     }
 

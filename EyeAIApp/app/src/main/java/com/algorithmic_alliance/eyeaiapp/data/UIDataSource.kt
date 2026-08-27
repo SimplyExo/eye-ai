@@ -53,7 +53,8 @@ object UIDataSource {
             "permissionDeclineSemantic" to "Zugriff auf Kamera ablehnen.",
             "permissionAcceptSemantic" to "Zugriff auf Kamera gestatten.",
             "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf die Kamera ablehnen, können sie die App nicht benutzen.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf Kamera trotzdem ablehnen. Die App wird geschlossen."
+            "confirmPermissionDeclineSemantic" to "Zugriff auf Kamera trotzdem ablehnen. Die App wird geschlossen.",
+            "hardPermission" to true
         ),
         mapOf(
             "permissionName" to "Mikrofon",
@@ -64,7 +65,8 @@ object UIDataSource {
             "permissionDeclineSemantic" to "Zugriff auf Mikrofon ablehnen.",
             "permissionAcceptSemantic" to "Zugriff auf Mikrofon gestatten.",
             "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf das Mikrofon ablehnen, können sie die App nicht benutzen.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf Mikrofon trotzdem ablehnen. Die App wird geschlossen."
+            "confirmPermissionDeclineSemantic" to "Zugriff auf Mikrofon trotzdem ablehnen. Die App wird geschlossen.",
+            "hardPermission" to false
         ),
         mapOf(
             "permissionName" to "WLAN-Netzwerke erkennen",
@@ -75,7 +77,8 @@ object UIDataSource {
             "permissionDeclineSemantic" to "Zugriff auf nahe WLAN-Geräte ablehnen.",
             "permissionAcceptSemantic" to "Zugriff auf nahe WLAN-Geräte gestatten.",
             "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf nahe WLAN-Geräte, können sie die App nicht benutzen.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf nahe WLAN-Geräte trotzdem ablehnen. Die App wird geschlossen."
+            "confirmPermissionDeclineSemantic" to "Zugriff auf nahe WLAN-Geräte trotzdem ablehnen. Die App wird geschlossen.",
+            "hardPermission" to true
         ),
         mapOf(
             "permissionName" to "Standort",
@@ -87,7 +90,8 @@ object UIDataSource {
             "permissionDeclineSemantic" to "Zugriff auf Standort ablehnen.",
             "permissionAcceptSemantic" to "Zugriff auf Standort gestatten.",
             "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf den Standort, können sie die App nicht benutzen.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf den Standort trotzdem ablehnen. Die App wird geschlossen."
+            "confirmPermissionDeclineSemantic" to "Zugriff auf den Standort trotzdem ablehnen. Die App wird geschlossen.",
+            "hardPermission" to true
         )
     )
 

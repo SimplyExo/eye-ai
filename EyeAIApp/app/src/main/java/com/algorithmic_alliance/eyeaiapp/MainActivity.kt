@@ -262,7 +262,6 @@ class MainActivity : AppCompatActivity() {
             SpatialAudio.start()
         }
 
-        updateSpeechRecognitionUIVisibility()
         /*
         permissionManager.requestCameraPermission()
         if (eyeAIApp().settings.enableSpeechRecognition)
@@ -270,13 +269,6 @@ class MainActivity : AppCompatActivity() {
         updateUngrantedPermissionsNotice()
          */
         viewModel.onResume()
-        val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
-        viewModel.updateLlmResponseText(
-            if (isLLMConfigured)
-                ""
-            else
-                getString(R.string.setup_llm_notice)
-        )
 
         // re-enabling the audio playback in accordance to the settings
         val settings = Settings.load(this@MainActivity)
@@ -573,18 +565,6 @@ class MainActivity : AppCompatActivity() {
     }
 
      */
-
-
-    private fun updateSpeechRecognitionUIVisibility() {
-        val visibility = if (eyeAIApp().settings.enableSpeechRecognition) {
-            VISIBLE
-        } else {
-            GONE
-        }
-
-        //speechRecognitionPartialResultText?.visibility = visibility
-        //speechRecognitionFinalResultText?.visibility = visibility
-    }
 
 
     /*All TTS methods start here*/

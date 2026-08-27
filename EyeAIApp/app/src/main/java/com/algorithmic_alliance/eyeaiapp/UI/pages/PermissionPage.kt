@@ -1,5 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
+import android.content.Context
+import androidx.core.content.edit
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,6 +44,10 @@ import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.preference.PreferenceManager
+import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
+import com.algorithmic_alliance.eyeaiapp.UI.checkPermissionsStatus
+import com.algorithmic_alliance.eyeaiapp.UI.onPermissionDecline
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -49,34 +55,20 @@ fun PermissionPage(
     modifier: Modifier = Modifier,
     onPermissionsGranted: () -> Unit,
     onPermissionsDeclined: () -> Unit,
-
-    ) {
+    onEvent: (UIEvent) -> Unit
+) {
     Log.d(LOG_TAG, "[PermissionPage] Loading PermissionPage")
     val context = LocalContext.current
 
     val neededPermissions = UIDataSource.NEEDED_PERMISSIONS
-    val notGrantedPermissions = mutableListOf<Map<String, Any>>()
+    val notGrantedPermissions = checkPermissionsStatus(neededPermissions, context, onEvent = onEvent)
 
-    for (map in neededPermissions) {
-        for (permission in map["permissions"] as List<*>) {
-            val hasPermission = ContextCompat.checkSelfPermission(
-                context,
-                permission as String
-            ) == PackageManager.PERMISSION_GRANTED
-            if (!hasPermission) {
-                Log.d(LOG_TAG, "[PermissionPage] App does not have permission for $permission")
-                notGrantedPermissions.add(map)
-                continue
-            }else{
-                Log.d(LOG_TAG, "[PermissionPage] App already has permission for $permission")
-            }
-        }
-    }
     if (notGrantedPermissions.isEmpty()) {
         Log.d(LOG_TAG, "[PermissionPage] All permissions already granted. Exiting PermissionPage")
         onPermissionsGranted()
         return
     }
+
     var currentPermission by rememberSaveable { mutableIntStateOf(0) }
 
     Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
@@ -85,7 +77,7 @@ fun PermissionPage(
                 modifier,
                 notGrantedPermissions[currentPermission],
                 onPermissionAccepted = { if (currentPermission < notGrantedPermissions.size - 1) currentPermission++ else onPermissionsGranted() },
-                onPermissionDeclined = { onPermissionsDeclined() }
+                onExitPermissionPage = { onPermissionsDeclined() }, onEvent = onEvent
             )
         }
 
@@ -98,8 +90,10 @@ fun AskForPermission(
     modifier: Modifier = Modifier,
     permissionData: Map<String, Any>,
     onPermissionAccepted: () -> Unit,
-    onPermissionDeclined: () -> Unit
+    onExitPermissionPage: () -> Unit,
+    onEvent: (UIEvent) -> Unit
 ) {
+    val context = LocalContext.current
     Log.d(
         LOG_TAG,
         "[PermissionPage.AskForPermission] Asking for permission ${permissionData["permissions"]}"
@@ -118,7 +112,14 @@ fun AskForPermission(
                 LOG_TAG,
                 "[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} declined"
             )
-            onPermissionDeclined()
+            onPermissionDecline(
+                permissionData,
+                onExitPermissionSelection = onExitPermissionPage,
+                context,
+                onEvent = onEvent,
+                onPermissionDecline = onPermissionAccepted
+            )
+
         }
     }
 
@@ -203,21 +204,24 @@ fun AskForPermission(
         ConfirmPermissionDecline(
             modifier = modifier,
             permissionData = permissionData,
-            onPermissionDeclined = {
-                onPermissionDeclined()
-            },
-            onDialogDismissed = { showDeclineDialog = false })
+            onDialogDismissed = { showDeclineDialog = false },
+            onExitPermissionSelection = onExitPermissionPage,
+            onEvent = onEvent,
+            onPermissionDecline = onPermissionAccepted
+        )
     }
 
 }
-
 @Composable
 fun ConfirmPermissionDecline(
     modifier: Modifier = Modifier,
     permissionData: Map<String, Any>,
-    onPermissionDeclined: () -> Unit,
     onDialogDismissed: () -> Unit,
+    onExitPermissionSelection: () -> Unit,
+    onEvent: (UIEvent) -> Unit,
+    onPermissionDecline: () -> Unit
 ) {
+    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = { onDialogDismissed() },
         title = {
@@ -250,7 +254,13 @@ fun ConfirmPermissionDecline(
                     "[PermissionPage.ConfirmPermissionDecline] Permission ${permissionData["permissions"]}declined"
                 )
                 onDialogDismissed()
-                onPermissionDeclined()
+                onPermissionDecline(
+                    permissionData,
+                    onExitPermissionSelection,
+                    context = context,
+                    onEvent = onEvent,
+                    onPermissionDecline = onPermissionDecline
+                )
             }) {
                 Text("Trotzdem Ablehnen", modifier = Modifier.clearAndSetSemantics {})
             }
@@ -262,5 +272,10 @@ fun ConfirmPermissionDecline(
 @Preview(showBackground = true, name = "PermissionPage Preview")
 @Composable
 fun PermissionPagePreview() {
-    MaterialTheme { PermissionPage(onPermissionsGranted = {}, onPermissionsDeclined = {}) }
+    MaterialTheme {
+        PermissionPage(
+            onPermissionsGranted = {},
+            onPermissionsDeclined = {},
+            onEvent = {})
+    }
 }

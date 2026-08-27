@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -14,6 +15,7 @@ import androidx.core.content.edit
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.key
 import androidx.compose.foundation.lazy.items
 import com.algorithmic_alliance.eyeaiapp.R
 import androidx.compose.foundation.layout.Row
@@ -37,12 +39,9 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.remote.creation.dsl.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -55,18 +54,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
+import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
+import com.algorithmic_alliance.eyeaiapp.UI.hasPermission
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
-import uniffi.NativeLib.Disposable
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsPage(
+    viewModel: MainViewModel,
     modifier: Modifier = Modifier,
     onReturn: () -> Unit,
     onOpenDebugPage: () -> Unit,
@@ -74,11 +75,12 @@ fun SettingsPage(
     onEvent: (UIEvent) -> Unit
 ) {
 
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     val settingsData = UIDataSource.APP_SETTINGS
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
-    val debugPageActivated =
-        sharedPreferences.getBoolean(debugPageActivatedKey, false)
+    val debugPageActivated = sharedPreferences.getBoolean(debugPageActivatedKey, false)
 
     DisposableEffect(Unit) {
         onEvent(UIEvent.OnOpenSettings)
@@ -113,51 +115,53 @@ fun SettingsPage(
         Column(
             modifier = Modifier.padding(innerPadding),
         ) {
-            LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
-                items(
-                    items = settingsData.entries.toList(), key = { entry -> entry.key }) { entry ->
-                    if (entry.key != "Developer Setting") SettingsCategoryCard(
-                        categorySettings = entry.value as List<Any>,
-                        category = entry.key,
-                        onEvent = onEvent
-                    )
-                    else DeveloperSettingsCard(
-                        categorySettings = entry.value as List<Any>,
-                        category = entry.key,
-                        onEvent = onEvent
-                    )
-                }
-                item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                    ) {
-                        Row(
+            key(uiState.reloadSettingsPageKey) {
+                LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
+                    items(
+                        items = settingsData.entries.toList(),
+                        key = { entry -> entry.key }) { entry ->
+                        if (entry.key != "Developer Setting") SettingsCategoryCard(
+                            categorySettings = entry.value as List<Any>,
+                            category = entry.key,
+                            onEvent = onEvent
+                        )
+                        else DeveloperSettingsCard(
+                            categorySettings = entry.value as List<Any>,
+                            category = entry.key,
+                            onEvent = onEvent
+                        )
+                    }
+                    item {
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp)
-                                .clickable {
-                                    if (!debugPageActivated){
-                                        onOpenDebugPage()
-                                        sharedPreferences.edit(commit = true){
-                                            putBoolean(debugPageActivatedKey, true)
-                                        }
-                                    } else{
-                                        onOpenHomePage()
-                                        sharedPreferences.edit(commit = true){
-                                            putBoolean(debugPageActivatedKey, false)
-                                        }
-                                    }
-
-                                },
-                            horizontalArrangement = Arrangement.Center
+                                .padding(8.dp)
                         ) {
-                            Text(
-                                if (!debugPageActivated) "DebugPage aktivieren" else "DebugPage deaktivieren",
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                                    .clickable {
+                                        if (!debugPageActivated) {
+                                            onOpenDebugPage()
+                                            sharedPreferences.edit(commit = true) {
+                                                putBoolean(debugPageActivatedKey, true)
+                                            }
+                                        } else {
+                                            onOpenHomePage()
+                                            sharedPreferences.edit(commit = true) {
+                                                putBoolean(debugPageActivatedKey, false)
+                                            }
+                                        }
+
+                                    }, horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    if (!debugPageActivated) "DebugPage aktivieren" else "DebugPage deaktivieren",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }
@@ -260,8 +264,7 @@ fun SettingsCategoryCard(
 fun CheckBoxSetting(
     modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
 ) {
-
-
+    val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val settingKey = stringResource(settingData["string"] as Int)
 
@@ -284,6 +287,15 @@ fun CheckBoxSetting(
             if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
         }
         Checkbox(checked = checked, onCheckedChange = { isChecked ->
+
+            if (settingData["string"] == R.string.enable_speech_recognition_setting && !hasPermission(
+                    context, Manifest.permission.RECORD_AUDIO
+                )
+            ) {
+                onEvent(UIEvent.OnUpdateAppMissingVoskPermission(true))
+                return@Checkbox
+            }
+
             Log.d(
                 LOG_TAG, "[SettingsPage.CheckBoxSetting] Setting $settingKey changed to $isChecked"
             )
@@ -294,6 +306,7 @@ fun CheckBoxSetting(
                 )
             }
             onEvent(UIEvent.UpdateSettings)
+
         })
     }
 }
@@ -536,8 +549,7 @@ fun FileSetting(
 
         try {
             context.contentResolver.takePersistableUriPermission(
-                uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
         } catch (e: SecurityException) {
             Log.e(LOG_TAG, "Could not persist URI permission", e)
@@ -574,11 +586,4 @@ fun FileSetting(
             )
         }
     }
-}
-
-
-@Preview(showBackground = true, name = "SettingsPage Preview")
-@Composable
-fun SettingsPagePreview() {
-    SettingsPage(onReturn = {}, onOpenDebugPage = {}, onEvent = {}, onOpenHomePage = {})
 }

@@ -66,6 +66,7 @@ fun HomePage(
                 onEvent(UIEvent.InitVoskService)
             } else {
                 Log.d(LOG_TAG, "[HomePage] Speech Recognition disabled not loading Vosk model")
+                onEvent(UIEvent.CloseVoskService)
             }
         }
         onEvent(UIEvent.UpdateVoskStatusText)

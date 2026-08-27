@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp.UI
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.core.content.edit
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,11 +17,26 @@ import kotlinx.serialization.Serializable
 import android.os.Build
 import android.util.Log
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
@@ -31,6 +47,8 @@ import com.algorithmic_alliance.eyeaiapp.UI.pages.PermissionPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.SettingsPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.WelcomePage
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
+import android.Manifest
 
 
 @Serializable
@@ -65,8 +83,7 @@ fun EyeAIAppUI(
     val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
 
     LaunchedEffect(Unit) {
-        activity?.requestedOrientation =
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
     }
     NavHost(
@@ -83,13 +100,14 @@ fun EyeAIAppUI(
             )
         }
         composable<PermissionRoute> {
-            PermissionPage(modifier = Modifier.fillMaxSize(), onPermissionsDeclined = {
-                navController.popBackStack()
-            }, onPermissionsGranted = {
+            PermissionPage(
+                modifier = Modifier.fillMaxSize(), onPermissionsDeclined = {
+                    navController.popBackStack()
+                }, onPermissionsGranted = {
+                    navController.navigate(ConnectionRoute)
 
-                navController.navigate(ConnectionRoute)
-
-            })
+                }, onEvent = onEvent
+            )
         }
         composable<ConnectionRoute> {
             ConnectionPage(modifier = Modifier.fillMaxSize(), onConnectionSuccessful = {
@@ -135,7 +153,7 @@ fun EyeAIAppUI(
                         inclusive = false
                     }
                 }
-            }, onEvent = onEvent)
+            }, onEvent = onEvent, viewModel = viewModel)
         }
         composable<DebugRoute> {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -148,4 +166,67 @@ fun EyeAIAppUI(
             )
         }
     }
+    UIDialogs(viewModel = viewModel, onEvent = onEvent)
+}
+
+@Composable
+fun UIDialogs(
+    viewModel: MainViewModel,
+    onEvent: (UIEvent) -> Unit,
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    if (uiState.appMissingVoskPermission) {
+        AppMissingVoskPermissionDialog(onEvent = onEvent)
+    }
+}
+
+@Composable
+fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
+    val context = LocalContext.current
+    val speechRecognitionEnabledKey = stringResource(R.string.enable_speech_recognition_setting)
+
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            onEvent(UIEvent.OnReloadSettingsPage)
+            onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
+        } else {
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+            if (sharedPreferences.getBoolean(speechRecognitionEnabledKey, true)) {
+                sharedPreferences.edit(commit = true) {
+                    putBoolean(speechRecognitionEnabledKey, false)
+                }
+                onEvent(UIEvent.UpdateSettings)
+            }
+            onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
+            onEvent(UIEvent.OnReloadSettingsPage)
+        }
+    }
+
+
+    AlertDialog(onDismissRequest = {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        if (sharedPreferences.getBoolean(speechRecognitionEnabledKey, true)) {
+            sharedPreferences.edit(commit = true) {
+                putBoolean(speechRecognitionEnabledKey, false)
+            }
+            onEvent(UIEvent.UpdateSettings)
+        }
+        onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
+        onEvent(UIEvent.OnReloadSettingsPage)
+
+    }, title = {
+        Text("Fehlende Berechtigung")
+    }, text = {
+        Text("Um die Spracherkennung zu aktivieren, braucht die App die Berechtigung für das Mikrophon. Wollen sie die Berechtigung erteilen?")
+    }, confirmButton = {
+        Button(onClick = {
+            launcher.launch(Manifest.permission.RECORD_AUDIO)
+        }) {
+            Text(
+                "Berechtigung erteilen"
+            )
+        }
+    })
 }
