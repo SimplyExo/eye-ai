@@ -49,6 +49,10 @@ import com.algorithmic_alliance.eyeaiapp.UI.pages.WelcomePage
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 
 @Serializable
@@ -92,6 +96,12 @@ fun EyeAIAppUI(
         modifier = Modifier.fillMaxSize(),
     ) {
         composable<WelcomeRoute> {
+            LaunchedEffect(Unit) { //setting these to false because the app will do the check when loading PermissionPage
+                onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
+                onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
+                onEvent(UIEvent.OnUpdatePermissionTutorialCompleted(false))
+            }
+
             WelcomePage(
                 modifier = Modifier.fillMaxSize(),
                 onGetStarted = {
@@ -104,8 +114,8 @@ fun EyeAIAppUI(
                 modifier = Modifier.fillMaxSize(), onPermissionsDeclined = {
                     navController.popBackStack()
                 }, onPermissionsGranted = {
+                    onEvent(UIEvent.OnUpdatePermissionTutorialCompleted(true))
                     navController.navigate(ConnectionRoute)
-
                 }, onEvent = onEvent
             )
         }
@@ -166,23 +176,83 @@ fun EyeAIAppUI(
             )
         }
     }
-    UIDialogs(viewModel = viewModel, onEvent = onEvent)
+    UIDialogs(viewModel = viewModel, onEvent = onEvent, onExitApp = {
+        navController.navigate(
+            WelcomeRoute
+        ) { popUpTo(WelcomeRoute) { inclusive = true } }
+    })
 }
 
 @Composable
 fun UIDialogs(
     viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit,
+    onExitApp: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     if (uiState.appMissingVoskPermission) {
         AppMissingVoskPermissionDialog(onEvent = onEvent)
     }
+    if (uiState.appMissingCameraPermission) {
+        AppMissingCameraPermissionDialog(onEvent = onEvent, onExitApp = onExitApp)
+    }
+}
+
+@Composable
+fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -> Unit) {
+    val context = LocalContext.current
+
+    val activity = context as? Activity
+    val shouldShowRationale = activity?.let {
+        ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.CAMERA)
+    } ?: false
+    if(!shouldShowRationale){
+        onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
+        } else {
+            onExitApp()
+            onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
+        }
+    }
+
+
+    AlertDialog(onDismissRequest = {
+        onExitApp()
+        onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
+    }, title = {
+        Text("Fehlende Berechtigung")
+    }, text = {
+        Text("Damit die KI ihre Umgebung analysieren kann, braucht die App zugriff auf ihre Kamera. Wollen sie die Berechtigung erteilen?")
+    }, confirmButton = {
+        Button(onClick = {
+            launcher.launch(Manifest.permission.CAMERA)
+        }) {
+            Text(
+                "Berechtigung erteilen"
+            )
+        }
+    })
 }
 
 @Composable
 fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
+
+
     val context = LocalContext.current
+
+    val activity = context as? Activity
+    val shouldShowRationale = activity?.let {
+        ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.RECORD_AUDIO)
+    } ?: false
+    if(!shouldShowRationale){
+        onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
+    }
     val speechRecognitionEnabledKey = stringResource(R.string.enable_speech_recognition_setting)
 
     val launcher = rememberLauncherForActivityResult(
@@ -199,8 +269,8 @@ fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
                 }
                 onEvent(UIEvent.UpdateSettings)
             }
-            onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
             onEvent(UIEvent.OnReloadSettingsPage)
+            onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
         }
     }
 
@@ -213,9 +283,8 @@ fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
             }
             onEvent(UIEvent.UpdateSettings)
         }
-        onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
         onEvent(UIEvent.OnReloadSettingsPage)
-
+        onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
     }, title = {
         Text("Fehlende Berechtigung")
     }, text = {

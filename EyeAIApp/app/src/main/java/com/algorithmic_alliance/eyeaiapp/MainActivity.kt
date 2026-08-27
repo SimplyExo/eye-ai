@@ -253,7 +253,6 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onResume() {
         super.onResume()
-
         eyeAIApp().updateSettings()
 
         CoroutineScope(Dispatchers.IO).launch {

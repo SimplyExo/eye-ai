@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.checkerframework.checker.guieffect.qual.UI
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
@@ -55,7 +56,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     @RequiresApi(Build.VERSION_CODES.P)
     fun onEvent(event: UIEvent) {
-        Log.d(LOG_TAG, "[MainViewModel] onEvent called")
         when (event) {
             is UIEvent.VoskListeningChanged -> {
                 Log.d(LOG_TAG, "[MainViewModel] VoskListeningChanged")
@@ -73,6 +73,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             UIEvent.OnReloadSettingsPage -> {
+                Log.d(LOG_TAG, "[MainViewModel] OnReloadSettingsPage")
                 reloadSettingsPage()
             }
 
@@ -89,6 +90,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             UIEvent.UpdateSettings -> {
                 Log.d(LOG_TAG, "[MainViewModel] UpdateSettings")
                 updateSettings()
+            }
+
+            is UIEvent.OnUpdatePermissionTutorialCompleted -> {
+                Log.d(LOG_TAG, "[MainViewModel] OnUpdatePermissionTutorialCompleted : ${event.value}")
+                setPermissionTutorialCompleted(event.value)
             }
 
             UIEvent.UpdateLlmStatusText -> {
@@ -112,7 +118,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 onReturnFromSettings()
             }
 
+            is UIEvent.OnUpdateAppMissingCameraPermission ->{
+                Log.d(LOG_TAG, "[MainViewModel] OnUpdateAppMissingCameraPermission: ${event.value}")
+                setAppMissingCameraPermission(event.value)
+            }
+
             is UIEvent.OnUpdateAppMissingVoskPermission -> {
+                Log.d(LOG_TAG, "[MainViewModel] OnUpdateAppMissingVoskPermission: ${event.value}")
                 setAppMissingVoskPermission(event.value)
             }
 
@@ -121,6 +133,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 initCamera(event.previewView, event.lifecycleOwner)
             }
         }
+    }
+
+    private fun setPermissionTutorialCompleted(value: Boolean){
+        _uiState.update { it.copy(permissionTutorialCompleted = value ) }
+    }
+
+    private fun setAppMissingCameraPermission(value: Boolean){
+        _uiState.update { it.copy(appMissingCameraPermission = value) }
     }
 
     private fun reloadSettingsPage() {
@@ -358,8 +378,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     @RequiresApi(Build.VERSION_CODES.P)
     fun onResume() {
-        if (eyeAIApp().settings.enableSpeechRecognition && !hasPermission(Manifest.permission.RECORD_AUDIO)) {
-            _uiState.update { it.copy(appMissingVoskPermission = true) }
+        if(!hasPermission(Manifest.permission.CAMERA) && _uiState.value.permissionTutorialCompleted){
+             setAppMissingCameraPermission(true)
+        }
+        if (eyeAIApp().settings.enableSpeechRecognition && !hasPermission(Manifest.permission.RECORD_AUDIO) && _uiState.value.permissionTutorialCompleted) {
+            setAppMissingVoskPermission(true)
         }
         updateVoskStatusText()
         val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false

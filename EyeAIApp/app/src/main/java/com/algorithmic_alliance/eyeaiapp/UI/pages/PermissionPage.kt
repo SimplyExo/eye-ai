@@ -1,5 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
 import androidx.core.content.edit
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +45,7 @@ import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
@@ -61,7 +64,8 @@ fun PermissionPage(
     val context = LocalContext.current
 
     val neededPermissions = UIDataSource.NEEDED_PERMISSIONS
-    val notGrantedPermissions = checkPermissionsStatus(neededPermissions, context, onEvent = onEvent)
+    val notGrantedPermissions =
+        checkPermissionsStatus(neededPermissions, context, onEvent = onEvent)
 
     if (notGrantedPermissions.isEmpty()) {
         Log.d(LOG_TAG, "[PermissionPage] All permissions already granted. Exiting PermissionPage")
@@ -191,8 +195,11 @@ fun AskForPermission(
                                     ?: UIDataSource.INFORMATION_NOT_FOUND) as String
                         },
                     onClick = {
-                        for (permission in permissions as List<*>)
+                        for (permission in permissions as List<*>) {
                             permissionLauncher.launch(permission as String)
+                        }
+
+
                     }) {
                     Text("Annehmen", modifier = Modifier.clearAndSetSemantics {}, fontSize = 16.sp)
                 }
@@ -212,6 +219,7 @@ fun AskForPermission(
     }
 
 }
+
 @Composable
 fun ConfirmPermissionDecline(
     modifier: Modifier = Modifier,

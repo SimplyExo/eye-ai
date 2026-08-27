@@ -23,7 +23,10 @@ sealed interface UIEvent {
 
     data object OnReturnFromSettings : UIEvent
 
+    data class OnUpdatePermissionTutorialCompleted(val value: Boolean): UIEvent
+
     data class OnUpdateAppMissingVoskPermission(val value: Boolean) : UIEvent
+    data class OnUpdateAppMissingCameraPermission(val value: Boolean) : UIEvent
 
     data class UIinitCamera(
         val previewView: PreviewView?,

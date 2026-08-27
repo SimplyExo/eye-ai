@@ -8,6 +8,8 @@ import uniffi.NativeLib.UniffiDetectedObject
 data class UIState(
     val reloadSettingsPageKey: Int = 0,
     val appMissingVoskPermission: Boolean = false,
+    val appMissingCameraPermission: Boolean = false,
+    val permissionTutorialCompleted: Boolean = true,
     val speechRecognitionFinalResultText: String = "",
     val speechRecognitionPartialResultText: String = "",
     val llmResponseText: String = "",
