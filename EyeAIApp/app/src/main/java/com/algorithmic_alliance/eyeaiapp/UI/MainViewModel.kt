@@ -38,7 +38,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.checkerframework.checker.guieffect.qual.UI
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
@@ -87,13 +86,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 closeVoskService()
             }
 
+            UIEvent.OnReloadDebugPage -> {
+                Log.d(LOG_TAG, "[MainViewModel] ReloadDebugPage")
+                reloadDebugPage()
+            }
+
             UIEvent.UpdateSettings -> {
                 Log.d(LOG_TAG, "[MainViewModel] UpdateSettings")
                 updateSettings()
             }
 
             is UIEvent.OnUpdatePermissionTutorialCompleted -> {
-                Log.d(LOG_TAG, "[MainViewModel] OnUpdatePermissionTutorialCompleted : ${event.value}")
+                Log.d(
+                    LOG_TAG,
+                    "[MainViewModel] OnUpdatePermissionTutorialCompleted : ${event.value}"
+                )
                 setPermissionTutorialCompleted(event.value)
             }
 
@@ -118,7 +125,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 onReturnFromSettings()
             }
 
-            is UIEvent.OnUpdateAppMissingCameraPermission ->{
+            is UIEvent.OnUpdateAppMissingCameraPermission -> {
                 Log.d(LOG_TAG, "[MainViewModel] OnUpdateAppMissingCameraPermission: ${event.value}")
                 setAppMissingCameraPermission(event.value)
             }
@@ -132,15 +139,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d(LOG_TAG, "[MainViewModel] UIInitCamera")
                 initCamera(event.previewView, event.lifecycleOwner)
             }
+
+            is UIEvent.OnUpdateAppMissingSelectedMediaSource -> {
+                setAppMissingSelectedMediaSource(event.value)
+            }
         }
     }
 
-    private fun setPermissionTutorialCompleted(value: Boolean){
-        _uiState.update { it.copy(permissionTutorialCompleted = value ) }
+    private fun setPermissionTutorialCompleted(value: Boolean) {
+        _uiState.update { it.copy(permissionTutorialCompleted = value) }
     }
 
-    private fun setAppMissingCameraPermission(value: Boolean){
+    private fun setAppMissingSelectedMediaSource(value: Boolean) {
+        _uiState.update { it.copy(appMissingSelectedMediaSource = value) }
+    }
+
+
+    private fun setAppMissingCameraPermission(value: Boolean) {
         _uiState.update { it.copy(appMissingCameraPermission = value) }
+    }
+
+    private fun reloadDebugPage() {
+        _uiState.update { it.copy(reloadDebugPageKey = it.reloadDebugPageKey + 1) }
     }
 
     private fun reloadSettingsPage() {
@@ -378,8 +398,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     @RequiresApi(Build.VERSION_CODES.P)
     fun onResume() {
-        if(!hasPermission(Manifest.permission.CAMERA) && _uiState.value.permissionTutorialCompleted){
-             setAppMissingCameraPermission(true)
+        if (!hasPermission(Manifest.permission.CAMERA) && _uiState.value.permissionTutorialCompleted) {
+            setAppMissingCameraPermission(true)
         }
         if (eyeAIApp().settings.enableSpeechRecognition && !hasPermission(Manifest.permission.RECORD_AUDIO) && _uiState.value.permissionTutorialCompleted) {
             setAppMissingVoskPermission(true)
@@ -396,10 +416,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     @RequiresApi(Build.VERSION_CODES.P)
     private fun initCamera(cameraPreviewView: PreviewView?, lifecycleOwner: LifecycleOwner) {
+        _uiState.update { it.copy(detectedObjects = emptyArray()) }
+        _uiState.update { it.copy(ocrResults = emptyArray()) }
+        _uiState.update { it.copy(depthPreviewBitmap = createBitmap(256, 256)) }
         if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_camera)) {
             if (hasPermission(Manifest.permission.CAMERA)) {
-                //ungrantedPermissionsNotice!!.visibility = GONE
-
                 eyeAIApp().cameraManager.cameraFrameAnalyzer?.shutdown()
                 eyeAIApp().cameraManager.cameraFrameAnalyzer =
                     CameraFrameAnalyzer(
@@ -423,7 +444,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         cameraPreviewView,
                     )
             } else {
-                //ungrantedPermissionsNotice!!.visibility = VISIBLE
+                _uiState.update { it.copy(appMissingCameraPermission = true) }
             }
         } else if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_media)) {
             if (eyeAIApp().settings.mediaSource!!.isNotEmpty()) {
@@ -460,20 +481,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                 eyeAIApp().mediaFrameAnalyzer?.start()
             } else {
-                //TODO implement Dialog
                 Log.d(
                     LOG_TAG,
                     "[MainViewModel.initCamera] Input Source is media but selected file is empty"
                 )
-                /*
-                val builder = AlertDialog.Builder(eyeAIApp())
-                builder.setMessage("No media file has been selected. Please select one in the settings menu")
-                    .setPositiveButton("Open settings") { dialog, id ->
-                        startActivity(Intent(this, SettingsActivity::class.java))
-                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                    }
-                builder.create().show()
-                 */
+                setAppMissingSelectedMediaSource(true)
             }
 
         } else if (eyeAIApp().settings.inputSource == eyeAIApp().getString(R.string.input_is_eyeaivision)) {

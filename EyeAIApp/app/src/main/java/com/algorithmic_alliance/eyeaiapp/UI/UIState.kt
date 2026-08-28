@@ -7,6 +7,8 @@ import uniffi.NativeLib.UniffiDetectedObject
 
 data class UIState(
     val reloadSettingsPageKey: Int = 0,
+    val reloadDebugPageKey: Int = 0,
+    val appMissingSelectedMediaSource: Boolean = false,
     val appMissingVoskPermission: Boolean = false,
     val appMissingCameraPermission: Boolean = false,
     val permissionTutorialCompleted: Boolean = true,

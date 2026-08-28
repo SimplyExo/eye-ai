@@ -39,6 +39,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -47,6 +48,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.IconButton
 import androidx.compose.remote.creation.dsl.background
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -54,6 +56,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
@@ -99,123 +102,155 @@ fun DebugPage(
         onEvent(UIEvent.UpdateVoskStatusText)
         onEvent(UIEvent.UpdateLlmStatusText)
     }
-
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        TopAppBar(
-            title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Debug")
-                }
-            },
-            modifier = Modifier.shadow(elevation = 8.dp),
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ),
-        )
-    }, floatingActionButton = {
-        Row(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(0.35f),
-            horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
-        ) {
-            if (speechRecognitionEnabled) FloatingActionButton(
-                onClick = {
-                    onEvent(UIEvent.VoskListeningChanged)
-                    ttsEnabled = !ttsEnabled
-                    Log.d(LOG_TAG, "[DebugPage] Vosk on: $ttsEnabled")
+    key(uiState.reloadDebugPageKey) {
+        Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+            TopAppBar(
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Debug")
+                    }
                 },
+                modifier = Modifier.shadow(elevation = 8.dp),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+            )
+        }, floatingActionButton = {
+            Row(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(0.35f),
+                horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
             ) {
-                Icon(
-                    painter = if (ttsEnabled) painterResource(R.drawable.stop_24px) else painterResource(
-                        R.drawable.play_arrow_24px
-                    ), contentDescription = "Start Vosk"
-                )
-            }
-            FloatingActionButton(onClick = { onOpenSettings() }) {
-                Icon(
-                    painter = painterResource(R.drawable.settings_24px),
-                    contentDescription = "Open Settings"
-                )
-            }
-        }
-    }, content = { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            horizontalAlignment = Alignment.CenterHorizontally,
-
-            ) {
-            item {
-                Card(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .aspectRatio(4f / 3f)
+                if (speechRecognitionEnabled) FloatingActionButton(
+                    onClick = {
+                        onEvent(UIEvent.VoskListeningChanged)
+                        ttsEnabled = !ttsEnabled
+                        Log.d(LOG_TAG, "[DebugPage] Vosk on: $ttsEnabled")
+                    },
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        if (sharedPreferences.getString(
-                                stringResource(R.string.input_source_setting), "camera"
-                            ) == "camera" && !sharedPreferences.getBoolean(
-                                stringResource(R.string.show_debug_input_bitmap_setting), false
-                            )
-                        ) CameraPreview(onEvent = onEvent)
-                        if (sharedPreferences.getString(
-                                stringResource(R.string.input_source_setting), "camera"
-                            ) == "media" && !sharedPreferences.getBoolean(
-                                stringResource(R.string.show_debug_input_bitmap_setting), false
-                            )
-                        ) MediaPreview(bitmap = uiState.mediaPreviewBitmap, onEvent = onEvent)
-                        if (sharedPreferences.getBoolean(
-                                stringResource(R.string.show_debug_input_bitmap_setting), false
-                            )
-                        ) DebugInputPreview(
-                            bitmap = uiState.debugInputPreviewBitmap, onEvent = onEvent
-                        )
-                        ObjectDetectionOverlay(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .padding(8.dp),
-                            uiState.detectedObjects,
-                            cameraResolution = uiState.cameraResolution
-                        )
-                        OCROverlay(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .padding(8.dp),
-                            results = uiState.ocrResults,
-                            cameraResolution = uiState.cameraResolution
-                        )
-                    }
-                }
-                if (sharedPreferences.getBoolean(
-                        stringResource(R.string.enable_speech_recognition_setting), true
+                    Icon(
+                        painter = if (ttsEnabled) painterResource(R.drawable.stop_24px) else painterResource(
+                            R.drawable.play_arrow_24px
+                        ), contentDescription = "Start Vosk"
                     )
-                ) {
-                    Column() {
-                        Text(uiState.speechRecognitionPartialResultText)
-                        Text(uiState.speechRecognitionFinalResultText)
-                        Text(uiState.llmResponseText)
-                    }
                 }
-                Card(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .aspectRatio(4f / 3f)
-                ) {
-
-                    DepthPreview(bitmap = uiState.depthPreviewBitmap)
-                    Text(text = uiState.performanceText, fontSize = 10.sp)
-
+                FloatingActionButton(onClick = { onOpenSettings() }) {
+                    Icon(
+                        painter = painterResource(R.drawable.settings_24px),
+                        contentDescription = "Open Settings"
+                    )
                 }
             }
+        }, content = { paddingValues ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                horizontalAlignment = Alignment.CenterHorizontally,
+
+                ) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .aspectRatio(4f / 3f)
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            if (sharedPreferences.getString(
+                                    stringResource(R.string.input_source_setting), "camera"
+                                ) == "camera" && !sharedPreferences.getBoolean(
+                                    stringResource(R.string.show_debug_input_bitmap_setting), false
+                                )
+                            ) CameraPreview(onEvent = onEvent)
+                            if (sharedPreferences.getString(
+                                    stringResource(R.string.input_source_setting), "camera"
+                                ) == "media" && !sharedPreferences.getBoolean(
+                                    stringResource(R.string.show_debug_input_bitmap_setting), false
+                                )
+                            ) {
+                                MediaPreview(bitmap = uiState.mediaPreviewBitmap, onEvent = onEvent)
+                                if (sharedPreferences.getString(
+                                        stringResource(R.string.media_path_setting), ""
+                                    ) == ""
+                                ) Column(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(8.dp),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        "Bitte in den Einstellungen eine Media-Quelle auswählen!",
+                                        fontSize = 26.sp,
+                                    )
+                                }
+                            }
+                            if (sharedPreferences.getBoolean(
+                                    stringResource(R.string.show_debug_input_bitmap_setting), false
+                                )
+                            ) DebugInputPreview(
+                                bitmap = uiState.debugInputPreviewBitmap, onEvent = onEvent
+                            )
+                            ObjectDetectionOverlay(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .padding(8.dp),
+                                uiState.detectedObjects,
+                                cameraResolution = uiState.cameraResolution
+                            )
+                            OCROverlay(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .padding(8.dp),
+                                results = uiState.ocrResults,
+                                cameraResolution = uiState.cameraResolution
+                            )
+                        }
+                    }
+                    if (sharedPreferences.getBoolean(
+                            stringResource(R.string.enable_speech_recognition_setting), true
+                        )
+                    ) {
+                        Column() {
+                            Text(uiState.speechRecognitionPartialResultText)
+                            Text(uiState.speechRecognitionFinalResultText)
+                            Text(uiState.llmResponseText)
+                        }
+                    }
+                    Card(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .aspectRatio(4f / 3f)
+                    ) {
+                        if (sharedPreferences.getString(
+                                stringResource(R.string.media_path_setting), ""
+                            ) == "" && sharedPreferences.getString(stringResource(R.string.input_source_setting ),"camera") == "media"
+                        ) Column(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(8.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                "Bitte in den Einstellungen eine Media-Quelle auswählen!",
+                                fontSize = 26.sp,
+                            )
+                        }
+                        Box {
+                            DepthPreview(bitmap = uiState.depthPreviewBitmap)
+                            Text(text = uiState.performanceText, fontSize = 10.sp)
+                        }
+                    }
+                }
 
 
-        }
-    })
+            }
+        })
 
-
+    }
 }
 
 @Composable
@@ -301,7 +336,6 @@ fun MediaPreview(
             )
         }
     }
-
 }
 
 @Composable

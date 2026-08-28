@@ -180,14 +180,15 @@ fun EyeAIAppUI(
         navController.navigate(
             WelcomeRoute
         ) { popUpTo(WelcomeRoute) { inclusive = true } }
-    })
+    }, onOpenSettings = { navController.navigate(SettingsRoute) })
 }
 
 @Composable
 fun UIDialogs(
     viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit,
-    onExitApp: () -> Unit
+    onExitApp: () -> Unit,
+    onOpenSettings: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     if (uiState.appMissingVoskPermission) {
@@ -196,7 +197,32 @@ fun UIDialogs(
     if (uiState.appMissingCameraPermission) {
         AppMissingCameraPermissionDialog(onEvent = onEvent, onExitApp = onExitApp)
     }
+    if (uiState.appMissingSelectedMediaSource) {
+        AppMissingSelectedMediaSourceDialog(onEvent = onEvent, onOpenSettings = onOpenSettings)
+    }
 }
+
+@Composable
+fun AppMissingSelectedMediaSourceDialog(onEvent: (UIEvent) -> Unit, onOpenSettings: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = {
+            onEvent(UIEvent.OnUpdateAppMissingSelectedMediaSource(false))
+        },
+        title = { Text("Fehlende Media-Quelle") },
+        text = { Text("In den Einstellungen ist als Eingabequelle 'Media' ausgewählt. Es wurde jedoch keine Media Datei ausgewählt. Wollen Sie die Einstellungen öffnen, um eine Datei oder eine andere Eingabequelle auszuwählen?") },
+        confirmButton = {
+            Button(onClick = {
+                onOpenSettings()
+                onEvent(UIEvent.OnUpdateAppMissingSelectedMediaSource(false))
+            }) {
+                Text(
+                    "Einstellungen öffnen"
+                )
+            }
+        }
+    )
+}
+
 
 @Composable
 fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -> Unit) {
@@ -206,7 +232,7 @@ fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -
     val shouldShowRationale = activity?.let {
         ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.CAMERA)
     } ?: false
-    if(!shouldShowRationale){
+    if (!shouldShowRationale) {
         onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
     }
 
@@ -215,6 +241,7 @@ fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -
     ) { isGranted ->
         if (isGranted) {
             onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
+            onEvent(UIEvent.OnReloadDebugPage)
         } else {
             onExitApp()
             onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
@@ -250,7 +277,7 @@ fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
     val shouldShowRationale = activity?.let {
         ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.RECORD_AUDIO)
     } ?: false
-    if(!shouldShowRationale){
+    if (!shouldShowRationale) {
         onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
     }
     val speechRecognitionEnabledKey = stringResource(R.string.enable_speech_recognition_setting)
