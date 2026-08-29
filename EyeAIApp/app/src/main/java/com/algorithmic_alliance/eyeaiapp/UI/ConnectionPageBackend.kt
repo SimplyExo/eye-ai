@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.UI
 
 import android.content.Context
 import android.media.AudioDeviceInfo
+import androidx.core.content.edit
 import android.net.ConnectivityManager
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import android.net.Network
@@ -22,6 +23,7 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import com.algorithmic_alliance.eyeaiapp.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -29,14 +31,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.app.ActivityCompat
+import androidx.preference.PreferenceManager
 
 @RequiresApi(Build.VERSION_CODES.S)
 fun connectToDevice(
     context: Context,
     deviceCategory: String,
     selectedDevice: String,
-    onResult: (Boolean) -> Unit
+    onEvent: (UIEvent) -> Unit,
+    onResult: (Boolean) -> Unit,
 ) {
     when (deviceCategory) {
         "audio" -> {
@@ -72,6 +77,11 @@ fun connectToDevice(
                     context, selectedDevice, "12345678",
                     onConnected = {
                         Log.d(LOG_TAG, "[ConnectionPage.connect] Connection successful")
+                        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+                        sharedPreferences.edit(commit = true){
+                            putString(context.getString(R.string.input_source_setting), "eyeaivision")
+                        }
+                        onEvent(UIEvent.UpdateSettings)
                         onResult(true)
                     },
                     onFailed = {
@@ -80,6 +90,11 @@ fun connectToDevice(
                     }
                 )
             } else{
+                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+                sharedPreferences.edit(commit = true){
+                    putString(context.getString(R.string.input_source_setting), "camera")
+                }
+                onEvent(UIEvent.UpdateSettings)
                 Log.d(LOG_TAG, "[ConnectionPage.connect] User choose phone camera over eye-ai-vison")
                 onResult(true)
             }

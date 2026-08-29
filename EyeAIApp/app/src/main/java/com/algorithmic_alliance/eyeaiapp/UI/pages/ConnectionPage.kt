@@ -54,6 +54,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
 import com.algorithmic_alliance.eyeaiapp.UI.rememberAudioDeviceState
@@ -69,6 +70,7 @@ fun ConnectionPage(
     onConnectionSuccessful: () -> Unit,
     onExitSelection: () -> Unit,
     uiState: UIState,
+    onEvent: (UIEvent) -> Unit
 ) {
     Log.d(LOG_TAG, "[PermissionPage] Loading ConnectionPage")
 
@@ -132,7 +134,9 @@ fun ConnectionPage(
             else onConnectionSuccessful()
         },
         goBack = { if (currentlyDisplayedDevices != 0) currentlyDisplayedDevices-- else onExitSelection() },
-        devicesData = devices[currentlyDisplayedDevices] as Map<Any, Any>, uiState = uiState
+        devicesData = devices[currentlyDisplayedDevices] as Map<Any, Any>,
+        uiState = uiState,
+        onEvent = onEvent
     )
 
 }
@@ -145,6 +149,7 @@ fun ChooseConnectionPage(
     goBack: () -> Unit,
     devicesData: Map<Any, Any>,
     uiState: UIState,
+    onEvent: (UIEvent) -> Unit
 ) {
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -167,7 +172,6 @@ fun ChooseConnectionPage(
     Log.d(LOG_TAG, "[ConnectionPage] Choosing connection for $deviceCategory")
 
     LaunchedEffect(devicesData["type"]) {
-        Log.d(LOG_TAG, "${devicesData["type"] } ${devicesData["remember"]} ${devicesData["selected"]}")
         if (devicesData["type"] == "eye-ai-vision" && (devicesData["remember"] == true && devicesData["selected"] != "Handykamera verwenden")) {
             val locationManager =
                 context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -183,7 +187,7 @@ fun ChooseConnectionPage(
 
         }
     }
-    if(!uiState.connectionTutorialCompleted){
+    if (!uiState.connectionTutorialCompleted) {
         LaunchedEffect(devicesData) {
             if (devicesData["remember"] == true && (devices.contains(devicesData["selected"]) || devicesData["selected"] == "Handykamera verwenden")) {
                 Log.d(
@@ -193,11 +197,15 @@ fun ChooseConnectionPage(
                 connectToDevice(
                     context,
                     devicesData["type"] as String,
-                    devicesData["selected"] as String
+                    devicesData["selected"] as String,
+                    onEvent = onEvent
                 )
                 { success ->
                     if (success) {
-                        Log.d(LOG_TAG, "[ConnectionPage] Connection to remembered device successful")
+                        Log.d(
+                            LOG_TAG,
+                            "[ConnectionPage] Connection to remembered device successful"
+                        )
                         onConnectionSuccessful()
                     }
 
@@ -355,7 +363,8 @@ fun ChooseConnectionPage(
                                 connectToDevice(
                                     context,
                                     devicesData["type"] as String,
-                                    selectedDevice
+                                    selectedDevice,
+                                    onEvent = onEvent
                                 )
                                 { success ->
                                     if (success) {
@@ -376,7 +385,7 @@ fun ChooseConnectionPage(
                                         sharedPreferences.edit(commit = true) {
                                             putString(
                                                 selectedDeviceKey,
-                                                if(shouldRememberDevice) selectedDevice else ""
+                                                if (shouldRememberDevice) selectedDevice else ""
                                             )
                                         }
                                         shouldRememberDevice = false
@@ -460,7 +469,7 @@ fun ConnectionPagePreview() {
             Modifier.fillMaxSize(),
             onConnectionSuccessful = {},
             onExitSelection = {},
-            uiState = UIState()
+            uiState = UIState(), onEvent = {}
         )
     }
 }

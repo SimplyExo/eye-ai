@@ -140,7 +140,7 @@ fun EyeAIAppUI(
                         inclusive = false
                     }
                 }
-            }, uiState = uiState)
+            }, uiState = uiState, onEvent = onEvent)
         }
         composable<HomeRoute> {
             HomePage(modifier = Modifier.fillMaxSize(), onOpenSettings = {
