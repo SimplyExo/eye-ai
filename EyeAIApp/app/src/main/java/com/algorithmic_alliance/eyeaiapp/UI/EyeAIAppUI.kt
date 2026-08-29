@@ -1,13 +1,10 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
-import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.core.content.edit
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.navigation.compose.composable
@@ -21,24 +18,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.pages.ConnectionPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.DebugPage
@@ -46,13 +32,9 @@ import com.algorithmic_alliance.eyeaiapp.UI.pages.HomePage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.PermissionPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.SettingsPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.WelcomePage
-import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import android.Manifest
 import android.app.Activity
-import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 
 
 @Serializable
@@ -101,7 +83,7 @@ fun EyeAIAppUI(
                 onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
                 onEvent(UIEvent.OnUpdatePermissionTutorialCompleted(false))
                 onEvent(UIEvent.OnUpdateConnectionTutorialCompleted(false))
-                onEvent(UIEvent.OnUpdateConnectionPageStartedFromSettings(false))
+                onEvent(UIEvent.OnUpdateActionStartedFromSettings(false))
             }
             WelcomePage(
                 modifier = Modifier.fillMaxSize(),
@@ -124,8 +106,8 @@ fun EyeAIAppUI(
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             ConnectionPage(modifier = Modifier.fillMaxSize(), onConnectionSuccessful = {
                 onEvent(UIEvent.OnUpdateConnectionTutorialCompleted(true))
-                if (uiState.connectionPageStartedFromSettings){
-                    onEvent(UIEvent.OnUpdateConnectionPageStartedFromSettings(false))
+                if (uiState.actionStartedFromSettings){
+                    onEvent(UIEvent.OnUpdateActionStartedFromSettings(false))
                     navController.popBackStack()
                 } else if(!sharedPreferences.getBoolean(debugPageActivatedKey, false)) {
                     navController.navigate(
@@ -138,14 +120,14 @@ fun EyeAIAppUI(
                 }
 
             }, onExitSelection = {
-                if(!uiState.connectionPageStartedFromSettings){
+                if(!uiState.actionStartedFromSettings){
                     navController.navigate(WelcomeRoute) {
                         popUpTo(WelcomeRoute) {
                             inclusive = false
                         }
                     }
                 }else{
-                    onEvent(UIEvent.OnUpdateConnectionPageStartedFromSettings(false))
+                    onEvent(UIEvent.OnUpdateActionStartedFromSettings(false))
                     navController.popBackStack()
                 }
             }, uiState = uiState, onEvent = onEvent)

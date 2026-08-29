@@ -133,6 +133,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 onReturnFromSettings()
             }
 
+            is UIEvent.OnUpdateSettingsOpened ->{
+                Log.d(LOG_TAG, "[MainViewModel] OnUpdateSettingsOpened: ${event.value}")
+                _uiState.update { it.copy(settingsOpened = event.value) }
+            }
+
             is UIEvent.OnUpdateAppMissingCameraPermission -> {
                 Log.d(LOG_TAG, "[MainViewModel] OnUpdateAppMissingCameraPermission: ${event.value}")
                 setAppMissingCameraPermission(event.value)
@@ -148,9 +153,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 initCamera(event.previewView, event.lifecycleOwner)
             }
 
-            is UIEvent.OnUpdateConnectionPageStartedFromSettings->{
+            is UIEvent.OnUpdateActionStartedFromSettings->{
                 Log.d(LOG_TAG, "[MainViewModel] OnUpdateConnectionPageStartedFromSettings: ${event.value}")
-                _uiState.update { it.copy(connectionPageStartedFromSettings = event.value) }
+                _uiState.update { it.copy(actionStartedFromSettings = event.value) }
                 Log.d(LOG_TAG, "[MainViewModel] Finished")
             }
 
@@ -416,6 +421,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     @RequiresApi(Build.VERSION_CODES.P)
     fun onResume() {
+        Log.d(LOG_TAG, "[MainViewModel] OnResume")
+        if(_uiState.value.actionStartedFromSettings ||_uiState.value.settingsOpened){
+            Log.d(LOG_TAG, "[MainViewModel] Exited OnResume")
+            return
+        }
+
         if (!hasPermission(Manifest.permission.CAMERA) && _uiState.value.permissionTutorialCompleted) {
             setAppMissingCameraPermission(true)
         }
@@ -430,6 +441,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             else
                 eyeAIApp().getString(R.string.setup_llm_notice)
         )
+
+        CoroutineScope(Dispatchers.IO).launch {
+            Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
+            SpatialAudio.setup(eyeAIApp())
+            SpatialAudio.start()
+        }
+
+        val settings = Settings.load(eyeAIApp())
+        uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+        uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
     }
 
     @RequiresApi(Build.VERSION_CODES.P)

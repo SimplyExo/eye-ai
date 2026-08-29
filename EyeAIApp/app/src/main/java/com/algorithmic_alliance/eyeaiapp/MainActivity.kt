@@ -255,12 +255,6 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         eyeAIApp().updateSettings()
 
-        CoroutineScope(Dispatchers.IO).launch {
-            Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
-            SpatialAudio.setup(this@MainActivity)
-            SpatialAudio.start()
-        }
-
         /*
         permissionManager.requestCameraPermission()
         if (eyeAIApp().settings.enableSpeechRecognition)
@@ -268,11 +262,6 @@ class MainActivity : AppCompatActivity() {
         updateUngrantedPermissionsNotice()
          */
         viewModel.onResume()
-
-        // re-enabling the audio playback in accordance to the settings
-        val settings = Settings.load(this@MainActivity)
-        uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
-        uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 
     }
 

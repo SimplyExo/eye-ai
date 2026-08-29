@@ -44,7 +44,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -86,11 +85,12 @@ fun SettingsPage(
 
     DisposableEffect(Unit) {
         onEvent(UIEvent.OnOpenSettings)
+        onEvent(UIEvent.OnUpdateSettingsOpened(true))
         onDispose {
-            if(!viewModel.uiState.value.connectionPageStartedFromSettings){
+            if(!viewModel.uiState.value.actionStartedFromSettings){
                 onEvent(UIEvent.OnReturnFromSettings)
+                onEvent(UIEvent.OnUpdateSettingsOpened(false))
             }
-
         }
     }
 
@@ -300,7 +300,7 @@ fun ClickSetting(
         Box {
             IconButton(onClick = {
                 if(settingData["title"] == "Standartgeräte ändern"){
-                    onEvent(UIEvent.OnUpdateConnectionPageStartedFromSettings(true))
+                    onEvent(UIEvent.OnUpdateActionStartedFromSettings(true))
                     onOpenConnectionPage()
                 }
 
@@ -600,7 +600,9 @@ fun FileSetting(
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
-        uri ?: return@rememberLauncherForActivityResult
+        if(uri == null){
+            return@rememberLauncherForActivityResult
+        }
 
         try {
             context.contentResolver.takePersistableUriPermission(
