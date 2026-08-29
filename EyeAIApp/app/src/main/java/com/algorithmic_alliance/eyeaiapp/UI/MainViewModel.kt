@@ -427,6 +427,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
+        reloadDebugPage()
         if (!hasPermission(Manifest.permission.CAMERA) && _uiState.value.permissionTutorialCompleted) {
             setAppMissingCameraPermission(true)
         }
