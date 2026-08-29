@@ -44,6 +44,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -86,7 +87,10 @@ fun SettingsPage(
     DisposableEffect(Unit) {
         onEvent(UIEvent.OnOpenSettings)
         onDispose {
-            onEvent(UIEvent.OnReturnFromSettings)
+            if(!viewModel.uiState.value.connectionPageStartedFromSettings){
+                onEvent(UIEvent.OnReturnFromSettings)
+            }
+
         }
     }
 
@@ -295,8 +299,11 @@ fun ClickSetting(
         }
         Box {
             IconButton(onClick = {
-                if(settingData["title"] == "Standartgeräte ändern")
+                if(settingData["title"] == "Standartgeräte ändern"){
+                    onEvent(UIEvent.OnUpdateConnectionPageStartedFromSettings(true))
                     onOpenConnectionPage()
+                }
+
             }) {
                 Icon(
                     painter = painterResource(R.drawable.change_circle_24px),

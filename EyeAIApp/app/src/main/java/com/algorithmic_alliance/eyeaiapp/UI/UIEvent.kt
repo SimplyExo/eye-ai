@@ -32,6 +32,8 @@ sealed interface UIEvent {
     data class OnUpdateAppMissingVoskPermission(val value: Boolean) : UIEvent
     data class OnUpdateAppMissingCameraPermission(val value: Boolean) : UIEvent
 
+    data class OnUpdateConnectionPageStartedFromSettings(val value: Boolean): UIEvent
+
     data class OnUpdateAppMissingSelectedMediaSource(val value: Boolean) : UIEvent
 
     data class UIinitCamera(

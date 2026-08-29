@@ -73,7 +73,6 @@ fun ConnectionPage(
     onEvent: (UIEvent) -> Unit
 ) {
     Log.d(LOG_TAG, "[PermissionPage] Loading ConnectionPage")
-
     val context = LocalContext.current
 
     if (ActivityCompat.checkSelfPermission(

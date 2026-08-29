@@ -148,6 +148,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 initCamera(event.previewView, event.lifecycleOwner)
             }
 
+            is UIEvent.OnUpdateConnectionPageStartedFromSettings->{
+                Log.d(LOG_TAG, "[MainViewModel] OnUpdateConnectionPageStartedFromSettings: ${event.value}")
+                _uiState.update { it.copy(connectionPageStartedFromSettings = event.value) }
+                Log.d(LOG_TAG, "[MainViewModel] Finished")
+            }
+
             is UIEvent.OnUpdateAppMissingSelectedMediaSource -> {
                 setAppMissingSelectedMediaSource(event.value)
             }

@@ -101,8 +101,8 @@ fun EyeAIAppUI(
                 onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
                 onEvent(UIEvent.OnUpdatePermissionTutorialCompleted(false))
                 onEvent(UIEvent.OnUpdateConnectionTutorialCompleted(false))
+                onEvent(UIEvent.OnUpdateConnectionPageStartedFromSettings(false))
             }
-
             WelcomePage(
                 modifier = Modifier.fillMaxSize(),
                 onGetStarted = {
@@ -124,7 +124,10 @@ fun EyeAIAppUI(
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             ConnectionPage(modifier = Modifier.fillMaxSize(), onConnectionSuccessful = {
                 onEvent(UIEvent.OnUpdateConnectionTutorialCompleted(true))
-                if (!sharedPreferences.getBoolean(debugPageActivatedKey, false)) {
+                if (uiState.connectionPageStartedFromSettings){
+                    onEvent(UIEvent.OnUpdateConnectionPageStartedFromSettings(false))
+                    navController.popBackStack()
+                } else if(!sharedPreferences.getBoolean(debugPageActivatedKey, false)) {
                     navController.navigate(
                         HomeRoute
                     ) { popUpTo(WelcomeRoute) { inclusive = false } }
@@ -135,10 +138,15 @@ fun EyeAIAppUI(
                 }
 
             }, onExitSelection = {
-                navController.navigate(WelcomeRoute) {
-                    popUpTo(WelcomeRoute) {
-                        inclusive = false
+                if(!uiState.connectionPageStartedFromSettings){
+                    navController.navigate(WelcomeRoute) {
+                        popUpTo(WelcomeRoute) {
+                            inclusive = false
+                        }
                     }
+                }else{
+                    onEvent(UIEvent.OnUpdateConnectionPageStartedFromSettings(false))
+                    navController.popBackStack()
                 }
             }, uiState = uiState, onEvent = onEvent)
         }
