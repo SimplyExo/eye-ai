@@ -27,6 +27,8 @@ sealed interface UIEvent {
 
     data class OnUpdatePermissionTutorialCompleted(val value: Boolean): UIEvent
 
+    data class OnUpdateConnectionTutorialCompleted(val value: Boolean): UIEvent
+
     data class OnUpdateAppMissingVoskPermission(val value: Boolean) : UIEvent
     data class OnUpdateAppMissingCameraPermission(val value: Boolean) : UIEvent
 

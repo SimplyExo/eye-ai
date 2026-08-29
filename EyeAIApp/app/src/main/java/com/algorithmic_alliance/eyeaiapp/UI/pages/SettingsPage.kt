@@ -72,7 +72,8 @@ fun SettingsPage(
     onReturn: () -> Unit,
     onOpenDebugPage: () -> Unit,
     onOpenHomePage: () -> Unit,
-    onEvent: (UIEvent) -> Unit
+    onEvent: (UIEvent) -> Unit,
+    onOpenConnectionPage: () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -123,12 +124,14 @@ fun SettingsPage(
                         if (entry.key != "Developer Setting") SettingsCategoryCard(
                             categorySettings = entry.value as List<Any>,
                             category = entry.key,
-                            onEvent = onEvent
+                            onEvent = onEvent,
+                            onOpenConnectionPage = onOpenConnectionPage
                         )
                         else DeveloperSettingsCard(
                             categorySettings = entry.value as List<Any>,
                             category = entry.key,
-                            onEvent = onEvent
+                            onEvent = onEvent,
+                            onOpenConnectionPage = onOpenConnectionPage
                         )
                     }
                     item {
@@ -177,7 +180,8 @@ fun DeveloperSettingsCard(
     modifier: Modifier = Modifier,
     categorySettings: List<Any>,
     category: String,
-    onEvent: (UIEvent) -> Unit
+    onEvent: (UIEvent) -> Unit,
+    onOpenConnectionPage: () -> Unit
 ) {
     var developerSettingsEnabled by rememberSaveable { mutableStateOf(false) }
     AnimatedContent(
@@ -201,7 +205,7 @@ fun DeveloperSettingsCard(
             }
         }
         else SettingsCategoryCard(
-            categorySettings = categorySettings, category = category, onEvent = onEvent
+            categorySettings = categorySettings, category = category, onEvent = onEvent, onOpenConnectionPage = onOpenConnectionPage
         )
     }
 }
@@ -211,7 +215,8 @@ fun SettingsCategoryCard(
     modifier: Modifier = Modifier,
     categorySettings: List<Any>,
     category: String,
-    onEvent: (UIEvent) -> Unit
+    onEvent: (UIEvent) -> Unit,
+    onOpenConnectionPage: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -253,8 +258,52 @@ fun SettingsCategoryCard(
                     "Info" -> InfoSetting(
                         modifier = Modifier, settingData = settingData,
                     )
+
+                    "click" -> ClickSetting(settingData = settingData, onEvent = onEvent, onOpenConnectionPage = onOpenConnectionPage)
                 }
             }
+
+        }
+    }
+}
+
+@Composable
+fun ClickSetting(
+    settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit, onOpenConnectionPage: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(settingData.getValue("title") as String, fontSize = 18.sp)
+            if (settingData.getValue("description") as String != "")
+                Text(settingData.getValue("description") as String)
+            if (settingData["title"] == "Standartgeräte ändern") {
+                val sharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+                val standardAudioDevice =
+                    sharedPreferences.getString(stringResource(R.string.selected_audio_device), "")
+                val standardVisionDevice =
+                    sharedPreferences.getString(stringResource(R.string.selected_eye_ai_vision), "")
+                Text("Audiogerät: ${if(standardAudioDevice != "") standardAudioDevice else "   -"}")
+                Text("Vision: ${if (standardVisionDevice != "") standardVisionDevice else "   -"}")
+            }
+        }
+        Box {
+            IconButton(onClick = {
+                if(settingData["title"] == "Standartgeräte ändern")
+                    onOpenConnectionPage()
+            }) {
+                Icon(
+                    painter = painterResource(R.drawable.change_circle_24px),
+                    contentDescription = ""
+                )
+            }
+
 
         }
     }
@@ -447,7 +496,6 @@ fun TextInputSetting(
             if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
         }
         Box {
-
             IconButton(onClick = { showTextFieldDialog = true }) {
                 Icon(
                     painter = painterResource(R.drawable.ink_pen_24px), contentDescription = ""

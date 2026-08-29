@@ -104,6 +104,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 setPermissionTutorialCompleted(event.value)
             }
 
+            is UIEvent.OnUpdateConnectionTutorialCompleted -> {
+                Log.d(
+                    LOG_TAG,
+                    "[MainViewModel] OnUpdateConnectionTutorialCompleted : ${event.value}"
+                )
+                setConnectionTutorialCompleted(event.value)
+            }
+
             UIEvent.UpdateLlmStatusText -> {
                 Log.d(LOG_TAG, "[MainViewModel] UpdateLlmStatusText")
                 val isLLMConfigured = eyeAIApp().settings.googleAiStudioApiKey?.isEmpty() == false
@@ -148,6 +156,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun setPermissionTutorialCompleted(value: Boolean) {
         _uiState.update { it.copy(permissionTutorialCompleted = value) }
+    }
+
+    private fun setConnectionTutorialCompleted(value: Boolean) {
+        _uiState.update { it.copy(connectionTutorialCompleted = value) }
     }
 
     private fun setAppMissingSelectedMediaSource(value: Boolean) {

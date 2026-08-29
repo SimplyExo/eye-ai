@@ -31,7 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 
-@RequiresApi(Build.VERSION_CODES.Q)
+@RequiresApi(Build.VERSION_CODES.S)
 fun connectToDevice(
     context: Context,
     deviceCategory: String,
@@ -45,7 +45,20 @@ fun connectToDevice(
                 LOG_TAG,
                 "[ConnectionPage.connect] Attempting to connect to audio device: '$selectedDevice'"
             )
-            onResult(true)
+            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+            val availableAudioDevices = audioManager.availableCommunicationDevices
+            for (device in availableAudioDevices){
+                if (selectedDevice == "${device.productName} (${audioDeviceTypeName(device.type)})"){
+                    if(audioManager.setCommunicationDevice(device)){
+                        Log.d(LOG_TAG, "[ConnectToDevice] setCommunicationDevice success=true, device=${device.productName}")
+                        onResult(true)
+                    }else{
+                        Log.d(LOG_TAG, "[ConnectToDevice] setCommunicationDevice success=false, device=${device.productName}")
+                        onResult(false)
+                    }
+                }
+            }
         }
 
         "eye-ai-vision" -> {
@@ -191,7 +204,7 @@ fun audioDeviceTypeName(type: Int): String = when (type) {
     AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> "Eingebauter Lautsprecher"
     AudioDeviceInfo.TYPE_WIRED_HEADSET -> "Kabelgebundenes Headset (mit Mikrofon)"
     AudioDeviceInfo.TYPE_WIRED_HEADPHONES -> "Kabelgebundene Kopfhörer (Klinke)"
-    AudioDeviceInfo.TYPE_BLUETOOTH_A2DP -> "Bluetooth-Kopfhörer/Lautsprecher (Media)"
+    AudioDeviceInfo.TYPE_BLUETOOTH_SCO -> "Bluetooth-Headset (Anruf/Sprache)"
     AudioDeviceInfo.TYPE_BLE_HEADSET -> "Bluetooth LE Kopfhörer"
     AudioDeviceInfo.TYPE_USB_HEADSET -> "USB-Kopfhörer"
     AudioDeviceInfo.TYPE_USB_DEVICE -> "USB-Audiogerät"
@@ -201,6 +214,7 @@ fun audioDeviceTypeName(type: Int): String = when (type) {
     else -> "Unbekannt"
 }
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun rememberAudioDeviceState(context: Context): Pair<List<String>, () -> Unit> {
     var devices by remember { mutableStateOf(getAvailableAudioDevices(context)) }
@@ -208,9 +222,11 @@ fun rememberAudioDeviceState(context: Context): Pair<List<String>, () -> Unit> {
     return devices to refresh
 }
 
+@RequiresApi(Build.VERSION_CODES.S)
 fun getAvailableAudioDevices(context: Context): List<String>{
     val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    val availableAudioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+    val availableAudioDevices = audioManager.availableCommunicationDevices
+
     val displayAudioDevices = mutableListOf<String>()
     for (device in availableAudioDevices) {
         val audioDeviceType = audioDeviceTypeName(device.type)

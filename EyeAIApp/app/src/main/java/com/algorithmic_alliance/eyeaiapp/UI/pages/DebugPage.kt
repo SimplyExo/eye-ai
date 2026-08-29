@@ -213,10 +213,12 @@ fun DebugPage(
                             stringResource(R.string.enable_speech_recognition_setting), true
                         )
                     ) {
-                        Column() {
-                            Text(uiState.speechRecognitionPartialResultText)
-                            Text(uiState.speechRecognitionFinalResultText)
-                            Text(uiState.llmResponseText)
+                        Card(modifier = Modifier.padding(8.dp).fillMaxWidth()) {
+                            Column(modifier = Modifier.padding(8.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(uiState.speechRecognitionPartialResultText)
+                                Text(uiState.speechRecognitionFinalResultText)
+                                Text(uiState.llmResponseText)
+                            }
                         }
                     }
                     Card(
@@ -226,7 +228,10 @@ fun DebugPage(
                     ) {
                         if (sharedPreferences.getString(
                                 stringResource(R.string.media_path_setting), ""
-                            ) == "" && sharedPreferences.getString(stringResource(R.string.input_source_setting ),"camera") == "media"
+                            ) == "" && sharedPreferences.getString(
+                                stringResource(R.string.input_source_setting),
+                                "camera"
+                            ) == "media"
                         ) Column(
                             modifier = Modifier
                                 .fillMaxHeight()

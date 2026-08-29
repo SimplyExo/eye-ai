@@ -209,6 +209,13 @@ object UIDataSource {
                 "default" to "english"
             ),
         ),
+        "Device Manager" to listOf(
+            mapOf(
+                "title" to "Standartgeräte ändern",
+                "description" to "",
+                "settingsType" to "click"
+            )
+        ),
         "LLM" to listOf(
             mapOf(
                 "title" to "Google AI Studio API Key",

@@ -54,6 +54,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
 import com.algorithmic_alliance.eyeaiapp.UI.rememberAudioDeviceState
 import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
@@ -61,12 +62,13 @@ import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import kotlin.collections.emptyList
 
 
-@RequiresApi(Build.VERSION_CODES.Q)
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ConnectionPage(
     modifier: Modifier = Modifier,
     onConnectionSuccessful: () -> Unit,
-    onExitSelection: () -> Unit
+    onExitSelection: () -> Unit,
+    uiState: UIState,
 ) {
     Log.d(LOG_TAG, "[PermissionPage] Loading ConnectionPage")
 
@@ -130,18 +132,19 @@ fun ConnectionPage(
             else onConnectionSuccessful()
         },
         goBack = { if (currentlyDisplayedDevices != 0) currentlyDisplayedDevices-- else onExitSelection() },
-        devicesData = devices[currentlyDisplayedDevices] as Map<Any, Any>
+        devicesData = devices[currentlyDisplayedDevices] as Map<Any, Any>, uiState = uiState
     )
 
 }
 
-@RequiresApi(Build.VERSION_CODES.Q)
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ChooseConnectionPage(
     modifier: Modifier = Modifier,
     onConnectionSuccessful: () -> Unit,
     goBack: () -> Unit,
-    devicesData: Map<Any, Any>
+    devicesData: Map<Any, Any>,
+    uiState: UIState,
 ) {
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -180,28 +183,28 @@ fun ChooseConnectionPage(
 
         }
     }
+    if(!uiState.connectionTutorialCompleted){
+        LaunchedEffect(devicesData) {
+            if (devicesData["remember"] == true && (devices.contains(devicesData["selected"]) || devicesData["selected"] == "Handykamera verwenden")) {
+                Log.d(
+                    LOG_TAG,
+                    "[ConnectionPage] Attempting to connect to remembered ${devicesData["type"]} device"
+                )
+                connectToDevice(
+                    context,
+                    devicesData["type"] as String,
+                    devicesData["selected"] as String
+                )
+                { success ->
+                    if (success) {
+                        Log.d(LOG_TAG, "[ConnectionPage] Connection to remembered device successful")
+                        onConnectionSuccessful()
+                    }
 
-    LaunchedEffect(devicesData) {
-        if (devicesData["remember"] == true && (devices.contains(devicesData["selected"]) || devicesData["selected"] == "Handykamera verwenden")) {
-            Log.d(
-                LOG_TAG,
-                "[ConnectionPage] Attempting to connect to remembered ${devicesData["type"]} device"
-            )
-            connectToDevice(
-                context,
-                devicesData["type"] as String,
-                devicesData["selected"] as String
-            )
-            { success ->
-                if (success) {
-                    Log.d(LOG_TAG, "[ConnectionPage] Connection to remembered device successful")
-                    onConnectionSuccessful()
                 }
-
             }
         }
     }
-
 
     Surface(
         modifier = Modifier
@@ -373,7 +376,7 @@ fun ChooseConnectionPage(
                                         sharedPreferences.edit(commit = true) {
                                             putString(
                                                 selectedDeviceKey,
-                                                selectedDevice
+                                                if(shouldRememberDevice) selectedDevice else ""
                                             )
                                         }
                                         shouldRememberDevice = false
@@ -448,7 +451,7 @@ class WifiScanState(
     val rescan: () -> Unit
 )
 
-@RequiresApi(Build.VERSION_CODES.Q)
+@RequiresApi(Build.VERSION_CODES.S)
 @Preview(showBackground = true, name = "ConnectionPagePreview")
 @Composable
 fun ConnectionPagePreview() {
@@ -456,7 +459,8 @@ fun ConnectionPagePreview() {
         ConnectionPage(
             Modifier.fillMaxSize(),
             onConnectionSuccessful = {},
-            onExitSelection = {}
+            onExitSelection = {},
+            uiState = UIState()
         )
     }
 }

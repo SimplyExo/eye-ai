@@ -100,6 +100,7 @@ fun EyeAIAppUI(
                 onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
                 onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
                 onEvent(UIEvent.OnUpdatePermissionTutorialCompleted(false))
+                onEvent(UIEvent.OnUpdateConnectionTutorialCompleted(false))
             }
 
             WelcomePage(
@@ -120,7 +121,9 @@ fun EyeAIAppUI(
             )
         }
         composable<ConnectionRoute> {
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             ConnectionPage(modifier = Modifier.fillMaxSize(), onConnectionSuccessful = {
+                onEvent(UIEvent.OnUpdateConnectionTutorialCompleted(true))
                 if (!sharedPreferences.getBoolean(debugPageActivatedKey, false)) {
                     navController.navigate(
                         HomeRoute
@@ -137,7 +140,7 @@ fun EyeAIAppUI(
                         inclusive = false
                     }
                 }
-            })
+            }, uiState = uiState)
         }
         composable<HomeRoute> {
             HomePage(modifier = Modifier.fillMaxSize(), onOpenSettings = {
@@ -163,7 +166,11 @@ fun EyeAIAppUI(
                         inclusive = false
                     }
                 }
-            }, onEvent = onEvent, viewModel = viewModel)
+            }, onEvent = onEvent, viewModel = viewModel, onOpenConnectionPage = {
+                navController.navigate(
+                    ConnectionRoute
+                )
+            })
         }
         composable<DebugRoute> {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
