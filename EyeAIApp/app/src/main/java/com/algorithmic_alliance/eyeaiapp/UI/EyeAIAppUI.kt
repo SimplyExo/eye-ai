@@ -137,7 +137,7 @@ fun EyeAIAppUI(
                 navController.navigate(
                     SettingsRoute
                 )
-            }, onEvent = onEvent)
+            }, onEvent = onEvent, viewModel = viewModel)
         }
         composable<SettingsRoute> {
             SettingsPage(modifier = Modifier.fillMaxSize(), onReturn = {

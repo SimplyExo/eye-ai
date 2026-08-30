@@ -200,7 +200,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     @RequiresApi(Build.VERSION_CODES.P)
     private fun onOpenSettings() {
         SpatialAudio.stop()
-        eyeAIApp().voskModel.stopListening()
+        stopVoskListening()
 
         eyeAIApp().cameraManager.pauseAnalyzer()
         eyeAIApp().mediaFrameAnalyzer?.shutdown()
@@ -242,6 +242,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         eyeAIApp().voskModel.startListening()
         Log.d(EyeAIApp.APP_LOG_TAG, "User started Vosk Model")
         updateVoskStatusText()
+        _uiState.update { it.copy(voskListening = true) }
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -266,6 +267,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         eyeAIApp().voskModel.stopListening()
         Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
         updateVoskStatusText()
+        _uiState.update { it.copy(voskListening = false) }
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -276,7 +278,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 .initService(
                     ::onPartialSpeechRecognitionResult,
                     ::onFinalSpeechRecognitionResult,
-                    ::onSpeechRecognitionLoaded
+                    ::onSpeechRecognitionLoaded,
+                    {status -> _uiState.update {it.copy(voskListening = status)  }}
                 )
         }
     }
@@ -374,6 +377,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     private suspend fun onSpeechResult(final: String) {
         Log.d(EyeAIApp.APP_LOG_TAG, "onSpeechResult: Creating new StateMachine for input: '$final'")
 
@@ -383,8 +387,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             eyeAIApp().lastLlmJsonResponse,
             { text -> _uiState.update { it.copy(llmResponseText = text) } },
             { text -> _uiState.update { it.copy(llmResponseText = it.llmResponseText + text) } },
-            eyeAIApp().cameraManager.cameraFrameAnalyzer ?: eyeAIApp().mediaFrameAnalyzer
+            eyeAIApp().cameraManager.cameraFrameAnalyzer ?: eyeAIApp().mediaFrameAnalyzer,
         ) {
+            updateVoskStatusText()
             CoroutineScope(Dispatchers.Main).launch {
                 Log.d(
                     EyeAIApp.APP_LOG_TAG,

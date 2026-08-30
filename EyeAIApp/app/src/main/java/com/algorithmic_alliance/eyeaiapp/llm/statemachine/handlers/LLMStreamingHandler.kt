@@ -18,7 +18,6 @@ class LLMStreamingHandler(
 	private val textToSpeechInstance: TextToSpeechInstance,
 	private var setLlmResponseText: (String) -> Unit,
 	private var appendLlmResponseText: (String) -> Unit,
-	//private val llmResponseText: TextView?,
 	private val eyeAIApp: EyeAIApp,
 	private val onStreamingComplete: () -> Unit
 ) {

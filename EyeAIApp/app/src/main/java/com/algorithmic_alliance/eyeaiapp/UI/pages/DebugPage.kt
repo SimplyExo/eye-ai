@@ -53,6 +53,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.remote.creation.dsl.background
 import androidx.compose.remote.creation.dsl.heightIn
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -66,6 +67,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
@@ -83,7 +85,6 @@ fun DebugPage(
     uiState: UIState,
 ) {
     val activity = LocalActivity.current
-    var ttsEnabled by rememberSaveable() { mutableStateOf(false) }
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
@@ -131,12 +132,11 @@ fun DebugPage(
                 if (speechRecognitionEnabled) FloatingActionButton(
                     onClick = {
                         onEvent(UIEvent.VoskListeningChanged)
-                        ttsEnabled = !ttsEnabled
-                        Log.d(LOG_TAG, "[DebugPage] Vosk on: $ttsEnabled")
+                        Log.d(LOG_TAG, "[DebugPage] Vosk on: ${uiState.voskListening}")
                     },
                 ) {
                     Icon(
-                        painter = if (ttsEnabled) painterResource(R.drawable.stop_24px) else painterResource(
+                        painter = if (uiState.voskListening) painterResource(R.drawable.stop_24px) else painterResource(
                             R.drawable.play_arrow_24px
                         ), contentDescription = "Start Vosk"
                     )

@@ -27,6 +27,8 @@ class VoskModel(val context: Context, val modelName: String) {
     private var onPartialResultCallback: (partial: String) -> Unit = {}
     private var onFinalResultCallback: (partial: String) -> Unit = {}
 
+    private var onUpdateVoskUIStatus: (status: Boolean) -> Unit = {}
+
     private var activateSound: MediaPlayer? = null
     private var deactivateSound: MediaPlayer? = null
 
@@ -58,7 +60,7 @@ class VoskModel(val context: Context, val modelName: String) {
             } ?: run {
                 Log.e(EyeAIApp.APP_LOG_TAG, "[VoskModel] failed to parse final result json format")
             }
-
+            onUpdateVoskUIStatus(false) //Callback an das UI, damit auf dem Button das richtige Icon angezeigt werden kann
             deactivateSound?.seekTo(0);
             deactivateSound?.start()
         }
@@ -100,10 +102,12 @@ class VoskModel(val context: Context, val modelName: String) {
     fun initService(
         onPartialResult: (partial: String) -> Unit,
         onFinalResult: (final: String) -> Unit,
-        onModelLoaded: () -> Unit
+        onModelLoaded: () -> Unit,
+        onUpdateVoskUIStatus: (status: Boolean) -> Unit
     ) {
         this.onPartialResultCallback = onPartialResult
         this.onFinalResultCallback = onFinalResult
+        this.onUpdateVoskUIStatus = onUpdateVoskUIStatus
 
         if (model != null) {
             onModelLoaded()
