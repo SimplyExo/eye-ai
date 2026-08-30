@@ -167,16 +167,6 @@ class EyeAIApp : Application() {
 			)
 		}
 
-		if (oldSettings.objectAudioPlaybackLanguage != settings.objectAudioPlaybackLanguage) {
-			Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] ObjectAudioPlaybackLanguage is set to ${settings.objectAudioPlaybackLanguage}")
-			// TODO: move this somewhere else?
-			SpatialAudio.stop()
-			CoroutineScope(Dispatchers.IO).launch {
-				SpatialAudio.setup(this@EyeAIApp)
-				SpatialAudio.start()
-			}
-		}
-
 		val enableNpuChanged = oldSettings.enableNpu != settings.enableNpu
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
