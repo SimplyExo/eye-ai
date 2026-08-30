@@ -87,7 +87,7 @@ fun SettingsPage(
         onEvent(UIEvent.OnOpenSettings)
         onEvent(UIEvent.OnUpdateSettingsOpened(true))
         onDispose {
-            if(!viewModel.uiState.value.actionStartedFromSettings){
+            if (!viewModel.uiState.value.actionStartedFromSettings) {
                 onEvent(UIEvent.OnReturnFromSettings)
                 onEvent(UIEvent.OnUpdateSettingsOpened(false))
             }
@@ -125,18 +125,13 @@ fun SettingsPage(
                     items(
                         items = settingsData.entries.toList(),
                         key = { entry -> entry.key }) { entry ->
-                        if (entry.key != "Developer Setting") SettingsCategoryCard(
-                            categorySettings = entry.value as List<Any>,
-                            category = entry.key,
-                            onEvent = onEvent,
-                            onOpenConnectionPage = onOpenConnectionPage
-                        )
-                        else DeveloperSettingsCard(
-                            categorySettings = entry.value as List<Any>,
-                            category = entry.key,
-                            onEvent = onEvent,
-                            onOpenConnectionPage = onOpenConnectionPage
-                        )
+                        if(entry.key != "Developer Settings" || (entry.key == "Developer Settings" && sharedPreferences.getBoolean(stringResource(R.string.debug_page_activated), false)))
+                            SettingsCategoryCard(
+                                categorySettings = entry.value as List<Any>,
+                                category = entry.key,
+                                onEvent = onEvent,
+                                onOpenConnectionPage = onOpenConnectionPage
+                            )
                     }
                     item {
                         Card(
@@ -177,41 +172,6 @@ fun SettingsPage(
         }
     })
 
-}
-
-@Composable
-fun DeveloperSettingsCard(
-    modifier: Modifier = Modifier,
-    categorySettings: List<Any>,
-    category: String,
-    onEvent: (UIEvent) -> Unit,
-    onOpenConnectionPage: () -> Unit
-) {
-    var developerSettingsEnabled by rememberSaveable { mutableStateOf(false) }
-    AnimatedContent(
-        targetState = developerSettingsEnabled, label = "developer_settings_transition"
-    ) { isEnabled ->
-        if (isEnabled) Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-                .clickable { developerSettingsEnabled = true }
-                .clearAndSetSemantics {}) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    "Enable Developer Settings", fontSize = 22.sp, fontWeight = FontWeight.Bold
-                )
-            }
-        }
-        else SettingsCategoryCard(
-            categorySettings = categorySettings, category = category, onEvent = onEvent, onOpenConnectionPage = onOpenConnectionPage
-        )
-    }
 }
 
 @Composable
@@ -263,7 +223,11 @@ fun SettingsCategoryCard(
                         modifier = Modifier, settingData = settingData,
                     )
 
-                    "click" -> ClickSetting(settingData = settingData, onEvent = onEvent, onOpenConnectionPage = onOpenConnectionPage)
+                    "click" -> ClickSetting(
+                        settingData = settingData,
+                        onEvent = onEvent,
+                        onOpenConnectionPage = onOpenConnectionPage
+                    )
                 }
             }
 
@@ -293,13 +257,13 @@ fun ClickSetting(
                     sharedPreferences.getString(stringResource(R.string.selected_audio_device), "")
                 val standardVisionDevice =
                     sharedPreferences.getString(stringResource(R.string.selected_eye_ai_vision), "")
-                Text("Audiogerät: ${if(standardAudioDevice != "") standardAudioDevice else "   -"}")
+                Text("Audiogerät: ${if (standardAudioDevice != "") standardAudioDevice else "   -"}")
                 Text("Vision: ${if (standardVisionDevice != "") standardVisionDevice else "   -"}")
             }
         }
         Box {
             IconButton(onClick = {
-                if(settingData["title"] == "Standartgeräte ändern"){
+                if (settingData["title"] == "Standartgeräte ändern") {
                     onEvent(UIEvent.OnUpdateActionStartedFromSettings(true))
                     onOpenConnectionPage()
                 }
@@ -600,7 +564,7 @@ fun FileSetting(
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
-        if(uri == null){
+        if (uri == null) {
             return@rememberLauncherForActivityResult
         }
 

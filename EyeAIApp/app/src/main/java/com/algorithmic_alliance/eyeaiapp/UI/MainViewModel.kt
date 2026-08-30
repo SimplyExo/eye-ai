@@ -133,7 +133,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 onReturnFromSettings()
             }
 
-            is UIEvent.OnUpdateSettingsOpened ->{
+            is UIEvent.OnUpdateSettingsOpened -> {
                 Log.d(LOG_TAG, "[MainViewModel] OnUpdateSettingsOpened: ${event.value}")
                 _uiState.update { it.copy(settingsOpened = event.value) }
             }
@@ -153,8 +153,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 initCamera(event.previewView, event.lifecycleOwner)
             }
 
-            is UIEvent.OnUpdateActionStartedFromSettings->{
-                Log.d(LOG_TAG, "[MainViewModel] OnUpdateConnectionPageStartedFromSettings: ${event.value}")
+            is UIEvent.OnUpdateActionStartedFromSettings -> {
+                Log.d(
+                    LOG_TAG,
+                    "[MainViewModel] OnUpdateConnectionPageStartedFromSettings: ${event.value}"
+                )
                 _uiState.update { it.copy(actionStartedFromSettings = event.value) }
                 Log.d(LOG_TAG, "[MainViewModel] Finished")
             }
@@ -213,11 +216,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun startSpatialAudio() {
-        CoroutineScope(Dispatchers.IO).launch {
-            Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
-            SpatialAudio.setup(eyeAIApp())
-            SpatialAudio.start()
-        }
+        Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
+        Log.d(LOG_TAG, "[SpatialAudio] Starting spatial audio")
+        SpatialAudio.setup(eyeAIApp())
+        SpatialAudio.start()
         val settings = Settings.load(eyeAIApp())
         uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
         uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
@@ -396,10 +398,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         eyeAIApp().currentStateMachine = stateMachine
 
         val update = when (currentState) {
-            MainActivity.State.IDLE -> stateMachine.handleIdle(final)
-            MainActivity.State.SETTINGS_MENU -> stateMachine.handleSettingsMenu(final)
-            MainActivity.State.SETTINGS_CHOICE -> stateMachine.handleSettingsChoice(final)
-            MainActivity.State.SETTINGS_ACTION -> stateMachine.handleSettingsAction(final)
+            State.IDLE -> stateMachine.handleIdle(final)
+            State.SETTINGS_MENU -> stateMachine.handleSettingsMenu(final)
+            State.SETTINGS_CHOICE -> stateMachine.handleSettingsChoice(final)
+            State.SETTINGS_ACTION -> stateMachine.handleSettingsAction(final)
         }
 
         // Logging der state transition
@@ -422,7 +424,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     @RequiresApi(Build.VERSION_CODES.P)
     fun onResume() {
         Log.d(LOG_TAG, "[MainViewModel] OnResume")
-        if(_uiState.value.actionStartedFromSettings ||_uiState.value.settingsOpened){
+        if (_uiState.value.actionStartedFromSettings || _uiState.value.settingsOpened) {
             Log.d(LOG_TAG, "[MainViewModel] Exited OnResume")
             return
         }
