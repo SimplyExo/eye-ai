@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Paint
 import android.provider.Contacts
 import android.util.Log
 import android.util.Size
@@ -38,15 +39,19 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.remote.creation.dsl.background
+import androidx.compose.remote.creation.dsl.heightIn
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
@@ -144,110 +149,133 @@ fun DebugPage(
                 }
             }
         }, content = { paddingValues ->
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .fillMaxHeight()
                     .padding(paddingValues),
                 horizontalAlignment = Alignment.CenterHorizontally,
-
+            ) {
+                Card(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(top = 8.dp, bottom = 8.dp, start = 4.dp, end = 4.dp),
                 ) {
-                item {
-                    Card(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .aspectRatio(4f / 3f)
-                    ) {
-                        Box(modifier = Modifier.fillMaxSize()) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        if (sharedPreferences.getString(
+                                stringResource(R.string.input_source_setting), "camera"
+                            ) == "camera" && !sharedPreferences.getBoolean(
+                                stringResource(R.string.show_debug_input_bitmap_setting), false
+                            )
+                        ) CameraPreview(onEvent = onEvent)
+                        if (sharedPreferences.getString(
+                                stringResource(R.string.input_source_setting), "camera"
+                            ) == "media" && !sharedPreferences.getBoolean(
+                                stringResource(R.string.show_debug_input_bitmap_setting), false
+                            )
+                        ) {
+                            MediaPreview(bitmap = uiState.mediaPreviewBitmap, onEvent = onEvent)
                             if (sharedPreferences.getString(
-                                    stringResource(R.string.input_source_setting), "camera"
-                                ) == "camera" && !sharedPreferences.getBoolean(
-                                    stringResource(R.string.show_debug_input_bitmap_setting), false
+                                    stringResource(R.string.media_path_setting), ""
+                                ) == ""
+                            ) Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .padding(8.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    "Bitte in den Einstellungen eine Media-Quelle auswählen!",
+                                    fontSize = 26.sp,
                                 )
-                            ) CameraPreview(onEvent = onEvent)
-                            if (sharedPreferences.getString(
-                                    stringResource(R.string.input_source_setting), "camera"
-                                ) == "media" && !sharedPreferences.getBoolean(
-                                    stringResource(R.string.show_debug_input_bitmap_setting), false
+                            }
+                        }
+                        if (sharedPreferences.getBoolean(
+                                stringResource(R.string.show_debug_input_bitmap_setting), false
+                            )
+                        ) DebugInputPreview(
+                            bitmap = uiState.debugInputPreviewBitmap, onEvent = onEvent
+                        )
+                        ObjectDetectionOverlay(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .padding(8.dp),
+                            uiState.detectedObjects,
+                            cameraResolution = uiState.cameraResolution
+                        )
+                        OCROverlay(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .padding(8.dp),
+                            results = uiState.ocrResults,
+                            cameraResolution = uiState.cameraResolution
+                        )
+                        if (sharedPreferences.getBoolean(
+                                stringResource(R.string.enable_speech_recognition_setting), true
+                            )
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .padding(bottom = 16.dp)
+                                    .align(Alignment.BottomCenter)
+                                    .fillMaxWidth(0.75f)
+                                    .heightIn(min = 50.dp, max = 150.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                        alpha = 0.75f
+                                    )
                                 )
                             ) {
-                                MediaPreview(bitmap = uiState.mediaPreviewBitmap, onEvent = onEvent)
-                                if (sharedPreferences.getString(
-                                        stringResource(R.string.media_path_setting), ""
-                                    ) == ""
-                                ) Column(
+                                LazyColumn(
                                     modifier = Modifier
-                                        .fillMaxHeight()
-                                        .padding(8.dp),
-                                    verticalArrangement = Arrangement.Center,
+                                        .padding(8.dp)
+                                        .fillMaxWidth(),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Text(
-                                        "Bitte in den Einstellungen eine Media-Quelle auswählen!",
-                                        fontSize = 26.sp,
-                                    )
+                                    item {
+                                        Text(uiState.speechRecognitionPartialResultText)
+                                        Text(uiState.speechRecognitionFinalResultText)
+                                        Text(uiState.llmResponseText)
+                                    }
                                 }
                             }
-                            if (sharedPreferences.getBoolean(
-                                    stringResource(R.string.show_debug_input_bitmap_setting), false
-                                )
-                            ) DebugInputPreview(
-                                bitmap = uiState.debugInputPreviewBitmap, onEvent = onEvent
-                            )
-                            ObjectDetectionOverlay(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .padding(8.dp),
-                                uiState.detectedObjects,
-                                cameraResolution = uiState.cameraResolution
-                            )
-                            OCROverlay(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .padding(8.dp),
-                                results = uiState.ocrResults,
-                                cameraResolution = uiState.cameraResolution
-                            )
+
                         }
                     }
-                    if (sharedPreferences.getBoolean(
-                            stringResource(R.string.enable_speech_recognition_setting), true
-                        )
-                    ) {
-                        Card(modifier = Modifier.padding(8.dp).fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(8.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(uiState.speechRecognitionPartialResultText)
-                                Text(uiState.speechRecognitionFinalResultText)
-                                Text(uiState.llmResponseText)
-                            }
-                        }
-                    }
-                    Card(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .aspectRatio(4f / 3f)
-                    ) {
+                }
+                Card(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp, start = 4.dp, end = 4.dp)
+                ) {
+                    Box(Modifier.fillMaxSize()) {
                         if (sharedPreferences.getString(
                                 stringResource(R.string.media_path_setting), ""
                             ) == "" && sharedPreferences.getString(
                                 stringResource(R.string.input_source_setting),
                                 "camera"
                             ) == "media"
-                        ) Column(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .padding(8.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
-                                "Bitte in den Einstellungen eine Media-Quelle auswählen!",
-                                fontSize = 26.sp,
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .padding(8.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    "Bitte in den Einstellungen eine Media-Quelle auswählen!",
+                                    fontSize = 26.sp,
+                                )
+                            }
                         }
-                        Box {
-                            DepthPreview(bitmap = uiState.depthPreviewBitmap)
-                            Text(text = uiState.performanceText, fontSize = 10.sp)
-                        }
+                        DepthPreview(
+                            bitmap = uiState.depthPreviewBitmap,
+                            performanceText = uiState.performanceText
+                        )
                     }
                 }
 
@@ -298,21 +326,28 @@ fun DebugInputPreview(
         Log.d(LOG_TAG, "Loading DebugInputPreview")
         onEvent(UIEvent.UIinitCamera(previewView = null, lifecycleOwner = lifecycleOwner))
     }
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(8.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.Black),
+        contentAlignment = Alignment.Center,
 
-    bitmap?.let {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-            Image(
-                bitmap = it.asImageBitmap(),
-                contentDescription = "Depth preview",
-                modifier = Modifier
-                    .padding(8.dp)
-                    .aspectRatio(1f / 1f)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
+        ) {
+        bitmap?.let {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Image(
+                    bitmap = it.asImageBitmap(),
+                    contentDescription = "Depth preview",
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Fit
 
-            )
+                )
+            }
+
         }
-
     }
 }
 
@@ -328,16 +363,21 @@ fun MediaPreview(
         onEvent(UIEvent.UIinitCamera(previewView = null, lifecycleOwner = lifecycleOwner))
     }
 
-    bitmap?.let {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(8.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.Black),
+        contentAlignment = Alignment.Center,
+    ) {
+        bitmap?.let {
             Image(
                 bitmap = it.asImageBitmap(),
-                contentDescription = "Depth preview",
+                contentDescription = "Media preview",
                 modifier = Modifier
-                    .padding(8.dp)
-                    .aspectRatio(1f / 1f)
                     .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Fit
             )
         }
     }
@@ -345,23 +385,35 @@ fun MediaPreview(
 
 @Composable
 fun DepthPreview(
-    modifier: Modifier = Modifier, bitmap: Bitmap?
+    modifier: Modifier = Modifier, bitmap: Bitmap?, performanceText: String
 ) {
-    bitmap?.let {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-            Image(
-                bitmap = it.asImageBitmap(),
-                contentDescription = "Depth preview",
-                modifier = Modifier
-                    .aspectRatio(1f / 1f)
-                    .padding(8.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-
-            )
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(8.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.Black),
+        contentAlignment = Alignment.Center,
+    ) {
+        bitmap?.let {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Box(modifier = Modifier.aspectRatio(1f/1f)){
+                Image(
+                    bitmap = it.asImageBitmap(),
+                    contentDescription = "Depth preview",
+                    modifier = Modifier
+                        .aspectRatio(1f / 1f)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Fit
+                )
+                    LazyColumn(modifier = Modifier.align(Alignment.TopStart).padding(start = 4.dp, top = 4.dp)) {
+                        item { Text(text = performanceText, fontSize = 8.sp) }
+                    }
+            }}
         }
-    }
 
+
+    }
 }
 
 @Composable
@@ -371,7 +423,6 @@ fun CameraPreview(onEvent: (UIEvent) -> Unit) {
 
     AndroidView(
         modifier = Modifier
-            .aspectRatio(4f / 3f)
             .padding(8.dp)
             .clip(RoundedCornerShape(8.dp)),
         factory = { context ->
