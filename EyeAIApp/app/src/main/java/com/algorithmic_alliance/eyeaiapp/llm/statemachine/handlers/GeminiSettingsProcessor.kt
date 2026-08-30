@@ -2,7 +2,6 @@ package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers
 
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationLabel
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
-import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -59,7 +58,7 @@ class GeminiSettingsExtractor(
 						"settingIntent=$settingIntent outcome=MISSING_VALUE " +
 						"reason=USER_PARAMETER_INCOMPLETE repairAttempted=false"
 				)
-				return SettingsExtractionResult.MissingValue(targetedQuestion(settingIntent))
+				return SettingsExtractionResult.MissingValue(settingIntent.missingOperationQuestion())
 			}
 			is ExtractionResponseAssessment.Invalid -> {
 				trace(
@@ -102,7 +101,7 @@ class GeminiSettingsExtractor(
 								"outcome=MISSING_VALUE reason=USER_PARAMETER_INCOMPLETE " +
 								"repairAttempt=1"
 						)
-						return SettingsExtractionResult.MissingValue(targetedQuestion(settingIntent))
+						return SettingsExtractionResult.MissingValue(settingIntent.missingOperationQuestion())
 					}
 					is ExtractionResponseAssessment.Invalid -> {
 						trace(
@@ -269,14 +268,6 @@ class GeminiSettingsExtractor(
 		}
 	}
 
-	private fun targetedQuestion(settingIntent: SettingIntent): String = when (settingIntent) {
-		SettingIntent.TTS_SPEED -> LLM.SNIPPET_TTS_SPEED
-		SettingIntent.VOICE -> LLM.SNIPPET_VOICE
-		SettingIntent.FREQUENCY -> LLM.SNIPPET_FREQUENCY
-		SettingIntent.BPS -> LLM.SNIPPET_BPS
-		SettingIntent.LEAVE, SettingIntent.NONE -> "Welche Einstellung möchten Sie ändern?"
-	}
-
 	private fun recoveryQuestion(settingIntent: SettingIntent): String = when (settingIntent) {
 		SettingIntent.TTS_SPEED ->
 			"Die gewünschte Sprechgeschwindigkeit konnte nicht zuverlässig ausgewertet werden. " +
@@ -298,8 +289,14 @@ class GeminiSettingsExtractor(
 enum class SettingsConfirmationResult {
 	APPLIED,
 	REJECTED,
-	ABORTED,
+	NOT_APPLIED,
 	UNKNOWN,
+	FAILED
+}
+
+enum class SettingsApplyResult {
+	APPLIED,
+	NOT_APPLIED,
 	FAILED
 }
 
@@ -347,15 +344,15 @@ class LocalSettingsConfirmation(
 		input: String,
 		currentJson: String?,
 		applySettings: suspend (String) -> Boolean
-	): SettingsConfirmationResult {
-		if (ExplicitSettingsFlowAbort.matches(input)) {
-			trace(
-				"[DecisionTrace][StateMachine][SETTINGS_ABORT] " +
-					"state=SETTINGS_ACTION outcome=ABORTED input='$input' " +
-					"evaluator=STATE_MACHINE_CONTROL modelInvoked=false apiCalled=false"
-			)
-			return SettingsConfirmationResult.ABORTED
+	): SettingsConfirmationResult = confirmAndApplyWithResult(input, currentJson) { settingsJson ->
+			if (applySettings(settingsJson)) SettingsApplyResult.APPLIED else SettingsApplyResult.FAILED
 		}
+
+	suspend fun confirmAndApplyWithResult(
+		input: String,
+		currentJson: String?,
+		applySettings: suspend (String) -> SettingsApplyResult
+	): SettingsConfirmationResult {
 		val settingsJson = currentJson ?: run {
 			return SettingsConfirmationResult.FAILED
 		}
@@ -384,20 +381,31 @@ class LocalSettingsConfirmation(
 			null -> return SettingsConfirmationResult.FAILED
 		}
 
-		return if (applySettings(settingsJson)) {
-			trace(
-				"[DecisionTrace][ConfirmationModel][APPLY] " +
-					"role=SETTINGS_CONFIRMATION decision=ACCEPT " +
-					"outcome=APPROVED_AND_APPLIED apiCalled=false"
-			)
-			SettingsConfirmationResult.APPLIED
-		} else {
-			trace(
-				"[DecisionTrace][ConfirmationModel][APPLY] " +
-					"role=SETTINGS_CONFIRMATION decision=ACCEPT " +
-					"outcome=APPROVED_BUT_APPLY_FAILED apiCalled=false"
-			)
-			SettingsConfirmationResult.FAILED
+		return when (applySettings(settingsJson)) {
+			SettingsApplyResult.APPLIED -> {
+				trace(
+					"[DecisionTrace][ConfirmationModel][APPLY] " +
+						"role=SETTINGS_CONFIRMATION decision=ACCEPT " +
+						"outcome=APPROVED_AND_APPLIED apiCalled=false"
+				)
+				SettingsConfirmationResult.APPLIED
+			}
+			SettingsApplyResult.NOT_APPLIED -> {
+				trace(
+					"[DecisionTrace][ConfirmationModel][APPLY] " +
+						"role=SETTINGS_CONFIRMATION decision=ACCEPT " +
+						"outcome=APPROVED_BUT_NOT_APPLIED apiCalled=false"
+				)
+				SettingsConfirmationResult.NOT_APPLIED
+			}
+			SettingsApplyResult.FAILED -> {
+				trace(
+					"[DecisionTrace][ConfirmationModel][APPLY] " +
+						"role=SETTINGS_CONFIRMATION decision=ACCEPT " +
+						"outcome=APPROVED_BUT_APPLY_FAILED apiCalled=false"
+				)
+				SettingsConfirmationResult.FAILED
+			}
 		}
 	}
 }

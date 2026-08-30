@@ -29,6 +29,7 @@ import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.GenericCancellation
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.VoskRestartPolicy
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
@@ -741,15 +742,26 @@ class MainActivity : AppCompatActivity() {
 
 		SpeechManager.stream = stateMachine.getStreamingHandler()
 
+		val previousStateMachine = currentStateMachine
 		currentStateMachine = stateMachine
 
-		val update = when (currentState) {
-			State.IDLE -> stateMachine.handleIdle(final)
-			State.SETTINGS_MENU -> stateMachine.handleSettingsMenu(final)
-			State.SETTINGS_CHOICE -> stateMachine.handleSettingsChoice(final)
-			State.SETTINGS_ACTION -> stateMachine.handleSettingsAction(final)
-			State.SETTINGS_EXTERNAL_CONFIRMATION ->
-				stateMachine.handleSettingsExternalConfirmation(final)
+		val cancellationResponse = GenericCancellation.responseFor(final)
+		val update = if (cancellationResponse != null) {
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"[DecisionTrace][StateMachine][CANCEL] input matched generic cancellation before state dispatch"
+			)
+			previousStateMachine?.getStreamingHandler()?.takeIf { it.isStreaming() }?.stopStreaming()
+			stateMachine.handleCancellation()
+		} else {
+			when (currentState) {
+				State.IDLE -> stateMachine.handleIdle(final)
+				State.SETTINGS_MENU -> stateMachine.handleSettingsMenu(final)
+				State.SETTINGS_CHOICE -> stateMachine.handleSettingsChoice(final)
+				State.SETTINGS_ACTION -> stateMachine.handleSettingsAction(final)
+				State.SETTINGS_EXTERNAL_CONFIRMATION ->
+					stateMachine.handleSettingsExternalConfirmation(final)
+			}
 		}
 
 		if (update.voskRestartPolicy == VoskRestartPolicy.REQUIRE_MANUAL_RESTART) {

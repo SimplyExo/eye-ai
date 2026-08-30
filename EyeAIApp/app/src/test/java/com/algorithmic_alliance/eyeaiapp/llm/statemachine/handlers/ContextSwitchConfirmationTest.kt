@@ -57,18 +57,4 @@ class ContextSwitchConfirmationTest {
 		)
 	}
 
-	@Test
-	fun explicitAbortRemainsSeparateFromTheThreeModelLabels() {
-		var modelLoads = 0
-		val confirmation = ContextSwitchConfirmation({
-			modelLoads++
-			model
-		})
-
-		assertEquals(
-			ContextSwitchConfirmationResult.ABORTED,
-			confirmation.evaluate("Abbrechen.", pending)
-		)
-		assertEquals(0, modelLoads)
-	}
 }

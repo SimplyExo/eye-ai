@@ -110,13 +110,6 @@ object RequestBuilder {
 			put("approval", JSONObject().apply {
 				put("type", "NUMBER")
 			})
-			put("abort_settings_flow", JSONObject().apply {
-				put("type", "BOOLEAN")
-				put(
-					"description",
-					"Nur true bei ausdrücklichem Abbruch des gesamten Einstellungsdialogs, nicht bei einer einfachen Ablehnung."
-				)
-			})
 		}
 	}
 

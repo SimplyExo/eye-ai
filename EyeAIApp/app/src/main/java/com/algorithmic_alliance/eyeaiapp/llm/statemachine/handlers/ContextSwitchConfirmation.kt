@@ -6,7 +6,6 @@ import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 enum class ContextSwitchConfirmationResult {
 	APPROVED,
 	REJECTED,
-	ABORTED,
 	UNKNOWN,
 	FAILED
 }
@@ -21,14 +20,6 @@ class ContextSwitchConfirmation(
 		pendingIntent: PendingExternalIntent
 	): ContextSwitchConfirmationResult {
 		val intent = pendingIntent.intentResult.intent
-		if (ExplicitSettingsFlowAbort.matches(input)) {
-			trace(
-				"[DecisionTrace][StateMachine][SETTINGS_ABORT] " +
-					"state=SETTINGS_EXTERNAL_CONFIRMATION outcome=ABORTED input='$input' " +
-					"evaluator=STATE_MACHINE_CONTROL modelInvoked=false apiCalled=false"
-			)
-			return ContextSwitchConfirmationResult.ABORTED
-		}
 		val question = PendingExternalIntentPresentation.confirmationQuestion(intent)
 		val pendingAction = PendingExternalIntentPresentation.pendingAction(intent)
 		trace(

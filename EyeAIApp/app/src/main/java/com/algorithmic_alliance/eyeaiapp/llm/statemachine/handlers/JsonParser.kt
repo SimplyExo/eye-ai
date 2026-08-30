@@ -250,15 +250,6 @@ class JsonParser {
 		}
 	}
 
-	fun isSettingsFlowAbort(jsonString: String): Boolean {
-		return try {
-			JSONObject(jsonString).optBoolean("abort_settings_flow", false)
-		} catch (e: JSONException) {
-			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in isSettingsFlowAbort", e)
-			false
-		}
-	}
-
 	fun parseExtractedObject(jsonString: String): String? {
 		return try {
 			val jsonObject = JSONObject(jsonString)

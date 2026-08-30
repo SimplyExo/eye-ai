@@ -1,7 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers
 
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModelTestFixture
-import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -60,10 +59,10 @@ class GeminiSettingsProcessorTest {
 	@Test
 	fun incompleteCommandsAskTargetedQuestionWithoutOpeningGeneralMenu() = runBlocking {
 		val examples = listOf(
-			Triple(SettingIntent.FREQUENCY, "Ändere die Frequenz.", LLM.SNIPPET_FREQUENCY),
-			Triple(SettingIntent.VOICE, "Ändere die Stimme.", LLM.SNIPPET_VOICE),
-			Triple(SettingIntent.TTS_SPEED, "Ändere die Geschwindigkeit.", LLM.SNIPPET_TTS_SPEED),
-			Triple(SettingIntent.BPS, "Ändere die Signalrate.", LLM.SNIPPET_BPS)
+			Triple(SettingIntent.FREQUENCY, "Ändere die Frequenz.", SettingIntent.FREQUENCY.missingOperationQuestion()),
+			Triple(SettingIntent.VOICE, "Ändere die Stimme.", SettingIntent.VOICE.missingOperationQuestion()),
+			Triple(SettingIntent.TTS_SPEED, "Ändere die Geschwindigkeit.", SettingIntent.TTS_SPEED.missingOperationQuestion()),
+			Triple(SettingIntent.BPS, "Ändere die Signalrate.", SettingIntent.BPS.missingOperationQuestion())
 		)
 
 		examples.forEach { (settingIntent, originalText, expectedQuestion) ->
@@ -265,6 +264,20 @@ class GeminiSettingsProcessorTest {
 	}
 
 	@Test
+	fun approvedButUnavailableVoiceIsNotReportedAsApplied() = runBlocking {
+		val confirmation = LocalSettingsConfirmation({ confirmationModel }, parser)
+
+		val result = confirmation.confirmAndApplyWithResult(
+			"Ja.",
+			"""{"changed_settings":[{"voice":1}]}"""
+		) {
+			SettingsApplyResult.NOT_APPLIED
+		}
+
+		assertEquals(SettingsConfirmationResult.NOT_APPLIED, result)
+	}
+
+	@Test
 	fun rejectedChangeDoesNotApply() = runBlocking {
 		var applyCount = 0
 		val confirmation = LocalSettingsConfirmation({ confirmationModel }, parser)
@@ -308,20 +321,4 @@ class GeminiSettingsProcessorTest {
 		assertTrue(traces.any { it.contains("sideEffect=NONE clarificationRequired=true") })
 	}
 
-	@Test
-	fun explicitAbortRemainsDistinctFromSimpleRejectionWithoutApplying() = runBlocking {
-		var applyCount = 0
-		val confirmation = LocalSettingsConfirmation({ confirmationModel }, parser)
-
-		val result = confirmation.confirmAndApply(
-			"Abbrechen.",
-			"""{"changed_settings":[{"frequency":700}]}"""
-		) {
-			applyCount++
-			true
-		}
-
-		assertEquals(SettingsConfirmationResult.ABORTED, result)
-		assertEquals(0, applyCount)
-	}
 }

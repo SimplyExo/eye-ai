@@ -17,6 +17,7 @@ import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.PendingExtern
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects.ObjectDetectionHandler
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.RequestedFunction
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingIntent
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.missingOperationQuestion
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingsFlow
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingsHandler
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingsIntentRoute
@@ -107,8 +108,8 @@ class StateMachine(
             is SettingsIntentRoute.Direct -> {
                 logNlpRoute(
                     nlpIntent,
-                    "GEMINI_API",
-                    "DIRECT_SETTINGS_PARAMETER_EXTRACTION"
+                    "LOCAL_SETTINGS_PARSER",
+                    "DIRECT_SETTINGS_PARSE"
                 )
                 handleDirectSettingsRequest(settingsRoute)
             }
@@ -129,10 +130,15 @@ class StateMachine(
                     handleMeasureDistanceWithLLM(final)
                 }
 
-                Intent.REDIRECT_TO_LLM, Intent.ABORT -> {
-                    logNlpRoute(nlpIntent, "GEMINI_API", "INTENT_FALLBACK")
-                    handleWithLLMFallback(final)
-                }
+				Intent.REDIRECT_TO_LLM -> {
+					logNlpRoute(nlpIntent, "GEMINI_API", "INTENT_FALLBACK")
+					handleWithLLMFallback(final)
+				}
+
+				Intent.ABORT -> {
+					logNlpRoute(nlpIntent, "LOCAL_STATE_MACHINE", "GENERIC_CANCEL")
+					handleCancellation()
+				}
 
                 else -> {
                     logNlpRoute(nlpIntent, "GEMINI_API", "INTENT_FALLBACK")
@@ -193,44 +199,19 @@ class StateMachine(
         )
     }
 
-    private fun formatPercentage(probability: Float): String =
-        String.format(Locale.US, "%.2f%%", probability * 100f)
+	private fun formatPercentage(probability: Float): String =
+		String.format(Locale.US, "%.2f%%", probability * 100f)
 
-    private fun isConfidentAbort(intentResult: IntentResult?): Boolean =
-        intentResult?.intent == Intent.ABORT &&
-            intentResult.confidence >= nlpConfidenceThreshold
-
-    private suspend fun abortSettingsFlow(sourceState: State): StateUpdate {
-        Log.d(
-            EyeAIApp.APP_LOG_TAG,
-            "[DecisionTrace][StateMachine][SETTINGS_ABORT] classifier=NLP_V2 " +
-                "state=$sourceState outcome=RETURN_TO_IDLE pendingExternalIntent=cleared"
-        )
-        lastLlmJsonResponse = null
-        streamingHandler.speakAndHandleUi("Okay, ich habe den Einstellungsdialog abgebrochen.")
-        return StateUpdate(State.IDLE, null)
-    }
-
-    private fun classifyAbortForSettingsChoice(input: String): Boolean {
-        val result = classifyIntentWithNLP(input)
-        val accepted = isConfidentAbort(result)
-        val action = if (accepted) {
-            "ABORT_SETTINGS_FLOW"
-        } else {
-            "FORWARD_TO_GEMINI_PARAMETER_EXTRACTION"
-        }
-        val nextEvaluator = if (accepted) "NONE" else "GEMINI_API"
-        Log.d(
-            EyeAIApp.APP_LOG_TAG,
-            "[DecisionTrace][StateMachine][SETTINGS_ABORT_GATE] classifier=NLP_V2 " +
-                "state=SETTINGS_CHOICE top1=${result?.intent} " +
-                "confidence=${formatPercentage(result?.confidence ?: 0f)} " +
-                "threshold=${formatPercentage(nlpConfidenceThreshold)} accepted=$accepted " +
-                "action=$action nextEvaluator=$nextEvaluator " +
-                "nonAbortIntentIgnored=${result != null && result.intent != Intent.ABORT}"
-        )
-        return accepted
-    }
+	suspend fun handleCancellation(): StateUpdate {
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][StateMachine][CANCEL] evaluator=GENERIC_CANCELLATION " +
+				"outcome=RETURN_TO_IDLE pendingContext=cleared"
+		)
+		lastLlmJsonResponse = null
+		streamingHandler.speakAndHandleUi(GenericCancellation.RESPONSE)
+		return StateUpdate(State.IDLE, null)
+	}
 
     private suspend fun handleTextRecognitionDirectly(): StateUpdate {
         val ocrSuccess = cameraFrameAnalyzer?.runOcrAnalysis() ?: false
@@ -303,8 +284,9 @@ class StateMachine(
         Log.d(
             EyeAIApp.APP_LOG_TAG,
             "[DecisionTrace][StateMachine][HANDOFF] classifier=NLP_V2 " +
-                "intent=${intentResult.intent} evaluator=GEMINI_API " +
-                "role=SETTINGS_PARAMETER_EXTRACTION settingIntent=${route.settingIntent} " +
+                "intent=${intentResult.intent} evaluator=LOCAL_SETTINGS_PARSER " +
+                "role=SETTINGS_PARAMETER_EXTRACTION " +
+                "settingIntent=${route.settingIntent} " +
                 "originalText='${intentResult.originalText}'"
         )
 
@@ -317,7 +299,7 @@ class StateMachine(
     }
 
     private suspend fun handleWithLLMFallback(final: String): StateUpdate {
-        // Use LLM as fallback for REDIRECT_TO_LLM, ABORT, or when NLP fails
+        // Use LLM as fallback for REDIRECT_TO_LLM or when NLP fails
         Log.d(
             EyeAIApp.APP_LOG_TAG,
             "[DecisionTrace][Gemini API][EVALUATE] role=INTENT_FALLBACK input='$final'"
@@ -485,15 +467,15 @@ class StateMachine(
                 "probabilitiesPreserved=true renormalized=false"
         )
 
-        return when (route) {
+		return when (route) {
             is SettingsMenuIntentRoute.LocalSetting ->
                 handleLocalSettingsMenuIntent(route.intent)
 
-            is SettingsMenuIntentRoute.ExternalIntent ->
-                requestExternalIntentContextSwitch(intentResult)
+			is SettingsMenuIntentRoute.ExternalIntent ->
+				requestExternalIntentContextSwitch(intentResult)
 
-            SettingsMenuIntentRoute.Abort ->
-                abortSettingsFlow(State.SETTINGS_MENU)
+			SettingsMenuIntentRoute.Abort ->
+				handleCancellation()
 
             SettingsMenuIntentRoute.AlreadyInSettings ->
                 remindUserSettingsAreAlreadyOpen()
@@ -504,11 +486,11 @@ class StateMachine(
     }
 
     private suspend fun handleLocalSettingsMenuIntent(intent: Intent): StateUpdate {
-        val (settingIntent, prompt) = when (intent) {
-            Intent.CHANGE_SPEECH_SPEED -> SettingIntent.TTS_SPEED to LLM.Companion.SNIPPET_TTS_SPEED
-            Intent.CHANGE_SPEAKER -> SettingIntent.VOICE to LLM.Companion.SNIPPET_VOICE
-            Intent.SET_FREQUENCY -> SettingIntent.FREQUENCY to LLM.Companion.SNIPPET_FREQUENCY
-            Intent.SET_BPS -> SettingIntent.BPS to LLM.Companion.SNIPPET_BPS
+        val settingIntent = when (intent) {
+            Intent.CHANGE_SPEECH_SPEED -> SettingIntent.TTS_SPEED
+            Intent.CHANGE_SPEAKER -> SettingIntent.VOICE
+            Intent.SET_FREQUENCY -> SettingIntent.FREQUENCY
+            Intent.SET_BPS -> SettingIntent.BPS
             else -> error("Intent $intent is not a concrete settings intent")
         }
         Log.d(
@@ -516,7 +498,7 @@ class StateMachine(
             "[DecisionTrace][StateMachine][SETTINGS_ROUTE] classifier=NLP_V2 " +
                 "intent=$intent action=LOCAL_SETTINGS_SELECTION nextState=SETTINGS_CHOICE"
         )
-        streamingHandler.speakAndHandleUi(prompt)
+        streamingHandler.speakAndHandleUi(settingIntent.missingOperationQuestion())
         lastLlmJsonResponse = jsonParser.createSettingsContext(settingIntent)
         return StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
     }
@@ -582,12 +564,8 @@ class StateMachine(
         }
     }
 
-    suspend fun handleSettingsChoice(final: String): StateUpdate {
-        if (classifyAbortForSettingsChoice(final)) {
-            return abortSettingsFlow(State.SETTINGS_CHOICE)
-        }
-
-        return settingsHandler.handleSettingsChoice(final, lastLlmJsonResponse) { newJson ->
+	suspend fun handleSettingsChoice(final: String): StateUpdate {
+		return settingsHandler.handleSettingsChoice(final, lastLlmJsonResponse) { newJson ->
             lastLlmJsonResponse = newJson
         }
     }
@@ -648,18 +626,7 @@ class StateMachine(
                 StateUpdate(State.SETTINGS_MENU, null)
             }
 
-            ContextSwitchConfirmationResult.ABORTED -> {
-                Log.d(
-                    EyeAIApp.APP_LOG_TAG,
-                    "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +
-                        "evaluator=STATE_MACHINE_CONTROL apiCalled=false modelInvoked=false " +
-                        "decision=ABORTED confirmation=ABORTED action=RETURN_TO_IDLE " +
-                        "pendingExternalIntent=cleared"
-                )
-                abortSettingsFlow(State.SETTINGS_EXTERNAL_CONFIRMATION)
-            }
-
-            ContextSwitchConfirmationResult.UNKNOWN -> {
+			ContextSwitchConfirmationResult.UNKNOWN -> {
                 Log.d(
                     EyeAIApp.APP_LOG_TAG,
                     "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +

@@ -57,12 +57,6 @@ class SettingsIntentRouterTest {
 		assertSame(SettingsIntentRoute.NotSettings, SettingsIntentRouter.route(result))
 	}
 
-	@Test
-	fun cancellationReturnsDirectFlowToIdleAndGuidedFlowToMenu() {
-		assertEquals(SettingsCancellationDestination.IDLE, SettingsFlow.DIRECT.cancellationDestination())
-		assertEquals(SettingsCancellationDestination.GUIDED_MENU, SettingsFlow.GUIDED.cancellationDestination())
-	}
-
 	private fun intentResult(intent: Intent, originalText: String): IntentResult {
 		val probabilities = FloatArray(Intent.CLASS_ORDER.size)
 		probabilities[intent.ordinal] = 1f

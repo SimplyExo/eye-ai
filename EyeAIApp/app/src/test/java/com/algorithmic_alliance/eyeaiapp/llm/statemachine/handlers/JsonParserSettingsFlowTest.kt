@@ -95,15 +95,9 @@ class JsonParserSettingsFlowTest {
 	}
 
 	@Test
-	fun approvalAndFullSettingsAbortRemainDistinct() {
+	fun approvalRemainsAvailableWithoutSettingsSpecificCancellationState() {
 		assertEquals(true, parser.parseApproval("""{"approval":1}"""))
 		assertEquals(false, parser.parseApproval("""{"approval":0}"""))
 		assertEquals(null, parser.parseApproval("{}"))
-		assertFalse(parser.isSettingsFlowAbort("""{"approval":0}"""))
-		assertTrue(
-			parser.isSettingsFlowAbort(
-				"""{"approval":0,"abort_settings_flow":true}"""
-			)
-		)
 	}
 }

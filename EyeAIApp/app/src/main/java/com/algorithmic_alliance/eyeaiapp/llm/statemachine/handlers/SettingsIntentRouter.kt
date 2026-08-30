@@ -14,16 +14,6 @@ enum class SettingsFlow(val wireValue: String) {
 	}
 }
 
-enum class SettingsCancellationDestination {
-	IDLE,
-	GUIDED_MENU
-}
-
-fun SettingsFlow.cancellationDestination(): SettingsCancellationDestination = when (this) {
-	SettingsFlow.DIRECT -> SettingsCancellationDestination.IDLE
-	SettingsFlow.GUIDED -> SettingsCancellationDestination.GUIDED_MENU
-}
-
 /** Pure routing result used by IDLE before any settings side effect is performed. */
 sealed class SettingsIntentRoute {
 	data object NotSettings : SettingsIntentRoute()

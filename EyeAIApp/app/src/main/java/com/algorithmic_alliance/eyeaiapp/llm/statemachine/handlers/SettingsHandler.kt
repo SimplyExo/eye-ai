@@ -7,10 +7,17 @@ import com.algorithmic_alliance.eyeaiapp.MainActivity.State
 import com.algorithmic_alliance.eyeaiapp.Settings
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationLabel
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
-import com.algorithmic_alliance.eyeaiapp.llm.LLM
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.GenericCancellation
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateUpdate
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.VoskRestartPolicy
+import com.algorithmic_alliance.eyeaiapp.settingsparser.CurrentSettingsState
+import com.algorithmic_alliance.eyeaiapp.settingsparser.LocalSettingsParser
+import com.algorithmic_alliance.eyeaiapp.settingsparser.SettingsCommandExecutor
+import com.algorithmic_alliance.eyeaiapp.settingsparser.SpeakerChoice
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -21,12 +28,13 @@ class SettingsHandler(
 	private val eyeAIApp: EyeAIApp,
 	confirmationModelProvider: () -> ConfirmationModel,
 	private val generateLlmResponse: suspend (String, Boolean) -> String?,
-	private val speakAndHandleUi: suspend (String) -> Unit
+	private val speakAndHandleUi: suspend (String) -> Unit,
+	private val localSettingsParserProvider: () -> LocalSettingsParser? = { eyeAIApp.localSettingsParser },
+	private val localSettingsCommandExecutor: SettingsCommandExecutor = SettingsCommandExecutor()
 ) {
-	private val settingsExtractor = GeminiSettingsExtractor(
+	private val localSettingsDialogFlow = LocalSettingsDialogFlow(
 		jsonParser = jsonParser,
-		trace = ::logDecisionTrace,
-		generateLlmResponse = generateLlmResponse
+		commandExecutor = localSettingsCommandExecutor
 	)
 	private val settingsConfirmation = LocalSettingsConfirmation(
 		confirmationModelProvider = confirmationModelProvider,
@@ -85,25 +93,25 @@ class SettingsHandler(
 
 		return when (settingIntent) {
 			SettingIntent.TTS_SPEED -> {
-				speakAndHandleUi(LLM.Companion.SNIPPET_TTS_SPEED)
+				speakAndHandleUi(settingIntent.missingOperationQuestion())
 				onJsonUpdate(jsonResponse)
 				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
 			}
 
 			SettingIntent.VOICE -> {
-				speakAndHandleUi(LLM.Companion.SNIPPET_VOICE)
+				speakAndHandleUi(settingIntent.missingOperationQuestion())
 				onJsonUpdate(jsonResponse)
 				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
 			}
 
 			SettingIntent.FREQUENCY -> {
-				speakAndHandleUi(LLM.Companion.SNIPPET_FREQUENCY)
+				speakAndHandleUi(settingIntent.missingOperationQuestion())
 				onJsonUpdate(jsonResponse)
 				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
 			}
 
 			SettingIntent.BPS -> {
-				speakAndHandleUi(LLM.Companion.SNIPPET_BPS)
+				speakAndHandleUi(settingIntent.missingOperationQuestion())
 				onJsonUpdate(jsonResponse)
 				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
 			}
@@ -122,52 +130,83 @@ class SettingsHandler(
 		}
 	}
 
+	/**
+	 * Command extraction and every parameter follow-up stay on the local frozen
+	 * parser path. The Gemini callback above is used only by [handleSettingsMenu]
+	 * to choose a guided-menu target.
+	 */
 	suspend fun handleSettingsChoice(
 		input: String,
 		currentJson: String?,
 		onJsonUpdate: (String?) -> Unit
 	): StateUpdate {
-		val currentIntent = currentJson?.let { jsonParser.parseSettingIntent(it) } ?: SettingIntent.NONE
 		val settings = Settings.load(eyeAIApp)
 		val voicePreferences = eyeAIApp.getSharedPreferences("tts_settings", Context.MODE_PRIVATE)
-		val snapshot = CurrentSettingsSnapshot(
-			speechRate = textToSpeechInstance.speechRate,
-			voice = voicePreferences.getInt("tts_voice", 0),
+		val currentState = CurrentSettingsState(
 			frequency = settings.depthAudioFrequency,
-			bps = settings.depthAudioClickIncidence
+			bps = settings.depthAudioClickIncidence.toDouble(),
+			speechSpeed = textToSpeechInstance.speechRate.toDouble(),
+			speaker = when (voicePreferences.getInt("tts_voice", -1)) {
+				1 -> SpeakerChoice.MALE
+				0 -> SpeakerChoice.FEMALE
+				else -> SpeakerChoice.UNSPECIFIED
+			}
 		)
-
-		return when (
-			val result = settingsExtractor.extract(currentIntent, input, currentJson, snapshot)
-		) {
-			SettingsExtractionResult.Failed -> {
-				speakAndHandleUi("LLM-Antwort konnte nicht generiert werden.")
-				StateUpdate(State.SETTINGS_CHOICE, currentJson)
-			}
-
-			is SettingsExtractionResult.MissingValue -> {
-				speakAndHandleUi(result.targetedQuestion)
-				onJsonUpdate(currentJson)
-				StateUpdate(State.SETTINGS_CHOICE, currentJson)
-			}
-
-			is SettingsExtractionResult.InvalidResponse -> {
-				Log.w(
-					EyeAIApp.APP_LOG_TAG,
-					"[DecisionTrace][SettingsHandler][SETTINGS_CHOICE] " +
-						"outcome=INVALID_GEMINI_RESPONSE action=REQUEST_REPHRASE " +
-						"nextState=SETTINGS_CHOICE contextRetained=true"
+		val result = try {
+			withContext(Dispatchers.Default) {
+				localSettingsDialogFlow.process(
+					input = input,
+					currentJson = currentJson,
+					currentState = currentState,
+					parser = localSettingsParserProvider()
 				)
-				speakAndHandleUi(result.recoveryQuestion)
-				onJsonUpdate(currentJson)
-				StateUpdate(State.SETTINGS_CHOICE, currentJson)
 			}
+		} catch (error: Throwable) {
+			if (error is CancellationException) throw error
+			Log.e(
+				EyeAIApp.APP_LOG_TAG,
+				"[DecisionTrace][SettingsParser][ROUTE] outcome=UNAVAILABLE " +
+					"nextEvaluator=NONE role=SETTINGS_PARAMETER_EXTRACTION",
+				error
+			)
+			localSettingsDialogFlow.localRuntimeUnavailable(currentJson)
+		}
 
-			is SettingsExtractionResult.Complete -> {
-				speakAndHandleUi(result.confirmationQuestion)
-				onJsonUpdate(result.json)
-				StateUpdate(State.SETTINGS_ACTION, result.json)
-			}
+		return handleLocalSettingsDialogResult(result, onJsonUpdate)
+	}
+
+	private suspend fun handleLocalSettingsDialogResult(
+		result: LocalSettingsDialogResult,
+		onJsonUpdate: (String?) -> Unit
+	): StateUpdate = when (result) {
+		is LocalSettingsDialogResult.Ready -> {
+			val execution = result.execution
+			Log.i(
+				EyeAIApp.APP_LOG_TAG,
+				"[DecisionTrace][SettingsParser][RESULT] execution=LOCAL apiCalled=false " +
+					"target=${execution.command.target} operation=${execution.command.operation} " +
+					"status=${execution.command.status} action=REQUEST_CONFIRMATION"
+			)
+			speakAndHandleUi(result.confirmationQuestion)
+			onJsonUpdate(result.confirmationJson)
+			StateUpdate(State.SETTINGS_ACTION, result.confirmationJson)
+		}
+
+		is LocalSettingsDialogResult.FollowUp -> {
+			val command = result.command
+			Log.i(
+				EyeAIApp.APP_LOG_TAG,
+				"[DecisionTrace][SettingsParser][RESULT] execution=LOCAL apiCalled=false " +
+					"target=${command?.target ?: result.settingIntent} " +
+					"operation=${command?.operation} " +
+					"status=${result.status ?: result.diagnostic ?: "NEEDS_CLARIFICATION"} " +
+					"diagnostic=${result.diagnostic} action=REQUEST_REPHRASE " +
+					"nextState=SETTINGS_CHOICE " +
+					"contextRetained=${result.retainedContextJson != null}"
+			)
+			speakAndHandleUi(result.question)
+			onJsonUpdate(result.retainedContextJson)
+			StateUpdate(State.SETTINGS_CHOICE, result.retainedContextJson)
 		}
 	}
 
@@ -178,19 +217,6 @@ class SettingsHandler(
 	): StateUpdate {
 
 		if (currentJson != null && jsonParser.isLeaveRequest(currentJson)) {
-			if (ExplicitSettingsFlowAbort.matches(input)) {
-				logConfirmationTransition(
-					role = "LEAVE_SETTINGS_CONFIRMATION",
-					decision = "ABORTED",
-					action = "ABORT_SETTINGS_FLOW",
-					nextState = State.IDLE,
-					contextRetained = false,
-					modelInvoked = false
-				)
-				speakAndHandleUi("Okay, ich habe den Einstellungsdialog abgebrochen.")
-				onJsonUpdate(null)
-				return StateUpdate(State.IDLE, null)
-			}
 			return when (settingsConfirmation.evaluate(input, currentJson)) {
 				ConfirmationLabel.ACCEPT -> {
 					logConfirmationTransition(
@@ -235,9 +261,8 @@ class SettingsHandler(
 			}
 		}
 
-		val settingsFlow = jsonParser.parseSettingsFlow(currentJson)
 		return when (
-			settingsConfirmation.confirmAndApply(input, currentJson, ::applySettings)
+			settingsConfirmation.confirmAndApplyWithResult(input, currentJson, ::applySettings)
 		) {
 			SettingsConfirmationResult.APPLIED -> {
 				logConfirmationTransition(
@@ -258,30 +283,24 @@ class SettingsHandler(
 			}
 
 			SettingsConfirmationResult.REJECTED -> {
+				logConfirmationTransition(
+					"SETTINGS_CONFIRMATION", "REJECT",
+					"CANCEL_SETTINGS_ACTION", State.IDLE, false
+				)
 				onJsonUpdate(null)
-				if (settingsFlow.cancellationDestination() == SettingsCancellationDestination.IDLE) {
-					logConfirmationTransition(
-						"SETTINGS_CONFIRMATION", "REJECT",
-						"CANCEL_SETTING_CHANGE", State.IDLE, false
-					)
-					speakAndHandleUi("Okay, ich habe die Einstellungsänderung abgebrochen.")
-					StateUpdate(State.IDLE, null)
-				} else {
-					logConfirmationTransition(
-						"SETTINGS_CONFIRMATION", "REJECT",
-						"RETURN_TO_SETTINGS_MENU", State.SETTINGS_MENU, false
-					)
-					speakAndHandleUi("Okay, ich habe den Vorgang abgebrochen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
-					StateUpdate(State.SETTINGS_MENU, null)
-				}
+				speakAndHandleUi(GenericCancellation.RESPONSE)
+				StateUpdate(State.IDLE, null)
 			}
 
-			SettingsConfirmationResult.ABORTED -> {
+			SettingsConfirmationResult.NOT_APPLIED -> {
 				logConfirmationTransition(
-					"SETTINGS_CONFIRMATION", "ABORTED",
-					"ABORT_SETTINGS_FLOW", State.IDLE, false, modelInvoked = false
+					"SETTINGS_CONFIRMATION", "ACCEPT",
+					"REJECT_UNAVAILABLE_VOICE", State.IDLE, false
 				)
-				speakAndHandleUi("Okay, ich habe den Einstellungsdialog abgebrochen.")
+				speakAndHandleUi(
+					"Die gewünschte Assistentenstimme ist auf diesem Gerät nicht verfügbar. " +
+						"Die bisherige Stimme bleibt aktiv."
+				)
 				onJsonUpdate(null)
 				StateUpdate(State.IDLE, null)
 			}
@@ -310,7 +329,7 @@ class SettingsHandler(
 		}
 	}
 
-	private suspend fun applySettings(jsonString: String): Boolean {
+	private suspend fun applySettings(jsonString: String): SettingsApplyResult {
 		try {
 			val changedSettings = JSONObject(jsonString).getJSONArray("changed_settings")
 			val settings = Settings.load(eyeAIApp)
@@ -338,7 +357,14 @@ class SettingsHandler(
 
 					setting.has("voice") -> {
 						val voice = setting.getInt("voice")
-						textToSpeechInstance.setVoice(voice)
+						if (!textToSpeechInstance.setVoice(voice)) {
+							Log.w(
+								EyeAIApp.APP_LOG_TAG,
+								"[DecisionTrace][SettingsHandler][APPLY] outcome=NOT_APPLIED " +
+									"setting=VOICE value=$voice"
+							)
+							return SettingsApplyResult.NOT_APPLIED
+						}
 						// Save TTS settings
 						ttsEditor.putInt("tts_voice", voice)
 						Log.d(
@@ -387,10 +413,10 @@ class SettingsHandler(
 
 			// save tts settings
 			ttsEditor.apply()
-			return true
+			return SettingsApplyResult.APPLIED
 		} catch (e: JSONException) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "Fehler bei der Verarbeitung der JSON-Aktion.", e)
-			return false
+			return SettingsApplyResult.FAILED
 		}
 	}
 

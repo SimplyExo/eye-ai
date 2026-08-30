@@ -17,6 +17,7 @@ import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
+import com.algorithmic_alliance.eyeaiapp.settingsparser.LocalSettingsParser
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -89,6 +90,39 @@ class EyeAIApp : Application() {
 		}
 	}
 
+	/**
+	 * The two frozen Clean-v2 interpreters are loaded lazily once, from product
+	 * assets only. SettingsHandler requests this property on a background dispatcher.
+	 */
+	private val localSettingsParserLazy = lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+		val started = System.nanoTime()
+		Log.i(
+			APP_LOG_TAG,
+			"[DecisionTrace][SettingsParser][LOAD] architecture=SPECIALIZED_WORD_OPERATION_CHAR_SPEAKER " +
+				"execution=LOCAL apiCalled=false outcome=STARTED"
+		)
+		try {
+			LocalSettingsParser.fromAssets(this).also {
+				Log.i(
+					APP_LOG_TAG,
+					"[DecisionTrace][SettingsParser][LOAD] execution=LOCAL apiCalled=false " +
+						"outcome=SUCCESS duration=${(System.nanoTime() - started) / 1_000_000}ms"
+				)
+			}
+		} catch (error: Throwable) {
+			Log.e(
+				APP_LOG_TAG,
+				"[DecisionTrace][SettingsParser][LOAD] execution=LOCAL apiCalled=false outcome=FAILED " +
+					"duration=${(System.nanoTime() - started) / 1_000_000}ms",
+				error
+			)
+			throw error
+		}
+	}
+
+	val localSettingsParser: LocalSettingsParser
+		get() = localSettingsParserLazy.value
+
 	/* will not be fully initialized when enableOCR is disabled in settings */
 	var ocrModel = GoogleOCR()
 		private set
@@ -151,6 +185,13 @@ class EyeAIApp : Application() {
 			if (settings.enableOCR)
 				ocrModel.create()
 		}
+	}
+
+	override fun onTerminate() {
+		if (localSettingsParserLazy.isInitialized()) {
+			localSettingsParserLazy.value.close()
+		}
+		super.onTerminate()
 	}
 
 	fun updateSettings() {
