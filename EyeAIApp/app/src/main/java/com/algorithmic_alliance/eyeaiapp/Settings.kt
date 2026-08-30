@@ -12,8 +12,6 @@ data class Settings(
 	var showDebugInputBitmap: Boolean,
 	var enableSpeechRecognition: Boolean,
 	var nlpModel: String,
-	var googleAiStudioApiKey: String?,
-	var customGoogleGenAIStudioEndpoint: String?,
 	var enableObjectDetection: Boolean,
 	var maxObjectDetectionFrameRate: Int?,
 	var enableOCR: Boolean,
@@ -74,16 +72,6 @@ data class Settings(
 				NLPModelInfo.DEFAULT_MODEL_ID
 			).toString()
 			val nlpModel = NLPModelInfo.findById(configuredNlpModel).id
-
-			val googleAiStudioApiKey = sharedPreferences.getString(
-				context.getString(R.string.google_ai_studio_api_key_stetting),
-				null
-			)
-
-			val customGoogleGenAIStudioEndpoint = sharedPreferences.getString(
-				context.getString(R.string.custom_google_gen_ai_studio_endpoint_setting),
-				null
-			)
 
 			val enableObjectDetection = sharedPreferences.getBoolean(
 				context.getString(R.string.enable_object_detection_setting),
@@ -156,8 +144,6 @@ data class Settings(
 				showDebugInputBitmap,
 				enableSpeechRecognition,
 				nlpModel,
-				googleAiStudioApiKey,
-				customGoogleGenAIStudioEndpoint,
 				enableObjectDetection,
 				maxObjectDetectionFrameRate,
 				enableOCR,
@@ -182,8 +168,6 @@ data class Settings(
 		showDebugInputBitmap,
 		enableSpeechRecognition,
 		nlpModel,
-		googleAiStudioApiKey,
-		customGoogleGenAIStudioEndpoint,
 		enableObjectDetection,
 		maxObjectDetectionFrameRate,
 		enableOCR,
@@ -229,17 +213,6 @@ data class Settings(
 			putBoolean(context.getString(R.string.object_playback_setting), objectAudioPlayback)
 			putBoolean(context.getString(R.string.enable_npu_delegate_setting), enableNpu)
 			putInt(context.getString(R.string.jpeg_compression), jpegCompression)
-
-			// Nullable Strings
-			googleAiStudioApiKey?.let {
-				putString(context.getString(R.string.google_ai_studio_api_key_stetting), it)
-			}
-			customGoogleGenAIStudioEndpoint?.let {
-				putString(
-					context.getString(R.string.custom_google_gen_ai_studio_endpoint_setting),
-					it
-				)
-			}
 
 			// Frame Rate Limits
 			maxDepthFrameRate?.let {

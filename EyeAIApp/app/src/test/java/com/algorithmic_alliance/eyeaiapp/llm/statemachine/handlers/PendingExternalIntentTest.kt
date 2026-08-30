@@ -44,8 +44,7 @@ class PendingExternalIntentTest {
 		listOf(
 			Intent.TEXT_RECOGNITION,
 			Intent.OBJECT_DETECTION,
-			Intent.MEASURE_DISTANCE,
-			Intent.REDIRECT_TO_LLM
+			Intent.MEASURE_DISTANCE
 		).forEach { intent ->
 			val question = PendingExternalIntentPresentation.confirmationQuestion(intent)
 			assertTrue(question.startsWith("Sie befinden sich noch in den Einstellungen."))

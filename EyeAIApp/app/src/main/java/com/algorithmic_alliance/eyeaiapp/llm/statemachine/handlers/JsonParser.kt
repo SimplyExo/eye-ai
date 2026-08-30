@@ -13,31 +13,6 @@ class JsonParser {
 		const val SETTINGS_PARAMETER_COMPLETE_KEY = "settings_parameter_complete"
 	}
 
-	fun parseRequestedFunction(jsonString: String): RequestedFunction {
-		return try {
-			val requestedFunctions = JSONObject(jsonString).optJSONObject("requested_functions")
-			when {
-				requestedFunctions?.optBoolean("texterkennung", false) == true -> RequestedFunction.TEXT_RECOGNITION
-				requestedFunctions?.optBoolean("einstellungen", false) == true -> RequestedFunction.SETTINGS
-				requestedFunctions?.optBoolean("objekterkennung", false) == true -> RequestedFunction.OBJECT_DETECTION
-				else -> RequestedFunction.NONE
-			}
-		} catch (e: JSONException) {
-			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseRequestedFunction", e)
-			RequestedFunction.NONE
-		}
-	}
-
-	fun parseObjectQuery(jsonString: String): String? {
-		return try {
-			val query = JSONObject(jsonString).optString("object_query", null)
-			if (query.isNullOrBlank()) null else query.trim()
-		} catch (e: JSONException) {
-			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseObjectQuery", e)
-			null
-		}
-	}
-
 	fun parseSettingIntent(jsonString: String): SettingIntent {
 		return try {
 			SettingIntent.fromWireValue(
@@ -84,7 +59,7 @@ class JsonParser {
 		}
 	}
 
-	/** Carries local flow metadata forward without asking Gemini to reproduce it. */
+	/** Carries local flow metadata forward without losing the original command. */
 	fun carrySettingsContext(jsonResponse: String, currentJson: String?): String {
 		if (parseSettingsFlow(currentJson) != SettingsFlow.DIRECT) return jsonResponse
 
@@ -102,8 +77,8 @@ class JsonParser {
 	}
 
 	/**
-	 * Checks only Gemini's structured response, never the user's natural-language
-	 * input. A missing expected field means that a targeted follow-up is needed.
+	 * Checks a structured local settings result. A missing expected field means
+	 * that a targeted follow-up is needed.
 	 */
 	fun hasExpectedSettingChange(jsonString: String, settingIntent: SettingIntent): Boolean {
 		return normalizedExpectedSettingChange(jsonString, settingIntent) != null
@@ -147,22 +122,6 @@ class JsonParser {
 			SettingIntent.VOICE -> finiteValue == 0.0 || finiteValue == 1.0
 			SettingIntent.FREQUENCY, SettingIntent.BPS -> true
 			SettingIntent.LEAVE, SettingIntent.NONE -> false
-		}
-	}
-
-	fun parseInteractionText(jsonString: String): String? {
-		return try {
-			val obj = JSONObject(jsonString)
-			val txt = obj.optString("interaction_text", "").trim()
-			if (txt.isNotEmpty()) return txt
-
-
-			val direct = obj.optString("text", "").trim()
-			if (direct.isNotEmpty()) return direct
-			null
-		} catch (e: JSONException) {
-			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseInteractionText", e)
-			null
 		}
 	}
 

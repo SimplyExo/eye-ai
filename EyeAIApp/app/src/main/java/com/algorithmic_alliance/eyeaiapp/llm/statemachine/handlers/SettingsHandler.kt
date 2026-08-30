@@ -18,7 +18,6 @@ import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -27,7 +26,6 @@ class SettingsHandler(
 	private val jsonParser: JsonParser,
 	private val eyeAIApp: EyeAIApp,
 	confirmationModelProvider: () -> ConfirmationModel,
-	private val generateLlmResponse: suspend (String, Boolean) -> String?,
 	private val speakAndHandleUi: suspend (String) -> Unit,
 	private val localSettingsParserProvider: () -> LocalSettingsParser? = { eyeAIApp.localSettingsParser },
 	private val localSettingsCommandExecutor: SettingsCommandExecutor = SettingsCommandExecutor()
@@ -64,77 +62,7 @@ class SettingsHandler(
 		)
 	}
 
-	suspend fun handleSettingsMenu(
-		input: String,
-		currentJson: String?,
-		onJsonUpdate: (String?) -> Unit
-	): StateUpdate {
-		// Method when NLP fails
-		// NLP logic majorly in StateMachine.kt
-
-		Log.d(
-			EyeAIApp.APP_LOG_TAG,
-			"[DecisionTrace][Gemini API][CLASSIFY] role=GUIDED_SETTINGS_INTENT input='$input'"
-		)
-		val intentPrompt = eyeAIApp.llm!!.buildSettingsMenuPrompt(input)
-		val jsonResponse = generateLlmResponse(intentPrompt, true)
-
-		if (jsonResponse == null) {
-			speakAndHandleUi("LLM-Antwort konnte nicht generiert werden.")
-			return StateUpdate(State.SETTINGS_MENU, currentJson)
-		}
-
-		val settingIntent = jsonParser.parseSettingIntent(jsonResponse)
-		Log.d(
-			EyeAIApp.APP_LOG_TAG,
-			"[DecisionTrace][Gemini API][RESULT] role=GUIDED_SETTINGS_INTENT " +
-				"settingIntent=$settingIntent"
-		)
-
-		return when (settingIntent) {
-			SettingIntent.TTS_SPEED -> {
-				speakAndHandleUi(settingIntent.missingOperationQuestion())
-				onJsonUpdate(jsonResponse)
-				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
-			}
-
-			SettingIntent.VOICE -> {
-				speakAndHandleUi(settingIntent.missingOperationQuestion())
-				onJsonUpdate(jsonResponse)
-				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
-			}
-
-			SettingIntent.FREQUENCY -> {
-				speakAndHandleUi(settingIntent.missingOperationQuestion())
-				onJsonUpdate(jsonResponse)
-				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
-			}
-
-			SettingIntent.BPS -> {
-				speakAndHandleUi(settingIntent.missingOperationQuestion())
-				onJsonUpdate(jsonResponse)
-				StateUpdate(State.SETTINGS_CHOICE, jsonResponse)
-			}
-
-			SettingIntent.LEAVE -> {
-				val syntheticLeave = createLeaveSettingsJson()
-				speakAndHandleUi("Möchten Sie die Einstellungen wirklich verlassen?")
-				onJsonUpdate(syntheticLeave)
-				StateUpdate(State.SETTINGS_ACTION, syntheticLeave)
-			}
-
-			SettingIntent.NONE -> {
-				speakAndHandleUi("Ich habe das leider nicht verstanden. Sie können die Sprechgeschwindigkeit, die Stimme, die Frequenz, die BPS anpassen oder die Einstellungen verlassen.")
-				StateUpdate(State.SETTINGS_MENU, currentJson)
-			}
-		}
-	}
-
-	/**
-	 * Command extraction and every parameter follow-up stay on the local frozen
-	 * parser path. The Gemini callback above is used only by [handleSettingsMenu]
-	 * to choose a guided-menu target.
-	 */
+	/** Command extraction and every parameter follow-up use the local frozen parser path. */
 	suspend fun handleSettingsChoice(
 		input: String,
 		currentJson: String?,
@@ -419,16 +347,5 @@ class SettingsHandler(
 			return SettingsApplyResult.FAILED
 		}
 	}
-
-	private fun createLeaveSettingsJson(): String {
-		return JSONObject().apply {
-			put("changed_settings", JSONArray().apply {
-				put(JSONObject().apply {
-					put("leave", true)
-				})
-			})
-		}.toString()
-	}
-
 
 }

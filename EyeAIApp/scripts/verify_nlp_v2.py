@@ -80,9 +80,9 @@ SETTINGS_MENU_UTTERANCES = [
     ("Doch nicht.", "ABORT"),
     ("Lass gut sein.", "ABORT"),
 ]
-KNOWN_SETTINGS_MENU_FALLBACKS = [
+KNOWN_SETTINGS_MENU_UNRESOLVED = [
     # The unchanged M0_T1 model has no confident top-1 for this isolated noun.
-    # Android therefore keeps the existing 0.60 path to Gemini settings routing.
+    # Android therefore keeps the existing 0.60 path and reports the input locally.
     ("Signalrate.", "OPEN_SETTINGS", 0.60),
 ]
 FROZEN_ENCODINGS = {
@@ -273,7 +273,7 @@ def verify_default_pipeline(tokenizer: FrozenTokenizer) -> None:
         print(f"  {actual_intent:22} {probabilities[top_index]:.6f}  {original_text!r}")
 
     for original_text, expected_top_intent, confidence_threshold in (
-        KNOWN_SETTINGS_MENU_FALLBACKS
+        KNOWN_SETTINGS_MENU_UNRESOLVED
     ):
         probabilities = infer(
             interpreter,
@@ -286,7 +286,7 @@ def verify_default_pipeline(tokenizer: FrozenTokenizer) -> None:
         assert actual_intent == expected_top_intent, (original_text, actual_intent)
         assert probabilities[top_index] < confidence_threshold
         print(
-            f"  {'GEMINI_FALLBACK':22} {probabilities[top_index]:.6f}  "
+            f"  {'LOCAL_UNRESOLVED':22} {probabilities[top_index]:.6f}  "
             f"{original_text!r} (NLP top-1: {actual_intent})"
         )
 
@@ -304,7 +304,7 @@ def main() -> int:
         len(KNOWN_UTTERANCES)
         + len(DIRECT_SETTINGS_UTTERANCES)
         + len(SETTINGS_MENU_UTTERANCES)
-        + len(KNOWN_SETTINGS_MENU_FALLBACKS)
+        + len(KNOWN_SETTINGS_MENU_UNRESOLVED)
     )
     print(
         f"Validated 8 models, 2 frozen tokenizers, and "

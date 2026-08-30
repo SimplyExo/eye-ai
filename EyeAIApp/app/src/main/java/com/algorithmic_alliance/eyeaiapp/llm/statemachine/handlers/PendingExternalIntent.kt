@@ -72,8 +72,6 @@ object PendingExternalIntentPresentation {
 		Intent.TEXT_RECOGNITION -> "die Einstellungen verlassen und die Texterkennung ausführen"
 		Intent.OBJECT_DETECTION -> "die Einstellungen verlassen und die Objekterkennung ausführen"
 		Intent.MEASURE_DISTANCE -> "die Einstellungen verlassen und die Entfernung messen"
-		Intent.REDIRECT_TO_LLM ->
-			"die Einstellungen verlassen und die ursprüngliche Anfrage ausführen"
 		else -> throw IllegalArgumentException("Intent $intent is not external to settings")
 	}
 
@@ -81,7 +79,6 @@ object PendingExternalIntentPresentation {
 			Intent.TEXT_RECOGNITION -> "die Texterkennung ausführen"
 			Intent.OBJECT_DETECTION -> "die Objekterkennung ausführen"
 			Intent.MEASURE_DISTANCE -> "die Entfernung messen"
-			Intent.REDIRECT_TO_LLM -> "Ihre ursprüngliche Anfrage ausführen"
 			else -> throw IllegalArgumentException("Intent $intent is not external to settings")
 		}
 }

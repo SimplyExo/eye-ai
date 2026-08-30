@@ -1,6 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers
 
-import com.algorithmic_alliance.eyeaiapp.llm.LLM
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.LocalInteractionMessages
 import com.algorithmic_alliance.eyeaiapp.nlp.Intent
 import com.algorithmic_alliance.eyeaiapp.nlp.IntentResult
 import org.junit.Assert.assertEquals
@@ -42,8 +42,7 @@ class SettingsMenuIntentRouterTest {
 		val globalIntents = listOf(
 			Intent.TEXT_RECOGNITION,
 			Intent.OBJECT_DETECTION,
-			Intent.MEASURE_DISTANCE,
-			Intent.REDIRECT_TO_LLM
+			Intent.MEASURE_DISTANCE
 		)
 
 		globalIntents.forEach { intent ->
@@ -54,6 +53,18 @@ class SettingsMenuIntentRouterTest {
 			assertEquals(intent, route.intent)
 			assertEquals(result.confidence, route.confidence)
 		}
+	}
+
+	@Test
+	fun redirectToLlmIsHandledAsLocalUnresolvedCommand() {
+		val route = SettingsMenuIntentRouter.route(oneHotResult(Intent.REDIRECT_TO_LLM), threshold)
+
+		assertSame(SettingsMenuIntentRoute.Unresolved, route)
+		assertEquals(
+			"Ich habe den Befehl nicht eindeutig verstanden. Bitte versuchen Sie es noch einmal.",
+			LocalInteractionMessages.UNRESOLVED_COMMAND
+		)
+		assertTrue(!SettingsMenuIntentRouter.isExternalIntent(Intent.REDIRECT_TO_LLM))
 	}
 
 	@Test
@@ -95,7 +106,7 @@ class SettingsMenuIntentRouterTest {
 	}
 
 	@Test
-	fun settingsCandidateBelowExistingThresholdUsesGeminiFallback() {
+	fun settingsCandidateBelowThresholdIsUnresolved() {
 		val route = SettingsMenuIntentRouter.route(
 			SettingsMenuIntentEvidence(
 				topIntent = Intent.SET_FREQUENCY,
@@ -106,15 +117,11 @@ class SettingsMenuIntentRouterTest {
 			threshold
 		)
 
-		assertTrue(route is SettingsMenuIntentRoute.GeminiFallback)
-		assertEquals(
-			0.59f,
-			(route as SettingsMenuIntentRoute.GeminiFallback).bestSettingsConfidence
-		)
+		assertSame(SettingsMenuIntentRoute.Unresolved, route)
 	}
 
 	@Test
-	fun currentSignalrateModelEvidenceUsesExistingGeminiFallback() {
+	fun ambiguousModelEvidenceIsUnresolved() {
 		val route = SettingsMenuIntentRouter.route(
 			SettingsMenuIntentEvidence(
 				topIntent = Intent.OPEN_SETTINGS,
@@ -125,14 +132,7 @@ class SettingsMenuIntentRouterTest {
 			threshold
 		)
 
-		assertTrue(route is SettingsMenuIntentRoute.GeminiFallback)
-		val fallbackLlm = object : LLM {
-			override fun generate(command: String, structured: Boolean): String = ""
-		}
-		assertTrue(
-			fallbackLlm.buildSettingsMenuPrompt("Signalrate.")
-				.contains("Signalrate")
-		)
+		assertSame(SettingsMenuIntentRoute.Unresolved, route)
 	}
 
 	@Test

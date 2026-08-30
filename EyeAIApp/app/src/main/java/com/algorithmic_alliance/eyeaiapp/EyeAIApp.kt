@@ -10,8 +10,6 @@ import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
-import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
-import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
@@ -42,10 +40,6 @@ class EyeAIApp : Application() {
 
 	/* will not load the model or listen if enableSpeechRecognition is disabled in settings, needs to be started manually inside MainActivity */
 	lateinit var voskModel: VoskModel
-		private set
-
-	/* can be [null] if googleAiStudioApiKey is not set in settings */
-	var llm: LLM? = null
 		private set
 
 	/* will not be fully created if enableObjectDetection is disabled in settings */
@@ -168,11 +162,6 @@ class EyeAIApp : Application() {
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
 
-			settings.googleAiStudioApiKey?.let { apiKey ->
-				if (!apiKey.isEmpty())
-					llm = GoogleAIStudioLLM(apiKey, settings.customGoogleGenAIStudioEndpoint)
-			}
-
 			// Yolo Model erstellen
 			if (settings.enableObjectDetection) {
 				yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
@@ -244,16 +233,6 @@ class EyeAIApp : Application() {
 			if (oldSettings.enableSpeechRecognition != settings.enableSpeechRecognition) {
 				if (!settings.enableSpeechRecognition) {
 					voskModel.closeService()
-				}
-			}
-
-			if (oldSettings.googleAiStudioApiKey != settings.googleAiStudioApiKey || oldSettings.customGoogleGenAIStudioEndpoint != settings.customGoogleGenAIStudioEndpoint) {
-				val apiKey = settings.googleAiStudioApiKey
-				val customEndpoint = settings.customGoogleGenAIStudioEndpoint
-				llm = if (apiKey != null && !apiKey.isEmpty()) {
-					GoogleAIStudioLLM(apiKey, customEndpoint)
-				} else {
-					null
 				}
 			}
 

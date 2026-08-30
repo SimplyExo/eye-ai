@@ -27,7 +27,7 @@ class LocalSettingsDialogFlowTest {
 	)
 
 	@Test
-	fun `complete command enters the existing confirmation path without a Gemini dependency`() {
+	fun `complete command enters the existing local confirmation path`() {
 		val context = jsonParser.createSettingsContext(
 			SettingIntent.FREQUENCY,
 			SettingsFlow.DIRECT,
@@ -200,7 +200,7 @@ class LocalSettingsDialogFlowTest {
 	}
 
 	@Test
-	fun `unavailable local parser requests a retained local retry instead of Gemini fallback`() {
+	fun `unavailable local parser requests a retained local retry`() {
 		val context = jsonParser.createSettingsContext(SettingIntent.FREQUENCY)
 
 		val result = flow.process(

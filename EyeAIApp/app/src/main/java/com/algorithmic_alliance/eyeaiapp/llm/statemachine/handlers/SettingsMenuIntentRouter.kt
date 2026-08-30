@@ -24,11 +24,7 @@ sealed class SettingsMenuIntentRoute {
 
 	data object Abort : SettingsMenuIntentRoute()
 	data object AlreadyInSettings : SettingsMenuIntentRoute()
-
-	data class GeminiFallback(
-		val bestSettingsIntent: Intent?,
-		val bestSettingsConfidence: Float
-	) : SettingsMenuIntentRoute()
+	data object Unresolved : SettingsMenuIntentRoute()
 }
 
 /**
@@ -47,8 +43,7 @@ object SettingsMenuIntentRouter {
 	private val externalIntents = setOf(
 		Intent.TEXT_RECOGNITION,
 		Intent.OBJECT_DETECTION,
-		Intent.MEASURE_DISTANCE,
-		Intent.REDIRECT_TO_LLM
+		Intent.MEASURE_DISTANCE
 	)
 
 	fun route(
@@ -64,6 +59,10 @@ object SettingsMenuIntentRouter {
 		evidence: SettingsMenuIntentEvidence,
 		confidenceThreshold: Float
 	): SettingsMenuIntentRoute {
+		if (evidence.topIntent == Intent.REDIRECT_TO_LLM) {
+			return SettingsMenuIntentRoute.Unresolved
+		}
+
 		if (evidence.topConfidence >= confidenceThreshold) {
 			when (evidence.topIntent) {
 				in externalIntents -> return SettingsMenuIntentRoute.ExternalIntent(
@@ -92,10 +91,7 @@ object SettingsMenuIntentRouter {
 			}
 		}
 
-		return SettingsMenuIntentRoute.GeminiFallback(
-			bestSettingsIntent = evidence.bestSettingsIntent,
-			bestSettingsConfidence = evidence.bestSettingsConfidence
-		)
+		return SettingsMenuIntentRoute.Unresolved
 	}
 
 	fun evidenceFrom(intentResult: IntentResult): SettingsMenuIntentEvidence {

@@ -90,16 +90,6 @@
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="LLM">
-        <EditTextPreference
-            app:key="@string/google_ai_studio_api_key_stetting"
-            app:title="Google AI Studio API Key" />
-
-        <EditTextPreference
-            app:key="@string/custom_google_gen_ai_studio_endpoint_setting"
-            app:title="Custom Google Gen AI Studio endpoint\n(for testing / mocking)" />
-    </PreferenceCategory>
-
     <PreferenceCategory app:title="Object Detection">
         <CheckBoxPreference
             app:defaultValue="true"

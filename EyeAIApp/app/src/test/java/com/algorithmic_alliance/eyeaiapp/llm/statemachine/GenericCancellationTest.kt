@@ -6,8 +6,8 @@ import org.junit.Test
 
 class GenericCancellationTest {
 	@Test
-	fun cancellationTextIsExactForSettingsLlmRedirectAndGenericFlows() {
-		val contexts = listOf("settings", "llm-redirect", "generic")
+	fun cancellationTextIsExactForSettingsRedirectAndGenericFlows() {
+		val contexts = listOf("settings", "redirect", "generic")
 
 		contexts.forEach { _ ->
 			assertEquals(

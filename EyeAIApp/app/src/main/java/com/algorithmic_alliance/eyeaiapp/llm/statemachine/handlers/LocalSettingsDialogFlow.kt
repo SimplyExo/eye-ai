@@ -10,8 +10,8 @@ import com.algorithmic_alliance.eyeaiapp.settingsparser.SettingTarget
 import com.algorithmic_alliance.eyeaiapp.settingsparser.SettingsCommandExecutor
 
 /**
- * Pure settings-choice dialog routing. It deliberately owns no Gemini callback:
- * every command and every follow-up is handled by the frozen local parser.
+ * Pure settings-choice dialog routing. Every command and every follow-up is
+ * handled by the frozen local parser.
  */
 internal sealed interface LocalSettingsDialogResult {
 	data class Ready(

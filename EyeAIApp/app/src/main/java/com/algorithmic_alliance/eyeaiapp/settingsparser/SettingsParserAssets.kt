@@ -72,12 +72,15 @@ object SettingsParserAssetContract {
 				"Frozen settings-parser asset SHA mismatch: $file"
 			}
 		}
-		verifyContract(Files.readString(directory.resolve(fileName(CONTRACT_ASSET))))
+		verifyContract(readUtf8(directory.resolve(fileName(CONTRACT_ASSET))))
 		return VerifiedAssets(
-			wordTokenizerJson = Files.readString(directory.resolve(fileName(WORD_TOKENIZER_ASSET))),
-			characterTokenizerJson = Files.readString(directory.resolve(fileName(CHARACTER_TOKENIZER_ASSET)))
+			wordTokenizerJson = readUtf8(directory.resolve(fileName(WORD_TOKENIZER_ASSET))),
+			characterTokenizerJson = readUtf8(directory.resolve(fileName(CHARACTER_TOKENIZER_ASSET)))
 		)
 	}
+
+	private fun readUtf8(file: Path): String =
+		String(Files.readAllBytes(file), Charsets.UTF_8)
 
 	private fun verifyContract(serialized: String) {
 		val contract = JSONObject(serialized)

@@ -63,7 +63,7 @@ class JsonParserSettingsFlowTest {
 	}
 
 	@Test
-	fun directMetadataSurvivesGeminiExtraction() {
+	fun directMetadataSurvivesLocalSettingsResult() {
 		val originalText = "Stell die Stimme auf männlich."
 		val context = parser.createSettingsContext(
 			SettingIntent.VOICE,
