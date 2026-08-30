@@ -185,7 +185,7 @@ object UIDataSource {
                 "default" to true
             ),
             mapOf(
-                "title" to "Frequency",
+                "title" to "Audio-Frequency",
                 "description" to "Controls frequency used for depth mapping",
                 "settingsType" to "slider",
                 "settingsOption" to mapOf("min" to 100, "max" to 4000),

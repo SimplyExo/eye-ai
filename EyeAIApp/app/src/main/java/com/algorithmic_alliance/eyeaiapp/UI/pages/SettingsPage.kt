@@ -433,7 +433,10 @@ fun SliderSetting(
             if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
             Slider(
                 value = currentValue.toFloat(), onValueChange = {
-                    currentValue = it.roundToInt()
+                    if(settingData.getValue("title") == "Audio-Frequency")
+                        currentValue = (it / 10.0).roundToInt() * 10
+                    else
+                        currentValue = it.roundToInt()
                     Log.d(
                         LOG_TAG,
                         "[SettingsPage.SliderSetting] Changed setting $settingKey to $currentValue"
