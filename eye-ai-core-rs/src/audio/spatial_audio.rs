@@ -325,7 +325,7 @@ fn object_audio_thread(
 	);
 
 	let mut source = context.new_static_source().unwrap();
-	source.set_gain(0.5).unwrap();
+	source.set_gain(1.0).unwrap();
 
 	let mut sound_buffer: Vec<Mono<i16>> = Vec::new();
 
@@ -357,6 +357,9 @@ fn object_audio_thread(
 		);
 		source.set_buffer(buffer).unwrap();
 		source.set_position(source_data.position).unwrap();
+		source
+			.set_gain(get_gain_for_distance(source_data.distance))
+			.unwrap();
 		source.play();
 
 		while source.state() == SourceState::Playing {
@@ -460,8 +463,42 @@ fn process_object_detection_data(
 			sound_begin: object_label_data.sample_begin,
 			sound_end: object_label_data.sample_end,
 			position: sound_origin,
+			distance,
 		});
 	}
 
 	audio_source_data
+}
+
+fn get_gain_for_distance(distance: f32) -> f32 {
+	const CLOSEST_DISTANCE: f32 = 1.0;
+	const FARTHEST_DISTANCE: f32 = 3.5;
+	const GAIN_CLOSE: f32 = 1.0;
+	const GAIN_FAR: f32 = 0.2;
+
+	math_utils::remap(
+		distance,
+		(CLOSEST_DISTANCE, FARTHEST_DISTANCE),
+		(GAIN_CLOSE, GAIN_FAR),
+	)
+}
+
+/// https://gist.github.com/laundmo/cb06630109e5e1100f5a2758dfb67cfd
+mod math_utils {
+	#[inline(always)]
+	pub fn lerp(value: f32, from: f32, to: f32) -> f32 {
+		(1.0 - value) * from + value * to
+	}
+	#[inline(always)]
+	pub fn inv_lerp(value: f32, from: f32, to: f32) -> f32 {
+		(value - from) / (to - from)
+	}
+	#[inline(always)]
+	pub fn remap(value: f32, from_range: (f32, f32), to_range: (f32, f32)) -> f32 {
+		lerp(
+			inv_lerp(value, from_range.0, from_range.1),
+			to_range.0,
+			to_range.1,
+		)
+	}
 }
