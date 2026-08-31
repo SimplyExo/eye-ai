@@ -206,6 +206,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun onOpenSettings() {
         SpatialAudio.stop()
         stopVoskListening()
+        eyeAIApp().textToSpeechInstance.stop()
 
         eyeAIApp().cameraManager.pauseAnalyzer()
         eyeAIApp().mediaFrameAnalyzer?.shutdown()
