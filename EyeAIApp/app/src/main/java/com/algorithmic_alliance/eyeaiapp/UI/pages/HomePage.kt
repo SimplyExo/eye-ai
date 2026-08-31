@@ -41,8 +41,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
 
@@ -52,8 +54,9 @@ fun HomePage(
     modifier: Modifier = Modifier,
     onOpenSettings: () -> Unit,
     onEvent: (UIEvent) -> Unit,
-    uiState: UIState,
+    viewModel: MainViewModel,
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     Log.d(LOG_TAG, "[HomePage] Loading HomePage")
@@ -106,10 +109,8 @@ fun HomePage(
             if (speechRecognitionEnabled) FloatingActionButton(
                 onClick = {
                     onEvent(UIEvent.VoskListeningChanged)
-                    Log.d(LOG_TAG, "[DebugPage] Vosk on: ${uiState.voskListening}")
                 },
             ) {
-                Log.d(LOG_TAG, "[Homepage] ${uiState.llmSpeaking}")
                 Icon(
                     painter = if (uiState.voskListening) {
                         painterResource(R.drawable.stop_24px)
@@ -132,13 +133,13 @@ fun HomePage(
     }, content = { paddingValues ->
         LazyVerticalGrid(modifier = Modifier.padding(paddingValues), columns = GridCells.Fixed(2)) {
             item {
-                VoskStatusCard(uiState = uiState)
+                VoskStatusCard(viewModel = viewModel)
             }
             item {
-                DepthStatusCard(uiState = uiState)
+                DepthStatusCard(viewModel = viewModel)
             }
-            item { ObjectStatusCard(uiState = uiState) }
-            item { VisionStatusCard(uiState = uiState) }
+            item { ObjectStatusCard(viewModel = viewModel) }
+            item { VisionStatusCard(viewModel = viewModel) }
 
         }
     })
@@ -146,7 +147,8 @@ fun HomePage(
 }
 
 @Composable
-fun ObjectStatusCard(uiState: UIState) {
+fun ObjectStatusCard(viewModel: MainViewModel) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     Card(
@@ -186,7 +188,8 @@ fun ObjectStatusCard(uiState: UIState) {
 }
 
 @Composable
-fun VisionStatusCard(uiState: UIState) {
+fun VisionStatusCard(viewModel: MainViewModel) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     Card(
@@ -223,7 +226,8 @@ fun VisionStatusCard(uiState: UIState) {
 }
 
 @Composable
-fun DepthStatusCard(uiState: UIState) {
+fun DepthStatusCard(viewModel: MainViewModel) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     Card(
@@ -255,7 +259,8 @@ fun DepthStatusCard(uiState: UIState) {
 }
 
 @Composable
-fun VoskStatusCard(uiState: UIState) {
+fun VoskStatusCard(viewModel: MainViewModel) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -326,15 +331,4 @@ private fun getObjectFPS(text: String): Int {
         }
     }
     return -1
-}
-
-@Preview(showBackground = true, name = "HomePage Preview")
-@Composable
-fun HomePagePreview() {
-    HomePage(
-        modifier = Modifier.fillMaxSize(),
-        onOpenSettings = {},
-        onEvent = {},
-        uiState = UIState()
-    )
 }
