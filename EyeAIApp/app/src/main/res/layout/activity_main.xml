@@ -118,16 +118,16 @@
                 android:contentDescription="@string/speech_recognition_final_result_description" />
 
             <TextView
-                android:id="@+id/llm_response"
+                android:id="@+id/speech_response"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="40dp"
                 android:textAlignment="center"
-                android:textColor="@color/llm_response"
+                android:textColor="@color/speech_response"
                 android:background="@color/black"
                 android:text=""
                 android:textSize="25sp"
-                android:contentDescription="@string/llm_response_description" />
+                android:contentDescription="@string/speech_response_description" />
 
         </LinearLayout>
 

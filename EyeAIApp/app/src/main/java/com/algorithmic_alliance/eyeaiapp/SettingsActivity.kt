@@ -5,11 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
+import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -79,29 +79,14 @@ class SettingsActivity : AppCompatActivity() {
 				}
 			}
 
-			// Custom Google Gen Ai Studio Endpoint
-			findPreference<EditTextPreference>(getString(R.string.custom_google_gen_ai_studio_endpoint_setting))?.let { endpointPreference ->
-				updateCustomGoogleGenAIStudioEndpointPreferenceSummary(
-					this,
-					endpointPreference,
-					endpointPreference.text
-				)
-
-				// formats the "Custom Google Gen AI Studio endpoint" summary
-				endpointPreference.onPreferenceChangeListener =
-					Preference.OnPreferenceChangeListener { preference, newValue ->
-						if (preference is EditTextPreference && preference.key == getString(
-								R.string.custom_google_gen_ai_studio_endpoint_setting
-							) && newValue is String?
-						) {
-							updateCustomGoogleGenAIStudioEndpointPreferenceSummary(
-								this,
-								preference,
-								newValue
-							)
-						}
-						true // save the new value
-					}
+			// NLP V2 baseline selector
+			findPreference<ListPreference>(getString(R.string.nlp_model_setting))?.let { list ->
+				list.entries = NLPModelInfo.BASELINE_MODELS.map { it.displayName }.toTypedArray()
+				list.entryValues = NLPModelInfo.BASELINE_MODELS.map { it.id }.toTypedArray()
+				list.setDefaultValue(NLPModelInfo.DEFAULT_MODEL_ID)
+				if (list.value.isNullOrEmpty()) {
+					list.value = NLPModelInfo.DEFAULT_MODEL_ID
+				}
 			}
 
 			// Media File Selector
@@ -140,20 +125,5 @@ class SettingsActivity : AppCompatActivity() {
 			openDocument.launch(intent)
 		}
 
-	}
-}
-
-private fun updateCustomGoogleGenAIStudioEndpointPreferenceSummary(
-	settingsFragment: SettingsActivity.SettingsFragment,
-	preference: EditTextPreference,
-	value: String?
-) {
-	preference.summary = if (value?.isEmpty() ?: true) {
-		""
-	} else {
-		settingsFragment.getString(
-			R.string.custom_google_gen_ai_studio_endpoint_summary,
-			value
-		)
 	}
 }

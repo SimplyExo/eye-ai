@@ -47,6 +47,11 @@
             app:defaultValue="true"
             app:key="@string/enable_speech_recognition_setting"
             app:title="Enabled" />
+
+		<ListPreference
+			app:key="@string/nlp_model_setting"
+			app:summary="%s"
+			app:title="NLP V2 Baseline Model" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Audio Playback">
@@ -83,16 +88,6 @@
             app:entries="@array/language_entries"
             app:entryValues="@array/language_values"
             app:useSimpleSummaryProvider="true" />
-    </PreferenceCategory>
-
-    <PreferenceCategory app:title="LLM">
-        <EditTextPreference
-            app:key="@string/google_ai_studio_api_key_stetting"
-            app:title="Google AI Studio API Key" />
-
-        <EditTextPreference
-            app:key="@string/custom_google_gen_ai_studio_endpoint_setting"
-            app:title="Custom Google Gen AI Studio endpoint\n(for testing / mocking)" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Object Detection">

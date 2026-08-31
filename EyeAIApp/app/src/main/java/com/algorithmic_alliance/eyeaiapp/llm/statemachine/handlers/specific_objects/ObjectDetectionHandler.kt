@@ -3,7 +3,6 @@ package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_obj
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.AIModelData
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
-import com.algorithmic_alliance.eyeaiapp.llm.LLM
 
 class ObjectDetectionHandler() {
 	companion object {
@@ -20,7 +19,7 @@ class ObjectDetectionHandler() {
 		)
 
 
-		fun getGermanObjectLabelsForLLM(): List<String> {
+		fun getGermanObjectLabels(): List<String> {
 			val objectDetectionBoxes = AIModelData.detectedObjects.get()
 
 			if (objectDetectionBoxes.isNullOrEmpty()) {
@@ -30,7 +29,7 @@ class ObjectDetectionHandler() {
 			return objectDetectionBoxes
 				.mapNotNull { box ->
 					val englishLabel = box.clsName
-					if (englishLabel in LLM.Companion.knownObjectLabels) {
+					if (TranslateEnglishToGerman.isKnownEnglishLabel(englishLabel)) {
 						TranslateEnglishToGerman.Companion.translateToGerman(englishLabel)
 					} else null
 				}
@@ -73,7 +72,7 @@ class ObjectDetectionHandler() {
 				val englishLabel = box.clsName
 				Log.d(EyeAIApp.Companion.APP_LOG_TAG, "Processing box with English label: '$englishLabel'")
 
-				if (englishLabel in LLM.Companion.knownObjectLabels) {
+				if (TranslateEnglishToGerman.isKnownEnglishLabel(englishLabel)) {
 					val germanLabel =
 						TranslateEnglishToGerman.Companion.translateToGerman(englishLabel)
 					Log.d(EyeAIApp.Companion.APP_LOG_TAG, "Translated '$englishLabel' to '$germanLabel'")

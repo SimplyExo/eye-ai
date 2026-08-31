@@ -1,0 +1,11744 @@
+[
+  {
+    "rank": 0,
+    "left": "▁",
+    "right": "d",
+    "merged": "▁d"
+  },
+  {
+    "rank": 1,
+    "left": "e",
+    "right": "r",
+    "merged": "er"
+  },
+  {
+    "rank": 2,
+    "left": "c",
+    "right": "h",
+    "merged": "ch"
+  },
+  {
+    "rank": 3,
+    "left": "e",
+    "right": "n",
+    "merged": "en"
+  },
+  {
+    "rank": 4,
+    "left": "s",
+    "right": "t",
+    "merged": "st"
+  },
+  {
+    "rank": 5,
+    "left": "i",
+    "right": "e",
+    "merged": "ie"
+  },
+  {
+    "rank": 6,
+    "left": "▁",
+    "right": "w",
+    "merged": "▁w"
+  },
+  {
+    "rank": 7,
+    "left": "e",
+    "right": "i",
+    "merged": "ei"
+  },
+  {
+    "rank": 8,
+    "left": "▁",
+    "right": "s",
+    "merged": "▁s"
+  },
+  {
+    "rank": 9,
+    "left": "▁",
+    "right": "m",
+    "merged": "▁m"
+  },
+  {
+    "rank": 10,
+    "left": "▁d",
+    "right": "ie",
+    "merged": "▁die"
+  },
+  {
+    "rank": 11,
+    "left": "a",
+    "right": "s",
+    "merged": "as"
+  },
+  {
+    "rank": 12,
+    "left": "a",
+    "right": "n",
+    "merged": "an"
+  },
+  {
+    "rank": 13,
+    "left": "▁",
+    "right": "i",
+    "merged": "▁i"
+  },
+  {
+    "rank": 14,
+    "left": "▁",
+    "right": "a",
+    "merged": "▁a"
+  },
+  {
+    "rank": 15,
+    "left": "ei",
+    "right": "n",
+    "merged": "ein"
+  },
+  {
+    "rank": 16,
+    "left": "t",
+    "right": "e",
+    "merged": "te"
+  },
+  {
+    "rank": 17,
+    "left": "▁",
+    "right": "n",
+    "merged": "▁n"
+  },
+  {
+    "rank": 18,
+    "left": "u",
+    "right": "n",
+    "merged": "un"
+  },
+  {
+    "rank": 19,
+    "left": "▁",
+    "right": "b",
+    "merged": "▁b"
+  },
+  {
+    "rank": 20,
+    "left": "e",
+    "right": "l",
+    "merged": "el"
+  },
+  {
+    "rank": 21,
+    "left": "▁",
+    "right": "k",
+    "merged": "▁k"
+  },
+  {
+    "rank": 22,
+    "left": "▁",
+    "right": "h",
+    "merged": "▁h"
+  },
+  {
+    "rank": 23,
+    "left": "▁",
+    "right": "st",
+    "merged": "▁st"
+  },
+  {
+    "rank": 24,
+    "left": "▁",
+    "right": "ein",
+    "merged": "▁ein"
+  },
+  {
+    "rank": 25,
+    "left": "o",
+    "right": "n",
+    "merged": "on"
+  },
+  {
+    "rank": 26,
+    "left": "i",
+    "right": "ch",
+    "merged": "ich"
+  },
+  {
+    "rank": 27,
+    "left": "▁",
+    "right": "v",
+    "merged": "▁v"
+  },
+  {
+    "rank": 28,
+    "left": "▁",
+    "right": "z",
+    "merged": "▁z"
+  },
+  {
+    "rank": 29,
+    "left": "i",
+    "right": "n",
+    "merged": "in"
+  },
+  {
+    "rank": 30,
+    "left": "▁a",
+    "right": "u",
+    "merged": "▁au"
+  },
+  {
+    "rank": 31,
+    "left": "▁",
+    "right": "f",
+    "merged": "▁f"
+  },
+  {
+    "rank": 32,
+    "left": "d",
+    "right": "er",
+    "merged": "der"
+  },
+  {
+    "rank": 33,
+    "left": "▁",
+    "right": "t",
+    "merged": "▁t"
+  },
+  {
+    "rank": 34,
+    "left": "▁d",
+    "right": "as",
+    "merged": "▁das"
+  },
+  {
+    "rank": 35,
+    "left": "el",
+    "right": "l",
+    "merged": "ell"
+  },
+  {
+    "rank": 36,
+    "left": "m",
+    "right": "m",
+    "merged": "mm"
+  },
+  {
+    "rank": 37,
+    "left": "▁",
+    "right": "l",
+    "merged": "▁l"
+  },
+  {
+    "rank": 38,
+    "left": "▁m",
+    "right": "i",
+    "merged": "▁mi"
+  },
+  {
+    "rank": 39,
+    "left": "e",
+    "right": "h",
+    "merged": "eh"
+  },
+  {
+    "rank": 40,
+    "left": "▁",
+    "right": "g",
+    "merged": "▁g"
+  },
+  {
+    "rank": 41,
+    "left": "e",
+    "right": "s",
+    "merged": "es"
+  },
+  {
+    "rank": 42,
+    "left": "▁i",
+    "right": "st",
+    "merged": "▁ist"
+  },
+  {
+    "rank": 43,
+    "left": "▁w",
+    "right": "ie",
+    "merged": "▁wie"
+  },
+  {
+    "rank": 44,
+    "left": "r",
+    "right": "e",
+    "merged": "re"
+  },
+  {
+    "rank": 45,
+    "left": "▁w",
+    "right": "as",
+    "merged": "▁was"
+  },
+  {
+    "rank": 46,
+    "left": "▁d",
+    "right": "u",
+    "merged": "▁du"
+  },
+  {
+    "rank": 47,
+    "left": "▁i",
+    "right": "ch",
+    "merged": "▁ich"
+  },
+  {
+    "rank": 48,
+    "left": "▁m",
+    "right": "a",
+    "merged": "▁ma"
+  },
+  {
+    "rank": 49,
+    "left": "▁",
+    "right": "p",
+    "merged": "▁p"
+  },
+  {
+    "rank": 50,
+    "left": "an",
+    "right": "n",
+    "merged": "ann"
+  },
+  {
+    "rank": 51,
+    "left": "i",
+    "right": "g",
+    "merged": "ig"
+  },
+  {
+    "rank": 52,
+    "left": "▁d",
+    "right": "er",
+    "merged": "▁der"
+  },
+  {
+    "rank": 53,
+    "left": "▁au",
+    "right": "f",
+    "merged": "▁auf"
+  },
+  {
+    "rank": 54,
+    "left": "un",
+    "right": "g",
+    "merged": "ung"
+  },
+  {
+    "rank": 55,
+    "left": "▁d",
+    "right": "en",
+    "merged": "▁den"
+  },
+  {
+    "rank": 56,
+    "left": "▁k",
+    "right": "ann",
+    "merged": "▁kann"
+  },
+  {
+    "rank": 57,
+    "left": "i",
+    "right": "mm",
+    "merged": "imm"
+  },
+  {
+    "rank": 58,
+    "left": "o",
+    "right": "r",
+    "merged": "or"
+  },
+  {
+    "rank": 59,
+    "left": "ich",
+    "right": "t",
+    "merged": "icht"
+  },
+  {
+    "rank": 60,
+    "left": "▁mi",
+    "right": "r",
+    "merged": "▁mir"
+  },
+  {
+    "rank": 61,
+    "left": "u",
+    "right": "r",
+    "merged": "ur"
+  },
+  {
+    "rank": 62,
+    "left": "▁s",
+    "right": "ch",
+    "merged": "▁sch"
+  },
+  {
+    "rank": 63,
+    "left": "e",
+    "right": "t",
+    "merged": "et"
+  },
+  {
+    "rank": 64,
+    "left": "▁n",
+    "right": "icht",
+    "merged": "▁nicht"
+  },
+  {
+    "rank": 65,
+    "left": "e",
+    "right": "m",
+    "merged": "em"
+  },
+  {
+    "rank": 66,
+    "left": "▁b",
+    "right": "i",
+    "merged": "▁bi"
+  },
+  {
+    "rank": 67,
+    "left": "▁kann",
+    "right": "st",
+    "merged": "▁kannst"
+  },
+  {
+    "rank": 68,
+    "left": "▁",
+    "right": "er",
+    "merged": "▁er"
+  },
+  {
+    "rank": 69,
+    "left": "d",
+    "right": "e",
+    "merged": "de"
+  },
+  {
+    "rank": 70,
+    "left": "r",
+    "right": "a",
+    "merged": "ra"
+  },
+  {
+    "rank": 71,
+    "left": "ei",
+    "right": "t",
+    "merged": "eit"
+  },
+  {
+    "rank": 72,
+    "left": "l",
+    "right": "l",
+    "merged": "ll"
+  },
+  {
+    "rank": 73,
+    "left": "imm",
+    "right": "e",
+    "merged": "imme"
+  },
+  {
+    "rank": 74,
+    "left": "s",
+    "right": "ch",
+    "merged": "sch"
+  },
+  {
+    "rank": 75,
+    "left": "▁s",
+    "right": "p",
+    "merged": "▁sp"
+  },
+  {
+    "rank": 76,
+    "left": "a",
+    "right": "r",
+    "merged": "ar"
+  },
+  {
+    "rank": 77,
+    "left": "▁",
+    "right": "an",
+    "merged": "▁an"
+  },
+  {
+    "rank": 78,
+    "left": "▁ma",
+    "right": "ch",
+    "merged": "▁mach"
+  },
+  {
+    "rank": 79,
+    "left": "eh",
+    "right": "t",
+    "merged": "eht"
+  },
+  {
+    "rank": 80,
+    "left": "▁",
+    "right": "ä",
+    "merged": "▁ä"
+  },
+  {
+    "rank": 81,
+    "left": "▁v",
+    "right": "or",
+    "merged": "▁vor"
+  },
+  {
+    "rank": 82,
+    "left": "▁d",
+    "right": "a",
+    "merged": "▁da"
+  },
+  {
+    "rank": 83,
+    "left": "a",
+    "right": "l",
+    "merged": "al"
+  },
+  {
+    "rank": 84,
+    "left": "▁a",
+    "right": "b",
+    "merged": "▁ab"
+  },
+  {
+    "rank": 85,
+    "left": "▁d",
+    "right": "em",
+    "merged": "▁dem"
+  },
+  {
+    "rank": 86,
+    "left": "▁z",
+    "right": "u",
+    "merged": "▁zu"
+  },
+  {
+    "rank": 87,
+    "left": "▁st",
+    "right": "eht",
+    "merged": "▁steht"
+  },
+  {
+    "rank": 88,
+    "left": "g",
+    "right": "en",
+    "merged": "gen"
+  },
+  {
+    "rank": 89,
+    "left": "t",
+    "right": "te",
+    "merged": "tte"
+  },
+  {
+    "rank": 90,
+    "left": "▁",
+    "right": "o",
+    "merged": "▁o"
+  },
+  {
+    "rank": 91,
+    "left": "re",
+    "right": "ch",
+    "merged": "rech"
+  },
+  {
+    "rank": 92,
+    "left": "k",
+    "right": "t",
+    "merged": "kt"
+  },
+  {
+    "rank": 93,
+    "left": "▁st",
+    "right": "imme",
+    "merged": "▁stimme"
+  },
+  {
+    "rank": 94,
+    "left": "ü",
+    "right": "r",
+    "merged": "ür"
+  },
+  {
+    "rank": 95,
+    "left": "i",
+    "right": "er",
+    "merged": "ier"
+  },
+  {
+    "rank": 96,
+    "left": "n",
+    "right": "ell",
+    "merged": "nell"
+  },
+  {
+    "rank": 97,
+    "left": "▁sch",
+    "right": "nell",
+    "merged": "▁schnell"
+  },
+  {
+    "rank": 98,
+    "left": "an",
+    "right": "d",
+    "merged": "and"
+  },
+  {
+    "rank": 99,
+    "left": "ö",
+    "right": "h",
+    "merged": "öh"
+  },
+  {
+    "rank": 100,
+    "left": "▁s",
+    "right": "o",
+    "merged": "▁so"
+  },
+  {
+    "rank": 101,
+    "left": "▁t",
+    "right": "on",
+    "merged": "▁ton"
+  },
+  {
+    "rank": 102,
+    "left": "f",
+    "right": "er",
+    "merged": "fer"
+  },
+  {
+    "rank": 103,
+    "left": "▁w",
+    "right": "ar",
+    "merged": "▁war"
+  },
+  {
+    "rank": 104,
+    "left": "n",
+    "right": "e",
+    "merged": "ne"
+  },
+  {
+    "rank": 105,
+    "left": "w",
+    "right": "ei",
+    "merged": "wei"
+  },
+  {
+    "rank": 106,
+    "left": "▁w",
+    "right": "o",
+    "merged": "▁wo"
+  },
+  {
+    "rank": 107,
+    "left": "b",
+    "right": "en",
+    "merged": "ben"
+  },
+  {
+    "rank": 108,
+    "left": "an",
+    "right": "g",
+    "merged": "ang"
+  },
+  {
+    "rank": 109,
+    "left": "▁bi",
+    "right": "tte",
+    "merged": "▁bitte"
+  },
+  {
+    "rank": 110,
+    "left": "▁w",
+    "right": "eit",
+    "merged": "▁weit"
+  },
+  {
+    "rank": 111,
+    "left": "st",
+    "right": "ell",
+    "merged": "stell"
+  },
+  {
+    "rank": 112,
+    "left": "o",
+    "right": "ch",
+    "merged": "och"
+  },
+  {
+    "rank": 113,
+    "left": "▁n",
+    "right": "ur",
+    "merged": "▁nur"
+  },
+  {
+    "rank": 114,
+    "left": "u",
+    "right": "en",
+    "merged": "uen"
+  },
+  {
+    "rank": 115,
+    "left": "t",
+    "right": "er",
+    "merged": "ter"
+  },
+  {
+    "rank": 116,
+    "left": "in",
+    "right": "d",
+    "merged": "ind"
+  },
+  {
+    "rank": 117,
+    "left": "▁",
+    "right": "un",
+    "merged": "▁un"
+  },
+  {
+    "rank": 118,
+    "left": "i",
+    "right": "on",
+    "merged": "ion"
+  },
+  {
+    "rank": 119,
+    "left": "▁h",
+    "right": "in",
+    "merged": "▁hin"
+  },
+  {
+    "rank": 120,
+    "left": "▁er",
+    "right": "k",
+    "merged": "▁erk"
+  },
+  {
+    "rank": 121,
+    "left": "a",
+    "right": "m",
+    "merged": "am"
+  },
+  {
+    "rank": 122,
+    "left": "n",
+    "right": "der",
+    "merged": "nder"
+  },
+  {
+    "rank": 123,
+    "left": "ch",
+    "right": "e",
+    "merged": "che"
+  },
+  {
+    "rank": 124,
+    "left": "en",
+    "right": "t",
+    "merged": "ent"
+  },
+  {
+    "rank": 125,
+    "left": "▁ein",
+    "right": "stell",
+    "merged": "▁einstell"
+  },
+  {
+    "rank": 126,
+    "left": "m",
+    "right": "p",
+    "merged": "mp"
+  },
+  {
+    "rank": 127,
+    "left": "▁sp",
+    "right": "rech",
+    "merged": "▁sprech"
+  },
+  {
+    "rank": 128,
+    "left": "▁ma",
+    "right": "l",
+    "merged": "▁mal"
+  },
+  {
+    "rank": 129,
+    "left": "▁w",
+    "right": "i",
+    "merged": "▁wi"
+  },
+  {
+    "rank": 130,
+    "left": "a",
+    "right": "u",
+    "merged": "au"
+  },
+  {
+    "rank": 131,
+    "left": "▁b",
+    "right": "e",
+    "merged": "▁be"
+  },
+  {
+    "rank": 132,
+    "left": "▁l",
+    "right": "ie",
+    "merged": "▁lie"
+  },
+  {
+    "rank": 133,
+    "left": "▁",
+    "right": "te",
+    "merged": "▁te"
+  },
+  {
+    "rank": 134,
+    "left": "s",
+    "right": "e",
+    "merged": "se"
+  },
+  {
+    "rank": 135,
+    "left": "l",
+    "right": "ich",
+    "merged": "lich"
+  },
+  {
+    "rank": 136,
+    "left": "▁h",
+    "right": "er",
+    "merged": "▁her"
+  },
+  {
+    "rank": 137,
+    "left": "▁schnell",
+    "right": "er",
+    "merged": "▁schneller"
+  },
+  {
+    "rank": 138,
+    "left": "q",
+    "right": "uen",
+    "merged": "quen"
+  },
+  {
+    "rank": 139,
+    "left": "quen",
+    "right": "z",
+    "merged": "quenz"
+  },
+  {
+    "rank": 140,
+    "left": "re",
+    "right": "quenz",
+    "merged": "requenz"
+  },
+  {
+    "rank": 141,
+    "left": "▁an",
+    "right": "der",
+    "merged": "▁ander"
+  },
+  {
+    "rank": 142,
+    "left": "es",
+    "right": "ch",
+    "merged": "esch"
+  },
+  {
+    "rank": 143,
+    "left": "▁einstell",
+    "right": "ung",
+    "merged": "▁einstellung"
+  },
+  {
+    "rank": 144,
+    "left": "as",
+    "right": "s",
+    "merged": "ass"
+  },
+  {
+    "rank": 145,
+    "left": "ig",
+    "right": "n",
+    "merged": "ign"
+  },
+  {
+    "rank": 146,
+    "left": "▁",
+    "right": "ent",
+    "merged": "▁ent"
+  },
+  {
+    "rank": 147,
+    "left": "▁d",
+    "right": "i",
+    "merged": "▁di"
+  },
+  {
+    "rank": 148,
+    "left": "▁w",
+    "right": "e",
+    "merged": "▁we"
+  },
+  {
+    "rank": 149,
+    "left": "en",
+    "right": "n",
+    "merged": "enn"
+  },
+  {
+    "rank": 150,
+    "left": "ign",
+    "right": "al",
+    "merged": "ignal"
+  },
+  {
+    "rank": 151,
+    "left": "▁l",
+    "right": "ang",
+    "merged": "▁lang"
+  },
+  {
+    "rank": 152,
+    "left": "s",
+    "right": "am",
+    "merged": "sam"
+  },
+  {
+    "rank": 153,
+    "left": "▁ä",
+    "right": "h",
+    "merged": "▁äh"
+  },
+  {
+    "rank": 154,
+    "left": "▁i",
+    "right": "n",
+    "merged": "▁in"
+  },
+  {
+    "rank": 155,
+    "left": "l",
+    "right": "ei",
+    "merged": "lei"
+  },
+  {
+    "rank": 156,
+    "left": "st",
+    "right": "and",
+    "merged": "stand"
+  },
+  {
+    "rank": 157,
+    "left": "▁lang",
+    "right": "sam",
+    "merged": "▁langsam"
+  },
+  {
+    "rank": 158,
+    "left": "▁war",
+    "right": "te",
+    "merged": "▁warte"
+  },
+  {
+    "rank": 159,
+    "left": "▁ä",
+    "right": "nder",
+    "merged": "▁änder"
+  },
+  {
+    "rank": 160,
+    "left": "c",
+    "right": "k",
+    "merged": "ck"
+  },
+  {
+    "rank": 161,
+    "left": "▁ein",
+    "right": "e",
+    "merged": "▁eine"
+  },
+  {
+    "rank": 162,
+    "left": "l",
+    "right": "e",
+    "merged": "le"
+  },
+  {
+    "rank": 163,
+    "left": "▁so",
+    "right": "ll",
+    "merged": "▁soll"
+  },
+  {
+    "rank": 164,
+    "left": "fer",
+    "right": "n",
+    "merged": "fern"
+  },
+  {
+    "rank": 165,
+    "left": "▁f",
+    "right": "requenz",
+    "merged": "▁frequenz"
+  },
+  {
+    "rank": 166,
+    "left": "▁s",
+    "right": "ignal",
+    "merged": "▁signal"
+  },
+  {
+    "rank": 167,
+    "left": "g",
+    "right": "e",
+    "merged": "ge"
+  },
+  {
+    "rank": 168,
+    "left": "i",
+    "right": "sch",
+    "merged": "isch"
+  },
+  {
+    "rank": 169,
+    "left": "p",
+    "right": "t",
+    "merged": "pt"
+  },
+  {
+    "rank": 170,
+    "left": "▁h",
+    "right": "öh",
+    "merged": "▁höh"
+  },
+  {
+    "rank": 171,
+    "left": "▁v",
+    "right": "er",
+    "merged": "▁ver"
+  },
+  {
+    "rank": 172,
+    "left": "▁v",
+    "right": "on",
+    "merged": "▁von"
+  },
+  {
+    "rank": 173,
+    "left": "▁ent",
+    "right": "fern",
+    "merged": "▁entfern"
+  },
+  {
+    "rank": 174,
+    "left": "r",
+    "right": "o",
+    "merged": "ro"
+  },
+  {
+    "rank": 175,
+    "left": "mp",
+    "right": "o",
+    "merged": "mpo"
+  },
+  {
+    "rank": 176,
+    "left": "▁un",
+    "right": "d",
+    "merged": "▁und"
+  },
+  {
+    "rank": 177,
+    "left": "a",
+    "right": "t",
+    "merged": "at"
+  },
+  {
+    "rank": 178,
+    "left": "▁hin",
+    "right": "wei",
+    "merged": "▁hinwei"
+  },
+  {
+    "rank": 179,
+    "left": "▁höh",
+    "right": "er",
+    "merged": "▁höher"
+  },
+  {
+    "rank": 180,
+    "left": "▁",
+    "right": "et",
+    "merged": "▁et"
+  },
+  {
+    "rank": 181,
+    "left": "▁ab",
+    "right": "stand",
+    "merged": "▁abstand"
+  },
+  {
+    "rank": 182,
+    "left": "▁f",
+    "right": "ür",
+    "merged": "▁für"
+  },
+  {
+    "rank": 183,
+    "left": "ra",
+    "right": "u",
+    "merged": "rau"
+  },
+  {
+    "rank": 184,
+    "left": "▁",
+    "right": "r",
+    "merged": "▁r"
+  },
+  {
+    "rank": 185,
+    "left": "an",
+    "right": "z",
+    "merged": "anz"
+  },
+  {
+    "rank": 186,
+    "left": "▁",
+    "right": "es",
+    "merged": "▁es"
+  },
+  {
+    "rank": 187,
+    "left": "▁s",
+    "right": "a",
+    "merged": "▁sa"
+  },
+  {
+    "rank": 188,
+    "left": "▁langsam",
+    "right": "er",
+    "merged": "▁langsamer"
+  },
+  {
+    "rank": 189,
+    "left": "▁s",
+    "right": "e",
+    "merged": "▁se"
+  },
+  {
+    "rank": 190,
+    "left": "o",
+    "right": "mm",
+    "merged": "omm"
+  },
+  {
+    "rank": 191,
+    "left": "▁einstellung",
+    "right": "en",
+    "merged": "▁einstellungen"
+  },
+  {
+    "rank": 192,
+    "left": "w",
+    "right": "as",
+    "merged": "was"
+  },
+  {
+    "rank": 193,
+    "left": "▁au",
+    "right": "s",
+    "merged": "▁aus"
+  },
+  {
+    "rank": 194,
+    "left": "▁k",
+    "right": "l",
+    "merged": "▁kl"
+  },
+  {
+    "rank": 195,
+    "left": "▁mi",
+    "right": "t",
+    "merged": "▁mit"
+  },
+  {
+    "rank": 196,
+    "left": "▁st",
+    "right": "ell",
+    "merged": "▁stell"
+  },
+  {
+    "rank": 197,
+    "left": "▁w",
+    "right": "el",
+    "merged": "▁wel"
+  },
+  {
+    "rank": 198,
+    "left": "▁z",
+    "right": "ur",
+    "merged": "▁zur"
+  },
+  {
+    "rank": 199,
+    "left": "▁et",
+    "right": "was",
+    "merged": "▁etwas"
+  },
+  {
+    "rank": 200,
+    "left": "a",
+    "right": "b",
+    "merged": "ab"
+  },
+  {
+    "rank": 201,
+    "left": "▁m",
+    "right": "ö",
+    "merged": "▁mö"
+  },
+  {
+    "rank": 202,
+    "left": "▁p",
+    "right": "ie",
+    "merged": "▁pie"
+  },
+  {
+    "rank": 203,
+    "left": "ch",
+    "right": "te",
+    "merged": "chte"
+  },
+  {
+    "rank": 204,
+    "left": "ä",
+    "right": "n",
+    "merged": "än"
+  },
+  {
+    "rank": 205,
+    "left": "▁g",
+    "right": "esch",
+    "merged": "▁gesch"
+  },
+  {
+    "rank": 206,
+    "left": "ch",
+    "right": "s",
+    "merged": "chs"
+  },
+  {
+    "rank": 207,
+    "left": "et",
+    "right": "z",
+    "merged": "etz"
+  },
+  {
+    "rank": 208,
+    "left": "▁k",
+    "right": "omm",
+    "merged": "▁komm"
+  },
+  {
+    "rank": 209,
+    "left": "▁l",
+    "right": "ass",
+    "merged": "▁lass"
+  },
+  {
+    "rank": 210,
+    "left": "▁mö",
+    "right": "chte",
+    "merged": "▁möchte"
+  },
+  {
+    "rank": 211,
+    "left": "a",
+    "right": "h",
+    "merged": "ah"
+  },
+  {
+    "rank": 212,
+    "left": "▁erk",
+    "right": "enn",
+    "merged": "▁erkenn"
+  },
+  {
+    "rank": 213,
+    "left": "▁z",
+    "right": "ei",
+    "merged": "▁zei"
+  },
+  {
+    "rank": 214,
+    "left": "▁bi",
+    "right": "s",
+    "merged": "▁bis"
+  },
+  {
+    "rank": 215,
+    "left": "f",
+    "right": "ig",
+    "merged": "fig"
+  },
+  {
+    "rank": 216,
+    "left": "▁t",
+    "right": "ür",
+    "merged": "▁tür"
+  },
+  {
+    "rank": 217,
+    "left": "▁te",
+    "right": "mpo",
+    "merged": "▁tempo"
+  },
+  {
+    "rank": 218,
+    "left": "▁wie",
+    "right": "der",
+    "merged": "▁wieder"
+  },
+  {
+    "rank": 219,
+    "left": "h",
+    "right": "öh",
+    "merged": "höh"
+  },
+  {
+    "rank": 220,
+    "left": "t",
+    "right": "z",
+    "merged": "tz"
+  },
+  {
+    "rank": 221,
+    "left": "▁t",
+    "right": "ie",
+    "merged": "▁tie"
+  },
+  {
+    "rank": 222,
+    "left": "▁wi",
+    "right": "ll",
+    "merged": "▁will"
+  },
+  {
+    "rank": 223,
+    "left": "l",
+    "right": "d",
+    "merged": "ld"
+  },
+  {
+    "rank": 224,
+    "left": "s",
+    "right": "s",
+    "merged": "ss"
+  },
+  {
+    "rank": 225,
+    "left": "f",
+    "right": "t",
+    "merged": "ft"
+  },
+  {
+    "rank": 226,
+    "left": "▁g",
+    "right": "lei",
+    "merged": "▁glei"
+  },
+  {
+    "rank": 227,
+    "left": "▁p",
+    "right": "ro",
+    "merged": "▁pro"
+  },
+  {
+    "rank": 228,
+    "left": "or",
+    "right": "t",
+    "merged": "ort"
+  },
+  {
+    "rank": 229,
+    "left": "o",
+    "right": "l",
+    "merged": "ol"
+  },
+  {
+    "rank": 230,
+    "left": "un",
+    "right": "de",
+    "merged": "unde"
+  },
+  {
+    "rank": 231,
+    "left": "u",
+    "right": "l",
+    "merged": "ul"
+  },
+  {
+    "rank": 232,
+    "left": "▁w",
+    "right": "er",
+    "merged": "▁wer"
+  },
+  {
+    "rank": 233,
+    "left": "g",
+    "right": "t",
+    "merged": "gt"
+  },
+  {
+    "rank": 234,
+    "left": "d",
+    "right": "en",
+    "merged": "den"
+  },
+  {
+    "rank": 235,
+    "left": "in",
+    "right": "de",
+    "merged": "inde"
+  },
+  {
+    "rank": 236,
+    "left": "▁ein",
+    "right": "en",
+    "merged": "▁einen"
+  },
+  {
+    "rank": 237,
+    "left": "l",
+    "right": "ä",
+    "merged": "lä"
+  },
+  {
+    "rank": 238,
+    "left": "ö",
+    "right": "f",
+    "merged": "öf"
+  },
+  {
+    "rank": 239,
+    "left": "▁",
+    "right": "öf",
+    "merged": "▁öf"
+  },
+  {
+    "rank": 240,
+    "left": "j",
+    "right": "e",
+    "merged": "je"
+  },
+  {
+    "rank": 241,
+    "left": "▁f",
+    "right": "inde",
+    "merged": "▁finde"
+  },
+  {
+    "rank": 242,
+    "left": "k",
+    "right": "unde",
+    "merged": "kunde"
+  },
+  {
+    "rank": 243,
+    "left": "p",
+    "right": "p",
+    "merged": "pp"
+  },
+  {
+    "rank": 244,
+    "left": "st",
+    "right": "anz",
+    "merged": "stanz"
+  },
+  {
+    "rank": 245,
+    "left": "▁di",
+    "right": "stanz",
+    "merged": "▁distanz"
+  },
+  {
+    "rank": 246,
+    "left": "▁n",
+    "right": "imm",
+    "merged": "▁nimm"
+  },
+  {
+    "rank": 247,
+    "left": "▁o",
+    "right": "b",
+    "merged": "▁ob"
+  },
+  {
+    "rank": 248,
+    "left": "▁se",
+    "right": "kunde",
+    "merged": "▁sekunde"
+  },
+  {
+    "rank": 249,
+    "left": "▁sprech",
+    "right": "er",
+    "merged": "▁sprecher"
+  },
+  {
+    "rank": 250,
+    "left": "ein",
+    "right": "e",
+    "merged": "eine"
+  },
+  {
+    "rank": 251,
+    "left": "▁i",
+    "right": "m",
+    "merged": "▁im"
+  },
+  {
+    "rank": 252,
+    "left": "e",
+    "right": "ben",
+    "merged": "eben"
+  },
+  {
+    "rank": 253,
+    "left": "u",
+    "right": "m",
+    "merged": "um"
+  },
+  {
+    "rank": 254,
+    "left": "▁ab",
+    "right": "er",
+    "merged": "▁aber"
+  },
+  {
+    "rank": 255,
+    "left": "▁ander",
+    "right": "e",
+    "merged": "▁andere"
+  },
+  {
+    "rank": 256,
+    "left": "eh",
+    "right": "en",
+    "merged": "ehen"
+  },
+  {
+    "rank": 257,
+    "left": "▁n",
+    "right": "och",
+    "merged": "▁noch"
+  },
+  {
+    "rank": 258,
+    "left": "▁tie",
+    "right": "fer",
+    "merged": "▁tiefer"
+  },
+  {
+    "rank": 259,
+    "left": "höh",
+    "right": "e",
+    "merged": "höhe"
+  },
+  {
+    "rank": 260,
+    "left": "un",
+    "right": "der",
+    "merged": "under"
+  },
+  {
+    "rank": 261,
+    "left": "▁her",
+    "right": "z",
+    "merged": "▁herz"
+  },
+  {
+    "rank": 262,
+    "left": "▁lie",
+    "right": "s",
+    "merged": "▁lies"
+  },
+  {
+    "rank": 263,
+    "left": "▁s",
+    "right": "ie",
+    "merged": "▁sie"
+  },
+  {
+    "rank": 264,
+    "left": "r",
+    "right": "i",
+    "merged": "ri"
+  },
+  {
+    "rank": 265,
+    "left": "▁wel",
+    "right": "che",
+    "merged": "▁welche"
+  },
+  {
+    "rank": 266,
+    "left": "ier",
+    "right": "t",
+    "merged": "iert"
+  },
+  {
+    "rank": 267,
+    "left": "n",
+    "right": "en",
+    "merged": "nen"
+  },
+  {
+    "rank": 268,
+    "left": "a",
+    "right": "ch",
+    "merged": "ach"
+  },
+  {
+    "rank": 269,
+    "left": "es",
+    "right": "en",
+    "merged": "esen"
+  },
+  {
+    "rank": 270,
+    "left": "k",
+    "right": "eit",
+    "merged": "keit"
+  },
+  {
+    "rank": 271,
+    "left": "t",
+    "right": "en",
+    "merged": "ten"
+  },
+  {
+    "rank": 272,
+    "left": "under",
+    "right": "t",
+    "merged": "undert"
+  },
+  {
+    "rank": 273,
+    "left": "▁we",
+    "right": "g",
+    "merged": "▁weg"
+  },
+  {
+    "rank": 274,
+    "left": "b",
+    "right": "er",
+    "merged": "ber"
+  },
+  {
+    "rank": 275,
+    "left": "ra",
+    "right": "te",
+    "merged": "rate"
+  },
+  {
+    "rank": 276,
+    "left": "▁entfern",
+    "right": "ung",
+    "merged": "▁entfernung"
+  },
+  {
+    "rank": 277,
+    "left": "▁h",
+    "right": "ä",
+    "merged": "▁hä"
+  },
+  {
+    "rank": 278,
+    "left": "kt",
+    "right": "ion",
+    "merged": "ktion"
+  },
+  {
+    "rank": 279,
+    "left": "▁änder",
+    "right": "n",
+    "merged": "▁ändern"
+  },
+  {
+    "rank": 280,
+    "left": "au",
+    "right": "s",
+    "merged": "aus"
+  },
+  {
+    "rank": 281,
+    "left": "r",
+    "right": "en",
+    "merged": "ren"
+  },
+  {
+    "rank": 282,
+    "left": "▁b",
+    "right": "p",
+    "merged": "▁bp"
+  },
+  {
+    "rank": 283,
+    "left": "▁glei",
+    "right": "ch",
+    "merged": "▁gleich"
+  },
+  {
+    "rank": 284,
+    "left": "▁m",
+    "right": "en",
+    "merged": "▁men"
+  },
+  {
+    "rank": 285,
+    "left": "h",
+    "right": "undert",
+    "merged": "hundert"
+  },
+  {
+    "rank": 286,
+    "left": "i",
+    "right": "ld",
+    "merged": "ild"
+  },
+  {
+    "rank": 287,
+    "left": "isch",
+    "right": "en",
+    "merged": "ischen"
+  },
+  {
+    "rank": 288,
+    "left": "pt",
+    "right": "ion",
+    "merged": "ption"
+  },
+  {
+    "rank": 289,
+    "left": "st",
+    "right": "imme",
+    "merged": "stimme"
+  },
+  {
+    "rank": 290,
+    "left": "ü",
+    "right": "n",
+    "merged": "ün"
+  },
+  {
+    "rank": 291,
+    "left": "▁hinwei",
+    "right": "s",
+    "merged": "▁hinweis"
+  },
+  {
+    "rank": 292,
+    "left": "▁v",
+    "right": "ie",
+    "merged": "▁vie"
+  },
+  {
+    "rank": 293,
+    "left": "▁ob",
+    "right": "je",
+    "merged": "▁obje"
+  },
+  {
+    "rank": 294,
+    "left": "▁we",
+    "right": "chs",
+    "merged": "▁wechs"
+  },
+  {
+    "rank": 295,
+    "left": "▁z",
+    "right": "w",
+    "merged": "▁zw"
+  },
+  {
+    "rank": 296,
+    "left": "▁zu",
+    "right": "m",
+    "merged": "▁zum"
+  },
+  {
+    "rank": 297,
+    "left": "ab",
+    "right": "e",
+    "merged": "abe"
+  },
+  {
+    "rank": 298,
+    "left": "ig",
+    "right": "keit",
+    "merged": "igkeit"
+  },
+  {
+    "rank": 299,
+    "left": "ind",
+    "right": "igkeit",
+    "merged": "indigkeit"
+  },
+  {
+    "rank": 300,
+    "left": "w",
+    "right": "indigkeit",
+    "merged": "windigkeit"
+  },
+  {
+    "rank": 301,
+    "left": "r",
+    "right": "ei",
+    "merged": "rei"
+  },
+  {
+    "rank": 302,
+    "left": "▁pie",
+    "right": "p",
+    "merged": "▁piep"
+  },
+  {
+    "rank": 303,
+    "left": "u",
+    "right": "h",
+    "merged": "uh"
+  },
+  {
+    "rank": 304,
+    "left": "▁",
+    "right": "j",
+    "merged": "▁j"
+  },
+  {
+    "rank": 305,
+    "left": "▁äh",
+    "right": "m",
+    "merged": "▁ähm"
+  },
+  {
+    "rank": 306,
+    "left": "▁g",
+    "right": "er",
+    "merged": "▁ger"
+  },
+  {
+    "rank": 307,
+    "left": "es",
+    "right": "s",
+    "merged": "ess"
+  },
+  {
+    "rank": 308,
+    "left": "ö",
+    "right": "ne",
+    "merged": "öne"
+  },
+  {
+    "rank": 309,
+    "left": "▁m",
+    "right": "an",
+    "merged": "▁man"
+  },
+  {
+    "rank": 310,
+    "left": "▁sa",
+    "right": "g",
+    "merged": "▁sag"
+  },
+  {
+    "rank": 311,
+    "left": "eh",
+    "right": "r",
+    "merged": "ehr"
+  },
+  {
+    "rank": 312,
+    "left": "ä",
+    "right": "h",
+    "merged": "äh"
+  },
+  {
+    "rank": 313,
+    "left": "▁s",
+    "right": "ich",
+    "merged": "▁sich"
+  },
+  {
+    "rank": 314,
+    "left": "ri",
+    "right": "ft",
+    "merged": "rift"
+  },
+  {
+    "rank": 315,
+    "left": "▁be",
+    "right": "f",
+    "merged": "▁bef"
+  },
+  {
+    "rank": 316,
+    "left": "▁d",
+    "right": "och",
+    "merged": "▁doch"
+  },
+  {
+    "rank": 317,
+    "left": "▁g",
+    "right": "e",
+    "merged": "▁ge"
+  },
+  {
+    "rank": 318,
+    "left": "▁o",
+    "right": "ption",
+    "merged": "▁option"
+  },
+  {
+    "rank": 319,
+    "left": "▁s",
+    "right": "ind",
+    "merged": "▁sind"
+  },
+  {
+    "rank": 320,
+    "left": "▁ton",
+    "right": "höhe",
+    "merged": "▁tonhöhe"
+  },
+  {
+    "rank": 321,
+    "left": "sch",
+    "right": "en",
+    "merged": "schen"
+  },
+  {
+    "rank": 322,
+    "left": "▁erk",
+    "right": "lä",
+    "merged": "▁erklä"
+  },
+  {
+    "rank": 323,
+    "left": "▁komm",
+    "right": "en",
+    "merged": "▁kommen"
+  },
+  {
+    "rank": 324,
+    "left": "▁wechs",
+    "right": "el",
+    "merged": "▁wechsel"
+  },
+  {
+    "rank": 325,
+    "left": "▁",
+    "right": "re",
+    "merged": "▁re"
+  },
+  {
+    "rank": 326,
+    "left": "▁a",
+    "right": "l",
+    "merged": "▁al"
+  },
+  {
+    "rank": 327,
+    "left": "▁sp",
+    "right": "ra",
+    "merged": "▁spra"
+  },
+  {
+    "rank": 328,
+    "left": "▁erkenn",
+    "right": "en",
+    "merged": "▁erkennen"
+  },
+  {
+    "rank": 329,
+    "left": "▁z",
+    "right": "wei",
+    "merged": "▁zwei"
+  },
+  {
+    "rank": 330,
+    "left": "▁öf",
+    "right": "f",
+    "merged": "▁öff"
+  },
+  {
+    "rank": 331,
+    "left": "un",
+    "right": "ktion",
+    "merged": "unktion"
+  },
+  {
+    "rank": 332,
+    "left": "än",
+    "right": "n",
+    "merged": "änn"
+  },
+  {
+    "rank": 333,
+    "left": "▁f",
+    "right": "unktion",
+    "merged": "▁funktion"
+  },
+  {
+    "rank": 334,
+    "left": "▁m",
+    "right": "änn",
+    "merged": "▁männ"
+  },
+  {
+    "rank": 335,
+    "left": "▁zw",
+    "right": "ischen",
+    "merged": "▁zwischen"
+  },
+  {
+    "rank": 336,
+    "left": "m",
+    "right": "al",
+    "merged": "mal"
+  },
+  {
+    "rank": 337,
+    "left": "▁m",
+    "right": "ehr",
+    "merged": "▁mehr"
+  },
+  {
+    "rank": 338,
+    "left": "der",
+    "right": "n",
+    "merged": "dern"
+  },
+  {
+    "rank": 339,
+    "left": "in",
+    "right": "g",
+    "merged": "ing"
+  },
+  {
+    "rank": 340,
+    "left": "▁m",
+    "right": "ein",
+    "merged": "▁mein"
+  },
+  {
+    "rank": 341,
+    "left": "▁sp",
+    "right": "r",
+    "merged": "▁spr"
+  },
+  {
+    "rank": 342,
+    "left": "0",
+    "right": "0",
+    "merged": "00"
+  },
+  {
+    "rank": 343,
+    "left": "r",
+    "right": "ie",
+    "merged": "rie"
+  },
+  {
+    "rank": 344,
+    "left": "t",
+    "right": "o",
+    "merged": "to"
+  },
+  {
+    "rank": 345,
+    "left": "▁al",
+    "right": "s",
+    "merged": "▁als"
+  },
+  {
+    "rank": 346,
+    "left": "▁funktion",
+    "right": "iert",
+    "merged": "▁funktioniert"
+  },
+  {
+    "rank": 347,
+    "left": "▁gesch",
+    "right": "windigkeit",
+    "merged": "▁geschwindigkeit"
+  },
+  {
+    "rank": 348,
+    "left": "▁her",
+    "right": "tz",
+    "merged": "▁hertz"
+  },
+  {
+    "rank": 349,
+    "left": "▁sch",
+    "right": "ild",
+    "merged": "▁schild"
+  },
+  {
+    "rank": 350,
+    "left": "g",
+    "right": "abe",
+    "merged": "gabe"
+  },
+  {
+    "rank": 351,
+    "left": "ig",
+    "right": "er",
+    "merged": "iger"
+  },
+  {
+    "rank": 352,
+    "left": "▁",
+    "right": "rech",
+    "merged": "▁rech"
+  },
+  {
+    "rank": 353,
+    "left": "▁bp",
+    "right": "s",
+    "merged": "▁bps"
+  },
+  {
+    "rank": 354,
+    "left": "▁option",
+    "right": "en",
+    "merged": "▁optionen"
+  },
+  {
+    "rank": 355,
+    "left": "ch",
+    "right": "st",
+    "merged": "chst"
+  },
+  {
+    "rank": 356,
+    "left": "on",
+    "right": "fig",
+    "merged": "onfig"
+  },
+  {
+    "rank": 357,
+    "left": "ün",
+    "right": "f",
+    "merged": "ünf"
+  },
+  {
+    "rank": 358,
+    "left": "▁st",
+    "right": "o",
+    "merged": "▁sto"
+  },
+  {
+    "rank": 359,
+    "left": "▁te",
+    "right": "x",
+    "merged": "▁tex"
+  },
+  {
+    "rank": 360,
+    "left": "▁änder",
+    "right": "e",
+    "merged": "▁ändere"
+  },
+  {
+    "rank": 361,
+    "left": "ü",
+    "right": "ber",
+    "merged": "über"
+  },
+  {
+    "rank": 362,
+    "left": "▁b",
+    "right": "lei",
+    "merged": "▁blei"
+  },
+  {
+    "rank": 363,
+    "left": "▁k",
+    "right": "onfig",
+    "merged": "▁konfig"
+  },
+  {
+    "rank": 364,
+    "left": "▁men",
+    "right": "ü",
+    "merged": "▁menü"
+  },
+  {
+    "rank": 365,
+    "left": "▁sprech",
+    "right": "en",
+    "merged": "▁sprechen"
+  },
+  {
+    "rank": 366,
+    "left": "▁vor",
+    "right": "ne",
+    "merged": "▁vorne"
+  },
+  {
+    "rank": 367,
+    "left": "▁w",
+    "right": "ei",
+    "merged": "▁wei"
+  },
+  {
+    "rank": 368,
+    "left": "gen",
+    "right": "d",
+    "merged": "gend"
+  },
+  {
+    "rank": 369,
+    "left": "lich",
+    "right": "e",
+    "merged": "liche"
+  },
+  {
+    "rank": 370,
+    "left": "ul",
+    "right": "se",
+    "merged": "ulse"
+  },
+  {
+    "rank": 371,
+    "left": "▁entfern",
+    "right": "t",
+    "merged": "▁entfernt"
+  },
+  {
+    "rank": 372,
+    "left": "▁obje",
+    "right": "kt",
+    "merged": "▁objekt"
+  },
+  {
+    "rank": 373,
+    "left": "▁vor",
+    "right": "l",
+    "merged": "▁vorl"
+  },
+  {
+    "rank": 374,
+    "left": "▁wieder",
+    "right": "h",
+    "merged": "▁wiederh"
+  },
+  {
+    "rank": 375,
+    "left": "▁zei",
+    "right": "g",
+    "merged": "▁zeig"
+  },
+  {
+    "rank": 376,
+    "left": "▁konfig",
+    "right": "ur",
+    "merged": "▁konfigur"
+  },
+  {
+    "rank": 377,
+    "left": "▁n",
+    "right": "eben",
+    "merged": "▁neben"
+  },
+  {
+    "rank": 378,
+    "left": "i",
+    "right": "s",
+    "merged": "is"
+  },
+  {
+    "rank": 379,
+    "left": "▁ander",
+    "right": "en",
+    "merged": "▁anderen"
+  },
+  {
+    "rank": 380,
+    "left": "▁s",
+    "right": "etz",
+    "merged": "▁setz"
+  },
+  {
+    "rank": 381,
+    "left": "▁wi",
+    "right": "r",
+    "merged": "▁wir"
+  },
+  {
+    "rank": 382,
+    "left": "b",
+    "right": "t",
+    "merged": "bt"
+  },
+  {
+    "rank": 383,
+    "left": "r",
+    "right": "gend",
+    "merged": "rgend"
+  },
+  {
+    "rank": 384,
+    "left": "t",
+    "right": "lich",
+    "merged": "tlich"
+  },
+  {
+    "rank": 385,
+    "left": "t",
+    "right": "s",
+    "merged": "ts"
+  },
+  {
+    "rank": 386,
+    "left": "▁bis",
+    "right": "schen",
+    "merged": "▁bisschen"
+  },
+  {
+    "rank": 387,
+    "left": "▁i",
+    "right": "rgend",
+    "merged": "▁irgend"
+  },
+  {
+    "rank": 388,
+    "left": "▁tex",
+    "right": "t",
+    "merged": "▁text"
+  },
+  {
+    "rank": 389,
+    "left": "rau",
+    "right": "f",
+    "merged": "rauf"
+  },
+  {
+    "rank": 390,
+    "left": "▁",
+    "right": "über",
+    "merged": "▁über"
+  },
+  {
+    "rank": 391,
+    "left": "▁piep",
+    "right": "en",
+    "merged": "▁piepen"
+  },
+  {
+    "rank": 392,
+    "left": "ch",
+    "right": "en",
+    "merged": "chen"
+  },
+  {
+    "rank": 393,
+    "left": "rie",
+    "right": "ben",
+    "merged": "rieben"
+  },
+  {
+    "rank": 394,
+    "left": "▁mach",
+    "right": "t",
+    "merged": "▁macht"
+  },
+  {
+    "rank": 395,
+    "left": "ei",
+    "right": "gen",
+    "merged": "eigen"
+  },
+  {
+    "rank": 396,
+    "left": "▁au",
+    "right": "to",
+    "merged": "▁auto"
+  },
+  {
+    "rank": 397,
+    "left": "▁spr",
+    "right": "ich",
+    "merged": "▁sprich"
+  },
+  {
+    "rank": 398,
+    "left": "▁w",
+    "right": "and",
+    "merged": "▁wand"
+  },
+  {
+    "rank": 399,
+    "left": "imm",
+    "right": "en",
+    "merged": "immen"
+  },
+  {
+    "rank": 400,
+    "left": "▁die",
+    "right": "s",
+    "merged": "▁dies"
+  },
+  {
+    "rank": 401,
+    "left": "▁gesch",
+    "right": "rieben",
+    "merged": "▁geschrieben"
+  },
+  {
+    "rank": 402,
+    "left": "▁signal",
+    "right": "e",
+    "merged": "▁signale"
+  },
+  {
+    "rank": 403,
+    "left": "▁sto",
+    "right": "pp",
+    "merged": "▁stopp"
+  },
+  {
+    "rank": 404,
+    "left": "▁wiederh",
+    "right": "ol",
+    "merged": "▁wiederhol"
+  },
+  {
+    "rank": 405,
+    "left": "u",
+    "right": "fig",
+    "merged": "ufig"
+  },
+  {
+    "rank": 406,
+    "left": "ü",
+    "right": "ck",
+    "merged": "ück"
+  },
+  {
+    "rank": 407,
+    "left": "▁hä",
+    "right": "ufig",
+    "merged": "▁häufig"
+  },
+  {
+    "rank": 408,
+    "left": "▁k",
+    "right": "ur",
+    "merged": "▁kur"
+  },
+  {
+    "rank": 409,
+    "left": "a",
+    "right": "de",
+    "merged": "ade"
+  },
+  {
+    "rank": 410,
+    "left": "an",
+    "right": "der",
+    "merged": "ander"
+  },
+  {
+    "rank": 411,
+    "left": "ein",
+    "right": "ander",
+    "merged": "einander"
+  },
+  {
+    "rank": 412,
+    "left": "▁er",
+    "right": "st",
+    "merged": "▁erst"
+  },
+  {
+    "rank": 413,
+    "left": "▁ger",
+    "right": "ade",
+    "merged": "▁gerade"
+  },
+  {
+    "rank": 414,
+    "left": "▁h",
+    "right": "och",
+    "merged": "▁hoch"
+  },
+  {
+    "rank": 415,
+    "left": "▁rech",
+    "right": "ts",
+    "merged": "▁rechts"
+  },
+  {
+    "rank": 416,
+    "left": "▁s",
+    "right": "ehen",
+    "merged": "▁sehen"
+  },
+  {
+    "rank": 417,
+    "left": "te",
+    "right": "t",
+    "merged": "tet"
+  },
+  {
+    "rank": 418,
+    "left": "ä",
+    "right": "chst",
+    "merged": "ächst"
+  },
+  {
+    "rank": 419,
+    "left": "ä",
+    "right": "nder",
+    "merged": "änder"
+  },
+  {
+    "rank": 420,
+    "left": "▁irgend",
+    "right": "w",
+    "merged": "▁irgendw"
+  },
+  {
+    "rank": 421,
+    "left": "▁n",
+    "right": "ächst",
+    "merged": "▁nächst"
+  },
+  {
+    "rank": 422,
+    "left": "ch",
+    "right": "t",
+    "merged": "cht"
+  },
+  {
+    "rank": 423,
+    "left": "ier",
+    "right": "en",
+    "merged": "ieren"
+  },
+  {
+    "rank": 424,
+    "left": "un",
+    "right": "ter",
+    "merged": "unter"
+  },
+  {
+    "rank": 425,
+    "left": "▁b",
+    "right": "ei",
+    "merged": "▁bei"
+  },
+  {
+    "rank": 426,
+    "left": "▁bef",
+    "right": "ind",
+    "merged": "▁befind"
+  },
+  {
+    "rank": 427,
+    "left": "▁kur",
+    "right": "z",
+    "merged": "▁kurz"
+  },
+  {
+    "rank": 428,
+    "left": "▁spra",
+    "right": "ch",
+    "merged": "▁sprach"
+  },
+  {
+    "rank": 429,
+    "left": "ah",
+    "right": "l",
+    "merged": "ahl"
+  },
+  {
+    "rank": 430,
+    "left": "▁f",
+    "right": "l",
+    "merged": "▁fl"
+  },
+  {
+    "rank": 431,
+    "left": "▁irgendw",
+    "right": "o",
+    "merged": "▁irgendwo"
+  },
+  {
+    "rank": 432,
+    "left": "eigen",
+    "right": "tlich",
+    "merged": "eigentlich"
+  },
+  {
+    "rank": 433,
+    "left": "m",
+    "right": "en",
+    "merged": "men"
+  },
+  {
+    "rank": 434,
+    "left": "▁",
+    "right": "eigentlich",
+    "merged": "▁eigentlich"
+  },
+  {
+    "rank": 435,
+    "left": "▁",
+    "right": "rate",
+    "merged": "▁rate"
+  },
+  {
+    "rank": 436,
+    "left": "▁h",
+    "right": "ö",
+    "merged": "▁hö"
+  },
+  {
+    "rank": 437,
+    "left": "▁pie",
+    "right": "pt",
+    "merged": "▁piept"
+  },
+  {
+    "rank": 438,
+    "left": "▁r",
+    "right": "unter",
+    "merged": "▁runter"
+  },
+  {
+    "rank": 439,
+    "left": "▁v",
+    "right": "ier",
+    "merged": "▁vier"
+  },
+  {
+    "rank": 440,
+    "left": "▁vorl",
+    "right": "esen",
+    "merged": "▁vorlesen"
+  },
+  {
+    "rank": 441,
+    "left": "o",
+    "right": "m",
+    "merged": "om"
+  },
+  {
+    "rank": 442,
+    "left": "re",
+    "right": "kt",
+    "merged": "rekt"
+  },
+  {
+    "rank": 443,
+    "left": "uh",
+    "right": "l",
+    "merged": "uhl"
+  },
+  {
+    "rank": 444,
+    "left": "▁b",
+    "right": "rau",
+    "merged": "▁brau"
+  },
+  {
+    "rank": 445,
+    "left": "▁di",
+    "right": "rekt",
+    "merged": "▁direkt"
+  },
+  {
+    "rank": 446,
+    "left": "▁h",
+    "right": "ier",
+    "merged": "▁hier"
+  },
+  {
+    "rank": 447,
+    "left": "▁st",
+    "right": "uhl",
+    "merged": "▁stuhl"
+  },
+  {
+    "rank": 448,
+    "left": "▁t",
+    "right": "a",
+    "merged": "▁ta"
+  },
+  {
+    "rank": 449,
+    "left": "▁war",
+    "right": "um",
+    "merged": "▁warum"
+  },
+  {
+    "rank": 450,
+    "left": "äh",
+    "right": "r",
+    "merged": "ähr"
+  },
+  {
+    "rank": 451,
+    "left": "▁befind",
+    "right": "et",
+    "merged": "▁befindet"
+  },
+  {
+    "rank": 452,
+    "left": "▁h",
+    "right": "z",
+    "merged": "▁hz"
+  },
+  {
+    "rank": 453,
+    "left": "▁vie",
+    "right": "le",
+    "merged": "▁viele"
+  },
+  {
+    "rank": 454,
+    "left": "▁w",
+    "right": "en",
+    "merged": "▁wen"
+  },
+  {
+    "rank": 455,
+    "left": "a",
+    "right": "ck",
+    "merged": "ack"
+  },
+  {
+    "rank": 456,
+    "left": "at",
+    "right": "ion",
+    "merged": "ation"
+  },
+  {
+    "rank": 457,
+    "left": "▁g",
+    "right": "en",
+    "merged": "▁gen"
+  },
+  {
+    "rank": 458,
+    "left": "▁s",
+    "right": "el",
+    "merged": "▁sel"
+  },
+  {
+    "rank": 459,
+    "left": "▁s",
+    "right": "on",
+    "merged": "▁son"
+  },
+  {
+    "rank": 460,
+    "left": "▁sch",
+    "right": "rift",
+    "merged": "▁schrift"
+  },
+  {
+    "rank": 461,
+    "left": "▁t",
+    "right": "un",
+    "merged": "▁tun"
+  },
+  {
+    "rank": 462,
+    "left": "▁wer",
+    "right": "den",
+    "merged": "▁werden"
+  },
+  {
+    "rank": 463,
+    "left": "g",
+    "right": "ang",
+    "merged": "gang"
+  },
+  {
+    "rank": 464,
+    "left": "t",
+    "right": "h",
+    "merged": "th"
+  },
+  {
+    "rank": 465,
+    "left": "te",
+    "right": "l",
+    "merged": "tel"
+  },
+  {
+    "rank": 466,
+    "left": "▁b",
+    "right": "esch",
+    "merged": "▁besch"
+  },
+  {
+    "rank": 467,
+    "left": "▁f",
+    "right": "ol",
+    "merged": "▁fol"
+  },
+  {
+    "rank": 468,
+    "left": "▁f",
+    "right": "ra",
+    "merged": "▁fra"
+  },
+  {
+    "rank": 469,
+    "left": "▁f",
+    "right": "ünf",
+    "merged": "▁fünf"
+  },
+  {
+    "rank": 470,
+    "left": "▁hinwei",
+    "right": "se",
+    "merged": "▁hinweise"
+  },
+  {
+    "rank": 471,
+    "left": "▁l",
+    "right": "in",
+    "merged": "▁lin"
+  },
+  {
+    "rank": 472,
+    "left": "▁m",
+    "right": "et",
+    "merged": "▁met"
+  },
+  {
+    "rank": 473,
+    "left": "▁m",
+    "right": "ich",
+    "merged": "▁mich"
+  },
+  {
+    "rank": 474,
+    "left": "▁n",
+    "right": "e",
+    "merged": "▁ne"
+  },
+  {
+    "rank": 475,
+    "left": "e",
+    "right": "f",
+    "merged": "ef"
+  },
+  {
+    "rank": 476,
+    "left": "t",
+    "right": "w",
+    "merged": "tw"
+  },
+  {
+    "rank": 477,
+    "left": "▁d",
+    "right": "rei",
+    "merged": "▁drei"
+  },
+  {
+    "rank": 478,
+    "left": "▁ge",
+    "right": "gen",
+    "merged": "▁gegen"
+  },
+  {
+    "rank": 479,
+    "left": "▁l",
+    "right": "esen",
+    "merged": "▁lesen"
+  },
+  {
+    "rank": 480,
+    "left": "▁nicht",
+    "right": "s",
+    "merged": "▁nichts"
+  },
+  {
+    "rank": 481,
+    "left": "▁öff",
+    "right": "ne",
+    "merged": "▁öffne"
+  },
+  {
+    "rank": 482,
+    "left": "f",
+    "right": "ach",
+    "merged": "fach"
+  },
+  {
+    "rank": 483,
+    "left": "tw",
+    "right": "ort",
+    "merged": "twort"
+  },
+  {
+    "rank": 484,
+    "left": "▁an",
+    "right": "twort",
+    "merged": "▁antwort"
+  },
+  {
+    "rank": 485,
+    "left": "▁d",
+    "right": "ort",
+    "merged": "▁dort"
+  },
+  {
+    "rank": 486,
+    "left": "▁ein",
+    "right": "fach",
+    "merged": "▁einfach"
+  },
+  {
+    "rank": 487,
+    "left": "▁kl",
+    "right": "in",
+    "merged": "▁klin"
+  },
+  {
+    "rank": 488,
+    "left": "▁lie",
+    "right": "gt",
+    "merged": "▁liegt"
+  },
+  {
+    "rank": 489,
+    "left": "▁p",
+    "right": "er",
+    "merged": "▁per"
+  },
+  {
+    "rank": 490,
+    "left": "▁t",
+    "right": "öne",
+    "merged": "▁töne"
+  },
+  {
+    "rank": 491,
+    "left": "▁vie",
+    "right": "l",
+    "merged": "▁viel"
+  },
+  {
+    "rank": 492,
+    "left": "dern",
+    "right": "is",
+    "merged": "dernis"
+  },
+  {
+    "rank": 493,
+    "left": "i",
+    "right": "ck",
+    "merged": "ick"
+  },
+  {
+    "rank": 494,
+    "left": "k",
+    "right": "s",
+    "merged": "ks"
+  },
+  {
+    "rank": 495,
+    "left": "▁",
+    "right": "ung",
+    "merged": "▁ung"
+  },
+  {
+    "rank": 496,
+    "left": "▁erklä",
+    "right": "r",
+    "merged": "▁erklär"
+  },
+  {
+    "rank": 497,
+    "left": "▁finde",
+    "right": "st",
+    "merged": "▁findest"
+  },
+  {
+    "rank": 498,
+    "left": "▁hin",
+    "right": "dernis",
+    "merged": "▁hindernis"
+  },
+  {
+    "rank": 499,
+    "left": "▁lin",
+    "right": "ks",
+    "merged": "▁links"
+  },
+  {
+    "rank": 500,
+    "left": "▁met",
+    "right": "er",
+    "merged": "▁meter"
+  },
+  {
+    "rank": 501,
+    "left": "▁wei",
+    "right": "b",
+    "merged": "▁weib"
+  },
+  {
+    "rank": 502,
+    "left": "▁d",
+    "right": "rauf",
+    "merged": "▁drauf"
+  },
+  {
+    "rank": 503,
+    "left": "▁nächst",
+    "right": "e",
+    "merged": "▁nächste"
+  },
+  {
+    "rank": 504,
+    "left": "▁per",
+    "right": "s",
+    "merged": "▁pers"
+  },
+  {
+    "rank": 505,
+    "left": "▁s",
+    "right": "ein",
+    "merged": "▁sein"
+  },
+  {
+    "rank": 506,
+    "left": "▁un",
+    "right": "ter",
+    "merged": "▁unter"
+  },
+  {
+    "rank": 507,
+    "left": "▁ung",
+    "right": "ef",
+    "merged": "▁ungef"
+  },
+  {
+    "rank": 508,
+    "left": "▁wechsel",
+    "right": "n",
+    "merged": "▁wechseln"
+  },
+  {
+    "rank": 509,
+    "left": "ch",
+    "right": "er",
+    "merged": "cher"
+  },
+  {
+    "rank": 510,
+    "left": "l",
+    "right": "a",
+    "merged": "la"
+  },
+  {
+    "rank": 511,
+    "left": "▁a",
+    "right": "kt",
+    "merged": "▁akt"
+  },
+  {
+    "rank": 512,
+    "left": "▁soll",
+    "right": "en",
+    "merged": "▁sollen"
+  },
+  {
+    "rank": 513,
+    "left": "▁t",
+    "right": "isch",
+    "merged": "▁tisch"
+  },
+  {
+    "rank": 514,
+    "left": "▁zur",
+    "right": "ück",
+    "merged": "▁zurück"
+  },
+  {
+    "rank": 515,
+    "left": "as",
+    "right": "st",
+    "merged": "asst"
+  },
+  {
+    "rank": 516,
+    "left": "en",
+    "right": "d",
+    "merged": "end"
+  },
+  {
+    "rank": 517,
+    "left": "ess",
+    "right": "en",
+    "merged": "essen"
+  },
+  {
+    "rank": 518,
+    "left": "et",
+    "right": "tel",
+    "merged": "ettel"
+  },
+  {
+    "rank": 519,
+    "left": "te",
+    "right": "mpo",
+    "merged": "tempo"
+  },
+  {
+    "rank": 520,
+    "left": "▁hin",
+    "right": "ter",
+    "merged": "▁hinter"
+  },
+  {
+    "rank": 521,
+    "left": "▁i",
+    "right": "mp",
+    "merged": "▁imp"
+  },
+  {
+    "rank": 522,
+    "left": "▁p",
+    "right": "asst",
+    "merged": "▁passt"
+  },
+  {
+    "rank": 523,
+    "left": "▁pers",
+    "right": "on",
+    "merged": "▁person"
+  },
+  {
+    "rank": 524,
+    "left": "▁sa",
+    "right": "gen",
+    "merged": "▁sagen"
+  },
+  {
+    "rank": 525,
+    "left": "▁ungef",
+    "right": "ähr",
+    "merged": "▁ungefähr"
+  },
+  {
+    "rank": 526,
+    "left": "▁weit",
+    "right": "er",
+    "merged": "▁weiter"
+  },
+  {
+    "rank": 527,
+    "left": "▁z",
+    "right": "ettel",
+    "merged": "▁zettel"
+  },
+  {
+    "rank": 528,
+    "left": "de",
+    "right": "u",
+    "merged": "deu"
+  },
+  {
+    "rank": 529,
+    "left": "deu",
+    "right": "tet",
+    "merged": "deutet"
+  },
+  {
+    "rank": 530,
+    "left": "h",
+    "right": "in",
+    "merged": "hin"
+  },
+  {
+    "rank": 531,
+    "left": "▁als",
+    "right": "o",
+    "merged": "▁also"
+  },
+  {
+    "rank": 532,
+    "left": "▁be",
+    "right": "deutet",
+    "merged": "▁bedeutet"
+  },
+  {
+    "rank": 533,
+    "left": "▁d",
+    "right": "es",
+    "merged": "▁des"
+  },
+  {
+    "rank": 534,
+    "left": "▁ein",
+    "right": "er",
+    "merged": "▁einer"
+  },
+  {
+    "rank": 535,
+    "left": "▁erklä",
+    "right": "ren",
+    "merged": "▁erklären"
+  },
+  {
+    "rank": 536,
+    "left": "▁häufig",
+    "right": "er",
+    "merged": "▁häufiger"
+  },
+  {
+    "rank": 537,
+    "left": "▁n",
+    "right": "ah",
+    "merged": "▁nah"
+  },
+  {
+    "rank": 538,
+    "left": "▁sie",
+    "right": "h",
+    "merged": "▁sieh"
+  },
+  {
+    "rank": 539,
+    "left": "▁wen",
+    "right": "iger",
+    "merged": "▁weniger"
+  },
+  {
+    "rank": 540,
+    "left": "aus",
+    "right": "gabe",
+    "merged": "ausgabe"
+  },
+  {
+    "rank": 541,
+    "left": "o",
+    "right": "t",
+    "merged": "ot"
+  },
+  {
+    "rank": 542,
+    "left": "ul",
+    "right": "s",
+    "merged": "uls"
+  },
+  {
+    "rank": 543,
+    "left": "▁",
+    "right": "e",
+    "merged": "▁e"
+  },
+  {
+    "rank": 544,
+    "left": "▁",
+    "right": "um",
+    "merged": "▁um"
+  },
+  {
+    "rank": 545,
+    "left": "▁be",
+    "right": "st",
+    "merged": "▁best"
+  },
+  {
+    "rank": 546,
+    "left": "▁fra",
+    "right": "uen",
+    "merged": "▁frauen"
+  },
+  {
+    "rank": 547,
+    "left": "▁mi",
+    "right": "ss",
+    "merged": "▁miss"
+  },
+  {
+    "rank": 548,
+    "left": "▁v",
+    "right": "om",
+    "merged": "▁vom"
+  },
+  {
+    "rank": 549,
+    "left": "▁öf",
+    "right": "ter",
+    "merged": "▁öfter"
+  },
+  {
+    "rank": 550,
+    "left": "ass",
+    "right": "en",
+    "merged": "assen"
+  },
+  {
+    "rank": 551,
+    "left": "eh",
+    "right": "e",
+    "merged": "ehe"
+  },
+  {
+    "rank": 552,
+    "left": "en",
+    "right": "de",
+    "merged": "ende"
+  },
+  {
+    "rank": 553,
+    "left": "etz",
+    "right": "t",
+    "merged": "etzt"
+  },
+  {
+    "rank": 554,
+    "left": "z",
+    "right": "ig",
+    "merged": "zig"
+  },
+  {
+    "rank": 555,
+    "left": "▁",
+    "right": "1",
+    "merged": "▁1"
+  },
+  {
+    "rank": 556,
+    "left": "▁blei",
+    "right": "bt",
+    "merged": "▁bleibt"
+  },
+  {
+    "rank": 557,
+    "left": "▁h",
+    "right": "at",
+    "merged": "▁hat"
+  },
+  {
+    "rank": 558,
+    "left": "▁m",
+    "right": "eine",
+    "merged": "▁meine"
+  },
+  {
+    "rank": 559,
+    "left": "▁m",
+    "right": "essen",
+    "merged": "▁messen"
+  },
+  {
+    "rank": 560,
+    "left": "▁mach",
+    "right": "en",
+    "merged": "▁machen"
+  },
+  {
+    "rank": 561,
+    "left": "▁s",
+    "right": "u",
+    "merged": "▁su"
+  },
+  {
+    "rank": 562,
+    "left": "▁sel",
+    "right": "ten",
+    "merged": "▁selten"
+  },
+  {
+    "rank": 563,
+    "left": "▁setz",
+    "right": "e",
+    "merged": "▁setze"
+  },
+  {
+    "rank": 564,
+    "left": "▁signal",
+    "right": "t",
+    "merged": "▁signalt"
+  },
+  {
+    "rank": 565,
+    "left": "▁sprach",
+    "right": "ausgabe",
+    "merged": "▁sprachausgabe"
+  },
+  {
+    "rank": 566,
+    "left": "▁ver",
+    "right": "g",
+    "merged": "▁verg"
+  },
+  {
+    "rank": 567,
+    "left": "h",
+    "right": "er",
+    "merged": "her"
+  },
+  {
+    "rank": 568,
+    "left": "▁frauen",
+    "right": "stimme",
+    "merged": "▁frauenstimme"
+  },
+  {
+    "rank": 569,
+    "left": "▁g",
+    "right": "i",
+    "merged": "▁gi"
+  },
+  {
+    "rank": 570,
+    "left": "▁i",
+    "right": "h",
+    "merged": "▁ih"
+  },
+  {
+    "rank": 571,
+    "left": "▁konfigur",
+    "right": "ation",
+    "merged": "▁konfiguration"
+  },
+  {
+    "rank": 572,
+    "left": "▁sieh",
+    "right": "st",
+    "merged": "▁siehst"
+  },
+  {
+    "rank": 573,
+    "left": "▁st",
+    "right": "immen",
+    "merged": "▁stimmen"
+  },
+  {
+    "rank": 574,
+    "left": "ah",
+    "right": "r",
+    "merged": "ahr"
+  },
+  {
+    "rank": 575,
+    "left": "eh",
+    "right": "l",
+    "merged": "ehl"
+  },
+  {
+    "rank": 576,
+    "left": "eh",
+    "right": "men",
+    "merged": "ehmen"
+  },
+  {
+    "rank": 577,
+    "left": "st",
+    "right": "än",
+    "merged": "stän"
+  },
+  {
+    "rank": 578,
+    "left": "u",
+    "right": "ell",
+    "merged": "uell"
+  },
+  {
+    "rank": 579,
+    "left": "ö",
+    "right": "nen",
+    "merged": "önen"
+  },
+  {
+    "rank": 580,
+    "left": "▁akt",
+    "right": "uell",
+    "merged": "▁aktuell"
+  },
+  {
+    "rank": 581,
+    "left": "▁b",
+    "right": "r",
+    "merged": "▁br"
+  },
+  {
+    "rank": 582,
+    "left": "▁d",
+    "right": "ich",
+    "merged": "▁dich"
+  },
+  {
+    "rank": 583,
+    "left": "▁erkenn",
+    "right": "st",
+    "merged": "▁erkennst"
+  },
+  {
+    "rank": 584,
+    "left": "▁imp",
+    "right": "ulse",
+    "merged": "▁impulse"
+  },
+  {
+    "rank": 585,
+    "left": "▁j",
+    "right": "etzt",
+    "merged": "▁jetzt"
+  },
+  {
+    "rank": 586,
+    "left": "▁mein",
+    "right": "en",
+    "merged": "▁meinen"
+  },
+  {
+    "rank": 587,
+    "left": "▁n",
+    "right": "ach",
+    "merged": "▁nach"
+  },
+  {
+    "rank": 588,
+    "left": "▁se",
+    "right": "chs",
+    "merged": "▁sechs"
+  },
+  {
+    "rank": 589,
+    "left": "▁ta",
+    "right": "kt",
+    "merged": "▁takt"
+  },
+  {
+    "rank": 590,
+    "left": "ei",
+    "right": "te",
+    "merged": "eite"
+  },
+  {
+    "rank": 591,
+    "left": "f",
+    "right": "en",
+    "merged": "fen"
+  },
+  {
+    "rank": 592,
+    "left": "rech",
+    "right": "en",
+    "merged": "rechen"
+  },
+  {
+    "rank": 593,
+    "left": "ü",
+    "right": "h",
+    "merged": "üh"
+  },
+  {
+    "rank": 594,
+    "left": "▁gegen",
+    "right": "stand",
+    "merged": "▁gegenstand"
+  },
+  {
+    "rank": 595,
+    "left": "▁hä",
+    "right": "tte",
+    "merged": "▁hätte"
+  },
+  {
+    "rank": 596,
+    "left": "▁hö",
+    "right": "ren",
+    "merged": "▁hören"
+  },
+  {
+    "rank": 597,
+    "left": "▁in",
+    "right": "s",
+    "merged": "▁ins"
+  },
+  {
+    "rank": 598,
+    "left": "▁lie",
+    "right": "ß",
+    "merged": "▁ließ"
+  },
+  {
+    "rank": 599,
+    "left": "▁noch",
+    "right": "mal",
+    "merged": "▁nochmal"
+  },
+  {
+    "rank": 600,
+    "left": "▁p",
+    "right": "ulse",
+    "merged": "▁pulse"
+  },
+  {
+    "rank": 601,
+    "left": "em",
+    "right": "and",
+    "merged": "emand"
+  },
+  {
+    "rank": 602,
+    "left": "ie",
+    "right": "d",
+    "merged": "ied"
+  },
+  {
+    "rank": 603,
+    "left": "ö",
+    "right": "n",
+    "merged": "ön"
+  },
+  {
+    "rank": 604,
+    "left": "▁",
+    "right": "5",
+    "merged": "▁5"
+  },
+  {
+    "rank": 605,
+    "left": "▁a",
+    "right": "ll",
+    "merged": "▁all"
+  },
+  {
+    "rank": 606,
+    "left": "▁aus",
+    "right": "gabe",
+    "merged": "▁ausgabe"
+  },
+  {
+    "rank": 607,
+    "left": "▁bi",
+    "right": "ld",
+    "merged": "▁bild"
+  },
+  {
+    "rank": 608,
+    "left": "▁blei",
+    "right": "ben",
+    "merged": "▁bleiben"
+  },
+  {
+    "rank": 609,
+    "left": "▁brau",
+    "right": "che",
+    "merged": "▁brauche"
+  },
+  {
+    "rank": 610,
+    "left": "▁d",
+    "right": "eine",
+    "merged": "▁deine"
+  },
+  {
+    "rank": 611,
+    "left": "▁das",
+    "right": "s",
+    "merged": "▁dass"
+  },
+  {
+    "rank": 612,
+    "left": "▁j",
+    "right": "emand",
+    "merged": "▁jemand"
+  },
+  {
+    "rank": 613,
+    "left": "▁klin",
+    "right": "gen",
+    "merged": "▁klingen"
+  },
+  {
+    "rank": 614,
+    "left": "▁männ",
+    "right": "liche",
+    "merged": "▁männliche"
+  },
+  {
+    "rank": 615,
+    "left": "▁p",
+    "right": "uls",
+    "merged": "▁puls"
+  },
+  {
+    "rank": 616,
+    "left": "▁r",
+    "right": "uh",
+    "merged": "▁ruh"
+  },
+  {
+    "rank": 617,
+    "left": "as",
+    "right": "che",
+    "merged": "asche"
+  },
+  {
+    "rank": 618,
+    "left": "b",
+    "right": "rechen",
+    "merged": "brechen"
+  },
+  {
+    "rank": 619,
+    "left": "e",
+    "right": "u",
+    "merged": "eu"
+  },
+  {
+    "rank": 620,
+    "left": "en",
+    "right": "ne",
+    "merged": "enne"
+  },
+  {
+    "rank": 621,
+    "left": "i",
+    "right": "k",
+    "merged": "ik"
+  },
+  {
+    "rank": 622,
+    "left": "v",
+    "right": "er",
+    "merged": "ver"
+  },
+  {
+    "rank": 623,
+    "left": "▁ab",
+    "right": "brechen",
+    "merged": "▁abbrechen"
+  },
+  {
+    "rank": 624,
+    "left": "▁au",
+    "right": "ch",
+    "merged": "▁auch"
+  },
+  {
+    "rank": 625,
+    "left": "▁bef",
+    "right": "ehl",
+    "merged": "▁befehl"
+  },
+  {
+    "rank": 626,
+    "left": "▁d",
+    "right": "ing",
+    "merged": "▁ding"
+  },
+  {
+    "rank": 627,
+    "left": "▁h",
+    "right": "ab",
+    "merged": "▁hab"
+  },
+  {
+    "rank": 628,
+    "left": "▁o",
+    "right": "ft",
+    "merged": "▁oft"
+  },
+  {
+    "rank": 629,
+    "left": "▁s",
+    "right": "ä",
+    "merged": "▁sä"
+  },
+  {
+    "rank": 630,
+    "left": "▁sprech",
+    "right": "tempo",
+    "merged": "▁sprechtempo"
+  },
+  {
+    "rank": 631,
+    "left": "▁öff",
+    "right": "nen",
+    "merged": "▁öffnen"
+  },
+  {
+    "rank": 632,
+    "left": "er",
+    "right": "stimme",
+    "merged": "erstimme"
+  },
+  {
+    "rank": 633,
+    "left": "f",
+    "right": "requenz",
+    "merged": "frequenz"
+  },
+  {
+    "rank": 634,
+    "left": "k",
+    "right": "u",
+    "merged": "ku"
+  },
+  {
+    "rank": 635,
+    "left": "ss",
+    "right": "en",
+    "merged": "ssen"
+  },
+  {
+    "rank": 636,
+    "left": "u",
+    "right": "t",
+    "merged": "ut"
+  },
+  {
+    "rank": 637,
+    "left": "z",
+    "right": "el",
+    "merged": "zel"
+  },
+  {
+    "rank": 638,
+    "left": "▁",
+    "right": "2",
+    "merged": "▁2"
+  },
+  {
+    "rank": 639,
+    "left": "▁ein",
+    "right": "zel",
+    "merged": "▁einzel"
+  },
+  {
+    "rank": 640,
+    "left": "▁fol",
+    "right": "ge",
+    "merged": "▁folge"
+  },
+  {
+    "rank": 641,
+    "left": "▁glei",
+    "right": "che",
+    "merged": "▁gleiche"
+  },
+  {
+    "rank": 642,
+    "left": "▁komm",
+    "right": "a",
+    "merged": "▁komma"
+  },
+  {
+    "rank": 643,
+    "left": "▁lass",
+    "right": "en",
+    "merged": "▁lassen"
+  },
+  {
+    "rank": 644,
+    "left": "▁männ",
+    "right": "erstimme",
+    "merged": "▁männerstimme"
+  },
+  {
+    "rank": 645,
+    "left": "▁o",
+    "right": "h",
+    "merged": "▁oh"
+  },
+  {
+    "rank": 646,
+    "left": "▁p",
+    "right": "l",
+    "merged": "▁pl"
+  },
+  {
+    "rank": 647,
+    "left": "▁son",
+    "right": "dern",
+    "merged": "▁sondern"
+  },
+  {
+    "rank": 648,
+    "left": "▁unter",
+    "right": "sch",
+    "merged": "▁untersch"
+  },
+  {
+    "rank": 649,
+    "left": "▁weib",
+    "right": "liche",
+    "merged": "▁weibliche"
+  },
+  {
+    "rank": 650,
+    "left": "▁wel",
+    "right": "cher",
+    "merged": "▁welcher"
+  },
+  {
+    "rank": 651,
+    "left": "ack",
+    "right": "ung",
+    "merged": "ackung"
+  },
+  {
+    "rank": 652,
+    "left": "at",
+    "right": "z",
+    "merged": "atz"
+  },
+  {
+    "rank": 653,
+    "left": "enn",
+    "right": "ung",
+    "merged": "ennung"
+  },
+  {
+    "rank": 654,
+    "left": "et",
+    "right": "t",
+    "merged": "ett"
+  },
+  {
+    "rank": 655,
+    "left": "hin",
+    "right": "wei",
+    "merged": "hinwei"
+  },
+  {
+    "rank": 656,
+    "left": "u",
+    "right": "ck",
+    "merged": "uck"
+  },
+  {
+    "rank": 657,
+    "left": "u",
+    "right": "s",
+    "merged": "us"
+  },
+  {
+    "rank": 658,
+    "left": "▁k",
+    "right": "ön",
+    "merged": "▁kön"
+  },
+  {
+    "rank": 659,
+    "left": "▁kl",
+    "right": "ein",
+    "merged": "▁klein"
+  },
+  {
+    "rank": 660,
+    "left": "▁kl",
+    "right": "ick",
+    "merged": "▁klick"
+  },
+  {
+    "rank": 661,
+    "left": "▁oh",
+    "right": "ne",
+    "merged": "▁ohne"
+  },
+  {
+    "rank": 662,
+    "left": "▁s",
+    "right": "eite",
+    "merged": "▁seite"
+  },
+  {
+    "rank": 663,
+    "left": "▁t",
+    "right": "re",
+    "merged": "▁tre"
+  },
+  {
+    "rank": 664,
+    "left": "▁ver",
+    "right": "änder",
+    "merged": "▁veränder"
+  },
+  {
+    "rank": 665,
+    "left": "er",
+    "right": "e",
+    "merged": "ere"
+  },
+  {
+    "rank": 666,
+    "left": "i",
+    "right": "t",
+    "merged": "it"
+  },
+  {
+    "rank": 667,
+    "left": "ier",
+    "right": "e",
+    "merged": "iere"
+  },
+  {
+    "rank": 668,
+    "left": "ig",
+    "right": "e",
+    "merged": "ige"
+  },
+  {
+    "rank": 669,
+    "left": "ig",
+    "right": "en",
+    "merged": "igen"
+  },
+  {
+    "rank": 670,
+    "left": "pp",
+    "right": "e",
+    "merged": "ppe"
+  },
+  {
+    "rank": 671,
+    "left": "st",
+    "right": "eht",
+    "merged": "steht"
+  },
+  {
+    "rank": 672,
+    "left": "▁da",
+    "right": "v",
+    "merged": "▁dav"
+  },
+  {
+    "rank": 673,
+    "left": "▁hinter",
+    "right": "einander",
+    "merged": "▁hintereinander"
+  },
+  {
+    "rank": 674,
+    "left": "▁o",
+    "right": "der",
+    "merged": "▁oder"
+  },
+  {
+    "rank": 675,
+    "left": "▁signalt",
+    "right": "on",
+    "merged": "▁signalton"
+  },
+  {
+    "rank": 676,
+    "left": "▁tre",
+    "right": "ppe",
+    "merged": "▁treppe"
+  },
+  {
+    "rank": 677,
+    "left": "▁wiederhol",
+    "right": "rate",
+    "merged": "▁wiederholrate"
+  },
+  {
+    "rank": 678,
+    "left": "al",
+    "right": "te",
+    "merged": "alte"
+  },
+  {
+    "rank": 679,
+    "left": "el",
+    "right": "d",
+    "merged": "eld"
+  },
+  {
+    "rank": 680,
+    "left": "f",
+    "right": "ünf",
+    "merged": "fünf"
+  },
+  {
+    "rank": 681,
+    "left": "k",
+    "right": "te",
+    "merged": "kte"
+  },
+  {
+    "rank": 682,
+    "left": "o",
+    "right": "ll",
+    "merged": "oll"
+  },
+  {
+    "rank": 683,
+    "left": "s",
+    "right": "p",
+    "merged": "sp"
+  },
+  {
+    "rank": 684,
+    "left": "stän",
+    "right": "de",
+    "merged": "stände"
+  },
+  {
+    "rank": 685,
+    "left": "▁",
+    "right": "3",
+    "merged": "▁3"
+  },
+  {
+    "rank": 686,
+    "left": "▁an",
+    "right": "z",
+    "merged": "▁anz"
+  },
+  {
+    "rank": 687,
+    "left": "▁ander",
+    "right": "s",
+    "merged": "▁anders"
+  },
+  {
+    "rank": 688,
+    "left": "▁einstell",
+    "right": "en",
+    "merged": "▁einstellen"
+  },
+  {
+    "rank": 689,
+    "left": "▁er",
+    "right": "höhe",
+    "merged": "▁erhöhe"
+  },
+  {
+    "rank": 690,
+    "left": "▁fl",
+    "right": "asche",
+    "merged": "▁flasche"
+  },
+  {
+    "rank": 691,
+    "left": "▁g",
+    "right": "es",
+    "merged": "▁ges"
+  },
+  {
+    "rank": 692,
+    "left": "▁k",
+    "right": "eine",
+    "merged": "▁keine"
+  },
+  {
+    "rank": 693,
+    "left": "▁konfigur",
+    "right": "ieren",
+    "merged": "▁konfigurieren"
+  },
+  {
+    "rank": 694,
+    "left": "▁ne",
+    "right": "e",
+    "merged": "▁nee"
+  },
+  {
+    "rank": 695,
+    "left": "▁selten",
+    "right": "er",
+    "merged": "▁seltener"
+  },
+  {
+    "rank": 696,
+    "left": "▁spra",
+    "right": "che",
+    "merged": "▁sprache"
+  },
+  {
+    "rank": 697,
+    "left": "▁wer",
+    "right": "t",
+    "merged": "▁wert"
+  },
+  {
+    "rank": 698,
+    "left": "▁wi",
+    "right": "ssen",
+    "merged": "▁wissen"
+  },
+  {
+    "rank": 699,
+    "left": "a",
+    "right": "ben",
+    "merged": "aben"
+  },
+  {
+    "rank": 700,
+    "left": "ess",
+    "right": "ung",
+    "merged": "essung"
+  },
+  {
+    "rank": 701,
+    "left": "f",
+    "right": "e",
+    "merged": "fe"
+  },
+  {
+    "rank": 702,
+    "left": "i",
+    "right": "r",
+    "merged": "ir"
+  },
+  {
+    "rank": 703,
+    "left": "i",
+    "right": "ss",
+    "merged": "iss"
+  },
+  {
+    "rank": 704,
+    "left": "lä",
+    "right": "ge",
+    "merged": "läge"
+  },
+  {
+    "rank": 705,
+    "left": "rau",
+    "right": "s",
+    "merged": "raus"
+  },
+  {
+    "rank": 706,
+    "left": "st",
+    "right": "ein",
+    "merged": "stein"
+  },
+  {
+    "rank": 707,
+    "left": "äh",
+    "right": "l",
+    "merged": "ähl"
+  },
+  {
+    "rank": 708,
+    "left": "▁aus",
+    "right": "gang",
+    "merged": "▁ausgang"
+  },
+  {
+    "rank": 709,
+    "left": "▁best",
+    "right": "immen",
+    "merged": "▁bestimmen"
+  },
+  {
+    "rank": 710,
+    "left": "▁die",
+    "right": "se",
+    "merged": "▁diese"
+  },
+  {
+    "rank": 711,
+    "left": "▁g",
+    "right": "eh",
+    "merged": "▁geh"
+  },
+  {
+    "rank": 712,
+    "left": "▁g",
+    "right": "em",
+    "merged": "▁gem"
+  },
+  {
+    "rank": 713,
+    "left": "▁ger",
+    "right": "n",
+    "merged": "▁gern"
+  },
+  {
+    "rank": 714,
+    "left": "▁kl",
+    "right": "ang",
+    "merged": "▁klang"
+  },
+  {
+    "rank": 715,
+    "left": "▁o",
+    "right": "k",
+    "merged": "▁ok"
+  },
+  {
+    "rank": 716,
+    "left": "▁s",
+    "right": "ehe",
+    "merged": "▁sehe"
+  },
+  {
+    "rank": 717,
+    "left": "▁takt",
+    "right": "ung",
+    "merged": "▁taktung"
+  },
+  {
+    "rank": 718,
+    "left": "▁verg",
+    "right": "iss",
+    "merged": "▁vergiss"
+  },
+  {
+    "rank": 719,
+    "left": "a",
+    "right": "ll",
+    "merged": "all"
+  },
+  {
+    "rank": 720,
+    "left": "am",
+    "right": "er",
+    "merged": "amer"
+  },
+  {
+    "rank": 721,
+    "left": "aus",
+    "right": "end",
+    "merged": "ausend"
+  },
+  {
+    "rank": 722,
+    "left": "de",
+    "right": "st",
+    "merged": "dest"
+  },
+  {
+    "rank": 723,
+    "left": "i",
+    "right": "l",
+    "merged": "il"
+  },
+  {
+    "rank": 724,
+    "left": "ku",
+    "right": "st",
+    "merged": "kust"
+  },
+  {
+    "rank": 725,
+    "left": "s",
+    "right": "m",
+    "merged": "sm"
+  },
+  {
+    "rank": 726,
+    "left": "ü",
+    "right": "g",
+    "merged": "üg"
+  },
+  {
+    "rank": 727,
+    "left": "▁a",
+    "right": "kust",
+    "merged": "▁akust"
+  },
+  {
+    "rank": 728,
+    "left": "▁b",
+    "right": "er",
+    "merged": "▁ber"
+  },
+  {
+    "rank": 729,
+    "left": "▁b",
+    "right": "o",
+    "merged": "▁bo"
+  },
+  {
+    "rank": 730,
+    "left": "▁f",
+    "right": "ahr",
+    "merged": "▁fahr"
+  },
+  {
+    "rank": 731,
+    "left": "▁g",
+    "right": "anz",
+    "merged": "▁ganz"
+  },
+  {
+    "rank": 732,
+    "left": "▁l",
+    "right": "etz",
+    "merged": "▁letz"
+  },
+  {
+    "rank": 733,
+    "left": "▁obje",
+    "right": "kte",
+    "merged": "▁objekte"
+  },
+  {
+    "rank": 734,
+    "left": "▁p",
+    "right": "a",
+    "merged": "▁pa"
+  },
+  {
+    "rank": 735,
+    "left": "▁untersch",
+    "right": "ied",
+    "merged": "▁unterschied"
+  },
+  {
+    "rank": 736,
+    "left": "▁ver",
+    "right": "w",
+    "merged": "▁verw"
+  },
+  {
+    "rank": 737,
+    "left": "▁wei",
+    "right": "ß",
+    "merged": "▁weiß"
+  },
+  {
+    "rank": 738,
+    "left": "es",
+    "right": "e",
+    "merged": "ese"
+  },
+  {
+    "rank": 739,
+    "left": "g",
+    "right": "esch",
+    "merged": "gesch"
+  },
+  {
+    "rank": 740,
+    "left": "hundert",
+    "right": "fünf",
+    "merged": "hundertfünf"
+  },
+  {
+    "rank": 741,
+    "left": "k",
+    "right": "ennung",
+    "merged": "kennung"
+  },
+  {
+    "rank": 742,
+    "left": "n",
+    "right": "ehmen",
+    "merged": "nehmen"
+  },
+  {
+    "rank": 743,
+    "left": "sch",
+    "right": "rift",
+    "merged": "schrift"
+  },
+  {
+    "rank": 744,
+    "left": "u",
+    "right": "g",
+    "merged": "ug"
+  },
+  {
+    "rank": 745,
+    "left": "ung",
+    "right": "en",
+    "merged": "ungen"
+  },
+  {
+    "rank": 746,
+    "left": "y",
+    "right": "th",
+    "merged": "yth"
+  },
+  {
+    "rank": 747,
+    "left": "▁",
+    "right": "4",
+    "merged": "▁4"
+  },
+  {
+    "rank": 748,
+    "left": "▁",
+    "right": "je",
+    "merged": "▁je"
+  },
+  {
+    "rank": 749,
+    "left": "▁all",
+    "right": "es",
+    "merged": "▁alles"
+  },
+  {
+    "rank": 750,
+    "left": "▁da",
+    "right": "rauf",
+    "merged": "▁darauf"
+  },
+  {
+    "rank": 751,
+    "left": "▁dav",
+    "right": "on",
+    "merged": "▁davon"
+  },
+  {
+    "rank": 752,
+    "left": "▁den",
+    "right": "n",
+    "merged": "▁denn"
+  },
+  {
+    "rank": 753,
+    "left": "▁ein",
+    "right": "ge",
+    "merged": "▁einge"
+  },
+  {
+    "rank": 754,
+    "left": "▁h",
+    "right": "and",
+    "merged": "▁hand"
+  },
+  {
+    "rank": 755,
+    "left": "▁hinwei",
+    "right": "st",
+    "merged": "▁hinweist"
+  },
+  {
+    "rank": 756,
+    "left": "▁re",
+    "right": "den",
+    "merged": "▁reden"
+  },
+  {
+    "rank": 757,
+    "left": "▁setz",
+    "right": "en",
+    "merged": "▁setzen"
+  },
+  {
+    "rank": 758,
+    "left": "▁wir",
+    "right": "d",
+    "merged": "▁wird"
+  },
+  {
+    "rank": 759,
+    "left": "▁zei",
+    "right": "le",
+    "merged": "▁zeile"
+  },
+  {
+    "rank": 760,
+    "left": "i",
+    "right": "f",
+    "merged": "if"
+  },
+  {
+    "rank": 761,
+    "left": "ie",
+    "right": "h",
+    "merged": "ieh"
+  },
+  {
+    "rank": 762,
+    "left": "isch",
+    "right": "e",
+    "merged": "ische"
+  },
+  {
+    "rank": 763,
+    "left": "lich",
+    "right": "er",
+    "merged": "licher"
+  },
+  {
+    "rank": 764,
+    "left": "mm",
+    "right": "er",
+    "merged": "mmer"
+  },
+  {
+    "rank": 765,
+    "left": "ra",
+    "right": "g",
+    "merged": "rag"
+  },
+  {
+    "rank": 766,
+    "left": "sm",
+    "right": "essung",
+    "merged": "smessung"
+  },
+  {
+    "rank": 767,
+    "left": "▁",
+    "right": "6",
+    "merged": "▁6"
+  },
+  {
+    "rank": 768,
+    "left": "▁a",
+    "right": "m",
+    "merged": "▁am"
+  },
+  {
+    "rank": 769,
+    "left": "▁b",
+    "right": "in",
+    "merged": "▁bin"
+  },
+  {
+    "rank": 770,
+    "left": "▁distanz",
+    "right": "hinwei",
+    "merged": "▁distanzhinwei"
+  },
+  {
+    "rank": 771,
+    "left": "▁einzel",
+    "right": "nen",
+    "merged": "▁einzelnen"
+  },
+  {
+    "rank": 772,
+    "left": "▁f",
+    "right": "ind",
+    "merged": "▁find"
+  },
+  {
+    "rank": 773,
+    "left": "▁fl",
+    "right": "ot",
+    "merged": "▁flot"
+  },
+  {
+    "rank": 774,
+    "left": "▁g",
+    "right": "ut",
+    "merged": "▁gut"
+  },
+  {
+    "rank": 775,
+    "left": "▁gen",
+    "right": "au",
+    "merged": "▁genau"
+  },
+  {
+    "rank": 776,
+    "left": "▁gi",
+    "right": "bt",
+    "merged": "▁gibt"
+  },
+  {
+    "rank": 777,
+    "left": "▁k",
+    "right": "amer",
+    "merged": "▁kamer"
+  },
+  {
+    "rank": 778,
+    "left": "▁l",
+    "right": "au",
+    "merged": "▁lau"
+  },
+  {
+    "rank": 779,
+    "left": "▁sie",
+    "right": "ben",
+    "merged": "▁sieben"
+  },
+  {
+    "rank": 780,
+    "left": "▁stell",
+    "right": "t",
+    "merged": "▁stellt"
+  },
+  {
+    "rank": 781,
+    "left": "▁tiefer",
+    "right": "en",
+    "merged": "▁tieferen"
+  },
+  {
+    "rank": 782,
+    "left": "▁veränder",
+    "right": "n",
+    "merged": "▁verändern"
+  },
+  {
+    "rank": 783,
+    "left": "▁vor",
+    "right": "her",
+    "merged": "▁vorher"
+  },
+  {
+    "rank": 784,
+    "left": "▁zei",
+    "right": "gen",
+    "merged": "▁zeigen"
+  },
+  {
+    "rank": 785,
+    "left": "5",
+    "right": "0",
+    "merged": "50"
+  },
+  {
+    "rank": 786,
+    "left": "a",
+    "right": "uen",
+    "merged": "auen"
+  },
+  {
+    "rank": 787,
+    "left": "hundertfünf",
+    "right": "zig",
+    "merged": "hundertfünfzig"
+  },
+  {
+    "rank": 788,
+    "left": "ik",
+    "right": "ett",
+    "merged": "ikett"
+  },
+  {
+    "rank": 789,
+    "left": "la",
+    "right": "y",
+    "merged": "lay"
+  },
+  {
+    "rank": 790,
+    "left": "or",
+    "right": "d",
+    "merged": "ord"
+  },
+  {
+    "rank": 791,
+    "left": "rei",
+    "right": "s",
+    "merged": "reis"
+  },
+  {
+    "rank": 792,
+    "left": "sp",
+    "right": "lay",
+    "merged": "splay"
+  },
+  {
+    "rank": 793,
+    "left": "stell",
+    "right": "t",
+    "merged": "stellt"
+  },
+  {
+    "rank": 794,
+    "left": "y",
+    "right": "n",
+    "merged": "yn"
+  },
+  {
+    "rank": 795,
+    "left": "än",
+    "right": "g",
+    "merged": "äng"
+  },
+  {
+    "rank": 796,
+    "left": "▁",
+    "right": "c",
+    "merged": "▁c"
+  },
+  {
+    "rank": 797,
+    "left": "▁a",
+    "right": "pp",
+    "merged": "▁app"
+  },
+  {
+    "rank": 798,
+    "left": "▁di",
+    "right": "splay",
+    "merged": "▁display"
+  },
+  {
+    "rank": 799,
+    "left": "▁einge",
+    "right": "stellt",
+    "merged": "▁eingestellt"
+  },
+  {
+    "rank": 800,
+    "left": "▁er",
+    "right": "höh",
+    "merged": "▁erhöh"
+  },
+  {
+    "rank": 801,
+    "left": "▁flot",
+    "right": "ter",
+    "merged": "▁flotter"
+  },
+  {
+    "rank": 802,
+    "left": "▁g",
+    "right": "r",
+    "merged": "▁gr"
+  },
+  {
+    "rank": 803,
+    "left": "▁m",
+    "right": "ü",
+    "merged": "▁mü"
+  },
+  {
+    "rank": 804,
+    "left": "▁p",
+    "right": "reis",
+    "merged": "▁preis"
+  },
+  {
+    "rank": 805,
+    "left": "▁piept",
+    "right": "on",
+    "merged": "▁piepton"
+  },
+  {
+    "rank": 806,
+    "left": "▁sch",
+    "right": "w",
+    "merged": "▁schw"
+  },
+  {
+    "rank": 807,
+    "left": "▁stell",
+    "right": "en",
+    "merged": "▁stellen"
+  },
+  {
+    "rank": 808,
+    "left": "▁un",
+    "right": "ver",
+    "merged": "▁unver"
+  },
+  {
+    "rank": 809,
+    "left": "▁w",
+    "right": "enn",
+    "merged": "▁wenn"
+  },
+  {
+    "rank": 810,
+    "left": "▁z",
+    "right": "ahl",
+    "merged": "▁zahl"
+  },
+  {
+    "rank": 811,
+    "left": "▁zei",
+    "right": "gt",
+    "merged": "▁zeigt"
+  },
+  {
+    "rank": 812,
+    "left": "a",
+    "right": "g",
+    "merged": "ag"
+  },
+  {
+    "rank": 813,
+    "left": "el",
+    "right": "ben",
+    "merged": "elben"
+  },
+  {
+    "rank": 814,
+    "left": "er",
+    "right": "kennung",
+    "merged": "erkennung"
+  },
+  {
+    "rank": 815,
+    "left": "er",
+    "right": "n",
+    "merged": "ern"
+  },
+  {
+    "rank": 816,
+    "left": "gesch",
+    "right": "windigkeit",
+    "merged": "geschwindigkeit"
+  },
+  {
+    "rank": 817,
+    "left": "k",
+    "right": "le",
+    "merged": "kle"
+  },
+  {
+    "rank": 818,
+    "left": "s",
+    "right": "elben",
+    "merged": "selben"
+  },
+  {
+    "rank": 819,
+    "left": "st",
+    "right": "e",
+    "merged": "ste"
+  },
+  {
+    "rank": 820,
+    "left": "t",
+    "right": "rag",
+    "merged": "trag"
+  },
+  {
+    "rank": 821,
+    "left": "un",
+    "right": "d",
+    "merged": "und"
+  },
+  {
+    "rank": 822,
+    "left": "▁",
+    "right": "7",
+    "merged": "▁7"
+  },
+  {
+    "rank": 823,
+    "left": "▁erk",
+    "right": "enne",
+    "merged": "▁erkenne"
+  },
+  {
+    "rank": 824,
+    "left": "▁et",
+    "right": "ikett",
+    "merged": "▁etikett"
+  },
+  {
+    "rank": 825,
+    "left": "▁find",
+    "right": "en",
+    "merged": "▁finden"
+  },
+  {
+    "rank": 826,
+    "left": "▁h",
+    "right": "abe",
+    "merged": "▁habe"
+  },
+  {
+    "rank": 827,
+    "left": "▁hö",
+    "right": "r",
+    "merged": "▁hör"
+  },
+  {
+    "rank": 828,
+    "left": "▁kön",
+    "right": "n",
+    "merged": "▁könn"
+  },
+  {
+    "rank": 829,
+    "left": "▁mein",
+    "right": "er",
+    "merged": "▁meiner"
+  },
+  {
+    "rank": 830,
+    "left": "▁p",
+    "right": "ass",
+    "merged": "▁pass"
+  },
+  {
+    "rank": 831,
+    "left": "▁piept",
+    "right": "öne",
+    "merged": "▁pieptöne"
+  },
+  {
+    "rank": 832,
+    "left": "anz",
+    "right": "ig",
+    "merged": "anzig"
+  },
+  {
+    "rank": 833,
+    "left": "e",
+    "right": "kt",
+    "merged": "ekt"
+  },
+  {
+    "rank": 834,
+    "left": "eit",
+    "right": "en",
+    "merged": "eiten"
+  },
+  {
+    "rank": 835,
+    "left": "ess",
+    "right": "er",
+    "merged": "esser"
+  },
+  {
+    "rank": 836,
+    "left": "f",
+    "right": "üh",
+    "merged": "füh"
+  },
+  {
+    "rank": 837,
+    "left": "ir",
+    "right": "m",
+    "merged": "irm"
+  },
+  {
+    "rank": 838,
+    "left": "kle",
+    "right": "ber",
+    "merged": "kleber"
+  },
+  {
+    "rank": 839,
+    "left": "ll",
+    "right": "ei",
+    "merged": "llei"
+  },
+  {
+    "rank": 840,
+    "left": "oll",
+    "right": "er",
+    "merged": "oller"
+  },
+  {
+    "rank": 841,
+    "left": "ro",
+    "right": "m",
+    "merged": "rom"
+  },
+  {
+    "rank": 842,
+    "left": "ro",
+    "right": "ß",
+    "merged": "roß"
+  },
+  {
+    "rank": 843,
+    "left": "sch",
+    "right": "ild",
+    "merged": "schild"
+  },
+  {
+    "rank": 844,
+    "left": "sch",
+    "right": "irm",
+    "merged": "schirm"
+  },
+  {
+    "rank": 845,
+    "left": "sch",
+    "right": "läge",
+    "merged": "schläge"
+  },
+  {
+    "rank": 846,
+    "left": "stell",
+    "right": "en",
+    "merged": "stellen"
+  },
+  {
+    "rank": 847,
+    "left": "tz",
+    "right": "e",
+    "merged": "tze"
+  },
+  {
+    "rank": 848,
+    "left": "▁",
+    "right": "eben",
+    "merged": "▁eben"
+  },
+  {
+    "rank": 849,
+    "left": "▁a",
+    "right": "cht",
+    "merged": "▁acht"
+  },
+  {
+    "rank": 850,
+    "left": "▁a",
+    "right": "ktion",
+    "merged": "▁aktion"
+  },
+  {
+    "rank": 851,
+    "left": "▁aktuell",
+    "right": "en",
+    "merged": "▁aktuellen"
+  },
+  {
+    "rank": 852,
+    "left": "▁b",
+    "right": "ord",
+    "merged": "▁bord"
+  },
+  {
+    "rank": 853,
+    "left": "▁b",
+    "right": "u",
+    "merged": "▁bu"
+  },
+  {
+    "rank": 854,
+    "left": "▁ein",
+    "right": "em",
+    "merged": "▁einem"
+  },
+  {
+    "rank": 855,
+    "left": "▁einstellung",
+    "right": "s",
+    "merged": "▁einstellungs"
+  },
+  {
+    "rank": 856,
+    "left": "▁entfernung",
+    "right": "smessung",
+    "merged": "▁entfernungsmessung"
+  },
+  {
+    "rank": 857,
+    "left": "▁fol",
+    "right": "gen",
+    "merged": "▁folgen"
+  },
+  {
+    "rank": 858,
+    "left": "▁g",
+    "right": "eht",
+    "merged": "▁geht"
+  },
+  {
+    "rank": 859,
+    "left": "▁g",
+    "right": "roß",
+    "merged": "▁groß"
+  },
+  {
+    "rank": 860,
+    "left": "▁höher",
+    "right": "en",
+    "merged": "▁höheren"
+  },
+  {
+    "rank": 861,
+    "left": "▁könn",
+    "right": "te",
+    "merged": "▁könnte"
+  },
+  {
+    "rank": 862,
+    "left": "▁m",
+    "right": "on",
+    "merged": "▁mon"
+  },
+  {
+    "rank": 863,
+    "left": "▁pro",
+    "right": "z",
+    "merged": "▁proz"
+  },
+  {
+    "rank": 864,
+    "left": "▁r",
+    "right": "uck",
+    "merged": "▁ruck"
+  },
+  {
+    "rank": 865,
+    "left": "▁s",
+    "right": "icht",
+    "merged": "▁sicht"
+  },
+  {
+    "rank": 866,
+    "left": "▁st",
+    "right": "ehen",
+    "merged": "▁stehen"
+  },
+  {
+    "rank": 867,
+    "left": "a",
+    "right": "d",
+    "merged": "ad"
+  },
+  {
+    "rank": 868,
+    "left": "a",
+    "right": "y",
+    "merged": "ay"
+  },
+  {
+    "rank": 869,
+    "left": "an",
+    "right": "k",
+    "merged": "ank"
+  },
+  {
+    "rank": 870,
+    "left": "ei",
+    "right": "l",
+    "merged": "eil"
+  },
+  {
+    "rank": 871,
+    "left": "l",
+    "right": "au",
+    "merged": "lau"
+  },
+  {
+    "rank": 872,
+    "left": "le",
+    "right": "un",
+    "merged": "leun"
+  },
+  {
+    "rank": 873,
+    "left": "o",
+    "right": "k",
+    "merged": "ok"
+  },
+  {
+    "rank": 874,
+    "left": "o",
+    "right": "s",
+    "merged": "os"
+  },
+  {
+    "rank": 875,
+    "left": "och",
+    "right": "en",
+    "merged": "ochen"
+  },
+  {
+    "rank": 876,
+    "left": "r",
+    "right": "ing",
+    "merged": "ring"
+  },
+  {
+    "rank": 877,
+    "left": "rift",
+    "right": "ung",
+    "merged": "riftung"
+  },
+  {
+    "rank": 878,
+    "left": "s",
+    "right": "ack",
+    "merged": "sack"
+  },
+  {
+    "rank": 879,
+    "left": "t",
+    "right": "ausend",
+    "merged": "tausend"
+  },
+  {
+    "rank": 880,
+    "left": "u",
+    "right": "ss",
+    "merged": "uss"
+  },
+  {
+    "rank": 881,
+    "left": "ß",
+    "right": "en",
+    "merged": "ßen"
+  },
+  {
+    "rank": 882,
+    "left": "änder",
+    "right": "t",
+    "merged": "ändert"
+  },
+  {
+    "rank": 883,
+    "left": "üg",
+    "right": "iger",
+    "merged": "ügiger"
+  },
+  {
+    "rank": 884,
+    "left": "▁aktuell",
+    "right": "e",
+    "merged": "▁aktuelle"
+  },
+  {
+    "rank": 885,
+    "left": "▁auf",
+    "right": "kleber",
+    "merged": "▁aufkleber"
+  },
+  {
+    "rank": 886,
+    "left": "▁auf",
+    "right": "trag",
+    "merged": "▁auftrag"
+  },
+  {
+    "rank": 887,
+    "left": "▁aus",
+    "right": "einander",
+    "merged": "▁auseinander"
+  },
+  {
+    "rank": 888,
+    "left": "▁aus",
+    "right": "w",
+    "merged": "▁ausw"
+  },
+  {
+    "rank": 889,
+    "left": "▁b",
+    "right": "esser",
+    "merged": "▁besser"
+  },
+  {
+    "rank": 890,
+    "left": "▁besch",
+    "right": "leun",
+    "merged": "▁beschleun"
+  },
+  {
+    "rank": 891,
+    "left": "▁besch",
+    "right": "riftung",
+    "merged": "▁beschriftung"
+  },
+  {
+    "rank": 892,
+    "left": "▁bo",
+    "right": "den",
+    "merged": "▁boden"
+  },
+  {
+    "rank": 893,
+    "left": "▁bord",
+    "right": "stein",
+    "merged": "▁bordstein"
+  },
+  {
+    "rank": 894,
+    "left": "▁d",
+    "right": "ein",
+    "merged": "▁dein"
+  },
+  {
+    "rank": 895,
+    "left": "▁dies",
+    "right": "em",
+    "merged": "▁diesem"
+  },
+  {
+    "rank": 896,
+    "left": "▁distanzhinwei",
+    "right": "se",
+    "merged": "▁distanzhinweise"
+  },
+  {
+    "rank": 897,
+    "left": "▁ein",
+    "right": "tausend",
+    "merged": "▁eintausend"
+  },
+  {
+    "rank": 898,
+    "left": "▁fünf",
+    "right": "hundert",
+    "merged": "▁fünfhundert"
+  },
+  {
+    "rank": 899,
+    "left": "▁gleich",
+    "right": "er",
+    "merged": "▁gleicher"
+  },
+  {
+    "rank": 900,
+    "left": "▁kamer",
+    "right": "a",
+    "merged": "▁kamera"
+  },
+  {
+    "rank": 901,
+    "left": "▁männ",
+    "right": "lich",
+    "merged": "▁männlich"
+  },
+  {
+    "rank": 902,
+    "left": "▁ok",
+    "right": "ay",
+    "merged": "▁okay"
+  },
+  {
+    "rank": 903,
+    "left": "▁p",
+    "right": "ackung",
+    "merged": "▁packung"
+  },
+  {
+    "rank": 904,
+    "left": "▁p",
+    "right": "assen",
+    "merged": "▁passen"
+  },
+  {
+    "rank": 905,
+    "left": "▁p",
+    "right": "au",
+    "merged": "▁pau"
+  },
+  {
+    "rank": 906,
+    "left": "▁pass",
+    "right": "iert",
+    "merged": "▁passiert"
+  },
+  {
+    "rank": 907,
+    "left": "▁pl",
+    "right": "atz",
+    "merged": "▁platz"
+  },
+  {
+    "rank": 908,
+    "left": "▁re",
+    "right": "d",
+    "merged": "▁red"
+  },
+  {
+    "rank": 909,
+    "left": "▁ruck",
+    "right": "sack",
+    "merged": "▁rucksack"
+  },
+  {
+    "rank": 910,
+    "left": "▁sa",
+    "right": "gt",
+    "merged": "▁sagt"
+  },
+  {
+    "rank": 911,
+    "left": "▁sprecher",
+    "right": "stimme",
+    "merged": "▁sprecherstimme"
+  },
+  {
+    "rank": 912,
+    "left": "▁su",
+    "right": "chen",
+    "merged": "▁suchen"
+  },
+  {
+    "rank": 913,
+    "left": "▁ton",
+    "right": "frequenz",
+    "merged": "▁tonfrequenz"
+  },
+  {
+    "rank": 914,
+    "left": "▁unver",
+    "right": "ändert",
+    "merged": "▁unverändert"
+  },
+  {
+    "rank": 915,
+    "left": "▁ver",
+    "right": "ring",
+    "merged": "▁verring"
+  },
+  {
+    "rank": 916,
+    "left": "▁verw",
+    "right": "ende",
+    "merged": "▁verwende"
+  },
+  {
+    "rank": 917,
+    "left": "▁w",
+    "right": "ort",
+    "merged": "▁wort"
+  },
+  {
+    "rank": 918,
+    "left": "▁z",
+    "right": "ügiger",
+    "merged": "▁zügiger"
+  },
+  {
+    "rank": 919,
+    "left": "ar",
+    "right": "t",
+    "merged": "art"
+  },
+  {
+    "rank": 920,
+    "left": "d",
+    "right": "r",
+    "merged": "dr"
+  },
+  {
+    "rank": 921,
+    "left": "f",
+    "right": "ol",
+    "merged": "fol"
+  },
+  {
+    "rank": 922,
+    "left": "fol",
+    "right": "ge",
+    "merged": "folge"
+  },
+  {
+    "rank": 923,
+    "left": "llei",
+    "right": "m",
+    "merged": "lleim"
+  },
+  {
+    "rank": 924,
+    "left": "lleim",
+    "right": "er",
+    "merged": "lleimer"
+  },
+  {
+    "rank": 925,
+    "left": "m",
+    "right": "us",
+    "merged": "mus"
+  },
+  {
+    "rank": 926,
+    "left": "men",
+    "right": "ü",
+    "merged": "menü"
+  },
+  {
+    "rank": 927,
+    "left": "n",
+    "right": "et",
+    "merged": "net"
+  },
+  {
+    "rank": 928,
+    "left": "p",
+    "right": "r",
+    "merged": "pr"
+  },
+  {
+    "rank": 929,
+    "left": "th",
+    "right": "e",
+    "merged": "the"
+  },
+  {
+    "rank": 930,
+    "left": "wei",
+    "right": "s",
+    "merged": "weis"
+  },
+  {
+    "rank": 931,
+    "left": "▁",
+    "right": "ch",
+    "merged": "▁ch"
+  },
+  {
+    "rank": 932,
+    "left": "▁",
+    "right": "el",
+    "merged": "▁el"
+  },
+  {
+    "rank": 933,
+    "left": "▁",
+    "right": "raus",
+    "merged": "▁raus"
+  },
+  {
+    "rank": 934,
+    "left": "▁an",
+    "right": "p",
+    "merged": "▁anp"
+  },
+  {
+    "rank": 935,
+    "left": "▁an",
+    "right": "weis",
+    "merged": "▁anweis"
+  },
+  {
+    "rank": 936,
+    "left": "▁b",
+    "right": "eh",
+    "merged": "▁beh"
+  },
+  {
+    "rank": 937,
+    "left": "▁bei",
+    "right": "m",
+    "merged": "▁beim"
+  },
+  {
+    "rank": 938,
+    "left": "▁bild",
+    "right": "schirm",
+    "merged": "▁bildschirm"
+  },
+  {
+    "rank": 939,
+    "left": "▁br",
+    "right": "ing",
+    "merged": "▁bring"
+  },
+  {
+    "rank": 940,
+    "left": "▁d",
+    "right": "icht",
+    "merged": "▁dicht"
+  },
+  {
+    "rank": 941,
+    "left": "▁erhöh",
+    "right": "en",
+    "merged": "▁erhöhen"
+  },
+  {
+    "rank": 942,
+    "left": "▁in",
+    "right": "ter",
+    "merged": "▁inter"
+  },
+  {
+    "rank": 943,
+    "left": "▁klick",
+    "right": "s",
+    "merged": "▁klicks"
+  },
+  {
+    "rank": 944,
+    "left": "▁ma",
+    "right": "the",
+    "merged": "▁mathe"
+  },
+  {
+    "rank": 945,
+    "left": "▁mü",
+    "right": "lleimer",
+    "merged": "▁mülleimer"
+  },
+  {
+    "rank": 946,
+    "left": "▁pau",
+    "right": "se",
+    "merged": "▁pause"
+  },
+  {
+    "rank": 947,
+    "left": "▁proz",
+    "right": "ent",
+    "merged": "▁prozent"
+  },
+  {
+    "rank": 948,
+    "left": "▁puls",
+    "right": "rate",
+    "merged": "▁pulsrate"
+  },
+  {
+    "rank": 949,
+    "left": "▁su",
+    "right": "ch",
+    "merged": "▁such"
+  },
+  {
+    "rank": 950,
+    "left": "▁sä",
+    "right": "u",
+    "merged": "▁säu"
+  },
+  {
+    "rank": 951,
+    "left": "▁wiederhol",
+    "right": "ung",
+    "merged": "▁wiederholung"
+  },
+  {
+    "rank": 952,
+    "left": "▁z",
+    "right": "ieh",
+    "merged": "▁zieh"
+  },
+  {
+    "rank": 953,
+    "left": "au",
+    "right": "pt",
+    "merged": "aupt"
+  },
+  {
+    "rank": 954,
+    "left": "ei",
+    "right": "d",
+    "merged": "eid"
+  },
+  {
+    "rank": 955,
+    "left": "el",
+    "right": "n",
+    "merged": "eln"
+  },
+  {
+    "rank": 956,
+    "left": "f",
+    "right": "eld",
+    "merged": "feld"
+  },
+  {
+    "rank": 957,
+    "left": "f",
+    "right": "ort",
+    "merged": "fort"
+  },
+  {
+    "rank": 958,
+    "left": "g",
+    "right": "al",
+    "merged": "gal"
+  },
+  {
+    "rank": 959,
+    "left": "h",
+    "right": "o",
+    "merged": "ho"
+  },
+  {
+    "rank": 960,
+    "left": "h",
+    "right": "yth",
+    "merged": "hyth"
+  },
+  {
+    "rank": 961,
+    "left": "hyth",
+    "right": "mus",
+    "merged": "hythmus"
+  },
+  {
+    "rank": 962,
+    "left": "ignal",
+    "right": "e",
+    "merged": "ignale"
+  },
+  {
+    "rank": 963,
+    "left": "l",
+    "right": "ie",
+    "merged": "lie"
+  },
+  {
+    "rank": 964,
+    "left": "l",
+    "right": "t",
+    "merged": "lt"
+  },
+  {
+    "rank": 965,
+    "left": "o",
+    "right": "le",
+    "merged": "ole"
+  },
+  {
+    "rank": 966,
+    "left": "pr",
+    "right": "ochen",
+    "merged": "prochen"
+  },
+  {
+    "rank": 967,
+    "left": "ra",
+    "right": "d",
+    "merged": "rad"
+  },
+  {
+    "rank": 968,
+    "left": "w",
+    "right": "a",
+    "merged": "wa"
+  },
+  {
+    "rank": 969,
+    "left": "ä",
+    "right": "ch",
+    "merged": "äch"
+  },
+  {
+    "rank": 970,
+    "left": "ähl",
+    "right": "en",
+    "merged": "ählen"
+  },
+  {
+    "rank": 971,
+    "left": "▁",
+    "right": "8",
+    "merged": "▁8"
+  },
+  {
+    "rank": 972,
+    "left": "▁",
+    "right": "ra",
+    "merged": "▁ra"
+  },
+  {
+    "rank": 973,
+    "left": "▁ab",
+    "right": "stände",
+    "merged": "▁abstände"
+  },
+  {
+    "rank": 974,
+    "left": "▁auf",
+    "right": "einander",
+    "merged": "▁aufeinander"
+  },
+  {
+    "rank": 975,
+    "left": "▁aus",
+    "right": "füh",
+    "merged": "▁ausfüh"
+  },
+  {
+    "rank": 976,
+    "left": "▁f",
+    "right": "al",
+    "merged": "▁fal"
+  },
+  {
+    "rank": 977,
+    "left": "▁gem",
+    "right": "äch",
+    "merged": "▁gemäch"
+  },
+  {
+    "rank": 978,
+    "left": "▁gi",
+    "right": "b",
+    "merged": "▁gib"
+  },
+  {
+    "rank": 979,
+    "left": "▁h",
+    "right": "a",
+    "merged": "▁ha"
+  },
+  {
+    "rank": 980,
+    "left": "▁h",
+    "right": "al",
+    "merged": "▁hal"
+  },
+  {
+    "rank": 981,
+    "left": "▁h",
+    "right": "il",
+    "merged": "▁hil"
+  },
+  {
+    "rank": 982,
+    "left": "▁ih",
+    "right": "r",
+    "merged": "▁ihr"
+  },
+  {
+    "rank": 983,
+    "left": "▁klin",
+    "right": "gt",
+    "merged": "▁klingt"
+  },
+  {
+    "rank": 984,
+    "left": "▁komm",
+    "right": "t",
+    "merged": "▁kommt"
+  },
+  {
+    "rank": 985,
+    "left": "▁men",
+    "right": "schen",
+    "merged": "▁menschen"
+  },
+  {
+    "rank": 986,
+    "left": "▁objekt",
+    "right": "erkennung",
+    "merged": "▁objekterkennung"
+  },
+  {
+    "rank": 987,
+    "left": "▁p",
+    "right": "oller",
+    "merged": "▁poller"
+  },
+  {
+    "rank": 988,
+    "left": "▁r",
+    "right": "hythmus",
+    "merged": "▁rhythmus"
+  },
+  {
+    "rank": 989,
+    "left": "▁re",
+    "right": "dest",
+    "merged": "▁redest"
+  },
+  {
+    "rank": 990,
+    "left": "▁ruh",
+    "right": "e",
+    "merged": "▁ruhe"
+  },
+  {
+    "rank": 991,
+    "left": "▁sch",
+    "right": "auen",
+    "merged": "▁schauen"
+  },
+  {
+    "rank": 992,
+    "left": "▁sechs",
+    "right": "hundert",
+    "merged": "▁sechshundert"
+  },
+  {
+    "rank": 993,
+    "left": "▁so",
+    "right": "fort",
+    "merged": "▁sofort"
+  },
+  {
+    "rank": 994,
+    "left": "▁son",
+    "right": "st",
+    "merged": "▁sonst"
+  },
+  {
+    "rank": 995,
+    "left": "▁sä",
+    "right": "tze",
+    "merged": "▁sätze"
+  },
+  {
+    "rank": 996,
+    "left": "▁t",
+    "right": "eil",
+    "merged": "▁teil"
+  },
+  {
+    "rank": 997,
+    "left": "▁tie",
+    "right": "f",
+    "merged": "▁tief"
+  },
+  {
+    "rank": 998,
+    "left": "▁vorl",
+    "right": "ese",
+    "merged": "▁vorlese"
+  },
+  {
+    "rank": 999,
+    "left": "▁weib",
+    "right": "lich",
+    "merged": "▁weiblich"
+  },
+  {
+    "rank": 1000,
+    "left": "▁z",
+    "right": "eit",
+    "merged": "▁zeit"
+  },
+  {
+    "rank": 1001,
+    "left": "an",
+    "right": "te",
+    "merged": "ante"
+  },
+  {
+    "rank": 1002,
+    "left": "ar",
+    "right": "z",
+    "merged": "arz"
+  },
+  {
+    "rank": 1003,
+    "left": "b",
+    "right": "ar",
+    "merged": "bar"
+  },
+  {
+    "rank": 1004,
+    "left": "b",
+    "right": "st",
+    "merged": "bst"
+  },
+  {
+    "rank": 1005,
+    "left": "c",
+    "right": "kt",
+    "merged": "ckt"
+  },
+  {
+    "rank": 1006,
+    "left": "eh",
+    "right": "n",
+    "merged": "ehn"
+  },
+  {
+    "rank": 1007,
+    "left": "ie",
+    "right": "l",
+    "merged": "iel"
+  },
+  {
+    "rank": 1008,
+    "left": "lau",
+    "right": "t",
+    "merged": "laut"
+  },
+  {
+    "rank": 1009,
+    "left": "mp",
+    "right": "el",
+    "merged": "mpel"
+  },
+  {
+    "rank": 1010,
+    "left": "p",
+    "right": "ackung",
+    "merged": "packung"
+  },
+  {
+    "rank": 1011,
+    "left": "s",
+    "right": "er",
+    "merged": "ser"
+  },
+  {
+    "rank": 1012,
+    "left": "st",
+    "right": "er",
+    "merged": "ster"
+  },
+  {
+    "rank": 1013,
+    "left": "t",
+    "right": "önen",
+    "merged": "tönen"
+  },
+  {
+    "rank": 1014,
+    "left": "u",
+    "right": "mmer",
+    "merged": "ummer"
+  },
+  {
+    "rank": 1015,
+    "left": "u",
+    "right": "z",
+    "merged": "uz"
+  },
+  {
+    "rank": 1016,
+    "left": "w",
+    "right": "anzig",
+    "merged": "wanzig"
+  },
+  {
+    "rank": 1017,
+    "left": "z",
+    "right": "u",
+    "merged": "zu"
+  },
+  {
+    "rank": 1018,
+    "left": "äng",
+    "right": "er",
+    "merged": "änger"
+  },
+  {
+    "rank": 1019,
+    "left": "ö",
+    "right": "r",
+    "merged": "ör"
+  },
+  {
+    "rank": 1020,
+    "left": "▁a",
+    "right": "mpel",
+    "merged": "▁ampel"
+  },
+  {
+    "rank": 1021,
+    "left": "▁akust",
+    "right": "ischen",
+    "merged": "▁akustischen"
+  },
+  {
+    "rank": 1022,
+    "left": "▁anp",
+    "right": "assen",
+    "merged": "▁anpassen"
+  },
+  {
+    "rank": 1023,
+    "left": "▁anweis",
+    "right": "ung",
+    "merged": "▁anweisung"
+  },
+  {
+    "rank": 1024,
+    "left": "▁be",
+    "right": "stimme",
+    "merged": "▁bestimme"
+  },
+  {
+    "rank": 1025,
+    "left": "▁beh",
+    "right": "alte",
+    "merged": "▁behalte"
+  },
+  {
+    "rank": 1026,
+    "left": "▁bi",
+    "right": "p",
+    "merged": "▁bip"
+  },
+  {
+    "rank": 1027,
+    "left": "▁d",
+    "right": "ar",
+    "merged": "▁dar"
+  },
+  {
+    "rank": 1028,
+    "left": "▁d",
+    "right": "un",
+    "merged": "▁dun"
+  },
+  {
+    "rank": 1029,
+    "left": "▁der",
+    "right": "selben",
+    "merged": "▁derselben"
+  },
+  {
+    "rank": 1030,
+    "left": "▁distanz",
+    "right": "s",
+    "merged": "▁distanzs"
+  },
+  {
+    "rank": 1031,
+    "left": "▁einstellungs",
+    "right": "menü",
+    "merged": "▁einstellungsmenü"
+  },
+  {
+    "rank": 1032,
+    "left": "▁ent",
+    "right": "steht",
+    "merged": "▁entsteht"
+  },
+  {
+    "rank": 1033,
+    "left": "▁er",
+    "right": "tönen",
+    "merged": "▁ertönen"
+  },
+  {
+    "rank": 1034,
+    "left": "▁erkenn",
+    "right": "ung",
+    "merged": "▁erkennung"
+  },
+  {
+    "rank": 1035,
+    "left": "▁fal",
+    "right": "sch",
+    "merged": "▁falsch"
+  },
+  {
+    "rank": 1036,
+    "left": "▁g",
+    "right": "eben",
+    "merged": "▁geben"
+  },
+  {
+    "rank": 1037,
+    "left": "▁gemäch",
+    "right": "licher",
+    "merged": "▁gemächlicher"
+  },
+  {
+    "rank": 1038,
+    "left": "▁ges",
+    "right": "prochen",
+    "merged": "▁gesprochen"
+  },
+  {
+    "rank": 1039,
+    "left": "▁hinweist",
+    "right": "öne",
+    "merged": "▁hinweistöne"
+  },
+  {
+    "rank": 1040,
+    "left": "▁höh",
+    "right": "e",
+    "merged": "▁höhe"
+  },
+  {
+    "rank": 1041,
+    "left": "▁kl",
+    "right": "eine",
+    "merged": "▁kleine"
+  },
+  {
+    "rank": 1042,
+    "left": "▁lie",
+    "right": "ber",
+    "merged": "▁lieber"
+  },
+  {
+    "rank": 1043,
+    "left": "▁ma",
+    "right": "r",
+    "merged": "▁mar"
+  },
+  {
+    "rank": 1044,
+    "left": "▁man",
+    "right": "che",
+    "merged": "▁manche"
+  },
+  {
+    "rank": 1045,
+    "left": "▁mein",
+    "right": "em",
+    "merged": "▁meinem"
+  },
+  {
+    "rank": 1046,
+    "left": "▁n",
+    "right": "ehmen",
+    "merged": "▁nehmen"
+  },
+  {
+    "rank": 1047,
+    "left": "▁nächst",
+    "right": "en",
+    "merged": "▁nächsten"
+  },
+  {
+    "rank": 1048,
+    "left": "▁piep",
+    "right": "e",
+    "merged": "▁piepe"
+  },
+  {
+    "rank": 1049,
+    "left": "▁red",
+    "right": "uz",
+    "merged": "▁reduz"
+  },
+  {
+    "rank": 1050,
+    "left": "▁st",
+    "right": "ück",
+    "merged": "▁stück"
+  },
+  {
+    "rank": 1051,
+    "left": "▁stell",
+    "right": "e",
+    "merged": "▁stelle"
+  },
+  {
+    "rank": 1052,
+    "left": "▁säu",
+    "right": "le",
+    "merged": "▁säule"
+  },
+  {
+    "rank": 1053,
+    "left": "▁t",
+    "right": "au",
+    "merged": "▁tau"
+  },
+  {
+    "rank": 1054,
+    "left": "▁t",
+    "right": "önen",
+    "merged": "▁tönen"
+  },
+  {
+    "rank": 1055,
+    "left": "▁ton",
+    "right": "ne",
+    "merged": "▁tonne"
+  },
+  {
+    "rank": 1056,
+    "left": "▁ver",
+    "right": "packung",
+    "merged": "▁verpackung"
+  },
+  {
+    "rank": 1057,
+    "left": "▁vor",
+    "right": "gang",
+    "merged": "▁vorgang"
+  },
+  {
+    "rank": 1058,
+    "left": "▁wort",
+    "right": "laut",
+    "merged": "▁wortlaut"
+  },
+  {
+    "rank": 1059,
+    "left": "aus",
+    "right": "en",
+    "merged": "ausen"
+  },
+  {
+    "rank": 1060,
+    "left": "b",
+    "right": "l",
+    "merged": "bl"
+  },
+  {
+    "rank": 1061,
+    "left": "chst",
+    "right": "aben",
+    "merged": "chstaben"
+  },
+  {
+    "rank": 1062,
+    "left": "e",
+    "right": "st",
+    "merged": "est"
+  },
+  {
+    "rank": 1063,
+    "left": "ein",
+    "right": "stell",
+    "merged": "einstell"
+  },
+  {
+    "rank": 1064,
+    "left": "ell",
+    "right": "er",
+    "merged": "eller"
+  },
+  {
+    "rank": 1065,
+    "left": "er",
+    "right": "t",
+    "merged": "ert"
+  },
+  {
+    "rank": 1066,
+    "left": "ge",
+    "right": "ben",
+    "merged": "geben"
+  },
+  {
+    "rank": 1067,
+    "left": "is",
+    "right": "st",
+    "merged": "isst"
+  },
+  {
+    "rank": 1068,
+    "left": "le",
+    "right": "gt",
+    "merged": "legt"
+  },
+  {
+    "rank": 1069,
+    "left": "m",
+    "right": "e",
+    "merged": "me"
+  },
+  {
+    "rank": 1070,
+    "left": "o",
+    "right": "st",
+    "merged": "ost"
+  },
+  {
+    "rank": 1071,
+    "left": "omm",
+    "right": "en",
+    "merged": "ommen"
+  },
+  {
+    "rank": 1072,
+    "left": "or",
+    "right": "m",
+    "merged": "orm"
+  },
+  {
+    "rank": 1073,
+    "left": "p",
+    "right": "ier",
+    "merged": "pier"
+  },
+  {
+    "rank": 1074,
+    "left": "st",
+    "right": "em",
+    "merged": "stem"
+  },
+  {
+    "rank": 1075,
+    "left": "y",
+    "right": "stem",
+    "merged": "ystem"
+  },
+  {
+    "rank": 1076,
+    "left": "z",
+    "right": "if",
+    "merged": "zif"
+  },
+  {
+    "rank": 1077,
+    "left": "ä",
+    "right": "tz",
+    "merged": "ätz"
+  },
+  {
+    "rank": 1078,
+    "left": "ä",
+    "right": "u",
+    "merged": "äu"
+  },
+  {
+    "rank": 1079,
+    "left": "▁6",
+    "right": "00",
+    "merged": "▁600"
+  },
+  {
+    "rank": 1080,
+    "left": "▁abstand",
+    "right": "st",
+    "merged": "▁abstandst"
+  },
+  {
+    "rank": 1081,
+    "left": "▁anz",
+    "right": "ahl",
+    "merged": "▁anzahl"
+  },
+  {
+    "rank": 1082,
+    "left": "▁ausw",
+    "right": "ahl",
+    "merged": "▁auswahl"
+  },
+  {
+    "rank": 1083,
+    "left": "▁bu",
+    "right": "chstaben",
+    "merged": "▁buchstaben"
+  },
+  {
+    "rank": 1084,
+    "left": "▁di",
+    "right": "r",
+    "merged": "▁dir"
+  },
+  {
+    "rank": 1085,
+    "left": "▁dun",
+    "right": "k",
+    "merged": "▁dunk"
+  },
+  {
+    "rank": 1086,
+    "left": "▁ein",
+    "right": "gang",
+    "merged": "▁eingang"
+  },
+  {
+    "rank": 1087,
+    "left": "▁fahr",
+    "right": "rad",
+    "merged": "▁fahrrad"
+  },
+  {
+    "rank": 1088,
+    "left": "▁g",
+    "right": "ehen",
+    "merged": "▁gehen"
+  },
+  {
+    "rank": 1089,
+    "left": "▁gen",
+    "right": "ug",
+    "merged": "▁genug"
+  },
+  {
+    "rank": 1090,
+    "left": "▁geschrieben",
+    "right": "en",
+    "merged": "▁geschriebenen"
+  },
+  {
+    "rank": 1091,
+    "left": "▁h",
+    "right": "eller",
+    "merged": "▁heller"
+  },
+  {
+    "rank": 1092,
+    "left": "▁hinweis",
+    "right": "schläge",
+    "merged": "▁hinweisschläge"
+  },
+  {
+    "rank": 1093,
+    "left": "▁ih",
+    "right": "n",
+    "merged": "▁ihn"
+  },
+  {
+    "rank": 1094,
+    "left": "▁k",
+    "right": "i",
+    "merged": "▁ki"
+  },
+  {
+    "rank": 1095,
+    "left": "▁l",
+    "right": "änger",
+    "merged": "▁länger"
+  },
+  {
+    "rank": 1096,
+    "left": "▁letz",
+    "right": "te",
+    "merged": "▁letzte"
+  },
+  {
+    "rank": 1097,
+    "left": "▁letz",
+    "right": "ten",
+    "merged": "▁letzten"
+  },
+  {
+    "rank": 1098,
+    "left": "▁m",
+    "right": "uss",
+    "merged": "▁muss"
+  },
+  {
+    "rank": 1099,
+    "left": "▁n",
+    "right": "äh",
+    "merged": "▁näh"
+  },
+  {
+    "rank": 1100,
+    "left": "▁p",
+    "right": "ausen",
+    "merged": "▁pausen"
+  },
+  {
+    "rank": 1101,
+    "left": "▁pa",
+    "right": "pier",
+    "merged": "▁papier"
+  },
+  {
+    "rank": 1102,
+    "left": "▁r",
+    "right": "ei",
+    "merged": "▁rei"
+  },
+  {
+    "rank": 1103,
+    "left": "▁ruh",
+    "right": "iger",
+    "merged": "▁ruhiger"
+  },
+  {
+    "rank": 1104,
+    "left": "▁sel",
+    "right": "bst",
+    "merged": "▁selbst"
+  },
+  {
+    "rank": 1105,
+    "left": "▁sicht",
+    "right": "feld",
+    "merged": "▁sichtfeld"
+  },
+  {
+    "rank": 1106,
+    "left": "▁spr",
+    "right": "icht",
+    "merged": "▁spricht"
+  },
+  {
+    "rank": 1107,
+    "left": "▁un",
+    "right": "ten",
+    "merged": "▁unten"
+  },
+  {
+    "rank": 1108,
+    "left": "▁verg",
+    "right": "isst",
+    "merged": "▁vergisst"
+  },
+  {
+    "rank": 1109,
+    "left": "▁w",
+    "right": "ä",
+    "merged": "▁wä"
+  },
+  {
+    "rank": 1110,
+    "left": "▁w",
+    "right": "ür",
+    "merged": "▁wür"
+  },
+  {
+    "rank": 1111,
+    "left": "▁wechs",
+    "right": "le",
+    "merged": "▁wechsle"
+  },
+  {
+    "rank": 1112,
+    "left": "▁wen",
+    "right": "ig",
+    "merged": "▁wenig"
+  },
+  {
+    "rank": 1113,
+    "left": "▁wie",
+    "right": "v",
+    "merged": "▁wiev"
+  },
+  {
+    "rank": 1114,
+    "left": "▁zwei",
+    "right": "te",
+    "merged": "▁zweite"
+  },
+  {
+    "rank": 1115,
+    "left": "▁über",
+    "right": "nehmen",
+    "merged": "▁übernehmen"
+  },
+  {
+    "rank": 1116,
+    "left": "ach",
+    "right": "en",
+    "merged": "achen"
+  },
+  {
+    "rank": 1117,
+    "left": "aus",
+    "right": "o",
+    "merged": "auso"
+  },
+  {
+    "rank": 1118,
+    "left": "b",
+    "right": "e",
+    "merged": "be"
+  },
+  {
+    "rank": 1119,
+    "left": "b",
+    "right": "ung",
+    "merged": "bung"
+  },
+  {
+    "rank": 1120,
+    "left": "end",
+    "right": "ung",
+    "merged": "endung"
+  },
+  {
+    "rank": 1121,
+    "left": "enn",
+    "right": "en",
+    "merged": "ennen"
+  },
+  {
+    "rank": 1122,
+    "left": "eu",
+    "right": "te",
+    "merged": "eute"
+  },
+  {
+    "rank": 1123,
+    "left": "f",
+    "right": "f",
+    "merged": "ff"
+  },
+  {
+    "rank": 1124,
+    "left": "f",
+    "right": "ür",
+    "merged": "für"
+  },
+  {
+    "rank": 1125,
+    "left": "i",
+    "right": "v",
+    "merged": "iv"
+  },
+  {
+    "rank": 1126,
+    "left": "imm",
+    "right": "t",
+    "merged": "immt"
+  },
+  {
+    "rank": 1127,
+    "left": "in",
+    "right": "n",
+    "merged": "inn"
+  },
+  {
+    "rank": 1128,
+    "left": "o",
+    "right": "d",
+    "merged": "od"
+  },
+  {
+    "rank": 1129,
+    "left": "o",
+    "right": "g",
+    "merged": "og"
+  },
+  {
+    "rank": 1130,
+    "left": "o",
+    "right": "ption",
+    "merged": "option"
+  },
+  {
+    "rank": 1131,
+    "left": "rau",
+    "right": "m",
+    "merged": "raum"
+  },
+  {
+    "rank": 1132,
+    "left": "w",
+    "right": "endung",
+    "merged": "wendung"
+  },
+  {
+    "rank": 1133,
+    "left": "wa",
+    "right": "gen",
+    "merged": "wagen"
+  },
+  {
+    "rank": 1134,
+    "left": "yn",
+    "right": "th",
+    "merged": "ynth"
+  },
+  {
+    "rank": 1135,
+    "left": "ä",
+    "right": "ll",
+    "merged": "äll"
+  },
+  {
+    "rank": 1136,
+    "left": "ö",
+    "right": "ß",
+    "merged": "öß"
+  },
+  {
+    "rank": 1137,
+    "left": "ü",
+    "right": "ßen",
+    "merged": "üßen"
+  },
+  {
+    "rank": 1138,
+    "left": "ür",
+    "right": "z",
+    "merged": "ürz"
+  },
+  {
+    "rank": 1139,
+    "left": "▁",
+    "right": "raum",
+    "merged": "▁raum"
+  },
+  {
+    "rank": 1140,
+    "left": "▁5",
+    "right": "00",
+    "merged": "▁500"
+  },
+  {
+    "rank": 1141,
+    "left": "▁a",
+    "right": "r",
+    "merged": "▁ar"
+  },
+  {
+    "rank": 1142,
+    "left": "▁an",
+    "right": "wendung",
+    "merged": "▁anwendung"
+  },
+  {
+    "rank": 1143,
+    "left": "▁antwort",
+    "right": "en",
+    "merged": "▁antworten"
+  },
+  {
+    "rank": 1144,
+    "left": "▁auf",
+    "right": "schrift",
+    "merged": "▁aufschrift"
+  },
+  {
+    "rank": 1145,
+    "left": "▁aus",
+    "right": "ge",
+    "merged": "▁ausge"
+  },
+  {
+    "rank": 1146,
+    "left": "▁be",
+    "right": "at",
+    "merged": "▁beat"
+  },
+  {
+    "rank": 1147,
+    "left": "▁be",
+    "right": "ende",
+    "merged": "▁beende"
+  },
+  {
+    "rank": 1148,
+    "left": "▁br",
+    "right": "ich",
+    "merged": "▁brich"
+  },
+  {
+    "rank": 1149,
+    "left": "▁c",
+    "right": "o",
+    "merged": "▁co"
+  },
+  {
+    "rank": 1150,
+    "left": "▁ch",
+    "right": "at",
+    "merged": "▁chat"
+  },
+  {
+    "rank": 1151,
+    "left": "▁d",
+    "right": "r",
+    "merged": "▁dr"
+  },
+  {
+    "rank": 1152,
+    "left": "▁da",
+    "right": "raus",
+    "merged": "▁daraus"
+  },
+  {
+    "rank": 1153,
+    "left": "▁dicht",
+    "right": "er",
+    "merged": "▁dichter"
+  },
+  {
+    "rank": 1154,
+    "left": "▁drauf",
+    "right": "steht",
+    "merged": "▁draufsteht"
+  },
+  {
+    "rank": 1155,
+    "left": "▁drei",
+    "right": "hundert",
+    "merged": "▁dreihundert"
+  },
+  {
+    "rank": 1156,
+    "left": "▁ein",
+    "right": "s",
+    "merged": "▁eins"
+  },
+  {
+    "rank": 1157,
+    "left": "▁ent",
+    "right": "zif",
+    "merged": "▁entzif"
+  },
+  {
+    "rank": 1158,
+    "left": "▁er",
+    "right": "de",
+    "merged": "▁erde"
+  },
+  {
+    "rank": 1159,
+    "left": "▁er",
+    "right": "m",
+    "merged": "▁erm"
+  },
+  {
+    "rank": 1160,
+    "left": "▁er",
+    "right": "z",
+    "merged": "▁erz"
+  },
+  {
+    "rank": 1161,
+    "left": "▁f",
+    "right": "üßen",
+    "merged": "▁füßen"
+  },
+  {
+    "rank": 1162,
+    "left": "▁fra",
+    "right": "ge",
+    "merged": "▁frage"
+  },
+  {
+    "rank": 1163,
+    "left": "▁ge",
+    "right": "f",
+    "merged": "▁gef"
+  },
+  {
+    "rank": 1164,
+    "left": "▁gegen",
+    "right": "stände",
+    "merged": "▁gegenstände"
+  },
+  {
+    "rank": 1165,
+    "left": "▁gen",
+    "right": "auso",
+    "merged": "▁genauso"
+  },
+  {
+    "rank": 1166,
+    "left": "▁gr",
+    "right": "öß",
+    "merged": "▁größ"
+  },
+  {
+    "rank": 1167,
+    "left": "▁h",
+    "right": "aupt",
+    "merged": "▁haupt"
+  },
+  {
+    "rank": 1168,
+    "left": "▁hä",
+    "right": "lt",
+    "merged": "▁hält"
+  },
+  {
+    "rank": 1169,
+    "left": "▁häufig",
+    "right": "keit",
+    "merged": "▁häufigkeit"
+  },
+  {
+    "rank": 1170,
+    "left": "▁höher",
+    "right": "e",
+    "merged": "▁höhere"
+  },
+  {
+    "rank": 1171,
+    "left": "▁höher",
+    "right": "er",
+    "merged": "▁höherer"
+  },
+  {
+    "rank": 1172,
+    "left": "▁in",
+    "right": "f",
+    "merged": "▁inf"
+  },
+  {
+    "rank": 1173,
+    "left": "▁j",
+    "right": "a",
+    "merged": "▁ja"
+  },
+  {
+    "rank": 1174,
+    "left": "▁k",
+    "right": "in",
+    "merged": "▁kin"
+  },
+  {
+    "rank": 1175,
+    "left": "▁klick",
+    "right": "en",
+    "merged": "▁klicken"
+  },
+  {
+    "rank": 1176,
+    "left": "▁könnte",
+    "right": "st",
+    "merged": "▁könntest"
+  },
+  {
+    "rank": 1177,
+    "left": "▁l",
+    "right": "ei",
+    "merged": "▁lei"
+  },
+  {
+    "rank": 1178,
+    "left": "▁lau",
+    "right": "fen",
+    "merged": "▁laufen"
+  },
+  {
+    "rank": 1179,
+    "left": "▁lie",
+    "right": "gen",
+    "merged": "▁liegen"
+  },
+  {
+    "rank": 1180,
+    "left": "▁n",
+    "right": "ein",
+    "merged": "▁nein"
+  },
+  {
+    "rank": 1181,
+    "left": "▁n",
+    "right": "enne",
+    "merged": "▁nenne"
+  },
+  {
+    "rank": 1182,
+    "left": "▁n",
+    "right": "ummer",
+    "merged": "▁nummer"
+  },
+  {
+    "rank": 1183,
+    "left": "▁ne",
+    "right": "un",
+    "merged": "▁neun"
+  },
+  {
+    "rank": 1184,
+    "left": "▁sa",
+    "right": "chen",
+    "merged": "▁sachen"
+  },
+  {
+    "rank": 1185,
+    "left": "▁sch",
+    "right": "on",
+    "merged": "▁schon"
+  },
+  {
+    "rank": 1186,
+    "left": "▁soll",
+    "right": "te",
+    "merged": "▁sollte"
+  },
+  {
+    "rank": 1187,
+    "left": "▁st",
+    "right": "u",
+    "merged": "▁stu"
+  },
+  {
+    "rank": 1188,
+    "left": "▁stopp",
+    "right": "en",
+    "merged": "▁stoppen"
+  },
+  {
+    "rank": 1189,
+    "left": "▁ver",
+    "right": "f",
+    "merged": "▁verf"
+  },
+  {
+    "rank": 1190,
+    "left": "▁ver",
+    "right": "st",
+    "merged": "▁verst"
+  },
+  {
+    "rank": 1191,
+    "left": "▁vorher",
+    "right": "ige",
+    "merged": "▁vorherige"
+  },
+  {
+    "rank": 1192,
+    "left": "▁w",
+    "right": "or",
+    "merged": "▁wor"
+  },
+  {
+    "rank": 1193,
+    "left": "▁zwei",
+    "right": "mal",
+    "merged": "▁zweimal"
+  },
+  {
+    "rank": 1194,
+    "left": "▁änder",
+    "right": "ung",
+    "merged": "▁änderung"
+  },
+  {
+    "rank": 1195,
+    "left": "▁über",
+    "right": "legt",
+    "merged": "▁überlegt"
+  },
+  {
+    "rank": 1196,
+    "left": "2",
+    "right": "0",
+    "merged": "20"
+  },
+  {
+    "rank": 1197,
+    "left": "ab",
+    "right": "y",
+    "merged": "aby"
+  },
+  {
+    "rank": 1198,
+    "left": "ar",
+    "right": "i",
+    "merged": "ari"
+  },
+  {
+    "rank": 1199,
+    "left": "ar",
+    "right": "te",
+    "merged": "arte"
+  },
+  {
+    "rank": 1200,
+    "left": "ari",
+    "right": "ante",
+    "merged": "ariante"
+  },
+  {
+    "rank": 1201,
+    "left": "at",
+    "right": "en",
+    "merged": "aten"
+  },
+  {
+    "rank": 1202,
+    "left": "b",
+    "right": "ei",
+    "merged": "bei"
+  },
+  {
+    "rank": 1203,
+    "left": "bar",
+    "right": "en",
+    "merged": "baren"
+  },
+  {
+    "rank": 1204,
+    "left": "c",
+    "right": "r",
+    "merged": "cr"
+  },
+  {
+    "rank": 1205,
+    "left": "ei",
+    "right": "ch",
+    "merged": "eich"
+  },
+  {
+    "rank": 1206,
+    "left": "einstell",
+    "right": "ungen",
+    "merged": "einstellungen"
+  },
+  {
+    "rank": 1207,
+    "left": "ekt",
+    "right": "isch",
+    "merged": "ektisch"
+  },
+  {
+    "rank": 1208,
+    "left": "es",
+    "right": "se",
+    "merged": "esse"
+  },
+  {
+    "rank": 1209,
+    "left": "ge",
+    "right": "bung",
+    "merged": "gebung"
+  },
+  {
+    "rank": 1210,
+    "left": "h",
+    "right": "eit",
+    "merged": "heit"
+  },
+  {
+    "rank": 1211,
+    "left": "ing",
+    "right": "s",
+    "merged": "ings"
+  },
+  {
+    "rank": 1212,
+    "left": "o",
+    "right": "p",
+    "merged": "op"
+  },
+  {
+    "rank": 1213,
+    "left": "option",
+    "right": "en",
+    "merged": "optionen"
+  },
+  {
+    "rank": 1214,
+    "left": "p",
+    "right": "l",
+    "merged": "pl"
+  },
+  {
+    "rank": 1215,
+    "left": "s",
+    "right": "ehen",
+    "merged": "sehen"
+  },
+  {
+    "rank": 1216,
+    "left": "tz",
+    "right": "ig",
+    "merged": "tzig"
+  },
+  {
+    "rank": 1217,
+    "left": "u",
+    "right": "ch",
+    "merged": "uch"
+  },
+  {
+    "rank": 1218,
+    "left": "z",
+    "right": "eu",
+    "merged": "zeu"
+  },
+  {
+    "rank": 1219,
+    "left": "ä",
+    "right": "t",
+    "merged": "ät"
+  },
+  {
+    "rank": 1220,
+    "left": "ö",
+    "right": "ren",
+    "merged": "ören"
+  },
+  {
+    "rank": 1221,
+    "left": "ör",
+    "right": "ter",
+    "merged": "örter"
+  },
+  {
+    "rank": 1222,
+    "left": "▁",
+    "right": "en",
+    "merged": "▁en"
+  },
+  {
+    "rank": 1223,
+    "left": "▁ausfüh",
+    "right": "ren",
+    "merged": "▁ausführen"
+  },
+  {
+    "rank": 1224,
+    "left": "▁auto",
+    "right": "m",
+    "merged": "▁autom"
+  },
+  {
+    "rank": 1225,
+    "left": "▁b",
+    "right": "aby",
+    "merged": "▁baby"
+  },
+  {
+    "rank": 1226,
+    "left": "▁b",
+    "right": "et",
+    "merged": "▁bet"
+  },
+  {
+    "rank": 1227,
+    "left": "▁b",
+    "right": "ie",
+    "merged": "▁bie"
+  },
+  {
+    "rank": 1228,
+    "left": "▁besch",
+    "right": "rei",
+    "merged": "▁beschrei"
+  },
+  {
+    "rank": 1229,
+    "left": "▁beschleun",
+    "right": "igen",
+    "merged": "▁beschleunigen"
+  },
+  {
+    "rank": 1230,
+    "left": "▁dar",
+    "right": "f",
+    "merged": "▁darf"
+  },
+  {
+    "rank": 1231,
+    "left": "▁e",
+    "right": "cht",
+    "merged": "▁echt"
+  },
+  {
+    "rank": 1232,
+    "left": "▁einzel",
+    "right": "ne",
+    "merged": "▁einzelne"
+  },
+  {
+    "rank": 1233,
+    "left": "▁el",
+    "right": "ekt",
+    "merged": "▁elekt"
+  },
+  {
+    "rank": 1234,
+    "left": "▁erkenn",
+    "right": "t",
+    "merged": "▁erkennt"
+  },
+  {
+    "rank": 1235,
+    "left": "▁f",
+    "right": "rau",
+    "merged": "▁frau"
+  },
+  {
+    "rank": 1236,
+    "left": "▁f",
+    "right": "rei",
+    "merged": "▁frei"
+  },
+  {
+    "rank": 1237,
+    "left": "▁f",
+    "right": "üh",
+    "merged": "▁füh"
+  },
+  {
+    "rank": 1238,
+    "left": "▁ge",
+    "right": "b",
+    "merged": "▁geb"
+  },
+  {
+    "rank": 1239,
+    "left": "▁gem",
+    "right": "ü",
+    "merged": "▁gemü"
+  },
+  {
+    "rank": 1240,
+    "left": "▁h",
+    "right": "ektisch",
+    "merged": "▁hektisch"
+  },
+  {
+    "rank": 1241,
+    "left": "▁h",
+    "right": "eute",
+    "merged": "▁heute"
+  },
+  {
+    "rank": 1242,
+    "left": "▁hal",
+    "right": "b",
+    "merged": "▁halb"
+  },
+  {
+    "rank": 1243,
+    "left": "▁hil",
+    "right": "f",
+    "merged": "▁hilf"
+  },
+  {
+    "rank": 1244,
+    "left": "▁hinweis",
+    "right": "en",
+    "merged": "▁hinweisen"
+  },
+  {
+    "rank": 1245,
+    "left": "▁i",
+    "right": "mmer",
+    "merged": "▁immer"
+  },
+  {
+    "rank": 1246,
+    "left": "▁k",
+    "right": "ürz",
+    "merged": "▁kürz"
+  },
+  {
+    "rank": 1247,
+    "left": "▁l",
+    "right": "eben",
+    "merged": "▁leben"
+  },
+  {
+    "rank": 1248,
+    "left": "▁mach",
+    "right": "e",
+    "merged": "▁mache"
+  },
+  {
+    "rank": 1249,
+    "left": "▁men",
+    "right": "sch",
+    "merged": "▁mensch"
+  },
+  {
+    "rank": 1250,
+    "left": "▁mon",
+    "right": "d",
+    "merged": "▁mond"
+  },
+  {
+    "rank": 1251,
+    "left": "▁n",
+    "right": "a",
+    "merged": "▁na"
+  },
+  {
+    "rank": 1252,
+    "left": "▁n",
+    "right": "ie",
+    "merged": "▁nie"
+  },
+  {
+    "rank": 1253,
+    "left": "▁o",
+    "right": "cr",
+    "merged": "▁ocr"
+  },
+  {
+    "rank": 1254,
+    "left": "▁p",
+    "right": "yth",
+    "merged": "▁pyth"
+  },
+  {
+    "rank": 1255,
+    "left": "▁piep",
+    "right": "s",
+    "merged": "▁pieps"
+  },
+  {
+    "rank": 1256,
+    "left": "▁ra",
+    "right": "t",
+    "merged": "▁rat"
+  },
+  {
+    "rank": 1257,
+    "left": "▁rech",
+    "right": "ten",
+    "merged": "▁rechten"
+  },
+  {
+    "rank": 1258,
+    "left": "▁reduz",
+    "right": "iere",
+    "merged": "▁reduziere"
+  },
+  {
+    "rank": 1259,
+    "left": "▁schneller",
+    "right": "es",
+    "merged": "▁schnelleres"
+  },
+  {
+    "rank": 1260,
+    "left": "▁sprech",
+    "right": "geschwindigkeit",
+    "merged": "▁sprechgeschwindigkeit"
+  },
+  {
+    "rank": 1261,
+    "left": "▁tau",
+    "right": "sch",
+    "merged": "▁tausch"
+  },
+  {
+    "rank": 1262,
+    "left": "▁um",
+    "right": "gebung",
+    "merged": "▁umgebung"
+  },
+  {
+    "rank": 1263,
+    "left": "▁v",
+    "right": "ariante",
+    "merged": "▁variante"
+  },
+  {
+    "rank": 1264,
+    "left": "▁w",
+    "right": "ann",
+    "merged": "▁wann"
+  },
+  {
+    "rank": 1265,
+    "left": "▁w",
+    "right": "örter",
+    "merged": "▁wörter"
+  },
+  {
+    "rank": 1266,
+    "left": "▁wiederh",
+    "right": "ole",
+    "merged": "▁wiederhole"
+  },
+  {
+    "rank": 1267,
+    "left": "▁wür",
+    "right": "dest",
+    "merged": "▁würdest"
+  },
+  {
+    "rank": 1268,
+    "left": "▁zahl",
+    "right": "en",
+    "merged": "▁zahlen"
+  },
+  {
+    "rank": 1269,
+    "left": "▁zieh",
+    "right": "t",
+    "merged": "▁zieht"
+  },
+  {
+    "rank": 1270,
+    "left": "▁änder",
+    "right": "t",
+    "merged": "▁ändert"
+  },
+  {
+    "rank": 1271,
+    "left": "00",
+    "right": "0",
+    "merged": "000"
+  },
+  {
+    "rank": 1272,
+    "left": "8",
+    "right": "0",
+    "merged": "80"
+  },
+  {
+    "rank": 1273,
+    "left": "ag",
+    "right": "or",
+    "merged": "agor"
+  },
+  {
+    "rank": 1274,
+    "left": "agor",
+    "right": "as",
+    "merged": "agoras"
+  },
+  {
+    "rank": 1275,
+    "left": "as",
+    "right": "ch",
+    "merged": "asch"
+  },
+  {
+    "rank": 1276,
+    "left": "as",
+    "right": "se",
+    "merged": "asse"
+  },
+  {
+    "rank": 1277,
+    "left": "bl",
+    "right": "em",
+    "merged": "blem"
+  },
+  {
+    "rank": 1278,
+    "left": "ch",
+    "right": "mal",
+    "merged": "chmal"
+  },
+  {
+    "rank": 1279,
+    "left": "ch",
+    "right": "n",
+    "merged": "chn"
+  },
+  {
+    "rank": 1280,
+    "left": "ch",
+    "right": "zig",
+    "merged": "chzig"
+  },
+  {
+    "rank": 1281,
+    "left": "der",
+    "right": "wagen",
+    "merged": "derwagen"
+  },
+  {
+    "rank": 1282,
+    "left": "dr",
+    "right": "uck",
+    "merged": "druck"
+  },
+  {
+    "rank": 1283,
+    "left": "ei",
+    "right": "ge",
+    "merged": "eige"
+  },
+  {
+    "rank": 1284,
+    "left": "eid",
+    "right": "et",
+    "merged": "eidet"
+  },
+  {
+    "rank": 1285,
+    "left": "ein",
+    "right": "en",
+    "merged": "einen"
+  },
+  {
+    "rank": 1286,
+    "left": "ett",
+    "right": "ings",
+    "merged": "ettings"
+  },
+  {
+    "rank": 1287,
+    "left": "f",
+    "right": "el",
+    "merged": "fel"
+  },
+  {
+    "rank": 1288,
+    "left": "g",
+    "right": "aben",
+    "merged": "gaben"
+  },
+  {
+    "rank": 1289,
+    "left": "h",
+    "right": "aus",
+    "merged": "haus"
+  },
+  {
+    "rank": 1290,
+    "left": "h",
+    "right": "eben",
+    "merged": "heben"
+  },
+  {
+    "rank": 1291,
+    "left": "i",
+    "right": "tte",
+    "merged": "itte"
+  },
+  {
+    "rank": 1292,
+    "left": "i",
+    "right": "z",
+    "merged": "iz"
+  },
+  {
+    "rank": 1293,
+    "left": "ied",
+    "right": "r",
+    "merged": "iedr"
+  },
+  {
+    "rank": 1294,
+    "left": "iedr",
+    "right": "iger",
+    "merged": "iedriger"
+  },
+  {
+    "rank": 1295,
+    "left": "ier",
+    "right": "ung",
+    "merged": "ierung"
+  },
+  {
+    "rank": 1296,
+    "left": "it",
+    "right": "ion",
+    "merged": "ition"
+  },
+  {
+    "rank": 1297,
+    "left": "k",
+    "right": "en",
+    "merged": "ken"
+  },
+  {
+    "rank": 1298,
+    "left": "k",
+    "right": "ommen",
+    "merged": "kommen"
+  },
+  {
+    "rank": 1299,
+    "left": "l",
+    "right": "ang",
+    "merged": "lang"
+  },
+  {
+    "rank": 1300,
+    "left": "l",
+    "right": "in",
+    "merged": "lin"
+  },
+  {
+    "rank": 1301,
+    "left": "la",
+    "right": "ge",
+    "merged": "lage"
+  },
+  {
+    "rank": 1302,
+    "left": "n",
+    "right": "ung",
+    "merged": "nung"
+  },
+  {
+    "rank": 1303,
+    "left": "or",
+    "right": "gen",
+    "merged": "orgen"
+  },
+  {
+    "rank": 1304,
+    "left": "ost",
+    "right": "en",
+    "merged": "osten"
+  },
+  {
+    "rank": 1305,
+    "left": "r",
+    "right": "ank",
+    "merged": "rank"
+  },
+  {
+    "rank": 1306,
+    "left": "r",
+    "right": "u",
+    "merged": "ru"
+  },
+  {
+    "rank": 1307,
+    "left": "ri",
+    "right": "f",
+    "merged": "rif"
+  },
+  {
+    "rank": 1308,
+    "left": "s",
+    "right": "st",
+    "merged": "sst"
+  },
+  {
+    "rank": 1309,
+    "left": "ss",
+    "right": "ignale",
+    "merged": "ssignale"
+  },
+  {
+    "rank": 1310,
+    "left": "tlich",
+    "right": "er",
+    "merged": "tlicher"
+  },
+  {
+    "rank": 1311,
+    "left": "tz",
+    "right": "wanzig",
+    "merged": "tzwanzig"
+  },
+  {
+    "rank": 1312,
+    "left": "uh",
+    "right": "r",
+    "merged": "uhr"
+  },
+  {
+    "rank": 1313,
+    "left": "under",
+    "right": "tzwanzig",
+    "merged": "undertzwanzig"
+  },
+  {
+    "rank": 1314,
+    "left": "ur",
+    "right": "de",
+    "merged": "urde"
+  },
+  {
+    "rank": 1315,
+    "left": "ynth",
+    "right": "ese",
+    "merged": "ynthese"
+  },
+  {
+    "rank": 1316,
+    "left": "z",
+    "right": "e",
+    "merged": "ze"
+  },
+  {
+    "rank": 1317,
+    "left": "z",
+    "right": "eiten",
+    "merged": "zeiten"
+  },
+  {
+    "rank": 1318,
+    "left": "äll",
+    "right": "t",
+    "merged": "ällt"
+  },
+  {
+    "rank": 1319,
+    "left": "ätz",
+    "right": "en",
+    "merged": "ätzen"
+  },
+  {
+    "rank": 1320,
+    "left": "äu",
+    "right": "de",
+    "merged": "äude"
+  },
+  {
+    "rank": 1321,
+    "left": "▁",
+    "right": "9",
+    "merged": "▁9"
+  },
+  {
+    "rank": 1322,
+    "left": "▁",
+    "right": "ende",
+    "merged": "▁ende"
+  },
+  {
+    "rank": 1323,
+    "left": "▁",
+    "right": "uhr",
+    "merged": "▁uhr"
+  },
+  {
+    "rank": 1324,
+    "left": "▁abstandst",
+    "right": "on",
+    "merged": "▁abstandston"
+  },
+  {
+    "rank": 1325,
+    "left": "▁akust",
+    "right": "ische",
+    "merged": "▁akustische"
+  },
+  {
+    "rank": 1326,
+    "left": "▁an",
+    "right": "heben",
+    "merged": "▁anheben"
+  },
+  {
+    "rank": 1327,
+    "left": "▁anz",
+    "right": "eige",
+    "merged": "▁anzeige"
+  },
+  {
+    "rank": 1328,
+    "left": "▁anz",
+    "right": "eigen",
+    "merged": "▁anzeigen"
+  },
+  {
+    "rank": 1329,
+    "left": "▁auf",
+    "right": "z",
+    "merged": "▁aufz"
+  },
+  {
+    "rank": 1330,
+    "left": "▁autom",
+    "right": "aten",
+    "merged": "▁automaten"
+  },
+  {
+    "rank": 1331,
+    "left": "▁ber",
+    "right": "eich",
+    "merged": "▁bereich"
+  },
+  {
+    "rank": 1332,
+    "left": "▁beschleun",
+    "right": "ige",
+    "merged": "▁beschleunige"
+  },
+  {
+    "rank": 1333,
+    "left": "▁brau",
+    "right": "chen",
+    "merged": "▁brauchen"
+  },
+  {
+    "rank": 1334,
+    "left": "▁da",
+    "right": "für",
+    "merged": "▁dafür"
+  },
+  {
+    "rank": 1335,
+    "left": "▁ein",
+    "right": "stein",
+    "merged": "▁einstein"
+  },
+  {
+    "rank": 1336,
+    "left": "▁erklär",
+    "right": "ung",
+    "merged": "▁erklärung"
+  },
+  {
+    "rank": 1337,
+    "left": "▁erst",
+    "right": "en",
+    "merged": "▁ersten"
+  },
+  {
+    "rank": 1338,
+    "left": "▁erz",
+    "right": "ähl",
+    "merged": "▁erzähl"
+  },
+  {
+    "rank": 1339,
+    "left": "▁geb",
+    "right": "äude",
+    "merged": "▁gebäude"
+  },
+  {
+    "rank": 1340,
+    "left": "▁gemü",
+    "right": "tlicher",
+    "merged": "▁gemütlicher"
+  },
+  {
+    "rank": 1341,
+    "left": "▁gleich",
+    "right": "es",
+    "merged": "▁gleiches"
+  },
+  {
+    "rank": 1342,
+    "left": "▁h",
+    "right": "aus",
+    "merged": "▁haus"
+  },
+  {
+    "rank": 1343,
+    "left": "▁h",
+    "right": "undert",
+    "merged": "▁hundert"
+  },
+  {
+    "rank": 1344,
+    "left": "▁ha",
+    "right": "tte",
+    "merged": "▁hatte"
+  },
+  {
+    "rank": 1345,
+    "left": "▁hand",
+    "right": "schrift",
+    "merged": "▁handschrift"
+  },
+  {
+    "rank": 1346,
+    "left": "▁her",
+    "right": "r",
+    "merged": "▁herr"
+  },
+  {
+    "rank": 1347,
+    "left": "▁her",
+    "right": "um",
+    "merged": "▁herum"
+  },
+  {
+    "rank": 1348,
+    "left": "▁hinweist",
+    "right": "on",
+    "merged": "▁hinweiston"
+  },
+  {
+    "rank": 1349,
+    "left": "▁hält",
+    "right": "st",
+    "merged": "▁hältst"
+  },
+  {
+    "rank": 1350,
+    "left": "▁inter",
+    "right": "net",
+    "merged": "▁internet"
+  },
+  {
+    "rank": 1351,
+    "left": "▁k",
+    "right": "n",
+    "merged": "▁kn"
+  },
+  {
+    "rank": 1352,
+    "left": "▁kin",
+    "right": "derwagen",
+    "merged": "▁kinderwagen"
+  },
+  {
+    "rank": 1353,
+    "left": "▁klein",
+    "right": "er",
+    "merged": "▁kleiner"
+  },
+  {
+    "rank": 1354,
+    "left": "▁kön",
+    "right": "nen",
+    "merged": "▁können"
+  },
+  {
+    "rank": 1355,
+    "left": "▁kürz",
+    "right": "er",
+    "merged": "▁kürzer"
+  },
+  {
+    "rank": 1356,
+    "left": "▁lei",
+    "right": "cht",
+    "merged": "▁leicht"
+  },
+  {
+    "rank": 1357,
+    "left": "▁m",
+    "right": "ann",
+    "merged": "▁mann"
+  },
+  {
+    "rank": 1358,
+    "left": "▁m",
+    "right": "in",
+    "merged": "▁min"
+  },
+  {
+    "rank": 1359,
+    "left": "▁man",
+    "right": "chmal",
+    "merged": "▁manchmal"
+  },
+  {
+    "rank": 1360,
+    "left": "▁n",
+    "right": "iedriger",
+    "merged": "▁niedriger"
+  },
+  {
+    "rank": 1361,
+    "left": "▁n",
+    "right": "or",
+    "merged": "▁nor"
+  },
+  {
+    "rank": 1362,
+    "left": "▁nah",
+    "right": "e",
+    "merged": "▁nahe"
+  },
+  {
+    "rank": 1363,
+    "left": "▁nimm",
+    "right": "t",
+    "merged": "▁nimmt"
+  },
+  {
+    "rank": 1364,
+    "left": "▁näh",
+    "right": "e",
+    "merged": "▁nähe"
+  },
+  {
+    "rank": 1365,
+    "left": "▁o",
+    "right": "pt",
+    "merged": "▁opt"
+  },
+  {
+    "rank": 1366,
+    "left": "▁p",
+    "right": "f",
+    "merged": "▁pf"
+  },
+  {
+    "rank": 1367,
+    "left": "▁p",
+    "right": "ho",
+    "merged": "▁pho"
+  },
+  {
+    "rank": 1368,
+    "left": "▁p",
+    "right": "s",
+    "merged": "▁ps"
+  },
+  {
+    "rank": 1369,
+    "left": "▁pl",
+    "right": "an",
+    "merged": "▁plan"
+  },
+  {
+    "rank": 1370,
+    "left": "▁preis",
+    "right": "schild",
+    "merged": "▁preisschild"
+  },
+  {
+    "rank": 1371,
+    "left": "▁pro",
+    "right": "blem",
+    "merged": "▁problem"
+  },
+  {
+    "rank": 1372,
+    "left": "▁pyth",
+    "right": "agoras",
+    "merged": "▁pythagoras"
+  },
+  {
+    "rank": 1373,
+    "left": "▁re",
+    "right": "gal",
+    "merged": "▁regal"
+  },
+  {
+    "rank": 1374,
+    "left": "▁ruh",
+    "right": "ig",
+    "merged": "▁ruhig"
+  },
+  {
+    "rank": 1375,
+    "left": "▁s",
+    "right": "atz",
+    "merged": "▁satz"
+  },
+  {
+    "rank": 1376,
+    "left": "▁s",
+    "right": "eh",
+    "merged": "▁seh"
+  },
+  {
+    "rank": 1377,
+    "left": "▁s",
+    "right": "ettings",
+    "merged": "▁settings"
+  },
+  {
+    "rank": 1378,
+    "left": "▁sch",
+    "right": "läge",
+    "merged": "▁schläge"
+  },
+  {
+    "rank": 1379,
+    "left": "▁schnell",
+    "right": "e",
+    "merged": "▁schnelle"
+  },
+  {
+    "rank": 1380,
+    "left": "▁signal",
+    "right": "en",
+    "merged": "▁signalen"
+  },
+  {
+    "rank": 1381,
+    "left": "▁signal",
+    "right": "folge",
+    "merged": "▁signalfolge"
+  },
+  {
+    "rank": 1382,
+    "left": "▁signal",
+    "right": "frequenz",
+    "merged": "▁signalfrequenz"
+  },
+  {
+    "rank": 1383,
+    "left": "▁sprech",
+    "right": "e",
+    "merged": "▁spreche"
+  },
+  {
+    "rank": 1384,
+    "left": "▁st",
+    "right": "öh",
+    "merged": "▁stöh"
+  },
+  {
+    "rank": 1385,
+    "left": "▁t",
+    "right": "r",
+    "merged": "▁tr"
+  },
+  {
+    "rank": 1386,
+    "left": "▁ta",
+    "right": "fel",
+    "merged": "▁tafel"
+  },
+  {
+    "rank": 1387,
+    "left": "▁ta",
+    "right": "g",
+    "merged": "▁tag"
+  },
+  {
+    "rank": 1388,
+    "left": "▁tiefer",
+    "right": "er",
+    "merged": "▁tieferer"
+  },
+  {
+    "rank": 1389,
+    "left": "▁ver",
+    "right": "lang",
+    "merged": "▁verlang"
+  },
+  {
+    "rank": 1390,
+    "left": "▁verf",
+    "right": "üg",
+    "merged": "▁verfüg"
+  },
+  {
+    "rank": 1391,
+    "left": "▁vier",
+    "right": "hundert",
+    "merged": "▁vierhundert"
+  },
+  {
+    "rank": 1392,
+    "left": "▁vorher",
+    "right": "igen",
+    "merged": "▁vorherigen"
+  },
+  {
+    "rank": 1393,
+    "left": "▁w",
+    "right": "urde",
+    "merged": "▁wurde"
+  },
+  {
+    "rank": 1394,
+    "left": "▁was",
+    "right": "ser",
+    "merged": "▁wasser"
+  },
+  {
+    "rank": 1395,
+    "left": "▁wer",
+    "right": "te",
+    "merged": "▁werte"
+  },
+  {
+    "rank": 1396,
+    "left": "▁wiederhol",
+    "right": "en",
+    "merged": "▁wiederholen"
+  },
+  {
+    "rank": 1397,
+    "left": "▁wä",
+    "right": "re",
+    "merged": "▁wäre"
+  },
+  {
+    "rank": 1398,
+    "left": "2",
+    "right": "00",
+    "merged": "200"
+  },
+  {
+    "rank": 1399,
+    "left": "6",
+    "right": "0",
+    "merged": "60"
+  },
+  {
+    "rank": 1400,
+    "left": "a",
+    "right": "ter",
+    "merged": "ater"
+  },
+  {
+    "rank": 1401,
+    "left": "ach",
+    "right": "tzig",
+    "merged": "achtzig"
+  },
+  {
+    "rank": 1402,
+    "left": "ah",
+    "right": "ren",
+    "merged": "ahren"
+  },
+  {
+    "rank": 1403,
+    "left": "al",
+    "right": "t",
+    "merged": "alt"
+  },
+  {
+    "rank": 1404,
+    "left": "asch",
+    "right": "all",
+    "merged": "aschall"
+  },
+  {
+    "rank": 1405,
+    "left": "au",
+    "right": "f",
+    "merged": "auf"
+  },
+  {
+    "rank": 1406,
+    "left": "au",
+    "right": "m",
+    "merged": "aum"
+  },
+  {
+    "rank": 1407,
+    "left": "bei",
+    "right": "tet",
+    "merged": "beitet"
+  },
+  {
+    "rank": 1408,
+    "left": "c",
+    "right": "t",
+    "merged": "ct"
+  },
+  {
+    "rank": 1409,
+    "left": "druck",
+    "right": "te",
+    "merged": "druckte"
+  },
+  {
+    "rank": 1410,
+    "left": "e",
+    "right": "d",
+    "merged": "ed"
+  },
+  {
+    "rank": 1411,
+    "left": "e",
+    "right": "y",
+    "merged": "ey"
+  },
+  {
+    "rank": 1412,
+    "left": "ei",
+    "right": "gt",
+    "merged": "eigt"
+  },
+  {
+    "rank": 1413,
+    "left": "el",
+    "right": "be",
+    "merged": "elbe"
+  },
+  {
+    "rank": 1414,
+    "left": "eld",
+    "right": "ung",
+    "merged": "eldung"
+  },
+  {
+    "rank": 1415,
+    "left": "en",
+    "right": "ster",
+    "merged": "enster"
+  },
+  {
+    "rank": 1416,
+    "left": "en",
+    "right": "te",
+    "merged": "ente"
+  },
+  {
+    "rank": 1417,
+    "left": "et",
+    "right": "ter",
+    "merged": "etter"
+  },
+  {
+    "rank": 1418,
+    "left": "etz",
+    "right": "e",
+    "merged": "etze"
+  },
+  {
+    "rank": 1419,
+    "left": "eu",
+    "right": "tlich",
+    "merged": "eutlich"
+  },
+  {
+    "rank": 1420,
+    "left": "g",
+    "right": "i",
+    "merged": "gi"
+  },
+  {
+    "rank": 1421,
+    "left": "g",
+    "right": "äng",
+    "merged": "gäng"
+  },
+  {
+    "rank": 1422,
+    "left": "ge",
+    "right": "druckte",
+    "merged": "gedruckte"
+  },
+  {
+    "rank": 1423,
+    "left": "gäng",
+    "right": "ig",
+    "merged": "gängig"
+  },
+  {
+    "rank": 1424,
+    "left": "h",
+    "right": "ang",
+    "merged": "hang"
+  },
+  {
+    "rank": 1425,
+    "left": "icht",
+    "right": "ig",
+    "merged": "ichtig"
+  },
+  {
+    "rank": 1426,
+    "left": "ie",
+    "right": "le",
+    "merged": "iele"
+  },
+  {
+    "rank": 1427,
+    "left": "isch",
+    "right": "er",
+    "merged": "ischer"
+  },
+  {
+    "rank": 1428,
+    "left": "it",
+    "right": "t",
+    "merged": "itt"
+  },
+  {
+    "rank": 1429,
+    "left": "itt",
+    "right": "le",
+    "merged": "ittle"
+  },
+  {
+    "rank": 1430,
+    "left": "k",
+    "right": "a",
+    "merged": "ka"
+  },
+  {
+    "rank": 1431,
+    "left": "l",
+    "right": "er",
+    "merged": "ler"
+  },
+  {
+    "rank": 1432,
+    "left": "lä",
+    "right": "ss",
+    "merged": "läss"
+  },
+  {
+    "rank": 1433,
+    "left": "m",
+    "right": "achen",
+    "merged": "machen"
+  },
+  {
+    "rank": 1434,
+    "left": "om",
+    "right": "ent",
+    "merged": "oment"
+  },
+  {
+    "rank": 1435,
+    "left": "or",
+    "right": "i",
+    "merged": "ori"
+  },
+  {
+    "rank": 1436,
+    "left": "ot",
+    "right": "or",
+    "merged": "otor"
+  },
+  {
+    "rank": 1437,
+    "left": "p",
+    "right": "pt",
+    "merged": "ppt"
+  },
+  {
+    "rank": 1438,
+    "left": "pl",
+    "right": "an",
+    "merged": "plan"
+  },
+  {
+    "rank": 1439,
+    "left": "r",
+    "right": "aschall",
+    "merged": "raschall"
+  },
+  {
+    "rank": 1440,
+    "left": "rif",
+    "right": "te",
+    "merged": "rifte"
+  },
+  {
+    "rank": 1441,
+    "left": "ru",
+    "right": "fen",
+    "merged": "rufen"
+  },
+  {
+    "rank": 1442,
+    "left": "s",
+    "right": "etz",
+    "merged": "setz"
+  },
+  {
+    "rank": 1443,
+    "left": "s",
+    "right": "schild",
+    "merged": "sschild"
+  },
+  {
+    "rank": 1444,
+    "left": "s",
+    "right": "ynthese",
+    "merged": "synthese"
+  },
+  {
+    "rank": 1445,
+    "left": "se",
+    "right": "chzig",
+    "merged": "sechzig"
+  },
+  {
+    "rank": 1446,
+    "left": "st",
+    "right": "rom",
+    "merged": "strom"
+  },
+  {
+    "rank": 1447,
+    "left": "t",
+    "right": "in",
+    "merged": "tin"
+  },
+  {
+    "rank": 1448,
+    "left": "t",
+    "right": "raschall",
+    "merged": "traschall"
+  },
+  {
+    "rank": 1449,
+    "left": "to",
+    "right": "synthese",
+    "merged": "tosynthese"
+  },
+  {
+    "rank": 1450,
+    "left": "u",
+    "right": "te",
+    "merged": "ute"
+  },
+  {
+    "rank": 1451,
+    "left": "ul",
+    "right": "traschall",
+    "merged": "ultraschall"
+  },
+  {
+    "rank": 1452,
+    "left": "un",
+    "right": "den",
+    "merged": "unden"
+  },
+  {
+    "rank": 1453,
+    "left": "ut",
+    "right": "t",
+    "merged": "utt"
+  },
+  {
+    "rank": 1454,
+    "left": "w",
+    "right": "e",
+    "merged": "we"
+  },
+  {
+    "rank": 1455,
+    "left": "z",
+    "right": "ahl",
+    "merged": "zahl"
+  },
+  {
+    "rank": 1456,
+    "left": "z",
+    "right": "eigt",
+    "merged": "zeigt"
+  },
+  {
+    "rank": 1457,
+    "left": "z",
+    "right": "eit",
+    "merged": "zeit"
+  },
+  {
+    "rank": 1458,
+    "left": "zeu",
+    "right": "g",
+    "merged": "zeug"
+  },
+  {
+    "rank": 1459,
+    "left": "ück",
+    "right": "gängig",
+    "merged": "ückgängig"
+  },
+  {
+    "rank": 1460,
+    "left": "ün",
+    "right": "de",
+    "merged": "ünde"
+  },
+  {
+    "rank": 1461,
+    "left": "▁",
+    "right": "ultraschall",
+    "merged": "▁ultraschall"
+  },
+  {
+    "rank": 1462,
+    "left": "▁abstand",
+    "right": "s",
+    "merged": "▁abstands"
+  },
+  {
+    "rank": 1463,
+    "left": "▁acht",
+    "right": "hundertfünfzig",
+    "merged": "▁achthundertfünfzig"
+  },
+  {
+    "rank": 1464,
+    "left": "▁an",
+    "right": "ge",
+    "merged": "▁ange"
+  },
+  {
+    "rank": 1465,
+    "left": "▁ander",
+    "right": "es",
+    "merged": "▁anderes"
+  },
+  {
+    "rank": 1466,
+    "left": "▁ar",
+    "right": "beitet",
+    "merged": "▁arbeitet"
+  },
+  {
+    "rank": 1467,
+    "left": "▁auf",
+    "right": "rufen",
+    "merged": "▁aufrufen"
+  },
+  {
+    "rank": 1468,
+    "left": "▁b",
+    "right": "ach",
+    "merged": "▁bach"
+  },
+  {
+    "rank": 1469,
+    "left": "▁b",
+    "right": "l",
+    "merged": "▁bl"
+  },
+  {
+    "rank": 1470,
+    "left": "▁be",
+    "right": "v",
+    "merged": "▁bev"
+  },
+  {
+    "rank": 1471,
+    "left": "▁beat",
+    "right": "s",
+    "merged": "▁beats"
+  },
+  {
+    "rank": 1472,
+    "left": "▁besch",
+    "right": "rifte",
+    "merged": "▁beschrifte"
+  },
+  {
+    "rank": 1473,
+    "left": "▁bi",
+    "right": "l",
+    "merged": "▁bil"
+  },
+  {
+    "rank": 1474,
+    "left": "▁bie",
+    "right": "ten",
+    "merged": "▁bieten"
+  },
+  {
+    "rank": 1475,
+    "left": "▁br",
+    "right": "in",
+    "merged": "▁brin"
+  },
+  {
+    "rank": 1476,
+    "left": "▁d",
+    "right": "ann",
+    "merged": "▁dann"
+  },
+  {
+    "rank": 1477,
+    "left": "▁d",
+    "right": "e",
+    "merged": "▁de"
+  },
+  {
+    "rank": 1478,
+    "left": "▁d",
+    "right": "eutlich",
+    "merged": "▁deutlich"
+  },
+  {
+    "rank": 1479,
+    "left": "▁dies",
+    "right": "elbe",
+    "merged": "▁dieselbe"
+  },
+  {
+    "rank": 1480,
+    "left": "▁dies",
+    "right": "er",
+    "merged": "▁dieser"
+  },
+  {
+    "rank": 1481,
+    "left": "▁dies",
+    "right": "mal",
+    "merged": "▁diesmal"
+  },
+  {
+    "rank": 1482,
+    "left": "▁distanz",
+    "right": "t",
+    "merged": "▁distanzt"
+  },
+  {
+    "rank": 1483,
+    "left": "▁distanzs",
+    "right": "ignal",
+    "merged": "▁distanzsignal"
+  },
+  {
+    "rank": 1484,
+    "left": "▁distanzs",
+    "right": "ignale",
+    "merged": "▁distanzsignale"
+  },
+  {
+    "rank": 1485,
+    "left": "▁du",
+    "right": "r",
+    "merged": "▁dur"
+  },
+  {
+    "rank": 1486,
+    "left": "▁dunk",
+    "right": "eln",
+    "merged": "▁dunkeln"
+  },
+  {
+    "rank": 1487,
+    "left": "▁e",
+    "right": "gal",
+    "merged": "▁egal"
+  },
+  {
+    "rank": 1488,
+    "left": "▁ein",
+    "right": "heit",
+    "merged": "▁einheit"
+  },
+  {
+    "rank": 1489,
+    "left": "▁ent",
+    "right": "sch",
+    "merged": "▁entsch"
+  },
+  {
+    "rank": 1490,
+    "left": "▁er",
+    "right": "f",
+    "merged": "▁erf"
+  },
+  {
+    "rank": 1491,
+    "left": "▁erk",
+    "right": "ann",
+    "merged": "▁erkann"
+  },
+  {
+    "rank": 1492,
+    "left": "▁erm",
+    "right": "ittle",
+    "merged": "▁ermittle"
+  },
+  {
+    "rank": 1493,
+    "left": "▁f",
+    "right": "enster",
+    "merged": "▁fenster"
+  },
+  {
+    "rank": 1494,
+    "left": "▁f",
+    "right": "orm",
+    "merged": "▁form"
+  },
+  {
+    "rank": 1495,
+    "left": "▁frequenz",
+    "right": "en",
+    "merged": "▁frequenzen"
+  },
+  {
+    "rank": 1496,
+    "left": "▁g",
+    "right": "el",
+    "merged": "▁gel"
+  },
+  {
+    "rank": 1497,
+    "left": "▁ganz",
+    "right": "en",
+    "merged": "▁ganzen"
+  },
+  {
+    "rank": 1498,
+    "left": "▁gef",
+    "right": "ällt",
+    "merged": "▁gefällt"
+  },
+  {
+    "rank": 1499,
+    "left": "▁ges",
+    "right": "etze",
+    "merged": "▁gesetze"
+  },
+  {
+    "rank": 1500,
+    "left": "▁gr",
+    "right": "und",
+    "merged": "▁grund"
+  },
+  {
+    "rank": 1501,
+    "left": "▁größ",
+    "right": "ere",
+    "merged": "▁größere"
+  },
+  {
+    "rank": 1502,
+    "left": "▁h",
+    "right": "aben",
+    "merged": "▁haben"
+  },
+  {
+    "rank": 1503,
+    "left": "▁ha",
+    "right": "st",
+    "merged": "▁hast"
+  },
+  {
+    "rank": 1504,
+    "left": "▁haupt",
+    "right": "st",
+    "merged": "▁hauptst"
+  },
+  {
+    "rank": 1505,
+    "left": "▁höher",
+    "right": "em",
+    "merged": "▁höherem"
+  },
+  {
+    "rank": 1506,
+    "left": "▁höher",
+    "right": "es",
+    "merged": "▁höheres"
+  },
+  {
+    "rank": 1507,
+    "left": "▁imp",
+    "right": "uls",
+    "merged": "▁impuls"
+  },
+  {
+    "rank": 1508,
+    "left": "▁j",
+    "right": "ahr",
+    "merged": "▁jahr"
+  },
+  {
+    "rank": 1509,
+    "left": "▁k",
+    "right": "aum",
+    "merged": "▁kaum"
+  },
+  {
+    "rank": 1510,
+    "left": "▁k",
+    "right": "o",
+    "merged": "▁ko"
+  },
+  {
+    "rank": 1511,
+    "left": "▁kl",
+    "right": "i",
+    "merged": "▁kli"
+  },
+  {
+    "rank": 1512,
+    "left": "▁klang",
+    "right": "lich",
+    "merged": "▁klanglich"
+  },
+  {
+    "rank": 1513,
+    "left": "▁klein",
+    "right": "en",
+    "merged": "▁kleinen"
+  },
+  {
+    "rank": 1514,
+    "left": "▁klein",
+    "right": "es",
+    "merged": "▁kleines"
+  },
+  {
+    "rank": 1515,
+    "left": "▁klein",
+    "right": "gedruckte",
+    "merged": "▁kleingedruckte"
+  },
+  {
+    "rank": 1516,
+    "left": "▁konfigur",
+    "right": "iere",
+    "merged": "▁konfiguriere"
+  },
+  {
+    "rank": 1517,
+    "left": "▁l",
+    "right": "am",
+    "merged": "▁lam"
+  },
+  {
+    "rank": 1518,
+    "left": "▁langsam",
+    "right": "e",
+    "merged": "▁langsame"
+  },
+  {
+    "rank": 1519,
+    "left": "▁m",
+    "right": "eldung",
+    "merged": "▁meldung"
+  },
+  {
+    "rank": 1520,
+    "left": "▁m",
+    "right": "oment",
+    "merged": "▁moment"
+  },
+  {
+    "rank": 1521,
+    "left": "▁n",
+    "right": "ot",
+    "merged": "▁not"
+  },
+  {
+    "rank": 1522,
+    "left": "▁neun",
+    "right": "hundert",
+    "merged": "▁neunhundert"
+  },
+  {
+    "rank": 1523,
+    "left": "▁nor",
+    "right": "mal",
+    "merged": "▁normal"
+  },
+  {
+    "rank": 1524,
+    "left": "▁o",
+    "right": "ben",
+    "merged": "▁oben"
+  },
+  {
+    "rank": 1525,
+    "left": "▁ob",
+    "right": "ere",
+    "merged": "▁obere"
+  },
+  {
+    "rank": 1526,
+    "left": "▁opt",
+    "right": "ische",
+    "merged": "▁optische"
+  },
+  {
+    "rank": 1527,
+    "left": "▁p",
+    "right": "h",
+    "merged": "▁ph"
+  },
+  {
+    "rank": 1528,
+    "left": "▁pho",
+    "right": "tosynthese",
+    "merged": "▁photosynthese"
+  },
+  {
+    "rank": 1529,
+    "left": "▁piept",
+    "right": "önen",
+    "merged": "▁pieptönen"
+  },
+  {
+    "rank": 1530,
+    "left": "▁r",
+    "right": "ückgängig",
+    "merged": "▁rückgängig"
+  },
+  {
+    "rank": 1531,
+    "left": "▁re",
+    "right": "de",
+    "merged": "▁rede"
+  },
+  {
+    "rank": 1532,
+    "left": "▁s",
+    "right": "en",
+    "merged": "▁sen"
+  },
+  {
+    "rank": 1533,
+    "left": "▁s",
+    "right": "ho",
+    "merged": "▁sho"
+  },
+  {
+    "rank": 1534,
+    "left": "▁s",
+    "right": "i",
+    "merged": "▁si"
+  },
+  {
+    "rank": 1535,
+    "left": "▁s",
+    "right": "ign",
+    "merged": "▁sign"
+  },
+  {
+    "rank": 1536,
+    "left": "▁s",
+    "right": "inn",
+    "merged": "▁sinn"
+  },
+  {
+    "rank": 1537,
+    "left": "▁s",
+    "right": "ystem",
+    "merged": "▁system"
+  },
+  {
+    "rank": 1538,
+    "left": "▁sch",
+    "right": "alte",
+    "merged": "▁schalte"
+  },
+  {
+    "rank": 1539,
+    "left": "▁sch",
+    "right": "le",
+    "merged": "▁schle"
+  },
+  {
+    "rank": 1540,
+    "left": "▁sch",
+    "right": "lie",
+    "merged": "▁schlie"
+  },
+  {
+    "rank": 1541,
+    "left": "▁sch",
+    "right": "ätzen",
+    "merged": "▁schätzen"
+  },
+  {
+    "rank": 1542,
+    "left": "▁schw",
+    "right": "arz",
+    "merged": "▁schwarz"
+  },
+  {
+    "rank": 1543,
+    "left": "▁sieben",
+    "right": "hundert",
+    "merged": "▁siebenhundert"
+  },
+  {
+    "rank": 1544,
+    "left": "▁sieben",
+    "right": "hundertfünfzig",
+    "merged": "▁siebenhundertfünfzig"
+  },
+  {
+    "rank": 1545,
+    "left": "▁signalt",
+    "right": "öne",
+    "merged": "▁signaltöne"
+  },
+  {
+    "rank": 1546,
+    "left": "▁sp",
+    "right": "ei",
+    "merged": "▁spei"
+  },
+  {
+    "rank": 1547,
+    "left": "▁st",
+    "right": "imm",
+    "merged": "▁stimm"
+  },
+  {
+    "rank": 1548,
+    "left": "▁st",
+    "right": "ünde",
+    "merged": "▁stünde"
+  },
+  {
+    "rank": 1549,
+    "left": "▁stu",
+    "right": "fe",
+    "merged": "▁stufe"
+  },
+  {
+    "rank": 1550,
+    "left": "▁stöh",
+    "right": "ne",
+    "merged": "▁stöhne"
+  },
+  {
+    "rank": 1551,
+    "left": "▁ton",
+    "right": "lage",
+    "merged": "▁tonlage"
+  },
+  {
+    "rank": 1552,
+    "left": "▁untersch",
+    "right": "eidet",
+    "merged": "▁unterscheidet"
+  },
+  {
+    "rank": 1553,
+    "left": "▁ver",
+    "right": "b",
+    "merged": "▁verb"
+  },
+  {
+    "rank": 1554,
+    "left": "▁verfüg",
+    "right": "baren",
+    "merged": "▁verfügbaren"
+  },
+  {
+    "rank": 1555,
+    "left": "▁verlang",
+    "right": "sam",
+    "merged": "▁verlangsam"
+  },
+  {
+    "rank": 1556,
+    "left": "▁verring",
+    "right": "ere",
+    "merged": "▁verringere"
+  },
+  {
+    "rank": 1557,
+    "left": "▁verring",
+    "right": "ern",
+    "merged": "▁verringern"
+  },
+  {
+    "rank": 1558,
+    "left": "▁verst",
+    "right": "ehe",
+    "merged": "▁verstehe"
+  },
+  {
+    "rank": 1559,
+    "left": "▁vier",
+    "right": "tel",
+    "merged": "▁viertel"
+  },
+  {
+    "rank": 1560,
+    "left": "▁w",
+    "right": "etter",
+    "merged": "▁wetter"
+  },
+  {
+    "rank": 1561,
+    "left": "▁warte",
+    "right": "t",
+    "merged": "▁wartet"
+  },
+  {
+    "rank": 1562,
+    "left": "▁wel",
+    "right": "t",
+    "merged": "▁welt"
+  },
+  {
+    "rank": 1563,
+    "left": "▁wiev",
+    "right": "iel",
+    "merged": "▁wieviel"
+  },
+  {
+    "rank": 1564,
+    "left": "▁wo",
+    "right": "chen",
+    "merged": "▁wochen"
+  },
+  {
+    "rank": 1565,
+    "left": "▁wor",
+    "right": "te",
+    "merged": "▁worte"
+  },
+  {
+    "rank": 1566,
+    "left": "▁zei",
+    "right": "chen",
+    "merged": "▁zeichen"
+  },
+  {
+    "rank": 1567,
+    "left": "▁zwei",
+    "right": "hundert",
+    "merged": "▁zweihundert"
+  },
+  {
+    "rank": 1568,
+    "left": "ad",
+    "right": "t",
+    "merged": "adt"
+  },
+  {
+    "rank": 1569,
+    "left": "ag",
+    "right": "d",
+    "merged": "agd"
+  },
+  {
+    "rank": 1570,
+    "left": "al",
+    "right": "is",
+    "merged": "alis"
+  },
+  {
+    "rank": 1571,
+    "left": "am",
+    "right": "ik",
+    "merged": "amik"
+  },
+  {
+    "rank": 1572,
+    "left": "ar",
+    "right": "b",
+    "merged": "arb"
+  },
+  {
+    "rank": 1573,
+    "left": "arb",
+    "right": "eiten",
+    "merged": "arbeiten"
+  },
+  {
+    "rank": 1574,
+    "left": "arz",
+    "right": "ell",
+    "merged": "arzell"
+  },
+  {
+    "rank": 1575,
+    "left": "at",
+    "right": "t",
+    "merged": "att"
+  },
+  {
+    "rank": 1576,
+    "left": "at",
+    "right": "ten",
+    "merged": "atten"
+  },
+  {
+    "rank": 1577,
+    "left": "at",
+    "right": "ur",
+    "merged": "atur"
+  },
+  {
+    "rank": 1578,
+    "left": "au",
+    "right": "b",
+    "merged": "aub"
+  },
+  {
+    "rank": 1579,
+    "left": "ch",
+    "right": "ter",
+    "merged": "chter"
+  },
+  {
+    "rank": 1580,
+    "left": "chn",
+    "right": "isch",
+    "merged": "chnisch"
+  },
+  {
+    "rank": 1581,
+    "left": "chs",
+    "right": "ehen",
+    "merged": "chsehen"
+  },
+  {
+    "rank": 1582,
+    "left": "ck",
+    "right": "e",
+    "merged": "cke"
+  },
+  {
+    "rank": 1583,
+    "left": "d",
+    "right": "ent",
+    "merged": "dent"
+  },
+  {
+    "rank": 1584,
+    "left": "d",
+    "right": "lich",
+    "merged": "dlich"
+  },
+  {
+    "rank": 1585,
+    "left": "de",
+    "right": "e",
+    "merged": "dee"
+  },
+  {
+    "rank": 1586,
+    "left": "dent",
+    "right": "if",
+    "merged": "dentif"
+  },
+  {
+    "rank": 1587,
+    "left": "dentif",
+    "right": "iz",
+    "merged": "dentifiz"
+  },
+  {
+    "rank": 1588,
+    "left": "dentifiz",
+    "right": "ieren",
+    "merged": "dentifizieren"
+  },
+  {
+    "rank": 1589,
+    "left": "e",
+    "right": "b",
+    "merged": "eb"
+  },
+  {
+    "rank": 1590,
+    "left": "e",
+    "right": "er",
+    "merged": "eer"
+  },
+  {
+    "rank": 1591,
+    "left": "ehr",
+    "right": "sschild",
+    "merged": "ehrsschild"
+  },
+  {
+    "rank": 1592,
+    "left": "ei",
+    "right": "ß",
+    "merged": "eiß"
+  },
+  {
+    "rank": 1593,
+    "left": "eit",
+    "right": "ausend",
+    "merged": "eitausend"
+  },
+  {
+    "rank": 1594,
+    "left": "en",
+    "right": "den",
+    "merged": "enden"
+  },
+  {
+    "rank": 1595,
+    "left": "ent",
+    "right": "ierung",
+    "merged": "entierung"
+  },
+  {
+    "rank": 1596,
+    "left": "er",
+    "right": "nen",
+    "merged": "ernen"
+  },
+  {
+    "rank": 1597,
+    "left": "er",
+    "right": "v",
+    "merged": "erv"
+  },
+  {
+    "rank": 1598,
+    "left": "er",
+    "right": "wei",
+    "merged": "erwei"
+  },
+  {
+    "rank": 1599,
+    "left": "ern",
+    "right": "t",
+    "merged": "ernt"
+  },
+  {
+    "rank": 1600,
+    "left": "erwei",
+    "right": "se",
+    "merged": "erweise"
+  },
+  {
+    "rank": 1601,
+    "left": "et",
+    "right": "en",
+    "merged": "eten"
+  },
+  {
+    "rank": 1602,
+    "left": "f",
+    "right": "ahr",
+    "merged": "fahr"
+  },
+  {
+    "rank": 1603,
+    "left": "f",
+    "right": "fer",
+    "merged": "ffer"
+  },
+  {
+    "rank": 1604,
+    "left": "g",
+    "right": "em",
+    "merged": "gem"
+  },
+  {
+    "rank": 1605,
+    "left": "g",
+    "right": "l",
+    "merged": "gl"
+  },
+  {
+    "rank": 1606,
+    "left": "g",
+    "right": "lich",
+    "merged": "glich"
+  },
+  {
+    "rank": 1607,
+    "left": "g",
+    "right": "n",
+    "merged": "gn"
+  },
+  {
+    "rank": 1608,
+    "left": "gl",
+    "right": "ische",
+    "merged": "glische"
+  },
+  {
+    "rank": 1609,
+    "left": "gn",
+    "right": "or",
+    "merged": "gnor"
+  },
+  {
+    "rank": 1610,
+    "left": "her",
+    "right": "m",
+    "merged": "herm"
+  },
+  {
+    "rank": 1611,
+    "left": "herm",
+    "right": "od",
+    "merged": "hermod"
+  },
+  {
+    "rank": 1612,
+    "left": "hermod",
+    "right": "yn",
+    "merged": "hermodyn"
+  },
+  {
+    "rank": 1613,
+    "left": "hermodyn",
+    "right": "amik",
+    "merged": "hermodynamik"
+  },
+  {
+    "rank": 1614,
+    "left": "hinwei",
+    "right": "s",
+    "merged": "hinweis"
+  },
+  {
+    "rank": 1615,
+    "left": "ir",
+    "right": "f",
+    "merged": "irf"
+  },
+  {
+    "rank": 1616,
+    "left": "it",
+    "right": "or",
+    "merged": "itor"
+  },
+  {
+    "rank": 1617,
+    "left": "itte",
+    "right": "l",
+    "merged": "ittel"
+  },
+  {
+    "rank": 1618,
+    "left": "k",
+    "right": "e",
+    "merged": "ke"
+  },
+  {
+    "rank": 1619,
+    "left": "k",
+    "right": "ehrsschild",
+    "merged": "kehrsschild"
+  },
+  {
+    "rank": 1620,
+    "left": "k",
+    "right": "el",
+    "merged": "kel"
+  },
+  {
+    "rank": 1621,
+    "left": "k",
+    "right": "st",
+    "merged": "kst"
+  },
+  {
+    "rank": 1622,
+    "left": "ku",
+    "right": "chen",
+    "merged": "kuchen"
+  },
+  {
+    "rank": 1623,
+    "left": "l",
+    "right": "arzell",
+    "merged": "larzell"
+  },
+  {
+    "rank": 1624,
+    "left": "l",
+    "right": "ation",
+    "merged": "lation"
+  },
+  {
+    "rank": 1625,
+    "left": "la",
+    "right": "g",
+    "merged": "lag"
+  },
+  {
+    "rank": 1626,
+    "left": "läss",
+    "right": "ig",
+    "merged": "lässig"
+  },
+  {
+    "rank": 1627,
+    "left": "m",
+    "right": "zahl",
+    "merged": "mzahl"
+  },
+  {
+    "rank": 1628,
+    "left": "mp",
+    "right": "u",
+    "merged": "mpu"
+  },
+  {
+    "rank": 1629,
+    "left": "mpu",
+    "right": "ter",
+    "merged": "mputer"
+  },
+  {
+    "rank": 1630,
+    "left": "n",
+    "right": "a",
+    "merged": "na"
+  },
+  {
+    "rank": 1631,
+    "left": "o",
+    "right": "pp",
+    "merged": "opp"
+  },
+  {
+    "rank": 1632,
+    "left": "om",
+    "right": "e",
+    "merged": "ome"
+  },
+  {
+    "rank": 1633,
+    "left": "on",
+    "right": "y",
+    "merged": "ony"
+  },
+  {
+    "rank": 1634,
+    "left": "ony",
+    "right": "m",
+    "merged": "onym"
+  },
+  {
+    "rank": 1635,
+    "left": "opp",
+    "right": "el",
+    "merged": "oppel"
+  },
+  {
+    "rank": 1636,
+    "left": "ori",
+    "right": "entierung",
+    "merged": "orientierung"
+  },
+  {
+    "rank": 1637,
+    "left": "orm",
+    "right": "ation",
+    "merged": "ormation"
+  },
+  {
+    "rank": 1638,
+    "left": "os",
+    "right": "ition",
+    "merged": "osition"
+  },
+  {
+    "rank": 1639,
+    "left": "p",
+    "right": "ar",
+    "merged": "par"
+  },
+  {
+    "rank": 1640,
+    "left": "p",
+    "right": "e",
+    "merged": "pe"
+  },
+  {
+    "rank": 1641,
+    "left": "p",
+    "right": "s",
+    "merged": "ps"
+  },
+  {
+    "rank": 1642,
+    "left": "r",
+    "right": "ung",
+    "merged": "rung"
+  },
+  {
+    "rank": 1643,
+    "left": "ra",
+    "right": "gen",
+    "merged": "ragen"
+  },
+  {
+    "rank": 1644,
+    "left": "rei",
+    "right": "fen",
+    "merged": "reifen"
+  },
+  {
+    "rank": 1645,
+    "left": "ri",
+    "right": "mzahl",
+    "merged": "rimzahl"
+  },
+  {
+    "rank": 1646,
+    "left": "rie",
+    "right": "g",
+    "merged": "rieg"
+  },
+  {
+    "rank": 1647,
+    "left": "rom",
+    "right": "otor",
+    "merged": "romotor"
+  },
+  {
+    "rank": 1648,
+    "left": "s",
+    "right": "geschwindigkeit",
+    "merged": "sgeschwindigkeit"
+  },
+  {
+    "rank": 1649,
+    "left": "ter",
+    "right": "n",
+    "merged": "tern"
+  },
+  {
+    "rank": 1650,
+    "left": "u",
+    "right": "er",
+    "merged": "uer"
+  },
+  {
+    "rank": 1651,
+    "left": "u",
+    "right": "ß",
+    "merged": "uß"
+  },
+  {
+    "rank": 1652,
+    "left": "und",
+    "right": "z",
+    "merged": "undz"
+  },
+  {
+    "rank": 1653,
+    "left": "undz",
+    "right": "wanzig",
+    "merged": "undzwanzig"
+  },
+  {
+    "rank": 1654,
+    "left": "ver",
+    "right": "lässig",
+    "merged": "verlässig"
+  },
+  {
+    "rank": 1655,
+    "left": "w",
+    "right": "eit",
+    "merged": "weit"
+  },
+  {
+    "rank": 1656,
+    "left": "yn",
+    "right": "onym",
+    "merged": "ynonym"
+  },
+  {
+    "rank": 1657,
+    "left": "zu",
+    "right": "stellen",
+    "merged": "zustellen"
+  },
+  {
+    "rank": 1658,
+    "left": "ähr",
+    "right": "ung",
+    "merged": "ährung"
+  },
+  {
+    "rank": 1659,
+    "left": "ö",
+    "right": "l",
+    "merged": "öl"
+  },
+  {
+    "rank": 1660,
+    "left": "ün",
+    "right": "d",
+    "merged": "ünd"
+  },
+  {
+    "rank": 1661,
+    "left": "▁",
+    "right": "eh",
+    "merged": "▁eh"
+  },
+  {
+    "rank": 1662,
+    "left": "▁",
+    "right": "em",
+    "merged": "▁em"
+  },
+  {
+    "rank": 1663,
+    "left": "▁",
+    "right": "orientierung",
+    "merged": "▁orientierung"
+  },
+  {
+    "rank": 1664,
+    "left": "▁",
+    "right": "ro",
+    "merged": "▁ro"
+  },
+  {
+    "rank": 1665,
+    "left": "▁",
+    "right": "ur",
+    "merged": "▁ur"
+  },
+  {
+    "rank": 1666,
+    "left": "▁1",
+    "right": "000",
+    "merged": "▁1000"
+  },
+  {
+    "rank": 1667,
+    "left": "▁1",
+    "right": "200",
+    "merged": "▁1200"
+  },
+  {
+    "rank": 1668,
+    "left": "▁2",
+    "right": "00",
+    "merged": "▁200"
+  },
+  {
+    "rank": 1669,
+    "left": "▁3",
+    "right": "00",
+    "merged": "▁300"
+  },
+  {
+    "rank": 1670,
+    "left": "▁7",
+    "right": "00",
+    "merged": "▁700"
+  },
+  {
+    "rank": 1671,
+    "left": "▁7",
+    "right": "50",
+    "merged": "▁750"
+  },
+  {
+    "rank": 1672,
+    "left": "▁8",
+    "right": "50",
+    "merged": "▁850"
+  },
+  {
+    "rank": 1673,
+    "left": "▁9",
+    "right": "00",
+    "merged": "▁900"
+  },
+  {
+    "rank": 1674,
+    "left": "▁ab",
+    "right": "fahr",
+    "merged": "▁abfahr"
+  },
+  {
+    "rank": 1675,
+    "left": "▁akt",
+    "right": "iv",
+    "merged": "▁aktiv"
+  },
+  {
+    "rank": 1676,
+    "left": "▁all",
+    "right": "gem",
+    "merged": "▁allgem"
+  },
+  {
+    "rank": 1677,
+    "left": "▁an",
+    "right": "sch",
+    "merged": "▁ansch"
+  },
+  {
+    "rank": 1678,
+    "left": "▁an",
+    "right": "sehen",
+    "merged": "▁ansehen"
+  },
+  {
+    "rank": 1679,
+    "left": "▁aufz",
+    "right": "ug",
+    "merged": "▁aufzug"
+  },
+  {
+    "rank": 1680,
+    "left": "▁aus",
+    "right": "hang",
+    "merged": "▁aushang"
+  },
+  {
+    "rank": 1681,
+    "left": "▁ausfüh",
+    "right": "rung",
+    "merged": "▁ausführung"
+  },
+  {
+    "rank": 1682,
+    "left": "▁ausw",
+    "right": "ählen",
+    "merged": "▁auswählen"
+  },
+  {
+    "rank": 1683,
+    "left": "▁auto",
+    "right": "haus",
+    "merged": "▁autohaus"
+  },
+  {
+    "rank": 1684,
+    "left": "▁b",
+    "right": "ank",
+    "merged": "▁bank"
+  },
+  {
+    "rank": 1685,
+    "left": "▁b",
+    "right": "at",
+    "merged": "▁bat"
+  },
+  {
+    "rank": 1686,
+    "left": "▁b",
+    "right": "el",
+    "merged": "▁bel"
+  },
+  {
+    "rank": 1687,
+    "left": "▁b",
+    "right": "es",
+    "merged": "▁bes"
+  },
+  {
+    "rank": 1688,
+    "left": "▁b",
+    "right": "us",
+    "merged": "▁bus"
+  },
+  {
+    "rank": 1689,
+    "left": "▁be",
+    "right": "arbeiten",
+    "merged": "▁bearbeiten"
+  },
+  {
+    "rank": 1690,
+    "left": "▁befind",
+    "right": "en",
+    "merged": "▁befinden"
+  },
+  {
+    "rank": 1691,
+    "left": "▁ber",
+    "right": "lin",
+    "merged": "▁berlin"
+  },
+  {
+    "rank": 1692,
+    "left": "▁beschrifte",
+    "right": "te",
+    "merged": "▁beschriftete"
+  },
+  {
+    "rank": 1693,
+    "left": "▁best",
+    "right": "en",
+    "merged": "▁besten"
+  },
+  {
+    "rank": 1694,
+    "left": "▁bet",
+    "right": "ragen",
+    "merged": "▁betragen"
+  },
+  {
+    "rank": 1695,
+    "left": "▁bev",
+    "right": "or",
+    "merged": "▁bevor"
+  },
+  {
+    "rank": 1696,
+    "left": "▁bi",
+    "right": "st",
+    "merged": "▁bist"
+  },
+  {
+    "rank": 1697,
+    "left": "▁bil",
+    "right": "dern",
+    "merged": "▁bildern"
+  },
+  {
+    "rank": 1698,
+    "left": "▁brau",
+    "right": "cht",
+    "merged": "▁braucht"
+  },
+  {
+    "rank": 1699,
+    "left": "▁brin",
+    "right": "gt",
+    "merged": "▁bringt"
+  },
+  {
+    "rank": 1700,
+    "left": "▁bu",
+    "right": "ch",
+    "merged": "▁buch"
+  },
+  {
+    "rank": 1701,
+    "left": "▁co",
+    "right": "mputer",
+    "merged": "▁computer"
+  },
+  {
+    "rank": 1702,
+    "left": "▁d",
+    "right": "oppel",
+    "merged": "▁doppel"
+  },
+  {
+    "rank": 1703,
+    "left": "▁da",
+    "right": "hin",
+    "merged": "▁dahin"
+  },
+  {
+    "rank": 1704,
+    "left": "▁dav",
+    "right": "or",
+    "merged": "▁davor"
+  },
+  {
+    "rank": 1705,
+    "left": "▁dem",
+    "right": "selben",
+    "merged": "▁demselben"
+  },
+  {
+    "rank": 1706,
+    "left": "▁den",
+    "right": "kst",
+    "merged": "▁denkst"
+  },
+  {
+    "rank": 1707,
+    "left": "▁dies",
+    "right": "es",
+    "merged": "▁dieses"
+  },
+  {
+    "rank": 1708,
+    "left": "▁distanz",
+    "right": "en",
+    "merged": "▁distanzen"
+  },
+  {
+    "rank": 1709,
+    "left": "▁distanzhinwei",
+    "right": "s",
+    "merged": "▁distanzhinweis"
+  },
+  {
+    "rank": 1710,
+    "left": "▁dort",
+    "right": "hin",
+    "merged": "▁dorthin"
+  },
+  {
+    "rank": 1711,
+    "left": "▁dunk",
+    "right": "ler",
+    "merged": "▁dunkler"
+  },
+  {
+    "rank": 1712,
+    "left": "▁dur",
+    "right": "ch",
+    "merged": "▁durch"
+  },
+  {
+    "rank": 1713,
+    "left": "▁elekt",
+    "right": "romotor",
+    "merged": "▁elektromotor"
+  },
+  {
+    "rank": 1714,
+    "left": "▁en",
+    "right": "glische",
+    "merged": "▁englische"
+  },
+  {
+    "rank": 1715,
+    "left": "▁entzif",
+    "right": "fer",
+    "merged": "▁entziffer"
+  },
+  {
+    "rank": 1716,
+    "left": "▁entzif",
+    "right": "fern",
+    "merged": "▁entziffern"
+  },
+  {
+    "rank": 1717,
+    "left": "▁erst",
+    "right": "e",
+    "merged": "▁erste"
+  },
+  {
+    "rank": 1718,
+    "left": "▁erst",
+    "right": "mal",
+    "merged": "▁erstmal"
+  },
+  {
+    "rank": 1719,
+    "left": "▁f",
+    "right": "all",
+    "merged": "▁fall"
+  },
+  {
+    "rank": 1720,
+    "left": "▁f",
+    "right": "est",
+    "merged": "▁fest"
+  },
+  {
+    "rank": 1721,
+    "left": "▁fahr",
+    "right": "plan",
+    "merged": "▁fahrplan"
+  },
+  {
+    "rank": 1722,
+    "left": "▁fahr",
+    "right": "zeug",
+    "merged": "▁fahrzeug"
+  },
+  {
+    "rank": 1723,
+    "left": "▁füh",
+    "right": "re",
+    "merged": "▁führe"
+  },
+  {
+    "rank": 1724,
+    "left": "▁g",
+    "right": "ps",
+    "merged": "▁gps"
+  },
+  {
+    "rank": 1725,
+    "left": "▁g",
+    "right": "ute",
+    "merged": "▁gute"
+  },
+  {
+    "rank": 1726,
+    "left": "▁ge",
+    "right": "w",
+    "merged": "▁gew"
+  },
+  {
+    "rank": 1727,
+    "left": "▁gel",
+    "right": "änder",
+    "merged": "▁geländer"
+  },
+  {
+    "rank": 1728,
+    "left": "▁gleich",
+    "right": "en",
+    "merged": "▁gleichen"
+  },
+  {
+    "rank": 1729,
+    "left": "▁h",
+    "right": "ey",
+    "merged": "▁hey"
+  },
+  {
+    "rank": 1730,
+    "left": "▁h",
+    "right": "än",
+    "merged": "▁hän"
+  },
+  {
+    "rank": 1731,
+    "left": "▁hauptst",
+    "right": "adt",
+    "merged": "▁hauptstadt"
+  },
+  {
+    "rank": 1732,
+    "left": "▁i",
+    "right": "dee",
+    "merged": "▁idee"
+  },
+  {
+    "rank": 1733,
+    "left": "▁i",
+    "right": "dentifizieren",
+    "merged": "▁identifizieren"
+  },
+  {
+    "rank": 1734,
+    "left": "▁i",
+    "right": "gnor",
+    "merged": "▁ignor"
+  },
+  {
+    "rank": 1735,
+    "left": "▁ih",
+    "right": "m",
+    "merged": "▁ihm"
+  },
+  {
+    "rank": 1736,
+    "left": "▁in",
+    "right": "h",
+    "merged": "▁inh"
+  },
+  {
+    "rank": 1737,
+    "left": "▁inf",
+    "right": "lation",
+    "merged": "▁inflation"
+  },
+  {
+    "rank": 1738,
+    "left": "▁inf",
+    "right": "ormation",
+    "merged": "▁information"
+  },
+  {
+    "rank": 1739,
+    "left": "▁irgend",
+    "right": "was",
+    "merged": "▁irgendwas"
+  },
+  {
+    "rank": 1740,
+    "left": "▁k",
+    "right": "assen",
+    "merged": "▁kassen"
+  },
+  {
+    "rank": 1741,
+    "left": "▁k",
+    "right": "ennung",
+    "merged": "▁kennung"
+  },
+  {
+    "rank": 1742,
+    "left": "▁k",
+    "right": "unde",
+    "merged": "▁kunde"
+  },
+  {
+    "rank": 1743,
+    "left": "▁k",
+    "right": "ün",
+    "merged": "▁kün"
+  },
+  {
+    "rank": 1744,
+    "left": "▁kamer",
+    "right": "ab",
+    "merged": "▁kamerab"
+  },
+  {
+    "rank": 1745,
+    "left": "▁ki",
+    "right": "ste",
+    "merged": "▁kiste"
+  },
+  {
+    "rank": 1746,
+    "left": "▁ko",
+    "right": "ffer",
+    "merged": "▁koffer"
+  },
+  {
+    "rank": 1747,
+    "left": "▁l",
+    "right": "ernt",
+    "merged": "▁lernt"
+  },
+  {
+    "rank": 1748,
+    "left": "▁lam",
+    "right": "pe",
+    "merged": "▁lampe"
+  },
+  {
+    "rank": 1749,
+    "left": "▁langsamer",
+    "right": "e",
+    "merged": "▁langsamere"
+  },
+  {
+    "rank": 1750,
+    "left": "▁langsamer",
+    "right": "es",
+    "merged": "▁langsameres"
+  },
+  {
+    "rank": 1751,
+    "left": "▁laufen",
+    "right": "den",
+    "merged": "▁laufenden"
+  },
+  {
+    "rank": 1752,
+    "left": "▁m",
+    "right": "eer",
+    "merged": "▁meer"
+  },
+  {
+    "rank": 1753,
+    "left": "▁m",
+    "right": "esse",
+    "merged": "▁messe"
+  },
+  {
+    "rank": 1754,
+    "left": "▁m",
+    "right": "orgen",
+    "merged": "▁morgen"
+  },
+  {
+    "rank": 1755,
+    "left": "▁ma",
+    "right": "x",
+    "merged": "▁max"
+  },
+  {
+    "rank": 1756,
+    "left": "▁mar",
+    "right": "s",
+    "merged": "▁mars"
+  },
+  {
+    "rank": 1757,
+    "left": "▁mi",
+    "right": "sst",
+    "merged": "▁misst"
+  },
+  {
+    "rank": 1758,
+    "left": "▁mon",
+    "right": "itor",
+    "merged": "▁monitor"
+  },
+  {
+    "rank": 1759,
+    "left": "▁männ",
+    "right": "licher",
+    "merged": "▁männlicher"
+  },
+  {
+    "rank": 1760,
+    "left": "▁n",
+    "right": "am",
+    "merged": "▁nam"
+  },
+  {
+    "rank": 1761,
+    "left": "▁n",
+    "right": "enn",
+    "merged": "▁nenn"
+  },
+  {
+    "rank": 1762,
+    "left": "▁n",
+    "right": "erv",
+    "merged": "▁nerv"
+  },
+  {
+    "rank": 1763,
+    "left": "▁na",
+    "right": "chsehen",
+    "merged": "▁nachsehen"
+  },
+  {
+    "rank": 1764,
+    "left": "▁normal",
+    "right": "erweise",
+    "merged": "▁normalerweise"
+  },
+  {
+    "rank": 1765,
+    "left": "▁p",
+    "right": "osition",
+    "merged": "▁position"
+  },
+  {
+    "rank": 1766,
+    "left": "▁p",
+    "right": "rimzahl",
+    "merged": "▁primzahl"
+  },
+  {
+    "rank": 1767,
+    "left": "▁person",
+    "right": "en",
+    "merged": "▁personen"
+  },
+  {
+    "rank": 1768,
+    "left": "▁pieps",
+    "right": "en",
+    "merged": "▁piepsen"
+  },
+  {
+    "rank": 1769,
+    "left": "▁pl",
+    "right": "atten",
+    "merged": "▁platten"
+  },
+  {
+    "rank": 1770,
+    "left": "▁plan",
+    "right": "eten",
+    "merged": "▁planeten"
+  },
+  {
+    "rank": 1771,
+    "left": "▁r",
+    "right": "u",
+    "merged": "▁ru"
+  },
+  {
+    "rank": 1772,
+    "left": "▁rech",
+    "right": "t",
+    "merged": "▁recht"
+  },
+  {
+    "rank": 1773,
+    "left": "▁s",
+    "right": "eine",
+    "merged": "▁seine"
+  },
+  {
+    "rank": 1774,
+    "left": "▁s",
+    "right": "eit",
+    "merged": "▁seit"
+  },
+  {
+    "rank": 1775,
+    "left": "▁s",
+    "right": "m",
+    "merged": "▁sm"
+  },
+  {
+    "rank": 1776,
+    "left": "▁s",
+    "right": "ynonym",
+    "merged": "▁synonym"
+  },
+  {
+    "rank": 1777,
+    "left": "▁sch",
+    "right": "l",
+    "merged": "▁schl"
+  },
+  {
+    "rank": 1778,
+    "left": "▁schle",
+    "right": "chter",
+    "merged": "▁schlechter"
+  },
+  {
+    "rank": 1779,
+    "left": "▁schw",
+    "right": "er",
+    "merged": "▁schwer"
+  },
+  {
+    "rank": 1780,
+    "left": "▁schw",
+    "right": "immt",
+    "merged": "▁schwimmt"
+  },
+  {
+    "rank": 1781,
+    "left": "▁sechs",
+    "right": "mal",
+    "merged": "▁sechsmal"
+  },
+  {
+    "rank": 1782,
+    "left": "▁sho",
+    "right": "p",
+    "merged": "▁shop"
+  },
+  {
+    "rank": 1783,
+    "left": "▁si",
+    "right": "tz",
+    "merged": "▁sitz"
+  },
+  {
+    "rank": 1784,
+    "left": "▁sign",
+    "right": "atur",
+    "merged": "▁signatur"
+  },
+  {
+    "rank": 1785,
+    "left": "▁signal",
+    "right": "rate",
+    "merged": "▁signalrate"
+  },
+  {
+    "rank": 1786,
+    "left": "▁signal",
+    "right": "s",
+    "merged": "▁signals"
+  },
+  {
+    "rank": 1787,
+    "left": "▁so",
+    "right": "larzell",
+    "merged": "▁solarzell"
+  },
+  {
+    "rank": 1788,
+    "left": "▁sprach",
+    "right": "optionen",
+    "merged": "▁sprachoptionen"
+  },
+  {
+    "rank": 1789,
+    "left": "▁st",
+    "right": "att",
+    "merged": "▁statt"
+  },
+  {
+    "rank": 1790,
+    "left": "▁st",
+    "right": "aub",
+    "merged": "▁staub"
+  },
+  {
+    "rank": 1791,
+    "left": "▁st",
+    "right": "rom",
+    "merged": "▁strom"
+  },
+  {
+    "rank": 1792,
+    "left": "▁sto",
+    "right": "ff",
+    "merged": "▁stoff"
+  },
+  {
+    "rank": 1793,
+    "left": "▁sto",
+    "right": "ppt",
+    "merged": "▁stoppt"
+  },
+  {
+    "rank": 1794,
+    "left": "▁stopp",
+    "right": "e",
+    "merged": "▁stoppe"
+  },
+  {
+    "rank": 1795,
+    "left": "▁t",
+    "right": "hermodynamik",
+    "merged": "▁thermodynamik"
+  },
+  {
+    "rank": 1796,
+    "left": "▁t",
+    "right": "i",
+    "merged": "▁ti"
+  },
+  {
+    "rank": 1797,
+    "left": "▁t",
+    "right": "ick",
+    "merged": "▁tick"
+  },
+  {
+    "rank": 1798,
+    "left": "▁t",
+    "right": "ur",
+    "merged": "▁tur"
+  },
+  {
+    "rank": 1799,
+    "left": "▁te",
+    "right": "chnisch",
+    "merged": "▁technisch"
+  },
+  {
+    "rank": 1800,
+    "left": "▁tex",
+    "right": "te",
+    "merged": "▁texte"
+  },
+  {
+    "rank": 1801,
+    "left": "▁uhr",
+    "right": "zeit",
+    "merged": "▁uhrzeit"
+  },
+  {
+    "rank": 1802,
+    "left": "▁um",
+    "right": "stellen",
+    "merged": "▁umstellen"
+  },
+  {
+    "rank": 1803,
+    "left": "▁um",
+    "right": "zustellen",
+    "merged": "▁umzustellen"
+  },
+  {
+    "rank": 1804,
+    "left": "▁un",
+    "right": "ser",
+    "merged": "▁unser"
+  },
+  {
+    "rank": 1805,
+    "left": "▁unter",
+    "right": "nehmen",
+    "merged": "▁unternehmen"
+  },
+  {
+    "rank": 1806,
+    "left": "▁ver",
+    "right": "kehrsschild",
+    "merged": "▁verkehrsschild"
+  },
+  {
+    "rank": 1807,
+    "left": "▁verw",
+    "right": "irf",
+    "merged": "▁verwirf"
+  },
+  {
+    "rank": 1808,
+    "left": "▁w",
+    "right": "ählen",
+    "merged": "▁wählen"
+  },
+  {
+    "rank": 1809,
+    "left": "▁weiblich",
+    "right": "en",
+    "merged": "▁weiblichen"
+  },
+  {
+    "rank": 1810,
+    "left": "▁wie",
+    "right": "weit",
+    "merged": "▁wieweit"
+  },
+  {
+    "rank": 1811,
+    "left": "▁wiederholung",
+    "right": "sgeschwindigkeit",
+    "merged": "▁wiederholungsgeschwindigkeit"
+  },
+  {
+    "rank": 1812,
+    "left": "▁wiev",
+    "right": "iele",
+    "merged": "▁wieviele"
+  },
+  {
+    "rank": 1813,
+    "left": "▁zu",
+    "right": "verlässig",
+    "merged": "▁zuverlässig"
+  },
+  {
+    "rank": 1814,
+    "left": "▁zw",
+    "right": "anzig",
+    "merged": "▁zwanzig"
+  },
+  {
+    "rank": 1815,
+    "left": "▁über",
+    "right": "setz",
+    "merged": "▁übersetz"
+  },
+  {
+    "rank": 1816,
+    "left": "a",
+    "right": "den",
+    "merged": "aden"
+  },
+  {
+    "rank": 1817,
+    "left": "a",
+    "right": "kt",
+    "merged": "akt"
+  },
+  {
+    "rank": 1818,
+    "left": "a",
+    "right": "re",
+    "merged": "are"
+  },
+  {
+    "rank": 1819,
+    "left": "a",
+    "right": "te",
+    "merged": "ate"
+  },
+  {
+    "rank": 1820,
+    "left": "ack",
+    "right": "e",
+    "merged": "acke"
+  },
+  {
+    "rank": 1821,
+    "left": "al",
+    "right": "es",
+    "merged": "ales"
+  },
+  {
+    "rank": 1822,
+    "left": "alte",
+    "right": "stell",
+    "merged": "altestell"
+  },
+  {
+    "rank": 1823,
+    "left": "altestell",
+    "right": "e",
+    "merged": "altestelle"
+  },
+  {
+    "rank": 1824,
+    "left": "and",
+    "right": "o",
+    "merged": "ando"
+  },
+  {
+    "rank": 1825,
+    "left": "ank",
+    "right": "e",
+    "merged": "anke"
+  },
+  {
+    "rank": 1826,
+    "left": "art",
+    "right": "y",
+    "merged": "arty"
+  },
+  {
+    "rank": 1827,
+    "left": "at",
+    "right": "iv",
+    "merged": "ativ"
+  },
+  {
+    "rank": 1828,
+    "left": "b",
+    "right": "are",
+    "merged": "bare"
+  },
+  {
+    "rank": 1829,
+    "left": "b",
+    "right": "on",
+    "merged": "bon"
+  },
+  {
+    "rank": 1830,
+    "left": "c",
+    "right": "e",
+    "merged": "ce"
+  },
+  {
+    "rank": 1831,
+    "left": "cht",
+    "right": "ung",
+    "merged": "chtung"
+  },
+  {
+    "rank": 1832,
+    "left": "der",
+    "right": "s",
+    "merged": "ders"
+  },
+  {
+    "rank": 1833,
+    "left": "dr",
+    "right": "esse",
+    "merged": "dresse"
+  },
+  {
+    "rank": 1834,
+    "left": "dr",
+    "right": "u",
+    "merged": "dru"
+  },
+  {
+    "rank": 1835,
+    "left": "dru",
+    "right": "ckt",
+    "merged": "druckt"
+  },
+  {
+    "rank": 1836,
+    "left": "e",
+    "right": "gen",
+    "merged": "egen"
+  },
+  {
+    "rank": 1837,
+    "left": "eb",
+    "right": "ra",
+    "merged": "ebra"
+  },
+  {
+    "rank": 1838,
+    "left": "ei",
+    "right": "g",
+    "merged": "eig"
+  },
+  {
+    "rank": 1839,
+    "left": "ei",
+    "right": "le",
+    "merged": "eile"
+  },
+  {
+    "rank": 1840,
+    "left": "eid",
+    "right": "ung",
+    "merged": "eidung"
+  },
+  {
+    "rank": 1841,
+    "left": "eitausend",
+    "right": "z",
+    "merged": "eitausendz"
+  },
+  {
+    "rank": 1842,
+    "left": "eitausendz",
+    "right": "wei",
+    "merged": "eitausendzwei"
+  },
+  {
+    "rank": 1843,
+    "left": "eitausendzwei",
+    "right": "hundert",
+    "merged": "eitausendzweihundert"
+  },
+  {
+    "rank": 1844,
+    "left": "eiß",
+    "right": "t",
+    "merged": "eißt"
+  },
+  {
+    "rank": 1845,
+    "left": "el",
+    "right": "in",
+    "merged": "elin"
+  },
+  {
+    "rank": 1846,
+    "left": "elin",
+    "right": "e",
+    "merged": "eline"
+  },
+  {
+    "rank": 1847,
+    "left": "enn",
+    "right": "st",
+    "merged": "ennst"
+  },
+  {
+    "rank": 1848,
+    "left": "er",
+    "right": "st",
+    "merged": "erst"
+  },
+  {
+    "rank": 1849,
+    "left": "es",
+    "right": "zeiten",
+    "merged": "eszeiten"
+  },
+  {
+    "rank": 1850,
+    "left": "ess",
+    "right": "iert",
+    "merged": "essiert"
+  },
+  {
+    "rank": 1851,
+    "left": "et",
+    "right": "u",
+    "merged": "etu"
+  },
+  {
+    "rank": 1852,
+    "left": "etu",
+    "right": "p",
+    "merged": "etup"
+  },
+  {
+    "rank": 1853,
+    "left": "eu",
+    "right": "chtung",
+    "merged": "euchtung"
+  },
+  {
+    "rank": 1854,
+    "left": "f",
+    "right": "fe",
+    "merged": "ffe"
+  },
+  {
+    "rank": 1855,
+    "left": "f",
+    "right": "ri",
+    "merged": "fri"
+  },
+  {
+    "rank": 1856,
+    "left": "fen",
+    "right": "ster",
+    "merged": "fenster"
+  },
+  {
+    "rank": 1857,
+    "left": "fri",
+    "right": "ka",
+    "merged": "frika"
+  },
+  {
+    "rank": 1858,
+    "left": "ft",
+    "right": "ig",
+    "merged": "ftig"
+  },
+  {
+    "rank": 1859,
+    "left": "füh",
+    "right": "r",
+    "merged": "führ"
+  },
+  {
+    "rank": 1860,
+    "left": "führ",
+    "right": "t",
+    "merged": "führt"
+  },
+  {
+    "rank": 1861,
+    "left": "g",
+    "right": "an",
+    "merged": "gan"
+  },
+  {
+    "rank": 1862,
+    "left": "g",
+    "right": "art",
+    "merged": "gart"
+  },
+  {
+    "rank": 1863,
+    "left": "g",
+    "right": "el",
+    "merged": "gel"
+  },
+  {
+    "rank": 1864,
+    "left": "g",
+    "right": "r",
+    "merged": "gr"
+  },
+  {
+    "rank": 1865,
+    "left": "g",
+    "right": "um",
+    "merged": "gum"
+  },
+  {
+    "rank": 1866,
+    "left": "ge",
+    "right": "gen",
+    "merged": "gegen"
+  },
+  {
+    "rank": 1867,
+    "left": "gr",
+    "right": "ünd",
+    "merged": "gründ"
+  },
+  {
+    "rank": 1868,
+    "left": "gründ",
+    "right": "et",
+    "merged": "gründet"
+  },
+  {
+    "rank": 1869,
+    "left": "gum",
+    "right": "ente",
+    "merged": "gumente"
+  },
+  {
+    "rank": 1870,
+    "left": "h",
+    "right": "altestelle",
+    "merged": "haltestelle"
+  },
+  {
+    "rank": 1871,
+    "left": "h",
+    "right": "aupt",
+    "merged": "haupt"
+  },
+  {
+    "rank": 1872,
+    "left": "h",
+    "right": "undertzwanzig",
+    "merged": "hundertzwanzig"
+  },
+  {
+    "rank": 1873,
+    "left": "h",
+    "right": "ören",
+    "merged": "hören"
+  },
+  {
+    "rank": 1874,
+    "left": "i",
+    "right": "en",
+    "merged": "ien"
+  },
+  {
+    "rank": 1875,
+    "left": "i",
+    "right": "o",
+    "merged": "io"
+  },
+  {
+    "rank": 1876,
+    "left": "i",
+    "right": "p",
+    "merged": "ip"
+  },
+  {
+    "rank": 1877,
+    "left": "ie",
+    "right": "den",
+    "merged": "ieden"
+  },
+  {
+    "rank": 1878,
+    "left": "ie",
+    "right": "gen",
+    "merged": "iegen"
+  },
+  {
+    "rank": 1879,
+    "left": "ieh",
+    "right": "en",
+    "merged": "iehen"
+  },
+  {
+    "rank": 1880,
+    "left": "ig",
+    "right": "j",
+    "merged": "igj"
+  },
+  {
+    "rank": 1881,
+    "left": "igen",
+    "right": "z",
+    "merged": "igenz"
+  },
+  {
+    "rank": 1882,
+    "left": "igj",
+    "right": "ähr",
+    "merged": "igjähr"
+  },
+  {
+    "rank": 1883,
+    "left": "igjähr",
+    "right": "ige",
+    "merged": "igjährige"
+  },
+  {
+    "rank": 1884,
+    "left": "in",
+    "right": "ge",
+    "merged": "inge"
+  },
+  {
+    "rank": 1885,
+    "left": "ip",
+    "right": "eline",
+    "merged": "ipeline"
+  },
+  {
+    "rank": 1886,
+    "left": "k",
+    "right": "an",
+    "merged": "kan"
+  },
+  {
+    "rank": 1887,
+    "left": "k",
+    "right": "et",
+    "merged": "ket"
+  },
+  {
+    "rank": 1888,
+    "left": "k",
+    "right": "n",
+    "merged": "kn"
+  },
+  {
+    "rank": 1889,
+    "left": "kn",
+    "right": "all",
+    "merged": "knall"
+  },
+  {
+    "rank": 1890,
+    "left": "la",
+    "right": "gen",
+    "merged": "lagen"
+  },
+  {
+    "rank": 1891,
+    "left": "ll",
+    "right": "e",
+    "merged": "lle"
+  },
+  {
+    "rank": 1892,
+    "left": "ll",
+    "right": "igenz",
+    "merged": "lligenz"
+  },
+  {
+    "rank": 1893,
+    "left": "m",
+    "right": "a",
+    "merged": "ma"
+  },
+  {
+    "rank": 1894,
+    "left": "n",
+    "right": "hinweis",
+    "merged": "nhinweis"
+  },
+  {
+    "rank": 1895,
+    "left": "n",
+    "right": "ier",
+    "merged": "nier"
+  },
+  {
+    "rank": 1896,
+    "left": "nung",
+    "right": "s",
+    "merged": "nungs"
+  },
+  {
+    "rank": 1897,
+    "left": "nungs",
+    "right": "zeiten",
+    "merged": "nungszeiten"
+  },
+  {
+    "rank": 1898,
+    "left": "o",
+    "right": "her",
+    "merged": "oher"
+  },
+  {
+    "rank": 1899,
+    "left": "o",
+    "right": "tte",
+    "merged": "otte"
+  },
+  {
+    "rank": 1900,
+    "left": "ok",
+    "right": "um",
+    "merged": "okum"
+  },
+  {
+    "rank": 1901,
+    "left": "okum",
+    "right": "ent",
+    "merged": "okument"
+  },
+  {
+    "rank": 1902,
+    "left": "on",
+    "right": "ders",
+    "merged": "onders"
+  },
+  {
+    "rank": 1903,
+    "left": "op",
+    "right": "f",
+    "merged": "opf"
+  },
+  {
+    "rank": 1904,
+    "left": "ost",
+    "right": "et",
+    "merged": "ostet"
+  },
+  {
+    "rank": 1905,
+    "left": "p",
+    "right": "f",
+    "merged": "pf"
+  },
+  {
+    "rank": 1906,
+    "left": "p",
+    "right": "ro",
+    "merged": "pro"
+  },
+  {
+    "rank": 1907,
+    "left": "par",
+    "right": "iert",
+    "merged": "pariert"
+  },
+  {
+    "rank": 1908,
+    "left": "q",
+    "right": "u",
+    "merged": "qu"
+  },
+  {
+    "rank": 1909,
+    "left": "r",
+    "right": "ischer",
+    "merged": "rischer"
+  },
+  {
+    "rank": 1910,
+    "left": "r",
+    "right": "ü",
+    "merged": "rü"
+  },
+  {
+    "rank": 1911,
+    "left": "ra",
+    "right": "t",
+    "merged": "rat"
+  },
+  {
+    "rank": 1912,
+    "left": "s",
+    "right": "a",
+    "merged": "sa"
+  },
+  {
+    "rank": 1913,
+    "left": "sch",
+    "right": "ieden",
+    "merged": "schieden"
+  },
+  {
+    "rank": 1914,
+    "left": "sch",
+    "right": "lag",
+    "merged": "schlag"
+  },
+  {
+    "rank": 1915,
+    "left": "st",
+    "right": "ehen",
+    "merged": "stehen"
+  },
+  {
+    "rank": 1916,
+    "left": "st",
+    "right": "en",
+    "merged": "sten"
+  },
+  {
+    "rank": 1917,
+    "left": "st",
+    "right": "ieren",
+    "merged": "stieren"
+  },
+  {
+    "rank": 1918,
+    "left": "stän",
+    "right": "den",
+    "merged": "ständen"
+  },
+  {
+    "rank": 1919,
+    "left": "stän",
+    "right": "dlich",
+    "merged": "ständlich"
+  },
+  {
+    "rank": 1920,
+    "left": "t",
+    "right": "t",
+    "merged": "tt"
+  },
+  {
+    "rank": 1921,
+    "left": "te",
+    "right": "lligenz",
+    "merged": "telligenz"
+  },
+  {
+    "rank": 1922,
+    "left": "tern",
+    "right": "ativ",
+    "merged": "ternativ"
+  },
+  {
+    "rank": 1923,
+    "left": "u",
+    "right": "e",
+    "merged": "ue"
+  },
+  {
+    "rank": 1924,
+    "left": "u",
+    "right": "ert",
+    "merged": "uert"
+  },
+  {
+    "rank": 1925,
+    "left": "u",
+    "right": "stieren",
+    "merged": "ustieren"
+  },
+  {
+    "rank": 1926,
+    "left": "u",
+    "right": "tz",
+    "merged": "utz"
+  },
+  {
+    "rank": 1927,
+    "left": "uck",
+    "right": "en",
+    "merged": "ucken"
+  },
+  {
+    "rank": 1928,
+    "left": "ul",
+    "right": "esen",
+    "merged": "ulesen"
+  },
+  {
+    "rank": 1929,
+    "left": "ul",
+    "right": "kan",
+    "merged": "ulkan"
+  },
+  {
+    "rank": 1930,
+    "left": "ur",
+    "right": "t",
+    "merged": "urt"
+  },
+  {
+    "rank": 1931,
+    "left": "utt",
+    "right": "gart",
+    "merged": "uttgart"
+  },
+  {
+    "rank": 1932,
+    "left": "w",
+    "right": "ahl",
+    "merged": "wahl"
+  },
+  {
+    "rank": 1933,
+    "left": "w",
+    "right": "ischen",
+    "merged": "wischen"
+  },
+  {
+    "rank": 1934,
+    "left": "w",
+    "right": "ähl",
+    "merged": "wähl"
+  },
+  {
+    "rank": 1935,
+    "left": "wähl",
+    "right": "t",
+    "merged": "wählt"
+  },
+  {
+    "rank": 1936,
+    "left": "z",
+    "right": "ehn",
+    "merged": "zehn"
+  },
+  {
+    "rank": 1937,
+    "left": "z",
+    "right": "iehen",
+    "merged": "ziehen"
+  },
+  {
+    "rank": 1938,
+    "left": "z",
+    "right": "ulesen",
+    "merged": "zulesen"
+  },
+  {
+    "rank": 1939,
+    "left": "z",
+    "right": "wischen",
+    "merged": "zwischen"
+  },
+  {
+    "rank": 1940,
+    "left": "ze",
+    "right": "an",
+    "merged": "zean"
+  },
+  {
+    "rank": 1941,
+    "left": "ze",
+    "right": "pt",
+    "merged": "zept"
+  },
+  {
+    "rank": 1942,
+    "left": "ß",
+    "right": "e",
+    "merged": "ße"
+  },
+  {
+    "rank": 1943,
+    "left": "ß",
+    "right": "igjährige",
+    "merged": "ßigjährige"
+  },
+  {
+    "rank": 1944,
+    "left": "änder",
+    "right": "ung",
+    "merged": "änderung"
+  },
+  {
+    "rank": 1945,
+    "left": "ör",
+    "right": "t",
+    "merged": "ört"
+  },
+  {
+    "rank": 1946,
+    "left": "▁",
+    "right": "qu",
+    "merged": "▁qu"
+  },
+  {
+    "rank": 1947,
+    "left": "▁1",
+    "right": "0",
+    "merged": "▁10"
+  },
+  {
+    "rank": 1948,
+    "left": "▁1",
+    "right": "5",
+    "merged": "▁15"
+  },
+  {
+    "rank": 1949,
+    "left": "▁4",
+    "right": "00",
+    "merged": "▁400"
+  },
+  {
+    "rank": 1950,
+    "left": "▁a",
+    "right": "ch",
+    "merged": "▁ach"
+  },
+  {
+    "rank": 1951,
+    "left": "▁a",
+    "right": "dresse",
+    "merged": "▁adresse"
+  },
+  {
+    "rank": 1952,
+    "left": "▁a",
+    "right": "frika",
+    "merged": "▁afrika"
+  },
+  {
+    "rank": 1953,
+    "left": "▁a",
+    "right": "to",
+    "merged": "▁ato"
+  },
+  {
+    "rank": 1954,
+    "left": "▁abfahr",
+    "right": "t",
+    "merged": "▁abfahrt"
+  },
+  {
+    "rank": 1955,
+    "left": "▁abstand",
+    "right": "smessung",
+    "merged": "▁abstandsmessung"
+  },
+  {
+    "rank": 1956,
+    "left": "▁abstand",
+    "right": "ssignale",
+    "merged": "▁abstandssignale"
+  }
+]

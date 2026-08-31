@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.api.file.DirectoryProperty
+import java.security.MessageDigest
 
 plugins {
 	alias(libs.plugins.android.application)
@@ -15,6 +17,7 @@ android {
 		targetSdk = 38
 		versionCode = 1
 		versionName = "1.0"
+		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
 		ndk {
 			//noinspection ChromeOsAbiSupport
@@ -96,6 +99,10 @@ android {
 	packaging {
 		jniLibs.useLegacyPackaging = true
 	}
+	sourceSets.getByName("test").resources.directories.add("../../settings_parser/spec")
+	// Golden commands are test-only assets for the on-device TFLite parity test;
+	// they are never merged into the production APK assets.
+sourceSets.getByName("androidTest").assets.directories.add("src/test/resources")
 }
 
 dependencies {
@@ -123,9 +130,8 @@ dependencies {
 	implementation(libs.androidx.appcompat)
 	implementation(libs.androidx.activity)
 
-	// TFLite Select Ops for NLU
+	// TFLite runtime for NLP V2 BaselineCNN
 	implementation(libs.tensorflow.lite)
-	implementation(libs.tensorflow.lite.select.tf.ops)
 
 	// runtime only libs for tflite gpu/npu delegates
 	runtimeOnly(libs.litert.gpu)
@@ -133,6 +139,11 @@ dependencies {
 
 	// OCR
 	implementation(libs.text.recognition)
+
+	testImplementation(libs.junit)
+	testImplementation(libs.org.json)
+	androidTestImplementation(libs.androidx.test.runner)
+	androidTestImplementation(libs.androidx.test.ext.junit)
 
 	debugImplementation(libs.androidx.ui.tooling)
 	debugImplementation(libs.androidx.ui.test.manifest)
@@ -189,4 +200,70 @@ val verifyEyeAICoreRSBuild = tasks.register<VerifyEyeAICoreRSBuildTask>("verifyE
 }
 tasks.named("preBuild").configure {
 	dependsOn(verifyEyeAICoreRSBuild)
+}
+
+/** Fails both test and APK builds if a Clean-v2 production asset is altered or added accidentally. */
+abstract class VerifySettingsParserAssetsTask : DefaultTask() {
+	@get:InputDirectory
+	abstract val assetDirectory: DirectoryProperty
+
+	init {
+		group = "verification"
+		description = "Verifies the immutable production Settings Parser TFLite/tokenizer assets"
+	}
+
+	@TaskAction
+	fun verify() {
+		val directory = assetDirectory.get().asFile
+		val expected = linkedMapOf(
+			"word_operation_seed_20260812.tflite" to
+				"0b992d94767c87629d4e1044d097638bcc2a85a9c4050ea3719e7c55009f0519",
+			"character_speaker_seed_20260814.tflite" to
+				"fd61e69b450378cf91991c3900dd966fd412492ff9e5be10db82e231989b4a79",
+			"word_tokenizer.json" to
+				"6f87b77a9609b82c7bec09c4450d98b892a84549edd1086e8d03419c9da64405",
+			"character_tokenizer.json" to
+				"6b7a7b71f686a07eb14e45c37bb99653d1855e5a26e2e8c41a5cdef5285067d0"
+		)
+		val contractName = "settings_parser_contract.json"
+		val actualNames = directory.listFiles()?.map { it.name }?.sorted()
+			?: throw GradleException("Missing Settings Parser asset directory: $directory")
+		if (actualNames != (expected.keys + contractName).sorted()) {
+			throw GradleException("Settings Parser asset directory contains unexpected files: $actualNames")
+		}
+		expected.forEach { (name, expectedSha) ->
+			val file = directory.resolve(name)
+			val actualSha = MessageDigest.getInstance("SHA-256")
+				.digest(file.readBytes())
+				.joinToString("") { "%02x".format(it.toInt() and 0xff) }
+			if (actualSha != expectedSha) {
+				throw GradleException("Frozen Settings Parser SHA mismatch for $name: $actualSha")
+			}
+		}
+		val contract = directory.resolve(contractName).readText()
+		if (
+			!contract.contains("\"architecture\": \"SPECIALIZED_WORD_OPERATION_CHAR_SPEAKER\"") ||
+			expected.values.any { hash -> !contract.contains(hash) }
+		) {
+			throw GradleException("Settings Parser production contract does not match frozen assets")
+		}
+		println("Verified 2 frozen Settings Parser TFLite models and 2 tokenizer contracts.")
+	}
+}
+
+val verifySettingsParserAssets = tasks.register<VerifySettingsParserAssetsTask>("verifySettingsParserAssets") {
+	assetDirectory.set(layout.projectDirectory.dir("src/main/assets/nlp-v2/settings-parser"))
+}
+tasks.named("preBuild").configure {
+	dependsOn(verifySettingsParserAssets)
+}
+tasks.configureEach {
+	if (name.endsWith("UnitTest")) {
+		dependsOn(verifySettingsParserAssets)
+	}
+}
+tasks.configureEach {
+	if (name.startsWith("assemble") && name.endsWith("Debug")) {
+		dependsOn(verifySettingsParserAssets)
+	}
 }

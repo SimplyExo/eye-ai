@@ -1,0 +1,16 @@
+attempt_id;label;base_text;transcript;reason
+dataset:12:v1;YES;Richtig, nimm für die Frequenz den neuen Wert.;durchweg nimmt die begrenzte neuen werden;Zustimmung und auszuführender Inhalt sind nicht mehr verlässlich erkennbar
+dataset:24:v1;YES;Okay, ändere die Signalgeschwindigkeit entsprechend.;wir können kinder die sigmar geschwindigkeit entsprechen;Zustimmung und Handlungsaufforderung sind nicht mehr eindeutig erkennbar
+dataset:39:v1;YES;Richtig, lies ab jetzt etwas schneller vor.;wichtig dies hat jetzt etwas will vor;Bestätigung und Tempoänderung sind nicht mehr erkennbar
+dataset:43:v1;YES;Ja, passe das Vorlesetempo entsprechend an.;na hast du das vorgesetzten seiten bei entsprechend an;Zustimmung und Tempoänderung sind nicht mehr erkennbar
+dataset:94:v1;NO;Übernimm den neuen BPS-Wert nicht.;übernimmt den neuen gps werfen;Verneinung ging verloren und der Satz klingt wie eine Übernahme
+dataset:101:v1;NO;Übernimm diese Einstellung für die Signalrate nicht.;übernehmen diese einstellung für die signal raten;Verneinung ging verloren und der Satz klingt wie eine Übernahme
+dataset:123:v1;NO;Nein bitte, nimm nicht die weibliche Stimme.;neuen bitte nämlich die weibliche stimme;Beide Verneinungen gingen verloren und der Satz wirkt zustimmend
+dataset:139:v1;NO;Bleib im Menü und miss den Abstand nicht.;im menü und musste abstatten;Ablehnung und Verneinung sind nicht mehr erkennbar
+dataset:145:v1;NO;Bleib bei den Einstellungen und starte die Texterkennung nicht.;bleibt bei den einstellungen und starte die text erkennung;Verneinung ging verloren und der zweite Satzteil wirkt zustimmend
+dataset:175:v1;YES;Die Änderung der BPS ist von mir bestätigt.;die änderung der baby es ist von neben stecken;Bestätigung ist nicht mehr erkennbar
+dataset:202:v1;YES;Nimm ruhig die andere Stimme.;dem rund die andere stimmen;Zustimmung und Handlungsaufforderung sind nicht mehr eindeutig erkennbar
+dataset:207:v1;YES;Der Wechsel zur Frauenstimme ist bestätigt.;der wechsel zur frauenstimme besteht;Die explizite Bestätigung ging verloren und die Aussage ist mehrdeutig
+dataset:236:v1;NO;Bitte speichere diese Frequenzeinstellung nicht.;bitte speichere diese frequenz stellung;Verneinung ging verloren und der Satz wurde zum positiven Befehl
+dataset:256:v1;NO;Nimm nicht die eben vorgeschlagene Rate.;nämlich die gegen vorgeschlagen geraten;Ablehnung und Verneinung sind nicht mehr erkennbar
+dataset:287:v1;NO;Die aktuelle Sprachausgabe soll genau diese Stimme behalten.;die aktuelle sprachausgabe soll genau diese stimme beiden;Beibehaltung der aktuellen Stimme ist nicht mehr eindeutig erkennbar

@@ -1,0 +1,49 @@
+{
+  "pipeline_version": "generation_2_review_first",
+  "seed": 20260809,
+  "clean_samples_total": 300,
+  "source_selection": {
+    "dataset": {
+      "path": "GitHub/eye-ai/eyeai_confirmation_manual_300.txt",
+      "available": 300,
+      "selected_for_tts": 300,
+      "ratio": 1.0,
+      "attempts_per_sample": 1
+    }
+  },
+  "tts_attempts": 300,
+  "severity_attempts": {
+    "clean": 120,
+    "moderate": 180
+  },
+  "attempt_status": {
+    "generated": 300
+  },
+  "generated_nonempty": 300,
+  "flagged_for_review": 171,
+  "generated_by_source": {
+    "dataset": 300
+  },
+  "generated_by_severity": {
+    "clean": 120,
+    "moderate": 180
+  },
+  "generated_by_label": {
+    "YES": 150,
+    "NO": 150
+  },
+  "tts_backend": {
+    "piper": 300
+  },
+  "piper_voices": [
+    "Trainingsdaten/Neue Daten von ChatGPT/Aktuelle Trainingsdaten/Skript für Vosk-TTS/Generation2/piper_voices/de_DE-karlsson-low.onnx",
+    "Trainingsdaten/Neue Daten von ChatGPT/Aktuelle Trainingsdaten/Skript für Vosk-TTS/Generation2/piper_voices/de_DE-kerstin-low.onnx",
+    "Trainingsdaten/Neue Daten von ChatGPT/Aktuelle Trainingsdaten/Skript für Vosk-TTS/Generation2/piper_voices/de_DE-thorsten-high.onnx",
+    "Trainingsdaten/Neue Daten von ChatGPT/Aktuelle Trainingsdaten/Skript für Vosk-TTS/Generation2/piper_voices/de_DE-thorsten-medium.onnx"
+  ],
+  "espeak_weight": 0.03,
+  "tts_normalization": true,
+  "real_noise_wavs": 0,
+  "real_rir_wavs": 0,
+  "note": "Keine harten Augmentierungen. Alle nichtleeren Vosk-Transkripte bleiben zunächst erhalten; Flags dienen dem anschließenden menschlichen Review."
+}
