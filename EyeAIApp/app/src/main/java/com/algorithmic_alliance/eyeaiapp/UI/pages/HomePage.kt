@@ -131,7 +131,7 @@ fun HomePage(
                 DepthStatusCard(uiState = uiState)
             }
             item { ObjectStatusCard(uiState = uiState) }
-
+            item { VisionStatusCard(uiState = uiState) }
 
         }
     })
@@ -172,6 +172,43 @@ fun ObjectStatusCard(uiState: UIState) {
                         )
                     }
 
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun VisionStatusCard(uiState: UIState) {
+    val context = LocalContext.current
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .aspectRatio(4f / 3f)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("EyeAI-Vision", fontSize = 18.sp, textAlign = TextAlign.Center)
+            HorizontalDivider()
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                //TODO == statt != für echte App
+                if (sharedPreferences.getString(
+                        stringResource(R.string.input_source_setting),
+                        stringResource(R.string.input_is_camera)
+                    ) != stringResource(R.string.input_is_camera)
+                ) {
+                    Text(
+                        "Keine EyeAI-Vision verbunden. Handykamera wird benutzt.",
+                        textAlign = TextAlign.Center
+                    )
+                } else {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Name: EyeAI-Vision von Robert", textAlign = TextAlign.Center)
+                        Text("Verbindung: Gut ", textAlign = TextAlign.Center)
+                        Text("Akku: 49% ", textAlign = TextAlign.Center)
+                    }
                 }
             }
         }
@@ -234,8 +271,7 @@ fun VoskStatusCard(uiState: UIState) {
                 ) {
                     Text("EyeAI denkt nach...", textAlign = TextAlign.Center)
                 } else if (uiState.llmResponseText != "") Text(
-                    "EyeAI antwortet...",
-                    textAlign = TextAlign.Center
+                    "EyeAI antwortet...", textAlign = TextAlign.Center
                 )
             }
         }
@@ -261,8 +297,7 @@ private fun getDepthFPS(text: String): Int {
     val index = text.indexOf("Depth Frame: ")
     if (index != -1 && index + 15 <= text.length) {
         var result = text.substring(index + 13, index + 15)
-        if (result.endsWith("."))
-            result = result.dropLast(1)
+        if (result.endsWith(".")) result = result.dropLast(1)
         return try {
             result.toInt()
         } catch (e: NumberFormatException) {
@@ -276,8 +311,7 @@ private fun getObjectFPS(text: String): Int {
     val index = text.indexOf("Object Frame: ")
     if (index != -1 && index + 16 <= text.length) {
         var result = text.substring(index + 14, index + 16)
-        if (result.endsWith("."))
-            result = result.dropLast(1)
+        if (result.endsWith(".")) result = result.dropLast(1)
         return try {
             result.toInt()
         } catch (e: NumberFormatException) {
