@@ -64,7 +64,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     eyeAIApp().textToSpeechInstance.stop()
                     updateLlmResponseText("")
                     updateVoskStatusText()
+                    setLLMSpeaking(false)
                 } else if (!voskUserStart.get()) {
+                    setLLMSpeaking(false)
                     startVosk()
                 } else {
                     stopVosk()
@@ -167,10 +169,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d(LOG_TAG, "[MainViewModel] Finished")
             }
 
+            is UIEvent.OnUpdateLLMSpeaking ->{
+                setLLMSpeaking(event.value)
+            }
+
             is UIEvent.OnUpdateAppMissingSelectedMediaSource -> {
                 setAppMissingSelectedMediaSource(event.value)
             }
         }
+    }
+
+    private fun setLLMSpeaking(value: Boolean){
+        Log.d(LOG_TAG, "[setLLMSpeaking] : $value")
+        _uiState.update { it.copy(llmSpeaking = value) }
     }
 
     private fun setPermissionTutorialCompleted(value: Boolean) {
@@ -390,7 +401,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     @RequiresApi(Build.VERSION_CODES.P)
     private suspend fun onSpeechResult(final: String) {
         Log.d(EyeAIApp.APP_LOG_TAG, "onSpeechResult: Creating new StateMachine for input: '$final'")
-
+        setLLMSpeaking(true)
         val stateMachine = StateMachine(
             eyeAIApp(),
             eyeAIApp().textToSpeechInstance,
@@ -401,6 +412,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         ) {
             updateVoskStatusText()
             updateLlmResponseText("")
+            setLLMSpeaking(false)
             CoroutineScope(Dispatchers.Main).launch {
                 Log.d(
                     EyeAIApp.APP_LOG_TAG,

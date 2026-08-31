@@ -136,9 +136,15 @@ fun DebugPage(
                     },
                 ) {
                     Icon(
-                        painter = if (uiState.voskListening) painterResource(R.drawable.stop_24px) else painterResource(
-                            R.drawable.play_arrow_24px
-                        ), contentDescription = "Start Vosk"
+                        painter = if (uiState.voskListening) {
+                            painterResource(R.drawable.stop_24px)
+                        } else if (uiState.llmSpeaking) {
+                            painterResource(
+                                R.drawable.pause_playback_24px
+                            )
+                        } else {
+                            painterResource(R.drawable.play_arrow_24px)
+                        }, contentDescription = "Start Vosk"
                     )
                 }
                 FloatingActionButton(onClick = { onOpenSettings() }) {
