@@ -59,7 +59,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             is UIEvent.VoskListeningChanged -> {
                 Log.d(LOG_TAG, "[MainViewModel] VoskListeningChanged")
                 State.IDLE
-                if (!voskUserStart.get()) {
+
+                if(eyeAIApp().textToSpeechInstance.isSpeaking()){
+                    eyeAIApp().textToSpeechInstance.stop()
+                    updateLlmResponseText("")
+                    updateVoskStatusText()
+                } else if (!voskUserStart.get()) {
                     startVosk()
                 } else {
                     stopVosk()
@@ -316,6 +321,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         updateVoskStatusText()
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     private fun onFinalSpeechRecognitionResult(final: String) {
         if (final.isEmpty()) {
             return
@@ -393,6 +399,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             eyeAIApp().cameraManager.cameraFrameAnalyzer ?: eyeAIApp().mediaFrameAnalyzer,
         ) {
             updateVoskStatusText()
+            updateLlmResponseText("")
             CoroutineScope(Dispatchers.Main).launch {
                 Log.d(
                     EyeAIApp.APP_LOG_TAG,

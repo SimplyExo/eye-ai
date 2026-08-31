@@ -272,6 +272,7 @@ class MainActivity : AppCompatActivity() {
         SpatialAudio.stop()
 
         eyeAIApp().voskModel.stopListening()
+        eyeAIApp().textToSpeechInstance.stop()
 
         eyeAIApp().cameraManager.pauseAnalyzer()
         eyeAIApp().mediaFrameAnalyzer?.shutdown()
