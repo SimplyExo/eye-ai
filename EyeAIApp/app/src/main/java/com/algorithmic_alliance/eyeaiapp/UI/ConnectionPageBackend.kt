@@ -151,12 +151,18 @@ data class WifiScanState(
 )
 
 @Composable
-fun rememberWifiScanState(context: Context, autoScanOnStart: Boolean = true): WifiScanState {
+fun rememberWifiScanState(context: Context, autoScanOnStart: Boolean = true, setScannState: (Boolean) -> Unit): WifiScanState {
     val wifiManager = remember { context.getSystemService(Context.WIFI_SERVICE) as WifiManager }
     var scanResults by remember { mutableStateOf<List<ScanResult>>(emptyList()) }
 
     val rescan: () -> Unit = remember(wifiManager) {
-        { triggerWifiScan(context, wifiManager) { results -> scanResults = results } }
+        {
+            Log.d(LOG_TAG, "[ConnectionPageBackend.rememberWifiScanState] Starting Wifi Scan")
+            setScannState(true)
+            triggerWifiScan(context, wifiManager) { results ->
+                scanResults = results
+            }
+        }
     }
 
     DisposableEffect(Unit) {
@@ -168,6 +174,8 @@ fun rememberWifiScanState(context: Context, autoScanOnStart: Boolean = true): Wi
                 ) return
                 scanResults = wifiManager.scanResults
                 Log.d(LOG_TAG, "[WifiScanState] Found WIFI-Networks: ${wifiManager.scanResults}")
+                Log.d(LOG_TAG, "[ConnectionPageBackend.rememberWifiScanState] Wifi Scan completed")
+                setScannState(false)
             }
         }
 
@@ -188,7 +196,6 @@ fun rememberWifiScanState(context: Context, autoScanOnStart: Boolean = true): Wi
     val networks = remember(scanResults) {
         scanResults.filter { it.SSID.contains("EyeAI-Vision") }.map { it.SSID }
     }
-
     return WifiScanState(networks, rescan)
 }
 

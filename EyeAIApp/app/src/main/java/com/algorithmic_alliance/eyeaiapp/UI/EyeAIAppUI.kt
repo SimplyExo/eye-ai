@@ -130,7 +130,7 @@ fun EyeAIAppUI(
                     onEvent(UIEvent.OnUpdateActionStartedFromSettings(false))
                     navController.popBackStack()
                 }
-            }, uiState = uiState, onEvent = onEvent)
+            }, viewModel = viewModel, onEvent = onEvent)
         }
         composable<HomeRoute> {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -138,7 +138,7 @@ fun EyeAIAppUI(
                 navController.navigate(
                     SettingsRoute
                 )
-            }, onEvent = onEvent, uiState = uiState)
+            }, onEvent = onEvent, viewModel = viewModel)
         }
         composable<SettingsRoute> {
             SettingsPage(modifier = Modifier.fillMaxSize(), onReturn = {

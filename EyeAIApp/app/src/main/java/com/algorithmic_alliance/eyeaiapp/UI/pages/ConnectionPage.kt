@@ -53,8 +53,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
@@ -70,7 +72,7 @@ fun ConnectionPage(
     modifier: Modifier = Modifier,
     onConnectionSuccessful: () -> Unit,
     onExitSelection: () -> Unit,
-    uiState: UIState,
+    viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit
 ) {
 
@@ -78,7 +80,7 @@ fun ConnectionPage(
         onExitSelection()
     }
 
-    Log.d(LOG_TAG, "[PermissionPage] Loading ConnectionPage")
+    Log.d(LOG_TAG, "[ConnectionPage] Loading ConnectionPage")
     val context = LocalContext.current
 
     if (ActivityCompat.checkSelfPermission(
@@ -92,9 +94,6 @@ fun ConnectionPage(
         )
         return
     }
-
-    val wifiScanState = rememberWifiScanState(context, autoScanOnStart = false)
-    //wifiScanState.rescan()
 
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -140,7 +139,7 @@ fun ConnectionPage(
         },
         goBack = { if (currentlyDisplayedDevices != 0) currentlyDisplayedDevices-- else onExitSelection() },
         devicesData = devices[currentlyDisplayedDevices] as Map<Any, Any>,
-        uiState = uiState,
+        viewModel = viewModel,
         onEvent = onEvent
     )
 
@@ -153,20 +152,22 @@ fun ChooseConnectionPage(
     onConnectionSuccessful: () -> Unit,
     goBack: () -> Unit,
     devicesData: Map<Any, Any>,
-    uiState: UIState,
+    viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     var shouldRememberDevice by rememberSaveable { mutableStateOf(false) }
     var selectedDevice by remember { mutableStateOf("") }
     var showConnectionFailedDialog by remember { mutableStateOf(false) }
     var showLocationDisabledDialog by remember { mutableStateOf(false) }
+    var scanningForDevices by rememberSaveable { mutableStateOf(false) }
 
     val shouldRememberKey = stringResource(devicesData["rememberKey"] as Int)
     val selectedDeviceKey = stringResource(devicesData["selectedKey"] as Int)
     val deviceCategory = devicesData["name"] ?: UIDataSource.INFORMATION_NOT_FOUND
-    val wifiScanState = rememberWifiScanState(context, autoScanOnStart = false)
+    val wifiScanState = rememberWifiScanState(context, autoScanOnStart = false, setScannState = { bool -> scanningForDevices = bool})
     val (audioDevices, refreshAudioDevices) = rememberAudioDeviceState(context)
     val devices: List<String> = when (devicesData["type"]) {
         "audio" -> audioDevices
@@ -174,10 +175,17 @@ fun ChooseConnectionPage(
         else -> emptyList()
     }
 
+
+
     Log.d(LOG_TAG, "[ConnectionPage] Choosing connection for $deviceCategory")
 
     LaunchedEffect(devicesData["type"]) {
-        if (devicesData["type"] == "eye-ai-vision" && (devicesData["remember"] == true && devicesData["selected"] != "Handykamera verwenden")) {
+        Log.d(LOG_TAG, "${devicesData["type"]} ${devicesData["remember"]} ${devicesData["selected"]}")
+        if(devicesData["type"] != "eye-ai-vision")
+            return@LaunchedEffect
+        if(devicesData["remember"] == true && devicesData["selected"] != "Handykamera verwenden")
+            return@LaunchedEffect
+        if (devicesData["type"] == "eye-ai-vision") {
             val locationManager =
                 context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             if (locationManager.isLocationEnabled)
@@ -284,7 +292,12 @@ fun ChooseConnectionPage(
                         Row(
                             modifier = Modifier
                                 .padding(8.dp)
-                        ) { Text("Lade...") }
+                        ) {
+                            if(scanningForDevices)
+                                Text("Lade...")
+                            else
+                                Text("Keine verfügbaren Geräte gefunden.")
+                        }
                         DeviceListEntry(
                             "Handykamera verwenden",
                             onSelected = { selectedDevice = "Handykamera verwenden" },
@@ -460,23 +473,5 @@ fun ErrorDialog(titel: String, content: String, onDismissed: () -> Unit) {
 
 }
 
-class WifiScanState(
-    val networks: List<String>,
-    val rescan: () -> Unit
-)
-
-@RequiresApi(Build.VERSION_CODES.S)
-@Preview(showBackground = true, name = "ConnectionPagePreview")
-@Composable
-fun ConnectionPagePreview() {
-    MaterialTheme {
-        ConnectionPage(
-            Modifier.fillMaxSize(),
-            onConnectionSuccessful = {},
-            onExitSelection = {},
-            uiState = UIState(), onEvent = {}
-        )
-    }
-}
 
 
