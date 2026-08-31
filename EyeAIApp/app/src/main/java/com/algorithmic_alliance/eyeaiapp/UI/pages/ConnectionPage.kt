@@ -18,6 +18,7 @@ import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
@@ -57,10 +58,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
 import com.algorithmic_alliance.eyeaiapp.UI.rememberAudioDeviceState
+import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import kotlin.collections.emptyList
@@ -175,7 +178,7 @@ fun ChooseConnectionPage(
         else -> emptyList()
     }
 
-
+    val shimmerBrush = rememberShimmerBrush()
 
     Log.d(LOG_TAG, "[ConnectionPage] Choosing connection for $deviceCategory")
 
@@ -291,10 +294,11 @@ fun ChooseConnectionPage(
                     } else {
                         Row(
                             modifier = Modifier
-                                .padding(8.dp)
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 8.dp)
                         ) {
                             if(scanningForDevices)
-                                Text("Lade...")
+                                ShimmerBox(shimmerBrush, Modifier.height(16.dp).fillMaxWidth(0.6f))
                             else
                                 Text("Keine verfügbaren Geräte gefunden.")
                         }
