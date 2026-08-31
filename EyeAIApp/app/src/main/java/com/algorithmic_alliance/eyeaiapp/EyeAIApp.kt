@@ -3,13 +3,23 @@ package com.algorithmic_alliance.eyeaiapp
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Build
+import android.provider.Contacts
 import android.util.Log
 import android.util.Size
+import androidx.activity.viewModels
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
+import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
+import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
+import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
+import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
@@ -17,13 +27,17 @@ import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
 import com.algorithmic_alliance.eyeaiapp.settingsparser.LocalSettingsParser
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
+import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as UI_LOG_TAG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
 import java.util.concurrent.Executors
+import kotlin.getValue
 
 /**
  * App class that holds everything that should persist when switching to another app, for example
@@ -121,6 +135,14 @@ class EyeAIApp : Application() {
 	var ocrModel = GoogleOCR()
 		private set
 
+	lateinit var textToSpeechInstance: TextToSpeechInstance
+	var lastLlmJsonResponse: String? = null
+	var cameraManager = CameraManager()
+	var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
+	var currentStateMachine: StateMachine? = null
+	var mediaPlayer: MediaPlayer? = null
+	var bitmapFlow: MutableSharedFlow<Bitmap>? = null
+	lateinit var eyeAIVision: EyeAIVision
 	var aiData = AIModelData
 
 	var npuQnnDelegateDirectory: String? = null
@@ -210,15 +232,6 @@ class EyeAIApp : Application() {
 			)
 		}
 
-		if (oldSettings.objectAudioPlaybackLanguage != settings.objectAudioPlaybackLanguage) {
-			// TODO: move this somewhere else?
-			SpatialAudio.stop()
-			CoroutineScope(Dispatchers.IO).launch {
-				SpatialAudio.setup(this@EyeAIApp)
-				SpatialAudio.start()
-			}
-		}
-
 		val enableNpuChanged = oldSettings.enableNpu != settings.enableNpu
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
@@ -227,16 +240,22 @@ class EyeAIApp : Application() {
 			}
 
 			if (oldSettings.depthModel != settings.depthModel || enableNpuChanged) {
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] DepthModel is set to ${settings.depthModel}")
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] Enable NPU is set to ${settings.enableNpu}")
 				switchDepthModel(settings.depthModel)
 			}
 
 			if (oldSettings.enableSpeechRecognition != settings.enableSpeechRecognition) {
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] EnableSpeechRecognition is set to ${settings.enableSpeechRecognition}")
 				if (!settings.enableSpeechRecognition) {
+					Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] Closing Vosk service")
 					voskModel.closeService()
 				}
 			}
 
 			if (oldSettings.enableObjectDetection != settings.enableObjectDetection || enableNpuChanged) {
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] EnableObjectDetection is set to ${settings.enableObjectDetection}")
+				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] Enable NPU is set to ${settings.enableNpu}")
 				if (settings.enableObjectDetection) {
 					yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
 				}

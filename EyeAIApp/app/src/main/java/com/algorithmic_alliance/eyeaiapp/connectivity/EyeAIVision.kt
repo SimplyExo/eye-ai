@@ -20,7 +20,7 @@ import java.util.concurrent.Executors
 open class EyeAIVision(
 	private val ip: String,
 	private val compression: Int,
-	private val lifecycleScope: LifecycleCoroutineScope,
+	private val lifecycleScope: CoroutineScope,
 	private val bitmapFlow: MutableSharedFlow<Bitmap>?,
 	private val onSingleClick: () -> Unit,
 	private val onDoubleClick: () -> Unit,

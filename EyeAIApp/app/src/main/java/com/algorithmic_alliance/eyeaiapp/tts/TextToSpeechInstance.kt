@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.tts
 
 import android.content.Context
+import android.media.AudioAttributes
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
@@ -46,6 +47,12 @@ class TextToSpeechInstance(
 	}
 
 	override fun onInit(status: Int) {
+		tts?.setAudioAttributes(
+			AudioAttributes.Builder()
+				.setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+				.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+				.build()
+		)
 		if (status == TextToSpeech.SUCCESS) {
 			try { tts?.language = Locale.GERMAN } catch (_: Exception) {}
 			isReady = true

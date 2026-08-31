@@ -5,6 +5,7 @@ import java.security.MessageDigest
 plugins {
 	alias(libs.plugins.android.application)
 	alias(libs.plugins.kotlin.compose)
+	id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0"
 }
 
 android {
@@ -106,7 +107,11 @@ sourceSets.getByName("androidTest").assets.directories.add("src/test/resources")
 }
 
 dependencies {
-	implementation(libs.androidx.core.ktx)
+	implementation(libs.androidx.benchmark.common)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.remote.creation.core)
+    implementation(libs.androidx.core.ktx)
 	implementation(libs.androidx.lifecycle.runtime.ktx)
 	implementation(libs.androidx.activity.compose)
 	implementation(libs.androidx.constraintlayout)
@@ -132,6 +137,7 @@ dependencies {
 
 	// TFLite runtime for NLP V2 BaselineCNN
 	implementation(libs.tensorflow.lite)
+	implementation(libs.tensorflow.lite.select.tf.ops)
 
 	// runtime only libs for tflite gpu/npu delegates
 	runtimeOnly(libs.litert.gpu)
@@ -144,6 +150,10 @@ dependencies {
 	testImplementation(libs.org.json)
 	androidTestImplementation(libs.androidx.test.runner)
 	androidTestImplementation(libs.androidx.test.ext.junit)
+
+	//UI
+	implementation(libs.androidx.navigation.compose)
+	implementation(libs.kotlinx.serialization.json)
 
 	debugImplementation(libs.androidx.ui.tooling)
 	debugImplementation(libs.androidx.ui.test.manifest)

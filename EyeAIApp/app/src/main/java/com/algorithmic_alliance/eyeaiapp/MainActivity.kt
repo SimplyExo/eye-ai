@@ -13,18 +13,17 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
-import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.core.graphics.createBitmap
-import androidx.core.net.toUri
-import androidx.core.view.isVisible
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
+import com.algorithmic_alliance.eyeaiapp.UI.EyeAIAppUI
+import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
@@ -34,9 +33,11 @@ import com.algorithmic_alliance.eyeaiapp.llm.statemachine.VoskRestartPolicy
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
+import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.SpeechManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as UI_LOG_TAG
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -50,9 +51,13 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 class MainActivity : AppCompatActivity() {
 	var cameraManager = CameraManager()
 
-	@RequiresApi(Build.VERSION_CODES.P)
-	private var permissionManager =
-		PermissionManager(this, ::onCameraPermissionResult, ::onMicrophonePermissionResult)
+    @RequiresApi(Build.VERSION_CODES.P)
+    private var permissionManager =
+        PermissionManager(
+            this,
+            //::onCameraPermissionResult,
+            //::onMicrophonePermissionResult
+        )
 
 	private var cameraPreviewView: PreviewView? = null
 	private var ungrantedPermissionsNotice: LinearLayout? = null
@@ -63,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var eyeAIVision: EyeAIVision
 	private var bitmapFlow: MutableSharedFlow<Bitmap>? = null
 
-	private val voskStarting = AtomicBoolean(false)
+    private val voskStarting = AtomicBoolean(false)
 
 	private val voskUserStart = AtomicBoolean(false)
 	private val voskManualRestartRequired = AtomicBoolean(false)
@@ -91,10 +96,10 @@ class MainActivity : AppCompatActivity() {
 
 	private var lastDialogContext: String? = null
 
-	private var tcpErrorShowing = false
-	private var mjpegErrorShowing = false
+    private var tcpErrorShowing = false
+    private var mjpegErrorShowing = false
 
-	private var mjpegErrorIgnored = false
+    private var mjpegErrorIgnored = false
 
 
 
@@ -108,80 +113,86 @@ class MainActivity : AppCompatActivity() {
 		SETTINGS_EXTERNAL_CONFIRMATION,
 	}
 
-	private var currentState: State = State.IDLE
+    private var currentState: State = State.IDLE
 
 	private var mediaFrameAnalyzer: CameraFrameAnalyzer? = null
 	private var mediaPlayer: MediaPlayer? = null
 
+    private val viewModel: MainViewModel by viewModels()
 
-	@RequiresApi(Build.VERSION_CODES.P)
-	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
+        setContent {
+            EyeAIAppUI(
+                onEvent = viewModel::onEvent,
+                viewModel = viewModel
+            )
+        }
 
-		enableEdgeToEdge()
-		setContentView(R.layout.activity_main)
+		/*
 
-		cameraPreviewView = findViewById(R.id.camera_view)
+        cameraPreviewView = findViewById(R.id.camera_view)
 
-		depthPreviewImage = findViewById(R.id.depth_preview_image)
+        depthPreviewImage = findViewById(R.id.depth_preview_image)
 
-		mediaImageView = findViewById(R.id.media_view)
+        mediaImageView = findViewById(R.id.media_view)
 
-		debugInputBitmapPreview = findViewById(R.id.debug_input_bitmap)
+        debugInputBitmapPreview = findViewById(R.id.debug_input_bitmap)
 
-		performanceText = findViewById(R.id.performance_text)
+        performanceText = findViewById(R.id.performance_text)
 
-		overlayObjectDetection = findViewById(R.id.overlay_object_detection)
-		overlayOcr = findViewById(R.id.overlay_ocr)
+        overlayObjectDetection = findViewById(R.id.overlay_object_detection)
+        overlayOcr = findViewById(R.id.overlay_ocr)
 
-		ungrantedPermissionsNotice = findViewById(R.id.ungranted_permissions_notice)
-		ungrantedPermissionsNoticeText = findViewById(R.id.ungranted_permissions_notice_text)
+        ungrantedPermissionsNotice = findViewById(R.id.ungranted_permissions_notice)
+        ungrantedPermissionsNoticeText = findViewById(R.id.ungranted_permissions_notice_text)
 
-		allowCameraPermission = findViewById(R.id.allow_camera_permission_btn)
-		allowCameraPermission!!.setOnClickListener { permissionManager.openAppPermissionSettings() }
+        allowCameraPermission = findViewById(R.id.allow_camera_permission_btn)
+        allowCameraPermission!!.setOnClickListener { permissionManager.openAppPermissionSettings() }
 
-		startStopVosk = findViewById(R.id.stop_tts_button)
-		startStopVosk!!.setOnClickListener {
+        startStopVosk = findViewById(R.id.stop_tts_button)
+        startStopVosk!!.setOnClickListener {
 
-			State.IDLE
+            State.IDLE
 
-			if (voskUserStart.get()){
+            if (voskUserStart.get()){
 
-					textToSpeechInstance.stop()
-
-
-				android.os.Handler(Looper.getMainLooper()).postDelayed({
-					stopVoskListening()
-				}, 100)
-
-			}
-			else{
-				startVoskListening()
-			}
-
-		}
-
-		speechRecognitionPartialResultText = findViewById(R.id.speech_recognition_partial_output)
-		speechRecognitionFinalResultText = findViewById(R.id.speech_recognition_final_output)
-		speechResponseText = findViewById(R.id.speech_response)
-
-		findViewById<FloatingActionButton>(R.id.settings_button).setOnClickListener {
-			startActivity(Intent(this, SettingsActivity::class.java))
-			overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-		}
+                SpeechManager.forceStop()
 
 
+                android.os.Handler(Looper.getMainLooper()).postDelayed({
+                    stopVoskListening()
+                }, 100)
 
-		updateUngrantedPermissionsNotice()
+            }
+            else{
+                startVoskListening()
+            }
 
-		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
 
-		eyeAIApp().updateSettings()
+        done speechRecognitionPartialResultText = findViewById(R.id.speech_recognition_partial_output)
+        done speechRecognitionFinalResultText = findViewById(R.id.speech_recognition_final_output)
+        done llmResponseText = findViewById(R.id.llm_response)
 
-		updateSpeechRecognitionUIVisibility()
+        findViewById<FloatingActionButton>(R.id.settings_button).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
 
-		textToSpeechInstance = TextToSpeechInstance(this) {
+
+
+        updateUngrantedPermissionsNotice()
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        */
+        eyeAIApp().updateSettings()
+
+        //updateSpeechRecognitionUIVisibility()
+
+		eyeAIApp().textToSpeechInstance = TextToSpeechInstance(this) {
 				// Restart Vosk after the local TTS response has finished.
 			CoroutineScope(Dispatchers.Main).launch {
 				try {
@@ -202,10 +213,10 @@ class MainActivity : AppCompatActivity() {
 						return@launch
 					}
 
-					Log.d(
-						EyeAIApp.APP_LOG_TAG,
-						"GLOBAL TTS CALLBACK: TextToSpeechInstance already waited for silence -> attempting to start Vosk."
-					)
+                    Log.d(
+                        EyeAIApp.APP_LOG_TAG,
+                        "GLOBAL TTS CALLBACK: TextToSpeechInstance already waited for silence -> attempting to start Vosk."
+                    )
 
 					//avoiding prallel starts
 					if (voskStarting.compareAndSet(false, true)) {
@@ -259,98 +270,81 @@ class MainActivity : AppCompatActivity() {
 
 	}
 
-	@RequiresApi(Build.VERSION_CODES.P)
-	override fun onResume() {
-		super.onResume()
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun onResume() {
+        super.onResume()
+        eyeAIApp().updateSettings()
 
-		eyeAIApp().updateSettings()
+        /*
+        permissionManager.requestCameraPermission()
+        if (eyeAIApp().settings.enableSpeechRecognition)
+            permissionManager.requestMicrophonePermission()
+        updateUngrantedPermissionsNotice()
+         */
+        viewModel.onResume()
 
-		CoroutineScope(Dispatchers.IO).launch {
-			Log.d("Spatial Audio", "[SpatialAudio] Starting spatial audio")
-			SpatialAudio.setup(this@MainActivity)
-			SpatialAudio.start()
-		}
+    }
 
-		updateSpeechRecognitionUIVisibility()
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun onPause() {
+        super.onPause()
 
-		permissionManager.requestCameraPermission()
-		if (eyeAIApp().settings.enableSpeechRecognition)
-			permissionManager.requestMicrophonePermission()
-		updateUngrantedPermissionsNotice()
+        SpatialAudio.stop()
 
-		debugInputBitmapPreview?.visibility = if (eyeAIApp().settings.showDebugInputBitmap) {
-			VISIBLE
-		} else {
-			GONE
-		}
+        eyeAIApp().voskModel.stopListening()
+        eyeAIApp().textToSpeechInstance.stop()
 
-		speechResponseText?.text = ""
+        eyeAIApp().cameraManager.pauseAnalyzer()
+        eyeAIApp().mediaFrameAnalyzer?.shutdown()
+        eyeAIApp().mediaPlayer?.shutdown()
 
-		// re-enabling the audio playback in accordance to the settings
-		val settings = Settings.load(this@MainActivity)
-		uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
-		uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
-	}
+        // stopping audio playback
+        uniffi.NativeLib.setObjectAudioPaused(true)
+        uniffi.NativeLib.setDepthAudioPaused(true)
+    }
 
-	@RequiresApi(Build.VERSION_CODES.P)
-	override fun onPause() {
-		super.onPause()
-		cancelPendingSpatialAudioResume()
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun onDestroy() {
+        super.onDestroy()
+        eyeAIApp().cameraManager.shutdown()
+        eyeAIApp().textToSpeechInstance.shutdown()
+        eyeAIApp().mediaFrameAnalyzer?.shutdown()
+        eyeAIApp().mediaPlayer?.shutdown()
+        SpatialAudio.stop()
 
-		SpatialAudio.stop()
+        eyeAIApp().voskModel.closeService()
+    }
 
-		eyeAIApp().voskModel.stopListening()
+    /*
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun onCameraPermissionResult(isGranted: Boolean) {
+        if (isGranted) {
+            //ungrantedPermissionsNotice!!.visibility = GONE
+            initCamera()
+        } else {
+            //ungrantedPermissionsNotice!!.visibility = VISIBLE
+        }
+    }
+     */
+    /*
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun onMicrophonePermissionResult(isGranted: Boolean) {
+        if (isGranted && eyeAIApp().settings.enableSpeechRecognition) {
+            if (!eyeAIApp().voskModel.isListening()) {
+                eyeAIApp()
+                    .voskModel
+                    .initService(
+                        ::onPartialSpeechRecognitionResult,
+                        ::onFinalSpeechRecognitionResult,
+                        ::onSpeechRecognitionLoaded
+                    )
+            }
+        } else {
+            Log.w(EyeAIApp.APP_LOG_TAG, "Microphone Permission not granted!")
+        }
+    }
 
-		cameraManager.pauseAnalyzer()
-		mediaFrameAnalyzer?.shutdown()
-		mediaPlayer?.shutdown()
-
-		// stopping audio playback
-		uniffi.NativeLib.setObjectAudioPaused(true)
-		uniffi.NativeLib.setDepthAudioPaused(true)
-	}
-
-	@RequiresApi(Build.VERSION_CODES.P)
-	override fun onDestroy() {
-		super.onDestroy()
-		cancelPendingSpatialAudioResume()
-		cameraManager.shutdown()
-		textToSpeechInstance.shutdown()
-		mediaFrameAnalyzer?.shutdown()
-		mediaPlayer?.shutdown()
-		SpatialAudio.stop()
-
-		eyeAIApp().voskModel.closeService()
-	}
-
-	@RequiresApi(Build.VERSION_CODES.P)
-	private fun onCameraPermissionResult(isGranted: Boolean) {
-		if (isGranted) {
-			ungrantedPermissionsNotice!!.visibility = GONE
-			initCamera()
-		} else {
-			ungrantedPermissionsNotice!!.visibility = VISIBLE
-		}
-	}
-
-	@RequiresApi(Build.VERSION_CODES.P)
-	private fun onMicrophonePermissionResult(isGranted: Boolean) {
-		if (isGranted && eyeAIApp().settings.enableSpeechRecognition) {
-			if (!eyeAIApp().voskModel.isListening()) {
-				eyeAIApp()
-					.voskModel
-					.initService(
-						::onPartialSpeechRecognitionResult,
-						::onFinalSpeechRecognitionResult,
-						::onSpeechRecognitionLoaded
-					)
-			}
-		} else {
-			Log.w(EyeAIApp.APP_LOG_TAG, "Microphone Permission not granted!")
-		}
-	}
-
-
+	*/
 	private fun eyeAIApp(): EyeAIApp {
 		return application as EyeAIApp
 	}
@@ -561,49 +555,13 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
-
-	private fun updateSpeechRecognitionUIVisibility() {
-		val visibility = if (eyeAIApp().settings.enableSpeechRecognition) {
-			VISIBLE
-		} else {
-			GONE
-		}
-
-		speechRecognitionPartialResultText?.visibility = visibility
-		speechRecognitionFinalResultText?.visibility = visibility
-	}
-
-	@RequiresApi(Build.VERSION_CODES.P)
-	private fun updateUngrantedPermissionsNotice() {
-		val cameraGranted = permissionManager.isCameraPermissionGranted()
-		val microphoneGranted = permissionManager.isMicrophonePermissionGranted()
-
-		if (cameraGranted && microphoneGranted) {
-			ungrantedPermissionsNotice?.visibility = GONE
-		} else {
-			ungrantedPermissionsNotice?.visibility = VISIBLE
-			ungrantedPermissionsNoticeText?.text = getString(
-				if (cameraGranted) {
-					R.string.allow_microphone_permission_notice
-				} else if (microphoneGranted) {
-					R.string.allow_camera_permission_notice
-				} else {
-					R.string.allow_camera_and_microphone_permission_notice
-				}
-			)
-		}
-	}
+     */
 
 
-	/*All TTS methods start here*/
+    /*All TTS methods start here*/
 
-	private fun onPartialSpeechRecognitionResult(partial: String) {
-		CoroutineScope(Dispatchers.Main).launch {
-			speechRecognitionPartialResultText?.text = partial
-		}
-	}
 
-	/*All TTS methods start here*/
+    /*All TTS methods start here*/
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun onFinalSpeechRecognitionResult(final: String) {
@@ -863,5 +821,6 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	companion object
+
 
 }

@@ -28,7 +28,7 @@
     <string name="eyeaivision_ip_setting">eyeaivision_ip_setting</string>
     <string name="input_is_eyeaivision">eyeaivision</string>
     <string name="enable_object_detection_setting">enable_object_detection</string>
-    <string name="speech_recognition_ready">Speech Recognition Ready!</string>
+    <string name="speech_recognition_ready">Speech Recognition Listening!</string>
     <string name="version_info_settings">version_info</string>
     <string name="build_time_settings">build_time</string>
     <string name="git_info_settings">git_info</string>
@@ -38,7 +38,10 @@
     <string name="depth_playback_setting">depth_playback_setting</string>
     <string name="audio_frequency_range_setting">audio_frequency_range</string>
     <string name="audio_playback_rate_setting">audio_playback_rate</string>
-    <string name="tutorial_completed_setting">tutorial_completed_setting</string>
+    <string name="remember_audio_device">remember_audio_device</string>
+    <string name="selected_audio_device">selected_audio_device</string>
+    <string name="remember_eye_ai_vision">remember_eye_ai_vision</string>
+    <string name="selected_eye_ai_vision">selected_eye_ai_vision</string>
     <string name="tutorial_camera_permission_explanation">For EyeAI to analyze your surroundings,
         it needs access to your camera while using the app.
 Every camera frame is processed offline locally on your device,
@@ -60,4 +63,5 @@ Every camera frame is processed offline locally on your device,
     <string name="icon_description">Eye AI Icon</string>
     <string name="permission_icon_description">Current Permission Icon</string>
     <string name="stop_tts_description">Stop TTS Button</string>
+    <string name="debug_page_activated">debug_page_activated</string>
 </resources>

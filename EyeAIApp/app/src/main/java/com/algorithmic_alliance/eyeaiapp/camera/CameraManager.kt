@@ -30,11 +30,10 @@ class CameraManager {
 
 	fun init(
 		context: Context,
+		lifecycleOwner: LifecycleOwner,
 		preferredImageSize: Size,
 		cameraPreviewView: PreviewView?,
 	) {
-		val lifecycleOwner = context as LifecycleOwner
-
 		val cameraProviderListenableFuture = ProcessCameraProvider.getInstance(context)
 
 		cameraProviderListenableFuture.addListener(
@@ -70,7 +69,7 @@ class CameraManager {
 						cameraPreview
 					)
 
-					cameraPreview.surfaceProvider = cameraPreviewView!!.surfaceProvider
+					cameraPreview.surfaceProvider = cameraPreviewView?.surfaceProvider
 				} catch (e: ExecutionException) {
 					Log.e(APP_LOG_TAG, e.message!!)
 				} catch (e: InterruptedException) {

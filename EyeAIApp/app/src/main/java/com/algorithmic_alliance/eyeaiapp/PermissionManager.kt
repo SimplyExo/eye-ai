@@ -13,9 +13,10 @@ import androidx.core.content.ContextCompat
 /** Helper class that manages all app permissions: camera and microphone for now */
 class PermissionManager(
 	var activity: ComponentActivity,
-	onCameraPermissionResult: (isGranted: Boolean) -> Unit,
-	onMicrophonePermissionResult: (isGranted: Boolean) -> Unit
+	//onCameraPermissionResult: (isGranted: Boolean) -> Unit,
+	//onMicrophonePermissionResult: (isGranted: Boolean) -> Unit
 ) {
+	/*
 	private val requestPermissionsLauncher =
 		activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
 			if (permissions.containsKey(Manifest.permission.CAMERA)) {
@@ -36,6 +37,8 @@ class PermissionManager(
 			}
 		}
 
+	 */
+	/*
 	fun requestCameraPermission() {
 		requestPermissionsLauncher.launch(arrayOf(Manifest.permission.CAMERA))
 	}
@@ -43,6 +46,8 @@ class PermissionManager(
 	fun requestMicrophonePermission() {
 		requestPermissionsLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO))
 	}
+
+	 */
 
 	fun isCameraPermissionGranted(): Boolean {
 		return ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) ==

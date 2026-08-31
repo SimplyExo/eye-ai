@@ -23,7 +23,7 @@ import java.util.concurrent.Executors
 class MediaPlayer(
 	private val context: Context,
 	private val uri: Uri? = null,
-	private val targetImageView: ImageView,
+	private val updateTargetImageView: (Bitmap) -> Unit,
 	private val bitmapFlow: Flow<Bitmap>? = null
 ) {
 
@@ -56,7 +56,7 @@ class MediaPlayer(
 
 			withContext(Dispatchers.Main) {
 				try {
-					targetImageView.setImageBitmap(bitmap)
+					updateTargetImageView(bitmap)
 				} catch (t: Throwable) {
 					Log.e("MediaPlayer", "Error setting bitmap to ImageView", t)
 				}
@@ -80,7 +80,9 @@ class MediaPlayer(
 
 					val bmp = BitmapFactory.decodeStream(input, null, options)
 					withContext(Dispatchers.Main) {
-						targetImageView.setImageBitmap(bmp)
+						bmp?.let{
+							updateTargetImageView(bmp)
+						}
 					}
 				}
 			} else if (type.startsWith("video/")) {
@@ -93,7 +95,9 @@ class MediaPlayer(
 					try {
 						val frame = retriever!!.getFrameAtIndex(index)?.toARGB8888()
 						withContext(Dispatchers.Main) {
-							targetImageView.setImageBitmap(frame)
+							frame?.let{
+								updateTargetImageView(frame)
+							}
 						}
 						index++
 
