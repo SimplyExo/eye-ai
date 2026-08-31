@@ -47,6 +47,10 @@ class EyeAIApp : Application() {
 	lateinit var settings: Settings
 		private set
 
+	val speechThreadExecutor = Executors.newSingleThreadExecutor()
+
+	var lastDialogContext: String? = null
+
 	private var loadAIModelExecutor = Executors.newSingleThreadExecutor()
 
 	var metricDepthModel: MetricDepthModel? = null

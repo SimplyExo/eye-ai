@@ -8,7 +8,7 @@ import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 /** Sends local interaction responses through the existing UI and TTS path. */
 class SpeechOutputHandler(
 	private val textToSpeechInstance: TextToSpeechInstance,
-	private val responseText: TextView?
+	private val updateResponseText: (String)-> Unit
 ) {
 	private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -18,7 +18,7 @@ class SpeechOutputHandler(
 			return
 		}
 
-		mainHandler.post { responseText?.text = toSpeak }
+		mainHandler.post { updateResponseText(toSpeak) }
 		textToSpeechInstance.speak(toSpeak)
 	}
 }

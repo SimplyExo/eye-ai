@@ -81,7 +81,7 @@ fun HomePage(
         }
         onEvent(UIEvent.UIinitCamera(null, lifecycleOwner))
         onEvent(UIEvent.UpdateVoskStatusText)
-        onEvent(UIEvent.UpdateLlmStatusText)
+        onEvent(UIEvent.UpdateSpeechStatusText)
     }
 
 
@@ -267,17 +267,15 @@ fun VoskStatusCard(uiState: UIState) {
             Text("Spracherkennung", fontSize = 18.sp, textAlign = TextAlign.Center)
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (uiState.llmResponseText.isEmpty()) Text(
+                if (uiState.speechResponseText.isEmpty()) Text(
                     modifier = Modifier.padding(8.dp),
                     text = uiState.speechRecognitionFinalResultText,
                     textAlign = TextAlign.Center
                 )
-                if (uiState.llmResponseText.isNotEmpty()) if (uiState.llmResponseText == stringResource(
-                        R.string.llm_responding_notice
-                    )
+                if (uiState.speechResponseText.isNotEmpty()) if (uiState.speechResponseText == "eyeai dent nach"
                 ) {
                     Text("EyeAI denkt nach...", textAlign = TextAlign.Center)
-                } else if (uiState.llmResponseText != "") Text(
+                } else if (uiState.speechResponseText != "") Text(
                     "EyeAI antwortet...", textAlign = TextAlign.Center
                 )
             }

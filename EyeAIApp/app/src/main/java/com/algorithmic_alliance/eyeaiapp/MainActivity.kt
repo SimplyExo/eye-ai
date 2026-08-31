@@ -13,17 +13,20 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.algorithmic_alliance.eyeaiapp.UI.EyeAIAppUI
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
@@ -33,7 +36,6 @@ import com.algorithmic_alliance.eyeaiapp.llm.statemachine.VoskRestartPolicy
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
-import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.SpeechManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -348,7 +350,7 @@ class MainActivity : AppCompatActivity() {
 	private fun eyeAIApp(): EyeAIApp {
 		return application as EyeAIApp
 	}
-
+	/*
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun initCamera() {
 		if (eyeAIApp().settings.inputSource == getString(R.string.input_is_camera)) {
@@ -555,14 +557,14 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
-     */
+    */
 
 
     /*All TTS methods start here*/
 
 
     /*All TTS methods start here*/
-
+	/*
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun onFinalSpeechRecognitionResult(final: String) {
 		if (final.isEmpty()) {
@@ -620,11 +622,15 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
+	 */
+	/*
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun onSpeechRecognitionLoaded() {
 		updateVoskStatusText()
 	}
 
+	 */
+	/*
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun updateVoskStatusText() {
 		runOnUiThread {
@@ -647,8 +653,10 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
+	 */
 
 
+	/*
 	@RequiresApi(Build.VERSION_CODES.P)
 	private suspend fun onSpeechResult(final: String) {
 		Log.d(
@@ -705,6 +713,8 @@ class MainActivity : AppCompatActivity() {
 		lastDialogContext = update.newJson
 	}
 
+	 */
+	/*
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun startVoskListening(trigger: String = "USER_BUTTON") {
 		if (voskUserStart.get()) return // Check whether already started
@@ -752,6 +762,9 @@ class MainActivity : AppCompatActivity() {
 		updateVoskStatusText()
 	}
 
+
+	 */
+	/*
 	private fun scheduleSpatialAudioResumeAfterTts(trigger: String) {
 		cancelPendingSpatialAudioResume()
 
@@ -795,6 +808,9 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
+
+	 */
+	/*
 	private fun restoreSpatialAudioFromSettings(trigger: String) {
 		val settings = Settings.load(this)
 		uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
@@ -812,6 +828,8 @@ class MainActivity : AppCompatActivity() {
 		resumeSpatialAudioAfterTtsJob = null
 	}
 
+
+	 */
 
 	fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
 

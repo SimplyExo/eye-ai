@@ -1,11 +1,8 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.Manifest
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Paint
-import android.provider.Contacts
 import android.util.Log
 import android.util.Size
 import androidx.activity.compose.LocalActivity
@@ -39,21 +36,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.IconButton
-import androidx.compose.remote.creation.dsl.background
-import androidx.compose.remote.creation.dsl.heightIn
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -62,12 +52,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
@@ -106,7 +94,7 @@ fun DebugPage(
             }
         }
         onEvent(UIEvent.UpdateVoskStatusText)
-        onEvent(UIEvent.UpdateLlmStatusText)
+        onEvent(UIEvent.UpdateSpeechStatusText)
     }
     key(uiState.reloadDebugPageKey) {
         Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
@@ -243,7 +231,7 @@ fun DebugPage(
                                     item {
                                         Text(uiState.speechRecognitionPartialResultText)
                                         Text(uiState.speechRecognitionFinalResultText)
-                                        Text(uiState.llmResponseText)
+                                        Text(uiState.speechResponseText)
                                     }
                                 }
                             }

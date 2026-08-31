@@ -35,13 +35,13 @@ class StateMachine(
     private val eyeAIApp: EyeAIApp,
     private val textToSpeechInstance: TextToSpeechInstance,
 	private var lastDialogContext: String?,
-	private val speechResponseText: TextView?,
+	private val setSpeechResponseText: (String) -> Unit,
 	private val cameraFrameAnalyzer: CameraFrameAnalyzer? = null
 ) {
 
 	private val speechOutputHandler = SpeechOutputHandler(
 		textToSpeechInstance,
-		speechResponseText
+		updateResponseText = setSpeechResponseText
 	)
     private val jsonParser = JsonParser()
 

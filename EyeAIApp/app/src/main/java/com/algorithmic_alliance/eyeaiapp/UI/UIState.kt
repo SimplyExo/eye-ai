@@ -19,7 +19,7 @@ data class UIState(
     val connectionTutorialCompleted: Boolean = true,
     val speechRecognitionFinalResultText: String = "",
     val speechRecognitionPartialResultText: String = "",
-    val llmResponseText: String = "",
+    val speechResponseText: String = "",
     val depthPreviewBitmap: Bitmap? = null,
     val mediaPreviewBitmap: Bitmap? = null,
     val debugInputPreviewBitmap: Bitmap? = null,

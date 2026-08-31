@@ -13,7 +13,7 @@ sealed interface UIEvent {
 
     data object CloseVoskService : UIEvent
 
-    data object UpdateLlmStatusText : UIEvent
+    data object UpdateSpeechStatusText : UIEvent
 
     data object UpdateSettings : UIEvent
 
