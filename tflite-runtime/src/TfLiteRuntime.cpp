@@ -13,17 +13,6 @@
 static void
 tflite_error_callback(void* user_data_ptr, const char* format, va_list args);
 
-static auto copy_tflite_interpreter_options(
-	const std::unique_ptr<
-		TfLiteInterpreterOptions,
-		decltype(&TfLiteInterpreterOptionsDelete)>& src
-) {
-	return std::unique_ptr<
-		TfLiteInterpreterOptions, decltype(&TfLiteInterpreterOptionsDelete)>{
-		TfLiteInterpreterOptionsCopy(src.get()), TfLiteInterpreterOptionsDelete
-	};
-}
-
 tl::expected<std::unique_ptr<TfLiteRuntime>, ErrorMsg> TfLiteRuntime::create(
 	std::span<const int8_t> model_data,
 	std::string_view delegate_serialization_dir,
@@ -48,38 +37,27 @@ tl::expected<std::unique_ptr<TfLiteRuntime>, ErrorMsg> TfLiteRuntime::create(
 
 	std::unique_ptr<
 		TfLiteInterpreterOptions, decltype(&TfLiteInterpreterOptionsDelete)>
-		interpreter_options_without_any_delegate = {
+		interpreter_options_without_gpu_delegate = {
 			TfLiteInterpreterOptionsCreate(), TfLiteInterpreterOptionsDelete
 		};
 	TfLiteInterpreterOptionsSetErrorReporter(
-		interpreter_options_without_any_delegate.get(), tflite_error_callback,
+		interpreter_options_without_gpu_delegate.get(), tflite_error_callback,
 		&runtime->reporter_user_data
 	);
 	TfLiteInterpreterOptionsSetNumThreads(
-		interpreter_options_without_any_delegate.get(), 4
-	);
-
-	auto interpreter_options_with_gpu_delegate =
-		copy_tflite_interpreter_options(
-			interpreter_options_without_any_delegate
-		);
-	runtime->gpu_delegate =
-		create_gpu_delegate(delegate_serialization_dir, model_token);
-	TfLiteInterpreterOptionsAddDelegate(
-		interpreter_options_with_gpu_delegate.get(), runtime->gpu_delegate.get()
+		interpreter_options_without_gpu_delegate.get(), 4
 	);
 
 	std::unique_ptr<
 		TfLiteInterpreterOptions, decltype(&TfLiteInterpreterOptionsDelete)>
-		interpreter_options_with_gpu_and_npu_delegate{
-			nullptr, TfLiteInterpreterOptionsDelete
+		interpreter_options_with_gpu_and_npu_delegate = {
+			TfLiteInterpreterOptionsCopy(
+				interpreter_options_without_gpu_delegate.get()
+			),
+			TfLiteInterpreterOptionsDelete
 		};
 
 	if (enable_npu) {
-		interpreter_options_with_gpu_and_npu_delegate =
-			copy_tflite_interpreter_options(
-				interpreter_options_with_gpu_delegate
-			);
 		runtime->npu_delegate = create_qnn_npu_delegate(
 			delegate_serialization_dir, model_token, npu_config,
 			skel_library_dir
@@ -95,45 +73,45 @@ tl::expected<std::unique_ptr<TfLiteRuntime>, ErrorMsg> TfLiteRuntime::create(
 		}
 	}
 
-	auto try_create = [&](TfLiteInterpreterOptions* opts) -> bool {
-		runtime->interpreter = {
-			TfLiteInterpreterCreate(runtime->model.get(), opts),
-			TfLiteInterpreterDelete
-		};
-		return runtime->interpreter != nullptr;
+	runtime->gpu_delegate =
+		create_gpu_delegate(delegate_serialization_dir, model_token);
+	TfLiteInterpreterOptionsAddDelegate(
+		interpreter_options_with_gpu_and_npu_delegate.get(),
+		runtime->gpu_delegate.get()
+	);
+
+	// first try to create interpreter with gpu delegate
+	runtime->interpreter = {
+		TfLiteInterpreterCreate(
+			runtime->model.get(),
+			interpreter_options_with_gpu_and_npu_delegate.get()
+		),
+		TfLiteInterpreterDelete
 	};
 
-	// first try to create interpreter with gpu and npu delegate
-	if (runtime->npu_delegate &&
-		try_create(interpreter_options_with_gpu_and_npu_delegate.get())) {
+	if (runtime->interpreter == nullptr) {
+		// trying to create interpreter again, just without gpu delegate
+		log_warning_callback(
+			"GPU or NPU Delegate is not supported, falling back to CPU only "
+			"mode"
+		);
+		runtime->interpreter = {
+			TfLiteInterpreterCreate(
+				runtime->model.get(),
+				interpreter_options_without_gpu_delegate.get()
+			),
+			TfLiteInterpreterDelete
+		};
+		if (runtime->interpreter == nullptr) {
+			return tl::unexpected("failed to create tflite interpreter");
+		}
+		runtime->interpreter_options =
+			std::move(interpreter_options_without_gpu_delegate);
+		runtime->gpu_delegate.reset();
+		runtime->npu_delegate.reset();
+	} else {
 		runtime->interpreter_options =
 			std::move(interpreter_options_with_gpu_and_npu_delegate);
-	} else {
-		// trying to create interpreter again, just with gpu delegate
-		if (runtime->npu_delegate) {
-			log_warning_callback(
-				"NPU Delegate is not supported, trying just the GPU Delegate"
-			);
-		}
-
-		if (runtime->gpu_delegate &&
-			try_create(interpreter_options_with_gpu_delegate.get())) {
-			runtime->interpreter_options =
-				std::move(interpreter_options_with_gpu_delegate);
-		} else {
-			// trying to create interpreter once again, without any delegate
-			log_warning_callback(
-				"GPU Delegate not supported, trying without any delegates"
-			);
-			if (!try_create(interpreter_options_without_any_delegate.get()))
-				return tl::unexpected("failed to create tflite interpreter");
-
-			runtime->interpreter_options =
-				std::move(interpreter_options_without_any_delegate);
-			runtime->gpu_delegate.reset();
-		}
-
-		runtime->npu_delegate.reset();
 	}
 
 	const TfLiteStatus allocate_tensors_status =
