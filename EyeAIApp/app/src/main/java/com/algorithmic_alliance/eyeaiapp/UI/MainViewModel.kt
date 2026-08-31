@@ -279,7 +279,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     ::onPartialSpeechRecognitionResult,
                     ::onFinalSpeechRecognitionResult,
                     ::onSpeechRecognitionLoaded,
-                    {status -> _uiState.update {it.copy(voskListening = status)  }}
+                    { status ->
+                        _uiState.update { it.copy(voskListening = status) }
+                        voskUserStart.set(status)
+                    }
                 )
         }
     }
