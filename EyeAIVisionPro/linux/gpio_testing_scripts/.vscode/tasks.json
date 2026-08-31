@@ -1,0 +1,43 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "1. rsync Sync",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "sync.sh"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "2. Run Script via SSH",
+            "type": "shell",
+            "command": "ssh eyeai@192.168.4.1 \"python3 -u ~/gpio_testing_scripts/${fileBasename}\"",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Sync & Run",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "1. rsync Sync",
+                "2. Run Script via SSH"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}

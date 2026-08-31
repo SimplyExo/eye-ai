@@ -1,0 +1,101 @@
+#!/bin/sh
+
+sudo apt update
+sudo apt install dnsmasq hostapd dhcpcd
+
+sudo systemctl stop hostapd
+sudo systemctl stop dnsmasq
+
+sudo systemctl disable hostapd
+sudo systemctl disable dnsmasq
+
+sudo raspi-config
+
+Localisation Options
+ └── WLAN Country
+      └── DE Germany
+
+sudo nano /etc/NetworkManager/NetworkManager.conf
+
+[keyfile]
+unmanaged-devices=interface-name:wlan0
+
+sudo systemctl restart NetworkManager
+
+sudo nano /etc/systemd/network/20-wlan0.network
+[Match]
+Name=wlan0
+
+[Network]
+Address=192.168.4.1/24
+
+sudo systemctl enable systemd-networkd
+sudo systemctl restart systemd-networkd
+
+sudo nano /etc/hostapd/hostapd.conf
+interface=wlan0
+driver=nl80211
+
+ssid=EyeAIVisionPro
+
+country_code=DE
+
+hw_mode=g
+channel=6
+
+ieee80211n=1
+wmm_enabled=1
+
+auth_algs=1
+
+wpa=2
+wpa_passphrase=12345678
+
+wpa_key_mgmt=WPA-PSK
+rsn_pairwise=CCMP
+
+ignore_broadcast_ssid=0
+
+sudo nano /etc/default/hostapd
+DAEMON_CONF="/etc/hostapd/hostapd.conf"
+
+sudo nano /etc/dnsmasq.conf
+interface=wlan0
+bind-interfaces
+
+dhcp-range=192.168.4.10,192.168.4.200,255.255.255.0,12h
+
+domain-needed
+bogus-priv
+
+server=1.1.1.1
+server=8.8.8.8
+
+sudo ip addr add 192.168.4.1/24 dev wlan0
+
+sudo systemctl restart dnsmasq
+
+# Test
+sudo hostapd -dd /etc/hostapd/hostapd.conf
+
+sudo systemctl enable hostapd
+sudo systemctl enable dnsmasq
+
+sudo systemctl start hostapd
+sudo systemctl start dnsmasq
+
+# Internet über LAN teilen
+sudo sysctl -w net.ipv4.ip_forward=1
+
+sudo nano /etc/sysctl.conf	# permanent
+net.ipv4.ip_forward=1
+
+sudo systemctl edit systemd-sysctl
+[Service]
+ExecStartPost=/usr/sbin/sysctl -w net.ipv4.ip_forward=1
+
+sudo apt install iptables
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+sudo apt install iptables-persistent
+sudo netfilter-persistent save
