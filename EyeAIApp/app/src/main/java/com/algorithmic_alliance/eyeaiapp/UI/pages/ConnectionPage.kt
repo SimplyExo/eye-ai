@@ -196,30 +196,35 @@ fun ChooseConnectionPage(
     Log.d(LOG_TAG, "[ConnectionPage] Choosing connection for $deviceCategory")
 
     LaunchedEffect(deviceType) {
+        //If opened from the settings, the auto-connection is not needed, but in case of the
+        //eye-ai-vision a wifi scan is started for the user
         if (uiState.connectionTutorialCompleted) {
             Log.d(
                 LOG_TAG,
                 "[ConnectionPage:LaunchedEffect] ConnectionTutorial completed, not automatic connection: Exiting LaunchedEffect"
             )
-            wifiScanState.rescan()
+            if(deviceType == "eye-ai-vision")
+                wifiScanState.rescan()
             pageLoading = false
             return@LaunchedEffect
         }
 
         //If the user does want to automatically connect, exit
+        //in case of the eye-ai-vision a wifi scan is started for the user
         if (devicesData["remember"] == false) {
             Log.d(
                 LOG_TAG,
                 "[ConnectionPage:LaunchedEffect] User does not want automatic connection: Exiting LaunchedEffect"
             )
             pageLoading = false
-            wifiScanState.rescan()
+            if(deviceType == "eye-ai-vision")
+                wifiScanState.rescan()
             return@LaunchedEffect
         }
-        //----------[WIFI-Scan logic]----------
-        var scanNetworks: List<String>? = null
+
         // WIFI-Scan only necessary for eye-ai-vision, but not if user automatically connects to
         // phone camera
+        var scanNetworks: List<String>? = null
         if (deviceType == "eye-ai-vision" && devicesData["selected"] != "Handykamera verwenden") {
             Log.d(LOG_TAG, "[ConnectionPage:LaunchedEffect] WIFI-Scan necessary, starting")
             val locationManager =
@@ -241,11 +246,6 @@ fun ChooseConnectionPage(
             "audio" -> audioDevices
             else -> emptyList()
         }
-
-        //----------[Remember Connection logic]----------
-
-        //This applies if the user opens this page from the settings, to change his remembered
-        //devices. In this case no automatic connection is wanted
 
         //If the device the user wants to automatically connect to is not available, exit
         //Because phone camera is handled outside the devices list, it needs extra checking
@@ -273,7 +273,6 @@ fun ChooseConnectionPage(
                     LOG_TAG,
                     "[ConnectionPage:LaunchedEffect] Connection to remembered device successful"
                 )
-                pageLoading = false
                 onConnectionSuccessful()
             } else {
                 pageLoading = false
