@@ -8,6 +8,8 @@ import android.util.Log
 import androidx.core.content.edit
 import androidx.annotation.RequiresApi
 import androidx.camera.core.impl.utils.ContextUtil.getApplication
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
@@ -16,8 +18,6 @@ import com.algorithmic_alliance.eyeaiapp.Settings
 import kotlin.collections.listOf
 
 object UIDataSource {
-
-
     const val INFORMATION_NOT_FOUND =
         "Die Information konnte nicht geladen werden. Wir bitten um Entschuldigung."
 
@@ -338,4 +338,21 @@ object UIDataSource {
 
     )
 
+}
+
+object Spacing {
+    val xs = 4.dp
+    val sm = 8.dp
+    val md = 16.dp
+    val lg = 24.dp
+    val xl = 32.dp
+    val xxl = 48.dp
+    val xxxl = 64.dp
+    val xxxxl = 128.dp
+}
+
+object Shapes{
+    val small = RoundedCornerShape(8.dp)
+    val medium = RoundedCornerShape(16.dp)
+    val large = RoundedCornerShape(28.dp)
 }

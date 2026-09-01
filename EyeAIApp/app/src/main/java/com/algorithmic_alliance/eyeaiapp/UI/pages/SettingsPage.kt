@@ -54,13 +54,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.hasPermission
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import kotlin.math.roundToInt
 
@@ -96,7 +96,7 @@ fun SettingsPage(
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(
-            modifier = Modifier.shadow(elevation = 8.dp),
+            modifier = Modifier.shadow(elevation = Spacing.sm),
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -121,7 +121,7 @@ fun SettingsPage(
             modifier = Modifier.padding(innerPadding),
         ) {
             key(uiState.reloadSettingsPageKey) {
-                LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
+                LazyColumn(modifier = modifier.padding(vertical = Spacing.xs)) {
                     items(
                         items = settingsData.entries.toList(),
                         key = { entry -> entry.key }) { entry ->
@@ -137,12 +137,12 @@ fun SettingsPage(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp)
+                                .padding(Spacing.sm)
                         ) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
+                                    .padding(Spacing.md)
                                     .clickable {
                                         if (!debugPageActivated) {
                                             onOpenDebugPage()
@@ -185,9 +185,9 @@ fun SettingsCategoryCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(Spacing.sm)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(Spacing.md)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(
                     category, fontSize = 22.sp, fontWeight = FontWeight.Bold
@@ -242,8 +242,8 @@ fun ClickSetting(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -298,8 +298,8 @@ fun CheckBoxSetting(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -350,8 +350,8 @@ fun SelectSetting(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -414,14 +414,14 @@ fun SliderSetting(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md)
             ) {
                 Text(
                     settingData.getValue("title") as String,
@@ -461,8 +461,8 @@ fun TextInputSetting(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -542,7 +542,7 @@ fun TextFieldDialog(
 @Composable
 fun InfoSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
 
-    Row(modifier = Modifier.padding(8.dp)) {
+    Row(modifier = Modifier.padding(Spacing.md)) {
         Column {
             Text(
                 settingData.getValue("title") as String,
@@ -592,8 +592,8 @@ fun FileSetting(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {

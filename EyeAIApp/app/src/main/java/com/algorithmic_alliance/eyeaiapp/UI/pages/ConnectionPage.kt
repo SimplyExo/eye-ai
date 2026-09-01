@@ -68,6 +68,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
 import com.algorithmic_alliance.eyeaiapp.UI.rememberAudioDeviceState
 import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import kotlinx.coroutines.flow.first
 import kotlin.collections.emptyList
@@ -295,7 +296,7 @@ fun ChooseConnectionPage(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(Spacing.md),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -308,7 +309,7 @@ fun ChooseConnectionPage(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
+                                .padding(Spacing.md),
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
@@ -323,12 +324,12 @@ fun ChooseConnectionPage(
                         }
                         HorizontalDivider(
                             modifier = Modifier
-                                .padding(8.dp)
+                                .padding(Spacing.sm)
                                 .clearAndSetSemantics {})
                         if (devices.isNotEmpty()) {
                             LazyColumn(
                                 modifier = Modifier
-                                    .padding(8.dp)
+                                    .padding(Spacing.sm)
                                     .fillMaxWidth()
                             ) {
                                 items(items = devices) { item ->
@@ -357,12 +358,12 @@ fun ChooseConnectionPage(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 8.dp)
+                                    .padding(start = Spacing.md, top = Spacing.sm, bottom = Spacing.sm, end = Spacing.sm)
                             ) {
                                 if (scanningForDevices)
                                     ShimmerBox(
                                         shimmerBrush, Modifier
-                                            .height(16.dp)
+                                            .height(Spacing.md)
                                             .fillMaxWidth(0.6f)
                                     )
                                 else
@@ -378,15 +379,15 @@ fun ChooseConnectionPage(
                         }
                         HorizontalDivider(
                             modifier = Modifier.padding(
-                                top = 8.dp,
-                                start = 8.dp,
-                                end = 8.dp
+                                top = Spacing.sm,
+                                start = Spacing.sm,
+                                end = Spacing.sm
                             )
                         )
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 8.dp, end = 32.dp, top = 4.dp, bottom = 4.dp),
+                                .padding(start = Spacing.sm, end = Spacing.xl, top = Spacing.xs, bottom = Spacing.xs),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
@@ -427,16 +428,16 @@ fun ChooseConnectionPage(
                         }
                         HorizontalDivider(
                             modifier = Modifier.padding(
-                                bottom = 8.dp,
-                                start = 8.dp,
-                                end = 8.dp
+                                bottom = Spacing.sm,
+                                start = Spacing.sm,
+                                end = Spacing.sm
                             )
                         )
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                .padding(Spacing.md),
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                         ) {
                             Button(
                                 modifier = Modifier.weight(1f),
@@ -557,7 +558,7 @@ fun LoadingPage() {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(Spacing.md),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -567,94 +568,94 @@ fun LoadingPage() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(Spacing.md),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     ShimmerBox(
                         shimmerBrush, Modifier
                             .fillMaxWidth(0.7f)
-                            .height(60.dp)
+                            .height(Spacing.xxxl)
                     )
                 }
                 HorizontalDivider(
                     modifier = Modifier
-                        .padding(8.dp)
+                        .padding(Spacing.sm)
                         .clearAndSetSemantics {})
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 8.dp)
+                        .padding(start = Spacing.sm, top = Spacing.sm, bottom = Spacing.sm, end = Spacing.sm)
                 ) {
                     ShimmerBox(
                         shimmerBrush, Modifier
                             .fillMaxWidth(0.6f)
-                            .height(16.dp)
+                            .height(Spacing.md)
                     )
                 }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 8.dp)
+                        .padding(start = Spacing.sm, top = Spacing.sm, bottom = Spacing.sm, end = Spacing.sm)
                 ) {
                     ShimmerBox(
                         shimmerBrush, Modifier
                             .fillMaxWidth(0.6f)
-                            .height(16.dp)
+                            .height(Spacing.md)
                     )
                 }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 8.dp)
+                        .padding(start = Spacing.sm, top = Spacing.sm, bottom = Spacing.sm, end = Spacing.sm)
                 ) {
                     ShimmerBox(
                         shimmerBrush, Modifier
                             .fillMaxWidth(0.6f)
-                            .height(16.dp)
+                            .height(Spacing.md)
                     )
                 }
                 HorizontalDivider(
                     modifier = Modifier.padding(
-                        top = 8.dp,
-                        start = 8.dp,
-                        end = 8.dp
+                        top = Spacing.sm,
+                        start = Spacing.sm,
+                        end = Spacing.sm
                     )
                 )
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 16.dp, end = 32.dp, top = 16.dp, bottom = 16.dp),
+                        .padding(start = Spacing.md, end = Spacing.xl, top = Spacing.md, bottom = Spacing.md),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     ShimmerBox(
                         shimmerBrush, Modifier
                             .fillMaxWidth(0.7f)
-                            .height(30.dp)
+                            .height(Spacing.xl)
                     )
                 }
                 HorizontalDivider(
                     modifier = Modifier.padding(
-                        bottom = 8.dp,
-                        start = 8.dp,
-                        end = 8.dp
+                        bottom =Spacing.sm,
+                        start = Spacing.sm,
+                        end = Spacing.sm
                     )
                 )
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        .padding(Spacing.md),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                 ) {
                     ShimmerBox(
                         shimmerBrush, Modifier
                             .weight(1f)
-                            .height(40.dp)
+                            .height(Spacing.xxl)
                     )
                     ShimmerBox(
                         shimmerBrush, Modifier
                             .weight(1f)
-                            .height(40.dp)
+                            .height(Spacing.xxl)
                     )
                 }
             }

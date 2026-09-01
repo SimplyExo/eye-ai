@@ -7,11 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Card
@@ -39,7 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -51,6 +53,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,12 +96,12 @@ fun HomePage(
     }
 
 
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+    Scaffold(modifier = Modifier.fillMaxSize(), contentWindowInsets = WindowInsets.safeDrawing, topBar = {
         TopAppBar(
             title = {
                 Text("EyeAI App")
             },
-            modifier = Modifier.shadow(elevation = 8.dp),
+            modifier = Modifier.shadow(elevation = Spacing.sm),
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -107,7 +110,7 @@ fun HomePage(
     }, floatingActionButton = {
         Row(
             modifier = Modifier
-                .padding(8.dp)
+                .padding(Spacing.sm)
                 .fillMaxWidth(0.35f),
             horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
         ) {
@@ -145,7 +148,6 @@ fun HomePage(
             }
             item { ObjectStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush) }
             item { VisionStatusCard(viewModel = viewModel) }
-
         }
     })
 
@@ -158,13 +160,13 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     Card(
         modifier = Modifier
-            .padding(8.dp)
+            .padding(Spacing.sm)
             .aspectRatio(4f / 3f)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp),
+                .padding(Spacing.sm),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("Objekterkennung", fontSize = 18.sp, textAlign = TextAlign.Center)
@@ -176,7 +178,7 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
                 ) {
                     Text(text = "Objekterkennung deaktiviert", textAlign = TextAlign.Center)
                 } else if (getObjectFPS(uiState.performanceText) == -1) {
-                    ShimmerBox(shimmerBrush, Modifier.fillMaxWidth(0.75f).height(30.dp))
+                    ShimmerBox(shimmerBrush, Modifier.fillMaxWidth(0.75f).height(Spacing.xl))
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Aktiv", textAlign = TextAlign.Center)
@@ -199,11 +201,11 @@ fun VisionStatusCard(viewModel: MainViewModel) {
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     Card(
         modifier = Modifier
-            .padding(8.dp)
+            .padding(Spacing.sm)
             .aspectRatio(4f / 3f)
     ) {
         Column(
-            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(Spacing.sm), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("EyeAI-Vision", fontSize = 18.sp, textAlign = TextAlign.Center)
             HorizontalDivider()
@@ -237,17 +239,17 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     Card(
         modifier = Modifier
-            .padding(8.dp)
+            .padding(Spacing.sm)
             .aspectRatio(4f / 3f)
     ) {
         Column(
-            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(Spacing.sm), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("Distanzmessung", fontSize = 18.sp, textAlign = TextAlign.Center)
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (getDepthFPS(uiState.performanceText) == -1) {
-                    ShimmerBox(shimmerBrush, Modifier.fillMaxWidth(0.75f).height(30.dp))
+                    ShimmerBox(shimmerBrush, Modifier.fillMaxWidth(0.75f).height(Spacing.xl))
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Aktiv", textAlign = TextAlign.Center)
@@ -268,17 +270,17 @@ fun VoskStatusCard(viewModel: MainViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Card(
         modifier = Modifier
-            .padding(8.dp)
+            .padding(Spacing.sm)
             .aspectRatio(4f / 3f)
     ) {
         Column(
-            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(Spacing.sm), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("Spracherkennung", fontSize = 18.sp, textAlign = TextAlign.Center)
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (uiState.llmResponseText.isEmpty()) Text(
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(Spacing.sm),
                     text = uiState.speechRecognitionFinalResultText,
                     textAlign = TextAlign.Center
                 )

@@ -51,6 +51,7 @@ import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.checkPermissionsStatus
 import com.algorithmic_alliance.eyeaiapp.UI.onPermissionDecline
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -139,23 +140,23 @@ fun AskForPermission(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(Spacing.md),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(Spacing.md)) {
             Row(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(Spacing.md)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
                 Icon(
                     modifier = Modifier
-                        .height(150.dp)
-                        .width(150.dp),
+                        .height(Spacing.xxxxl)
+                        .width(Spacing.xxxxl),
                     painter = painterResource(permissionIcon as Int),
                     contentDescription = iconDescription as String,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
@@ -163,15 +164,15 @@ fun AskForPermission(
             }
             Text(
                 permissionExplanation as String,
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(Spacing.md),
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 20.sp
             )
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    .padding(top = Spacing.md),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
             ) {
                 Button(
                     modifier = Modifier

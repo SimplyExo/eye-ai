@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.Image
@@ -40,13 +39,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
@@ -73,6 +73,8 @@ import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
+import com.algorithmic_alliance.eyeaiapp.data.Shapes
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.ocr.TextBoundingBox
 import uniffi.NativeLib.UniffiDetectedObject
 
@@ -109,14 +111,14 @@ fun DebugPage(
         onEvent(UIEvent.UpdateLlmStatusText)
     }
     key(uiState.reloadDebugPageKey) {
-        Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+        Scaffold(modifier = Modifier.fillMaxSize(), contentWindowInsets = WindowInsets.safeDrawing,topBar = {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Debug")
                     }
                 },
-                modifier = Modifier.shadow(elevation = 8.dp),
+                modifier = Modifier.shadow(elevation = Spacing.sm),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -125,7 +127,7 @@ fun DebugPage(
         }, floatingActionButton = {
             Row(
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(Spacing.sm)
                     .fillMaxWidth(0.35f),
                 horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
             ) {
@@ -166,7 +168,7 @@ fun DebugPage(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                        .padding(top = 8.dp, bottom = 8.dp, start = 4.dp, end = 4.dp),
+                        .padding(top = Spacing.sm, bottom = Spacing.sm, start = Spacing.xs, end = Spacing.xs),
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         if (sharedPreferences.getString(
@@ -188,7 +190,7 @@ fun DebugPage(
                             ) Column(
                                 modifier = Modifier
                                     .fillMaxHeight()
-                                    .padding(8.dp),
+                                    .padding(Spacing.sm),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -207,14 +209,14 @@ fun DebugPage(
                         ObjectDetectionOverlay(
                             modifier = Modifier
                                 .matchParentSize()
-                                .padding(8.dp),
+                                .padding(Spacing.sm),
                             uiState.detectedObjects,
                             cameraResolution = uiState.cameraResolution
                         )
                         OCROverlay(
                             modifier = Modifier
                                 .matchParentSize()
-                                .padding(8.dp),
+                                .padding(Spacing.sm),
                             results = uiState.ocrResults,
                             cameraResolution = uiState.cameraResolution
                         )
@@ -224,10 +226,10 @@ fun DebugPage(
                         ) {
                             Card(
                                 modifier = Modifier
-                                    .padding(bottom = 16.dp)
+                                    .padding(bottom = Spacing.md)
                                     .align(Alignment.BottomCenter)
                                     .fillMaxWidth(0.75f)
-                                    .heightIn(min = 50.dp, max = 150.dp),
+                                    .heightIn(min = Spacing.xxl, max = Spacing.xxxxl),
                                 colors = CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
                                         alpha = 0.75f
@@ -236,7 +238,7 @@ fun DebugPage(
                             ) {
                                 LazyColumn(
                                     modifier = Modifier
-                                        .padding(8.dp)
+                                        .padding(Spacing.sm)
                                         .fillMaxWidth(),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
@@ -255,7 +257,7 @@ fun DebugPage(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp, start = 4.dp, end = 4.dp)
+                        .padding(bottom = Spacing.sm, start = Spacing.xs, end = Spacing.xs)
                 ) {
                     Box(Modifier.fillMaxSize()) {
                         if (sharedPreferences.getString(
@@ -268,7 +270,7 @@ fun DebugPage(
                             Column(
                                 modifier = Modifier
                                     .fillMaxHeight()
-                                    .padding(8.dp),
+                                    .padding(Spacing.sm),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -335,8 +337,8 @@ fun DebugInputPreview(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(8.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .padding(Spacing.sm)
+            .clip(Shapes.small)
             .background(Color.Black),
         contentAlignment = Alignment.Center,
 
@@ -347,7 +349,7 @@ fun DebugInputPreview(
                     bitmap = it.asImageBitmap(),
                     contentDescription = "Depth preview",
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp)),
+                        .clip(Shapes.small),
                     contentScale = ContentScale.Fit
 
                 )
@@ -372,8 +374,8 @@ fun MediaPreview(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(8.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .padding(Spacing.sm)
+            .clip(Shapes.small)
             .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
@@ -382,7 +384,7 @@ fun MediaPreview(
                 bitmap = it.asImageBitmap(),
                 contentDescription = "Media preview",
                 modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp)),
+                    .clip(Shapes.small),
                 contentScale = ContentScale.Fit
             )
         }
@@ -396,8 +398,8 @@ fun DepthPreview(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(8.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .padding(Spacing.sm)
+            .clip(Shapes.small)
             .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
@@ -409,10 +411,10 @@ fun DepthPreview(
                     contentDescription = "Depth preview",
                     modifier = Modifier
                         .aspectRatio(1f / 1f)
-                        .clip(RoundedCornerShape(8.dp)),
+                        .clip(Shapes.small),
                     contentScale = ContentScale.Fit
                 )
-                    LazyColumn(modifier = Modifier.align(Alignment.TopStart).padding(start = 4.dp, top = 4.dp)) {
+                    LazyColumn(modifier = Modifier.align(Alignment.TopStart).padding(start = Spacing.xs, top = Spacing.xs)) {
                         item { Text(text = performanceText, fontSize = 8.sp) }
                     }
             }}
@@ -429,8 +431,8 @@ fun CameraPreview(onEvent: (UIEvent) -> Unit) {
 
     AndroidView(
         modifier = Modifier
-            .padding(8.dp)
-            .clip(RoundedCornerShape(8.dp)),
+            .padding(Spacing.sm)
+            .clip(Shapes.small),
         factory = { context ->
             PreviewView(context).apply { scaleType = PreviewView.ScaleType.FIT_CENTER }.also {
                 onEvent(
