@@ -33,6 +33,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -40,6 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -49,6 +51,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,6 +69,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.rememberAudioDeviceState
 import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
+import kotlinx.coroutines.flow.first
 import kotlin.collections.emptyList
 
 
@@ -158,6 +162,11 @@ fun ChooseConnectionPage(
     viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit
 ) {
+    DisposableEffect(Unit) {
+        onDispose {
+            Log.d(LOG_TAG, "Disposing ChooseConnectionPage")
+        }
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -170,29 +179,53 @@ fun ChooseConnectionPage(
     val shouldRememberKey = stringResource(devicesData["rememberKey"] as Int)
     val selectedDeviceKey = stringResource(devicesData["selectedKey"] as Int)
     val deviceCategory = devicesData["name"] ?: UIDataSource.INFORMATION_NOT_FOUND
-    val wifiScanState = rememberWifiScanState(context, autoScanOnStart = false, setScannState = { bool -> scanningForDevices = bool})
+    val wifiScanState = rememberWifiScanState(
+        context,
+        autoScanOnStart = false,
+        setScannState = { bool -> scanningForDevices = bool })
     val (audioDevices, refreshAudioDevices) = rememberAudioDeviceState(context)
     val devices: List<String> = when (devicesData["type"]) {
         "audio" -> audioDevices
         "eye-ai-vision" -> wifiScanState.networks
         else -> emptyList()
     }
-
+    val deviceType = devicesData["type"] as String
     val shimmerBrush = rememberShimmerBrush()
+    var pageLoading by rememberSaveable { mutableStateOf(true) }
 
     Log.d(LOG_TAG, "[ConnectionPage] Choosing connection for $deviceCategory")
 
-    LaunchedEffect(devicesData["type"]) {
-        Log.d(LOG_TAG, "${devicesData["type"]} ${devicesData["remember"]} ${devicesData["selected"]}")
-        if(devicesData["type"] != "eye-ai-vision")
+    LaunchedEffect(deviceType) {
+        if (uiState.connectionTutorialCompleted) {
+            Log.d(
+                LOG_TAG,
+                "[ConnectionPage:LaunchedEffect] ConnectionTutorial completed, not automatic connection: Exiting LaunchedEffect"
+            )
+            wifiScanState.rescan()
+            pageLoading = false
             return@LaunchedEffect
-        if(devicesData["remember"] == true && devicesData["selected"] != "Handykamera verwenden")
+        }
+
+        //If the user does want to automatically connect, exit
+        if (devicesData["remember"] == false) {
+            Log.d(
+                LOG_TAG,
+                "[ConnectionPage:LaunchedEffect] User does not want automatic connection: Exiting LaunchedEffect"
+            )
+            pageLoading = false
+            wifiScanState.rescan()
             return@LaunchedEffect
-        if (devicesData["type"] == "eye-ai-vision") {
+        }
+        //----------[WIFI-Scan logic]----------
+        var scanNetworks: List<String>? = null
+        // WIFI-Scan only necessary for eye-ai-vision, but not if user automatically connects to
+        // phone camera
+        if (deviceType == "eye-ai-vision" && devicesData["selected"] != "Handykamera verwenden") {
+            Log.d(LOG_TAG, "[ConnectionPage:LaunchedEffect] WIFI-Scan necessary, starting")
             val locationManager =
                 context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             if (locationManager.isLocationEnabled)
-                wifiScanState.rescan()
+                scanNetworks = wifiScanState.awaitScan()
             else {
                 Log.d(
                     LOG_TAG,
@@ -200,35 +233,59 @@ fun ChooseConnectionPage(
                 )
                 showLocationDisabledDialog = true
             }
-
+        } else {
+            Log.d(LOG_TAG, "[ConnectionPage:LaunchedEffect] WIFI-Scan not necessary, not starting")
         }
-    }
-    if (!uiState.connectionTutorialCompleted) {
-        LaunchedEffect(devicesData) {
-            if (devicesData["remember"] == true && (devices.contains(devicesData["selected"]) || devicesData["selected"] == "Handykamera verwenden")) {
+        val availableDevices = when (deviceType) {
+            "eye-ai-vision" -> scanNetworks ?: emptyList()
+            "audio" -> audioDevices
+            else -> emptyList()
+        }
+
+        //----------[Remember Connection logic]----------
+
+        //This applies if the user opens this page from the settings, to change his remembered
+        //devices. In this case no automatic connection is wanted
+
+        //If the device the user wants to automatically connect to is not available, exit
+        //Because phone camera is handled outside the devices list, it needs extra checking
+        if (!availableDevices.contains(devicesData["selected"]) && devicesData["selected"] != "Handykamera verwenden") {
+            Log.d(
+                LOG_TAG,
+                "[ConnectionPage:LaunchedEffect] Device for automatic connection not available: Exiting LaunchedEffect"
+            )
+            pageLoading = false
+            return@LaunchedEffect
+        }
+        Log.d(
+            LOG_TAG,
+            "[ConnectionPage:LaunchedEffect] Attempting to connect to remembered ${devicesData["type"]} device"
+        )
+        connectToDevice(
+            context,
+            devicesData["type"] as String,
+            devicesData["selected"] as String,
+            onEvent = onEvent
+        )
+        { success ->
+            if (success) {
                 Log.d(
                     LOG_TAG,
-                    "[ConnectionPage] Attempting to connect to remembered ${devicesData["type"]} device"
+                    "[ConnectionPage:LaunchedEffect] Connection to remembered device successful"
                 )
-                connectToDevice(
-                    context,
-                    devicesData["type"] as String,
-                    devicesData["selected"] as String,
-                    onEvent = onEvent
+                pageLoading = false
+                onConnectionSuccessful()
+            } else {
+                pageLoading = false
+                Log.d(
+                    LOG_TAG,
+                    "[ConnectionPage:LaunchedEffect] Connection to remembered device not successful"
                 )
-                { success ->
-                    if (success) {
-                        Log.d(
-                            LOG_TAG,
-                            "[ConnectionPage] Connection to remembered device successful"
-                        )
-                        onConnectionSuccessful()
-                    }
-
-                }
             }
         }
+
     }
+
 
     Surface(
         modifier = Modifier
@@ -245,178 +302,195 @@ fun ChooseConnectionPage(
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             ) {
-                Column {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            "$deviceCategory auswählen",
-                            modifier = Modifier.clearAndSetSemantics {
-                                contentDescription = "$deviceCategory auswählen"
-                            },
-                            fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clearAndSetSemantics {})
-                    if (devices.isNotEmpty()) {
-                        LazyColumn(
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .fillMaxWidth()
-                        ) {
-                            items(items = devices) { item ->
-                                val index = devices.indexOf(item)
-                                DeviceListEntry(
-                                    item as String,
-                                    onSelected = {
-                                        selectedDevice = item
-                                    },
-                                    isSelected = item == selectedDevice
-                                )
-                            }
-                            if (devicesData["type"] == "eye-ai-vision") {
-                                item {
-                                    DeviceListEntry(
-                                        "Handykamera verwenden",
-                                        onSelected = { selectedDevice = "Handykamera verwenden" },
-                                        isSelected = "Handykamera verwenden" == selectedDevice
-                                    )
-                                }
-                            }
-                        }
-                    } else {
+                if (pageLoading) {
+                    LoadingPage()
+                } else {
+                    Column {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 8.dp)
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            if(scanningForDevices)
-                                ShimmerBox(shimmerBrush, Modifier.height(16.dp).fillMaxWidth(0.6f))
-                            else
-                                Text("Keine verfügbaren Geräte gefunden.")
+                            Text(
+                                "$deviceCategory auswählen",
+                                modifier = Modifier.clearAndSetSemantics {
+                                    contentDescription = "$deviceCategory auswählen"
+                                },
+                                fontSize = 30.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
                         }
-                        DeviceListEntry(
-                            "Handykamera verwenden",
-                            onSelected = { selectedDevice = "Handykamera verwenden" },
-                            isSelected = "Handykamera verwenden" == selectedDevice
-                        )
-
-
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(
-                            top = 8.dp,
-                            start = 8.dp,
-                            end = 8.dp
-                        )
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 8.dp, end = 32.dp, top = 4.dp, bottom = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = shouldRememberDevice,
-                                onCheckedChange = { shouldRememberDevice = !shouldRememberDevice })
-                            Text("Als Standardgerät festlegen")
-                        }
-                        Box(modifier = Modifier.clickable {
-                            when (devicesData["type"]) {
-                                "audio" -> {
-                                    refreshAudioDevices()
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .clearAndSetSemantics {})
+                        if (devices.isNotEmpty()) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .fillMaxWidth()
+                            ) {
+                                items(items = devices) { item ->
+                                    val index = devices.indexOf(item)
+                                    DeviceListEntry(
+                                        item as String,
+                                        onSelected = {
+                                            selectedDevice = item
+                                        },
+                                        isSelected = item == selectedDevice
+                                    )
                                 }
-
-                                "eye-ai-vision" -> {
-                                    val locationManager =
-                                        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                                    if (locationManager.isLocationEnabled)
-                                        wifiScanState.rescan()
-                                    else {
-                                        Log.d(
-                                            LOG_TAG,
-                                            "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
+                                if (devicesData["type"] == "eye-ai-vision") {
+                                    item {
+                                        DeviceListEntry(
+                                            "Handykamera verwenden",
+                                            onSelected = {
+                                                selectedDevice = "Handykamera verwenden"
+                                            },
+                                            isSelected = "Handykamera verwenden" == selectedDevice
                                         )
-                                        showLocationDisabledDialog = true
                                     }
                                 }
                             }
-                        }) {
-                            Icon(
-                                painter = painterResource(R.drawable.refresh_24px),
-                                contentDescription = ""
+                        } else {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 8.dp)
+                            ) {
+                                if (scanningForDevices)
+                                    ShimmerBox(
+                                        shimmerBrush, Modifier
+                                            .height(16.dp)
+                                            .fillMaxWidth(0.6f)
+                                    )
+                                else
+                                    Text("Keine verfügbaren Geräte gefunden.")
+                            }
+                            DeviceListEntry(
+                                "Handykamera verwenden",
+                                onSelected = { selectedDevice = "Handykamera verwenden" },
+                                isSelected = "Handykamera verwenden" == selectedDevice
                             )
-                        }
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(
-                            bottom = 8.dp,
-                            start = 8.dp,
-                            end = 8.dp
-                        )
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Button(
-                            modifier = Modifier.weight(1f),
-                            onClick = { goBack() }) { Text("Zurück") }
-                        Button(
-                            modifier = Modifier
-                                .weight(1f)
-                                .semantics {
-                                    contentDescription =
-                                        "Mit Gerät $selectedDevice verbinden"
-                                }, enabled = selectedDevice != "",
-                            onClick = {
 
-                                connectToDevice(
-                                    context,
-                                    devicesData["type"] as String,
-                                    selectedDevice,
-                                    onEvent = onEvent
-                                )
-                                { success ->
-                                    if (success) {
-                                        Log.d(
-                                            LOG_TAG,
-                                            "[ConnectionPage] Setting SharedPreferences ShouldRememberDevice: $shouldRememberDevice"
-                                        )
-                                        sharedPreferences.edit(commit = true) {
-                                            putBoolean(
-                                                shouldRememberKey,
-                                                shouldRememberDevice
+
+                        }
+                        HorizontalDivider(
+                            modifier = Modifier.padding(
+                                top = 8.dp,
+                                start = 8.dp,
+                                end = 8.dp
+                            )
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 8.dp, end = 32.dp, top = 4.dp, bottom = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(
+                                    checked = shouldRememberDevice,
+                                    onCheckedChange = {
+                                        shouldRememberDevice = !shouldRememberDevice
+                                    })
+                                Text("Als Standardgerät festlegen")
+                            }
+                            Box(modifier = Modifier.clickable {
+                                when (devicesData["type"]) {
+                                    "audio" -> {
+                                        refreshAudioDevices()
+                                    }
+
+                                    "eye-ai-vision" -> {
+                                        val locationManager =
+                                            context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                                        if (locationManager.isLocationEnabled)
+                                            wifiScanState.rescan()
+                                        else {
+                                            Log.d(
+                                                LOG_TAG,
+                                                "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
                                             )
+                                            showLocationDisabledDialog = true
                                         }
-                                        Log.d(
-                                            LOG_TAG,
-                                            "[ConnectionPage] Setting SharedPreferences SelectedDevice: $selectedDevice"
-                                        )
-                                        sharedPreferences.edit(commit = true) {
-                                            putString(
-                                                selectedDeviceKey,
-                                                if (shouldRememberDevice) selectedDevice else ""
-                                            )
-                                        }
-                                        shouldRememberDevice = false
-                                        selectedDevice = ""
-                                        onConnectionSuccessful()
-                                    } else
-                                        showConnectionFailedDialog = true
+                                    }
                                 }
-                            }) { Text("Verbinden", modifier = Modifier.clearAndSetSemantics {}) }
+                            }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.refresh_24px),
+                                    contentDescription = ""
+                                )
+                            }
+                        }
+                        HorizontalDivider(
+                            modifier = Modifier.padding(
+                                bottom = 8.dp,
+                                start = 8.dp,
+                                end = 8.dp
+                            )
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Button(
+                                modifier = Modifier.weight(1f),
+                                onClick = { goBack() }) { Text("Zurück") }
+                            Button(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .semantics {
+                                        contentDescription =
+                                            "Mit Gerät $selectedDevice verbinden"
+                                    }, enabled = selectedDevice != "",
+                                onClick = {
+
+                                    connectToDevice(
+                                        context,
+                                        devicesData["type"] as String,
+                                        selectedDevice,
+                                        onEvent = onEvent
+                                    )
+                                    { success ->
+                                        if (success) {
+                                            Log.d(
+                                                LOG_TAG,
+                                                "[ConnectionPage] Setting SharedPreferences ShouldRememberDevice: $shouldRememberDevice"
+                                            )
+                                            sharedPreferences.edit(commit = true) {
+                                                putBoolean(
+                                                    shouldRememberKey,
+                                                    shouldRememberDevice
+                                                )
+                                            }
+                                            Log.d(
+                                                LOG_TAG,
+                                                "[ConnectionPage] Setting SharedPreferences SelectedDevice: $selectedDevice"
+                                            )
+                                            sharedPreferences.edit(commit = true) {
+                                                putString(
+                                                    selectedDeviceKey,
+                                                    if (shouldRememberDevice) selectedDevice else ""
+                                                )
+                                            }
+                                            shouldRememberDevice = false
+                                            selectedDevice = ""
+                                            onConnectionSuccessful()
+                                        } else
+                                            showConnectionFailedDialog = true
+                                    }
+                                }) {
+                                Text(
+                                    "Verbinden",
+                                    modifier = Modifier.clearAndSetSemantics {})
+                            }
+                        }
                     }
                 }
             }
@@ -475,6 +549,118 @@ fun ErrorDialog(titel: String, content: String, onDismissed: () -> Unit) {
             }
         })
 
+}
+
+@Composable
+fun LoadingPage() {
+    val shimmerBrush = rememberShimmerBrush()
+    Column(verticalArrangement = Arrangement.Center) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    ShimmerBox(
+                        shimmerBrush, Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(60.dp)
+                    )
+                }
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .clearAndSetSemantics {})
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 8.dp)
+                ) {
+                    ShimmerBox(
+                        shimmerBrush, Modifier
+                            .fillMaxWidth(0.6f)
+                            .height(16.dp)
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 8.dp)
+                ) {
+                    ShimmerBox(
+                        shimmerBrush, Modifier
+                            .fillMaxWidth(0.6f)
+                            .height(16.dp)
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 8.dp)
+                ) {
+                    ShimmerBox(
+                        shimmerBrush, Modifier
+                            .fillMaxWidth(0.6f)
+                            .height(16.dp)
+                    )
+                }
+                HorizontalDivider(
+                    modifier = Modifier.padding(
+                        top = 8.dp,
+                        start = 8.dp,
+                        end = 8.dp
+                    )
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 32.dp, top = 16.dp, bottom = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    ShimmerBox(
+                        shimmerBrush, Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(30.dp)
+                    )
+                }
+                HorizontalDivider(
+                    modifier = Modifier.padding(
+                        bottom = 8.dp,
+                        start = 8.dp,
+                        end = 8.dp
+                    )
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    ShimmerBox(
+                        shimmerBrush, Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                    )
+                    ShimmerBox(
+                        shimmerBrush, Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                    )
+                }
+            }
+        }
+    }
 }
 
 
