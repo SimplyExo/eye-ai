@@ -190,7 +190,7 @@ fun ChooseConnectionPage(
         else -> emptyList()
     }
     val deviceType = devicesData["type"] as String
-    val shimmerBrush = rememberShimmerBrush()
+    val shimmerBrush = rememberShimmerBrush(backgroundColor = MaterialTheme.colorScheme.primaryContainer, contrastColor = MaterialTheme.colorScheme.onPrimaryContainer)
     var pageLoading by rememberSaveable { mutableStateOf(true) }
 
     Log.d(LOG_TAG, "[ConnectionPage] Choosing connection for $deviceCategory")
@@ -552,7 +552,7 @@ fun ErrorDialog(titel: String, content: String, onDismissed: () -> Unit) {
 
 @Composable
 fun LoadingPage() {
-    val shimmerBrush = rememberShimmerBrush()
+    val shimmerBrush = rememberShimmerBrush(backgroundColor = MaterialTheme.colorScheme.primaryContainer, contrastColor = MaterialTheme.colorScheme.onPrimaryContainer)
     Column(verticalArrangement = Arrangement.Center) {
         Card(
             modifier = Modifier

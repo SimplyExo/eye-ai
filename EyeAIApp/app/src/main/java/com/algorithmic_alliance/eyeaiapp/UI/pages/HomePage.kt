@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -32,6 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,8 +47,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
+import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +73,7 @@ fun HomePage(
             )
         )
     }
+    val shimmerBrush = rememberShimmerBrush(backgroundColor = MaterialTheme.colorScheme.surface, contrastColor = MaterialTheme.colorScheme.onSurface)
     LaunchedEffect(Unit) {
         if (ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.RECORD_AUDIO
@@ -136,9 +141,9 @@ fun HomePage(
                 VoskStatusCard(viewModel = viewModel)
             }
             item {
-                DepthStatusCard(viewModel = viewModel)
+                DepthStatusCard(viewModel = viewModel, shimmerBrush =shimmerBrush)
             }
-            item { ObjectStatusCard(viewModel = viewModel) }
+            item { ObjectStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush) }
             item { VisionStatusCard(viewModel = viewModel) }
 
         }
@@ -147,7 +152,7 @@ fun HomePage(
 }
 
 @Composable
-fun ObjectStatusCard(viewModel: MainViewModel) {
+fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -171,7 +176,7 @@ fun ObjectStatusCard(viewModel: MainViewModel) {
                 ) {
                     Text(text = "Objekterkennung deaktiviert", textAlign = TextAlign.Center)
                 } else if (getObjectFPS(uiState.performanceText) == -1) {
-                    Text(text = "Startet...", textAlign = TextAlign.Center)
+                    ShimmerBox(shimmerBrush, Modifier.fillMaxWidth(0.75f).height(30.dp))
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Aktiv", textAlign = TextAlign.Center)
@@ -226,7 +231,7 @@ fun VisionStatusCard(viewModel: MainViewModel) {
 }
 
 @Composable
-fun DepthStatusCard(viewModel: MainViewModel) {
+fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -242,7 +247,7 @@ fun DepthStatusCard(viewModel: MainViewModel) {
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (getDepthFPS(uiState.performanceText) == -1) {
-                    Text(text = "Startet...", textAlign = TextAlign.Center)
+                    ShimmerBox(shimmerBrush, Modifier.fillMaxWidth(0.75f).height(30.dp))
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Aktiv", textAlign = TextAlign.Center)

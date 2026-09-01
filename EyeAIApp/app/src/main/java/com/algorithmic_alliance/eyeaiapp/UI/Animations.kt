@@ -9,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -21,7 +20,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun rememberShimmerBrush(): Brush {
+fun rememberShimmerBrush(backgroundColor: Color, contrastColor: Color): Brush {
     val transition = rememberInfiniteTransition(label = "shimmer")
     val translateAnim by transition.animateFloat(
         initialValue = 0f,
@@ -33,11 +32,8 @@ fun rememberShimmerBrush(): Brush {
         label = "shimmerTranslate"
     )
 
-    val background = MaterialTheme.colorScheme.primaryContainer
-    val contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
-
-    val baseColor = lerp(background, contrastColor, 0.15f)
-    val highlightColor = lerp(background, contrastColor, 0.4f)
+    val baseColor = lerp(backgroundColor, contrastColor, 0.15f)
+    val highlightColor = lerp(backgroundColor, contrastColor, 0.4f)
 
     val shimmerColors = listOf(baseColor, highlightColor, baseColor)
 
