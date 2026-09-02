@@ -16,7 +16,7 @@ internal enum class SpatialAudioResumeOutcome {
  * Keeps spatial output muted while a TTS response is still being played.
  *
  * The controller is deliberately independent of Android and the native audio
- * implementation so the ordering contract can be covered by local unit tests.
+ * implementation so it can be covered by local unit tests.
  */
 internal class SpatialAudioResumeController(
 	private val scope: CoroutineScope,
