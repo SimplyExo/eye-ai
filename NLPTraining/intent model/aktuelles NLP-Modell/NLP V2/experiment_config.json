@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "experiment": {
+    "id": "frozen_m0_m3_t1_t2_five_seed",
+    "title": "Frozen M0-M3 x T1/T2 five-seed BaselineCNN experiment",
+    "legacy_implementation_directory": "../NLP V1",
+    "default_output_directory": "BaselineCNN/M0-M3 Multiseed"
+  },
+  "training": {
+    "seeds": [20260810, 20260811, 20260812, 20260813, 20260814],
+    "max_len": 24,
+    "batch_size": 64,
+    "epochs": 30,
+    "patience": 5,
+    "phase1_strategy": "M0",
+    "parity_tolerance": 0.0001,
+    "parity_verification_samples": 100
+  },
+  "strategies": [
+    {
+      "id": "M0",
+      "description": "Clean only",
+      "learning_rate": 0.001,
+      "training_dataset": "clean_train",
+      "training_function": "train_m0",
+      "initialization": "initial_weights"
+    },
+    {
+      "id": "M1",
+      "description": "Joint Clean + Vosk from scratch",
+      "learning_rate": 0.001,
+      "training_dataset": "mixed_train",
+      "training_function": "train_m1",
+      "initialization": "initial_weights"
+    },
+    {
+      "id": "M2",
+      "description": "Clean pretraining -> joint Clean + Vosk fine-tuning",
+      "learning_rate": 0.0001,
+      "training_dataset": "mixed_train",
+      "training_function": "train_m2",
+      "initialization": "m0_checkpoint"
+    },
+    {
+      "id": "M3",
+      "description": "Clean pretraining -> Vosk-only fine-tuning",
+      "learning_rate": 0.0001,
+      "training_dataset": "vosk_train",
+      "training_function": "train_m3",
+      "initialization": "m0_checkpoint"
+    }
+  ],
+  "tokenizers": [
+    {
+      "id": "T1",
+      "name": "T1 Word",
+      "kind": "word",
+      "model_folder_name": "{strategy} {tokenizer} Word",
+      "source_directory": "BaselineCNN/Neue Seeds/Analysen/tokenizers/T1",
+      "expected_files": {
+        "vocab.json": "30db389d0b98cc5b91a5eaab53c9320227a667e57a12d1ebcdd2b18ae23c2386",
+        "vocab.txt": "23d5177875c702d88c4402650bf3ed1bd333bf82c18a48fed5411309db55dfc5",
+        "tokenizer_config.json": "c01a35eafb842698ac6b0c01b1aa0ed0121293f075828e973172610ca706d332"
+      }
+    },
+    {
+      "id": "T2",
+      "name": "T2 BPE-2000",
+      "kind": "bpe",
+      "vocabulary_size": 2000,
+      "model_folder_name": "{strategy} {tokenizer} BPE",
+      "source_directory": "BaselineCNN/Neue Seeds/Analysen/tokenizers/T2",
+      "expected_files": {
+        "vocab.json": "987261223a98792aa97d2b84b933aed036efb7145f5f279e98e38002251dfe55",
+        "vocab.txt": "d6da3c38843ecf178bcef782a5268bf83090746296415ddde0cbe42362cb37e5",
+        "tokenizer_config.json": "319cb0a49b1490cee16bb49ff607c4cbee7b7fe2325f623d450d3553fdee475d",
+        "merges.json": "7d570b4e938fb2e5ece7f395f223bb761acf0e9899d5179ba6172c36e7b1e9ad",
+        "merges.tsv": "2cbb1df9cc22a745dcebbb9c11640ace15482f31c534e7b095414289368f59d3"
+      }
+    }
+  ],
+  "datasets": {
+    "training_groups": {
+      "clean": ["clean_organic", "clean_main", "hard_negative_patch"],
+      "vosk": ["vosk_gen1", "vosk_gen2"]
+    },
+    "training": [
+      {
+        "id": "clean_organic",
+        "path": "Neue Trainingsdaten/01_Daten_mit_Widerspruechen_bereinigt_dedupliziert.txt",
+        "expected_samples": 700,
+        "sha256": "b81ddeec5e3522ce9a8e6255deb7e3787ad5e0f47c0e2d8c2e1ef6c2832c9503"
+      },
+      {
+        "id": "clean_main",
+        "path": "Neue Trainingsdaten/02_Saubere_Trainingsdaten_bereinigt_dedupliziert.txt",
+        "expected_samples": 1685,
+        "sha256": "cbd04b16b72da6ef84573ba026ac1bc1217958ad4cb3c82572539fb7677863ac"
+      },
+      {
+        "id": "hard_negative_patch",
+        "path": "Neue Trainingsdaten/final_hard_negative_patch_533.txt",
+        "expected_samples": 533,
+        "sha256": "383ad18f4264128aeb2a618e2d702fef1e3b11039f2c49f0d75f77e050e41998"
+      },
+      {
+        "id": "vosk_gen1",
+        "path": "Neue Trainingsdaten/vosk_generation1_final_manuell_kuratiert.txt",
+        "expected_samples": 280,
+        "sha256": "4dad8eaffb52162e8f4c0df04635ff51f8c18ebf1326e652b5d73194b00f13f0"
+      },
+      {
+        "id": "vosk_gen2",
+        "path": "Neue Trainingsdaten/vosk_generation2_streng_manuell_gefiltert.txt",
+        "expected_samples": 1548,
+        "sha256": "0fa2bc71fe88a3246abb3c9f12bbeb1225d1d1d517f4606314c43bce3453bf0a"
+      }
+    ],
+    "validation": [
+      {
+        "id": "semantic_val",
+        "display_name": "Semantic-300",
+        "path": "Neue Validationdaten/validation_manual_semantic_300.val",
+        "expected_samples": 300,
+        "sha256": "865c30bc157ed240d921a7cab96041e96f9e159b6b08786fba414cbb196bf2fb"
+      },
+      {
+        "id": "asr_val",
+        "display_name": "ASR-300",
+        "path": "Neue Validationdaten/validation_manual_asr_300.val",
+        "expected_samples": 300,
+        "sha256": "bf038a2f5abca804bc9e2a7336cab79cdb0347fac391ca13496d9fd9580456ef"
+      },
+      {
+        "id": "complex_val",
+        "display_name": "Curated-60",
+        "path": "Neue Validationdaten/DATASET_curated_60.val",
+        "expected_samples": 60,
+        "sha256": "ac55e6aa7c98db947cdc5e95340faeb09d7ce09f9024888b197177c9f6c268dc"
+      },
+      {
+        "id": "challenge_40",
+        "display_name": "Challenge-40",
+        "path": "Neue Validationdaten/challenge_regression_holdout_clean_40.val",
+        "expected_samples": 40,
+        "sha256": "5208a9683430213dfbb7cb4085430ff5a18eaf61cab740530100167acb553caa"
+      },
+      {
+        "id": "challenge_known_failure_subset_9",
+        "display_name": "Boundary-9 (Teilmenge von Challenge-40)",
+        "path": "Neue Validationdaten/challenge_known_failure_subset_9.val",
+        "expected_samples": 9,
+        "sha256": "04905673cae1ebc94b13d56f59d9c61996cf1d4d95c8d3f67afaa87c1b3c60c4"
+      }
+    ],
+    "evaluations": {
+      "primary": ["semantic_val", "asr_val", "complex_val", "challenge_40"],
+      "development": ["semantic_val", "asr_val", "complex_val"],
+      "known_boundary_subset": "challenge_known_failure_subset_9",
+      "challenge": "challenge_40"
+    },
+    "expected_aggregate_counts": {
+      "clean_train": 2918,
+      "vosk_train": 1828,
+      "final_train": 4746,
+      "semantic_val": 300,
+      "asr_val": 300,
+      "complex_val": 60,
+      "challenge_40": 40,
+      "challenge_known_failure_subset_9": 9
+    }
+  },
+  "audit": {
+    "baseline_architecture": {
+      "embedding_dimension": 32,
+      "conv_filters": 32,
+      "conv_kernel_size": 3,
+      "dense_units": 32,
+      "dropout_rate": 0.15
+    },
+    "tflite_tensor_contract": {
+      "input_shape": [1, 24],
+      "input_dtype": "int32",
+      "output_dtype": "float32"
+    }
+  },
+  "selection": {
+    "representative_seed_rule": {
+      "defined_before_training": true,
+      "features": [
+        "semantic_val:accuracy",
+        "semantic_val:macro_f1_all_10_classes",
+        "asr_val:accuracy",
+        "asr_val:macro_f1_all_10_classes",
+        "complex_val:accuracy",
+        "complex_val:macro_f1_all_10_classes"
+      ],
+      "primary": "minimum mean absolute distance from the combination's five-seed mean vector",
+      "tie_break_1": "minimum maximum absolute component distance",
+      "tie_break_2": "smallest numerical seed",
+      "challenge_used": false,
+      "reason": "select a central, representative development run instead of the best seed"
+    },
+    "ranking_rule": {
+      "scope": "development ranking only; not a production decision",
+      "primary": "descending equal-weight mean Macro-F1 over Semantic-300, ASR-300 and Curated-60",
+      "tie_break_1": "descending mean Challenge-40 accuracy",
+      "tie_break_2": "ascending sample standard deviation of the per-seed development composite",
+      "tie_break_3": "lexicographic combination ID",
+      "challenge_macro_f1_excluded_reason": "Challenge-40 is small and does not contain all ten truth classes"
+    }
+  }
+}

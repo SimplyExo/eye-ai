@@ -1,0 +1,31 @@
+{
+  "schema_version": 2,
+  "kind": "word",
+  "normalization_spec_version": "eyeai_word_v1",
+  "max_len": 32,
+  "special_tokens": [
+    "[PAD]",
+    "[UNK]",
+    "[CTX_FREQ]",
+    "[CTX_BPS]",
+    "[CTX_SPEED]",
+    "[CTX_SPEAKER]",
+    "<NUM>"
+  ],
+  "vocabulary": {
+    "[PAD]": 0,
+    "[UNK]": 1,
+    "[CTX_FREQ]": 2,
+    "[CTX_BPS]": 3,
+    "[CTX_SPEED]": 4,
+    "[CTX_SPEAKER]": 5,
+    "<NUM>": 6,
+    "straße": 7,
+    "äöü": 8,
+    "größer": 9,
+    "maße": 10,
+    "hertz": 11,
+    "wort": 12,
+    "stimme": 13
+  }
+}

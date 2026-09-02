@@ -7,7 +7,7 @@ import uniffi.NativeLib.UniffiDetectedObject
 
 data class UIState(
     val voskListening: Boolean = false,
-    val llmSpeaking: Boolean = false,
+    val ttsSpeaking: Boolean = false,
     val actionStartedFromSettings: Boolean = false,
     val settingsOpened: Boolean = false,
     val reloadSettingsPageKey: Int = 0,
@@ -19,7 +19,7 @@ data class UIState(
     val connectionTutorialCompleted: Boolean = true,
     val speechRecognitionFinalResultText: String = "",
     val speechRecognitionPartialResultText: String = "",
-    val llmResponseText: String = "",
+    val speechResponseText: String = "",
     val depthPreviewBitmap: Bitmap? = null,
     val mediaPreviewBitmap: Bitmap? = null,
     val debugInputPreviewBitmap: Bitmap? = null,

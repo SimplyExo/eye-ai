@@ -10,7 +10,7 @@
     <color name="red">#F44336</color>
     <color name="ripple_red">#40FFFFFF</color>
     <color name="final_speech_recognition">#00ff00</color>
-    <color name="llm_response">#007DFF</color>
+    <color name="speech_response">#007DFF</color>
     <color name="flashlight_button_off">#FFFFFFFF</color>
     <color name="flashlight_button_on">#FFFF00</color>
     <color name="default_blue">#7A90C8</color>

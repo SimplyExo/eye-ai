@@ -93,5 +93,8 @@ class TranslateEnglishToGerman {
 			Log.d(EyeAIApp.Companion.APP_LOG_TAG, "TranslateToGerman: '$englishLabel' -> '$translation'")
 			return translation
 		}
+
+		fun isKnownEnglishLabel(englishLabel: String): Boolean =
+			englishLabel in englishToGermanMap
 	}
 }

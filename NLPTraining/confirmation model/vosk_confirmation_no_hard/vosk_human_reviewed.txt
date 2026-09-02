@@ -1,0 +1,285 @@
+ja finden die frequenz;YES
+ja ich möchte dass die die schwieg wenns ende;YES
+genau wird für die frequenz so;YES
+ja bitte übernimmt die neuer frequenz;YES
+mach das die frequenz kann geändert werden;YES
+ja stelle die frequenz auf den genannten wert;YES
+das passt findet die frequenz entsprechend;YES
+bitte bestätige die frequenz änderung und führe sie aus;YES
+ja die frequenz soll höhe werden;YES
+ja die frequenz darf niedriger gesetzt werden;YES
+einverstanden ändere die tom frequenz;YES
+ja so möchte ich die frequenz haben;YES
+okay über den diese frequenz einstellung;YES
+genauso die frequenz kannst du einstellen;YES
+ja ändere die b ps;YES
+ja bitte setze die signal rate so;YES
+genau übernimmt den neuen b peters werden;YES
+mach das die signale sollen häufiger kommen;YES
+ja die abstand signale der von seltener werden;YES
+einverstanden ändere die wiederhole rate;YES
+ja stelle die bp es auf den genannten wird;YES
+wichtig die hin bei stöhn sollen öfter kommen;YES
+ja übernimmt diese einstellung für die signal rate;YES
+bitte führe die änderungen der baby es aus;YES
+ja die wiederholt rat der kann so gesetzt werden;YES
+das ist richtig nimm die neues signal rate;YES
+genau so sollen die abstand hinweise wiederholt werden;YES
+ja was du die p s wie besprochen an;YES
+ja spricht künftig schneller;YES
+ja bitte ändere die sprechgeschwindigkeit;YES
+genau das sprechtempo soll langsamer werden;YES
+mach das erhöhe das vorlese tempo;YES
+einverstanden reduziere die geschwindigkeit der sprachausgabe;YES
+ja fährt für das bei tempo auf den genannten wert;YES
+okay übernehmen die neue sprechgeschwindigkeit;YES
+ja die stimme darf langsame sprechen;YES
+bitte führe die tempo änderung aus;YES
+genauso soll die sprachausgabe künftig sprechen;YES
+das passt stelle die geschwindigkeit so ein;YES
+ja bitte verwende das neue spricht der pro;YES
+einverstanden ändere die geschwindigkeit der ausgabe;YES
+ja stelle die stimme auf männlich;YES
+ja bitte nimm die weibliche stimme;YES
+genau weg für den sprecher;YES
+mach das ich möchte die andere stimme hören;YES
+einverstanden verwende ab jetzt die männer stimmen;YES
+ja nimm künftig die frauenstimme;YES
+okay ändere die sprecherstimme;YES
+richtig die aktuelle stimme soll gewechselt werden;YES
+ja bitte übernehmen die ausgewählte stehen;YES
+genauso verwende den anderen sprecher;YES
+ja die stimme darf geändert werden;YES
+mit der führer den stimmen wechsel aus;YES
+das passt stelle die gewünschte stimme ein;YES
+ja weshalb für die aktuelle sprecherstimme durch die anderer;YES
+einverstanden wechselt auf die genannte stimmen;YES
+ja verlasse die einstellungen und lies den text;YES
+ja bitte geh aus den einstellungen und erkenne das objekt;YES
+genau verlasse das menü und miss den abstand;YES
+macht das beende die einstellung und beantworte meine frage;YES
+ja du kannst die einstellungen verlassen unterschied lesen;YES
+einverstanden geht zurück und startet die objekt erkennung;YES
+ja bitte verlasse das einstellung menü und bestimme die entfernung;YES
+welch dich schließe die einstellungen und führe die andere funktion aus;YES
+ja wechsel aus den einstellungen zur texter kennung;YES
+okay verlasse das menü und schau was vor mir ist;YES
+bitte beende die einstellungen und führe meinen vorherigen befehl aus;YES
+ja ich möchte die einstellungen verlassen und mit der messung fortfahren;YES
+genau die aus dem ließ und leute meine frage an die assistenz hatte;YES
+ja bitte schließe die einstellungen unter kinder den text;YES
+einverstanden verlasse den einstellungen dialog und führe die gespeicherte aktion aus;YES
+nein ändere die frequenzen;NO
+nein ich möchte die frequenz nicht ändern;NO
+lass die frequenz bitte wie sie ist;NO
+nein danke übernimmt neuen frequenz werk nicht;NO
+macht das nicht die frequenz soll unverändert bleiben;NO
+nein stelle die frequenz nicht auf den genannten wert;NO
+das passt so nicht andere die frequenz nicht;NO
+bitte verwirft die vorgeschlagene frequenz änderung;NO
+nein die frequenz nicht für werden;NO
+nein für zu die frequenz nicht niedriger;NO
+lass den bisherigen frequenz wird bestehen;NO
+ich bin dagegen die turn frequenz zu ändern;NO
+nein so möchte ich die frequenz nicht haben;NO
+übernimmt diese frequenz einstellung bitte nicht;NO
+nein führe die frequenz änderung nicht aus;NO
+nein andere die bip es nicht;NO
+nein bitte lass die signal rate unverändert;NO
+macht das nicht die signale sollen nicht häufiger kommen;NO
+nein die abstand signale sollen nicht seltener werden;NO
+das die wiederum rate bitte so wie bisher;NO
+neun stelle die bip nicht hawking inneren wert;NO
+die signale rate soll unverändert bleiben;NO
+nein die hinweis töne sollen nicht öfter kommen;NO
+bitte führe die änderung der bp ist nicht aus;NO
+nein hintere die wiederhole rate nicht;NO
+der bisherige bp ist werkzeug bleiben;NO
+nein passe die abstand hinweise nicht so an;NO
+verwirft bitte die änderung der sie nach rat;NO
+mein sprich nicht schneller;NO
+nein bitte ändere die sprechgeschwindigkeit nicht;NO
+das sprechtempo sonnig nicht langsamer werden;NO
+mach das licht der hüters vorlese tempo nicht;NO
+nein reduziere die geschwindigkeit der sprachausgabe nie;NO
+setze das sprechtempo nicht auf den genannten wert;NO
+lass die aktuelle sprechgeschwindigkeit bestehen;NO
+nein dies nicht schneller vor;NO
+die stimme sollen nicht langsamer sprechen;NO
+bitte führe die tempo änderung nicht aus;NO
+lass die sprachausgabe genauso schnell wie bisher;NO
+nein hasse das vorleser tempo nicht an;NO
+die geschwindigkeit soll so bleiben;NO
+verwende das neue sprechtempo bitte nicht;NO
+nein ändere die geschwindigkeit der ausgabe nicht;NO
+nein stellt die stimme nicht auf männlich;NO
+wechsle den sprecher nicht;NO
+macht das nicht ich möchte die aktuelle stimme behalten;NO
+nein verwende nicht immer der stimmt;NO
+mein kind gibt nicht die frauenstimme;NO
+das die sprecherstimme bitte unverändert;NO
+die aktuelle stimme soll nicht gewechselt werden;NO
+übernehmen die ausgewählte stimmen nicht;NO
+nein verwende ich den anderen sprecher;NO
+die stimme darf nicht geändert werden;NO
+bitte für den stimmung wechsel nicht aus;NO
+nein stelle die gewünschte stimmen nicht ein;NO
+behaltet die aktuelle sprecherstimme;NO
+nein wechsel nicht auf die genannte stimme;NO
+nein bleibt in den einstellungen und lies den text nicht;NO
+nein verlasse die einstellungen nicht für die objekt erkennen;NO
+nein beendet die einstellungen nicht für meine andere frage;NO
+ich möchte in den einstellungen bleiben unterschied nicht lesen;NO
+nein gehe nicht zurück zur objekt erkennung;NO
+herr lasse das einstellung menü nicht für die entfernungsmessung;NO
+nein schließe die einstellungen nicht für die andere funktion;NO
+nein gehen nicht aus dem menü um nach vorne zu schauen;NO
+führe meiner vorherigen befehlen jetzt nicht aus;NO
+nein ich möchte die einstellungen nicht für die messung verlassen;NO
+neu finden und leute meine frage nicht weiter;NO
+nein schließe die einstellungen nicht für die texter kennen;NO
+verwirft den gespeicherten befehl und bleibt in den einstellungen;NO
+das kannst du so übernehmen die neue frequenz ist in ordnung;YES
+von mir aus darfst du die frequenz jetzt umstellen;YES
+ja genau der vorgeschlagene frequenz wert soll gelten;YES
+die änderung an tun passt für mich für sie aus;YES
+ich bin mit der neuen frequenz einverstanden;YES
+so ist es richtig stellt den frequenz wert entsprechend ein;YES
+die frequenz änderung kannst du bestätigen;YES
+nimm ruhig den wert den ich eben für die frequenz genannt habe;YES
+bitte sehr die tonhöhe beziehungsweise frequenz wie besprochen;YES
+der neue frequenz wert passt nach weiter;YES
+ja diese anpassung an signal ton ist gewollt;YES
+du darfst die frequenz einstellung zu speichern;YES
+das ist die frequenz die ich haben möchte;YES
+der genau diese änderungen an der frequenz aus;YES
+für die frequenz ist das so korrekt;YES
+die neue wie p s einstellung passt übernehmen sie;YES
+ja die hinweise sollen in diesem rhythmus kommen;YES
+du kannst die wiederhole rate jetzt entsprechend ändern;YES
+der vorgeschlagene abstand zwischen den signal ist richtig;YES
+genau diese signal rate möchte ich verwenden;YES
+passt städte die hinweis signale so ein;YES
+nimm für die signale rückte eben genannte rate;YES
+ja so oft sollen die hinweise ausgegeben werden;YES
+der neuerer muss der abstand stöhne ist richtig;YES
+speichere diese einstellung für die wiederhole rate;YES
+das intervall der signale kannst du so übernehmen;YES
+ich möchte dass die p p s wie vorgeschlagen geändert werden;YES
+diese rate für die signal töne ist in ordnung;YES
+für die gerade besprochene b es anpassung aus;YES
+so schnell darf die sprachausgabe künftig sahen;YES
+da das neue lesetempo ist für mich passen;YES
+übernehmen die vorgeschlagene geschwindigkeit der stimmen;YES
+die änderung am sprechtempo kannst du durchführen;YES
+genau in diesen quellcode soll vorgelesen werden;YES
+von hier aus kannst du die ausgabe schnelle stein;YES
+ja verlangsamt die sprache wie vorgeschlagen;YES
+das neue vor diese tempo gefällt mir speichere;YES
+die geschwindigkeit passt so macht die änderung;YES
+nimm bitte das eben festgelegte sprechtempo;YES
+ich bestätige die anpassung der sprachausgabe;YES
+so soll ein ei künftig sprechen;YES
+das tempo der gesprochenen antworten darfst du geändert werden;YES
+ja die vorgeschlagene sprechgeschwindigkeit ist richtig;YES
+führe diese änderung am vor lesetempo aus;YES
+die minder stimme passt stellen sie ein;YES
+ja ich möchte künftig die weibliche stimme hören;YES
+der sprecher wechsel ist so in ordnung;YES
+diese sprecherstimme möchte ich verwenden;YES
+ja wechsel auf die vorgeschlagene stimmen;YES
+die ausgewählte stimme kannst du übernehmen;YES
+genau diese stimme soll er ag benutzen;YES
+die männliche ausgabe es für mich richtig;YES
+denn bitte auf den anderen sprecher um;YES
+ich möchte die eben ausgewählte sprecherstimme verhalten;YES
+ja diese stimme ist die richtige;YES
+führe den vorgeschlagenen stimmen wechsel durch;YES
+die sprachausgabe darf auf diese stimme wechseln;YES
+ja g aus dem einstellung dialog und führe die texte kennung aus;YES
+du kannst dass wir ihn verlassen und nach dem gegenstand von wir schauen;YES
+mithilfe lasse die einstellungen und bis anschließend die entfernung;YES
+das ist in ordnung schließe das mini und beantworte die vorherige frage;YES
+ja wechselt zurück zur normalen ansicht und ließ das schild;YES
+verlasse die einstellungen ruhig und startet objekt erkennung;YES
+ich bestätige dass du das menü für die distanz messung verlassen darfst;YES
+geh aus dem einstellungen und führe den gespeicherten befehl aus;YES
+ja beende den einstellung dialog und erkenne den text vor mir;YES
+du darfst die einstellungen verlassen und prüfen was im weg steht;YES
+bitte führe nach dem verlassen des melismen ursprüngliche anfrage aus;YES
+ja geht zurück und bestimmen den abstand zum finden;YES
+schließe die einstellungen und leitet die offene frage weiter;YES
+ich möchte jetzt aus dem mini raus und den text lesen lassen;YES
+bestätigt verlasse die einstellungen und starte die zuvor gewünschte funktion;YES
+die vorgeschlagene frequenz möchte jedoch nicht übernehmen;NO
+lass den ton bitte beim bisherigen frequenz wert;NO
+mit dieser ficken zentrum bin ich nicht einverstanden;NO
+den neuen frequenz wert bitte verwerfen;NO
+soll die frequenz nicht eingestellt werden;NO
+die anpassung an tun möchte ich nicht durchführen;NO
+nimmt für die frequenz lieber weiterhin den alten wert;NO
+die frequenz änderung ist von mir nicht bestätigt;NO
+stellt den signal tun doch nicht auf diesen wert;NO
+diese änderungen an der frequenz soll nicht passieren;NO
+der bisherige frequenz wert ist mir lieber;NO
+lass die frequenz einstellung unangetastet;NO
+ich lehne die vorgeschlagene änderung der frequenz ab;NO
+bitte nehmen die letzte frequenz anpassung nicht vor;NO
+die neue bip es einstellungen möchte ich nicht übernehmen;NO
+das die hinweise in ihrer bisherigen rhythmus;NO
+ändere die wiederhol ratte doch nicht;NO
+der vorgeschlagene signal abstand passt mir nicht;NO
+diese signal rate soll nicht eingestellt werden;NO
+bitte lass die bp ist auf den bisherigen wert;NO
+die anpassung der hin bei stühle möchte ich verwerfen;NO
+so oft sollen die signale doch nicht kommen;NO
+speicher wird diese wiederwahl rate bitte nicht;NO
+der neue rhythmus der abstand stünde ist nicht gewünscht;NO
+lass das intervall der signale unverändert;NO
+ich bestätige die änderung der bp es nicht;NO
+die signal rate salto bleiben die freue;NO
+führe die besprochene p es anpassung nicht aus;NO
+das neue spricht tempo möchte ich nicht übernehmen;NO
+lass die sprachausgabe so schnell wie bisher;NO
+hintere die lesegeschwindigkeit auch nicht;NO
+das vorgeschlagen von sie tempo passt mir nicht;NO
+bitte speichere diese änderung am sprechtempo nicht;NO
+die stimme soll weiterhin im bisherigen tempo sprechen;NO
+nimm nicht die eben festgelegte geschwindigkeit;NO
+die anpassung der sprachausgabe möchte ich verwerfen;NO
+mach ein ei doch nicht schneller;NO
+verlangsame die ausgabe bitte nicht;NO
+diese sprechgeschwindigkeit soll nicht eingestellt werden;NO
+der bisherige wert für das vorlese tempo soll bleiben;NO
+ich lehne die vorgeschlagene tempo änderung ab;NO
+lass die geschwindigkeit der gesprochenen antworten unverändert;NO
+führe die änderung am sprechtempo nicht durch;NO
+die männerstimme möchte ich doch nicht einstellen;NO
+web bitte bei der aktuellen stimme;NO
+den sprecher wechseln möchte ich nicht durchführen;NO
+nimm doch nicht die andere stimmen;NO
+die vorgeschlagene sprecherstimme passt mir nicht;NO
+wechsel nicht auf die frauenstimme;NO
+bitte behalte den bisherigen sprecher;NO
+diese stimme soll eier hier nicht verwenden;NO
+dem wechsel zur männlichen stimme bestätige ich nicht;NO
+lass die ausgewählte stimme bitte unverändert;NO
+die sprecherstimme soll nicht gewechselt werden;NO
+ich möchte den vorgeschlagenen stimmen wechsel verwerfen;NO
+der nicht auf die eben genannte stimmung;NO
+füge den wechsel der stimme nicht aus;NO
+leid bitte in ein stück dialog und startet die texter genug nicht;NO
+ich möchte das menü für die objekt erkennung noch nicht verlassen;NO
+dennoch du die einstellungen nicht in die entfernungen zu müssen;NO
+führe die vorherige frage jetzt nicht außerhalb des menüs aus;NO
+bleibt in den einstellungen und ließ das steht noch nicht;NO
+die objekte erkennung zur gibt nicht gestartet werden;NO
+verwirft den gespeicherten distanz befehl und bleibt im menü;NO
+die nicht aus den einstellungen um die andere aktion auszuführen;NO
+ich möchte den einstellung dialog für die text erkennung nicht verlassen;NO
+startet die erkennung des hindernis jetzt nicht;NO
+den ursprünglichen befehl wird noch nicht ausführen;NO
+im einstellung mini bleiben die abstandsmessung soll nicht starten;NO
+leiter meine offene frage jetzt nicht an die assistenz weiter;NO
+sind die einstellungen für die text kennung bitte nicht;NO
+nein verwerfe die gespeicherte externen aktionen und bleibt hier;NO

@@ -1,0 +1,19 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2711";
+
+    fragment@0 {
+        target = <&i2c1>;
+
+        __overlay__ {
+            status = "okay";
+
+            my_device@08 {
+                compatible = "eyeaivision,eyeai_i2c";
+                reg = <0x08>;
+            };
+        };
+    };
+};

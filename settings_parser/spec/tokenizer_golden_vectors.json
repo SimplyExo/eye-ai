@@ -1,0 +1,55 @@
+{
+  "normalization_spec_version": "eyeai_word_v1",
+  "tokenizer_artifact": "tokenizer_golden_tokenizer.json",
+  "vectors": [
+    {
+      "name": "eszett_and_frequency_context",
+      "input": "Straße",
+      "target": "FREQUENCY",
+      "expected_normalized_text": "Straße",
+      "expected_token_ids": [2, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "decomposed_umlauts_are_nfc",
+      "input": "ÄÖÜ größer",
+      "target": "BPS",
+      "expected_normalized_text": "ÄÖÜ größer",
+      "expected_token_ids": [3, 8, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "eszett_inside_word_and_speaker_context",
+      "input": "Maße stimme",
+      "target": "SPEAKER",
+      "expected_normalized_text": "Maße stimme",
+      "expected_token_ids": [5, 10, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "num_and_speed_context",
+      "input": "<NUM>",
+      "target": "SPEECH_SPEED",
+      "expected_normalized_text": "<NUM>",
+      "expected_token_ids": [4, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "unknown_word",
+      "input": "unbekannt",
+      "target": "BPS",
+      "expected_normalized_text": "unbekannt",
+      "expected_token_ids": [3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "punctuation_and_ascii_whitespace",
+      "input": "  Straße,\t  <NUM>!\nHertz?  ",
+      "target": "FREQUENCY",
+      "expected_normalized_text": "Straße, <NUM>! Hertz?",
+      "expected_token_ids": [2, 7, 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "max_length_truncation",
+      "input": "wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort",
+      "target": "SPEECH_SPEED",
+      "expected_normalized_text": "wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort wort",
+      "expected_token_ids": [4, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12]
+    }
+  ]
+}

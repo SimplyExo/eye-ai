@@ -216,22 +216,6 @@ object UIDataSource {
                 "settingsType" to "click"
             )
         ),
-        "LLM" to listOf(
-            mapOf(
-                "title" to "Google AI Studio API Key",
-                "description" to "",
-                "settingsType" to "textInput",
-                "string" to R.string.google_ai_studio_api_key_stetting,
-                "default" to null
-            ),
-            mapOf(
-                "title" to "Custom Google Gen AI Studio endpoint (for testing/mocking)",
-                "description" to "",
-                "settingsType" to "textInput",
-                "string" to R.string.custom_google_gen_ai_studio_endpoint_setting,
-                "default" to null
-            ),
-        ),
         "Object Detection" to listOf(
             mapOf(
                 "title" to "Enabled",

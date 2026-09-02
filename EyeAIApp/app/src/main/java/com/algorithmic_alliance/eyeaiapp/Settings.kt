@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp
 import android.content.Context
 import androidx.preference.PreferenceManager
 import androidx.core.content.edit
+import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 
 data class Settings(
 	var depthModel: String,
@@ -10,8 +11,7 @@ data class Settings(
 	var showProfilingInfo: Boolean,
 	var showDebugInputBitmap: Boolean,
 	var enableSpeechRecognition: Boolean,
-	var googleAiStudioApiKey: String?,
-	var customGoogleGenAIStudioEndpoint: String?,
+	var nlpModel: String,
 	var enableObjectDetection: Boolean,
 	var maxObjectDetectionFrameRate: Int?,
 	var enableOCR: Boolean,
@@ -67,15 +67,11 @@ data class Settings(
 				true
 			)
 
-			val googleAiStudioApiKey = sharedPreferences.getString(
-				context.getString(R.string.google_ai_studio_api_key_stetting),
-				null
-			)
-
-			val customGoogleGenAIStudioEndpoint = sharedPreferences.getString(
-				context.getString(R.string.custom_google_gen_ai_studio_endpoint_setting),
-				null
-			)
+			val configuredNlpModel = sharedPreferences.getString(
+				context.getString(R.string.nlp_model_setting),
+				NLPModelInfo.DEFAULT_MODEL_ID
+			).toString()
+			val nlpModel = NLPModelInfo.findById(configuredNlpModel).id
 
 			val enableObjectDetection = sharedPreferences.getBoolean(
 				context.getString(R.string.enable_object_detection_setting),
@@ -147,8 +143,7 @@ data class Settings(
 				showProfilingInfo,
 				showDebugInputBitmap,
 				enableSpeechRecognition,
-				googleAiStudioApiKey,
-				customGoogleGenAIStudioEndpoint,
+				nlpModel,
 				enableObjectDetection,
 				maxObjectDetectionFrameRate,
 				enableOCR,
@@ -172,8 +167,7 @@ data class Settings(
 		showProfilingInfo,
 		showDebugInputBitmap,
 		enableSpeechRecognition,
-		googleAiStudioApiKey,
-		customGoogleGenAIStudioEndpoint,
+		nlpModel,
 		enableObjectDetection,
 		maxObjectDetectionFrameRate,
 		enableOCR,
@@ -209,6 +203,7 @@ data class Settings(
 				context.getString(R.string.enable_speech_recognition_setting),
 				enableSpeechRecognition
 			)
+			putString(context.getString(R.string.nlp_model_setting), nlpModel)
 			putBoolean(
 				context.getString(R.string.enable_object_detection_setting),
 				enableObjectDetection
@@ -218,17 +213,6 @@ data class Settings(
 			putBoolean(context.getString(R.string.object_playback_setting), objectAudioPlayback)
 			putBoolean(context.getString(R.string.enable_npu_delegate_setting), enableNpu)
 			putInt(context.getString(R.string.jpeg_compression), jpegCompression)
-
-			// Nullable Strings
-			googleAiStudioApiKey?.let {
-				putString(context.getString(R.string.google_ai_studio_api_key_stetting), it)
-			}
-			customGoogleGenAIStudioEndpoint?.let {
-				putString(
-					context.getString(R.string.custom_google_gen_ai_studio_endpoint_setting),
-					it
-				)
-			}
 
 			// Frame Rate Limits
 			maxDepthFrameRate?.let {

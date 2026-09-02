@@ -5,31 +5,44 @@ import android.widget.TextView
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.MainActivity.State
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
-import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
-import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.JsonParser
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.LLMStreamingHandler
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SpeechOutputHandler
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.ContextSwitchConfirmationResult
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.ContextSwitchConfirmation
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.PendingExternalIntent
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.PendingExternalIntentCodec
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.PendingExternalIntentPresentation
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects.ObjectDetectionHandler
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.RequestedFunction
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingIntent
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.missingOperationQuestion
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingsFlow
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingsHandler
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingsIntentRoute
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingsIntentRouter
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingsMenuIntentRoute
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SettingsMenuIntentRouter
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.delay
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects.ObjectPositionClassifier
+import com.algorithmic_alliance.eyeaiapp.nlp.Intent
+import com.algorithmic_alliance.eyeaiapp.nlp.IntentResult
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
 import com.algorithmic_alliance.eyeaiapp.nlp.OCRToText
 import com.algorithmic_alliance.eyeaiapp.AIModelData
+import java.util.Locale
 
 class StateMachine(
     private val eyeAIApp: EyeAIApp,
     private val textToSpeechInstance: TextToSpeechInstance,
-    private var lastLlmJsonResponse: String?,
-    private val setLlmResponseText: (String) -> Unit,
-    private val appendLlmResponseText: (String) -> Unit,
-    private val cameraFrameAnalyzer: CameraFrameAnalyzer? = null,
-    private val onStreamingComplete: () -> Unit = {}
+	private var lastDialogContext: String?,
+	private val setSpeechResponseText: (String) -> Unit,
+	private val cameraFrameAnalyzer: CameraFrameAnalyzer? = null
 ) {
 
-    private val streamingHandler = LLMStreamingHandler(textToSpeechInstance, setLlmResponseText,appendLlmResponseText, eyeAIApp, onStreamingComplete)
+	private val speechOutputHandler = SpeechOutputHandler(
+		textToSpeechInstance,
+		updateResponseText = setSpeechResponseText
+	)
     private val jsonParser = JsonParser()
 
     // SettingsHandler
@@ -37,8 +50,12 @@ class StateMachine(
         textToSpeechInstance,
         jsonParser,
         eyeAIApp,
-        ::generateLlmResponse,
-        streamingHandler::speakAndHandleUi
+        { eyeAIApp.confirmationModel },
+        speechOutputHandler::speakAndHandleUi
+    )
+    private val contextSwitchConfirmation = ContextSwitchConfirmation(
+        confirmationModelProvider = { eyeAIApp.confirmationModel },
+        trace = { message -> Log.d(EyeAIApp.APP_LOG_TAG, message) }
     )
 
     private val objectPositionClassifier = ObjectPositionClassifier()
@@ -47,150 +64,164 @@ class StateMachine(
     // NLP model integration
     private val nlpModel: NLPModel? = eyeAIApp.nlpModel
 
-    // Using LLM if less than 60%
+    /** Complete, unfiltered NLP V2 result for future state-aware consumers. */
+    var lastIntentResult: IntentResult? = null
+        private set
+
+    // Keep the classifier acceptance threshold unchanged; rejected results are local unresolved commands.
     private val nlpConfidenceThreshold = 0.6f
 
-
-    private val promptCache = mutableMapOf<String, String>()
-
-
-    private val settingsIntents = setOf(
-        NLPModel.NLPClasses.CHANGE_SPEECH_SPEED,
-        NLPModel.NLPClasses.CHANGE_SPEAKER,
-        NLPModel.NLPClasses.OPEN_SETTINGS,
-        NLPModel.NLPClasses.SET_FREQUENCY,
-        NLPModel.NLPClasses.SET_BPS
-    )
-
-
-    private val validSettingsIntents = setOf(
-        NLPModel.NLPClasses.CHANGE_SPEECH_SPEED,
-        NLPModel.NLPClasses.CHANGE_SPEAKER,
-        NLPModel.NLPClasses.SET_FREQUENCY,
-        NLPModel.NLPClasses.SET_BPS,
-        NLPModel.NLPClasses.ABORT
-    )
-
-    private val exitKeywords = setOf(
-        "verlassen", "stopp", "abbruch", "stop", "exit", "quit",
-        "beenden", "raus", "zurück", "abbrechen", "cancel", "zumachen", "exit", "verlasse einstellungen", "schließ das", "home", "startseite", "ich will raus", "will hier raus"
-    )
-
-    private fun checkForExitKeywords(input: String): Boolean {
-        val lowerInput = input.lowercase().trim()
-        return exitKeywords.any { keyword ->
-            lowerInput.contains(keyword) || lowerInput == keyword
-        }
-    }
-
-    private suspend fun handleExitFromSettings(): StateUpdate {
-        val syntheticLeave = createLeaveSettingsJson()
-        streamingHandler.speakAndHandleUi("Möchten Sie die Einstellungen wirklich verlassen?")
-        lastLlmJsonResponse = syntheticLeave
-        return StateUpdate(State.SETTINGS_ACTION, syntheticLeave)
-    }
-
-    fun isStreaming(): Boolean = streamingHandler.isStreaming()
-
-    fun getStreamingHandler(): LLMStreamingHandler = streamingHandler
-
-    private fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
-
     suspend fun handleIdle(final: String): StateUpdate {
-        // Intent with nlp if confidence is greater than 50%
-        val (nlpIntent, confidence) = classifyIntentWithNLPAndConfidence(final)
+        val intentResult = classifyIntentWithNLP(final)
+        val confidence = intentResult?.confidence ?: 0f
+        val nlpIntent = intentResult?.intent?.takeIf { confidence >= nlpConfidenceThreshold }
 
-        Log.d(EyeAIApp.APP_LOG_TAG, "NLP classified intent: $nlpIntent with confidence: ${String.format("%.2f", confidence * 100)}% for input: '$final'")
-
-        // fallback to llm
         if (nlpIntent == null) {
-            Log.d(EyeAIApp.APP_LOG_TAG, "NLP confidence below threshold (${String.format("%.2f", confidence * 100)}%), falling back to LLM")
-            return handleWithLLMFallback(final)
-        }
-
-        return when (nlpIntent) {
-            NLPModel.NLPClasses.TEXT_RECOGNITION -> handleTextRecognitionDirectly()
-            NLPModel.NLPClasses.OBJECT_DETECTION -> handleObjectDetectionWithLLM(final)
-            NLPModel.NLPClasses.MEASURE_DISTANCE -> handleMeasureDistanceWithLLM(final)
-            in settingsIntents -> handleSettingsRequest()
-            NLPModel.NLPClasses.REDIRECT_TO_LLM, NLPModel.NLPClasses.ABORT -> handleWithLLMFallback(final)
-            else -> handleWithLLMFallback(final)
-        }
-    }
-
-    private fun classifyIntentWithNLPAndConfidence(input: String): Pair<NLPModel.NLPClasses?, Float> {
-        return try {
-            val results = nlpModel?.runInferenceWithAllResults(input)
-            if (results == null) return Pair(null, 0f)
-
-            // Get intent with highest confidence
-            val intentConfidences = listOf(
-                NLPModel.NLPClasses.TEXT_RECOGNITION to results.TEXT_RECOGNITION,
-                NLPModel.NLPClasses.OBJECT_DETECTION to results.OBJECT_DETECTION,
-                NLPModel.NLPClasses.CHANGE_SPEECH_SPEED to results.CHANGE_SPEECH_SPEED,
-                NLPModel.NLPClasses.CHANGE_SPEAKER to results.CHANGE_SPEAKER,
-                NLPModel.NLPClasses.REDIRECT_TO_LLM to results.REDIRECT_TO_LLM,
-                NLPModel.NLPClasses.OPEN_SETTINGS to results.OPEN_SETTINGS,
-                NLPModel.NLPClasses.SET_FREQUENCY to results.SET_FREQUENCY,
-                NLPModel.NLPClasses.SET_BPS to results.SET_BPS,
-                NLPModel.NLPClasses.MEASURE_DISTANCE to results.MEASURE_DISTANCE,
-                NLPModel.NLPClasses.ABORT to results.ABORT
+            Log.d(
+                EyeAIApp.APP_LOG_TAG,
+                "[DecisionTrace][StateMachine][ROUTE] classifier=NLP_V2 accepted=false " +
+                    "confidence=${formatPercentage(confidence)} threshold=${formatPercentage(nlpConfidenceThreshold)} " +
+                    "nextEvaluator=LOCAL_UNRESOLVED role=UNRESOLVED_COMMAND"
             )
-
-            val bestMatch = intentConfidences.maxByOrNull { it.second }
-            if (bestMatch != null && bestMatch.second >= nlpConfidenceThreshold) {
-                Pair(bestMatch.first, bestMatch.second)
-            } else {
-                Pair(null, bestMatch?.second ?: 0f)
-            }
-        } catch (e: Exception) {
-            Log.e(EyeAIApp.APP_LOG_TAG, "NLP classification with confidence failed", e)
-            Pair(null, 0f)
+            return handleUnresolvedCommand(classifierLabel = intentResult?.intent)
         }
-    }
 
-    // with confidence levels now
-    private fun classifyIntentWithNLPFallbackForSettings(input: String): Pair<NLPModel.NLPClasses?, Float> {
-        return try {
-            val results = nlpModel?.runInferenceWithAllResults(input)
-            if (results == null) return Pair(null, 0f)
+        val confidentIntentResult = requireNotNull(intentResult)
+        return when (val settingsRoute = SettingsIntentRouter.route(confidentIntentResult)) {
+            SettingsIntentRoute.GuidedMenu -> {
+                logNlpRoute(nlpIntent, "LOCAL_STATE_MACHINE", "OPEN_GUIDED_SETTINGS_MENU")
+                openGuidedSettingsMenu()
+            }
 
-            // Convert results to list of intent and confidence
-            val intentConfidences = listOf(
-                NLPModel.NLPClasses.TEXT_RECOGNITION to results.TEXT_RECOGNITION,
-                NLPModel.NLPClasses.OBJECT_DETECTION to results.OBJECT_DETECTION,
-                NLPModel.NLPClasses.CHANGE_SPEECH_SPEED to results.CHANGE_SPEECH_SPEED,
-                NLPModel.NLPClasses.CHANGE_SPEAKER to results.CHANGE_SPEAKER,
-                NLPModel.NLPClasses.REDIRECT_TO_LLM to results.REDIRECT_TO_LLM,
-                NLPModel.NLPClasses.OPEN_SETTINGS to results.OPEN_SETTINGS,
-                NLPModel.NLPClasses.SET_FREQUENCY to results.SET_FREQUENCY,
-                NLPModel.NLPClasses.SET_BPS to results.SET_BPS,
-                NLPModel.NLPClasses.MEASURE_DISTANCE to results.MEASURE_DISTANCE,
-                NLPModel.NLPClasses.ABORT to results.ABORT
-            ).sortedByDescending { it.second }
+            is SettingsIntentRoute.Direct -> {
+                logNlpRoute(
+                    nlpIntent,
+                    "LOCAL_SETTINGS_PARSER",
+                    "DIRECT_SETTINGS_PARSE"
+                )
+                handleDirectSettingsRequest(settingsRoute)
+            }
 
-            // Ignore non-settings intents, use next best if first is invalid
-            for ((intent, confidence) in intentConfidences) {
-                if (intent in validSettingsIntents && confidence >= nlpConfidenceThreshold) {
-                    return Pair(intent, confidence)
+            SettingsIntentRoute.NotSettings -> when (nlpIntent) {
+                Intent.TEXT_RECOGNITION -> {
+                    logNlpRoute(nlpIntent, "LOCAL_OCR_PIPELINE", "TEXT_RECOGNITION")
+                    handleTextRecognitionDirectly()
+                }
+
+                Intent.OBJECT_DETECTION -> {
+                    logNlpRoute(nlpIntent, "LOCAL_OBJECT_DETECTION", "OBJECT_QUERY_EVALUATION")
+                    handleObjectDetectionRequest(final)
+                }
+
+                Intent.MEASURE_DISTANCE -> {
+                    logNlpRoute(nlpIntent, "LOCAL_UNRESOLVED", "UNSUPPORTED_DISTANCE_REQUEST")
+                    handleUnresolvedCommand(classifierLabel = Intent.MEASURE_DISTANCE)
+                }
+
+				Intent.REDIRECT_TO_LLM -> {
+					logNlpRoute(nlpIntent, "LOCAL_UNRESOLVED", "UNRESOLVED_COMMAND")
+					handleUnresolvedCommand(classifierLabel = Intent.REDIRECT_TO_LLM)
+				}
+
+				Intent.ABORT -> {
+					logNlpRoute(nlpIntent, "LOCAL_STATE_MACHINE", "GENERIC_CANCEL")
+					handleCancellation()
+                }
+
+                else -> {
+                    logNlpRoute(nlpIntent, "LOCAL_UNRESOLVED", "UNSUPPORTED_INTENT")
+                    handleUnresolvedCommand(classifierLabel = nlpIntent)
                 }
             }
-
-            // get best with confidence
-            val bestValidIntent = intentConfidences.find { it.first in validSettingsIntents }
-            return Pair(null, bestValidIntent?.second ?: 0f)
-        } catch (e: Exception) {
-            Log.e(EyeAIApp.APP_LOG_TAG, "NLP classification with fallback failed", e)
-            Pair(null, 0f)
         }
     }
+
+    private suspend fun handleUnresolvedCommand(
+        nextState: State = State.IDLE,
+        retainedContext: String? = null,
+        classifierLabel: Intent? = null
+    ): StateUpdate {
+        Log.d(
+            EyeAIApp.APP_LOG_TAG,
+            "[DecisionTrace][StateMachine][UNRESOLVED] " +
+                "classifierLabel=${classifierLabel?.name ?: "NONE"} semantic=UNRESOLVED_COMMAND " +
+                "externalRequest=false"
+        )
+        speechOutputHandler.speakAndHandleUi(LocalInteractionMessages.UNRESOLVED_COMMAND)
+        return StateUpdate(nextState, retainedContext, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
+    }
+
+    private fun classifyIntentWithNLP(input: String): IntentResult? {
+        lastIntentResult = null
+        val activeModel = nlpModel
+        if (activeModel == null) {
+            Log.w(
+                EyeAIApp.APP_LOG_TAG,
+                "[DecisionTrace][NLP V2][CLASSIFY] outcome=UNAVAILABLE input='$input'"
+            )
+            return null
+        }
+
+        Log.d(
+            EyeAIApp.APP_LOG_TAG,
+            "[DecisionTrace][NLP V2][CLASSIFY] model=${activeModel.info.id} input='$input'"
+        )
+        return try {
+            activeModel.classify(input).also { result ->
+                lastIntentResult = result
+                val probabilities = Intent.CLASS_ORDER.indices.joinToString(
+                    prefix = "[",
+                    postfix = "]"
+                ) { index ->
+                    "${Intent.CLASS_ORDER[index].name}=" +
+                        String.format(Locale.US, "%.4f", result.probabilities[index])
+                }
+                Log.d(
+                    EyeAIApp.APP_LOG_TAG,
+                    "[DecisionTrace][NLP V2][RESULT] model=${activeModel.info.id} " +
+                        "top1=${result.intent} confidence=${formatPercentage(result.confidence)} " +
+                        "probabilities=$probabilities originalText='${result.originalText}'"
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(
+                EyeAIApp.APP_LOG_TAG,
+                "[DecisionTrace][NLP V2][RESULT] model=${activeModel.info.id} outcome=FAILED",
+                e
+            )
+            lastIntentResult = null
+            null
+        }
+    }
+
+    private fun logNlpRoute(intent: Intent, nextEvaluator: String, role: String) {
+        Log.d(
+            EyeAIApp.APP_LOG_TAG,
+            "[DecisionTrace][StateMachine][ROUTE] classifier=NLP_V2 accepted=true " +
+                "intent=$intent nextEvaluator=$nextEvaluator role=$role"
+        )
+    }
+
+	private fun formatPercentage(probability: Float): String =
+		String.format(Locale.US, "%.2f%%", probability * 100f)
+
+	suspend fun handleCancellation(): StateUpdate {
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][StateMachine][CANCEL] evaluator=GENERIC_CANCELLATION " +
+				"outcome=RETURN_TO_IDLE pendingContext=cleared"
+		)
+		lastDialogContext = null
+		speechOutputHandler.speakAndHandleUi(GenericCancellation.RESPONSE)
+		return StateUpdate(State.IDLE, null)
+	}
 
     private suspend fun handleTextRecognitionDirectly(): StateUpdate {
         val ocrSuccess = cameraFrameAnalyzer?.runOcrAnalysis() ?: false
 
         if (!ocrSuccess) {
             Log.d(EyeAIApp.APP_LOG_TAG, "OCR analysis failed")
-            streamingHandler.speakAndHandleUi("Entschuldigung, die Texterkennung konnte nicht durchgeführt werden.")
+            speechOutputHandler.speakAndHandleUi("Entschuldigung, die Texterkennung konnte nicht durchgeführt werden.")
             return StateUpdate(State.IDLE, null)
         }
 
@@ -201,7 +232,7 @@ class StateMachine(
 
         if (ocrBoxes.isNullOrEmpty()) {
             Log.d(EyeAIApp.APP_LOG_TAG, "No OCR boxes available after OCR analysis")
-            streamingHandler.speakAndHandleUi("Entschuldigung, es wurde kein Text erkannt.")
+            speechOutputHandler.speakAndHandleUi("Entschuldigung, es wurde kein Text erkannt.")
             return StateUpdate(State.IDLE, null)
         }
 
@@ -213,66 +244,66 @@ class StateMachine(
 
         if (readableText.isEmpty()) {
             Log.d(EyeAIApp.APP_LOG_TAG, "OCRToText generated empty text")
-            streamingHandler.speakAndHandleUi("Entschuldigung, ich konnte keinen sinnvollen Text erkennen.")
+            speechOutputHandler.speakAndHandleUi("Entschuldigung, ich konnte keinen sinnvollen Text erkennen.")
             return StateUpdate(State.IDLE, null)
         }
 
         Log.d(EyeAIApp.APP_LOG_TAG, "OCRToText generated: $readableText")
-        streamingHandler.speakAndHandleUi(readableText)
+        speechOutputHandler.speakAndHandleUi(readableText)
 
         return StateUpdate(State.IDLE, null)
     }
 
-    private suspend fun handleObjectDetectionWithLLM(final: String): StateUpdate {
-
-        val jsonResponse = generateLlmResponse(final, true) ?: return StateUpdate(State.IDLE, null)
-        logDebugInfo(final, jsonResponse)
-        return handleObjectDetectionRequest(jsonResponse)
-    }
-
-    private suspend fun handleMeasureDistanceWithLLM(final: String): StateUpdate {
-
-        val jsonResponse = generateLlmResponse(final, true) ?: return StateUpdate(State.IDLE, null)
-        logDebugInfo(final, jsonResponse)
-        return handleNoneRequest(jsonResponse, final)
-    }
-
-    private suspend fun handleSettingsRequest(): StateUpdate {
-        streamingHandler.speakAndHandleUi(LLM.Companion.SNIPPET_SETTINGS)
+    private suspend fun openGuidedSettingsMenu(): StateUpdate {
+        speechOutputHandler.speakAndHandleUi(LocalInteractionMessages.SETTINGS_MENU)
         return StateUpdate(State.SETTINGS_MENU, null)
     }
 
-    private suspend fun handleWithLLMFallback(final: String): StateUpdate {
-        // Use LLM as fallback for REDIRECT_TO_LLM, ABORT, or when NLP fails
-        val jsonResponse = generateLlmResponse(final, true) ?: return StateUpdate(State.IDLE, null)
-        logDebugInfo(final, jsonResponse)
+    private suspend fun handleDirectSettingsRequest(
+        route: SettingsIntentRoute.Direct
+    ): StateUpdate {
+        val intentResult = route.intentResult
+        val settingsContext = jsonParser.createSettingsContext(
+            settingIntent = route.settingIntent,
+            flow = SettingsFlow.DIRECT,
+            originalText = intentResult.originalText
+        )
+        lastDialogContext = settingsContext
 
-        return when (jsonParser.parseRequestedFunction(jsonResponse)) {
-            RequestedFunction.OBJECT_DETECTION -> handleObjectDetectionRequest(jsonResponse)
-            RequestedFunction.TEXT_RECOGNITION -> handleTextRecognitionRequest()
-            RequestedFunction.SETTINGS -> handleSettingsRequestFromLLM(jsonResponse)
-            RequestedFunction.NONE -> handleNoneRequest(jsonResponse, final)
+        Log.d(
+            EyeAIApp.APP_LOG_TAG,
+            "[DecisionTrace][StateMachine][HANDOFF] classifier=NLP_V2 " +
+                "intent=${intentResult.intent} evaluator=LOCAL_SETTINGS_PARSER " +
+                "role=SETTINGS_PARAMETER_EXTRACTION " +
+                "settingIntent=${route.settingIntent} " +
+                "originalText='${intentResult.originalText}'"
+        )
+
+        return settingsHandler.handleSettingsChoice(
+            input = intentResult.originalText,
+            currentJson = settingsContext
+        ) { newJson ->
+            lastDialogContext = newJson
         }
     }
 
-    private suspend fun handleObjectDetectionRequest(jsonResponse: String): StateUpdate {
-        val germanObjectQuery = jsonParser.parseObjectQuery(jsonResponse)?.trim() ?: ""
-        Log.d(EyeAIApp.APP_LOG_TAG, "German object query from LLM: '$germanObjectQuery'")
-        Log.d(EyeAIApp.APP_LOG_TAG, "JSON response: $jsonResponse")
+    private suspend fun handleObjectDetectionRequest(userInput: String): StateUpdate {
+        val germanObjectQuery = userInput.trim()
+        Log.d(EyeAIApp.APP_LOG_TAG, "German object query from local NLP input: '$germanObjectQuery'")
 
         if (germanObjectQuery.isBlank()) {
             Log.w(EyeAIApp.APP_LOG_TAG, "Object query is blank")
-            val availableGermanObjects = ObjectDetectionHandler.getGermanObjectLabelsForLLM()
+            val availableGermanObjects = ObjectDetectionHandler.getGermanObjectLabels()
             Log.d(EyeAIApp.APP_LOG_TAG, "Available German objects: $availableGermanObjects")
 
             if (availableGermanObjects.isNotEmpty()) {
                 val objectList = availableGermanObjects.take(5).joinToString(", ")
-                streamingHandler.speakAndHandleUi(
+                speechOutputHandler.speakAndHandleUi(
                     "Bitte nennen Sie ein spezifisches Objekt, nach dem Sie suchen möchten. " +
                         "Verfügbare Objekte: $objectList"
                 )
             } else {
-                streamingHandler.speakAndHandleUi("Entschuldigung, ich konnte gerade keine Objekte erkennen.")
+                speechOutputHandler.speakAndHandleUi("Entschuldigung, ich konnte gerade keine Objekte erkennen.")
             }
             return StateUpdate(State.IDLE, null)
         }
@@ -295,12 +326,12 @@ class StateMachine(
 
                 val description = objectPositionClassifier.generatePositionDescription(objectData)
                 Log.d(EyeAIApp.APP_LOG_TAG, "Generated position description: $description")
-                streamingHandler.speakAndHandleUi(description)
+                speechOutputHandler.speakAndHandleUi(description)
             }
 
             is ObjectDetectionHandler.ObjectDetectionResult.ObjectNotFound -> {
                 Log.d(EyeAIApp.APP_LOG_TAG, "Object NOT FOUND. Available: ${result.availableObjects}")
-                streamingHandler.speakAndHandleUi(
+                speechOutputHandler.speakAndHandleUi(
                     "Entschuldigung, das Objekt '$germanObjectQuery' konnte ich nicht finden. " +
                         "Ich sehe aber folgende Objekte: ${result.availableObjects.joinToString(", ")}."
                 )
@@ -308,206 +339,236 @@ class StateMachine(
 
             is ObjectDetectionHandler.ObjectDetectionResult.NoObjectsFound -> {
                 Log.d(EyeAIApp.APP_LOG_TAG, "No objects found")
-                streamingHandler.speakAndHandleUi("Entschuldigung, ich konnte gerade keine Objekte erkennen.")
+                speechOutputHandler.speakAndHandleUi("Entschuldigung, ich konnte gerade keine Objekte erkennen.")
             }
 
             is ObjectDetectionHandler.ObjectDetectionResult.DepthDataUnavailable -> {
                 Log.d(EyeAIApp.APP_LOG_TAG, "Depth data unavailable")
-                streamingHandler.speakAndHandleUi("Entschuldigung, die Tiefenerkennung ist derzeit nicht verfügbar.")
+                speechOutputHandler.speakAndHandleUi("Entschuldigung, die Tiefenerkennung ist derzeit nicht verfügbar.")
             }
 
             is ObjectDetectionHandler.ObjectDetectionResult.DepthDataInvalid -> {
                 Log.d(EyeAIApp.APP_LOG_TAG, "Depth data invalid")
-                streamingHandler.speakAndHandleUi("Entschuldigung, die Tiefendaten haben eine unerwartete Größe.")
+                speechOutputHandler.speakAndHandleUi("Entschuldigung, die Tiefendaten haben eine unerwartete Größe.")
             }
 
             is ObjectDetectionHandler.ObjectDetectionResult.NoKnownObjectsFound -> {
                 Log.d(EyeAIApp.APP_LOG_TAG, "No known objects found")
-                streamingHandler.speakAndHandleUi("Ich konnte leider keine bekannten Objekte erkennen.")
+                speechOutputHandler.speakAndHandleUi("Ich konnte leider keine bekannten Objekte erkennen.")
             }
 
             is ObjectDetectionHandler.ObjectDetectionResult.NoQueryProvided -> {
                 Log.d(EyeAIApp.APP_LOG_TAG, "No query provided")
-                streamingHandler.speakAndHandleUi("Bitte nennen Sie ein spezifisches Objekt.")
+                speechOutputHandler.speakAndHandleUi("Bitte nennen Sie ein spezifisches Objekt.")
             }
         }
 
         return StateUpdate(State.IDLE, null)
     }
 
-    private suspend fun handleTextRecognitionRequest(): StateUpdate {
-        val ocrSuccess = cameraFrameAnalyzer?.runOcrAnalysis() ?: false
-
-        if (!ocrSuccess) {
-            Log.d(EyeAIApp.APP_LOG_TAG, "OCR analysis failed")
-            streamingHandler.speakAndHandleUi("Entschuldigung, die Texterkennung konnte nicht durchgeführt werden.")
-            return StateUpdate(State.IDLE, null)
-        }
-
-        delay(200) // Wait for OCR result to be available
-
-        val ocrText = eyeAIApp.ocrModel.lastResult.trim()
-
-        if (ocrText.isEmpty()) {
-            Log.d(EyeAIApp.APP_LOG_TAG, "No OCR text available after on-demand analysis")
-            streamingHandler.speakAndHandleUi("Entschuldigung, es wurde kein Text erkannt.")
-            return StateUpdate(State.IDLE, null)
-        }
-
-        val prompt = eyeAIApp.llm!!.buildOcrPrompt(ocrText)
-
-        if (prompt.trim().isEmpty()) {
-            Log.w(EyeAIApp.APP_LOG_TAG, "OCR prompt is empty")
-            streamingHandler.speakAndHandleUi("Entschuldigung, ich konnte keinen sinnvollen Text erkennen.")
-            return StateUpdate(State.IDLE, null)
-        }
-
-        streamingHandler.generateAndStreamResponse(eyeAIApp.llm as GoogleAIStudioLLM, prompt)
-        return StateUpdate(State.IDLE, null)
-    }
-
-    private suspend fun handleSettingsRequestFromLLM(jsonResponse: String): StateUpdate {
-        streamingHandler.speakAndHandleUi(LLM.Companion.SNIPPET_SETTINGS)
-        lastLlmJsonResponse = jsonResponse
-        return StateUpdate(State.SETTINGS_MENU, lastLlmJsonResponse)
-    }
-
-    private suspend fun handleNoneRequest(jsonResponse: String, final: String): StateUpdate {
-        val direct = jsonParser.parseInteractionText(jsonResponse)
-        return if (!direct.isNullOrBlank()) {
-            streamingHandler.speakAndHandleUi(direct)
-            StateUpdate(State.IDLE, null)
-        } else {
-            val fallbackResponse = generateLlmResponse(final, false) ?: jsonResponse
-            streamingHandler.speakAndHandleUi(fallbackResponse)
-            StateUpdate(State.IDLE, null)
-        }
-    }
 
     suspend fun handleSettingsMenu(final: String): StateUpdate {
-
-        //keyword search
-        if (checkForExitKeywords(final)) {
-            Log.d(EyeAIApp.APP_LOG_TAG, "Exit keyword detected in settings menu: '$final'")
-            return handleExitFromSettings()
+        val intentResult = classifyIntentWithNLP(final)
+        if (intentResult == null) {
+            Log.d(
+                EyeAIApp.APP_LOG_TAG,
+                "[DecisionTrace][StateMachine][SETTINGS_ROUTE] classifier=NLP_V2 " +
+                    "outcome=UNAVAILABLE nextEvaluator=LOCAL_UNRESOLVED role=UNRESOLVED_COMMAND"
+            )
+            return handleUnresolvedCommand(
+                nextState = State.SETTINGS_MENU,
+                retainedContext = lastDialogContext,
+                classifierLabel = null
+            )
         }
 
-        // Use NLP for intent classification in settings with confidence check
-        val (nlpIntent, confidence) = classifyIntentWithNLPFallbackForSettings(final)
+        val evidence = SettingsMenuIntentRouter.evidenceFrom(intentResult)
+        val route = SettingsMenuIntentRouter.route(evidence, nlpConfidenceThreshold)
+        Log.d(
+            EyeAIApp.APP_LOG_TAG,
+            "[DecisionTrace][StateMachine][SETTINGS_ROUTE] classifier=NLP_V2 " +
+                "top1=${evidence.topIntent} top1Confidence=${formatPercentage(evidence.topConfidence)} " +
+                "bestSettingsIntent=${evidence.bestSettingsIntent} " +
+                "bestSettingsConfidence=${formatPercentage(evidence.bestSettingsConfidence)} " +
+                "threshold=${formatPercentage(nlpConfidenceThreshold)} route=${route::class.simpleName} " +
+                "probabilitiesPreserved=true renormalized=false"
+        )
 
-        Log.d(EyeAIApp.APP_LOG_TAG, "Settings menu NLP classified intent: $nlpIntent with confidence: ${String.format("%.2f", confidence * 100)}% for input: '$final'")
+        return when (route) {
+            is SettingsMenuIntentRoute.LocalSetting ->
+                handleLocalSettingsMenuIntent(route.intent)
 
-        // If confidence is below, back to LLM
-        if (nlpIntent == null) {
-            Log.d(EyeAIApp.APP_LOG_TAG, "Settings NLP confidence below threshold (${String.format("%.2f", confidence * 100)}%), falling back to LLM")
-            return settingsHandler.handleSettingsMenu(final, lastLlmJsonResponse) { newJson ->
-                lastLlmJsonResponse = newJson
-            }
-        }
+            is SettingsMenuIntentRoute.ExternalIntent ->
+                requestExternalIntentContextSwitch(intentResult)
 
-        return when (nlpIntent) {
-            NLPModel.NLPClasses.CHANGE_SPEECH_SPEED -> {
-                streamingHandler.speakAndHandleUi(LLM.Companion.SNIPPET_TTS_SPEED)
-                lastLlmJsonResponse = createSyntheticSettingsJson("tts_speed")
-                StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
-            }
+            SettingsMenuIntentRoute.Abort ->
+                handleCancellation()
 
-            NLPModel.NLPClasses.CHANGE_SPEAKER -> {
-                streamingHandler.speakAndHandleUi(LLM.Companion.SNIPPET_VOICE)
-                lastLlmJsonResponse = createSyntheticSettingsJson("voice")
-                StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
-            }
+            SettingsMenuIntentRoute.AlreadyInSettings ->
+                remindUserSettingsAreAlreadyOpen()
 
-            NLPModel.NLPClasses.SET_FREQUENCY -> {
-                streamingHandler.speakAndHandleUi(LLM.Companion.SNIPPET_FREQUENCY)
-                lastLlmJsonResponse = createSyntheticSettingsJson("frequency")
-                StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
-            }
-
-            NLPModel.NLPClasses.SET_BPS -> {
-                streamingHandler.speakAndHandleUi(LLM.Companion.SNIPPET_BPS)
-                lastLlmJsonResponse = createSyntheticSettingsJson("bps")
-                StateUpdate(State.SETTINGS_CHOICE, lastLlmJsonResponse)
-            }
-
-            NLPModel.NLPClasses.ABORT -> {
-                val syntheticLeave = createLeaveSettingsJson()
-                streamingHandler.speakAndHandleUi("Möchten Sie die Einstellungen wirklich verlassen?")
-                lastLlmJsonResponse = syntheticLeave
-                StateUpdate(State.SETTINGS_ACTION, syntheticLeave)
-            }
-
-            else -> {
-                settingsHandler.handleSettingsMenu(final, lastLlmJsonResponse) { newJson ->
-                    lastLlmJsonResponse = newJson
-                }
-            }
+            SettingsMenuIntentRoute.Unresolved ->
+                handleUnresolvedCommand(
+                    nextState = State.SETTINGS_MENU,
+                    retainedContext = lastDialogContext,
+                    classifierLabel = intentResult.intent
+                )
         }
     }
 
-    suspend fun handleSettingsChoice(final: String): StateUpdate {
-
-        if (checkForExitKeywords(final)) {
-            Log.d(EyeAIApp.APP_LOG_TAG, "Exit keyword detected in settings choice: '$final'")
-            return handleExitFromSettings()
+    private suspend fun handleLocalSettingsMenuIntent(intent: Intent): StateUpdate {
+        val settingIntent = when (intent) {
+            Intent.CHANGE_SPEECH_SPEED -> SettingIntent.TTS_SPEED
+            Intent.CHANGE_SPEAKER -> SettingIntent.VOICE
+            Intent.SET_FREQUENCY -> SettingIntent.FREQUENCY
+            Intent.SET_BPS -> SettingIntent.BPS
+            else -> error("Intent $intent is not a concrete settings intent")
         }
+        Log.d(
+            EyeAIApp.APP_LOG_TAG,
+            "[DecisionTrace][StateMachine][SETTINGS_ROUTE] classifier=NLP_V2 " +
+                "intent=$intent action=LOCAL_SETTINGS_SELECTION nextState=SETTINGS_CHOICE"
+        )
+        speechOutputHandler.speakAndHandleUi(settingIntent.missingOperationQuestion())
+        lastDialogContext = jsonParser.createSettingsContext(settingIntent)
+        return StateUpdate(State.SETTINGS_CHOICE, lastDialogContext)
+    }
 
-        return settingsHandler.handleSettingsChoice(final, lastLlmJsonResponse) { newJson ->
-            lastLlmJsonResponse = newJson
+    private suspend fun requestExternalIntentContextSwitch(
+        intentResult: IntentResult
+    ): StateUpdate {
+        val pendingIntent = PendingExternalIntent(intentResult)
+        val pendingContext = PendingExternalIntentCodec.encode(pendingIntent)
+        lastDialogContext = pendingContext
+        Log.d(
+            EyeAIApp.APP_LOG_TAG,
+            "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] action=STORE " +
+                "intent=${intentResult.intent} confidence=${formatPercentage(intentResult.confidence)} " +
+                "originalText='${intentResult.originalText}' probabilities=${intentResult.probabilities.size}"
+        )
+        speechOutputHandler.speakAndHandleUi(
+            PendingExternalIntentPresentation.confirmationQuestion(intentResult.intent)
+        )
+        return StateUpdate(State.SETTINGS_EXTERNAL_CONFIRMATION, pendingContext)
+    }
+
+    private suspend fun remindUserSettingsAreAlreadyOpen(): StateUpdate {
+        lastDialogContext = null
+        Log.d(
+            EyeAIApp.APP_LOG_TAG,
+            "[DecisionTrace][StateMachine][SETTINGS_ROUTE] classifier=NLP_V2 " +
+                "intent=OPEN_SETTINGS action=REPLAY_EXISTING_MENU nestedFlowCreated=false"
+        )
+        speechOutputHandler.speakAndHandleUi(
+            "Sie befinden sich bereits in den Einstellungen. ${LocalInteractionMessages.SETTINGS_MENU}"
+        )
+        return StateUpdate(State.SETTINGS_MENU, null)
+    }
+
+    private suspend fun executePendingExternalIntent(
+        pendingIntent: PendingExternalIntent
+    ): StateUpdate {
+        val result = pendingIntent.intentResult
+        Log.d(
+            EyeAIApp.APP_LOG_TAG,
+            "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] action=DISPATCH " +
+                "intent=${result.intent} originalText='${result.originalText}' " +
+                "source=STORED_NLP_RESULT nlpInferenceCountForOriginalText=1"
+        )
+        return when (result.intent) {
+            Intent.TEXT_RECOGNITION -> handleTextRecognitionDirectly()
+            Intent.OBJECT_DETECTION -> handleObjectDetectionRequest(result.originalText)
+            Intent.MEASURE_DISTANCE ->
+                handleUnresolvedCommand(classifierLabel = Intent.MEASURE_DISTANCE)
+            else -> error("Intent ${result.intent} is not external to settings")
+        }
+	}
+
+	suspend fun handleSettingsChoice(final: String): StateUpdate {
+		return settingsHandler.handleSettingsChoice(final, lastDialogContext) { newJson ->
+            lastDialogContext = newJson
         }
     }
 
     suspend fun handleSettingsAction(final: String): StateUpdate {
-
-        if (checkForExitKeywords(final)) {
-            Log.d(EyeAIApp.APP_LOG_TAG, "Exit keyword detected in settings choice: '$final'")
-            return handleExitFromSettings()
-        }
-
-        return settingsHandler.handleSettingsAction(final, lastLlmJsonResponse) { newJson ->
-            lastLlmJsonResponse = newJson
+		return settingsHandler.handleSettingsAction(final, lastDialogContext) { newJson ->
+            lastDialogContext = newJson
         }
     }
 
-    private fun createSyntheticSettingsJson(settingType: String): String {
-        return """{"requested_function": "settings", "setting_intent": "$settingType"}"""
-    }
+    suspend fun handleSettingsExternalConfirmation(final: String): StateUpdate {
+        val pendingIntent = PendingExternalIntentCodec.decode(lastDialogContext)
+        if (pendingIntent == null) {
+            Log.e(
+                EyeAIApp.APP_LOG_TAG,
+                "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +
+                    "outcome=INVALID_OR_MISSING action=RETURN_TO_SETTINGS_MENU"
+            )
+            lastDialogContext = null
+            speechOutputHandler.speakAndHandleUi(
+                "Der vorgemerkte Befehl ist nicht mehr verfügbar. ${LocalInteractionMessages.SETTINGS_MENU}"
+            )
+            return StateUpdate(State.SETTINGS_MENU, null)
+        }
 
-    private fun createLeaveSettingsJson(): String {
-        return """{"changed_settings": [{"leave": true}]}"""
-    }
-
-    private suspend fun generateLlmResponse(prompt: String, structured: Boolean): String? {
-        val promptTrimmed = prompt.trim()
-        if (promptTrimmed.isEmpty()) return null
-
-        // Cache check
-        val cacheKey = "$promptTrimmed:$structured"
-        promptCache[cacheKey]?.let { return it }
-
-        val start = System.nanoTime()
-        return try {
-            val result = eyeAIApp.llm!!.generate(promptTrimmed, structured)
-            Log.d(EyeAIApp.APP_LOG_TAG, "LLM generate (non-stream) END duration=${elapsedMs(start)} ms")
-
-            // Cache result (limit cache size)
-            if (promptCache.size < 50) {
-                promptCache[cacheKey] = result
+        // Do not run yes/no through the ten intent classes. This explicit
+        // confirmation state is owned exclusively by the local confirmation model.
+        return when (contextSwitchConfirmation.evaluate(final, pendingIntent)) {
+            ContextSwitchConfirmationResult.APPROVED -> {
+                Log.d(
+                    EyeAIApp.APP_LOG_TAG,
+                    "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +
+                        "evaluator=LOCAL_CONFIRMATION_MODEL apiCalled=false " +
+                        "decision=ACCEPT confirmation=APPROVED " +
+                        "intent=${pendingIntent.intentResult.intent} " +
+                        "action=EXECUTE_STORED_RESULT pendingContextRetained=false " +
+                        "nlpReclassified=false"
+                )
+                lastDialogContext = null
+                executePendingExternalIntent(pendingIntent)
             }
 
-            result
-        } catch (e: Exception) {
-            Log.e(EyeAIApp.APP_LOG_TAG, "LLM generate (non-stream) EXCEPTION after ${elapsedMs(start)} ms", e)
-            streamingHandler.speakAndHandleUi("Entschuldigung, bei der Anfrage ist ein Fehler aufgetreten.")
-            null
-        }
-    }
+            ContextSwitchConfirmationResult.REJECTED -> {
+                Log.d(
+                    EyeAIApp.APP_LOG_TAG,
+                    "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +
+                        "evaluator=LOCAL_CONFIRMATION_MODEL apiCalled=false " +
+                        "decision=REJECT confirmation=REJECTED " +
+                        "action=STAY_IN_SETTINGS_MENU nextState=SETTINGS_MENU " +
+                        "pendingExternalIntent=cleared"
+                )
+                lastDialogContext = null
+                speechOutputHandler.speakAndHandleUi(
+                    "Okay, Sie bleiben in den Einstellungen. ${LocalInteractionMessages.SETTINGS_MENU}"
+                )
+                StateUpdate(State.SETTINGS_MENU, null)
+            }
 
-    private fun logDebugInfo(final: String, jsonResponse: String) {
-        Log.d(EyeAIApp.APP_LOG_TAG, "handleIdle called with: '$final', parsed function: ${jsonParser.parseRequestedFunction(jsonResponse)}")
-        Log.d(EyeAIApp.APP_LOG_TAG, "User input: '$final'")
-        Log.d(EyeAIApp.APP_LOG_TAG, "LLM JSON response: $jsonResponse")
-        Log.d(EyeAIApp.APP_LOG_TAG, "Parsed function: ${jsonParser.parseRequestedFunction(jsonResponse)}")
-        Log.d(EyeAIApp.APP_LOG_TAG, "Parsed object query: '${jsonParser.parseObjectQuery(jsonResponse)}'")
+			ContextSwitchConfirmationResult.UNKNOWN -> {
+                Log.d(
+                    EyeAIApp.APP_LOG_TAG,
+                    "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +
+                        "evaluator=LOCAL_CONFIRMATION_MODEL apiCalled=false " +
+                        "decision=UNKNOWN confirmation=UNKNOWN action=REQUEST_CLARIFICATION " +
+                        "nextState=SETTINGS_EXTERNAL_CONFIRMATION pendingContextRetained=true"
+                )
+				speechOutputHandler.speakAndHandleUi(
+                    "Ich konnte die Bestätigung nicht eindeutig zuordnen. " +
+                        "Bitte antworten Sie mit Ja oder Nein."
+                )
+                StateUpdate(State.SETTINGS_EXTERNAL_CONFIRMATION, lastDialogContext)
+            }
+
+            ContextSwitchConfirmationResult.FAILED -> {
+                Log.w(
+                    EyeAIApp.APP_LOG_TAG,
+                    "[DecisionTrace][StateMachine][PENDING_EXTERNAL_INTENT] " +
+                        "evaluator=LOCAL_CONFIRMATION_MODEL apiCalled=false " +
+                        "decision=FAILED confirmation=FAILED action=KEEP_PENDING_CONTEXT " +
+                        "nextState=SETTINGS_EXTERNAL_CONFIRMATION pendingContextRetained=true"
+                )
+                StateUpdate(State.SETTINGS_EXTERNAL_CONFIRMATION, lastDialogContext)
+            }
+        }
     }
 }

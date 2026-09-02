@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "tokenizer_type": "deterministic_word_boundary_bpe",
+  "normalization": "shared_intent_nfkc_lower_punctuation_whitespace_v1",
+  "word_boundary_symbol": "▁",
+  "padding": "post",
+  "truncating": "post",
+  "max_length": 24,
+  "reserved_tokens": {
+    "PAD": {
+      "token": "[PAD]",
+      "id": 0
+    },
+    "UNK": {
+      "token": "[UNK]",
+      "id": 1
+    }
+  },
+  "requested_vocabulary_size": 2000,
+  "actual_vocabulary_size": 2000,
+  "merge_count": 1957,
+  "vocabulary_checksum_sha256": "92d3b09395b92cd1226ab4257fe2567c25deab5d6d64daf4956e2682f676a4fe",
+  "validation_or_challenge_used_for_vocabulary": false,
+  "implementation_note": "BPE merges are learned within normalized whitespace-delimited words; merges never cross word boundaries."
+}

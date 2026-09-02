@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "tokenizer_type": "deterministic_word_level",
+  "normalization": "shared_intent_nfkc_lower_punctuation_whitespace_v1",
+  "split": "normalized whitespace",
+  "padding": "post",
+  "truncating": "post",
+  "max_length": 24,
+  "reserved_tokens": {
+    "PAD": {
+      "token": "[PAD]",
+      "id": 0
+    },
+    "UNK": {
+      "token": "[UNK]",
+      "id": 1
+    }
+  },
+  "vocabulary_policy": "all normalized training tokens with frequency >= 1",
+  "vocabulary_size": 2335,
+  "vocabulary_checksum_sha256": "41a78336bc3daf3c543e5a850b3718be6dadf091475b900a5722022d9b61331d",
+  "validation_or_challenge_used_for_vocabulary": false
+}

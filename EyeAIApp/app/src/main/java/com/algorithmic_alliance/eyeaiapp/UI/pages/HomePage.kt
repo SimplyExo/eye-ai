@@ -92,7 +92,7 @@ fun HomePage(
         }
         onEvent(UIEvent.UIinitCamera(null, lifecycleOwner))
         onEvent(UIEvent.UpdateVoskStatusText)
-        onEvent(UIEvent.UpdateLlmStatusText)
+        onEvent(UIEvent.UpdateSpeechStatusText)
     }
 
 
@@ -122,7 +122,7 @@ fun HomePage(
                 Icon(
                     painter = if (uiState.voskListening) {
                         painterResource(R.drawable.stop_24px)
-                    } else if (uiState.llmSpeaking) {
+                    } else if (uiState.ttsSpeaking) {
                         painterResource(
                             R.drawable.pause_playback_24px
                         )
@@ -282,18 +282,16 @@ fun VoskStatusCard(viewModel: MainViewModel) {
             Text("Spracherkennung", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (uiState.llmResponseText.isEmpty()) Text(
+                if (uiState.speechResponseText.isEmpty()) Text(
                     modifier = Modifier.padding(Spacing.sm),
                     text = uiState.speechRecognitionFinalResultText,
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyMedium
                 )
-                if (uiState.llmResponseText.isNotEmpty()) if (uiState.llmResponseText == stringResource(
-                        R.string.llm_responding_notice
-                    )
+                if (uiState.speechResponseText.isNotEmpty()) if (uiState.speechResponseText == "eyeai dent nach"
                 ) {
                     Text("EyeAI denkt nach...", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
-                } else if (uiState.llmResponseText != "") Text(
+                } else if (uiState.speechResponseText != "") Text(
                     "EyeAI antwortet...", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium
                 )
             }

@@ -1,0 +1,17 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2711";
+
+    fragment@0 {
+        target-path = "/";
+
+        __overlay__ {
+            hat_button {
+                compatible = "eyeaivision,button";
+                button-gpios = <&gpio 22 0>;
+            };
+        };
+    };
+};

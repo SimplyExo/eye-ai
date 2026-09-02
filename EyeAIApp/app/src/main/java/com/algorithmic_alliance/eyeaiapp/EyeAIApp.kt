@@ -15,10 +15,9 @@ import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
+import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
-import com.algorithmic_alliance.eyeaiapp.llm.google_ai_studio.GoogleAIStudioLLM
-import com.algorithmic_alliance.eyeaiapp.llm.LLM
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
@@ -26,6 +25,7 @@ import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
+import com.algorithmic_alliance.eyeaiapp.settingsparser.LocalSettingsParser
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as UI_LOG_TAG
@@ -35,7 +35,9 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.Locale
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.getValue
 
 /**
@@ -46,6 +48,10 @@ class EyeAIApp : Application() {
 	lateinit var settings: Settings
 		private set
 
+	val speechThreadExecutor = Executors.newSingleThreadExecutor()
+
+	var lastDialogContext: String? = null
+
 	private var loadAIModelExecutor = Executors.newSingleThreadExecutor()
 
 	var metricDepthModel: MetricDepthModel? = null
@@ -55,18 +61,80 @@ class EyeAIApp : Application() {
 	lateinit var voskModel: VoskModel
 		private set
 
-	/* can be [null] if googleAiStudioApiKey is not set in settings */
-	var llm: LLM? = null
-		private set
-
 	/* will not be fully created if enableObjectDetection is disabled in settings */
 	var yoloModel: YoloModel =
 		YoloModel(YoloModelInfo("model.tflite", "coco.names", 640))
 		private set
 
 	var nlpModel: NLPModel =
-		NLPModel(NLPModelInfo("nlp_model_float32.tflite"))
+		NLPModel(NLPModelInfo.findById(NLPModelInfo.DEFAULT_MODEL_ID))
 		private set
+
+	/** Loaded lazily and shared across short-lived StateMachine instances. */
+	val confirmationModel: ConfirmationModel by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+		val started = System.nanoTime()
+		Log.i(
+			APP_LOG_TAG,
+			"[DecisionTrace][ConfirmationModel][LOAD] outcome=STARTED " +
+				"model=${ConfirmationModel.MODEL_ID} asset=${ConfirmationModel.ASSET_PATH} " +
+				"execution=LOCAL apiCalled=false"
+		)
+		try {
+			ConfirmationModel.fromAssets(this).also { model ->
+				Log.i(
+					APP_LOG_TAG,
+					"[DecisionTrace][ConfirmationModel][LOAD] outcome=SUCCESS " +
+						"model=${ConfirmationModel.MODEL_ID} featureCount=${model.featureCount} " +
+						"threshold=${String.format(Locale.US, "%.4f", model.confidenceThreshold)} " +
+						"duration=${(System.nanoTime() - started) / 1_000_000}ms " +
+						"execution=LOCAL apiCalled=false"
+				)
+			}
+		} catch (error: Throwable) {
+			Log.e(
+				APP_LOG_TAG,
+				"[DecisionTrace][ConfirmationModel][LOAD] outcome=FAILED " +
+					"model=${ConfirmationModel.MODEL_ID} " +
+					"duration=${(System.nanoTime() - started) / 1_000_000}ms " +
+					"execution=LOCAL apiCalled=false",
+				error
+			)
+			throw error
+		}
+	}
+
+	/**
+	 * The two frozen Clean-v2 interpreters are loaded lazily once, from product
+	 * assets only. SettingsHandler requests this property on a background dispatcher.
+	 */
+	private val localSettingsParserLazy = lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+		val started = System.nanoTime()
+		Log.i(
+			APP_LOG_TAG,
+			"[DecisionTrace][SettingsParser][LOAD] architecture=SPECIALIZED_WORD_OPERATION_CHAR_SPEAKER " +
+				"execution=LOCAL apiCalled=false outcome=STARTED"
+		)
+		try {
+			LocalSettingsParser.fromAssets(this).also {
+				Log.i(
+					APP_LOG_TAG,
+					"[DecisionTrace][SettingsParser][LOAD] execution=LOCAL apiCalled=false " +
+						"outcome=SUCCESS duration=${(System.nanoTime() - started) / 1_000_000}ms"
+				)
+			}
+		} catch (error: Throwable) {
+			Log.e(
+				APP_LOG_TAG,
+				"[DecisionTrace][SettingsParser][LOAD] execution=LOCAL apiCalled=false outcome=FAILED " +
+					"duration=${(System.nanoTime() - started) / 1_000_000}ms",
+				error
+			)
+			throw error
+		}
+	}
+
+	val localSettingsParser: LocalSettingsParser
+		get() = localSettingsParserLazy.value
 
 	/* will not be fully initialized when enableOCR is disabled in settings */
 	var ocrModel = GoogleOCR()
@@ -81,6 +149,8 @@ class EyeAIApp : Application() {
 	var bitmapFlow: MutableSharedFlow<Bitmap>? = null
 	lateinit var eyeAIVision: EyeAIVision
 	var aiData = AIModelData
+
+	val voskUserStart = AtomicBoolean(false)
 
 	var npuQnnDelegateDirectory: String? = null
 
@@ -121,23 +191,25 @@ class EyeAIApp : Application() {
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
 			switchDepthModel(settings.depthModel)
 
-			settings.googleAiStudioApiKey?.let { apiKey ->
-				if (!apiKey.isEmpty())
-					llm = GoogleAIStudioLLM(apiKey, settings.customGoogleGenAIStudioEndpoint)
-			}
-
 			// Yolo Model erstellen
 			if (settings.enableObjectDetection) {
 				yoloModel.create(baseContext, npuQnnDelegateDirectory!!, settings.enableNpu)
 			}
 
 			// NLP erstellen
-			nlpModel.create(baseContext)
+			switchNlpModel(settings.nlpModel)
 
 			// Google ML Kit initialisieren
 			if (settings.enableOCR)
 				ocrModel.create()
 		}
+	}
+
+	override fun onTerminate() {
+		if (localSettingsParserLazy.isInitialized()) {
+			localSettingsParserLazy.value.close()
+		}
+		super.onTerminate()
 	}
 
 	fun updateSettings() {
@@ -170,6 +242,10 @@ class EyeAIApp : Application() {
 		val enableNpuChanged = oldSettings.enableNpu != settings.enableNpu
 
 		CoroutineScope(loadAIModelExecutor.asCoroutineDispatcher()).launch {
+			if (oldSettings.nlpModel != settings.nlpModel) {
+				switchNlpModel(settings.nlpModel)
+			}
+
 			if (oldSettings.depthModel != settings.depthModel || enableNpuChanged) {
 				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] DepthModel is set to ${settings.depthModel}")
 				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] Enable NPU is set to ${settings.enableNpu}")
@@ -181,18 +257,6 @@ class EyeAIApp : Application() {
 				if (!settings.enableSpeechRecognition) {
 					Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] Closing Vosk service")
 					voskModel.closeService()
-				}
-			}
-
-			if (oldSettings.googleAiStudioApiKey != settings.googleAiStudioApiKey || oldSettings.customGoogleGenAIStudioEndpoint != settings.customGoogleGenAIStudioEndpoint) {
-				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] GoogleAIStudioAPIKey is set to ${settings.googleAiStudioApiKey}")
-				Log.d(UI_LOG_TAG, "[EyeAIApp.updateSettings] CustomGoogleGenAIStudioEndpoint is set to ${settings.customGoogleGenAIStudioEndpoint}")
-				val apiKey = settings.googleAiStudioApiKey
-				val customEndpoint = settings.customGoogleGenAIStudioEndpoint
-				llm = if (apiKey != null && !apiKey.isEmpty()) {
-					GoogleAIStudioLLM(apiKey, customEndpoint)
-				} else {
-					null
 				}
 			}
 
@@ -220,6 +284,12 @@ class EyeAIApp : Application() {
 
 		metricDepthModel = findDepthModelInfo(modelName)
 			.createDepthModel(this, npuQnnDelegateDirectory!!, settings.enableNpu)
+	}
+
+	private fun switchNlpModel(modelId: String) {
+		val modelInfo = NLPModelInfo.findById(modelId)
+		if (nlpModel.info.id == modelInfo.id && nlpModel.isInitialized) return
+		nlpModel.create(this, modelInfo)
 	}
 
 	private fun findDepthModelInfo(modelName: String): MetricDepthModelInfo {
