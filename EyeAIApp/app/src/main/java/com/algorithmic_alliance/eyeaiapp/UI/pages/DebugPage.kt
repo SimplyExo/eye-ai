@@ -173,14 +173,14 @@ fun DebugPage(
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         if (sharedPreferences.getString(
-                                stringResource(R.string.input_source_setting), "camera"
-                            ) == "camera" && !sharedPreferences.getBoolean(
+                                stringResource(R.string.input_source_setting), stringResource(R.string.input_is_camera)
+                            ) == stringResource(R.string.input_is_camera) && !sharedPreferences.getBoolean(
                                 stringResource(R.string.show_debug_input_bitmap_setting), false
                             )
                         ) CameraPreview(onEvent = onEvent)
                         if (sharedPreferences.getString(
-                                stringResource(R.string.input_source_setting), "camera"
-                            ) == "media" && !sharedPreferences.getBoolean(
+                                stringResource(R.string.input_source_setting), stringResource(R.string.input_is_camera)
+                            ) == stringResource(R.string.input_is_media) && !sharedPreferences.getBoolean(
                                 stringResource(R.string.show_debug_input_bitmap_setting), false
                             )
                         ) {

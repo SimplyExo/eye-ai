@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.audio
 
 import android.content.Context
 import android.util.Log
+import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import kotlinx.coroutines.CoroutineScope
@@ -114,13 +115,13 @@ object SpatialAudio {
 		var fileNameWav: String
 		var fileNameJson: String
 		when (language) {
-			"english" -> {
+			eyeAIApp.getString(R.string.language_is_english) -> {
 				Log.d("SpatialAudio", "[SpatialAudio] Selected english language")
 				fileNameWav = "coco_labels_english.wav"
 				fileNameJson = "coco_labels_data_english.json"
 			}
 
-			"german" -> {
+			eyeAIApp.getString(R.string.language_is_german) -> {
 				Log.d("SpatialAudio", "[SpatialAudio] Selected german language")
 				fileNameWav = "coco_labels_german.wav"
 				fileNameJson = "coco_labels_data_german.json"

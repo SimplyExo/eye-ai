@@ -96,7 +96,7 @@ fun connectToDevice(
                         sharedPreferences.edit(commit = true) {
                             putString(
                                 context.getString(R.string.input_source_setting),
-                                "eyeaivision"
+                                context.getString(R.string.input_is_eyeaivision)
                             )
                         }
                         onEvent(UIEvent.UpdateSettings)
@@ -110,7 +110,7 @@ fun connectToDevice(
             } else {
                 val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
                 sharedPreferences.edit(commit = true) {
-                    putString(context.getString(R.string.input_source_setting), "camera")
+                    putString(context.getString(R.string.input_source_setting), context.getString(R.string.input_is_camera))
                 }
                 onEvent(UIEvent.UpdateSettings)
                 Log.d(

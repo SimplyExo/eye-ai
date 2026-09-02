@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.util.Log
 import android.util.Size
 import androidx.annotation.OptIn
+import com.algorithmic_alliance.eyeaiapp.R
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -169,7 +170,7 @@ class CameraFrameAnalyzer(
     }
 
     fun getFrame(): Bitmap? {
-        return if (eyeAIApp.settings.inputSource == "camera") {
+        return if (eyeAIApp.settings.inputSource == eyeAIApp.getString(R.string.input_is_camera)) {
             latestCameraFrame.get()
         } else {
             mediaImageBitmapProvider()

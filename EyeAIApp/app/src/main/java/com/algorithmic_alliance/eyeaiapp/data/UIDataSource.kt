@@ -204,9 +204,9 @@ object UIDataSource {
                 "title" to "Audio language",
                 "description" to "",
                 "settingsType" to "select",
-                "settingsOptions" to listOf("english", "german"),
+                "settingsOptions" to listOf(R.string.language_is_english, R.string.language_is_german),
                 "string" to R.string.object_playback_language,
-                "default" to "english"
+                "default" to R.string.language_is_english
             ),
         ),
         "Device Manager" to listOf(
@@ -270,9 +270,9 @@ object UIDataSource {
                 "title" to "Input Source",
                 "description" to "",
                 "settingsType" to "select",
-                "settingsOptions" to listOf("camera", "media", "eyeaivision"),
+                "settingsOptions" to listOf(R.string.input_is_camera, R.string.input_is_media, R.string.input_is_eyeaivision),
                 "string" to R.string.input_source_setting,
-                "default" to "camera"
+                "default" to R.string.input_is_camera
             ),
             mapOf(
                 "title" to "Select Media File",

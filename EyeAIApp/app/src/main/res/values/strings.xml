@@ -24,11 +24,11 @@
     <string name="enable_speech_recognition_setting">enable_speech_recognition</string>
     <string name="enable_ocr_setting">enable_ocr_setting</string>
     <string name="input_source_setting">input_source_setting</string>
-    <string name="input_is_camera">camera</string>
-    <string name="input_is_media">media</string>
+    <string name="input_is_camera">Camera</string>
+    <string name="input_is_media">Media</string>
     <string name="media_path_setting">media_path_setting</string>
     <string name="eyeaivision_ip_setting">eyeaivision_ip_setting</string>
-    <string name="input_is_eyeaivision">eyeaivision</string>
+    <string name="input_is_eyeaivision">EyeAI-Vision</string>
     <string name="google_ai_studio_api_key_stetting">google_ai_studio_api_key</string>
     <string name="enable_object_detection_setting">enable_object_detection</string>
     <string name="speech_recognition_ready">Speech Recognition Listening!</string>
@@ -69,4 +69,6 @@ Every camera frame is processed offline locally on your device,
     <string name="permission_icon_description">Current Permission Icon</string>
     <string name="stop_tts_description">Stop TTS Button</string>
     <string name="debug_page_activated">debug_page_activated</string>
+    <string name="language_is_german">German</string>
+    <string name="language_is_english">English</string>
 </resources>

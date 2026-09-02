@@ -7,10 +7,12 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.benchmark.json.BenchmarkData
 import androidx.compose.animation.AnimatedContent
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Checkbox
+import android.content.Context
 import androidx.core.content.edit
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -335,6 +337,7 @@ fun CheckBoxSetting(
 fun SelectSetting(
     modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
 ) {
+    val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val settingKey = stringResource(settingData["string"] as Int)
 
@@ -342,7 +345,7 @@ fun SelectSetting(
     var currentlySelected by rememberSaveable {
         mutableStateOf(
             (sharedPreferences.getString(
-                settingKey, settingData["default"] as String?
+                settingKey, resolveString(context, settingData["default"] as Any)
             ))
         )
     }
@@ -373,8 +376,9 @@ fun SelectSetting(
             DropdownMenu(
                 expanded = dropDownEnabled, onDismissRequest = { dropDownEnabled = false }) {
                 for (item in (settingData.getValue("settingsOptions") as List<Any>)) {
-                    DropdownMenuItem(text = { Text(item as String, style = MaterialTheme.typography.bodySmall) }, onClick = {
-                        currentlySelected = item as String
+                    DropdownMenuItem(
+                        text = { Text(resolveString(LocalContext.current, item), style = MaterialTheme.typography.bodySmall) }, onClick = {
+                        currentlySelected = resolveString(context, item)
                         Log.d(
                             LOG_TAG,
                             "[SettingsPage.SelectSetting] Changed setting $settingKey to $currentlySelected"
@@ -610,5 +614,13 @@ fun FileSetting(
                 painter = painterResource(R.drawable.upload_file_24px), contentDescription = ""
             )
         }
+    }
+}
+
+private fun resolveString(context: Context, value: Any ) : String{
+    return when(value){
+        is Int -> context.getString(value)
+        is String -> value
+        else -> value.toString()
     }
 }
