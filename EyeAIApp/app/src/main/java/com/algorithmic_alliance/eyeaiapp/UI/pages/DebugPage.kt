@@ -126,7 +126,7 @@ fun DebugPage(
                     Icon(
                         painter = if (uiState.voskListening) {
                             painterResource(R.drawable.stop_24px)
-                        } else if (uiState.llmSpeaking) {
+                        } else if (uiState.ttsSpeaking) {
                             painterResource(
                                 R.drawable.pause_playback_24px
                             )

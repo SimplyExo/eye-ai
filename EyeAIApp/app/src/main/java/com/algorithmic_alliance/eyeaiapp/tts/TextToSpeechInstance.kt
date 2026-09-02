@@ -93,6 +93,18 @@ class TextToSpeechInstance(
 
 	}
 
+	private fun finishUtterance(utteranceId: String?){
+		decrementUtteranceCount()
+		utteranceId?.let {
+			id ->
+			pendingCallbacks.remove(id)?.invoke()
+			hasSpecificCallback.remove(id)
+		}
+		if(getActiveUtteranceCount() == 0){
+			invokeOnFinishedWhenPlaybackStops()
+		}
+	}
+
 
 	// ------------------------------
 	// Utterance listener
@@ -105,43 +117,31 @@ class TextToSpeechInstance(
 
 			override fun onDone(utteranceId: String?) {
 				Log.d(EyeAIApp.APP_LOG_TAG, "TTS onDone utterance=$utteranceId")
-				utteranceId?.let { id ->
+				finishUtterance(utteranceId)
 
-					decrementUtteranceCount()
-
-
-					pendingCallbacks.remove(id)?.invoke()
-					hasSpecificCallback.remove(id)
-
-
-					if (getActiveUtteranceCount() == 0) {
-						Log.d(EyeAIApp.APP_LOG_TAG, "No active utterances left -> schedule global callback when playback stops")
-						invokeOnFinishedWhenPlaybackStops()
-					}
+				if (getActiveUtteranceCount() == 0) {
+					Log.d(EyeAIApp.APP_LOG_TAG, "No active utterances left -> schedule global callback when playback stops")
+					invokeOnFinishedWhenPlaybackStops()
 				}
 			}
 
 			override fun onError(utteranceId: String?) {
 				Log.e(EyeAIApp.APP_LOG_TAG, "TTS onError utterance=$utteranceId")
-				utteranceId?.let { id ->
-					decrementUtteranceCount()
-					pendingCallbacks.remove(id)?.invoke()
-					hasSpecificCallback.remove(id)
-					if (getActiveUtteranceCount() == 0) {
-						invokeOnFinishedWhenPlaybackStops()
-					}
+				finishUtterance(utteranceId)
+
+				if (getActiveUtteranceCount() == 0) {
+					Log.d(EyeAIApp.APP_LOG_TAG, "No active utterances left -> schedule global callback when playback stops")
+					invokeOnFinishedWhenPlaybackStops()
 				}
 			}
 
 			override fun onStop(utteranceId: String?, interrupted: Boolean) {
 				Log.d(EyeAIApp.APP_LOG_TAG, "TTS onStop utterance=$utteranceId interrupted=$interrupted")
-				utteranceId?.let { id ->
-					decrementUtteranceCount()
-					pendingCallbacks.remove(id)?.invoke()
-					hasSpecificCallback.remove(id)
-					if (getActiveUtteranceCount() == 0) {
-						invokeOnFinishedWhenPlaybackStops()
-					}
+				finishUtterance(utteranceId)
+
+				if (getActiveUtteranceCount() == 0) {
+					Log.d(EyeAIApp.APP_LOG_TAG, "No active utterances left -> schedule global callback when playback stops")
+					invokeOnFinishedWhenPlaybackStops()
 				}
 			}
 		})
@@ -268,8 +268,9 @@ class TextToSpeechInstance(
 			val utteranceId = "utt_${System.currentTimeMillis()}_${Random.nextInt(10000)}"
 			incrementUtteranceCount()
 			val queueModeStr = if (queueMode == QUEUE_FLUSH) "QUEUE_FLUSH" else "QUEUE_ADD"
+			val params = Bundle().apply { putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId) }
 			Log.d(EyeAIApp.APP_LOG_TAG, "speak enqueued utterance=$utteranceId with queueMode=$queueModeStr")
-			tts?.speak(text, queueMode, null, utteranceId)
+			tts?.speak(text, queueMode, params, utteranceId)
 		}
 	}
 

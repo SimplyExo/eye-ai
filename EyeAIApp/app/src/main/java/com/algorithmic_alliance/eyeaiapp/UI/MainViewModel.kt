@@ -28,6 +28,7 @@ import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.VoskRestartPolicy
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.vibrate
+import com.squareup.wire.internal.encodeArray_int32
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -47,7 +48,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(UIState())
     val uiState: StateFlow<UIState> = _uiState.asStateFlow()
 
-    private val voskUserStart = AtomicBoolean(false)
 
     private var currentState: State = State.IDLE
     private var lastFinalResultMillis = System.currentTimeMillis()
@@ -60,13 +60,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d(LOG_TAG, "[MainViewModel] VoskListeningChanged")
                 State.IDLE
 
-                if(eyeAIApp().textToSpeechInstance.isSpeaking()){
+                if (eyeAIApp().textToSpeechInstance.isSpeaking()) {
                     eyeAIApp().textToSpeechInstance.stop()
                     updateSpeechResponseText("")
                     updateVoskStatusText()
-                    setLLMSpeaking(false)
-                } else if (!voskUserStart.get()) {
-                    setLLMSpeaking(false)
+                    setTTSSpeaking(false)
+                } else if (!eyeAIApp().voskUserStart.get()) {
+                    setTTSSpeaking(false)
                     startVosk()
                 } else {
                     stopVosk()
@@ -162,8 +162,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d(LOG_TAG, "[MainViewModel] Finished")
             }
 
-            is UIEvent.OnUpdateLLMSpeaking ->{
-                setLLMSpeaking(event.value)
+            is UIEvent.OnUpdateTTSSpeaking -> {
+                setTTSSpeaking(event.value)
             }
 
             is UIEvent.OnUpdateAppMissingSelectedMediaSource -> {
@@ -172,9 +172,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun setLLMSpeaking(value: Boolean){
+    fun setTTSSpeaking(value: Boolean) {
         Log.d(LOG_TAG, "[setLLMSpeaking] : $value")
-        _uiState.update { it.copy(llmSpeaking = value) }
+        _uiState.update { it.copy(ttsSpeaking = value) }
+    }
+
+    fun setVoskListening(value: Boolean) {
+        _uiState.update { it.copy(voskListening = value) }
     }
 
     private fun setPermissionTutorialCompleted(value: Boolean) {
@@ -244,11 +248,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     @RequiresApi(Build.VERSION_CODES.P)
     private fun startVoskListening(trigger: String = "USER_BUTTON") {
         Log.d(LOG_TAG, "[MainViewModel.startVoskListening] StartVoskListening called")
-        if (voskUserStart.get()) return // Check whether already started
+        if (eyeAIApp().voskUserStart.get()) return // Check whether already started
 
         uniffi.NativeLib.setObjectAudioPaused(true)
         uniffi.NativeLib.setDepthAudioPaused(true)
-        voskUserStart.set(true)
+        eyeAIApp().voskUserStart.set(true)
         eyeAIApp().voskModel.startListening()
         Log.i(
             EyeAIApp.APP_LOG_TAG,
@@ -270,14 +274,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    private fun stopVoskListening(trigger: String = "USER_BUTTON",) {
+    private fun stopVoskListening(trigger: String = "USER_BUTTON") {
         Log.d(LOG_TAG, "[MainViewModel.stopVoskListening] StopVoskListening called")
-        if (!voskUserStart.get()) return // Check whether already stopped
+        if (!eyeAIApp().voskUserStart.get()) return // Check whether already stopped
 
         val settings = Settings.load(eyeAIApp())
         uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
         uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
-        voskUserStart.set(false)
+        eyeAIApp().voskUserStart.set(false)
         eyeAIApp().voskModel.stopListening()
         Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
         updateVoskStatusText()
@@ -299,7 +303,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     ::onSpeechRecognitionLoaded,
                     { status ->
                         _uiState.update { it.copy(voskListening = status) }
-                        voskUserStart.set(status)
                     }
                 )
         }
@@ -311,14 +314,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     @RequiresApi(Build.VERSION_CODES.P)
     fun updateVoskStatusText() {
+        var voskText = ""
+        when {
+            !hasPermission(Manifest.permission.RECORD_AUDIO) -> {
+                voskText = "Mikrophon-Berechtigung erforderlich"
+            }
+
+            !eyeAIApp().settings.enableSpeechRecognition -> {
+                voskText = "Spracherkennung deaktiviert"
+            }
+
+            eyeAIApp().voskUserStart.get() -> {
+                voskText = eyeAIApp().getString(R.string.speech_recognition_ready)
+                _uiState.update { it.copy(voskListening = true) }
+            }
+
+            else -> {
+                voskText = "Vosk bereit - Button klicken zum Starten"
+            }
+        }
+
         _uiState.update {
             it.copy(
-                speechRecognitionFinalResultText = when {
-                    !hasPermission(Manifest.permission.RECORD_AUDIO) -> "Mikrophon-Berechtigung erforderlich"
-                    !eyeAIApp().settings.enableSpeechRecognition -> "Spracherkennung deaktiviert"
-                    voskUserStart.get() -> eyeAIApp().getString(R.string.speech_recognition_ready)
-                    else -> "Vosk bereit - Button klicken zum Starten"
-                }
+                speechRecognitionFinalResultText = voskText
             )
         }
     }
@@ -363,6 +381,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 "[DecisionTrace][Vosk][PAUSE_FOR_PROCESSING] autoRestartAfterTts=true"
             )
             eyeAIApp().voskModel.stopListening()
+            _uiState.update { it.copy(voskListening = false) }
 
             // vibrate for 100ms
             vibrate(eyeAIApp(), 100)
@@ -397,12 +416,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             EyeAIApp.APP_LOG_TAG,
             "[DecisionTrace][StateMachine][INPUT] state=$currentState originalText='$final'"
         )
-
+        setTTSSpeaking(true)
         val stateMachine = StateMachine(
             eyeAIApp(),
             eyeAIApp().textToSpeechInstance,
             eyeAIApp().lastDialogContext,
-            setSpeechResponseText = {string -> _uiState.update { it.copy(speechResponseText = string) }},
+            setSpeechResponseText = { string -> _uiState.update { it.copy(speechResponseText = string) } },
             eyeAIApp().cameraManager.cameraFrameAnalyzer ?: eyeAIApp().mediaFrameAnalyzer
         )
 
@@ -423,7 +442,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     stateMachine.handleSettingsExternalConfirmation(final)
             }
         }
-
         if (update.voskRestartPolicy == VoskRestartPolicy.REQUIRE_MANUAL_RESTART) {
             Log.i(
                 EyeAIApp.APP_LOG_TAG,
@@ -579,7 +597,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                         State.IDLE
 
-                        if (!voskUserStart.get()) {
+                        if (!eyeAIApp().voskUserStart.get()) {
                             startVoskListening(trigger = "EYEAIVISION_BUTTON")
                         }
 
@@ -590,7 +608,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                         State.IDLE
 
-                        if (voskUserStart.get()) {
+                        if (eyeAIApp().voskUserStart.get()) {
                             eyeAIApp().textToSpeechInstance.stop()
                             stopVoskListening()
                         }

@@ -36,7 +36,7 @@ sealed interface UIEvent {
 
     data class OnUpdateAppMissingSelectedMediaSource(val value: Boolean) : UIEvent
 
-    data class OnUpdateLLMSpeaking(val value: Boolean): UIEvent
+    data class OnUpdateTTSSpeaking(val value: Boolean): UIEvent
 
     data class OnUpdateSettingsOpened(val value: Boolean): UIEvent
 

@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.getValue
 
 /**
@@ -148,6 +149,8 @@ class EyeAIApp : Application() {
 	var bitmapFlow: MutableSharedFlow<Bitmap>? = null
 	lateinit var eyeAIVision: EyeAIVision
 	var aiData = AIModelData
+
+	val voskUserStart = AtomicBoolean(false)
 
 	var npuQnnDelegateDirectory: String? = null
 

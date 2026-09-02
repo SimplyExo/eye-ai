@@ -134,7 +134,7 @@ class SettingsHandler(
 			)
 			speakAndHandleUi(result.question)
 			onJsonUpdate(result.retainedContextJson)
-			StateUpdate(State.SETTINGS_CHOICE, result.retainedContextJson)
+			StateUpdate(State.SETTINGS_CHOICE, result.retainedContextJson, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
 		}
 	}
 
@@ -217,7 +217,7 @@ class SettingsHandler(
 				)
 				onJsonUpdate(null)
 				speakAndHandleUi(GenericCancellation.RESPONSE)
-				StateUpdate(State.IDLE, null)
+				StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
 			}
 
 			SettingsConfirmationResult.NOT_APPLIED -> {
@@ -230,7 +230,7 @@ class SettingsHandler(
 						"Die bisherige Stimme bleibt aktiv."
 				)
 				onJsonUpdate(null)
-				StateUpdate(State.IDLE, null)
+				StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
 			}
 
 			SettingsConfirmationResult.UNKNOWN -> {
@@ -242,7 +242,7 @@ class SettingsHandler(
 					"Ich konnte die Bestätigung nicht eindeutig zuordnen. " +
 						"Bitte antworten Sie mit Ja oder Nein."
 				)
-				StateUpdate(State.SETTINGS_ACTION, currentJson)
+				StateUpdate(State.SETTINGS_ACTION, currentJson, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
 			}
 
 			SettingsConfirmationResult.FAILED -> {
@@ -252,7 +252,7 @@ class SettingsHandler(
 				)
 				speakAndHandleUi("Fehler bei der Verarbeitung.")
 				onJsonUpdate(null)
-				StateUpdate(State.IDLE, null)
+				StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
 			}
 		}
 	}

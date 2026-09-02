@@ -148,7 +148,7 @@ class StateMachine(
                 "externalRequest=false"
         )
         speechOutputHandler.speakAndHandleUi(LocalInteractionMessages.UNRESOLVED_COMMAND)
-        return StateUpdate(nextState, retainedContext)
+        return StateUpdate(nextState, retainedContext, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
     }
 
     private fun classifyIntentWithNLP(input: String): IntentResult? {

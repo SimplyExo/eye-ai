@@ -1,49 +1,32 @@
 package com.algorithmic_alliance.eyeaiapp
 
-import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
-import android.os.Looper
 import android.util.Log
-import android.view.View.GONE
-import android.view.View.VISIBLE
-import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import com.algorithmic_alliance.eyeaiapp.UI.EyeAIAppUI
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.GenericCancellation
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.VoskRestartPolicy
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as UI_LOG_TAG
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
@@ -72,7 +55,6 @@ class MainActivity : AppCompatActivity() {
 
     private val voskStarting = AtomicBoolean(false)
 
-	private val voskUserStart = AtomicBoolean(false)
 	private val voskManualRestartRequired = AtomicBoolean(false)
 	@Volatile
 	private var resumeSpatialAudioAfterTtsJob: Job? = null
@@ -194,14 +176,17 @@ class MainActivity : AppCompatActivity() {
 
         //updateSpeechRecognitionUIVisibility()
 
+
 		eyeAIApp().textToSpeechInstance = TextToSpeechInstance(this) {
+			viewModel.setTTSSpeaking(false)
+			viewModel.updateVoskStatusText()
 				// Restart Vosk after the local TTS response has finished.
 			CoroutineScope(Dispatchers.Main).launch {
 				try {
 					//Announcing that the global callback has been fired.
 					Log.d(EyeAIApp.APP_LOG_TAG, "[DecisionTrace][Vosk][TTS_FINISHED] callback=fired")
 
-					if(!voskUserStart.get()){
+					if(!eyeAIApp().voskUserStart.get()){
 						val skipReason = if (voskManualRestartRequired.get()) {
 							"SETTINGS_APPLIED_BUTTON_PRESS_REQUIRED"
 						} else {
@@ -223,7 +208,7 @@ class MainActivity : AppCompatActivity() {
 					//avoiding prallel starts
 					if (voskStarting.compareAndSet(false, true)) {
 						try {
-							if (voskUserStart.get()) {
+							if (eyeAIApp().voskUserStart.get()) {
 								eyeAIApp().voskModel.startListening()
 								Log.d(
 									EyeAIApp.APP_LOG_TAG,
@@ -258,7 +243,7 @@ class MainActivity : AppCompatActivity() {
 					}
 				} catch (e: Exception) {
 					Log.e(EyeAIApp.APP_LOG_TAG, "Exception in global TTS finished handler", e)
-					if (voskUserStart.get() && voskStarting.compareAndSet(false, true)) {
+					if (eyeAIApp().voskUserStart.get() && voskStarting.compareAndSet(false, true)) {
 						try {
 							eyeAIApp().voskModel.startListening()
 						} catch (_: Exception) {
