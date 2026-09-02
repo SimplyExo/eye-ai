@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -317,12 +319,12 @@ fun ChooseConnectionPage(
                                 modifier = Modifier.clearAndSetSemantics {
                                     contentDescription = "$deviceCategory auswählen"
                                 },
-                                fontSize = 30.sp,
-                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.headlineLarge,
                                 textAlign = TextAlign.Center
                             )
                         }
                         HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outline,
                             modifier = Modifier
                                 .padding(Spacing.sm)
                                 .clearAndSetSemantics {})
@@ -367,7 +369,7 @@ fun ChooseConnectionPage(
                                             .fillMaxWidth(0.6f)
                                     )
                                 else
-                                    Text("Keine verfügbaren Geräte gefunden.")
+                                    Text("Keine verfügbaren Geräte gefunden.", style = MaterialTheme.typography.bodyMedium)
                             }
                             DeviceListEntry(
                                 "Handykamera verwenden",
@@ -378,6 +380,7 @@ fun ChooseConnectionPage(
 
                         }
                         HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outline,
                             modifier = Modifier.padding(
                                 top = Spacing.sm,
                                 start = Spacing.sm,
@@ -387,7 +390,7 @@ fun ChooseConnectionPage(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = Spacing.sm, end = Spacing.xl, top = Spacing.xs, bottom = Spacing.xs),
+                                .padding(start = Spacing.sm, end = Spacing.lg, top = Spacing.xs, bottom = Spacing.xs),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
@@ -397,7 +400,7 @@ fun ChooseConnectionPage(
                                     onCheckedChange = {
                                         shouldRememberDevice = !shouldRememberDevice
                                     })
-                                Text("Als Standardgerät festlegen")
+                                Text("Standardgerät", style = MaterialTheme.typography.bodyLarge)
                             }
                             Box(modifier = Modifier.clickable {
                                 when (devicesData["type"]) {
@@ -421,12 +424,15 @@ fun ChooseConnectionPage(
                                 }
                             }) {
                                 Icon(
+                                    modifier = Modifier.heightIn(Spacing.xl).width(Spacing.xl),
                                     painter = painterResource(R.drawable.refresh_24px),
-                                    contentDescription = ""
+                                    contentDescription = "",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
                         HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outline,
                             modifier = Modifier.padding(
                                 bottom = Spacing.sm,
                                 start = Spacing.sm,
@@ -441,7 +447,7 @@ fun ChooseConnectionPage(
                         ) {
                             Button(
                                 modifier = Modifier.weight(1f),
-                                onClick = { goBack() }) { Text("Zurück") }
+                                onClick = { goBack() }) { Text("Zurück", style = MaterialTheme.typography.labelLarge) }
                             Button(
                                 modifier = Modifier
                                     .weight(1f)
@@ -488,7 +494,8 @@ fun ChooseConnectionPage(
                                 }) {
                                 Text(
                                     "Verbinden",
-                                    modifier = Modifier.clearAndSetSemantics {})
+                                    modifier = Modifier.clearAndSetSemantics {},
+                                    style = MaterialTheme.typography.labelLarge)
                             }
                         }
                     }

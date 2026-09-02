@@ -37,6 +37,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
+import com.example.compose.AppTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 
@@ -114,10 +115,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            EyeAIAppUI(
-                onEvent = viewModel::onEvent,
-                viewModel = viewModel
-            )
+            AppTheme() {
+                EyeAIAppUI(
+                    onEvent = viewModel::onEvent,
+                    viewModel = viewModel
+                )
+            }
         }
 
         /*

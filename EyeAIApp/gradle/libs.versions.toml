@@ -1,5 +1,5 @@
 [versions]
-agp = "9.3.2"
+agp = "9.4.0"
 kotlin = "2.4.0"
 coreKtx = "1.19.0"
 kotlinxSerializationJson = "1.11.0"
@@ -24,6 +24,7 @@ remoteCreationCore = "1.0.0-alpha14"
 material3 = "1.4.0"
 foundationLayout = "1.11.4"
 benchmarkCommon = "1.4.1"
+uiTextGoogleFonts = "1.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -63,6 +64,7 @@ androidx-compose-remote-creation-core = { group = "androidx.compose.remote", nam
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-benchmark-common = { group = "androidx.benchmark", name = "benchmark-common", version.ref = "benchmarkCommon" }
+androidx-compose-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

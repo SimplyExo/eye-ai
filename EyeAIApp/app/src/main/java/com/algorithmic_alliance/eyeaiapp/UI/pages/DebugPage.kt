@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -115,7 +116,7 @@ fun DebugPage(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Debug")
+                        Text("Debug", style = MaterialTheme.typography.titleLarge)
                     }
                 },
                 modifier = Modifier.shadow(elevation = Spacing.sm),
@@ -243,9 +244,9 @@ fun DebugPage(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     item {
-                                        Text(uiState.speechRecognitionPartialResultText)
-                                        Text(uiState.speechRecognitionFinalResultText)
-                                        Text(uiState.llmResponseText)
+                                        Text(uiState.speechRecognitionPartialResultText, style = MaterialTheme.typography.bodyMedium)
+                                        Text(uiState.speechRecognitionFinalResultText, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                                        Text(uiState.llmResponseText, style = MaterialTheme.typography.bodyMedium)
                                     }
                                 }
                             }
@@ -415,7 +416,7 @@ fun DepthPreview(
                     contentScale = ContentScale.Fit
                 )
                     LazyColumn(modifier = Modifier.align(Alignment.TopStart).padding(start = Spacing.xs, top = Spacing.xs)) {
-                        item { Text(text = performanceText, fontSize = 8.sp) }
+                        item { Text(text = performanceText, style = MaterialTheme.typography.bodySmall, fontSize = 8.sp, lineHeight = 10.sp , letterSpacing = (-0.2).sp) }
                     }
             }}
         }

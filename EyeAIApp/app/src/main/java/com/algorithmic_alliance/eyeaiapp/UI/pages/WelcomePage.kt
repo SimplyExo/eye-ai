@@ -51,7 +51,7 @@ fun WelcomePage(modifier: Modifier = Modifier, onGetStarted: () -> Unit) {
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 )
-            ) { Text("App Starten", modifier = Modifier.clearAndSetSemantics {}) }
+            ) { Text("App Starten", modifier = Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.labelLarge) }
         }
     }
 

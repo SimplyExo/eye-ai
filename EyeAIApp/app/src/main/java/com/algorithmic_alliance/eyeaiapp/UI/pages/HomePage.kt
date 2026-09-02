@@ -99,7 +99,7 @@ fun HomePage(
     Scaffold(modifier = Modifier.fillMaxSize(), contentWindowInsets = WindowInsets.safeDrawing, topBar = {
         TopAppBar(
             title = {
-                Text("EyeAI App")
+                Text("EyeAI App", style = MaterialTheme.typography.titleLarge)
             },
             modifier = Modifier.shadow(elevation = Spacing.sm),
             colors = TopAppBarDefaults.topAppBarColors(
@@ -169,22 +169,23 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
                 .padding(Spacing.sm),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Objekterkennung", fontSize = 18.sp, textAlign = TextAlign.Center)
+            Text("Objekterkennung", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (!sharedPreferences.getBoolean(
                         stringResource(R.string.enable_object_detection_setting), true
                     )
                 ) {
-                    Text(text = "Objekterkennung deaktiviert", textAlign = TextAlign.Center)
+                    Text(text = "Objekterkennung deaktiviert", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
                 } else if (getObjectFPS(uiState.performanceText) == -1) {
                     ShimmerBox(shimmerBrush, Modifier.fillMaxWidth(0.75f).height(Spacing.xl))
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Aktiv", textAlign = TextAlign.Center)
+                        Text(text = "Aktiv", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
                         Text(
                             text = "Leistung: ${getPerformance(getObjectFPS(uiState.performanceText))}",
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
 
@@ -207,7 +208,7 @@ fun VisionStatusCard(viewModel: MainViewModel) {
         Column(
             modifier = Modifier.padding(Spacing.sm), horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("EyeAI-Vision", fontSize = 18.sp, textAlign = TextAlign.Center)
+            Text("EyeAI-Vision", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 //TODO == statt != für echte App
@@ -218,13 +219,14 @@ fun VisionStatusCard(viewModel: MainViewModel) {
                 ) {
                     Text(
                         "Keine EyeAI-Vision verbunden. Handykamera wird benutzt.",
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Name: EyeAI-Vision von Robert", textAlign = TextAlign.Center)
-                        Text("Verbindung: Gut ", textAlign = TextAlign.Center)
-                        Text("Akku: 49% ", textAlign = TextAlign.Center)
+                        Text("Name: EyeAI-Vision von Robert", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
+                        Text("Verbindung: Gut ", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
+                        Text("Akku: 49% ", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
@@ -245,17 +247,18 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
         Column(
             modifier = Modifier.padding(Spacing.sm), horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Distanzmessung", fontSize = 18.sp, textAlign = TextAlign.Center)
+            Text("Distanzmessung", textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (getDepthFPS(uiState.performanceText) == -1) {
                     ShimmerBox(shimmerBrush, Modifier.fillMaxWidth(0.75f).height(Spacing.xl))
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Aktiv", textAlign = TextAlign.Center)
+                        Text(text = "Aktiv", textAlign = TextAlign.Center, style= MaterialTheme.typography.bodyMedium)
                         Text(
                             text = "Leistung: ${getPerformance(getDepthFPS(uiState.performanceText))}",
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
 
@@ -276,21 +279,22 @@ fun VoskStatusCard(viewModel: MainViewModel) {
         Column(
             modifier = Modifier.padding(Spacing.sm), horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Spracherkennung", fontSize = 18.sp, textAlign = TextAlign.Center)
+            Text("Spracherkennung", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (uiState.llmResponseText.isEmpty()) Text(
                     modifier = Modifier.padding(Spacing.sm),
                     text = uiState.speechRecognitionFinalResultText,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium
                 )
                 if (uiState.llmResponseText.isNotEmpty()) if (uiState.llmResponseText == stringResource(
                         R.string.llm_responding_notice
                     )
                 ) {
-                    Text("EyeAI denkt nach...", textAlign = TextAlign.Center)
+                    Text("EyeAI denkt nach...", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
                 } else if (uiState.llmResponseText != "") Text(
-                    "EyeAI antwortet...", textAlign = TextAlign.Center
+                    "EyeAI antwortet...", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium
                 )
             }
         }

@@ -45,6 +45,7 @@ import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
@@ -166,7 +167,8 @@ fun AskForPermission(
                 permissionExplanation as String,
                 modifier = Modifier.padding(Spacing.md),
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                fontSize = 20.sp
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium
             )
             Row(
                 modifier = Modifier
@@ -185,7 +187,7 @@ fun AskForPermission(
                     onClick = {
                         showDeclineDialog = !showDeclineDialog
                     }) {
-                    Text("Ablehnen", modifier = Modifier.clearAndSetSemantics {}, fontSize = 16.sp)
+                    Text("Ablehnen", modifier = Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.labelLarge)
                 }
                 Button(
                     modifier = Modifier

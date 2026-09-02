@@ -53,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -112,7 +113,7 @@ fun SettingsPage(
                             contentDescription = "Zurück"
                         )
                     }
-                    Text("Einstellungen")
+                    Text("Einstellungen", style = MaterialTheme.typography.titleLarge)
                 }
             },
         )
@@ -160,8 +161,7 @@ fun SettingsPage(
                             ) {
                                 Text(
                                     if (!debugPageActivated) "DebugPage aktivieren" else "DebugPage deaktivieren",
-                                    fontSize = 22.sp,
-                                    fontWeight = FontWeight.Bold
+                                    style = MaterialTheme.typography.titleMedium,
                                 )
                             }
                         }
@@ -190,7 +190,7 @@ fun SettingsCategoryCard(
         Column(modifier = Modifier.padding(Spacing.md)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(
-                    category, fontSize = 22.sp, fontWeight = FontWeight.Bold
+                    category, style = MaterialTheme.typography.titleMedium
                 )
             }
             HorizontalDivider()
@@ -247,9 +247,9 @@ fun ClickSetting(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(settingData.getValue("title") as String, fontSize = 18.sp)
+            Text(settingData.getValue("title") as String, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
             if (settingData.getValue("description") as String != "")
-                Text(settingData.getValue("description") as String)
+                Text(settingData.getValue("description") as String, style = MaterialTheme.typography.bodySmall)
             if (settingData["title"] == "Standartgeräte ändern") {
                 val sharedPreferences =
                     PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
@@ -257,8 +257,8 @@ fun ClickSetting(
                     sharedPreferences.getString(stringResource(R.string.selected_audio_device), "")
                 val standardVisionDevice =
                     sharedPreferences.getString(stringResource(R.string.selected_eye_ai_vision), "")
-                Text("Audiogerät: ${if (standardAudioDevice != "") standardAudioDevice else "   -"}")
-                Text("Vision: ${if (standardVisionDevice != "") standardVisionDevice else "   -"}")
+                Text("Audiogerät: ${if (standardAudioDevice != "") standardAudioDevice else "   -"}", style = MaterialTheme.typography.bodySmall)
+                Text("Vision: ${if (standardVisionDevice != "") standardVisionDevice else "   -"}", style = MaterialTheme.typography.bodySmall)
             }
         }
         Box {
@@ -303,8 +303,8 @@ fun CheckBoxSetting(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(settingData.getValue("title") as String, fontSize = 18.sp)
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
+            Text(settingData.getValue("title") as String, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String, style = MaterialTheme.typography.bodySmall)
         }
         Checkbox(checked = checked, onCheckedChange = { isChecked ->
 
@@ -355,8 +355,8 @@ fun SelectSetting(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(settingData.getValue("title") as String, fontSize = 18.sp)
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
+            Text(settingData.getValue("title") as String, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String, style = MaterialTheme.typography.bodySmall)
         }
         Box {
             Row(
@@ -364,7 +364,7 @@ fun SelectSetting(
                     dropDownEnabled = true
                 }, verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(currentlySelected as String)
+                Text(currentlySelected as String, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
                 Icon(
                     painter = painterResource(R.drawable.arrow_drop_down_24px),
                     contentDescription = ""
@@ -373,7 +373,7 @@ fun SelectSetting(
             DropdownMenu(
                 expanded = dropDownEnabled, onDismissRequest = { dropDownEnabled = false }) {
                 for (item in (settingData.getValue("settingsOptions") as List<Any>)) {
-                    DropdownMenuItem(text = { Text(item as String) }, onClick = {
+                    DropdownMenuItem(text = { Text(item as String, style = MaterialTheme.typography.bodySmall) }, onClick = {
                         currentlySelected = item as String
                         Log.d(
                             LOG_TAG,
@@ -425,12 +425,13 @@ fun SliderSetting(
             ) {
                 Text(
                     settingData.getValue("title") as String,
-                    fontSize = 18.sp,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f)
                 )
-                Text("$currentValue")
+                Text("$currentValue", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
             }
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
+            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String, style = MaterialTheme.typography.bodySmall)
             Slider(
                 value = currentValue.toFloat(), onValueChange = {
                     if(settingData.getValue("title") == "Audio-Frequency")
@@ -466,8 +467,8 @@ fun TextInputSetting(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(settingData.getValue("title") as String, fontSize = 18.sp)
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
+            Text(settingData.getValue("title") as String, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String, style = MaterialTheme.typography.bodySmall)
         }
         Box {
             IconButton(onClick = { showTextFieldDialog = true }) {
@@ -546,9 +547,9 @@ fun InfoSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
         Column {
             Text(
                 settingData.getValue("title") as String,
-                fontSize = 18.sp,
+                style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium
             )
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
+            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String, style = MaterialTheme.typography.bodySmall)
         }
     }
 
@@ -597,8 +598,8 @@ fun FileSetting(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(settingData.getValue("title") as String, fontSize = 18.sp)
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
+            Text(settingData.getValue("title") as String, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String, style = MaterialTheme.typography.bodySmall)
         }
         IconButton(onClick = {
             filePickerLauncher.launch(
