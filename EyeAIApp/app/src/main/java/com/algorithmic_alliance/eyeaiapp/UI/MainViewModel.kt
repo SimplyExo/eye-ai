@@ -20,6 +20,8 @@ import com.algorithmic_alliance.eyeaiapp.MainActivity.State
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.Settings
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
+import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudioResumeController
+import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudioResumeOutcome
 import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG
@@ -52,6 +54,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private var currentState: State = State.IDLE
     private var lastFinalResultMillis = System.currentTimeMillis()
     private var llmThreadExecutor = Executors.newSingleThreadExecutor()
+
+    private val spatialAudioResumeController = SpatialAudioResumeController(
+        scope = viewModelScope,
+        pauseSpatialAudio = ::pauseSpatialAudio,
+        restoreSpatialAudio = ::restoreSpatialAudioFromSettings,
+        awaitTtsSilence = {
+            eyeAIApp().textToSpeechInstance.awaitSilence(
+                quietMs = 500L,
+                maxWaitMs = 30_000L
+            )
+        },
+        isListening = { eyeAIApp().voskUserStart.get() },
+        onOutcome = { trigger, outcome ->
+            when (outcome) {
+                SpatialAudioResumeOutcome.RESTORED -> Unit
+                SpatialAudioResumeOutcome.TTS_SILENCE_TIMEOUT -> Log.w(
+                    EyeAIApp.APP_LOG_TAG,
+                    "[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=SKIPPED " +
+                            "reason=TTS_SILENCE_TIMEOUT"
+                )
+
+                SpatialAudioResumeOutcome.LISTENING_STATE_CHANGED -> Log.d(
+                    EyeAIApp.APP_LOG_TAG,
+                    "[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=SKIPPED " +
+                            "reason=LISTENING_STATE_CHANGED"
+                )
+            }
+        }
+    )
 
     @RequiresApi(Build.VERSION_CODES.P)
     fun onEvent(event: UIEvent) {
@@ -212,6 +243,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     @RequiresApi(Build.VERSION_CODES.P)
     private fun onOpenSettings() {
+        spatialAudioResumeController.cancel()
         SpatialAudio.stop()
         stopVoskListening()
         eyeAIApp().textToSpeechInstance.stop()
@@ -225,6 +257,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun onReturnFromSettings() {
+        spatialAudioResumeController.cancel()
         eyeAIApp().aiData.detectedObjects.set(emptyArray())
         startSpatialAudio()
     }
@@ -234,9 +267,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(LOG_TAG, "[SpatialAudio] Starting spatial audio")
         SpatialAudio.setup(eyeAIApp())
         SpatialAudio.start()
-        val settings = Settings.load(eyeAIApp())
-        uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
-        uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+        restoreSpatialAudioFromSettings("SPATIAL_AUDIO_START")
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -250,8 +281,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(LOG_TAG, "[MainViewModel.startVoskListening] StartVoskListening called")
         if (eyeAIApp().voskUserStart.get()) return // Check whether already started
 
-        uniffi.NativeLib.setObjectAudioPaused(true)
-        uniffi.NativeLib.setDepthAudioPaused(true)
+        spatialAudioResumeController.cancel()
+        pauseSpatialAudio()
         eyeAIApp().voskUserStart.set(true)
         eyeAIApp().voskModel.startListening()
         Log.i(
@@ -274,15 +305,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    private fun stopVoskListening(trigger: String = "USER_BUTTON") {
+    private fun stopVoskListening(
+        trigger: String = "USER_BUTTON",
+        spatialAudioResume: SpatialAudioResume = SpatialAudioResume.IMMEDIATE
+    ) {
         Log.d(LOG_TAG, "[MainViewModel.stopVoskListening] StopVoskListening called")
         if (!eyeAIApp().voskUserStart.get()) return // Check whether already stopped
 
-        val settings = Settings.load(eyeAIApp())
-        uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
-        uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
         eyeAIApp().voskUserStart.set(false)
         eyeAIApp().voskModel.stopListening()
+
+        when (spatialAudioResume) {
+            SpatialAudioResume.IMMEDIATE -> {
+                spatialAudioResumeController.cancel()
+                restoreSpatialAudioFromSettings(trigger)
+            }
+
+            SpatialAudioResume.AFTER_TTS -> spatialAudioResumeController.schedule(trigger)
+        }
+
         Log.d(EyeAIApp.APP_LOG_TAG, "User stopped Vosk Model")
         updateVoskStatusText()
         Log.i(
@@ -450,6 +491,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             )
             stopVoskListening(
                 trigger = "SETTINGS_APPLIED",
+                spatialAudioResume = SpatialAudioResume.AFTER_TTS
             )
         }
 
@@ -497,9 +539,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             SpatialAudio.start()
         }
 
-        val settings = Settings.load(eyeAIApp())
-        uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
-        uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+        if (
+            eyeAIApp().voskUserStart.get() ||
+            spatialAudioResumeController.isPending() ||
+            eyeAIApp().textToSpeechInstance.isSpeaking()
+        ) {
+            pauseSpatialAudio()
+        } else {
+            restoreSpatialAudioFromSettings("ON_RESUME")
+        }
+    }
+
+    fun onPause() {
+        spatialAudioResumeController.cancel()
+        pauseSpatialAudio()
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -740,6 +793,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
+
+    private fun pauseSpatialAudio() {
+        uniffi.NativeLib.setObjectAudioPaused(true)
+        uniffi.NativeLib.setDepthAudioPaused(true)
+    }
+
+    private fun restoreSpatialAudioFromSettings(trigger: String) {
+        val settings = Settings.load(eyeAIApp())
+        uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+        uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
+        Log.i(
+            EyeAIApp.APP_LOG_TAG,
+            "[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=RESTORED " +
+                    "objectAudioEnabled=${settings.objectAudioPlayback} " +
+                    "depthAudioEnabled=${settings.depthAudioPlayback}"
+        )
+    }
+
+    private enum class SpatialAudioResume {
+        IMMEDIATE,
+        AFTER_TTS
+    }
 
     fun eyeAIApp(): EyeAIApp {
         return getApplication()

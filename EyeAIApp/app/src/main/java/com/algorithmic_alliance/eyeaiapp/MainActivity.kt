@@ -276,6 +276,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
 
+        viewModel.onPause()
         SpatialAudio.stop()
 
         eyeAIApp().voskModel.stopListening()

@@ -1,2 +1,12 @@
 .idea
 .zed
+/.venv-settings-clean-v2
+/.venv
+EyeAI Settings Parser – Clean-v2 Training, DEV Selection & Final BLIND Evaluation.md
+EyeAI Settings Parser – OOV Root-Cause, Representation Selection & Clean-v2 Readiness.md
+EyeAI_Final_Pre_CleanV2_Architecture_Decision_Prompt.md
+EyeAIApp/app/src/main/assets/confirmation/README.md
+NLPTraining/intent model/aktuelles NLP-Modell/NLP V2/MANUELLE_EVALUATION.md
+NLPTraining/intent model/Artefakte alter Tests/MODELLVERGLEICH_ERGEBNISSE.md
+/settings_parser
+SETTINGS_PARSER_ANDROID_INTEGRATION_REPORT.md
