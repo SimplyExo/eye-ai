@@ -1,16 +1,29 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
 import android.util.Log
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.location.LocationRequest
+
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
+import com.google.android.gms.location.Priority
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,6 +47,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.remote.creation.dsl.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -72,6 +87,9 @@ import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
 import kotlinx.coroutines.flow.first
 import kotlin.collections.emptyList
 
@@ -193,7 +211,10 @@ fun ChooseConnectionPage(
         else -> emptyList()
     }
     val deviceType = devicesData["type"] as String
-    val shimmerBrush = rememberShimmerBrush(backgroundColor = MaterialTheme.colorScheme.primaryContainer, contrastColor = MaterialTheme.colorScheme.onPrimaryContainer)
+    val shimmerBrush = rememberShimmerBrush(
+        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
+    )
     var pageLoading by rememberSaveable { mutableStateOf(true) }
 
     Log.d(LOG_TAG, "[ConnectionPage] Choosing connection for $deviceCategory")
@@ -206,7 +227,7 @@ fun ChooseConnectionPage(
                 LOG_TAG,
                 "[ConnectionPage:LaunchedEffect] ConnectionTutorial completed, not automatic connection: Exiting LaunchedEffect"
             )
-            if(deviceType == "eye-ai-vision")
+            if (deviceType == "eye-ai-vision")
                 wifiScanState.rescan()
             pageLoading = false
             return@LaunchedEffect
@@ -220,7 +241,7 @@ fun ChooseConnectionPage(
                 "[ConnectionPage:LaunchedEffect] User does not want automatic connection: Exiting LaunchedEffect"
             )
             pageLoading = false
-            if(deviceType == "eye-ai-vision")
+            if (deviceType == "eye-ai-vision")
                 wifiScanState.rescan()
             return@LaunchedEffect
         }
@@ -360,7 +381,12 @@ fun ChooseConnectionPage(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(start = Spacing.md, top = Spacing.sm, bottom = Spacing.sm, end = Spacing.sm)
+                                    .padding(
+                                        start = Spacing.md,
+                                        top = Spacing.sm,
+                                        bottom = Spacing.sm,
+                                        end = Spacing.sm
+                                    )
                             ) {
                                 if (scanningForDevices)
                                     ShimmerBox(
@@ -369,7 +395,10 @@ fun ChooseConnectionPage(
                                             .fillMaxWidth(0.6f)
                                     )
                                 else
-                                    Text("Keine verfügbaren Geräte gefunden.", style = MaterialTheme.typography.bodyMedium)
+                                    Text(
+                                        "Keine verfügbaren Geräte gefunden.",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
                             }
                             DeviceListEntry(
                                 "Handykamera verwenden",
@@ -390,7 +419,12 @@ fun ChooseConnectionPage(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = Spacing.sm, end = Spacing.lg, top = Spacing.xs, bottom = Spacing.xs),
+                                .padding(
+                                    start = Spacing.sm,
+                                    end = Spacing.lg,
+                                    top = Spacing.xs,
+                                    bottom = Spacing.xs
+                                ),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
@@ -424,7 +458,9 @@ fun ChooseConnectionPage(
                                 }
                             }) {
                                 Icon(
-                                    modifier = Modifier.heightIn(Spacing.xl).width(Spacing.xl),
+                                    modifier = Modifier
+                                        .heightIn(Spacing.xl)
+                                        .width(Spacing.xl),
                                     painter = painterResource(R.drawable.refresh_24px),
                                     contentDescription = "",
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -447,7 +483,12 @@ fun ChooseConnectionPage(
                         ) {
                             Button(
                                 modifier = Modifier.weight(1f),
-                                onClick = { goBack() }) { Text("Zurück", style = MaterialTheme.typography.labelLarge) }
+                                onClick = { goBack() }) {
+                                Text(
+                                    "Zurück",
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
                             Button(
                                 modifier = Modifier
                                     .weight(1f)
@@ -495,7 +536,8 @@ fun ChooseConnectionPage(
                                 Text(
                                     "Verbinden",
                                     modifier = Modifier.clearAndSetSemantics {},
-                                    style = MaterialTheme.typography.labelLarge)
+                                    style = MaterialTheme.typography.labelLarge
+                                )
                             }
                         }
                     }
@@ -512,10 +554,10 @@ fun ChooseConnectionPage(
     }
 
     if (showLocationDisabledDialog) {
-        ErrorDialog(
-            titel = "Standortdienste sind ausgeschaltet",
-            content = "Da durch einen Scan der WLAN-Netzwerke in der nähe Informationen zu ihrem Standort anfallen könnten, muss laut Android-Richtlinien der Standort angeschaltet sein. Die App nutzt ihren Standort jedoch nicht.",
-            onDismissed = { showLocationDisabledDialog = false }
+        ActivateLocationServicesDialog(
+            //titel = "Standortdienste sind ausgeschaltet",
+            //content = "Da durch einen Scan der WLAN-Netzwerke in der nähe Informationen zu ihrem Standort anfallen könnten, muss laut Android-Richtlinien der Standort angeschaltet sein. Die App nutzt ihren Standort jedoch nicht.",
+            onDismissed = { showLocationDisabledDialog = false },
         )
     }
 }
@@ -541,6 +583,87 @@ fun DeviceListEntry(deviceName: String, isSelected: Boolean = false, onSelected:
 }
 
 @Composable
+fun ActivateLocationServicesDialog(onDismissed: () -> Unit) {
+    val context = LocalContext.current
+    val activity = LocalActivity.current
+
+    val locationRequest = remember {
+        LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            10_000L
+        ).build()
+    }
+
+    val locationSettingsRequest = remember {
+        LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+            .build()
+    }
+
+    val settingsClient = remember {
+        LocationServices.getSettingsClient(context)
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // Nutzer hat die Standortdienste aktiviert
+            onDismissed()
+        }
+    }
+
+    fun activateLocationServices() {
+        settingsClient.checkLocationSettings(locationSettingsRequest)
+            .addOnSuccessListener {
+                // Standort ist bereits aktiviert
+                onDismissed()
+            }
+            .addOnFailureListener { exception ->
+                if (exception is ResolvableApiException) {
+                    try {
+                        val intentSenderRequest =
+                            IntentSenderRequest.Builder(
+                                exception.resolution
+                            ).build()
+
+                        launcher.launch(intentSenderRequest)
+                    } catch (e: IntentSender.SendIntentException) {
+                        // Systemdialog konnte nicht geöffnet werden
+                    }
+                }
+            }
+    }
+
+    AlertDialog(
+        onDismissRequest = { onDismissed() },
+        title = { Text("Standortdienste sind ausgeschaltet") },
+        text = { Text("Da durch einen Scan der WLAN-Netzwerke in der nähe Informationen zu ihrem Standort anfallen könnten, muss laut Android-Richtlinien der Standort angeschaltet sein. Die App nutzt ihren Standort jedoch nicht.") },
+        confirmButton = {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                Button(modifier = Modifier.weight(1f), onClick = { onDismissed() }) {
+                    Text(
+                        "Zurück",
+                        modifier = Modifier.clearAndSetSemantics {
+                            contentDescription = "Dialog-Feld verlassen."
+                        }
+                    )
+                }
+                Button(modifier = Modifier.weight(1f),onClick = { activateLocationServices() }) {
+                    Text(
+                        "Aktivieren",
+                        modifier = Modifier.clearAndSetSemantics {
+                            contentDescription = "Standortdienste aktivieren und Dialog-Feld verlassen."
+                        }
+                    )
+                }
+            }
+
+        }
+    )
+}
+
+@Composable
 fun ErrorDialog(titel: String, content: String, onDismissed: () -> Unit) {
     AlertDialog(
         onDismissRequest = { onDismissed() },
@@ -560,7 +683,10 @@ fun ErrorDialog(titel: String, content: String, onDismissed: () -> Unit) {
 
 @Composable
 fun LoadingPage() {
-    val shimmerBrush = rememberShimmerBrush(backgroundColor = MaterialTheme.colorScheme.primaryContainer, contrastColor = MaterialTheme.colorScheme.onPrimaryContainer)
+    val shimmerBrush = rememberShimmerBrush(
+        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
+    )
     Column(verticalArrangement = Arrangement.Center) {
         Card(
             modifier = Modifier
@@ -591,7 +717,12 @@ fun LoadingPage() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = Spacing.sm, top = Spacing.sm, bottom = Spacing.sm, end = Spacing.sm)
+                        .padding(
+                            start = Spacing.sm,
+                            top = Spacing.sm,
+                            bottom = Spacing.sm,
+                            end = Spacing.sm
+                        )
                 ) {
                     ShimmerBox(
                         shimmerBrush, Modifier
@@ -602,7 +733,12 @@ fun LoadingPage() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = Spacing.sm, top = Spacing.sm, bottom = Spacing.sm, end = Spacing.sm)
+                        .padding(
+                            start = Spacing.sm,
+                            top = Spacing.sm,
+                            bottom = Spacing.sm,
+                            end = Spacing.sm
+                        )
                 ) {
                     ShimmerBox(
                         shimmerBrush, Modifier
@@ -613,7 +749,12 @@ fun LoadingPage() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = Spacing.sm, top = Spacing.sm, bottom = Spacing.sm, end = Spacing.sm)
+                        .padding(
+                            start = Spacing.sm,
+                            top = Spacing.sm,
+                            bottom = Spacing.sm,
+                            end = Spacing.sm
+                        )
                 ) {
                     ShimmerBox(
                         shimmerBrush, Modifier
@@ -631,7 +772,12 @@ fun LoadingPage() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = Spacing.md, end = Spacing.xl, top = Spacing.md, bottom = Spacing.md),
+                        .padding(
+                            start = Spacing.md,
+                            end = Spacing.xl,
+                            top = Spacing.md,
+                            bottom = Spacing.md
+                        ),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -643,7 +789,7 @@ fun LoadingPage() {
                 }
                 HorizontalDivider(
                     modifier = Modifier.padding(
-                        bottom =Spacing.sm,
+                        bottom = Spacing.sm,
                         start = Spacing.sm,
                         end = Spacing.sm
                     )

@@ -130,8 +130,9 @@ dependencies {
 	implementation(libs.androidx.camera.lifecycle)
 	implementation(libs.androidx.camera.extensions)
 	implementation(libs.material)
+    implementation(libs.play.services.location)
 
-	// Vosk
+    // Vosk
 	implementation(libs.vosk)
 	implementation(libs.androidx.preference)
 	implementation(libs.androidx.appcompat)
