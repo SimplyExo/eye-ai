@@ -422,6 +422,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 "[DecisionTrace][Vosk][PAUSE_FOR_PROCESSING] autoRestartAfterTts=true"
             )
             eyeAIApp().voskModel.stopListening()
+            updateVoskStatusText()
             _uiState.update { it.copy(voskListening = false) }
 
             // vibrate for 100ms
@@ -458,6 +459,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             "[DecisionTrace][StateMachine][INPUT] state=$currentState originalText='$final'"
         )
         setTTSSpeaking(true)
+        updateVoskStatusText()
         val stateMachine = StateMachine(
             eyeAIApp(),
             eyeAIApp().textToSpeechInstance,
@@ -493,6 +495,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 trigger = "SETTINGS_APPLIED",
                 spatialAudioResume = SpatialAudioResume.AFTER_TTS
             )
+            updateVoskStatusText()
         }
 
         // Logging der state transition

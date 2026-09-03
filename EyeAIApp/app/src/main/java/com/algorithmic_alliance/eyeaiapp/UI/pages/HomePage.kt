@@ -82,10 +82,14 @@ fun HomePage(
             )
         )
     }
-    val shimmerBrush = rememberShimmerBrush(backgroundColor = MaterialTheme.colorScheme.surface, contrastColor = MaterialTheme.colorScheme.onSurface)
+    val shimmerBrush = rememberShimmerBrush(
+        backgroundColor = MaterialTheme.colorScheme.surface,
+        contrastColor = MaterialTheme.colorScheme.onSurface
+    )
     DisposableEffect(Unit) {
-        initialShowProfilingInformationSetting = sharedPreferences.getBoolean(profilingInformationKey, false)
-        sharedPreferences.edit(commit = true){
+        initialShowProfilingInformationSetting =
+            sharedPreferences.getBoolean(profilingInformationKey, false)
+        sharedPreferences.edit(commit = true) {
             putBoolean(profilingInformationKey, true)
         }
         onEvent(UIEvent.UpdateSettings)
@@ -106,7 +110,7 @@ fun HomePage(
         onEvent(UIEvent.UpdateVoskStatusText)
         onEvent(UIEvent.UpdateSpeechStatusText)
         onDispose {
-            sharedPreferences.edit(commit = true){
+            sharedPreferences.edit(commit = true) {
                 putBoolean(profilingInformationKey, initialShowProfilingInformationSetting)
             }
             onEvent(UIEvent.UpdateSettings)
@@ -114,60 +118,71 @@ fun HomePage(
     }
 
 
-    Scaffold(modifier = Modifier.fillMaxSize(), contentWindowInsets = WindowInsets.safeDrawing, topBar = {
-        TopAppBar(
-            title = {
-                Text("EyeAI App", style = MaterialTheme.typography.titleLarge)
-            },
-            modifier = Modifier.shadow(elevation = Spacing.sm),
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ),
-        )
-    }, floatingActionButton = {
-        Row(
-            modifier = Modifier
-                .padding(Spacing.sm)
-                .fillMaxWidth(0.35f),
-            horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
-        ) {
-            if (speechRecognitionEnabled) FloatingActionButton(
-                onClick = {
-                    onEvent(UIEvent.VoskListeningChanged)
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets.safeDrawing,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("EyeAI App", style = MaterialTheme.typography.titleLarge)
                 },
+                modifier = Modifier.shadow(elevation = Spacing.sm),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+            )
+        },
+        floatingActionButton = {
+            Row(
+                modifier = Modifier
+                    .padding(Spacing.sm)
+                    .fillMaxWidth(0.35f),
+                horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
             ) {
-                Icon(
-                    painter = if (uiState.voskListening) {
-                        painterResource(R.drawable.stop_24px)
-                    } else if (uiState.ttsSpeaking) {
-                        painterResource(
-                            R.drawable.pause_playback_24px
-                        )
-                    } else {
-                        painterResource(R.drawable.play_arrow_24px)
-                    }, contentDescription = "Start Vosk"
-                )
+                if (speechRecognitionEnabled) FloatingActionButton(
+                    onClick = {
+                        onEvent(UIEvent.VoskListeningChanged)
+                    },
+                ) {
+                    Icon(
+                        painter = if (uiState.voskListening) {
+                            painterResource(R.drawable.stop_24px)
+                        } else if (uiState.ttsSpeaking) {
+                            painterResource(
+                                R.drawable.pause_playback_24px
+                            )
+                        } else {
+                            painterResource(R.drawable.play_arrow_24px)
+                        }, contentDescription = "Start Vosk"
+                    )
+                }
+                FloatingActionButton(onClick = { onOpenSettings() }) {
+                    Icon(
+                        painter = painterResource(R.drawable.settings_24px),
+                        contentDescription = "Open Settings"
+                    )
+                }
             }
-            FloatingActionButton(onClick = { onOpenSettings() }) {
-                Icon(
-                    painter = painterResource(R.drawable.settings_24px),
-                    contentDescription = "Open Settings"
-                )
+        },
+        content = { paddingValues ->
+            LazyVerticalGrid(
+                modifier = Modifier.padding(paddingValues),
+                columns = GridCells.Fixed(2)
+            ) {
+                item {
+                    VoskStatusCard(viewModel = viewModel)
+                }
+                item {
+                    DepthStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush)
+                }
+                item { ObjectStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush) }
+                item { VisionStatusCard(viewModel = viewModel) }
+
             }
+
         }
-    }, content = { paddingValues ->
-        LazyVerticalGrid(modifier = Modifier.padding(paddingValues), columns = GridCells.Fixed(2)) {
-            item {
-                VoskStatusCard(viewModel = viewModel)
-            }
-            item {
-                DepthStatusCard(viewModel = viewModel, shimmerBrush =shimmerBrush)
-            }
-            item { ObjectStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush) }
-            item { VisionStatusCard(viewModel = viewModel) }
-        }
-    })
+    )
 
 }
 
@@ -187,21 +202,35 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
                 .padding(Spacing.sm),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Objekterkennung", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+            Text(
+                "Objekterkennung",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center
+            )
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (!sharedPreferences.getBoolean(
                         stringResource(R.string.enable_object_detection_setting), true
                     )
                 ) {
-                    Text(text = "Objekterkennung deaktiviert", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = "Objekterkennung deaktiviert",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 } else if (getObjectFPS(uiState.performanceText) == -1) {
-                    ShimmerBox(shimmerBrush, Modifier
-                        .fillMaxWidth(0.75f)
-                        .height(Spacing.xl))
+                    ShimmerBox(
+                        shimmerBrush, Modifier
+                            .fillMaxWidth(0.75f)
+                            .height(Spacing.xl)
+                    )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Aktiv", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            text = "Aktiv",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                         Text(
                             text = "Leistung: ${getPerformance(getObjectFPS(uiState.performanceText))}",
                             textAlign = TextAlign.Center,
@@ -226,9 +255,14 @@ fun VisionStatusCard(viewModel: MainViewModel) {
             .aspectRatio(4f / 3f)
     ) {
         Column(
-            modifier = Modifier.padding(Spacing.sm), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(Spacing.sm),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("EyeAI-Vision", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+            Text(
+                "EyeAI-Vision",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center
+            )
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 //TODO == statt != für echte App
@@ -244,9 +278,21 @@ fun VisionStatusCard(viewModel: MainViewModel) {
                     )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Name: EyeAI-Vision von Robert", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
-                        Text("Verbindung: Gut ", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
-                        Text("Akku: 49% ", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "Name: EyeAI-Vision von Robert",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            "Verbindung: Gut ",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            "Akku: 49% ",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                 }
             }
@@ -265,18 +311,29 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
             .aspectRatio(4f / 3f)
     ) {
         Column(
-            modifier = Modifier.padding(Spacing.sm), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(Spacing.sm),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Distanzmessung", textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Distanzmessung",
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleMedium
+            )
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (getDepthFPS(uiState.performanceText) == -1) {
-                    ShimmerBox(shimmerBrush, Modifier
-                        .fillMaxWidth(0.75f)
-                        .height(Spacing.xl))
+                    ShimmerBox(
+                        shimmerBrush, Modifier
+                            .fillMaxWidth(0.75f)
+                            .height(Spacing.xl)
+                    )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Aktiv", textAlign = TextAlign.Center, style= MaterialTheme.typography.bodyMedium)
+                        Text(
+                            text = "Aktiv",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                         Text(
                             text = "Leistung: ${getPerformance(getDepthFPS(uiState.performanceText))}",
                             textAlign = TextAlign.Center,
@@ -299,23 +356,33 @@ fun VoskStatusCard(viewModel: MainViewModel) {
             .aspectRatio(4f / 3f)
     ) {
         Column(
-            modifier = Modifier.padding(Spacing.sm), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(Spacing.sm),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Spracherkennung", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+            Text(
+                "Spracherkennung",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center
+            )
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (uiState.speechResponseText.isEmpty()) Text(
-                    modifier = Modifier.padding(Spacing.sm),
-                    text = uiState.speechRecognitionFinalResultText,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                if (uiState.speechResponseText.isNotEmpty()) if (uiState.speechResponseText == "eyeai dent nach"
-                ) {
-                    Text("EyeAI denkt nach...", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
-                } else if (uiState.ttsSpeaking) Text(
-                    "EyeAI antwortet...", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium
-                )
+                Column() {
+                    if (uiState.ttsSpeaking) {
+                        Text(
+                            "EyeAI antwortet...",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    } else {
+                        Text(
+                            modifier = Modifier.padding(Spacing.sm),
+                            text = uiState.speechRecognitionFinalResultText,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
+                }
             }
         }
 
