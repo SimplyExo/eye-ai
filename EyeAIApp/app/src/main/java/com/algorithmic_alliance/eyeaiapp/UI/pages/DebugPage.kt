@@ -55,7 +55,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
@@ -74,7 +73,6 @@ fun DebugPage(
 ) {
     val activity = LocalActivity.current
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val speechRecognitionKey = stringResource(R.string.enable_speech_recognition_setting)
     var speechRecognitionEnabled by rememberSaveable { mutableStateOf(true) }
@@ -315,10 +313,9 @@ fun DebugInputPreview(
     modifier: Modifier = Modifier, bitmap: Bitmap?, onEvent: (UIEvent) -> Unit
 ) {
 
-    val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(Unit) {
         Log.d(LOG_TAG, "Loading DebugInputPreview")
-        onEvent(UIEvent.UIinitCamera(previewView = null, lifecycleOwner = lifecycleOwner))
+        onEvent(UIEvent.UIinitCamera(previewView = null))
     }
     Box(
         modifier = modifier
@@ -350,11 +347,10 @@ fun MediaPreview(
     modifier: Modifier = Modifier, bitmap: Bitmap?, onEvent: (UIEvent) -> Unit
 ) {
 
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(Unit) {
         Log.d(LOG_TAG, "[DebugPage.MediaPreview] Loading Media Preview")
-        onEvent(UIEvent.UIinitCamera(previewView = null, lifecycleOwner = lifecycleOwner))
+        onEvent(UIEvent.UIinitCamera(previewView = null))
     }
 
     Box(
@@ -413,7 +409,6 @@ fun DepthPreview(
 @Composable
 fun CameraPreview(onEvent: (UIEvent) -> Unit) {
     Log.d(LOG_TAG, "Loading CameraPreview")
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     AndroidView(
         modifier = Modifier
@@ -422,12 +417,14 @@ fun CameraPreview(onEvent: (UIEvent) -> Unit) {
         factory = { context ->
             PreviewView(context).apply { scaleType = PreviewView.ScaleType.FIT_CENTER }.also {
                 onEvent(
-                    UIEvent.UIinitCamera(
-                        it, lifecycleOwner
-                    )
+                    UIEvent.UIinitCamera(it)
                 )
             }
-        })
+        },
+        onRelease = { previewView ->
+            onEvent(UIEvent.UIDetachCameraPreview(previewView))
+        },
+    )
 
 }
 

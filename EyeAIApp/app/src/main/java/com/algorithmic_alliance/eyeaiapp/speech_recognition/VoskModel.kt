@@ -15,19 +15,27 @@ import org.vosk.android.RecognitionListener
 import org.vosk.android.SpeechService
 import org.vosk.android.StorageService
 
-class VoskModel(val context: Context, val modelName: String) {
+class VoskModel(context: Context, val modelName: String) {
+	private val context: Context = context.applicationContext
     companion object {
         private const val SAMPLE_RATE = 48000.0f
     }
 
     private var model: Model? = null
     private var speechService: SpeechService? = null
-    private var isListening = false
+	@Volatile
+	private var isListening = false
+	@Volatile
+	private var modelLoading = false
+	private var modelLoadGeneration = 0L
 
-    private var onPartialResultCallback: (partial: String) -> Unit = {}
-    private var onFinalResultCallback: (partial: String) -> Unit = {}
+	@Volatile
+	private var onPartialResultCallback: (partial: String) -> Unit = {}
+	@Volatile
+	private var onFinalResultCallback: (partial: String) -> Unit = {}
 
-    private var onUpdateVoskUIStatus: (status: Boolean) -> Unit = {}
+	@Volatile
+	private var onUpdateVoskUIStatus: (status: Boolean) -> Unit = {}
 
     private var activateSound: MediaPlayer? = null
     private var deactivateSound: MediaPlayer? = null
@@ -99,47 +107,80 @@ class VoskModel(val context: Context, val modelName: String) {
         }
     }
 
-    fun initService(
+	@Synchronized
+	fun initService(
         onPartialResult: (partial: String) -> Unit,
         onFinalResult: (final: String) -> Unit,
         onModelLoaded: () -> Unit,
         onUpdateVoskUIStatus: (status: Boolean) -> Unit
     ) {
-        this.onPartialResultCallback = onPartialResult
-        this.onFinalResultCallback = onFinalResult
-        this.onUpdateVoskUIStatus = onUpdateVoskUIStatus
+		this.onPartialResultCallback = onPartialResult
+		this.onFinalResultCallback = onFinalResult
+		this.onUpdateVoskUIStatus = onUpdateVoskUIStatus
+		ensureSoundPlayers()
 
-        if (model != null) {
-            onModelLoaded()
-            return
-        }
+		if (model != null) {
+			onModelLoaded()
+			return
+	}
 
-        StorageService.unpack(
-            context, modelName, "unpacked_vosk_model",
-            { loadedModel ->
-                this.model = loadedModel
-                Log.d(EyeAIApp.APP_LOG_TAG, "[VoskModel] model unpacked")
-                onModelLoaded()
-            },
-            { exception ->
-                Log.e(
+		if (modelLoading) return
+
+		modelLoading = true
+		val generation = ++modelLoadGeneration
+
+		StorageService.unpack(
+			context, modelName, "unpacked_vosk_model",
+			{ loadedModel ->
+				val shouldNotify = synchronized(this) {
+					if (generation != modelLoadGeneration) {
+						false
+					} else {
+						this.model = loadedModel
+						modelLoading = false
+						true
+					}
+				}
+				if (shouldNotify) {
+					Log.d(EyeAIApp.APP_LOG_TAG, "[VoskModel] model unpacked")
+					onModelLoaded()
+				}
+			},
+			{ exception ->
+				synchronized(this) {
+					if (generation == modelLoadGeneration) modelLoading = false
+				}
+				Log.e(
                     EyeAIApp.APP_LOG_TAG,
                     "[VoskModel] Failed to unpack Vosk model '$modelName': $exception"
                 )
             }
-        )
-    }
+		)
+	}
 
-    fun closeService() {
-        try {
-            stopListening()
-            speechService?.shutdown()
+	@Synchronized
+	private fun ensureSoundPlayers() {
+		if (activateSound == null) activateSound = createSoundPlayer(context, R.raw.activate)
+		if (deactivateSound == null) deactivateSound = createSoundPlayer(context, R.raw.deactivate)
+	}
+
+	@Synchronized
+	fun closeService() {
+		++modelLoadGeneration
+		modelLoading = false
+		try {
+			stopListening()
+			speechService?.shutdown()
         } catch (e: Exception) {
             Log.e(EyeAIApp.APP_LOG_TAG, "[VoskModel] Exception closing service: ", e)
         } finally {
             speechService = null
-            model = null
-            isListening = false
+			model = null
+			isListening = false
+			activateSound?.release()
+			deactivateSound?.release()
+			activateSound = null
+			deactivateSound = null
         }
     }
 

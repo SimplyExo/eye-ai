@@ -40,7 +40,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
@@ -54,7 +53,6 @@ fun HomePage(
     onEvent: (UIEvent) -> Unit,
     uiState: UIState,
 ) {
-    val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     Log.d(LOG_TAG, "[HomePage] Loading HomePage")
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
@@ -79,7 +77,7 @@ fun HomePage(
                 onEvent(UIEvent.CloseVoskService)
             }
         }
-        onEvent(UIEvent.UIinitCamera(null, lifecycleOwner))
+        onEvent(UIEvent.UIinitCamera(null))
         onEvent(UIEvent.UpdateVoskStatusText)
         onEvent(UIEvent.UpdateSpeechStatusText)
     }

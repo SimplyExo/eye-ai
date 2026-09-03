@@ -3,7 +3,7 @@ package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers
 import android.content.Context
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
-import com.algorithmic_alliance.eyeaiapp.MainActivity.State
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.EyeAIState as State
 import com.algorithmic_alliance.eyeaiapp.Settings
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationLabel
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel

@@ -6,6 +6,8 @@ import androidx.lifecycle.lifecycleScope
 import com.algorithmic_alliance.eyeaiapp.media.MjpegBitmapReader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.io.*
@@ -34,11 +36,12 @@ open class EyeAIVision(
 	private lateinit var touchSocket: Socket
 	private var mjpegBitmapReader: MjpegBitmapReader? = null
 
+	private val socketExecutor = Executors.newSingleThreadExecutor()
+	private val compressionExecutor = Executors.newSingleThreadExecutor()
 	private val socketThread: CoroutineScope =
-		CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
-
+		CoroutineScope(socketExecutor.asCoroutineDispatcher())
 	private val compressionThread: CoroutineScope =
-		CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+		CoroutineScope(compressionExecutor.asCoroutineDispatcher())
 
 	init {
 		setCompression(compression)
@@ -51,7 +54,7 @@ open class EyeAIVision(
 				val reader = BufferedReader(InputStreamReader(touchSocket.inputStream))
 				onSocketConnectionEstablished()
 
-				while (true) {
+				while (isActive) {
 					val char = reader.read().toChar()
 
 					if (char == '1') {
@@ -112,5 +115,21 @@ open class EyeAIVision(
 			e.printStackTrace()
 			null
 		}
+	}
+
+	/** Stops the existing external source without touching the common analyzer/models. */
+	fun close() {
+		mjpegBitmapReader?.stop()
+		mjpegBitmapReader = null
+		if (::touchSocket.isInitialized) {
+			try {
+				touchSocket.close()
+			} catch (_: IOException) {
+			}
+		}
+		socketThread.cancel()
+		compressionThread.cancel()
+		socketExecutor.shutdownNow()
+		compressionExecutor.shutdownNow()
 	}
 }

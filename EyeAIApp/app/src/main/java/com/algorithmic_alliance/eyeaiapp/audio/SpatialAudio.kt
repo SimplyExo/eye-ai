@@ -19,45 +19,62 @@ object SpatialAudio {
 	private lateinit var executor: ExecutorService
 	private lateinit var scope: CoroutineScope
 	private lateinit var eyeAIApp: EyeAIApp
+	private var spatialAudioJob: Job? = null
+	private var configuredLanguage: String? = null
+	private val lock = Any()
 
 	fun start() {
-		if (!::scope.isInitialized) return
+		synchronized(lock) {
+			if (!::scope.isInitialized || spatialAudioJob?.isActive == true) return
 
-		scope.launch {
-			uniffi.NativeLib.createSpatialAudio()
+			spatialAudioJob = scope.launch {
+				uniffi.NativeLib.createSpatialAudio()
 
-			while (isActive) {
-				val depthData = eyeAIApp.aiData.depthEstimationData.get()
-				val objectData = eyeAIApp.aiData.detectedObjects.get()
-				if (depthData != null) {
-					uniffi.NativeLib.sendAiDataForSpatialAudio(
-						depthData.asUniffiWrapper(),
-						objectData?.toList() ?: emptyList()
-					)
+				while (isActive) {
+					val depthData = eyeAIApp.aiData.depthEstimationData.get()
+					val objectData = eyeAIApp.aiData.detectedObjects.get()
+					if (depthData != null) {
+						uniffi.NativeLib.sendAiDataForSpatialAudio(
+							depthData.asUniffiWrapper(),
+							objectData?.toList() ?: emptyList()
+						)
+					}
+					delay(50)
 				}
-				delay(50)
 			}
 		}
 	}
 
 	fun setup(context: Context) {
-		eyeAIApp = context.applicationContext as EyeAIApp
-		val settings = eyeAIApp.settings
-		loadAudioDataFiles(context, settings.objectAudioPlaybackLanguage)
+		val app = context.applicationContext as EyeAIApp
+		val settings = app.settings
+		synchronized(lock) {
+			eyeAIApp = app
+			if (configuredLanguage != settings.objectAudioPlaybackLanguage) {
+				loadAudioDataFiles(app, settings.objectAudioPlaybackLanguage)
+				configuredLanguage = settings.objectAudioPlaybackLanguage
+			}
+		}
 
 		uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		uniffi.NativeLib.setAudioSettings(settings.depthAudioFrequency.toFloat(), settings.depthAudioClickIncidence)
 
-		if (!::executor.isInitialized || executor.isShutdown) {
-			executor = Executors.newSingleThreadExecutor()
-			scope = CoroutineScope(executor.asCoroutineDispatcher())
+		synchronized(lock) {
+			if (!::executor.isInitialized || executor.isShutdown) {
+				executor = Executors.newSingleThreadExecutor()
+				scope = CoroutineScope(executor.asCoroutineDispatcher())
+			}
 		}
 	}
 
 	fun stop() {
-		if (::scope.isInitialized) scope.cancel()
-		if (::executor.isInitialized) executor.shutdown()
+		synchronized(lock) {
+			spatialAudioJob?.cancel()
+			spatialAudioJob = null
+			if (::scope.isInitialized) scope.cancel()
+			if (::executor.isInitialized) executor.shutdown()
+		}
 		uniffi.NativeLib.destroySpatialAudio()
 	}
 

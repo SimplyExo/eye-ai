@@ -17,6 +17,9 @@ import kotlin.collections.listOf
 
 object UIDataSource {
 
+    const val ACTION_OPEN_DEVICE_MANAGER = "open_device_manager"
+    const val ACTION_OPEN_BATTERY_OPTIMIZATION = "open_battery_optimization"
+
 
     const val INFORMATION_NOT_FOUND =
         "Die Information konnte nicht geladen werden. Wir bitten um Entschuldigung."
@@ -133,6 +136,12 @@ object UIDataSource {
                 "settingsType" to "checkbox",
                 "string" to R.string.enable_npu_delegate_setting,
                 "default" to true
+            ),
+            mapOf(
+                "title" to "Batterieoptimierung",
+                "description" to "Optional: EyeAI in den Android-Systemeinstellungen von der Akkuoptimierung ausnehmen. Das kann den Dauerbetrieb stabilisieren, erhöht aber den Akkuverbrauch.",
+                "settingsType" to "click",
+                "action" to ACTION_OPEN_BATTERY_OPTIMIZATION
             )
         ),
         "Depth Estimation" to listOf(
@@ -213,7 +222,8 @@ object UIDataSource {
             mapOf(
                 "title" to "Standartgeräte ändern",
                 "description" to "",
-                "settingsType" to "click"
+                "settingsType" to "click",
+                "action" to ACTION_OPEN_DEVICE_MANAGER
             )
         ),
         "Object Detection" to listOf(

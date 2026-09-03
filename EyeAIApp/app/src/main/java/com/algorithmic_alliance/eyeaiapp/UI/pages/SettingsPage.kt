@@ -42,9 +42,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,11 +58,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.hasPermission
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
+import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -239,6 +244,30 @@ fun SettingsCategoryCard(
 fun ClickSetting(
     settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit, onOpenConnectionPage: () -> Unit
 ) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val action = settingData["action"] as? String
+    var batteryOptimizationExempt by remember(action) {
+        mutableStateOf(
+            action == UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION &&
+                BatteryOptimization.isExempt(context)
+        )
+    }
+
+    DisposableEffect(lifecycleOwner, action) {
+        if (action != UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION) {
+            onDispose { }
+        } else {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    batteryOptimizationExempt = BatteryOptimization.isExempt(context)
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -250,7 +279,7 @@ fun ClickSetting(
             Text(settingData.getValue("title") as String, fontSize = 18.sp)
             if (settingData.getValue("description") as String != "")
                 Text(settingData.getValue("description") as String)
-            if (settingData["title"] == "Standartgeräte ändern") {
+            if (action == UIDataSource.ACTION_OPEN_DEVICE_MANAGER) {
                 val sharedPreferences =
                     PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
                 val standardAudioDevice =
@@ -260,14 +289,27 @@ fun ClickSetting(
                 Text("Audiogerät: ${if (standardAudioDevice != "") standardAudioDevice else "   -"}")
                 Text("Vision: ${if (standardVisionDevice != "") standardVisionDevice else "   -"}")
             }
+            if (action == UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION) {
+                Text(
+                    if (batteryOptimizationExempt) {
+                        "Status: von der Batterieoptimierung ausgenommen"
+                    } else {
+                        "Status: Batterieoptimierung aktiv"
+                    }
+                )
+            }
         }
         Box {
             IconButton(onClick = {
-                if (settingData["title"] == "Standartgeräte ändern") {
-                    onEvent(UIEvent.OnUpdateActionStartedFromSettings(true))
-                    onOpenConnectionPage()
+                when (action) {
+                    UIDataSource.ACTION_OPEN_DEVICE_MANAGER -> {
+                        onEvent(UIEvent.OnUpdateActionStartedFromSettings(true))
+                        onOpenConnectionPage()
+                    }
+                    UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION -> {
+                        BatteryOptimization.openSettings(context)
+                    }
                 }
-
             }) {
                 Icon(
                     painter = painterResource(R.drawable.change_circle_24px),

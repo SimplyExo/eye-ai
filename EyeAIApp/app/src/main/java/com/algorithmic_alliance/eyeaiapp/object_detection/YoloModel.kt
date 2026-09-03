@@ -19,10 +19,15 @@ class YoloModel(var info: YoloModelInfo) {
 
 	private var initialized = false
 
+	@Synchronized
 	fun create(
 		context: Context, skelDirectory: String,
 		enableNpu: Boolean
 	) {
+		if (initialized && enableNpu == currentEnableNpu) {
+			return
+		}
+
 		// Erstellen einer Yolo-Instanz
 		val modelBytes = info.getAsBytes(context)
 		labels = info.readLinesFromAsset(context).toList()
@@ -39,9 +44,14 @@ class YoloModel(var info: YoloModelInfo) {
 		numChannel = outputShape[1]
 		numElements = outputShape[2]
 
+		currentEnableNpu = enableNpu
 		initialized = true
 	}
 
+	@Volatile
+	private var currentEnableNpu: Boolean? = null
+
+	@Synchronized
 	fun runInference(frame: Bitmap): Array<UniffiDetectedObject>? {
 		if (!initialized) {
 			/*Log.e(
