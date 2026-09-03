@@ -27,6 +27,9 @@
     <string name="media_path_setting">media_path_setting</string>
     <string name="eyeaivision_ip_setting">eyeaivision_ip_setting</string>
     <string name="input_is_eyeaivision">eyeaivision</string>
+    <string name="input_source_camera_label">Camera</string>
+    <string name="input_source_media_label">Media</string>
+    <string name="input_source_eyeaivision_label">EyeAI-Vision</string>
     <string name="enable_object_detection_setting">enable_object_detection</string>
     <string name="speech_recognition_ready">Speech Recognition Listening!</string>
     <string name="version_info_settings">version_info</string>
@@ -64,4 +67,6 @@ Every camera frame is processed offline locally on your device,
     <string name="permission_icon_description">Current Permission Icon</string>
     <string name="stop_tts_description">Stop TTS Button</string>
     <string name="debug_page_activated">debug_page_activated</string>
+    <string name="language_is_german">German</string>
+    <string name="language_is_english">English</string>
 </resources>

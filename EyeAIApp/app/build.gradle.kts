@@ -108,9 +108,11 @@ sourceSets.getByName("androidTest").assets.directories.add("src/test/resources")
 
 dependencies {
 	implementation(libs.androidx.benchmark.common)
+    implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.remote.creation.core)
+    implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation(libs.androidx.core.ktx)
 	implementation(libs.androidx.lifecycle.runtime.ktx)
 	implementation(libs.androidx.lifecycle.service)
@@ -129,6 +131,7 @@ dependencies {
 	implementation(libs.androidx.camera.lifecycle)
 	implementation(libs.androidx.camera.extensions)
 	implementation(libs.material)
+    implementation(libs.play.services.location)
 
 	// Vosk
 	implementation(libs.vosk)

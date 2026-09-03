@@ -2,12 +2,18 @@ package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Checkbox
@@ -55,8 +61,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -65,6 +69,8 @@ import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.hasPermission
+import com.algorithmic_alliance.eyeaiapp.data.SelectOption
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import kotlin.math.roundToInt
@@ -101,7 +107,7 @@ fun SettingsPage(
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(
-            modifier = Modifier.shadow(elevation = 8.dp),
+            modifier = Modifier.shadow(elevation = Spacing.sm),
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -117,7 +123,7 @@ fun SettingsPage(
                             contentDescription = "Zurück"
                         )
                     }
-                    Text("Einstellungen")
+                    Text("Einstellungen", style = MaterialTheme.typography.titleLarge)
                 }
             },
         )
@@ -126,7 +132,7 @@ fun SettingsPage(
             modifier = Modifier.padding(innerPadding),
         ) {
             key(uiState.reloadSettingsPageKey) {
-                LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
+                LazyColumn(modifier = modifier.padding(vertical = Spacing.xs)) {
                     items(
                         items = settingsData.entries.toList(),
                         key = { entry -> entry.key }) { entry ->
@@ -142,12 +148,12 @@ fun SettingsPage(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp)
+                                .padding(Spacing.sm)
                         ) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
+                                    .padding(Spacing.md)
                                     .clickable {
                                         if (!debugPageActivated) {
                                             onOpenDebugPage()
@@ -165,8 +171,7 @@ fun SettingsPage(
                             ) {
                                 Text(
                                     if (!debugPageActivated) "DebugPage aktivieren" else "DebugPage deaktivieren",
-                                    fontSize = 22.sp,
-                                    fontWeight = FontWeight.Bold
+                                    style = MaterialTheme.typography.titleMedium,
                                 )
                             }
                         }
@@ -190,12 +195,13 @@ fun SettingsCategoryCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(Spacing.sm)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(Spacing.md)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(
-                    category, fontSize = 22.sp, fontWeight = FontWeight.Bold
+                    category,
+                    style = MaterialTheme.typography.titleMedium,
                 )
             }
             HorizontalDivider()
@@ -271,14 +277,21 @@ fun ClickSetting(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(settingData.getValue("title") as String, fontSize = 18.sp)
+            Text(
+                settingData.getValue("title") as String,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+            )
             if (settingData.getValue("description") as String != "")
-                Text(settingData.getValue("description") as String)
+                Text(
+                    settingData.getValue("description") as String,
+                    style = MaterialTheme.typography.bodySmall,
+                )
             if (action == UIDataSource.ACTION_OPEN_DEVICE_MANAGER) {
                 val sharedPreferences =
                     PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
@@ -286,8 +299,14 @@ fun ClickSetting(
                     sharedPreferences.getString(stringResource(R.string.selected_audio_device), "")
                 val standardVisionDevice =
                     sharedPreferences.getString(stringResource(R.string.selected_eye_ai_vision), "")
-                Text("Audiogerät: ${if (standardAudioDevice != "") standardAudioDevice else "   -"}")
-                Text("Vision: ${if (standardVisionDevice != "") standardVisionDevice else "   -"}")
+                Text(
+                    "Audiogerät: ${if (standardAudioDevice != "") standardAudioDevice else "   -"}",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Text(
+                    "Vision: ${if (standardVisionDevice != "") standardVisionDevice else "   -"}",
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
             if (action == UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION) {
                 Text(
@@ -295,7 +314,8 @@ fun ClickSetting(
                         "Status: von der Batterieoptimierung ausgenommen"
                     } else {
                         "Status: Batterieoptimierung aktiv"
-                    }
+                    },
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
         }
@@ -340,13 +360,22 @@ fun CheckBoxSetting(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(settingData.getValue("title") as String, fontSize = 18.sp)
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
+            Text(
+                settingData.getValue("title") as String,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+            )
+            if (settingData.getValue("description") as String != "") {
+                Text(
+                    settingData.getValue("description") as String,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
         Checkbox(checked = checked, onCheckedChange = { isChecked ->
 
@@ -377,6 +406,7 @@ fun CheckBoxSetting(
 fun SelectSetting(
     modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
 ) {
+    val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val settingKey = stringResource(settingData["string"] as Int)
 
@@ -392,13 +422,22 @@ fun SelectSetting(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(settingData.getValue("title") as String, fontSize = 18.sp)
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
+            Text(
+                settingData.getValue("title") as String,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+            )
+            if (settingData.getValue("description") as String != "") {
+                Text(
+                    settingData.getValue("description") as String,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
         Box {
             Row(
@@ -406,7 +445,11 @@ fun SelectSetting(
                     dropDownEnabled = true
                 }, verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(currentlySelected as String)
+                Text(
+                    displayOption(context, settingData, currentlySelected.orEmpty()),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
                 Icon(
                     painter = painterResource(R.drawable.arrow_drop_down_24px),
                     contentDescription = ""
@@ -414,9 +457,14 @@ fun SelectSetting(
             }
             DropdownMenu(
                 expanded = dropDownEnabled, onDismissRequest = { dropDownEnabled = false }) {
-                for (item in (settingData.getValue("settingsOptions") as List<Any>)) {
-                    DropdownMenuItem(text = { Text(item as String) }, onClick = {
-                        currentlySelected = item as String
+                    for (item in (settingData.getValue("settingsOptions") as List<Any>)) {
+                    DropdownMenuItem(text = {
+                        Text(
+                            displayOption(context, settingData, optionValue(item)),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }, onClick = {
+                        currentlySelected = optionValue(item)
                         Log.d(
                             LOG_TAG,
                             "[SettingsPage.SelectSetting] Changed setting $settingKey to $currentlySelected"
@@ -439,11 +487,26 @@ fun SliderSetting(
 ) {
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val settingKey = stringResource(settingData["string"] as Int)
-
     val settingsOptions = settingData.getValue("settingsOption") as Map<Any, Any>
-
     val min = (settingsOptions.getValue("min") as Number).toFloat()
     val max = (settingsOptions.getValue("max") as Number).toFloat()
+
+    val settingRes = settingData["string"] as Int
+    val isDepthFrameRate = settingRes == R.string.max_depth_frame_rate_setting
+    val isObjectFrameRate = settingRes == R.string.max_object_detection_frame_rate_setting
+    val depthLimiterEnabled by rememberPreferenceBooleanState(
+        key = stringResource(R.string.enable_depth_frame_rate_limit_setting),
+        default = true,
+    )
+    val objectLimiterEnabled by rememberPreferenceBooleanState(
+        key = stringResource(R.string.enable_object_detection_frame_rate_limit_setting),
+        default = true,
+    )
+    val visible = when {
+        isDepthFrameRate -> depthLimiterEnabled
+        isObjectFrameRate -> objectLimiterEnabled
+        else -> true
+    }
 
     var currentValue by rememberSaveable {
         mutableIntStateOf(
@@ -453,44 +516,62 @@ fun SliderSetting(
         )
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically(),
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    settingData.getValue("title") as String,
-                    fontSize = 18.sp,
-                    modifier = Modifier.weight(1f)
-                )
-                Text("$currentValue")
-            }
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
-            Slider(
-                value = currentValue.toFloat(), onValueChange = {
-                    if(settingData.getValue("title") == "Audio-Frequency")
-                        currentValue = (it / 10.0).roundToInt() * 10
-                    else
-                        currentValue = it.roundToInt()
-                    Log.d(
-                        LOG_TAG,
-                        "[SettingsPage.SliderSetting] Changed setting $settingKey to $currentValue"
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                ) {
+                    Text(
+                        settingData.getValue("title") as String,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.weight(1f),
                     )
-                    sharedPreferences.edit(commit = true) {
-                        putInt(settingKey, currentValue)
-                    }
-                    onEvent(UIEvent.UpdateSettings)
-                }, valueRange = min..max
-            )
+                    Text(
+                        "$currentValue",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+                if (settingData.getValue("description") as String != "") {
+                    Text(
+                        settingData.getValue("description") as String,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                Slider(
+                    value = currentValue.toFloat(),
+                    onValueChange = { value ->
+                        currentValue = if (settingData.getValue("title") == "Audio-Frequency") {
+                            (value / 10.0).roundToInt() * 10
+                        } else {
+                            value.roundToInt()
+                        }
+                        Log.d(
+                            LOG_TAG,
+                            "[SettingsPage.SliderSetting] Changed setting $settingKey to $currentValue",
+                        )
+                        sharedPreferences.edit(commit = true) {
+                            putInt(settingKey, currentValue)
+                        }
+                        onEvent(UIEvent.UpdateSettings)
+                    },
+                    valueRange = min..max,
+                )
+            }
         }
-
     }
 }
 
@@ -503,13 +584,22 @@ fun TextInputSetting(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(settingData.getValue("title") as String, fontSize = 18.sp)
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
+            Text(
+                settingData.getValue("title") as String,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+            )
+            if (settingData.getValue("description") as String != "") {
+                Text(
+                    settingData.getValue("description") as String,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
         Box {
             IconButton(onClick = { showTextFieldDialog = true }) {
@@ -584,13 +674,19 @@ fun TextFieldDialog(
 @Composable
 fun InfoSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
 
-    Row(modifier = Modifier.padding(8.dp)) {
+    Row(modifier = Modifier.padding(Spacing.md)) {
         Column {
             Text(
                 settingData.getValue("title") as String,
-                fontSize = 18.sp,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
             )
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
+            if (settingData.getValue("description") as String != "") {
+                Text(
+                    settingData.getValue("description") as String,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
     }
 
@@ -634,13 +730,22 @@ fun FileSetting(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(settingData.getValue("title") as String, fontSize = 18.sp)
-            if (settingData.getValue("description") as String != "") Text(settingData.getValue("description") as String)
+            Text(
+                settingData.getValue("title") as String,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+            )
+            if (settingData.getValue("description") as String != "") {
+                Text(
+                    settingData.getValue("description") as String,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
         IconButton(onClick = {
             filePickerLauncher.launch(
@@ -652,4 +757,35 @@ fun FileSetting(
             )
         }
     }
+}
+
+private fun optionValue(option: Any): String = when (option) {
+    is SelectOption -> option.value
+    else -> option.toString()
+}
+
+private fun displayOption(context: Context, settingData: Map<String, Any>, value: String): String {
+    val options = settingData["settingsOptions"] as? List<*> ?: return value
+    val option = options.firstOrNull { candidate ->
+        candidate != null && optionValue(candidate) == value
+    }
+    return if (option is SelectOption) context.getString(option.labelRes) else value
+}
+
+@Composable
+fun rememberPreferenceBooleanState(
+    key: String,
+    default: Boolean,
+): androidx.compose.runtime.State<Boolean> {
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val state = remember(key) { mutableStateOf(sharedPreferences.getBoolean(key, default)) }
+
+    DisposableEffect(sharedPreferences, key, default) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { preferences, changedKey ->
+            if (changedKey == key) state.value = preferences.getBoolean(key, default)
+        }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    return state
 }

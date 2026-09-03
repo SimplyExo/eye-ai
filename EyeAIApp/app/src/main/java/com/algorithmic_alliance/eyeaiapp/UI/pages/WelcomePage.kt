@@ -21,7 +21,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 
 @Composable
 fun WelcomePage(modifier: Modifier = Modifier, onGetStarted: () -> Unit) {
@@ -30,7 +30,7 @@ fun WelcomePage(modifier: Modifier = Modifier, onGetStarted: () -> Unit) {
         color = MaterialTheme.colorScheme.surface
     ) {
         Column(
-            modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(Spacing.lg), verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
@@ -40,7 +40,7 @@ fun WelcomePage(modifier: Modifier = Modifier, onGetStarted: () -> Unit) {
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp)
+                    .padding(Spacing.lg)
                     .semantics { contentDescription = "Startet die Eye-Ai Anwendung" },
                 onClick = {
 
@@ -51,7 +51,13 @@ fun WelcomePage(modifier: Modifier = Modifier, onGetStarted: () -> Unit) {
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 )
-            ) { Text("App Starten", modifier = Modifier.clearAndSetSemantics {}) }
+            ) {
+                Text(
+                    "App Starten",
+                    modifier = Modifier.clearAndSetSemantics {},
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
         }
     }
 

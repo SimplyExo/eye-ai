@@ -38,9 +38,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import androidx.annotation.RequiresApi
@@ -51,6 +50,8 @@ import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.checkPermissionsStatus
 import com.algorithmic_alliance.eyeaiapp.UI.onPermissionDecline
+import com.algorithmic_alliance.eyeaiapp.data.Shapes
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -139,23 +140,24 @@ fun AskForPermission(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(Spacing.md),
+        shape = Shapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(Spacing.md)) {
             Row(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(Spacing.md)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
                 Icon(
                     modifier = Modifier
-                        .height(150.dp)
-                        .width(150.dp),
+                        .height(Spacing.xxxxl)
+                        .width(Spacing.xxxxl),
                     painter = painterResource(permissionIcon as Int),
                     contentDescription = iconDescription as String,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
@@ -163,15 +165,16 @@ fun AskForPermission(
             }
             Text(
                 permissionExplanation as String,
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(Spacing.md),
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                fontSize = 20.sp
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
             )
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    .padding(top = Spacing.md),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
             ) {
                 Button(
                     modifier = Modifier
@@ -184,7 +187,11 @@ fun AskForPermission(
                     onClick = {
                         showDeclineDialog = !showDeclineDialog
                     }) {
-                    Text("Ablehnen", modifier = Modifier.clearAndSetSemantics {}, fontSize = 16.sp)
+                    Text(
+                        "Ablehnen",
+                        modifier = Modifier.clearAndSetSemantics {},
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                 }
                 Button(
                     modifier = Modifier
@@ -201,7 +208,11 @@ fun AskForPermission(
 
 
                     }) {
-                    Text("Annehmen", modifier = Modifier.clearAndSetSemantics {}, fontSize = 16.sp)
+                    Text(
+                        "Annehmen",
+                        modifier = Modifier.clearAndSetSemantics {},
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                 }
 
             }

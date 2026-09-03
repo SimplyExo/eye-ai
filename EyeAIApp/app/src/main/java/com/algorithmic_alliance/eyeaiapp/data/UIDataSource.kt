@@ -5,6 +5,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import androidx.annotation.StringRes
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.annotation.RequiresApi
 import androidx.camera.core.impl.utils.ContextUtil.getApplication
@@ -213,7 +216,10 @@ object UIDataSource {
                 "title" to "Audio language",
                 "description" to "",
                 "settingsType" to "select",
-                "settingsOptions" to listOf("english", "german"),
+                "settingsOptions" to listOf(
+                    SelectOption(R.string.language_is_english, "english"),
+                    SelectOption(R.string.language_is_german, "german"),
+                ),
                 "string" to R.string.object_playback_language,
                 "default" to "english"
             ),
@@ -264,7 +270,11 @@ object UIDataSource {
                 "title" to "Input Source",
                 "description" to "",
                 "settingsType" to "select",
-                "settingsOptions" to listOf("camera", "media", "eyeaivision"),
+                "settingsOptions" to listOf(
+                    SelectOption(R.string.input_source_camera_label, "camera"),
+                    SelectOption(R.string.input_source_media_label, "media"),
+                    SelectOption(R.string.input_source_eyeaivision_label, "eyeaivision"),
+                ),
                 "string" to R.string.input_source_setting,
                 "default" to "camera"
             ),
@@ -332,4 +342,24 @@ object UIDataSource {
 
     )
 
+}
+
+/** A user-facing label paired with the stable value consumed by the runtime. */
+data class SelectOption(@StringRes val labelRes: Int, val value: String)
+
+object Spacing {
+    val xs = 4.dp
+    val sm = 8.dp
+    val md = 16.dp
+    val lg = 24.dp
+    val xl = 32.dp
+    val xxl = 48.dp
+    val xxxl = 64.dp
+    val xxxxl = 128.dp
+}
+
+object Shapes {
+    val small = RoundedCornerShape(8.dp)
+    val medium = RoundedCornerShape(16.dp)
+    val large = RoundedCornerShape(28.dp)
 }

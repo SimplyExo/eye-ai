@@ -1,25 +1,31 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -47,22 +53,38 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.UI.PHONE_CAMERA_DEVICE
+import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
 import com.algorithmic_alliance.eyeaiapp.UI.rememberAudioDeviceState
+import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
-import kotlin.collections.emptyList
+import com.algorithmic_alliance.eyeaiapp.data.Shapes
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.Priority
 
+private const val AUDIO_DEVICE_TYPE = "audio"
+private const val VISION_DEVICE_TYPE = "eye-ai-vision"
+
+private data class ConnectionCategory(
+    val name: String,
+    val type: String,
+    val rememberKey: Int,
+    val selectedKey: Int,
+)
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -71,335 +93,318 @@ fun ConnectionPage(
     onConnectionSuccessful: () -> Unit,
     onExitSelection: () -> Unit,
     uiState: UIState,
-    onEvent: (UIEvent) -> Unit
+    onEvent: (UIEvent) -> Unit,
 ) {
+    BackHandler(onBack = onExitSelection)
 
-    BackHandler() {
-        onExitSelection()
-    }
-
-    Log.d(LOG_TAG, "[PermissionPage] Loading ConnectionPage")
     val context = LocalContext.current
-
-    if (ActivityCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        Log.d(
-            LOG_TAG,
-            "[ConnectionPage] Canceling WIFI-Scan due to permissions not being granted."
-        )
-        return
-    }
-
-    val wifiScanState = rememberWifiScanState(context, autoScanOnStart = false)
-    //wifiScanState.rescan()
-
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-
-    //TODO connection to Backend
-    val devices: List<Any> = listOf(
-        mapOf(
-            "name" to "Audio-Gerät",
-            "type" to "audio",
-            "rememberKey" to R.string.remember_audio_device,
-            "remember" to sharedPreferences.getBoolean(
-                stringResource(R.string.remember_audio_device),
-                false
-            ),
-            "selectedKey" to R.string.selected_audio_device,
-            "selected" to sharedPreferences.getString(
-                stringResource(R.string.selected_audio_device),
-                ""
-            ),
+    val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+    val categories = listOf(
+        ConnectionCategory(
+            name = "Audio-Gerät",
+            type = AUDIO_DEVICE_TYPE,
+            rememberKey = R.string.remember_audio_device,
+            selectedKey = R.string.selected_audio_device,
         ),
-        mapOf(
-            "name" to "EyeAI-Vision",
-            "type" to "eye-ai-vision",
-            "rememberKey" to R.string.remember_eye_ai_vision,
-            "remember" to sharedPreferences.getBoolean(
-                stringResource(R.string.remember_eye_ai_vision),
-                false
-            ),
-            "selectedKey" to R.string.selected_eye_ai_vision,
-            "selected" to sharedPreferences.getString(
-                stringResource(R.string.selected_eye_ai_vision),
-                ""
-            ),
-        )
+        ConnectionCategory(
+            name = "EyeAI-Vision",
+            type = VISION_DEVICE_TYPE,
+            rememberKey = R.string.remember_eye_ai_vision,
+            selectedKey = R.string.selected_eye_ai_vision,
+        ),
     )
+    var currentCategoryIndex by rememberSaveable { mutableIntStateOf(0) }
 
-    var currentlyDisplayedDevices by remember { mutableIntStateOf(0) }
+    val category = categories[currentCategoryIndex]
+    val remembered = preferences.getBoolean(context.getString(category.rememberKey), false)
+    val rememberedDevice = preferences.getString(context.getString(category.selectedKey), "").orEmpty()
 
     ChooseConnectionPage(
+        modifier = modifier,
+        category = category,
+        remembered = remembered,
+        rememberedDevice = rememberedDevice,
+        connectionTutorialCompleted = uiState.connectionTutorialCompleted,
         onConnectionSuccessful = {
-            if (currentlyDisplayedDevices < devices.size - 1)
-                currentlyDisplayedDevices++
-            else onConnectionSuccessful()
+            if (currentCategoryIndex < categories.lastIndex) {
+                currentCategoryIndex += 1
+            } else {
+                onConnectionSuccessful()
+            }
         },
-        goBack = { if (currentlyDisplayedDevices != 0) currentlyDisplayedDevices-- else onExitSelection() },
-        devicesData = devices[currentlyDisplayedDevices] as Map<Any, Any>,
-        uiState = uiState,
-        onEvent = onEvent
+        goBack = {
+            if (currentCategoryIndex > 0) currentCategoryIndex -= 1 else onExitSelection()
+        },
+        onEvent = onEvent,
     )
-
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun ChooseConnectionPage(
-    modifier: Modifier = Modifier,
+private fun ChooseConnectionPage(
+    modifier: Modifier,
+    category: ConnectionCategory,
+    remembered: Boolean,
+    rememberedDevice: String,
+    connectionTutorialCompleted: Boolean,
     onConnectionSuccessful: () -> Unit,
     goBack: () -> Unit,
-    devicesData: Map<Any, Any>,
-    uiState: UIState,
-    onEvent: (UIEvent) -> Unit
+    onEvent: (UIEvent) -> Unit,
 ) {
     val context = LocalContext.current
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-    var shouldRememberDevice by rememberSaveable { mutableStateOf(false) }
-    var selectedDevice by remember { mutableStateOf("") }
-    var showConnectionFailedDialog by remember { mutableStateOf(false) }
-    var showLocationDisabledDialog by remember { mutableStateOf(false) }
-
-    val shouldRememberKey = stringResource(devicesData["rememberKey"] as Int)
-    val selectedDeviceKey = stringResource(devicesData["selectedKey"] as Int)
-    val deviceCategory = devicesData["name"] ?: UIDataSource.INFORMATION_NOT_FOUND
+    val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+    val shouldRememberKey = stringResource(category.rememberKey)
+    val selectedDeviceKey = stringResource(category.selectedKey)
+    val hasLocationPermission = ActivityCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+    ) == PackageManager.PERMISSION_GRANTED
     val wifiScanState = rememberWifiScanState(context, autoScanOnStart = false)
     val (audioDevices, refreshAudioDevices) = rememberAudioDeviceState(context)
-    val devices: List<String> = when (devicesData["type"]) {
-        "audio" -> audioDevices
-        "eye-ai-vision" -> wifiScanState.networks
-        else -> emptyList()
+    val devices = if (category.type == AUDIO_DEVICE_TYPE) audioDevices else wifiScanState.networks
+    val shimmerBrush = rememberShimmerBrush(
+        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    )
+
+    var shouldRememberDevice by rememberSaveable(category.type) { mutableStateOf(remembered) }
+    var selectedDevice by rememberSaveable(category.type) { mutableStateOf("") }
+    var showConnectionFailedDialog by rememberSaveable(category.type) { mutableStateOf(false) }
+    var showLocationDisabledDialog by rememberSaveable(category.type) { mutableStateOf(false) }
+    var showLocationPermissionDialog by rememberSaveable(category.type) { mutableStateOf(false) }
+    var pageLoading by rememberSaveable(category.type) {
+        mutableStateOf(!connectionTutorialCompleted && remembered && rememberedDevice.isNotBlank())
     }
 
-    Log.d(LOG_TAG, "[ConnectionPage] Choosing connection for $deviceCategory")
-
-    LaunchedEffect(devicesData["type"]) {
-        if (devicesData["type"] == "eye-ai-vision" && (devicesData["remember"] == true && devicesData["selected"] != "Handykamera verwenden")) {
-            val locationManager =
-                context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            if (locationManager.isLocationEnabled)
-                wifiScanState.rescan()
-            else {
-                Log.d(
-                    LOG_TAG,
-                    "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
-                )
-                showLocationDisabledDialog = true
-            }
-
+    fun requestVisionScan() {
+        when {
+            !hasLocationPermission -> showLocationPermissionDialog = true
+            isLocationEnabled(context) -> wifiScanState.rescan()
+            else -> showLocationDisabledDialog = true
         }
     }
-    if (!uiState.connectionTutorialCompleted) {
-        LaunchedEffect(devicesData) {
-            if (devicesData["remember"] == true && (devices.contains(devicesData["selected"]) || devicesData["selected"] == "Handykamera verwenden")) {
-                Log.d(
-                    LOG_TAG,
-                    "[ConnectionPage] Attempting to connect to remembered ${devicesData["type"]} device"
-                )
-                connectToDevice(
-                    context,
-                    devicesData["type"] as String,
-                    devicesData["selected"] as String,
-                    onEvent = onEvent
-                )
-                { success ->
-                    if (success) {
-                        Log.d(
-                            LOG_TAG,
-                            "[ConnectionPage] Connection to remembered device successful"
-                        )
-                        onConnectionSuccessful()
-                    }
 
+    LaunchedEffect(category.type, connectionTutorialCompleted, remembered, rememberedDevice) {
+        if (connectionTutorialCompleted || !remembered || rememberedDevice.isBlank()) {
+            pageLoading = false
+            if (category.type == VISION_DEVICE_TYPE) requestVisionScan()
+            return@LaunchedEffect
+        }
+
+        val rememberedDeviceIsAvailable = when (category.type) {
+            AUDIO_DEVICE_TYPE -> rememberedDevice in audioDevices
+            VISION_DEVICE_TYPE -> when {
+                rememberedDevice == PHONE_CAMERA_DEVICE -> true
+                !hasLocationPermission -> {
+                    showLocationPermissionDialog = true
+                    false
                 }
+                !isLocationEnabled(context) -> {
+                    showLocationDisabledDialog = true
+                    false
+                }
+                else -> rememberedDevice in wifiScanState.awaitScan()
+            }
+            else -> false
+        }
+
+        if (!rememberedDeviceIsAvailable) {
+            Log.d(LOG_TAG, "[ConnectionPage] Remembered ${category.type} device is unavailable")
+            pageLoading = false
+            return@LaunchedEffect
+        }
+
+        connectToDevice(
+            context = context,
+            deviceCategory = category.type,
+            selectedDevice = rememberedDevice,
+            onEvent = onEvent,
+        ) { success ->
+            if (success) {
+                onConnectionSuccessful()
+            } else {
+                pageLoading = false
+                showConnectionFailedDialog = true
             }
         }
     }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize(),
-        color = MaterialTheme.colorScheme.surface
-    ) {
-        Column(verticalArrangement = Arrangement.Center) {
+    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(Spacing.md),
+            contentAlignment = Alignment.Center,
+        ) {
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth(),
+                shape = Shapes.medium,
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
             ) {
-                Column {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
+                if (pageLoading) {
+                    ConnectionLoadingContent(shimmerBrush)
+                } else {
+                    Column {
                         Text(
-                            "$deviceCategory auswählen",
-                            modifier = Modifier.clearAndSetSemantics {
-                                contentDescription = "$deviceCategory auswählen"
-                            },
-                            fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clearAndSetSemantics {})
-                    if (devices.isNotEmpty()) {
-                        LazyColumn(
+                            text = "${category.name} auswählen",
                             modifier = Modifier
-                                .padding(8.dp)
                                 .fillMaxWidth()
-                        ) {
-                            items(items = devices) { item ->
-                                val index = devices.indexOf(item)
-                                DeviceListEntry(
-                                    item as String,
-                                    onSelected = {
-                                        selectedDevice = item
-                                    },
-                                    isSelected = item == selectedDevice
-                                )
-                            }
-                            if (devicesData["type"] == "eye-ai-vision") {
-                                item {
+                                .padding(Spacing.md)
+                                .clearAndSetSemantics {
+                                    contentDescription = "${category.name} auswählen"
+                                },
+                            style = MaterialTheme.typography.headlineLarge,
+                            textAlign = TextAlign.Center,
+                        )
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.padding(horizontal = Spacing.sm),
+                        )
+
+                        if (devices.isNotEmpty()) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = Spacing.xxxxl * 3)
+                                    .padding(horizontal = Spacing.sm),
+                            ) {
+                                items(devices, key = { it }) { device ->
                                     DeviceListEntry(
-                                        "Handykamera verwenden",
-                                        onSelected = { selectedDevice = "Handykamera verwenden" },
-                                        isSelected = "Handykamera verwenden" == selectedDevice
+                                        deviceName = device,
+                                        isSelected = selectedDevice == device,
+                                        onSelected = { selectedDevice = device },
+                                    )
+                                }
+                                if (category.type == VISION_DEVICE_TYPE) {
+                                    item(key = PHONE_CAMERA_DEVICE) {
+                                        DeviceListEntry(
+                                            deviceName = PHONE_CAMERA_DEVICE,
+                                            isSelected = selectedDevice == PHONE_CAMERA_DEVICE,
+                                            onSelected = { selectedDevice = PHONE_CAMERA_DEVICE },
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(Spacing.md),
+                            ) {
+                                if (wifiScanState.scanning && category.type == VISION_DEVICE_TYPE) {
+                                    ShimmerBox(
+                                        brush = shimmerBrush,
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.7f)
+                                            .height(Spacing.md),
+                                    )
+                                } else {
+                                    Text(
+                                        text = "Keine verfügbaren Geräte gefunden.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                }
+                                if (category.type == VISION_DEVICE_TYPE) {
+                                    DeviceListEntry(
+                                        deviceName = PHONE_CAMERA_DEVICE,
+                                        isSelected = selectedDevice == PHONE_CAMERA_DEVICE,
+                                        onSelected = { selectedDevice = PHONE_CAMERA_DEVICE },
                                     )
                                 }
                             }
                         }
-                    } else {
+
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.padding(horizontal = Spacing.sm),
+                        )
                         Row(
                             modifier = Modifier
-                                .padding(8.dp)
-                        ) { Text("Lade...") }
-                        DeviceListEntry(
-                            "Handykamera verwenden",
-                            onSelected = { selectedDevice = "Handykamera verwenden" },
-                            isSelected = "Handykamera verwenden" == selectedDevice
-                        )
-
-
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(
-                            top = 8.dp,
-                            start = 8.dp,
-                            end = 8.dp
-                        )
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 8.dp, end = 32.dp, top = 4.dp, bottom = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = shouldRememberDevice,
-                                onCheckedChange = { shouldRememberDevice = !shouldRememberDevice })
-                            Text("Als Standardgerät festlegen")
-                        }
-                        Box(modifier = Modifier.clickable {
-                            when (devicesData["type"]) {
-                                "audio" -> {
-                                    refreshAudioDevices()
-                                }
-
-                                "eye-ai-vision" -> {
-                                    val locationManager =
-                                        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                                    if (locationManager.isLocationEnabled)
-                                        wifiScanState.rescan()
-                                    else {
-                                        Log.d(
-                                            LOG_TAG,
-                                            "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
-                                        )
-                                        showLocationDisabledDialog = true
-                                    }
-                                }
+                                .fillMaxWidth()
+                                .padding(
+                                    start = Spacing.sm,
+                                    end = Spacing.lg,
+                                    top = Spacing.xs,
+                                    bottom = Spacing.xs,
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(
+                                    checked = shouldRememberDevice,
+                                    onCheckedChange = { shouldRememberDevice = it },
+                                )
+                                Text("Standardgerät", style = MaterialTheme.typography.bodyLarge)
                             }
-                        }) {
                             Icon(
                                 painter = painterResource(R.drawable.refresh_24px),
-                                contentDescription = ""
+                                contentDescription = "Geräteliste aktualisieren",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier
+                                    .width(Spacing.xl)
+                                    .height(Spacing.xl)
+                                    .clickable {
+                                        if (category.type == AUDIO_DEVICE_TYPE) {
+                                            refreshAudioDevices()
+                                        } else {
+                                            requestVisionScan()
+                                        }
+                                    },
                             )
                         }
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(
-                            bottom = 8.dp,
-                            start = 8.dp,
-                            end = 8.dp
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.padding(horizontal = Spacing.sm),
                         )
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Button(
-                            modifier = Modifier.weight(1f),
-                            onClick = { goBack() }) { Text("Zurück") }
-                        Button(
+                        Row(
                             modifier = Modifier
-                                .weight(1f)
-                                .semantics {
-                                    contentDescription =
-                                        "Mit Gerät $selectedDevice verbinden"
-                                }, enabled = selectedDevice != "",
-                            onClick = {
-
-                                connectToDevice(
-                                    context,
-                                    devicesData["type"] as String,
-                                    selectedDevice,
-                                    onEvent = onEvent
-                                )
-                                { success ->
-                                    if (success) {
-                                        Log.d(
-                                            LOG_TAG,
-                                            "[ConnectionPage] Setting SharedPreferences ShouldRememberDevice: $shouldRememberDevice"
-                                        )
-                                        sharedPreferences.edit(commit = true) {
-                                            putBoolean(
-                                                shouldRememberKey,
-                                                shouldRememberDevice
-                                            )
+                                .fillMaxWidth()
+                                .padding(Spacing.md),
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+                        ) {
+                            Button(modifier = Modifier.weight(1f), onClick = goBack) {
+                                Text("Zurück", style = MaterialTheme.typography.labelLarge)
+                            }
+                            Button(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .semantics {
+                                        contentDescription = "Mit Gerät $selectedDevice verbinden"
+                                    },
+                                enabled = selectedDevice.isNotBlank(),
+                                onClick = {
+                                    connectToDevice(
+                                        context = context,
+                                        deviceCategory = category.type,
+                                        selectedDevice = selectedDevice,
+                                        onEvent = onEvent,
+                                    ) { success ->
+                                        if (!success) {
+                                            showConnectionFailedDialog = true
+                                            return@connectToDevice
                                         }
-                                        Log.d(
-                                            LOG_TAG,
-                                            "[ConnectionPage] Setting SharedPreferences SelectedDevice: $selectedDevice"
-                                        )
-                                        sharedPreferences.edit(commit = true) {
+                                        preferences.edit(commit = true) {
+                                            putBoolean(shouldRememberKey, shouldRememberDevice)
                                             putString(
                                                 selectedDeviceKey,
-                                                if (shouldRememberDevice) selectedDevice else ""
+                                                selectedDevice.takeIf { shouldRememberDevice }.orEmpty(),
                                             )
                                         }
-                                        shouldRememberDevice = false
-                                        selectedDevice = ""
                                         onConnectionSuccessful()
-                                    } else
-                                        showConnectionFailedDialog = true
-                                }
-                            }) { Text("Verbinden", modifier = Modifier.clearAndSetSemantics {}) }
+                                    }
+                                },
+                            ) {
+                                Text(
+                                    "Verbinden",
+                                    modifier = Modifier.clearAndSetSemantics {},
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -407,76 +412,172 @@ fun ChooseConnectionPage(
     }
 
     if (showConnectionFailedDialog) {
-        ErrorDialog(
-            titel = "Verbindung fehlgeschlagen",
-            content = "",
-            onDismissed = { showConnectionFailedDialog = false })
+        ConnectionErrorDialog(
+            title = "Verbindung fehlgeschlagen",
+            message = "Das ausgewählte Gerät konnte nicht verbunden werden.",
+            onDismissed = { showConnectionFailedDialog = false },
+        )
     }
-
+    if (showLocationPermissionDialog) {
+        ConnectionErrorDialog(
+            title = "Standortberechtigung erforderlich",
+            message = "Android benötigt die Standortberechtigung, um WLAN-Geräte in der Nähe zu finden.",
+            onDismissed = { showLocationPermissionDialog = false },
+        )
+    }
     if (showLocationDisabledDialog) {
-        ErrorDialog(
-            titel = "Standortdienste sind ausgeschaltet",
-            content = "Da durch einen Scan der WLAN-Netzwerke in der nähe Informationen zu ihrem Standort anfallen könnten, muss laut Android-Richtlinien der Standort angeschaltet sein. Die App nutzt ihren Standort jedoch nicht.",
-            onDismissed = { showLocationDisabledDialog = false }
+        ActivateLocationServicesDialog(
+            onDismissed = { showLocationDisabledDialog = false },
+            onLocationServicesActivated = { wifiScanState.rescan() },
         )
     }
 }
 
+private fun isLocationEnabled(context: Context): Boolean {
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+    return locationManager?.isLocationEnabled == true
+}
+
 @Composable
-fun DeviceListEntry(deviceName: String, isSelected: Boolean = false, onSelected: () -> Unit) {
+private fun DeviceListEntry(
+    deviceName: String,
+    isSelected: Boolean,
+    onSelected: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onSelected)
             .semantics {
-                contentDescription =
-                    "Gerät: $deviceName." + if (isSelected) "Das Gerät ist ausgewählt." else "Das Gerät ist nicht ausgewählt."
-            }, verticalAlignment = Alignment.CenterVertically
+                contentDescription = "Gerät: $deviceName. " + if (isSelected) {
+                    "Das Gerät ist ausgewählt."
+                } else {
+                    "Das Gerät ist nicht ausgewählt."
+                }
+            },
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        RadioButton(modifier = Modifier.semantics {
-            contentDescription =
-                if (!isSelected) "Gerät $deviceName auswählen?" else "Gerät $deviceName ist ausgewählt."
-        }, onClick = { onSelected() }, selected = isSelected)
-        Text(
-            deviceName, Modifier
-                .clearAndSetSemantics {})
+        RadioButton(
+            selected = isSelected,
+            onClick = onSelected,
+        )
+        Text(deviceName, modifier = Modifier.clearAndSetSemantics {})
     }
 }
 
 @Composable
-fun ErrorDialog(titel: String, content: String, onDismissed: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = { onDismissed() },
-        title = { Text(titel) },
-        text = { Text(content) },
-        confirmButton = {
-            Button(onClick = { onDismissed() }) {
-                Text(
-                    "Verstanden",
-                    modifier = Modifier.clearAndSetSemantics {
-                        contentDescription = "Verstanden. Dialog-Feld verlassen."
-                    })
-            }
-        })
-
+private fun ConnectionLoadingContent(shimmerBrush: androidx.compose.ui.graphics.Brush) {
+    Column(modifier = Modifier.padding(Spacing.md)) {
+        ShimmerBox(
+            brush = shimmerBrush,
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .height(Spacing.xxxl)
+                .align(Alignment.CenterHorizontally),
+        )
+        HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
+        repeat(3) {
+            ShimmerBox(
+                brush = shimmerBrush,
+                modifier = Modifier
+                    .fillMaxWidth(0.65f)
+                    .height(Spacing.md)
+                    .padding(vertical = Spacing.xs),
+            )
+        }
+    }
 }
 
-class WifiScanState(
-    val networks: List<String>,
-    val rescan: () -> Unit
-)
+@Composable
+private fun ActivateLocationServicesDialog(
+    onDismissed: () -> Unit,
+    onLocationServicesActivated: () -> Unit,
+) {
+    val context = LocalContext.current
+    val locationRequest = remember {
+        LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10_000L).build()
+    }
+    val locationSettingsRequest = remember(locationRequest) {
+        LocationSettingsRequest.Builder().addLocationRequest(locationRequest).build()
+    }
+    val settingsClient = remember(context) { LocationServices.getSettingsClient(context) }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult(),
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) onLocationServicesActivated()
+        onDismissed()
+    }
+
+    fun activateLocationServices() {
+        settingsClient.checkLocationSettings(locationSettingsRequest)
+            .addOnSuccessListener {
+                onLocationServicesActivated()
+                onDismissed()
+            }
+            .addOnFailureListener { exception ->
+                if (exception is ResolvableApiException) {
+                    try {
+                        launcher.launch(IntentSenderRequest.Builder(exception.resolution).build())
+                    } catch (sendException: IntentSender.SendIntentException) {
+                        Log.w(LOG_TAG, "[ConnectionPage] Could not open location settings", sendException)
+                        onDismissed()
+                    }
+                } else {
+                    onDismissed()
+                }
+            }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismissed,
+        title = { Text("Standortdienste sind ausgeschaltet") },
+        text = {
+            Text(
+                "Android benötigt aktivierte Standortdienste, um WLAN-Netzwerke in der Nähe zu " +
+                    "finden. EyeAI verwendet dabei nicht Ihren Standort.",
+            )
+        },
+        confirmButton = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            ) {
+                Button(modifier = Modifier.weight(1f), onClick = onDismissed) {
+                    Text("Zurück")
+                }
+                Button(modifier = Modifier.weight(1f), onClick = ::activateLocationServices) {
+                    Text("Aktivieren")
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun ConnectionErrorDialog(title: String, message: String, onDismissed: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismissed,
+        title = { Text(title) },
+        text = { Text(message) },
+        confirmButton = {
+            Button(onClick = onDismissed) {
+                Text("Verstanden")
+            }
+        },
+    )
+}
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Preview(showBackground = true, name = "ConnectionPagePreview")
 @Composable
-fun ConnectionPagePreview() {
+private fun ConnectionPagePreview() {
     MaterialTheme {
         ConnectionPage(
-            Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             onConnectionSuccessful = {},
             onExitSelection = {},
-            uiState = UIState(), onEvent = {}
+            uiState = UIState(),
+            onEvent = {},
         )
     }
 }
-
-

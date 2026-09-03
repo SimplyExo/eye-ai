@@ -27,6 +27,7 @@ remoteCreationCore = "1.0.0-alpha14"
 material3 = "1.4.0"
 foundationLayout = "1.11.4"
 benchmarkCommon = "1.4.1"
+playServicesLocation = "21.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -66,6 +67,9 @@ androidx-compose-remote-creation-core = { group = "androidx.compose.remote", nam
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-benchmark-common = { group = "androidx.benchmark", name = "benchmark-common", version.ref = "benchmarkCommon" }
+androidx-compose-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts" }
+androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 junit = { module = "junit:junit", version.ref = "junit" }
 org-json = { module = "org.json:json", version.ref = "orgJson" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTestRunner" }

@@ -2,22 +2,23 @@ package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -25,25 +26,26 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
+import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,129 +56,151 @@ fun HomePage(
     uiState: UIState,
 ) {
     val context = LocalContext.current
-    Log.d(LOG_TAG, "[HomePage] Loading HomePage")
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val speechRecognitionKey = stringResource(R.string.enable_speech_recognition_setting)
-    val speechRecognitionEnabled by rememberSaveable {
-        mutableStateOf(
-            sharedPreferences.getBoolean(
-                speechRecognitionKey, true
-            )
-        )
-    }
-    LaunchedEffect(Unit) {
-        if (ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            if (speechRecognitionEnabled) {
-                Log.d(LOG_TAG, "[HomePage] Loading Vosk model")
-                onEvent(UIEvent.InitVoskService)
-            } else {
-                Log.d(LOG_TAG, "[HomePage] Speech Recognition disabled not loading Vosk model")
-                onEvent(UIEvent.CloseVoskService)
+    val profilingInformationKey = stringResource(R.string.show_profiling_info_setting)
+    val speechRecognitionEnabled by rememberPreferenceBooleanState(speechRecognitionKey, true)
+    val shimmerBrush = rememberShimmerBrush(
+        backgroundColor = MaterialTheme.colorScheme.surface,
+        contrastColor = MaterialTheme.colorScheme.onSurface,
+    )
+
+    // Status cards need profiling values, but this is strictly a UI preference:
+    // the runtime and foreground service continue independently of this effect.
+    DisposableEffect(sharedPreferences, profilingInformationKey) {
+        val previousValue = sharedPreferences.getBoolean(profilingInformationKey, false)
+        if (!previousValue) {
+            sharedPreferences.edit(commit = true) { putBoolean(profilingInformationKey, true) }
+            onEvent(UIEvent.UpdateSettings)
+        }
+        onDispose {
+            if (!previousValue) {
+                sharedPreferences.edit(commit = true) { putBoolean(profilingInformationKey, false) }
+                onEvent(UIEvent.UpdateSettings)
             }
         }
+    }
+
+    LaunchedEffect(speechRecognitionEnabled) {
+        if (
+            ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
+                PackageManager.PERMISSION_GRANTED
+        ) {
+            if (speechRecognitionEnabled) onEvent(UIEvent.InitVoskService)
+            else onEvent(UIEvent.CloseVoskService)
+        }
+        // A null surface starts/keeps the service-owned source headlessly.
         onEvent(UIEvent.UIinitCamera(null))
         onEvent(UIEvent.UpdateVoskStatusText)
         onEvent(UIEvent.UpdateSpeechStatusText)
     }
 
-
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        TopAppBar(
-            title = {
-                Text("EyeAI App")
-            },
-            modifier = Modifier.shadow(elevation = 8.dp),
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ),
-        )
-    }, floatingActionButton = {
-        Row(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(0.35f),
-            horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
-        ) {
-            if (speechRecognitionEnabled) FloatingActionButton(
-                onClick = {
-                    onEvent(UIEvent.VoskListeningChanged)
-                    Log.d(LOG_TAG, "[DebugPage] Vosk on: ${uiState.voskListening}")
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets.safeDrawing,
+        topBar = {
+            TopAppBar(
+                title = { Text("EyeAI App", style = MaterialTheme.typography.titleLarge) },
+                modifier = Modifier.shadow(elevation = Spacing.sm),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
+            )
+        },
+        floatingActionButton = {
+            Row(
+                modifier = Modifier
+                    .padding(Spacing.sm)
+                    .fillMaxWidth(0.35f),
+                horizontalArrangement = if (speechRecognitionEnabled) {
+                    Arrangement.SpaceBetween
+                } else {
+                    Arrangement.End
                 },
             ) {
-                Log.d(LOG_TAG, "[Homepage] ${uiState.ttsSpeaking}")
-                Icon(
-                    painter = if (uiState.voskListening) {
-                        painterResource(R.drawable.stop_24px)
-                    } else if (uiState.ttsSpeaking) {
-                        painterResource(
-                            R.drawable.pause_playback_24px
+                if (speechRecognitionEnabled) {
+                    FloatingActionButton(onClick = { onEvent(UIEvent.VoskListeningChanged) }) {
+                        Icon(
+                            painter = when {
+                                uiState.voskListening -> painterResource(R.drawable.stop_24px)
+                                uiState.ttsSpeaking -> painterResource(R.drawable.pause_playback_24px)
+                                else -> painterResource(R.drawable.play_arrow_24px)
+                            },
+                            contentDescription = "Start or stop speech recognition",
                         )
-                    } else {
-                        painterResource(R.drawable.play_arrow_24px)
-                    }, contentDescription = "Start Vosk"
-                )
+                    }
+                }
+                FloatingActionButton(onClick = onOpenSettings) {
+                    Icon(
+                        painter = painterResource(R.drawable.settings_24px),
+                        contentDescription = "Open settings",
+                    )
+                }
             }
-            FloatingActionButton(onClick = { onOpenSettings() }) {
-                Icon(
-                    painter = painterResource(R.drawable.settings_24px),
-                    contentDescription = "Open Settings"
-                )
-            }
+        },
+    ) { paddingValues ->
+        LazyVerticalGrid(
+            modifier = Modifier.padding(paddingValues),
+            columns = GridCells.Fixed(2),
+        ) {
+            item { VoskStatusCard(uiState) }
+            item { DepthStatusCard(uiState, shimmerBrush) }
+            item { ObjectStatusCard(uiState, shimmerBrush) }
+            item { VisionStatusCard() }
         }
-    }, content = { paddingValues ->
-        LazyVerticalGrid(modifier = Modifier.padding(paddingValues), columns = GridCells.Fixed(2)) {
-            item {
-                VoskStatusCard(uiState = uiState)
-            }
-            item {
-                DepthStatusCard(uiState = uiState)
-            }
-            item { ObjectStatusCard(uiState = uiState) }
-            item { VisionStatusCard(uiState = uiState) }
-
-        }
-    })
-
+    }
 }
 
 @Composable
-fun ObjectStatusCard(uiState: UIState) {
-    val context = LocalContext.current
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+fun ObjectStatusCard(uiState: UIState, shimmerBrush: Brush) {
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     Card(
         modifier = Modifier
-            .padding(8.dp)
-            .aspectRatio(4f / 3f)
+            .padding(Spacing.sm)
+            .aspectRatio(4f / 3f),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(Spacing.sm),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Objekterkennung", fontSize = 18.sp, textAlign = TextAlign.Center)
+            Text(
+                text = "Objekterkennung",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+            )
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (!sharedPreferences.getBoolean(
-                        stringResource(R.string.enable_object_detection_setting), true
+                val fps = extractFps(uiState.performanceText, "Object Frame")
+                when {
+                    !sharedPreferences.getBoolean(
+                        stringResource(R.string.enable_object_detection_setting),
+                        true,
+                    ) -> Text(
+                        text = "Objekterkennung deaktiviert",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
                     )
-                ) {
-                    Text(text = "Objekterkennung deaktiviert", textAlign = TextAlign.Center)
-                } else if (getObjectFPS(uiState.performanceText) == -1) {
-                    Text(text = "Startet...", textAlign = TextAlign.Center)
-                } else {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Aktiv", textAlign = TextAlign.Center)
+                    fps == null -> ShimmerBox(
+                        brush = shimmerBrush,
+                        modifier = Modifier
+                            .fillMaxWidth(0.75f)
+                            .height(Spacing.xl),
+                    )
+                    else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "Leistung: ${getPerformance(getObjectFPS(uiState.performanceText))}",
-                            textAlign = TextAlign.Center
+                            text = "Aktiv",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                        )
+                        Text(
+                            text = "Leistung: ${performanceLabel(fps)}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
                         )
                     }
-
                 }
             }
         }
@@ -184,35 +208,48 @@ fun ObjectStatusCard(uiState: UIState) {
 }
 
 @Composable
-fun VisionStatusCard(uiState: UIState) {
+fun VisionStatusCard() {
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    val visionSelected = sharedPreferences.getString(
+        context.getString(R.string.input_source_setting),
+        context.getString(R.string.input_is_camera),
+    ) == context.getString(R.string.input_is_eyeaivision)
+
     Card(
         modifier = Modifier
-            .padding(8.dp)
-            .aspectRatio(4f / 3f)
+            .padding(Spacing.sm)
+            .aspectRatio(4f / 3f),
     ) {
         Column(
-            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(Spacing.sm),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("EyeAI-Vision", fontSize = 18.sp, textAlign = TextAlign.Center)
+            Text(
+                text = "EyeAI-Vision",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+            )
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                //TODO == statt != für echte App
-                if (sharedPreferences.getString(
-                        stringResource(R.string.input_source_setting),
-                        stringResource(R.string.input_is_camera)
-                    ) != stringResource(R.string.input_is_camera)
-                ) {
+                if (!visionSelected) {
                     Text(
-                        "Keine EyeAI-Vision verbunden. Handykamera wird benutzt.",
-                        textAlign = TextAlign.Center
+                        text = "Keine EyeAI-Vision verbunden. Handykamera wird benutzt.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
                     )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Name: EyeAI-Vision von Robert", textAlign = TextAlign.Center)
-                        Text("Verbindung: Gut ", textAlign = TextAlign.Center)
-                        Text("Akku: 49% ", textAlign = TextAlign.Center)
+                        Text(
+                            text = "EyeAI-Vision ausgewählt",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                        )
+                        Text(
+                            text = "Verbindung wird über die Runtime hergestellt",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                        )
                     }
                 }
             }
@@ -221,31 +258,44 @@ fun VisionStatusCard(uiState: UIState) {
 }
 
 @Composable
-fun DepthStatusCard(uiState: UIState) {
-    val context = LocalContext.current
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+fun DepthStatusCard(uiState: UIState, shimmerBrush: Brush) {
     Card(
         modifier = Modifier
-            .padding(8.dp)
-            .aspectRatio(4f / 3f)
+            .padding(Spacing.sm)
+            .aspectRatio(4f / 3f),
     ) {
         Column(
-            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(Spacing.sm),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Distanzmessung", fontSize = 18.sp, textAlign = TextAlign.Center)
+            Text(
+                text = "Distanzmessung",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+            )
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (getDepthFPS(uiState.performanceText) == -1) {
-                    Text(text = "Startet...", textAlign = TextAlign.Center)
+                val fps = extractFps(uiState.performanceText, "Depth Frame")
+                if (fps == null) {
+                    ShimmerBox(
+                        brush = shimmerBrush,
+                        modifier = Modifier
+                            .fillMaxWidth(0.75f)
+                            .height(Spacing.xl),
+                    )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Aktiv", textAlign = TextAlign.Center)
                         Text(
-                            text = "Leistung: ${getPerformance(getDepthFPS(uiState.performanceText))}",
-                            textAlign = TextAlign.Center
+                            text = "Aktiv",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                        )
+                        Text(
+                            text = "Leistung: ${performanceLabel(fps)}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
                         )
                     }
-
                 }
             }
         }
@@ -256,81 +306,47 @@ fun DepthStatusCard(uiState: UIState) {
 fun VoskStatusCard(uiState: UIState) {
     Card(
         modifier = Modifier
-            .padding(8.dp)
-            .aspectRatio(4f / 3f)
+            .padding(Spacing.sm)
+            .aspectRatio(4f / 3f),
     ) {
         Column(
-            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(Spacing.sm),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Spracherkennung", fontSize = 18.sp, textAlign = TextAlign.Center)
+            Text(
+                text = "Spracherkennung",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+            )
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (uiState.speechResponseText.isEmpty()) Text(
-                    modifier = Modifier.padding(8.dp),
-                    text = uiState.speechRecognitionFinalResultText,
-                    textAlign = TextAlign.Center
-                )
-                if (uiState.speechResponseText.isNotEmpty()) if (uiState.speechResponseText == "eyeai dent nach"
-                ) {
-                    Text("EyeAI denkt nach...", textAlign = TextAlign.Center)
-                } else if (uiState.speechResponseText != "") Text(
-                    "EyeAI antwortet...", textAlign = TextAlign.Center
+                Text(
+                    text = speechRecognitionStatus(uiState),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
                 )
             }
         }
-
     }
 }
 
-private fun getPerformance(fps: Int): String {
-    return when (fps) {
-        in 0..5 -> "Schlecht"
-        in 5..10 -> "Ausreichend"
-        in 10..20 -> "Gut"
-        in 20..100 -> "Sehr Gut"
-        in 100..1000 -> "Rekordverdächtig"
-        in 1000..10000 -> "Rechenzentrum"
-        in 10000..100000 -> "Quantencomputer"
-        in 100000..1000000 -> "Außerirdisch"
-        else -> "Berechne..."
-    }
+private fun speechRecognitionStatus(uiState: UIState): String = when {
+    uiState.ttsSpeaking -> "EyeAI antwortet"
+    uiState.voskListening -> "Vosk listening"
+    else -> "Vosk bereit"
 }
 
-private fun getDepthFPS(text: String): Int {
-    val index = text.indexOf("Depth Frame: ")
-    if (index != -1 && index + 15 <= text.length) {
-        var result = text.substring(index + 13, index + 15)
-        if (result.endsWith(".")) result = result.dropLast(1)
-        return try {
-            result.toInt()
-        } catch (e: NumberFormatException) {
-            -1
-        }
-    }
-    return -1
+private fun extractFps(performanceText: String, frameName: String): Float? {
+    val match = Regex("${Regex.escape(frameName)}:\\s*([0-9]+(?:\\.[0-9]+)?)")
+        .find(performanceText)
+        ?: return null
+    return match.groupValues[1].toFloatOrNull()
 }
 
-private fun getObjectFPS(text: String): Int {
-    val index = text.indexOf("Object Frame: ")
-    if (index != -1 && index + 16 <= text.length) {
-        var result = text.substring(index + 14, index + 16)
-        if (result.endsWith(".")) result = result.dropLast(1)
-        return try {
-            result.toInt()
-        } catch (e: NumberFormatException) {
-            -1
-        }
-    }
-    return -1
-}
-
-@Preview(showBackground = true, name = "HomePage Preview")
-@Composable
-fun HomePagePreview() {
-    HomePage(
-        modifier = Modifier.fillMaxSize(),
-        onOpenSettings = {},
-        onEvent = {},
-        uiState = UIState()
-    )
+private fun performanceLabel(fps: Float): String = when {
+    fps < 5f -> "Schlecht"
+    fps < 10f -> "Ausreichend"
+    fps < 20f -> "Gut"
+    fps < 100f -> "Sehr gut"
+    else -> "Sehr schnell"
 }
