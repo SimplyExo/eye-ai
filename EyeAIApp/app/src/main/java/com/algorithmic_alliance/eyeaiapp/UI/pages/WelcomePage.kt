@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -21,10 +22,19 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 
 @Composable
-fun WelcomePage(modifier: Modifier = Modifier, onGetStarted: () -> Unit) {
+fun WelcomePage(modifier: Modifier = Modifier, onGetStarted: () -> Unit, onEvent: (UIEvent) -> Unit) {
+
+    DisposableEffect(Unit) {
+        onEvent(UIEvent.OnOpenSettings)
+        onDispose {
+            onEvent(UIEvent.OnReturnFromSettings)
+        }
+    }
+
     Surface(
         modifier = modifier,
         color = MaterialTheme.colorScheme.surface
@@ -60,5 +70,5 @@ fun WelcomePage(modifier: Modifier = Modifier, onGetStarted: () -> Unit) {
 @Preview(showBackground = true, name = "WelcomePage Preview")
 @Composable
 fun Preview() {
-    MaterialTheme { WelcomePage(Modifier.fillMaxSize(), onGetStarted = {}) }
+    MaterialTheme { WelcomePage(Modifier.fillMaxSize(), onGetStarted = {}, onEvent = {}) }
 }

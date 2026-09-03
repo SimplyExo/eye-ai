@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
+import uniffi.NativeLib.Disposable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -291,7 +293,7 @@ fun VoskStatusCard(viewModel: MainViewModel) {
                 if (uiState.speechResponseText.isNotEmpty()) if (uiState.speechResponseText == "eyeai dent nach"
                 ) {
                     Text("EyeAI denkt nach...", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
-                } else if (uiState.speechResponseText != "") Text(
+                } else if (uiState.ttsSpeaking) Text(
                     "EyeAI antwortet...", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium
                 )
             }

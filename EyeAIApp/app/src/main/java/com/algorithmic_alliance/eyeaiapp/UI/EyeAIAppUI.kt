@@ -90,6 +90,7 @@ fun EyeAIAppUI(
                 onGetStarted = {
                     navController.navigate(PermissionRoute)
                 },
+                onEvent = onEvent
             )
         }
         composable<PermissionRoute> {

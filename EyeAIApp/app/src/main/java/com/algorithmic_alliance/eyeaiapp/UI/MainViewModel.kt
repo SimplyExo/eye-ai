@@ -280,9 +280,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun startVoskListening(trigger: String = "USER_BUTTON") {
         Log.d(LOG_TAG, "[MainViewModel.startVoskListening] StartVoskListening called")
         if (eyeAIApp().voskUserStart.get()) return // Check whether already started
-
         spatialAudioResumeController.cancel()
         pauseSpatialAudio()
+
         eyeAIApp().voskUserStart.set(true)
         eyeAIApp().voskModel.startListening()
         Log.i(
