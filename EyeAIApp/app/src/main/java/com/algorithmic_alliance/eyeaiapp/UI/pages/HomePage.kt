@@ -30,6 +30,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.core.content.edit
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -56,6 +57,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import uniffi.NativeLib.Disposable
+import kotlin.properties.Delegates
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +73,8 @@ fun HomePage(
     Log.d(LOG_TAG, "[HomePage] Loading HomePage")
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val speechRecognitionKey = stringResource(R.string.enable_speech_recognition_setting)
+    val profilingInformationKey = stringResource(R.string.show_profiling_info_setting)
+    var initialShowProfilingInformationSetting = false
     val speechRecognitionEnabled by rememberSaveable {
         mutableStateOf(
             sharedPreferences.getBoolean(
@@ -79,7 +83,13 @@ fun HomePage(
         )
     }
     val shimmerBrush = rememberShimmerBrush(backgroundColor = MaterialTheme.colorScheme.surface, contrastColor = MaterialTheme.colorScheme.onSurface)
-    LaunchedEffect(Unit) {
+    DisposableEffect(Unit) {
+        initialShowProfilingInformationSetting = sharedPreferences.getBoolean(profilingInformationKey, false)
+        sharedPreferences.edit(commit = true){
+            putBoolean(profilingInformationKey, true)
+        }
+        onEvent(UIEvent.UpdateSettings)
+
         if (ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.RECORD_AUDIO
             ) == PackageManager.PERMISSION_GRANTED
@@ -95,6 +105,12 @@ fun HomePage(
         onEvent(UIEvent.UIinitCamera(null, lifecycleOwner))
         onEvent(UIEvent.UpdateVoskStatusText)
         onEvent(UIEvent.UpdateSpeechStatusText)
+        onDispose {
+            sharedPreferences.edit(commit = true){
+                putBoolean(profilingInformationKey, initialShowProfilingInformationSetting)
+            }
+            onEvent(UIEvent.UpdateSettings)
+        }
     }
 
 
@@ -180,7 +196,9 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
                 ) {
                     Text(text = "Objekterkennung deaktiviert", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
                 } else if (getObjectFPS(uiState.performanceText) == -1) {
-                    ShimmerBox(shimmerBrush, Modifier.fillMaxWidth(0.75f).height(Spacing.xl))
+                    ShimmerBox(shimmerBrush, Modifier
+                        .fillMaxWidth(0.75f)
+                        .height(Spacing.xl))
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Aktiv", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
@@ -253,7 +271,9 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (getDepthFPS(uiState.performanceText) == -1) {
-                    ShimmerBox(shimmerBrush, Modifier.fillMaxWidth(0.75f).height(Spacing.xl))
+                    ShimmerBox(shimmerBrush, Modifier
+                        .fillMaxWidth(0.75f)
+                        .height(Spacing.xl))
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Aktiv", textAlign = TextAlign.Center, style= MaterialTheme.typography.bodyMedium)
