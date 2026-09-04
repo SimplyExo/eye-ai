@@ -18,9 +18,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -29,12 +27,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.core.content.edit
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -43,22 +38,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-
-import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.core.content.edit
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.UI.PremiumFloatingActionButton
 import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
-import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
-import uniffi.NativeLib.Disposable
-import kotlin.properties.Delegates
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -143,7 +135,7 @@ fun HomePage(
                     .fillMaxWidth(0.35f),
                 horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
             ) {
-                if (speechRecognitionEnabled) FloatingActionButton(
+                if (speechRecognitionEnabled) PremiumFloatingActionButton(
                     onClick = {
                         onEvent(UIEvent.VoskListeningChanged)
                     },
@@ -160,7 +152,8 @@ fun HomePage(
                         }, contentDescription = "Start Vosk"
                     )
                 }
-                FloatingActionButton(onClick = { onOpenSettings() }) {
+
+                PremiumFloatingActionButton(onClick = { onOpenSettings() }) {
                     Icon(
                         painter = painterResource(R.drawable.settings_24px),
                         contentDescription = "Open Settings"
@@ -170,8 +163,7 @@ fun HomePage(
         },
         content = { paddingValues ->
             LazyVerticalGrid(
-                modifier = Modifier.padding(paddingValues),
-                columns = GridCells.Fixed(2)
+                modifier = Modifier.padding(paddingValues), columns = GridCells.Fixed(2)
             ) {
                 item {
                     VoskStatusCard(viewModel = viewModel)
@@ -184,8 +176,7 @@ fun HomePage(
 
             }
 
-        }
-    )
+        })
 
 }
 
@@ -369,7 +360,7 @@ fun VoskStatusCard(viewModel: MainViewModel) {
             )
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column() {
+                Column {
                     if (uiState.ttsSpeaking) {
                         Text(
                             "EyeAI antwortet...",

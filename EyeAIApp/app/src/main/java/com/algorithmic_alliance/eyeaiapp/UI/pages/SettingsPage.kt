@@ -2,38 +2,40 @@ package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.benchmark.json.BenchmarkData
-import androidx.compose.animation.AnimatedContent
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
-import androidx.compose.foundation.clickable
-import androidx.compose.material3.Checkbox
-import android.content.Context
-import android.content.SharedPreferences
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.core.content.edit
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.runtime.key
-import androidx.compose.foundation.lazy.items
-import com.algorithmic_alliance.eyeaiapp.R
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,7 +51,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,22 +62,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
+import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
+import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.hasPermission
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import kotlin.math.roundToInt
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,7 +125,7 @@ fun SettingsPage(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { onReturn() }) {
+                    PremiumIconButton(onClick = { onReturn() }) {
                         Icon(
                             painter = painterResource(R.drawable.arrow_back_24px),
                             contentDescription = "Zurück"
@@ -150,29 +158,37 @@ fun SettingsPage(
                             )
                     }
                     item {
+                        val interactionSource = remember { MutableInteractionSource() }
+                        val isPressed by interactionSource.collectIsPressedAsState()
+                        val scale by animateFloatAsState(
+                            targetValue = if (isPressed) 0.94f else 1f,
+                            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                            label = "buttonScale"
+                        )
                         Card(
                             modifier = Modifier
+                                .graphicsLayer { scaleX = scale; scaleY = scale }
                                 .fillMaxWidth()
-                                .padding(Spacing.sm)
+                                .padding(Spacing.sm).clickable ( interactionSource = interactionSource, indication = LocalIndication.current){
+                                    if (!debugPageActivated) {
+                                        onOpenDebugPage()
+                                        sharedPreferences.edit(commit = true) {
+                                            putBoolean(debugPageActivatedKey, true)
+                                        }
+                                    } else {
+                                        onOpenHomePage()
+                                        sharedPreferences.edit(commit = true) {
+                                            putBoolean(debugPageActivatedKey, false)
+                                        }
+                                    }
+
+                                },
                         ) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(Spacing.md)
-                                    .clickable {
-                                        if (!debugPageActivated) {
-                                            onOpenDebugPage()
-                                            sharedPreferences.edit(commit = true) {
-                                                putBoolean(debugPageActivatedKey, true)
-                                            }
-                                        } else {
-                                            onOpenHomePage()
-                                            sharedPreferences.edit(commit = true) {
-                                                putBoolean(debugPageActivatedKey, false)
-                                            }
-                                        }
-
-                                    }, horizontalArrangement = Arrangement.Center
+                                    .padding(Spacing.md),
+                                     horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
                                     if (!debugPageActivated) "DebugPage aktivieren" else "DebugPage deaktivieren",
@@ -226,7 +242,10 @@ fun SettingsCategoryCard(
                     )
 
                     "select" -> SelectSetting(
-                        modifier = Modifier, settingData = settingData, onEvent = onEvent, uiState = uiState
+                        modifier = Modifier,
+                        settingData = settingData,
+                        onEvent = onEvent,
+                        uiState = uiState
                     )
 
                     "slider" -> SliderSetting(
@@ -298,7 +317,7 @@ fun ClickSetting(
             }
         }
         Box {
-            IconButton(onClick = {
+            PremiumIconButton(onClick = {
                 if (settingData["title"] == "Standartgeräte ändern") {
                     onEvent(UIEvent.OnUpdateActionStartedFromSettings(true))
                     onOpenConnectionPage()
@@ -310,7 +329,6 @@ fun ClickSetting(
                     contentDescription = ""
                 )
             }
-
 
         }
     }
@@ -432,7 +450,11 @@ fun SelectSetting(
             DropdownMenu(
                 expanded = dropDownEnabled, onDismissRequest = { dropDownEnabled = false }) {
                 for (item in (settingData.getValue("settingsOptions") as List<Any>)) {
-                    if(resolveString(LocalContext.current, item) == "EyeAI-Vision" && uiState.visionPermissionsNotGranted)
+                    if (resolveString(
+                            LocalContext.current,
+                            item
+                        ) == "EyeAI-Vision" && uiState.visionPermissionsNotGranted
+                    )
                         continue
                     DropdownMenuItem(
                         text = {
@@ -574,12 +596,11 @@ fun TextInputSetting(
             )
         }
         Box {
-            IconButton(onClick = { showTextFieldDialog = true }) {
+            PremiumIconButton(onClick = { showTextFieldDialog = true }) {
                 Icon(
                     painter = painterResource(R.drawable.ink_pen_24px), contentDescription = ""
                 )
             }
-
 
         }
 
@@ -616,30 +637,26 @@ fun TextFieldDialog(
         Row(
             modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { onDismiss() }) {
-                Icon(
-                    painterResource(R.drawable.arrow_back_24px),
-                    contentDescription = UIDataSource.RETURN_SEMANTIC
-                )
-            }
-            Text(settingName)
+            PremiumIconButton(modifier = Modifier.height(Spacing.xl).width(Spacing.xl),onClick = { onDismiss() }) { Icon(
+                painterResource(R.drawable.arrow_back_24px),
+                contentDescription = UIDataSource.RETURN_SEMANTIC
+            )}
+            Text(settingName, style = MaterialTheme.typography.titleLarge)
         }
     }, text = {
         OutlinedTextField(
             value = text ?: "",
             onValueChange = { text = it },
-            label = { Text("Eingeben...") })
+            label = { Text("Eingeben...", style = MaterialTheme.typography.bodySmall) })
     }, confirmButton = {
-        Button(onClick = {
+        PremiumButton(onClick = {
             onDismiss()
             Log.d(LOG_TAG, "[SettingsPage.TextFieldSetting] Changed setting $settingKey to $text")
             sharedPreferences.edit(commit = true) {
                 putString(settingKey, text)
             }
             onEvent(UIEvent.UpdateSettings)
-        }) {
-            Text("Fertig", modifier = Modifier.clearAndSetSemantics {})
-        }
+        }) { Text("Fertig", modifier = Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.labelLarge)}
     })
 }
 
@@ -738,7 +755,7 @@ private fun resolveString(context: Context, value: Any): String {
 fun rememberPreferenceBooleanState(
     key: String,
     default: Boolean
-): androidx.compose.runtime.State<Boolean> {
+): State<Boolean> {
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val state = remember { mutableStateOf(sharedPreferences.getBoolean(key, default)) }
 

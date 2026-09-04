@@ -44,11 +44,11 @@ import androidx.compose.ui.unit.sp
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.preference.PreferenceManager
+import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
+import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.checkPermissionsStatus
 import com.algorithmic_alliance.eyeaiapp.UI.onPermissionDecline
@@ -176,35 +176,39 @@ fun AskForPermission(
                     .padding(top = Spacing.md),
                 horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
             ) {
-                Button(
+                PremiumButton(
                     modifier = Modifier
                         .weight(1f)
                         .semantics {
                             contentDescription =
                                 (permissionData["permissionDeclineSemantic"]
                                     ?: UIDataSource.INFORMATION_NOT_FOUND) as String
-                        },
-                    onClick = {
-                        showDeclineDialog = !showDeclineDialog
-                    }) {
-                    Text("Ablehnen", modifier = Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.labelLarge)
+                        }, onClick = { showDeclineDialog = !showDeclineDialog }) {
+                    Text(
+                        "Ablehnen",
+                        modifier = Modifier.clearAndSetSemantics {},
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
-                Button(
+                PremiumButton(
                     modifier = Modifier
                         .weight(1f)
                         .semantics {
                             contentDescription =
                                 (permissionData["permissionAcceptSemantic"]
                                     ?: UIDataSource.INFORMATION_NOT_FOUND) as String
-                        },
-                    onClick = {
-                        for (permission in permissions as List<*>) {
-                            permissionLauncher.launch(permission as String)
-                        }
+                        }, onClick = {
+                    for (permission in permissions as List<*>) {
+                        permissionLauncher.launch(permission as String)
+                    }
 
 
-                    }) {
-                    Text("Annehmen", modifier = Modifier.clearAndSetSemantics {}, fontSize = 16.sp)
+                }) {
+                    Text(
+                        "Annehmen",
+                        modifier = Modifier.clearAndSetSemantics {},
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
 
             }
@@ -238,25 +242,25 @@ fun ConfirmPermissionDecline(
         title = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { onDialogDismissed() }) {
-                    Icon(
-                        painterResource(R.drawable.arrow_back_24px),
-                        contentDescription = UIDataSource.RETURN_SEMANTIC
-                    )
-                }
-                Text("Berechtigung Ablehnen?")
+                PremiumIconButton(modifier = Modifier, onClick = { onDialogDismissed() }) {Icon(
+                    modifier = Modifier.width(Spacing.xl).height(Spacing.xl),
+                    painter = painterResource(R.drawable.arrow_back_24px),
+                    contentDescription = UIDataSource.RETURN_SEMANTIC
+                ) }
+                Text("Berechtigung Ablehnen?", style = MaterialTheme.typography.titleLarge)
             }
         },
         text = {
             Text(
                 (permissionData["confirmPermissionDeclineExplanation"]
                     ?: UIDataSource.INFORMATION_NOT_FOUND) as String
-            )
+            , style = MaterialTheme.typography.bodyMedium)
         },
         confirmButton = {
-            Button(modifier = Modifier.semantics {
+            PremiumButton(modifier = Modifier.semantics {
                 contentDescription = (permissionData["confirmPermissionDeclineSemantic"]
                     ?: UIDataSource.INFORMATION_NOT_FOUND) as String
             }, onClick = {
@@ -272,9 +276,7 @@ fun ConfirmPermissionDecline(
                     onEvent = onEvent,
                     onPermissionDecline = onPermissionDecline
                 )
-            }) {
-                Text("Trotzdem Ablehnen", modifier = Modifier.clearAndSetSemantics {})
-            }
+            }) { Text("Trotzdem Ablehnen", modifier = Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.labelLarge)}
         }
     )
 }

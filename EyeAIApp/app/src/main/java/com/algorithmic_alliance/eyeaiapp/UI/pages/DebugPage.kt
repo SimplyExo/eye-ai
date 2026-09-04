@@ -63,6 +63,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
+import com.algorithmic_alliance.eyeaiapp.UI.PremiumFloatingActionButton
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.data.Shapes
@@ -123,10 +124,9 @@ fun DebugPage(
                     .fillMaxWidth(0.35f),
                 horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
             ) {
-                if (speechRecognitionEnabled) FloatingActionButton(
+                if (speechRecognitionEnabled) PremiumFloatingActionButton(
                     onClick = {
                         onEvent(UIEvent.VoskListeningChanged)
-                        Log.d(LOG_TAG, "[DebugPage] Vosk on: ${uiState.voskListening}")
                     },
                 ) {
                     Icon(
@@ -141,7 +141,8 @@ fun DebugPage(
                         }, contentDescription = "Start Vosk"
                     )
                 }
-                FloatingActionButton(onClick = { onOpenSettings() }) {
+
+                PremiumFloatingActionButton(onClick = { onOpenSettings() }) {
                     Icon(
                         painter = painterResource(R.drawable.settings_24px),
                         contentDescription = "Open Settings"

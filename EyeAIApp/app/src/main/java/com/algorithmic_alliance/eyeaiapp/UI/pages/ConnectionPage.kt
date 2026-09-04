@@ -66,6 +66,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
+import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
 import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
@@ -166,21 +168,21 @@ fun ConnectionPage(
 
     ChooseConnectionPage(
         onConnectionSuccessful = { visionDevice ->
-            if (visionDevice == "Handykamera verwenden") {
-                sharedPreferences.edit(commit = true) {
-                    putBoolean(
-                        shouldRememberAudioDeviceKey, false
-                    )
-                    putString(
-                        selectedAudioDeviceKey, ""
-                    )
-                }
-                onConnectionSuccessful()
-            } else if (currentlyDisplayedDevices < devices.size - 1) {
-                currentlyDisplayedDevices++
-                startAutoConnect = true
-            } else onConnectionSuccessful()
-        },
+        if (visionDevice == "Handykamera verwenden") {
+            sharedPreferences.edit(commit = true) {
+                putBoolean(
+                    shouldRememberAudioDeviceKey, false
+                )
+                putString(
+                    selectedAudioDeviceKey, ""
+                )
+            }
+            onConnectionSuccessful()
+        } else if (currentlyDisplayedDevices < devices.size - 1) {
+            currentlyDisplayedDevices++
+            startAutoConnect = true
+        } else onConnectionSuccessful()
+    },
         goBack = {
             if (currentlyDisplayedDevices != 0) {
                 currentlyDisplayedDevices--
@@ -426,10 +428,10 @@ fun ChooseConnectionPage(
                                 )
                             }
                             DeviceListEntry(
-                                "Handykamera verwenden",
-                                onSelected = { selectedDevice =
-                                    if (selectedDevice != "Handykamera verwenden") "Handykamera verwenden" else ""},
-                                isSelected = "Handykamera verwenden" == selectedDevice
+                                "Handykamera verwenden", onSelected = {
+                                    selectedDevice =
+                                        if (selectedDevice != "Handykamera verwenden") "Handykamera verwenden" else ""
+                                }, isSelected = "Handykamera verwenden" == selectedDevice
                             )
 
 
@@ -458,28 +460,26 @@ fun ChooseConnectionPage(
                                     })
                                 Text("Standardgerät", style = MaterialTheme.typography.bodyLarge)
                             }
-                            if (deviceType == "eye-ai-vision") Box(modifier = Modifier.clickable {
-                                val locationManager =
-                                    context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                                if (locationManager.isLocationEnabled) wifiScanState.rescan()
-                                else {
-                                    Log.d(
-                                        LOG_TAG,
-                                        "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
-                                    )
-                                    showLocationDisabledDialog = true
-                                }
-
-
-                            }) {
-                                Icon(
+                            if (deviceType == "eye-ai-vision") {
+                                PremiumIconButton(onClick = {
+                                    val locationManager =
+                                        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                                    if (locationManager.isLocationEnabled) wifiScanState.rescan()
+                                    else {
+                                        Log.d(
+                                            LOG_TAG,
+                                            "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
+                                        )
+                                        showLocationDisabledDialog = true
+                                    }
+                                }) {Icon(
                                     modifier = Modifier
                                         .heightIn(Spacing.xl)
                                         .width(Spacing.xl),
                                     painter = painterResource(R.drawable.refresh_24px),
                                     contentDescription = "",
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                ) }
                             }
                         }
                         HorizontalDivider(
@@ -493,18 +493,16 @@ fun ChooseConnectionPage(
                                 .padding(Spacing.md),
                             horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                         ) {
-                            Button(
-                                modifier = Modifier.weight(1f), onClick = { goBack() }) {
+                            PremiumButton(modifier = Modifier.weight(1f), onClick = { goBack() }) {
                                 Text(
                                     "Zurück", style = MaterialTheme.typography.labelLarge
                                 )
                             }
-                            Button(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .semantics {
-                                        contentDescription = "Mit Gerät $selectedDevice verbinden"
-                                    }, enabled = selectedDevice != "", onClick = {
+                            PremiumButton(modifier = Modifier
+                                .weight(1f)
+                                .semantics {
+                                    contentDescription = "Mit Gerät $selectedDevice verbinden"
+                                }, enabled = selectedDevice != "", onClick = {
 
                                 connectToDevice(
                                     context,
@@ -552,17 +550,22 @@ fun ChooseConnectionPage(
     }
 
     if (showConnectionFailedDialog) {
-        ErrorDialog(
-            titel = "Verbindung fehlgeschlagen",
-            content = "",
-            onDismissed = { showConnectionFailedDialog = false })
+        ErrorDialog(titel = {
+            Text(
+                "Verbindung fehlgeschlagen", style = MaterialTheme.typography.titleLarge
+            )
+        }, content = {
+            Text(
+                "Die Verbindung mit dem Gerät konnte nicht hergestellt werden.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }, onDismissed = { showConnectionFailedDialog = false })
     }
 
     if (showLocationDisabledDialog) {
         ActivateLocationServicesDialog(
-            //titel = "Standortdienste sind ausgeschaltet",
-            //content = "Da durch einen Scan der WLAN-Netzwerke in der nähe Informationen zu ihrem Standort anfallen könnten, muss laut Android-Richtlinien der Standort angeschaltet sein. Die App nutzt ihren Standort jedoch nicht.",
-            onDismissed = { showLocationDisabledDialog = false }, onGranted = {
+            onDismissed = { showLocationDisabledDialog = false },
+            onGranted = {
                 showLocationDisabledDialog = false
                 wifiScanState.rescan()
             })
@@ -644,13 +647,14 @@ fun ActivateLocationServicesDialog(onDismissed: () -> Unit, onGranted: () -> Uni
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
             ) {
-                Button(modifier = Modifier.weight(1f), onClick = { onDismissed() }) {
+                PremiumButton(modifier = Modifier.weight(1f), onClick = { onDismissed() }) {
                     Text(
                         "Zurück", modifier = Modifier.clearAndSetSemantics {
                             contentDescription = "Dialog-Feld verlassen."
                         })
                 }
-                Button(modifier = Modifier.weight(1f), onClick = { activateLocationServices() }) {
+                PremiumButton(
+                    modifier = Modifier.weight(1f), onClick = { activateLocationServices() }) {
                     Text(
                         "Aktivieren", modifier = Modifier.clearAndSetSemantics {
                             contentDescription =
@@ -663,13 +667,15 @@ fun ActivateLocationServicesDialog(onDismissed: () -> Unit, onGranted: () -> Uni
 }
 
 @Composable
-fun ErrorDialog(titel: String, content: String, onDismissed: () -> Unit) {
+fun ErrorDialog(
+    titel: @Composable () -> Unit, content: @Composable () -> Unit, onDismissed: () -> Unit
+) {
     AlertDialog(
         onDismissRequest = { onDismissed() },
-        title = { Text(titel) },
-        text = { Text(content) },
+        title = titel,
+        text = content,
         confirmButton = {
-            Button(onClick = { onDismissed() }) {
+            PremiumButton(onClick = { onDismissed() }) {
                 Text(
                     "Verstanden", modifier = Modifier.clearAndSetSemantics {
                         contentDescription = "Verstanden. Dialog-Feld verlassen."
