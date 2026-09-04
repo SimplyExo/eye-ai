@@ -8,13 +8,11 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
 import android.util.Log
-import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.gms.location.LocationRequest
@@ -28,7 +26,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,31 +44,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.remote.creation.dsl.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -80,9 +68,7 @@ import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
-import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
-import com.algorithmic_alliance.eyeaiapp.UI.rememberAudioDeviceState
 import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
@@ -90,7 +76,6 @@ import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
-import kotlinx.coroutines.flow.first
 import kotlin.collections.emptyList
 
 
@@ -128,20 +113,6 @@ fun ConnectionPage(
     //TODO connection to Backend
     val devices: List<Any> = listOf(
         mapOf(
-            "name" to "Audio-Gerät",
-            "type" to "audio",
-            "rememberKey" to R.string.remember_audio_device,
-            "remember" to sharedPreferences.getBoolean(
-                stringResource(R.string.remember_audio_device),
-                false
-            ),
-            "selectedKey" to R.string.selected_audio_device,
-            "selected" to sharedPreferences.getString(
-                stringResource(R.string.selected_audio_device),
-                ""
-            ),
-        ),
-        mapOf(
             "name" to "EyeAI-Vision",
             "type" to "eye-ai-vision",
             "rememberKey" to R.string.remember_eye_ai_vision,
@@ -154,21 +125,61 @@ fun ConnectionPage(
                 stringResource(R.string.selected_eye_ai_vision),
                 ""
             ),
-        )
+        ),
+        mapOf(
+            "name" to "Audio-Gerät",
+            "type" to "audio",
+            "rememberKey" to R.string.remember_audio_device,
+            "remember" to sharedPreferences.getBoolean(
+                stringResource(R.string.remember_audio_device),
+                false
+            ),
+            "selectedKey" to R.string.selected_audio_device,
+            "selected" to sharedPreferences.getString(
+                stringResource(R.string.selected_audio_device),
+                ""
+            ),
+            "devices" to listOf(
+                "EyeAI-Vision als Audiogerät verwenden",
+                "System-Audiogerät verwenden"
+            )
+        ),
     )
 
     var currentlyDisplayedDevices by remember { mutableIntStateOf(0) }
+    var startAutoConnect by remember { mutableStateOf(true) }
+    val shouldRememberAudioDeviceKey = stringResource(R.string.remember_audio_device)
+    val selectedAudioDeviceKey = stringResource(R.string.selected_audio_device)
 
     ChooseConnectionPage(
-        onConnectionSuccessful = {
-            if (currentlyDisplayedDevices < devices.size - 1)
+        onConnectionSuccessful = { visionDevice ->
+            if (visionDevice == "Handykamera verwenden") {
+                sharedPreferences.edit(commit = true) {
+                    putBoolean(
+                        shouldRememberAudioDeviceKey,
+                        false
+                    )
+                    putString(
+                        selectedAudioDeviceKey,
+                        ""
+                    )
+                }
+                onConnectionSuccessful()
+            } else if (currentlyDisplayedDevices < devices.size - 1) {
                 currentlyDisplayedDevices++
-            else onConnectionSuccessful()
+                startAutoConnect = true
+            } else onConnectionSuccessful()
         },
-        goBack = { if (currentlyDisplayedDevices != 0) currentlyDisplayedDevices-- else onExitSelection() },
+        goBack = {
+            if (currentlyDisplayedDevices != 0) {
+                currentlyDisplayedDevices--
+                startAutoConnect = false
+            } else onExitSelection()
+        },
         devicesData = devices[currentlyDisplayedDevices] as Map<Any, Any>,
         viewModel = viewModel,
-        onEvent = onEvent
+        onEvent = onEvent,
+        startAutoConnect = startAutoConnect
     )
 
 }
@@ -177,11 +188,12 @@ fun ConnectionPage(
 @Composable
 fun ChooseConnectionPage(
     modifier: Modifier = Modifier,
-    onConnectionSuccessful: () -> Unit,
+    onConnectionSuccessful: (String) -> Unit,
     goBack: () -> Unit,
     devicesData: Map<Any, Any>,
     viewModel: MainViewModel,
-    onEvent: (UIEvent) -> Unit
+    onEvent: (UIEvent) -> Unit,
+    startAutoConnect: Boolean = true
 ) {
     DisposableEffect(Unit) {
         onDispose {
@@ -204,9 +216,8 @@ fun ChooseConnectionPage(
         context,
         autoScanOnStart = false,
         setScannState = { bool -> scanningForDevices = bool })
-    val (audioDevices, refreshAudioDevices) = rememberAudioDeviceState(context)
     val devices: List<String> = when (devicesData["type"]) {
-        "audio" -> audioDevices
+        "audio" -> devicesData["devices"] as List<String>
         "eye-ai-vision" -> wifiScanState.networks
         else -> emptyList()
     }
@@ -220,6 +231,17 @@ fun ChooseConnectionPage(
     Log.d(LOG_TAG, "[ConnectionPage] Choosing connection for $deviceCategory")
 
     LaunchedEffect(deviceType) {
+        val locationManager =
+            context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        if (!startAutoConnect) {
+            if (deviceType == "eye-ai-vision" && locationManager.isLocationEnabled)
+                wifiScanState.rescan()
+            else if (deviceType == "eye-ai-vision" && !locationManager.isLocationEnabled) {
+                showLocationDisabledDialog = true
+            }
+            return@LaunchedEffect
+        }
         //If opened from the settings, the auto-connection is not needed, but in case of the
         //eye-ai-vision a wifi scan is started for the user
         if (uiState.connectionTutorialCompleted) {
@@ -227,13 +249,16 @@ fun ChooseConnectionPage(
                 LOG_TAG,
                 "[ConnectionPage:LaunchedEffect] ConnectionTutorial completed, not automatic connection: Exiting LaunchedEffect"
             )
-            if (deviceType == "eye-ai-vision")
+            if (deviceType == "eye-ai-vision" && locationManager.isLocationEnabled)
                 wifiScanState.rescan()
+            else if (deviceType == "eye-ai-vision" && !locationManager.isLocationEnabled) {
+                showLocationDisabledDialog = true
+            }
             pageLoading = false
             return@LaunchedEffect
         }
 
-        //If the user does want to automatically connect, exit
+        //If the user does not want to automatically connect, exit
         //in case of the eye-ai-vision a wifi scan is started for the user
         if (devicesData["remember"] == false) {
             Log.d(
@@ -241,8 +266,11 @@ fun ChooseConnectionPage(
                 "[ConnectionPage:LaunchedEffect] User does not want automatic connection: Exiting LaunchedEffect"
             )
             pageLoading = false
-            if (deviceType == "eye-ai-vision")
+            if (deviceType == "eye-ai-vision" && locationManager.isLocationEnabled)
                 wifiScanState.rescan()
+            else if (deviceType == "eye-ai-vision" && !locationManager.isLocationEnabled) {
+                showLocationDisabledDialog = true
+            }
             return@LaunchedEffect
         }
 
@@ -251,14 +279,12 @@ fun ChooseConnectionPage(
         var scanNetworks: List<String>? = null
         if (deviceType == "eye-ai-vision" && devicesData["selected"] != "Handykamera verwenden") {
             Log.d(LOG_TAG, "[ConnectionPage:LaunchedEffect] WIFI-Scan necessary, starting")
-            val locationManager =
-                context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             if (locationManager.isLocationEnabled)
                 scanNetworks = wifiScanState.awaitScan()
             else {
                 Log.d(
                     LOG_TAG,
-                    "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
+                    "[ConnectionPage:LaunchedEffect] Wifi-Scan failed. Location services are not turned on."
                 )
                 showLocationDisabledDialog = true
             }
@@ -267,7 +293,7 @@ fun ChooseConnectionPage(
         }
         val availableDevices = when (deviceType) {
             "eye-ai-vision" -> scanNetworks ?: emptyList()
-            "audio" -> audioDevices
+            "audio" -> devicesData["devices"] as List<String>
             else -> emptyList()
         }
 
@@ -297,7 +323,7 @@ fun ChooseConnectionPage(
                     LOG_TAG,
                     "[ConnectionPage:LaunchedEffect] Connection to remembered device successful"
                 )
-                onConnectionSuccessful()
+                onConnectionSuccessful(devicesData["selected"] as String)
             } else {
                 pageLoading = false
                 Log.d(
@@ -436,36 +462,31 @@ fun ChooseConnectionPage(
                                     })
                                 Text("Standardgerät", style = MaterialTheme.typography.bodyLarge)
                             }
-                            Box(modifier = Modifier.clickable {
-                                when (devicesData["type"]) {
-                                    "audio" -> {
-                                        refreshAudioDevices()
+                            if (deviceType == "eye-ai-vision")
+                                Box(modifier = Modifier.clickable {
+                                    val locationManager =
+                                        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                                    if (locationManager.isLocationEnabled)
+                                        wifiScanState.rescan()
+                                    else {
+                                        Log.d(
+                                            LOG_TAG,
+                                            "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
+                                        )
+                                        showLocationDisabledDialog = true
                                     }
 
-                                    "eye-ai-vision" -> {
-                                        val locationManager =
-                                            context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                                        if (locationManager.isLocationEnabled)
-                                            wifiScanState.rescan()
-                                        else {
-                                            Log.d(
-                                                LOG_TAG,
-                                                "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
-                                            )
-                                            showLocationDisabledDialog = true
-                                        }
-                                    }
+
+                                }) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .heightIn(Spacing.xl)
+                                            .width(Spacing.xl),
+                                        painter = painterResource(R.drawable.refresh_24px),
+                                        contentDescription = "",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
-                            }) {
-                                Icon(
-                                    modifier = Modifier
-                                        .heightIn(Spacing.xl)
-                                        .width(Spacing.xl),
-                                    painter = painterResource(R.drawable.refresh_24px),
-                                    contentDescription = "",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
                         }
                         HorizontalDivider(
                             color = MaterialTheme.colorScheme.outline,
@@ -526,9 +547,9 @@ fun ChooseConnectionPage(
                                                     if (shouldRememberDevice) selectedDevice else ""
                                                 )
                                             }
+                                            onConnectionSuccessful(selectedDevice)
                                             shouldRememberDevice = false
                                             selectedDevice = ""
-                                            onConnectionSuccessful()
                                         } else
                                             showConnectionFailedDialog = true
                                     }
@@ -558,6 +579,10 @@ fun ChooseConnectionPage(
             //titel = "Standortdienste sind ausgeschaltet",
             //content = "Da durch einen Scan der WLAN-Netzwerke in der nähe Informationen zu ihrem Standort anfallen könnten, muss laut Android-Richtlinien der Standort angeschaltet sein. Die App nutzt ihren Standort jedoch nicht.",
             onDismissed = { showLocationDisabledDialog = false },
+            onGranted = {
+                showLocationDisabledDialog = false
+                wifiScanState.rescan()
+            }
         )
     }
 }
@@ -583,7 +608,7 @@ fun DeviceListEntry(deviceName: String, isSelected: Boolean = false, onSelected:
 }
 
 @Composable
-fun ActivateLocationServicesDialog(onDismissed: () -> Unit) {
+fun ActivateLocationServicesDialog(onDismissed: () -> Unit, onGranted: () -> Unit) {
     val context = LocalContext.current
     val activity = LocalActivity.current
 
@@ -609,7 +634,7 @@ fun ActivateLocationServicesDialog(onDismissed: () -> Unit) {
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             // Nutzer hat die Standortdienste aktiviert
-            onDismissed()
+            onGranted()
         }
     }
 
@@ -617,7 +642,7 @@ fun ActivateLocationServicesDialog(onDismissed: () -> Unit) {
         settingsClient.checkLocationSettings(locationSettingsRequest)
             .addOnSuccessListener {
                 // Standort ist bereits aktiviert
-                onDismissed()
+                onGranted()
             }
             .addOnFailureListener { exception ->
                 if (exception is ResolvableApiException) {
@@ -640,7 +665,10 @@ fun ActivateLocationServicesDialog(onDismissed: () -> Unit) {
         title = { Text("Standortdienste sind ausgeschaltet") },
         text = { Text("Da durch einen Scan der WLAN-Netzwerke in der nähe Informationen zu ihrem Standort anfallen könnten, muss laut Android-Richtlinien der Standort angeschaltet sein. Die App nutzt ihren Standort jedoch nicht.") },
         confirmButton = {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+            ) {
                 Button(modifier = Modifier.weight(1f), onClick = { onDismissed() }) {
                     Text(
                         "Zurück",
@@ -649,11 +677,12 @@ fun ActivateLocationServicesDialog(onDismissed: () -> Unit) {
                         }
                     )
                 }
-                Button(modifier = Modifier.weight(1f),onClick = { activateLocationServices() }) {
+                Button(modifier = Modifier.weight(1f), onClick = { activateLocationServices() }) {
                     Text(
                         "Aktivieren",
                         modifier = Modifier.clearAndSetSemantics {
-                            contentDescription = "Standortdienste aktivieren und Dialog-Feld verlassen."
+                            contentDescription =
+                                "Standortdienste aktivieren und Dialog-Feld verlassen."
                         }
                     )
                 }
