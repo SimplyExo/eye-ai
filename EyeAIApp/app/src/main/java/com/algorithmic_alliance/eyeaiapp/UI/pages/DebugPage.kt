@@ -7,13 +7,26 @@ import android.util.Log
 import android.util.Size
 import androidx.activity.compose.LocalActivity
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -21,55 +34,42 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.preference.PreferenceManager
+import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumFloatingActionButton
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
-import com.algorithmic_alliance.eyeaiapp.data.Shapes
+import com.algorithmic_alliance.eyeaiapp.data.AppElevation
+import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.ocr.TextBoundingBox
 import uniffi.NativeLib.UniffiDetectedObject
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,185 +104,215 @@ fun DebugPage(
         onEvent(UIEvent.UpdateSpeechStatusText)
     }
     key(uiState.reloadDebugPageKey) {
-        Scaffold(modifier = Modifier.fillMaxSize(), contentWindowInsets = WindowInsets.safeDrawing,topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Debug", style = MaterialTheme.typography.titleLarge)
-                    }
-                },
-                modifier = Modifier.shadow(elevation = Spacing.sm),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-            )
-        }, floatingActionButton = {
-            Row(
-                modifier = Modifier
-                    .padding(Spacing.sm)
-                    .fillMaxWidth(0.35f),
-                horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
-            ) {
-                if (speechRecognitionEnabled) PremiumFloatingActionButton(
-                    onClick = {
-                        onEvent(UIEvent.VoskListeningChanged)
-                    },
-                ) {
-                    Icon(
-                        painter = if (uiState.voskListening) {
-                            painterResource(R.drawable.stop_24px)
-                        } else if (uiState.ttsSpeaking) {
-                            painterResource(
-                                R.drawable.pause_playback_24px
-                            )
-                        } else {
-                            painterResource(R.drawable.play_arrow_24px)
-                        }, contentDescription = "Start Vosk"
-                    )
-                }
-
-                PremiumFloatingActionButton(onClick = { onOpenSettings() }) {
-                    Icon(
-                        painter = painterResource(R.drawable.settings_24px),
-                        contentDescription = "Open Settings"
-                    )
-                }
-            }
-        }, content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .fillMaxHeight()
-                    .padding(paddingValues),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Card(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(top = Spacing.sm, bottom = Spacing.sm, start = Spacing.xs, end = Spacing.xs),
-                ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        if (sharedPreferences.getString(
-                                stringResource(R.string.input_source_setting), stringResource(R.string.input_is_camera)
-                            ) == stringResource(R.string.input_is_camera) && !sharedPreferences.getBoolean(
-                                stringResource(R.string.show_debug_input_bitmap_setting), false
-                            )
-                        ) CameraPreview(onEvent = onEvent)
-                        if (sharedPreferences.getString(
-                                stringResource(R.string.input_source_setting), stringResource(R.string.input_is_camera)
-                            ) == stringResource(R.string.input_is_media) && !sharedPreferences.getBoolean(
-                                stringResource(R.string.show_debug_input_bitmap_setting), false
-                            )
-                        ) {
-                            MediaPreview(bitmap = uiState.mediaPreviewBitmap, onEvent = onEvent)
-                            if (sharedPreferences.getString(
-                                    stringResource(R.string.media_path_setting), ""
-                                ) == ""
-                            ) Column(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .padding(Spacing.sm),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    "Bitte in den Einstellungen eine Media-Quelle auswählen!",
-                                    fontSize = 26.sp,
-                                )
-                            }
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            contentWindowInsets = WindowInsets.safeDrawing,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Debug", style = MaterialTheme.typography.titleLarge)
                         }
-                        if (sharedPreferences.getBoolean(
-                                stringResource(R.string.show_debug_input_bitmap_setting), false
-                            )
-                        ) DebugInputPreview(
-                            bitmap = uiState.debugInputPreviewBitmap, onEvent = onEvent
+                    },
+                    modifier = Modifier.shadow(elevation = Spacing.sm),
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                )
+            },
+            floatingActionButton = {
+                Row(
+                    modifier = Modifier
+                        .padding(Spacing.sm)
+                        .fillMaxWidth(0.35f),
+                    horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
+                ) {
+                    if (speechRecognitionEnabled) PremiumFloatingActionButton(
+                        onClick = {
+                            onEvent(UIEvent.VoskListeningChanged)
+                        },
+                    ) {
+                        Icon(
+                            painter = if (uiState.voskListening) {
+                                painterResource(R.drawable.stop_24px)
+                            } else if (uiState.ttsSpeaking) {
+                                painterResource(
+                                    R.drawable.pause_playback_24px
+                                )
+                            } else {
+                                painterResource(R.drawable.play_arrow_24px)
+                            }, contentDescription = "Start Vosk"
                         )
-                        ObjectDetectionOverlay(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .padding(Spacing.sm),
-                            uiState.detectedObjects,
-                            cameraResolution = uiState.cameraResolution
+                    }
+
+                    PremiumFloatingActionButton(onClick = { onOpenSettings() }) {
+                        Icon(
+                            painter = painterResource(R.drawable.settings_24px),
+                            contentDescription = "Open Settings"
                         )
-                        OCROverlay(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .padding(Spacing.sm),
-                            results = uiState.ocrResults,
-                            cameraResolution = uiState.cameraResolution
-                        )
-                        if (sharedPreferences.getBoolean(
-                                stringResource(R.string.enable_speech_recognition_setting), true
-                            )
-                        ) {
-                            Card(
-                                modifier = Modifier
-                                    .padding(bottom = Spacing.md)
-                                    .align(Alignment.BottomCenter)
-                                    .fillMaxWidth(0.75f)
-                                    .heightIn(min = Spacing.xxl, max = Spacing.xxxxl),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
-                                        alpha = 0.75f
-                                    )
+                    }
+                }
+            },
+            content = { paddingValues ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .fillMaxHeight()
+                        .padding(paddingValues),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(
+                                top = Spacing.sm,
+                                bottom = Spacing.sm,
+                                start = Spacing.xs,
+                                end = Spacing.xs
+                            ),
+
+                        shape = PremiumShapes.medium,
+                        elevation = CardDefaults.cardElevation(defaultElevation = if(isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
+                        border = BorderStroke(width = if(isSystemInDarkTheme()) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f)),
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            if (sharedPreferences.getString(
+                                    stringResource(R.string.input_source_setting),
+                                    stringResource(R.string.input_is_camera)
+                                ) == stringResource(R.string.input_is_camera) && !sharedPreferences.getBoolean(
+                                    stringResource(R.string.show_debug_input_bitmap_setting), false
+                                )
+                            ) CameraPreview(onEvent = onEvent)
+                            if (sharedPreferences.getString(
+                                    stringResource(R.string.input_source_setting),
+                                    stringResource(R.string.input_is_camera)
+                                ) == stringResource(R.string.input_is_media) && !sharedPreferences.getBoolean(
+                                    stringResource(R.string.show_debug_input_bitmap_setting), false
                                 )
                             ) {
-                                LazyColumn(
+                                MediaPreview(bitmap = uiState.mediaPreviewBitmap, onEvent = onEvent)
+                                if (sharedPreferences.getString(
+                                        stringResource(R.string.media_path_setting), ""
+                                    ) == ""
+                                ) Column(
                                     modifier = Modifier
-                                        .padding(Spacing.sm)
-                                        .fillMaxWidth(),
+                                        .fillMaxHeight()
+                                        .padding(Spacing.sm),
+                                    verticalArrangement = Arrangement.Center,
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    item {
-                                        Text(uiState.speechRecognitionPartialResultText, style = MaterialTheme.typography.bodyMedium)
-                                        Text(uiState.speechRecognitionFinalResultText, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                                        Text(uiState.speechResponseText, style = MaterialTheme.typography.bodyMedium)
-                                    }
+                                    Text(
+                                        "Bitte in den Einstellungen eine Media-Quelle auswählen!",
+                                        fontSize = 26.sp,
+                                    )
                                 }
                             }
-
-                        }
-                    }
-                }
-                Card(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(bottom = Spacing.sm, start = Spacing.xs, end = Spacing.xs)
-                ) {
-                    Box(Modifier.fillMaxSize()) {
-                        if (sharedPreferences.getString(
-                                stringResource(R.string.media_path_setting), ""
-                            ) == "" && sharedPreferences.getString(
-                                stringResource(R.string.input_source_setting),
-                                "camera"
-                            ) == "media"
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .padding(Spacing.sm),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    "Bitte in den Einstellungen eine Media-Quelle auswählen!",
-                                    fontSize = 26.sp,
+                            if (sharedPreferences.getBoolean(
+                                    stringResource(R.string.show_debug_input_bitmap_setting), false
                                 )
+                            ) DebugInputPreview(
+                                bitmap = uiState.debugInputPreviewBitmap, onEvent = onEvent
+                            )
+                            ObjectDetectionOverlay(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .padding(Spacing.sm),
+                                uiState.detectedObjects,
+                                cameraResolution = uiState.cameraResolution
+                            )
+                            OCROverlay(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .padding(Spacing.sm),
+                                results = uiState.ocrResults,
+                                cameraResolution = uiState.cameraResolution
+                            )
+                            if (sharedPreferences.getBoolean(
+                                    stringResource(R.string.enable_speech_recognition_setting), true
+                                )
+                            ) {
+                                Card(
+                                    modifier = Modifier
+                                        .padding(bottom = Spacing.md)
+                                        .align(Alignment.BottomCenter)
+                                        .fillMaxWidth(0.75f)
+                                        .heightIn(min = Spacing.xxl, max = Spacing.xxxxl),
+                                    shape = PremiumShapes.medium,
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                            alpha = 0.75f
+                                        )
+                                    )
+                                ) {
+                                    LazyColumn(
+                                        modifier = Modifier
+                                            .padding(Spacing.sm)
+                                            .fillMaxWidth(),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        item {
+                                            Text(
+                                                uiState.speechRecognitionPartialResultText,
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                            Text(
+                                                uiState.speechRecognitionFinalResultText,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Text(
+                                                uiState.speechResponseText,
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                        }
+                                    }
+                                }
+
                             }
                         }
-                        DepthPreview(
-                            bitmap = uiState.depthPreviewBitmap,
-                            performanceText = uiState.performanceText
-                        )
                     }
+                    Card(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(bottom = Spacing.sm, start = Spacing.xs, end = Spacing.xs),
+                        shape = PremiumShapes.medium,
+                        elevation = CardDefaults.cardElevation(defaultElevation = if(isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
+                        border = BorderStroke(width = if(isSystemInDarkTheme()) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f)),
+                    ) {
+                        Box(Modifier.fillMaxSize()) {
+                            if (sharedPreferences.getString(
+                                    stringResource(R.string.media_path_setting), ""
+                                ) == "" && sharedPreferences.getString(
+                                    stringResource(R.string.input_source_setting),
+                                    "camera"
+                                ) == "media"
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(Spacing.sm),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        "Bitte in den Einstellungen eine Media-Quelle auswählen!",
+                                        fontSize = 26.sp,
+                                    )
+                                }
+                            }
+                            DepthPreview(
+                                bitmap = uiState.depthPreviewBitmap,
+                                performanceText = uiState.performanceText
+                            )
+                        }
+                    }
+
+
                 }
-
-
-            }
-        })
+            })
 
     }
 }
@@ -331,7 +361,7 @@ fun DebugInputPreview(
         modifier = modifier
             .fillMaxSize()
             .padding(Spacing.sm)
-            .clip(Shapes.small)
+            .clip(PremiumShapes.small)
             .background(Color.Black),
         contentAlignment = Alignment.Center,
 
@@ -342,7 +372,7 @@ fun DebugInputPreview(
                     bitmap = it.asImageBitmap(),
                     contentDescription = "Depth preview",
                     modifier = Modifier
-                        .clip(Shapes.small),
+                        .clip(PremiumShapes.small),
                     contentScale = ContentScale.Fit
 
                 )
@@ -368,7 +398,7 @@ fun MediaPreview(
         modifier = modifier
             .fillMaxSize()
             .padding(Spacing.sm)
-            .clip(Shapes.small)
+            .clip(PremiumShapes.small)
             .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
@@ -377,7 +407,7 @@ fun MediaPreview(
                 bitmap = it.asImageBitmap(),
                 contentDescription = "Media preview",
                 modifier = Modifier
-                    .clip(Shapes.small),
+                    .clip(PremiumShapes.small),
                 contentScale = ContentScale.Fit
             )
         }
@@ -392,25 +422,38 @@ fun DepthPreview(
         modifier = modifier
             .fillMaxSize()
             .padding(Spacing.sm)
-            .clip(Shapes.small)
+            .clip(PremiumShapes.small)
             .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
         bitmap?.let {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Box(modifier = Modifier.aspectRatio(1f/1f)){
-                Image(
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = "Depth preview",
-                    modifier = Modifier
-                        .aspectRatio(1f / 1f)
-                        .clip(Shapes.small),
-                    contentScale = ContentScale.Fit
-                )
-                    LazyColumn(modifier = Modifier.align(Alignment.TopStart).padding(start = Spacing.xs, top = Spacing.xs)) {
-                        item { Text(text = performanceText, style = MaterialTheme.typography.bodySmall, fontSize = 8.sp, lineHeight = 10.sp , letterSpacing = (-0.2).sp) }
+                Box(modifier = Modifier.aspectRatio(1f / 1f)) {
+                    Image(
+                        bitmap = it.asImageBitmap(),
+                        contentDescription = "Depth preview",
+                        modifier = Modifier
+                            .aspectRatio(1f / 1f)
+                            .clip(PremiumShapes.small),
+                        contentScale = ContentScale.Fit
+                    )
+                    LazyColumn(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(start = Spacing.xs, top = Spacing.xs)
+                    ) {
+                        item {
+                            Text(
+                                text = performanceText,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 8.sp,
+                                lineHeight = 10.sp,
+                                letterSpacing = (-0.2).sp
+                            )
+                        }
                     }
-            }}
+                }
+            }
         }
 
 
@@ -425,7 +468,7 @@ fun CameraPreview(onEvent: (UIEvent) -> Unit) {
     AndroidView(
         modifier = Modifier
             .padding(Spacing.sm)
-            .clip(Shapes.small),
+            .clip(PremiumShapes.small),
         factory = { context ->
             PreviewView(context).apply { scaleType = PreviewView.ScaleType.FIT_CENTER }.also {
                 onEvent(

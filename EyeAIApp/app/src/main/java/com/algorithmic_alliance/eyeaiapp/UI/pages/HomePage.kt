@@ -3,12 +3,15 @@ package com.algorithmic_alliance.eyeaiapp.UI.pages
 import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +20,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,12 +36,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -49,6 +56,8 @@ import com.algorithmic_alliance.eyeaiapp.UI.PremiumFloatingActionButton
 import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
+import com.algorithmic_alliance.eyeaiapp.data.AppElevation
+import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
@@ -136,6 +145,7 @@ fun HomePage(
                 horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
             ) {
                 if (speechRecognitionEnabled) PremiumFloatingActionButton(
+                    shadowElevation = 8.dp,
                     onClick = {
                         onEvent(UIEvent.VoskListeningChanged)
                     },
@@ -153,7 +163,9 @@ fun HomePage(
                     )
                 }
 
-                PremiumFloatingActionButton(onClick = { onOpenSettings() }) {
+                PremiumFloatingActionButton(
+                    shadowElevation = 8.dp,
+                    onClick = { onOpenSettings() }) {
                     Icon(
                         painter = painterResource(R.drawable.settings_24px),
                         contentDescription = "Open Settings"
@@ -163,7 +175,7 @@ fun HomePage(
         },
         content = { paddingValues ->
             LazyVerticalGrid(
-                modifier = Modifier.padding(paddingValues), columns = GridCells.Fixed(2)
+                modifier = Modifier.padding(paddingValues).fillMaxHeight(), columns = GridCells.Fixed(2)
             ) {
                 item {
                     VoskStatusCard(viewModel = viewModel)
@@ -185,10 +197,14 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    val isDark = isSystemInDarkTheme()
     Card(
         modifier = Modifier
             .padding(Spacing.sm)
-            .aspectRatio(4f / 3f)
+            .aspectRatio(4f / 3f),
+        shape = PremiumShapes.medium,
+        elevation = CardDefaults.cardElevation(AppElevation.level3),
+        border = BorderStroke(if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier
@@ -243,10 +259,14 @@ fun VisionStatusCard(viewModel: MainViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    val isDark = isSystemInDarkTheme()
     Card(
         modifier = Modifier
             .padding(Spacing.sm)
-            .aspectRatio(4f / 3f)
+            .aspectRatio(4f / 3f),
+        shape = PremiumShapes.medium,
+                elevation = CardDefaults.cardElevation(AppElevation.level3),
+        border = BorderStroke(if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier.padding(Spacing.sm),
@@ -299,10 +319,13 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    val isDark = isSystemInDarkTheme()
     Card(
         modifier = Modifier
             .padding(Spacing.sm)
-            .aspectRatio(4f / 3f)
+            .aspectRatio(4f / 3f),
+        shape = PremiumShapes.medium,elevation = CardDefaults.cardElevation(AppElevation.level3),
+        border = BorderStroke(if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier.padding(Spacing.sm),
@@ -344,10 +367,13 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
 @Composable
 fun VoskStatusCard(viewModel: MainViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isDark = isSystemInDarkTheme()
     Card(
         modifier = Modifier
             .padding(Spacing.sm)
-            .aspectRatio(4f / 3f)
+            .aspectRatio(4f / 3f),
+        shape = PremiumShapes.medium,elevation = CardDefaults.cardElevation(AppElevation.level3),
+        border = BorderStroke(if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier.padding(Spacing.sm),

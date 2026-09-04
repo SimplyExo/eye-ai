@@ -9,6 +9,7 @@ import androidx.core.content.edit
 import androidx.annotation.RequiresApi
 import androidx.camera.core.impl.utils.ContextUtil.getApplication
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
@@ -335,8 +336,19 @@ object Spacing {
     val xxxxl = 128.dp
 }
 
-object Shapes{
-    val small = RoundedCornerShape(8.dp)
-    val medium = RoundedCornerShape(16.dp)
-    val large = RoundedCornerShape(28.dp)
+object AppElevation {
+    val level0 = 0.dp
+    val level1 = 1.dp   // ruhende Cards
+    val level2 = 3.dp   // aktive/hervorgehobene Cards
+    val level3 = 6.dp   // Dialoge, wichtige Highlight-Elemente
+    val level4 = 8.dp   // Navigation Drawer
+    val level5 = 12.dp  // Bottom Sheets, FAB gedrückt
 }
+
+val PremiumShapes = Shapes(
+    extraSmall = RoundedCornerShape(6.dp),   // Chips, kleine Badges
+    small = RoundedCornerShape(10.dp),       // Buttons, Textfelder
+    medium = RoundedCornerShape(16.dp),      // Cards
+    large = RoundedCornerShape(24.dp),       // große Container, Bottom Sheets
+    extraLarge = RoundedCornerShape(32.dp)   // Hero-Elemente, Modals
+)

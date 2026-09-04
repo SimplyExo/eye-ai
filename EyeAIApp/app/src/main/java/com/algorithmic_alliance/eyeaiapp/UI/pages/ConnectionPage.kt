@@ -8,24 +8,17 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import com.google.android.gms.location.LocationRequest
-
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import com.google.android.gms.location.Priority
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,8 +26,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -50,16 +43,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -73,12 +70,16 @@ import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
 import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
+import com.algorithmic_alliance.eyeaiapp.data.AppElevation
+import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
-import kotlin.collections.emptyList
+import com.google.android.gms.location.Priority
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -168,21 +169,21 @@ fun ConnectionPage(
 
     ChooseConnectionPage(
         onConnectionSuccessful = { visionDevice ->
-        if (visionDevice == "Handykamera verwenden") {
-            sharedPreferences.edit(commit = true) {
-                putBoolean(
-                    shouldRememberAudioDeviceKey, false
-                )
-                putString(
-                    selectedAudioDeviceKey, ""
-                )
-            }
-            onConnectionSuccessful()
-        } else if (currentlyDisplayedDevices < devices.size - 1) {
-            currentlyDisplayedDevices++
-            startAutoConnect = true
-        } else onConnectionSuccessful()
-    },
+            if (visionDevice == "Handykamera verwenden") {
+                sharedPreferences.edit(commit = true) {
+                    putBoolean(
+                        shouldRememberAudioDeviceKey, false
+                    )
+                    putString(
+                        selectedAudioDeviceKey, ""
+                    )
+                }
+                onConnectionSuccessful()
+            } else if (currentlyDisplayedDevices < devices.size - 1) {
+                currentlyDisplayedDevices++
+                startAutoConnect = true
+            } else onConnectionSuccessful()
+        },
         goBack = {
             if (currentlyDisplayedDevices != 0) {
                 currentlyDisplayedDevices--
@@ -213,6 +214,7 @@ fun ChooseConnectionPage(
             Log.d(LOG_TAG, "Disposing ChooseConnectionPage")
         }
     }
+    val isDark = isSystemInDarkTheme()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -349,6 +351,12 @@ fun ChooseConnectionPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(Spacing.md),
+                shape = PremiumShapes.large,
+                elevation = CardDefaults.cardElevation(AppElevation.level5),
+                border = BorderStroke(
+                    width = if (isDark) 2.dp else 0.dp,
+                    color = Color.White.copy(alpha = 0.2f)
+                ),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -461,7 +469,8 @@ fun ChooseConnectionPage(
                                 Text("Standardgerät", style = MaterialTheme.typography.bodyLarge)
                             }
                             if (deviceType == "eye-ai-vision") {
-                                PremiumIconButton(onClick = {
+                                PremiumIconButton(
+                                    onClick = {
                                     val locationManager =
                                         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
                                     if (locationManager.isLocationEnabled) wifiScanState.rescan()
@@ -472,14 +481,16 @@ fun ChooseConnectionPage(
                                         )
                                         showLocationDisabledDialog = true
                                     }
-                                }) {Icon(
-                                    modifier = Modifier
-                                        .heightIn(Spacing.xl)
-                                        .width(Spacing.xl),
-                                    painter = painterResource(R.drawable.refresh_24px),
-                                    contentDescription = "",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                ) }
+                                }) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .heightIn(Spacing.xl)
+                                            .width(Spacing.xl),
+                                        painter = painterResource(R.drawable.refresh_24px),
+                                        contentDescription = "",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                         HorizontalDivider(
@@ -493,16 +504,22 @@ fun ChooseConnectionPage(
                                 .padding(Spacing.md),
                             horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                         ) {
-                            PremiumButton(modifier = Modifier.weight(1f), onClick = { goBack() }) {
+                            PremiumButton(
+                                modifier = Modifier.weight(1f),
+                                shadowElevation = if (isDark) AppElevation.level4 else AppElevation.level2,
+                                onClick = { goBack() }) {
                                 Text(
                                     "Zurück", style = MaterialTheme.typography.labelLarge
                                 )
                             }
-                            PremiumButton(modifier = Modifier
-                                .weight(1f)
-                                .semantics {
-                                    contentDescription = "Mit Gerät $selectedDevice verbinden"
-                                }, enabled = selectedDevice != "", onClick = {
+                            PremiumButton(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .semantics {
+                                        contentDescription = "Mit Gerät $selectedDevice verbinden"
+                                    }, enabled = selectedDevice != "",
+                                shadowElevation = if (isDark) AppElevation.level4 else AppElevation.level2,
+                                onClick = {
 
                                 connectToDevice(
                                     context,

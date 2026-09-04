@@ -1,7 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
-import com.algorithmic_alliance.eyeaiapp.R
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,12 +19,19 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
+import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 
 @Composable
-fun WelcomePage(modifier: Modifier = Modifier, onGetStarted: () -> Unit, onEvent: (UIEvent) -> Unit) {
+fun WelcomePage(
+    modifier: Modifier = Modifier,
+    onGetStarted: () -> Unit,
+    onEvent: (UIEvent) -> Unit
+) {
+    val isDark = isSystemInDarkTheme()
 
     DisposableEffect(Unit) {
         onEvent(UIEvent.OnOpenSettings)
@@ -47,10 +54,16 @@ fun WelcomePage(modifier: Modifier = Modifier, onGetStarted: () -> Unit, onEvent
             )
             PremiumButton(
                 modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.lg)
-                .semantics { contentDescription = "Startet die Eye-Ai Anwendung" }, onClick = { onGetStarted() }){
-                Text("App Starten", modifier = Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.labelLarge)
+                    .fillMaxWidth()
+                    .padding(Spacing.lg)
+                    .semantics { contentDescription = "Startet die Eye-Ai Anwendung" },
+                shadowElevation = if(isDark) AppElevation.level5 else AppElevation.level3,
+                onClick = { onGetStarted() }) {
+                Text(
+                    "App Starten",
+                    modifier = Modifier.clearAndSetSemantics {},
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
     }

@@ -17,10 +17,12 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +37,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -61,13 +64,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
@@ -78,6 +84,8 @@ import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.hasPermission
+import com.algorithmic_alliance.eyeaiapp.data.AppElevation
+import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import kotlin.math.roundToInt
@@ -140,7 +148,7 @@ fun SettingsPage(
             modifier = Modifier.padding(innerPadding),
         ) {
             key(uiState.reloadSettingsPageKey) {
-                LazyColumn(modifier = modifier.padding(vertical = Spacing.xs)) {
+                LazyColumn(modifier = modifier) {
                     items(
                         items = settingsData.entries.toList(),
                         key = { entry -> entry.key }) { entry ->
@@ -183,6 +191,8 @@ fun SettingsPage(
                                     }
 
                                 },
+                            elevation = CardDefaults.cardElevation(defaultElevation = if(isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
+                            border = BorderStroke(width = if(isSystemInDarkTheme()) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
                         ) {
                             Row(
                                 modifier = Modifier
@@ -214,11 +224,14 @@ fun SettingsCategoryCard(
     onOpenConnectionPage: () -> Unit,
     uiState: UIState
 ) {
-
+    val isDark = isSystemInDarkTheme()
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(Spacing.sm)
+            .padding(Spacing.sm),
+        shape = PremiumShapes.medium,
+        elevation = CardDefaults.cardElevation(defaultElevation = if(isDark) AppElevation.level2 else AppElevation.level4),
+        border = BorderStroke(width = if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
             Row(

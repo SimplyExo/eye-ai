@@ -1,58 +1,55 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
-import android.Manifest
-import android.app.Activity
-import android.content.Context
-import androidx.core.content.edit
+import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import android.content.pm.PackageManager
-import android.os.Build
-import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
-import androidx.annotation.RequiresApi
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.checkPermissionsStatus
 import com.algorithmic_alliance.eyeaiapp.UI.onPermissionDecline
+import com.algorithmic_alliance.eyeaiapp.data.AppElevation
+import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -99,6 +96,7 @@ fun AskForPermission(
     onExitPermissionPage: () -> Unit,
     onEvent: (UIEvent) -> Unit
 ) {
+    val isDark = isSystemInDarkTheme()
     val context = LocalContext.current
     Log.d(
         LOG_TAG,
@@ -142,6 +140,12 @@ fun AskForPermission(
         modifier = Modifier
             .fillMaxWidth()
             .padding(Spacing.md),
+        shape = PremiumShapes.large,
+        elevation = CardDefaults.cardElevation(AppElevation.level5),
+        border = BorderStroke(
+            width = if (isDark) 2.dp else 0.dp,
+            color = Color.White.copy(alpha = 0.2f)
+        ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -183,7 +187,9 @@ fun AskForPermission(
                             contentDescription =
                                 (permissionData["permissionDeclineSemantic"]
                                     ?: UIDataSource.INFORMATION_NOT_FOUND) as String
-                        }, onClick = { showDeclineDialog = !showDeclineDialog }) {
+                        },
+                    shadowElevation = if (isDark) AppElevation.level4 else AppElevation.level2,
+                    onClick = { showDeclineDialog = !showDeclineDialog }) {
                     Text(
                         "Ablehnen",
                         modifier = Modifier.clearAndSetSemantics {},
@@ -197,13 +203,15 @@ fun AskForPermission(
                             contentDescription =
                                 (permissionData["permissionAcceptSemantic"]
                                     ?: UIDataSource.INFORMATION_NOT_FOUND) as String
-                        }, onClick = {
-                    for (permission in permissions as List<*>) {
-                        permissionLauncher.launch(permission as String)
-                    }
+                        },
+                    shadowElevation = if (isDark) AppElevation.level4 else AppElevation.level2,
+                    onClick = {
+                        for (permission in permissions as List<*>) {
+                            permissionLauncher.launch(permission as String)
+                        }
 
 
-                }) {
+                    }) {
                     Text(
                         "Annehmen",
                         modifier = Modifier.clearAndSetSemantics {},
@@ -237,6 +245,7 @@ fun ConfirmPermissionDecline(
     onPermissionDecline: () -> Unit
 ) {
     val context = LocalContext.current
+    val isDark = isSystemInDarkTheme()
     AlertDialog(
         onDismissRequest = { onDialogDismissed() },
         title = {
@@ -245,38 +254,52 @@ fun ConfirmPermissionDecline(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                PremiumIconButton(modifier = Modifier, onClick = { onDialogDismissed() }) {Icon(
-                    modifier = Modifier.width(Spacing.xl).height(Spacing.xl),
-                    painter = painterResource(R.drawable.arrow_back_24px),
-                    contentDescription = UIDataSource.RETURN_SEMANTIC
-                ) }
+                PremiumIconButton(modifier = Modifier, onClick = { onDialogDismissed() }) {
+                    Icon(
+                        modifier = Modifier
+                            .width(Spacing.xl)
+                            .height(Spacing.xl),
+                        painter = painterResource(R.drawable.arrow_back_24px),
+                        contentDescription = UIDataSource.RETURN_SEMANTIC
+                    )
+                }
                 Text("Berechtigung Ablehnen?", style = MaterialTheme.typography.titleLarge)
             }
         },
         text = {
             Text(
                 (permissionData["confirmPermissionDeclineExplanation"]
-                    ?: UIDataSource.INFORMATION_NOT_FOUND) as String
-            , style = MaterialTheme.typography.bodyMedium)
+                    ?: UIDataSource.INFORMATION_NOT_FOUND) as String,
+                style = MaterialTheme.typography.bodyMedium
+            )
         },
         confirmButton = {
-            PremiumButton(modifier = Modifier.semantics {
-                contentDescription = (permissionData["confirmPermissionDeclineSemantic"]
-                    ?: UIDataSource.INFORMATION_NOT_FOUND) as String
-            }, onClick = {
-                Log.d(
-                    LOG_TAG,
-                    "[PermissionPage.ConfirmPermissionDecline] Permission ${permissionData["permissions"]}declined"
+            PremiumButton(
+                modifier = Modifier.semantics {
+                    contentDescription = (permissionData["confirmPermissionDeclineSemantic"]
+                        ?: UIDataSource.INFORMATION_NOT_FOUND) as String
+                },
+                shadowElevation = if (isDark) 8.dp else 3.dp,
+                onClick = {
+                    Log.d(
+                        LOG_TAG,
+                        "[PermissionPage.ConfirmPermissionDecline] Permission ${permissionData["permissions"]}declined"
+                    )
+                    onDialogDismissed()
+                    onPermissionDecline(
+                        permissionData,
+                        onExitPermissionSelection,
+                        context = context,
+                        onEvent = onEvent,
+                        onPermissionDecline = onPermissionDecline
+                    )
+                }) {
+                Text(
+                    "Trotzdem Ablehnen",
+                    modifier = Modifier.clearAndSetSemantics {},
+                    style = MaterialTheme.typography.labelLarge
                 )
-                onDialogDismissed()
-                onPermissionDecline(
-                    permissionData,
-                    onExitPermissionSelection,
-                    context = context,
-                    onEvent = onEvent,
-                    onPermissionDecline = onPermissionDecline
-                )
-            }) { Text("Trotzdem Ablehnen", modifier = Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.labelLarge)}
+            }
         }
     )
 }
