@@ -38,6 +38,8 @@ sealed interface UIEvent {
 
     data class OnUpdateTTSSpeaking(val value: Boolean): UIEvent
 
+    data class OnUpdateVisionPermissionsNotGranted(val value: Boolean): UIEvent
+
     data class OnUpdateSettingsOpened(val value: Boolean): UIEvent
 
     data class UIinitCamera(

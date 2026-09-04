@@ -69,6 +69,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
+import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.hasPermission
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
@@ -144,7 +145,8 @@ fun SettingsPage(
                                 categorySettings = entry.value as List<Any>,
                                 category = entry.key,
                                 onEvent = onEvent,
-                                onOpenConnectionPage = onOpenConnectionPage
+                                onOpenConnectionPage = onOpenConnectionPage,
+                                uiState = uiState
                             )
                     }
                     item {
@@ -193,7 +195,8 @@ fun SettingsCategoryCard(
     categorySettings: List<Any>,
     category: String,
     onEvent: (UIEvent) -> Unit,
-    onOpenConnectionPage: () -> Unit
+    onOpenConnectionPage: () -> Unit,
+    uiState: UIState
 ) {
 
     Card(
@@ -223,7 +226,7 @@ fun SettingsCategoryCard(
                     )
 
                     "select" -> SelectSetting(
-                        modifier = Modifier, settingData = settingData, onEvent = onEvent
+                        modifier = Modifier, settingData = settingData, onEvent = onEvent, uiState = uiState
                     )
 
                     "slider" -> SliderSetting(
@@ -374,7 +377,10 @@ fun CheckBoxSetting(
 
 @Composable
 fun SelectSetting(
-    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
+    modifier: Modifier = Modifier,
+    settingData: Map<String, Any>,
+    onEvent: (UIEvent) -> Unit,
+    uiState: UIState
 ) {
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
@@ -426,6 +432,8 @@ fun SelectSetting(
             DropdownMenu(
                 expanded = dropDownEnabled, onDismissRequest = { dropDownEnabled = false }) {
                 for (item in (settingData.getValue("settingsOptions") as List<Any>)) {
+                    if(resolveString(LocalContext.current, item) == "EyeAI-Vision" && uiState.visionPermissionsNotGranted)
+                        continue
                     DropdownMenuItem(
                         text = {
                             Text(
@@ -727,7 +735,10 @@ private fun resolveString(context: Context, value: Any): String {
 }
 
 @Composable
-fun rememberPreferenceBooleanState(key: String, default: Boolean): androidx.compose.runtime.State<Boolean> {
+fun rememberPreferenceBooleanState(
+    key: String,
+    default: Boolean
+): androidx.compose.runtime.State<Boolean> {
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val state = remember { mutableStateOf(sharedPreferences.getBoolean(key, default)) }
 

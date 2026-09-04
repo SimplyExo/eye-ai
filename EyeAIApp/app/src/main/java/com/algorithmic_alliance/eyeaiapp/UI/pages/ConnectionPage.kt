@@ -88,7 +88,7 @@ fun ConnectionPage(
     viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit
 ) {
-
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     BackHandler() {
         onExitSelection()
     }
@@ -150,6 +150,28 @@ fun ConnectionPage(
     var startAutoConnect by remember { mutableStateOf(true) }
     val shouldRememberAudioDeviceKey = stringResource(R.string.remember_audio_device)
     val selectedAudioDeviceKey = stringResource(R.string.selected_audio_device)
+    val shouldRememberVisionDeviceKey = stringResource(R.string.remember_eye_ai_vision)
+    val selectedVisionDeviceKey = stringResource(R.string.selected_eye_ai_vision)
+    val inputSourceSettingKey = stringResource(R.string.input_source_setting)
+    val inputIsCameraKey = stringResource(R.string.input_is_camera)
+
+    LaunchedEffect(Unit) {
+        if (uiState.visionPermissionsNotGranted) {
+            sharedPreferences.edit(commit = true) {
+                putBoolean(
+                    shouldRememberVisionDeviceKey,
+                    false
+                )
+                putString(
+                    selectedVisionDeviceKey,
+                    "Handykamera verwenden"
+                )
+                putString(inputSourceSettingKey, inputIsCameraKey)
+            }
+            onEvent(UIEvent.UpdateSettings)
+            onConnectionSuccessful()
+        }
+    }
 
     ChooseConnectionPage(
         onConnectionSuccessful = { visionDevice ->

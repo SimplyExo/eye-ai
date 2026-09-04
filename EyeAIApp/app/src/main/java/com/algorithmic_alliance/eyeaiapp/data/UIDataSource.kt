@@ -64,8 +64,8 @@ object UIDataSource {
             "iconDescription" to "Mikrofon Icon",
             "permissionDeclineSemantic" to "Zugriff auf Mikrofon ablehnen.",
             "permissionAcceptSemantic" to "Zugriff auf Mikrofon gestatten.",
-            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf das Mikrofon ablehnen, können sie die App nicht benutzen.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf Mikrofon trotzdem ablehnen. Die App wird geschlossen.",
+            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf das Mikrofon ablehnen, können sie keine Sprachbefehle verwenden.",
+            "confirmPermissionDeclineSemantic" to "Zugriff auf Mikrofon trotzdem ablehnen. Sprachbefehle werden deaktiviert.",
             "hardPermission" to false
         ),
         mapOf(
@@ -76,9 +76,9 @@ object UIDataSource {
             "iconDescription" to "WLAN Icon",
             "permissionDeclineSemantic" to "Zugriff auf nahe WLAN-Geräte ablehnen.",
             "permissionAcceptSemantic" to "Zugriff auf nahe WLAN-Geräte gestatten.",
-            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf nahe WLAN-Geräte, können sie die App nicht benutzen.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf nahe WLAN-Geräte trotzdem ablehnen. Die App wird geschlossen.",
-            "hardPermission" to true
+            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf nahe WLAN-Geräte, können Sie keine EyeAI-Vision verwenden.",
+            "confirmPermissionDeclineSemantic" to "Zugriff auf nahe WLAN-Geräte trotzdem ablehnen. Die App nutzt die Handykamera.",
+            "hardPermission" to false
         ),
         mapOf(
             "permissionName" to "Standort",
@@ -89,9 +89,9 @@ object UIDataSource {
             "iconDescription" to "Standort Icon",
             "permissionDeclineSemantic" to "Zugriff auf Standort ablehnen.",
             "permissionAcceptSemantic" to "Zugriff auf Standort gestatten.",
-            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf den Standort, können sie die App nicht benutzen.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf den Standort trotzdem ablehnen. Die App wird geschlossen.",
-            "hardPermission" to true
+            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf den Standort ablehnen, können Sie keine EyeAI-Vision verwenden.",
+            "confirmPermissionDeclineSemantic" to "Zugriff auf den Standort trotzdem ablehnen. Die App nutzt die Handykamera.",
+            "hardPermission" to false
         )
     )
 

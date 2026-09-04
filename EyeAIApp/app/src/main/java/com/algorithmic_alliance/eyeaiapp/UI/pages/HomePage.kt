@@ -33,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.core.content.edit
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,12 +71,12 @@ fun HomePage(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
-    Log.d(LOG_TAG, "[HomePage] Loading HomePage")
+    //Log.d(LOG_TAG, "[HomePage] Loading HomePage")
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val speechRecognitionKey = stringResource(R.string.enable_speech_recognition_setting)
     val profilingInformationKey = stringResource(R.string.show_profiling_info_setting)
     var initialShowProfilingInformationSetting = false
-    val speechRecognitionEnabled by rememberSaveable {
+    val speechRecognitionEnabled by remember {
         mutableStateOf(
             sharedPreferences.getBoolean(
                 speechRecognitionKey, true
@@ -94,18 +95,20 @@ fun HomePage(
         }
         onEvent(UIEvent.UpdateSettings)
 
-        if (ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            if (speechRecognitionEnabled) {
+
+        if (speechRecognitionEnabled) {
+            if (ActivityCompat.checkSelfPermission(
+                    context, Manifest.permission.RECORD_AUDIO
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 Log.d(LOG_TAG, "[HomePage] Loading Vosk model")
                 onEvent(UIEvent.InitVoskService)
-            } else {
-                Log.d(LOG_TAG, "[HomePage] Speech Recognition disabled not loading Vosk model")
-                onEvent(UIEvent.CloseVoskService)
             }
+        } else {
+            Log.d(LOG_TAG, "[HomePage] Speech Recognition disabled not loading Vosk model")
+            onEvent(UIEvent.CloseVoskService)
         }
+
         onEvent(UIEvent.UIinitCamera(null, lifecycleOwner))
         onEvent(UIEvent.UpdateVoskStatusText)
         onEvent(UIEvent.UpdateSpeechStatusText)

@@ -164,6 +164,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 onReturnFromSettings()
             }
 
+            is UIEvent.OnUpdateVisionPermissionsNotGranted -> {
+                Log.d(LOG_TAG, "[MainViewModel] OnUpdateVisionPermissionsNotGranted: ${event.value}")
+                _uiState.update { it.copy(visionPermissionsNotGranted = event.value) }
+            }
+
             is UIEvent.OnUpdateSettingsOpened -> {
                 Log.d(LOG_TAG, "[MainViewModel] OnUpdateSettingsOpened: ${event.value}")
                 _uiState.update { it.copy(settingsOpened = event.value) }

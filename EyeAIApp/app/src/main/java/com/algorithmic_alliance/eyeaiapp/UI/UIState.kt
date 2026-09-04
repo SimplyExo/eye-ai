@@ -6,6 +6,7 @@ import com.algorithmic_alliance.eyeaiapp.ocr.TextBoundingBox
 import uniffi.NativeLib.UniffiDetectedObject
 
 data class UIState(
+    val visionPermissionsNotGranted: Boolean = false,
     val voskListening: Boolean = false,
     val ttsSpeaking: Boolean = false,
     val actionStartedFromSettings: Boolean = false,

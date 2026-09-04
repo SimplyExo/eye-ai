@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp.UI
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
@@ -29,6 +30,14 @@ fun onPermissionDecline(
             "Mikrofon" -> {
                 sharedPreferences.edit(commit = true) {
                     putBoolean(context.getString(R.string.enable_speech_recognition_setting), false)
+                }
+                onEvent(UIEvent.UpdateSettings)
+                onPermissionDecline()
+            }
+            "WLAN-Netzwerke erkennen", "Standort" -> {
+                onEvent(UIEvent.OnUpdateVisionPermissionsNotGranted(true))
+                sharedPreferences.edit(commit = true){
+                    putString(context.getString(R.string.input_source_setting), context.getString(R.string.input_is_camera))
                 }
                 onEvent(UIEvent.UpdateSettings)
                 onPermissionDecline()
