@@ -78,27 +78,9 @@ class VoskModel(val context: Context, val modelName: String) {
         LibVosk.setLogLevel(LogLevel.DEBUG)
 
         // MediaPlayer initialisieren
-        activateSound = createSoundPlayer(context, R.raw.activate)
-        deactivateSound = createSoundPlayer(context, R.raw.deactivate)
+        activateSound = MediaPlayer.create(context, R.raw.activate)
+        deactivateSound = MediaPlayer.create(context, R.raw.deactivate)
     }
-
-    // Extra Funktion für den Mediaplayer, da die Attribute für die Ausgabe über das
-    // richtige Audio-Gerät wichtig sind
-    private fun createSoundPlayer(context: Context, resId: Int): MediaPlayer {
-        return MediaPlayer().apply {
-            setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build()
-            )
-            val afd = context.resources.openRawResourceFd(resId)
-            setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-            afd.close()
-            prepare()
-        }
-    }
-
     fun initService(
         onPartialResult: (partial: String) -> Unit,
         onFinalResult: (final: String) -> Unit,

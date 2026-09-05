@@ -47,12 +47,6 @@ class TextToSpeechInstance(
 	}
 
 	override fun onInit(status: Int) {
-		tts?.setAudioAttributes(
-			AudioAttributes.Builder()
-				.setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-				.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-				.build()
-		)
 		if (status == TextToSpeech.SUCCESS) {
 			try { tts?.language = Locale.GERMAN } catch (_: Exception) {}
 			isReady = true
