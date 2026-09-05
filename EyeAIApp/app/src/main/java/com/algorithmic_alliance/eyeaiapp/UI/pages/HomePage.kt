@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
@@ -36,13 +37,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -209,11 +210,11 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(Spacing.sm),
+                .padding(Spacing.xs),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Objekterkennung",
+                stringResource(R.string.object_detection_card_title),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
@@ -224,7 +225,7 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
                     )
                 ) {
                     Text(
-                        text = "Objekterkennung deaktiviert",
+                        text = stringResource(R.string.object_detection_card_disabled_text),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -237,12 +238,13 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "Aktiv",
+                            text = stringResource(R.string.status_card_active_text),
                             textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Leistung: ${getPerformance(getObjectFPS(uiState.performanceText))}",
+                            text = "${stringResource(R.string.status_card_performance_text)}: ${getPerformance(LocalContext.current,getObjectFPS(uiState.performanceText))}",
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -269,11 +271,11 @@ fun VisionStatusCard(viewModel: MainViewModel) {
         border = BorderStroke(if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(
-            modifier = Modifier.padding(Spacing.sm),
+            modifier = Modifier.padding(Spacing.xs),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "EyeAI-Vision",
+                stringResource(R.string.vision_card_title),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
@@ -286,24 +288,24 @@ fun VisionStatusCard(viewModel: MainViewModel) {
                     ) != stringResource(R.string.input_is_camera)
                 ) {
                     Text(
-                        "Keine EyeAI-Vision verbunden. Handykamera wird benutzt.",
+                        stringResource(R.string.vision_card_no_vision_connected_text),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "Name: EyeAI-Vision von Robert",
+                            "${stringResource(R.string.vision_card_name_text)}: EyeAI-Vision",
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            "Verbindung: Gut ",
+                            "${stringResource(R.string.vision_card_connection_text)}: Good ",
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            "Akku: 49% ",
+                            "${stringResource(R.string.vision_card_battery_text)}: 49% ",
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -328,11 +330,11 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
         border = BorderStroke(if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(
-            modifier = Modifier.padding(Spacing.sm),
+            modifier = Modifier.padding(Spacing.xs),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Distanzmessung",
+                stringResource(R.string.depth_estimation_card_title),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium
             )
@@ -347,12 +349,12 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "Aktiv",
+                            text = stringResource(R.string.status_card_active_text),
                             textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Leistung: ${getPerformance(getDepthFPS(uiState.performanceText))}",
+                            text = "${stringResource(R.string.status_card_performance_text)}: ${getPerformance(LocalContext.current,getDepthFPS(uiState.performanceText))}",
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -376,11 +378,11 @@ fun VoskStatusCard(viewModel: MainViewModel) {
         border = BorderStroke(if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(
-            modifier = Modifier.padding(Spacing.sm),
+            modifier = Modifier.padding(Spacing.xs),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Spracherkennung",
+                stringResource(R.string.vosk_card_title),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
@@ -389,7 +391,7 @@ fun VoskStatusCard(viewModel: MainViewModel) {
                 Column {
                     if (uiState.ttsSpeaking) {
                         Text(
-                            "EyeAI antwortet...",
+                            stringResource(R.string.vosk_card_responding),
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -409,13 +411,13 @@ fun VoskStatusCard(viewModel: MainViewModel) {
     }
 }
 
-private fun getPerformance(fps: Int): String {
+private fun getPerformance(context: Context, fps: Int): String {
     return when (fps) {
-        in 0..5 -> "Schlecht"
-        in 5..10 -> "Ausreichend"
-        in 10..20 -> "Gut"
-        in 20..100 -> "Sehr Gut"
-        in 100..1000 -> "Rekordverdächtig"
+        in 0..5 -> context.getString(R.string.status_card_performance_poor)
+        in 5..10 -> context.getString(R.string.status_card_performance_sufficient)
+        in 10..20 -> context.getString(R.string.status_card_performance_good)
+        in 20..100 -> context.getString(R.string.status_card_performance_very_good)
+        in 100..1000 -> context.getString(R.string.status_card_performance_record)
         in 1000..10000 -> "Rechenzentrum"
         in 10000..100000 -> "Quantencomputer"
         in 100000..1000000 -> "Außerirdisch"

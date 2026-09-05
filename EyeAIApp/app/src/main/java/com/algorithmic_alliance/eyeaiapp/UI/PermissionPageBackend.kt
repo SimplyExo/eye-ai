@@ -26,15 +26,15 @@ fun onPermissionDecline(
     if (permissionData["hardPermission"] as Boolean) {
         onExitPermissionSelection()
     } else {
-        when (permissionData["permissionName"]) {
-            "Mikrofon" -> {
+        when (context.getString(permissionData["permissionName"] as Int)) {
+            context.getString(R.string.microphone_permission_name) -> {
                 sharedPreferences.edit(commit = true) {
                     putBoolean(context.getString(R.string.enable_speech_recognition_setting), false)
                 }
                 onEvent(UIEvent.UpdateSettings)
                 onPermissionDecline()
             }
-            "WLAN-Netzwerke erkennen", "Standort" -> {
+            context.getString(R.string.wifi_permission_name), context.getString(R.string.location_permission_name) -> {
                 onEvent(UIEvent.OnUpdateVisionPermissionsNotGranted(true))
                 sharedPreferences.edit(commit = true){
                     putString(context.getString(R.string.input_source_setting), context.getString(R.string.input_is_camera))

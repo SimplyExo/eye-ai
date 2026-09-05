@@ -56,7 +56,7 @@ class SettingsActivity : AppCompatActivity() {
 		}
 
 		override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-			setPreferencesFromResource(R.xml.settings_preferences, rootKey)
+			//setPreferencesFromResource(R.xml.settings_preferences, rootKey)
 
 			val showDevelopmentSettings = BuildConfig.BUILD_VARIANT != "Production"
 

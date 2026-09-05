@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.ui.res.stringResource
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
@@ -30,7 +31,6 @@ import com.algorithmic_alliance.eyeaiapp.llm.statemachine.StateMachine
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.VoskRestartPolicy
 import com.algorithmic_alliance.eyeaiapp.media.MediaPlayer
 import com.algorithmic_alliance.eyeaiapp.vibrate
-import com.squareup.wire.internal.encodeArray_int32
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -42,7 +42,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicBoolean
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -363,20 +362,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         var voskText = ""
         when {
             !hasPermission(Manifest.permission.RECORD_AUDIO) -> {
-                voskText = "Mikrophon-Berechtigung erforderlich"
+                voskText = eyeAIApp().getString(R.string.vosk_card_missing_permission)
             }
 
             !eyeAIApp().settings.enableSpeechRecognition -> {
-                voskText = "Spracherkennung deaktiviert"
+                voskText = eyeAIApp().getString(R.string.vosk_card_disabled)
             }
 
             eyeAIApp().voskUserStart.get() -> {
-                voskText = eyeAIApp().getString(R.string.speech_recognition_ready)
+                voskText = eyeAIApp().getString(R.string.vosk_card_listening)
                 _uiState.update { it.copy(voskListening = true) }
             }
 
             else -> {
-                voskText = "Vosk bereit - Button klicken zum Starten"
+                voskText = eyeAIApp().getString(R.string.vosk_card_ready)
             }
         }
 

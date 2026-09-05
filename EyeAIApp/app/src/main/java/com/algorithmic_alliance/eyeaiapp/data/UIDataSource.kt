@@ -1,17 +1,11 @@
 package com.algorithmic_alliance.eyeaiapp.data
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Build
-import android.util.Log
-import androidx.core.content.edit
 import androidx.annotation.RequiresApi
-import androidx.camera.core.impl.utils.ContextUtil.getApplication
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
-import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
@@ -44,56 +38,54 @@ object UIDataSource {
         ),
          */
         mapOf(
-            "permissionName" to "Kamera",
+            "permissionName" to R.string.camera_permission_name,
             "permissions" to listOf(Manifest.permission.CAMERA),
-            "permissionExplanation" to """Damit die KI die Umgebung analysieren kann, ist es notwendig, dass die App auf die System-Kamera zugreifen kann. 
-                |Die Kamerabilder werden genutzt, um Entfernungen zu Objekten zu bestimmen und um vorhandene Objekte im Raum zu erkennen. 
-                |Diese Informationen werden dann per Audio ausgegeben.""".trimMargin(),
+            "permissionExplanation" to R.string.camera_permission_explanation_text,
             "icon" to R.drawable.photo_camera_24px,
-            "iconDescription" to "Kamera Icon",
-            "permissionDeclineSemantic" to "Zugriff auf Kamera ablehnen.",
-            "permissionAcceptSemantic" to "Zugriff auf Kamera gestatten.",
-            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf die Kamera ablehnen, können sie die App nicht benutzen.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf Kamera trotzdem ablehnen. Die App wird geschlossen.",
+            "iconDescription" to R.string.camera_icon_description,
+            "permissionDeclineSemantic" to R.string.camera_permission_decline_semantic,
+            "permissionAcceptSemantic" to R.string.camera_permission_accept_semantic,
+            "confirmPermissionDeclineExplanation" to R.string.camera_confirm_decline_explanation_text,
+            "confirmPermissionDeclineSemantic" to R.string.camera_confirm_permission_decline_semantic,
             "hardPermission" to true
         ),
         mapOf(
-            "permissionName" to "Mikrofon",
+            "permissionName" to R.string.microphone_permission_name,
             "permissions" to listOf(Manifest.permission.RECORD_AUDIO),
-            "permissionExplanation" to "Um per Sprachbefehl mit der App zu interagieren, ist es notwendig, zugriff auf das System-Mikrofon zu erteilen.",
+            "permissionExplanation" to R.string.microphone_permission_explanation_text,
             "icon" to R.drawable.mic_24px,
-            "iconDescription" to "Mikrofon Icon",
-            "permissionDeclineSemantic" to "Zugriff auf Mikrofon ablehnen.",
-            "permissionAcceptSemantic" to "Zugriff auf Mikrofon gestatten.",
-            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf das Mikrofon ablehnen, können sie keine Sprachbefehle verwenden.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf Mikrofon trotzdem ablehnen. Sprachbefehle werden deaktiviert.",
+            "iconDescription" to R.string.microphone_icon_description,
+            "permissionDeclineSemantic" to R.string.microphone_permission_decline_semantic,
+            "permissionAcceptSemantic" to R.string.microphone_permission_accept_semantic,
+            "confirmPermissionDeclineExplanation" to R.string.microphone_confirm_permission_decline_explanation_text,
+            "confirmPermissionDeclineSemantic" to R.string.microphone_confirm_permission_decline_semantic,
             "hardPermission" to false
         ),
         mapOf(
-            "permissionName" to "WLAN-Netzwerke erkennen",
+            "permissionName" to R.string.wifi_permission_name,
             "permissions" to listOf(Manifest.permission.NEARBY_WIFI_DEVICES),
-            "permissionExplanation" to "Um sich mir der EyeAI-Vision zu verbinden, ist es notwendig, dass die App zugriff auf nah gelegene WLAN-Geräte hat.  ",
+            "permissionExplanation" to R.string.wifi_permission_explanation_text,
             "icon" to R.drawable.wifi_24px,
-            "iconDescription" to "WLAN Icon",
-            "permissionDeclineSemantic" to "Zugriff auf nahe WLAN-Geräte ablehnen.",
-            "permissionAcceptSemantic" to "Zugriff auf nahe WLAN-Geräte gestatten.",
-            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf nahe WLAN-Geräte, können Sie keine EyeAI-Vision verwenden.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf nahe WLAN-Geräte trotzdem ablehnen. Die App nutzt die Handykamera.",
+            "iconDescription" to R.string.wifi_icon_description,
+            "permissionDeclineSemantic" to R.string.wifi_permission_decline_semantic,
+            "permissionAcceptSemantic" to R.string.wifi_permission_accept_semantic,
+            "confirmPermissionDeclineExplanation" to R.string.wifi_confirm_decline_explanation_text,
+            "confirmPermissionDeclineSemantic" to R.string.wifi_confirm_permission_decline_semantic,
             "hardPermission" to false
         ),
         mapOf(
-            "permissionName" to "Standort",
+            "permissionName" to R.string.location_permission_name,
             "permissions" to listOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            "permissionExplanation" to "Da bei einem Scan der WLAN-Netzwerke über diese Informationen zum Standort anfallen können, muss die Berechtigung erteilt werden." +
-                    "Die App speichert oder verwertet zu keinem Zeitpunkt Standortdaten.",
+            "permissionExplanation" to R.string.location_permission_explanation_text,
             "icon" to R.drawable.location_on_24px,
-            "iconDescription" to "Standort Icon",
-            "permissionDeclineSemantic" to "Zugriff auf Standort ablehnen.",
-            "permissionAcceptSemantic" to "Zugriff auf Standort gestatten.",
-            "confirmPermissionDeclineExplanation" to "Wenn Sie den Zugriff auf den Standort ablehnen, können Sie keine EyeAI-Vision verwenden.",
-            "confirmPermissionDeclineSemantic" to "Zugriff auf den Standort trotzdem ablehnen. Die App nutzt die Handykamera.",
+            "iconDescription" to R.string.location_icon_description,
+            "permissionDeclineSemantic" to R.string.location_permission_decline_semantic,
+            "permissionAcceptSemantic" to R.string.location_permission_accept_semantic,
+            "confirmPermissionDeclineExplanation" to R.string.location_confirm_decline_explanation_text,
+            "confirmPermissionDeclineSemantic" to R.string.location_confirm_permission_decline_semantic,
             "hardPermission" to false
         )
+
     )
 
     /* EXPLANATION HOW TO ADD NEW SETTING
@@ -126,202 +118,201 @@ object UIDataSource {
         to a category.
      */
 
-    val APP_SETTINGS = mapOf<String, Any>(
-        "General" to listOf(
+    val APP_SETTINGS = mapOf<Int, Any>(
+        R.string.settings_category_general to listOf(
             mapOf(
-                "title" to "Use NPU (experimental)",
-                "description" to "Only enable on device with supported Qualcomm NPU. If no supported, performance will be worse!",
+                "title" to R.string.setting_use_npu_title,
+                "description" to R.string.setting_use_npu_description,
                 "settingsType" to "checkbox",
                 "string" to R.string.enable_npu_delegate_setting,
                 "default" to true
             )
         ),
-        "Depth Estimation" to listOf(
+        R.string.settings_category_depth_estimation to listOf(
             mapOf(
-                "title" to "Depth Estimation Model",
-                "description" to "",
+                "title" to R.string.setting_depth_estimation_model_title,
+                "description" to R.string.setting_depth_estimation_model_description,
                 "settingsType" to "select",
-                "settingsOptions" to EyeAIApp.DEPTH_MODELS.map { it.name },     //listOf("MiDaS V2.1", "MiDaS V2.1 (quantized)"),
+                "settingsOptions" to EyeAIApp.DEPTH_MODELS.map { it.name },
                 "string" to R.string.depth_model_setting,
                 "default" to EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
             ),
             mapOf(
-                "title" to "Enable Framerate Limiter",
-                "description" to "",
+                "title" to R.string.setting_enable_framerate_limiter_title,
+                "description" to R.string.setting_enable_depth_framerate_limiter_description,
                 "settingsType" to "checkbox",
                 "string" to R.string.enable_depth_frame_rate_limit_setting,
                 "default" to true
             ),
             mapOf(
-                "title" to "Framerate Limit",
-                "description" to "",
+                "title" to R.string.setting_framerate_limit_title,
+                "description" to R.string.setting_depth_framerate_limit_description,
                 "settingsType" to "slider",
                 "settingsOption" to mapOf("min" to 1, "max" to 120),
                 "string" to R.string.max_depth_frame_rate_setting,
                 "default" to Settings.DEFAULT_FRAME_RATE_LIMIT
             )
         ),
-        "Speech Recognition" to listOf<Map<String, Any>>(
+        R.string.settings_category_speech_recognition to listOf(
             mapOf(
-                "title" to "Speech Recognition enabled",
-                "description" to "",
+                "title" to R.string.setting_speech_recognition_enabled_title,
+                "description" to R.string.setting_speech_recognition_description,
                 "settingsType" to "checkbox",
                 "string" to R.string.enable_speech_recognition_setting,
                 "default" to true
             )
         ),
-        "Audio Playback" to listOf(
+        R.string.settings_category_audio_playback to listOf(
             mapOf(
-                "title" to "Enable Depth Playback",
-                "description" to "",
+                "title" to R.string.setting_enable_depth_playback_title,
+                "description" to R.string.setting_enable_depth_playback_description,
                 "settingsType" to "checkbox",
                 "string" to R.string.depth_playback_setting,
                 "default" to true
             ),
             mapOf(
-                "title" to "Enable Object Playback",
-                "description" to "",
+                "title" to R.string.setting_enable_object_playback_title,
+                "description" to R.string.setting_enable_object_playback_description,
                 "settingsType" to "checkbox",
                 "string" to R.string.object_playback_setting,
                 "default" to true
             ),
             mapOf(
-                "title" to "Audio-Frequency",
-                "description" to "Controls frequency used for depth mapping",
+                "title" to R.string.setting_audio_frequency_title,
+                "description" to R.string.setting_audio_frequency_description,
                 "settingsType" to "slider",
                 "settingsOption" to mapOf("min" to 100, "max" to 4000),
                 "string" to R.string.audio_frequency_range_setting,
                 "default" to 500
             ),
             mapOf(
-                "title" to "Frequency",
-                "description" to "How often per second a sound will be audible",
+                "title" to R.string.setting_frequency_title,
+                "description" to R.string.setting_frequency_description,
                 "settingsType" to "slider",
                 "settingsOption" to mapOf("min" to 1, "max" to 10),
                 "string" to R.string.audio_playback_rate_setting,
                 "default" to 2
             ),
             mapOf(
-                "title" to "Audio language",
-                "description" to "",
+                "title" to R.string.setting_audio_language_title,
+                "description" to R.string.setting_audio_language_description,
                 "settingsType" to "select",
-                "settingsOptions" to listOf(R.string.language_is_english, R.string.language_is_german),
+                "settingsOptions" to listOf(
+                    R.string.language_is_english,
+                    R.string.language_is_german
+                ),
                 "string" to R.string.object_playback_language,
                 "default" to R.string.language_is_english
-            ),
+            )
         ),
-        "Device Manager" to listOf(
+        R.string.settings_category_device_manager to listOf(
             mapOf(
-                "title" to "Standartgeräte ändern",
-                "description" to "",
+                "title" to R.string.setting_change_default_devices_title,
+                "description" to R.string.setting_change_default_devices_description,
                 "settingsType" to "click"
             )
         ),
-        "Object Detection" to listOf(
+        R.string.settings_category_object_detection to listOf(
             mapOf(
-                "title" to "Enabled",
-                "description" to "",
+                "title" to R.string.setting_enabled_title,
+                "description" to R.string.setting_object_detection_description,
                 "settingsType" to "checkbox",
                 "string" to R.string.enable_object_detection_setting,
                 "default" to true
             ),
             mapOf(
-                "title" to "Enable Framerate Limiter",
-                "description" to "",
+                "title" to R.string.setting_enable_framerate_limiter_title,
+                "description" to R.string.setting_enable_object_framerate_limiter_description,
                 "settingsType" to "checkbox",
                 "string" to R.string.enable_object_detection_frame_rate_limit_setting,
                 "default" to true
             ),
             mapOf(
-                "title" to "Framerate Limit",
-                "description" to "",
+                "title" to R.string.setting_framerate_limit_title,
+                "description" to R.string.setting_object_framerate_limit_description,
                 "settingsType" to "slider",
                 "settingsOption" to mapOf("min" to 1, "max" to 120),
                 "string" to R.string.max_object_detection_frame_rate_setting,
                 "default" to Settings.DEFAULT_FRAME_RATE_LIMIT
             )
         ),
-        "OCR" to listOf(
+        R.string.settings_category_input_source to listOf(
             mapOf(
-                "title" to "Enabled",
-                "description" to "",
-                "settingsType" to "checkbox",
-                "string" to R.string.enable_ocr_setting,
-                "default" to true
-            ),
-        ),
-        "Input Source" to listOf(
-            mapOf(
-                "title" to "Input Source",
-                "description" to "",
+                "title" to R.string.setting_input_source_title,
+                "description" to R.string.setting_input_source_description,
                 "settingsType" to "select",
-                "settingsOptions" to listOf(R.string.input_is_camera, R.string.input_is_media, R.string.input_is_eyeaivision),
+                "settingsOptions" to listOf(
+                    R.string.input_is_camera,
+                    R.string.input_is_media,
+                    R.string.input_is_eyeaivision
+                ),
                 "string" to R.string.input_source_setting,
                 "default" to R.string.input_is_camera
             ),
             mapOf(
-                "title" to "Select Media File",
-                "description" to "",
+                "title" to R.string.setting_select_media_file_title,
+                "description" to R.string.setting_select_media_file_description,
                 "settingsType" to "file",
                 "string" to R.string.media_path_setting,
                 "default" to ""
             ),
             mapOf(
-                "title" to "EyeAIVisionIP",
-                "description" to "",
+                "title" to R.string.setting_eyeaivision_ip_title,
+                "description" to R.string.setting_eyeaivision_ip_description,
                 "settingsType" to "textInput",
                 "string" to R.string.eyeaivision_ip_setting,
                 "default" to ""
             ),
             mapOf(
-                "title" to "JPEG Compression (only EyeAIVision)",
-                "description" to "",
+                "title" to R.string.setting_jpeg_compression_title,
+                "description" to R.string.setting_jpeg_compression_description,
                 "settingsType" to "slider",
                 "settingsOption" to mapOf("min" to 1, "max" to 64),
                 "string" to R.string.jpeg_compression,
                 "default" to 15
-            ),
+            )
         ),
-        "Developer Settings" to listOf<Map<String, Any>>(
+        R.string.settings_category_developer to listOf(
             mapOf(
-                "title" to "Show Profiling Information",
-                "description" to "",
+                "title" to R.string.setting_show_profiling_information_title,
+                "description" to R.string.setting_show_profiling_information_description,
                 "settingsType" to "checkbox",
                 "string" to R.string.show_profiling_info_setting,
                 "default" to false
             ),
             mapOf(
-                "title" to "Show Debug Input Bitmap",
-                "description" to "",
+                "title" to R.string.setting_show_debug_input_bitmap_title,
+                "description" to R.string.setting_show_debug_input_bitmap_description,
                 "settingsType" to "checkbox",
                 "string" to R.string.show_debug_input_bitmap_setting,
                 "default" to false
-            ),
+            )
         ),
-        "Build Info" to listOf(
+        R.string.settings_category_build_info to listOf(
             mapOf(
-                "title" to "App Version",
+                "title" to R.string.setting_app_version_title,
                 "description" to BuildInfoHelper.getVersionInfo(),
                 "settingsType" to "Info",
             ),
             mapOf(
-                "title" to "Build Time",
+                "title" to R.string.setting_build_time_title,
                 "description" to BuildInfoHelper.getFormattedBuildTime(),
-                "settingsType" to "Info",
+                "settingsType" to "Info"
             ),
             mapOf(
-                "title" to "Git Information",
+                "title" to R.string.setting_git_information_title,
                 "description" to BuildInfoHelper.getGitInfo(),
-                "settingsType" to "Info",
+                "settingsType" to "Info"
             ),
             mapOf(
-                "title" to "Build Variant",
+                "title" to R.string.setting_build_variant_title,
                 "description" to BuildInfoHelper.getBuildVariant(),
-                "settingsType" to "Info",
+                "settingsType" to "Info"
             )
         )
-
     )
+
+
 
 }
 

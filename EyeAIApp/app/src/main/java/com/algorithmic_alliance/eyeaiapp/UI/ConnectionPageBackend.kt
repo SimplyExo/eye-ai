@@ -1,7 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
 import android.content.Context
-import android.media.AudioDeviceInfo
 import androidx.core.content.edit
 import android.net.ConnectivityManager
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
@@ -17,7 +16,6 @@ import android.content.BroadcastReceiver
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.media.AudioManager
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
 import android.os.Build
@@ -25,15 +23,12 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.algorithmic_alliance.eyeaiapp.R
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.core.app.ActivityCompat
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.launch
@@ -60,7 +55,7 @@ fun connectToDevice(
 
         "eye-ai-vision" -> {
             //TODO input device setting
-            if (selectedDevice != "Handykamera verwenden") {
+            if (selectedDevice != context.getString(R.string.choose_camera_as_input_text)) {
                 Log.d(
                     LOG_TAG,
                     "[ConnectionPageBackend.connectToDevice] Attempting to connect to eye-ai-vision device '$selectedDevice'"

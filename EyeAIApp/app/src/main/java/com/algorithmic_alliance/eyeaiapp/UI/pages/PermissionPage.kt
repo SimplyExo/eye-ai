@@ -1,5 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -23,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -59,6 +62,9 @@ fun PermissionPage(
     onPermissionsDeclined: () -> Unit,
     onEvent: (UIEvent) -> Unit
 ) {
+    LaunchedEffect(Unit) {
+        onEvent(UIEvent.OnUpdateVisionPermissionsNotGranted(false))
+    }
     Log.d(LOG_TAG, "[PermissionPage] Loading PermissionPage")
     val context = LocalContext.current
 
@@ -130,9 +136,9 @@ fun AskForPermission(
     var showDeclineDialog by rememberSaveable { mutableStateOf(false) }
 
     val permissionExplanation =
-        permissionData["permissionExplanation"] ?: UIDataSource.INFORMATION_NOT_FOUND
+        stringResource(permissionData["permissionExplanation"] as Int)
     val permissionIcon = permissionData["icon"] ?: UIDataSource.ICON_NOT_FOUND
-    val iconDescription = permissionData["iconDescription"] ?: UIDataSource.INFORMATION_NOT_FOUND
+    val iconDescription = stringResource(permissionData["iconDescription"] as Int)
     val permissions = permissionData["permissions"]
 
 
@@ -163,7 +169,7 @@ fun AskForPermission(
                         .height(Spacing.xxxxl)
                         .width(Spacing.xxxxl),
                     painter = painterResource(permissionIcon as Int),
-                    contentDescription = iconDescription as String,
+                    contentDescription = stringResource(permissionData["iconDescription"] as Int),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
@@ -182,28 +188,18 @@ fun AskForPermission(
             ) {
                 PremiumButton(
                     modifier = Modifier
-                        .weight(1f)
-                        .semantics {
-                            contentDescription =
-                                (permissionData["permissionDeclineSemantic"]
-                                    ?: UIDataSource.INFORMATION_NOT_FOUND) as String
-                        },
+                        .weight(1f),
                     shadowElevation = if (isDark) AppElevation.level4 else AppElevation.level2,
                     onClick = { showDeclineDialog = !showDeclineDialog }) {
                     Text(
-                        "Ablehnen",
+                        stringResource(R.string.decline_action),
                         modifier = Modifier.clearAndSetSemantics {},
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
                 PremiumButton(
                     modifier = Modifier
-                        .weight(1f)
-                        .semantics {
-                            contentDescription =
-                                (permissionData["permissionAcceptSemantic"]
-                                    ?: UIDataSource.INFORMATION_NOT_FOUND) as String
-                        },
+                        .weight(1f),
                     shadowElevation = if (isDark) AppElevation.level4 else AppElevation.level2,
                     onClick = {
                         for (permission in permissions as List<*>) {
@@ -213,7 +209,7 @@ fun AskForPermission(
 
                     }) {
                     Text(
-                        "Annehmen",
+                        stringResource(R.string.accept_action),
                         modifier = Modifier.clearAndSetSemantics {},
                         style = MaterialTheme.typography.labelLarge
                     )
@@ -251,7 +247,6 @@ fun ConfirmPermissionDecline(
         title = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 PremiumIconButton(modifier = Modifier, onClick = { onDialogDismissed() }) {
@@ -260,25 +255,21 @@ fun ConfirmPermissionDecline(
                             .width(Spacing.xl)
                             .height(Spacing.xl),
                         painter = painterResource(R.drawable.arrow_back_24px),
-                        contentDescription = UIDataSource.RETURN_SEMANTIC
+                        contentDescription = stringResource(R.string.return_icon_description)
                     )
                 }
-                Text("Berechtigung Ablehnen?", style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(R.string.confirm_permission_decline_title), style = MaterialTheme.typography.titleLarge)
             }
         },
         text = {
             Text(
-                (permissionData["confirmPermissionDeclineExplanation"]
-                    ?: UIDataSource.INFORMATION_NOT_FOUND) as String,
+                (stringResource(permissionData["confirmPermissionDeclineExplanation"] as Int)),
                 style = MaterialTheme.typography.bodyMedium
             )
         },
         confirmButton = {
             PremiumButton(
-                modifier = Modifier.semantics {
-                    contentDescription = (permissionData["confirmPermissionDeclineSemantic"]
-                        ?: UIDataSource.INFORMATION_NOT_FOUND) as String
-                },
+                modifier = Modifier,
                 shadowElevation = if (isDark) 8.dp else 3.dp,
                 onClick = {
                     Log.d(
@@ -295,7 +286,7 @@ fun ConfirmPermissionDecline(
                     )
                 }) {
                 Text(
-                    "Trotzdem Ablehnen",
+                    stringResource(R.string.confirm_decline_action),
                     modifier = Modifier.clearAndSetSemantics {},
                     style = MaterialTheme.typography.labelLarge
                 )

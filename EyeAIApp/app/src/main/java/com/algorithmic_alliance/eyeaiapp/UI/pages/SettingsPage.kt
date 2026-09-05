@@ -35,7 +35,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -145,10 +144,10 @@ fun SettingsPage(
                         PremiumIconButton(onClick = { onReturn() }) {
                             Icon(
                                 painter = painterResource(R.drawable.arrow_back_24px),
-                                contentDescription = "Zurück"
+                                contentDescription = stringResource(R.string.return_icon_description)
                             )
                         }
-                        Text("Einstellungen", style = MaterialTheme.typography.titleLarge)
+                        Text(stringResource(R.string.settings_app_bar_title), style = MaterialTheme.typography.titleLarge)
                     }
                 },
             )
@@ -166,14 +165,14 @@ fun SettingsPage(
                             items(
                                 items = settingsData.entries.toList(),
                                 key = { entry -> entry.key }) { entry ->
-                                if (entry.key != "Developer Settings" || (entry.key == "Developer Settings" && sharedPreferences.getBoolean(
+                                if (stringResource(entry.key) != stringResource(R.string.settings_category_developer) || (stringResource(entry.key) == stringResource(R.string.settings_category_developer) && sharedPreferences.getBoolean(
                                         stringResource(R.string.debug_page_activated),
                                         false
                                     ))
                                 )
                                     SettingsCategoryCard(
                                         categorySettings = entry.value as List<Any>,
-                                        category = entry.key,
+                                        category = stringResource(entry.key),
                                         onEvent = onEvent,
                                         onOpenConnectionPage = onOpenConnectionPage,
                                         uiState = uiState
@@ -222,7 +221,7 @@ fun SettingsPage(
                                         horizontalArrangement = Arrangement.Center
                                     ) {
                                         Text(
-                                            if (!debugPageActivated) "DebugPage aktivieren" else "DebugPage deaktivieren",
+                                            if (!debugPageActivated) stringResource(R.string.activate_debug_page_text) else stringResource(R.string.deactivate_debug_page_text),
                                             style = MaterialTheme.typography.titleMedium,
                                         )
                                     }
@@ -332,6 +331,7 @@ fun SettingsCategoryCard(
 fun ClickSetting(
     settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit, onOpenConnectionPage: () -> Unit
 ) {
+    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -341,35 +341,65 @@ fun ClickSetting(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                settingData.getValue("title") as String,
+                settingTitle,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
-            if (settingData.getValue("description") as String != "")
+            if (resolveString(LocalContext.current, settingData.getValue("description"))!= "")
                 Text(
-                    settingData.getValue("description") as String,
+                    resolveString(LocalContext.current, settingData.getValue("description")),
                     style = MaterialTheme.typography.bodySmall
                 )
-            if (settingData["title"] == "Standartgeräte ändern") {
+            if (settingTitle == stringResource(R.string.setting_change_default_devices_title)) {
                 val sharedPreferences =
                     PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
                 val standardAudioDevice =
                     sharedPreferences.getString(stringResource(R.string.selected_audio_device), "")
                 val standardVisionDevice =
                     sharedPreferences.getString(stringResource(R.string.selected_eye_ai_vision), "")
-                Text(
-                    "Audiogerät: ${if (standardAudioDevice != "") standardAudioDevice else "   -"}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    "Vision: ${if (standardVisionDevice != "") standardVisionDevice else "   -"}",
-                    style = MaterialTheme.typography.bodySmall
-                )
+                if(standardVisionDevice != ""){
+                    if(standardVisionDevice == stringResource(R.string.camera_as_input_text)){
+                        Text(
+                            "${stringResource(R.string.vision)}: ${stringResource(R.string.camera_as_input_text)}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }else{
+                        Text(
+                            "${stringResource(R.string.vision)}: $standardVisionDevice",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }else{
+                    Text(
+                        "${stringResource(R.string.vision)}:    -",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                if(standardAudioDevice != ""){
+                    if(standardVisionDevice == stringResource(R.string.camera_as_input_text)){
+                        Text(
+                            "${stringResource(R.string.audio_device)}: ${stringResource(R.string.system_as_audio_text)}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }else{
+                        Text(
+                            "${stringResource(R.string.audio_device)}: ${if(standardAudioDevice == stringResource(R.string.choose_system_as_audio_text)) stringResource(R.string.system_as_audio_text) else standardAudioDevice}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }else{
+                    Text(
+                        "${stringResource(R.string.audio_device)}:    -",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
             }
         }
         Box {
+            val changeStandardDeviceText = stringResource(R.string.setting_change_default_devices_title)
             PremiumIconButton(onClick = {
-                if (settingData["title"] == "Standartgeräte ändern") {
+                if (settingTitle == changeStandardDeviceText) {
                     onEvent(UIEvent.OnUpdateActionStartedFromSettings(true))
                     onOpenConnectionPage()
                 }
@@ -402,6 +432,9 @@ fun CheckBoxSetting(
             )
         )
     }
+
+    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
+    val settingDescription = resolveString(LocalContext.current,settingData.getValue("description"))
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -411,12 +444,12 @@ fun CheckBoxSetting(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                settingData.getValue("title") as String,
+                settingTitle,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
-            if (settingData.getValue("description") as String != "") Text(
-                settingData.getValue("description") as String,
+            if (settingDescription != "") Text(
+                settingDescription,
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -463,6 +496,8 @@ fun SelectSetting(
             ))
         )
     }
+    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
+    val settingDescription = resolveString(LocalContext.current,settingData.getValue("description"))
 
     Row(
         modifier = Modifier
@@ -473,12 +508,12 @@ fun SelectSetting(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                settingData.getValue("title") as String,
+                settingTitle,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
-            if (settingData.getValue("description") as String != "") Text(
-                settingData.getValue("description") as String,
+            if (settingDescription != "") Text(
+               settingDescription,
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -504,7 +539,7 @@ fun SelectSetting(
                     if (resolveString(
                             LocalContext.current,
                             item
-                        ) == "EyeAI-Vision" && uiState.visionPermissionsNotGranted
+                        ) == stringResource(R.string.input_is_eyeaivision) && uiState.visionPermissionsNotGranted
                     )
                         continue
                     DropdownMenuItem(
@@ -566,7 +601,9 @@ fun SliderSetting(
             )
         )
     }
-
+    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
+    val settingDescription = resolveString(LocalContext.current,settingData.getValue("description"))
+    val audioFrequencySettingTitle = stringResource(R.string.setting_audio_frequency_title)
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn() + expandVertically(),
@@ -585,7 +622,7 @@ fun SliderSetting(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.md)
                 ) {
                     Text(
-                        settingData.getValue("title") as String,
+                        settingTitle,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.weight(1f)
@@ -596,13 +633,13 @@ fun SliderSetting(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                if (settingData.getValue("description") as String != "") Text(
-                    settingData.getValue("description") as String,
+                if (settingDescription != "") Text(
+                    settingDescription,
                     style = MaterialTheme.typography.bodySmall
                 )
                 Slider(
                     value = currentValue.toFloat(), onValueChange = {
-                        if (settingData.getValue("title") == "Audio-Frequency")
+                        if (settingTitle == audioFrequencySettingTitle)
                             currentValue = (it / 10.0).roundToInt() * 10
                         else
                             currentValue = it.roundToInt()
@@ -627,7 +664,8 @@ fun TextInputSetting(
     modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
 ) {
     var showTextFieldDialog by rememberSaveable { mutableStateOf(false) }
-
+    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
+    val settingDescription = resolveString(LocalContext.current,settingData.getValue("description"))
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -637,12 +675,12 @@ fun TextInputSetting(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                settingData.getValue("title") as String,
+                settingTitle,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
-            if (settingData.getValue("description") as String != "") Text(
-                settingData.getValue("description") as String,
+            if (settingDescription != "") Text(
+                settingDescription as String,
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -660,7 +698,7 @@ fun TextInputSetting(
     if (showTextFieldDialog) {
         TextFieldDialog(
             onDismiss = { showTextFieldDialog = false },
-            settingName = settingData.getValue("title") as String,
+            settingName = settingTitle,
             settingData = settingData,
             onEvent = onEvent
         )
@@ -704,7 +742,7 @@ fun TextFieldDialog(
         OutlinedTextField(
             value = text ?: "",
             onValueChange = { text = it },
-            label = { Text("Eingeben...", style = MaterialTheme.typography.bodySmall) })
+            label = { Text(stringResource(R.string.enter_text_in_text_field_text), style = MaterialTheme.typography.bodySmall) })
     }, confirmButton = {
         PremiumButton(onClick = {
             onDismiss()
@@ -715,7 +753,7 @@ fun TextFieldDialog(
             onEvent(UIEvent.UpdateSettings)
         }) {
             Text(
-                "Fertig",
+                stringResource(R.string.finished_editing_text),
                 modifier = Modifier.clearAndSetSemantics {},
                 style = MaterialTheme.typography.labelLarge
             )
@@ -729,11 +767,11 @@ fun InfoSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
     Row(modifier = Modifier.padding(Spacing.md)) {
         Column {
             Text(
-                settingData.getValue("title") as String,
+                resolveString(LocalContext.current, settingData.getValue("title")) as String,
                 style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium
             )
-            if (settingData.getValue("description") as String != "") Text(
-                settingData.getValue("description") as String,
+            if (resolveString(LocalContext.current, settingData.getValue("description")) != "") Text(
+                resolveString(LocalContext.current, settingData.getValue("description")),
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -751,6 +789,9 @@ fun FileSetting(
     val settingKey = stringResource(settingData["string"] as Int)
     var selectedFileUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
+
+    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
+    val settingDescription = resolveString(LocalContext.current,settingData.getValue("description"))
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
@@ -785,12 +826,12 @@ fun FileSetting(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                settingData.getValue("title") as String,
+                settingTitle,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
-            if (settingData.getValue("description") as String != "") Text(
-                settingData.getValue("description") as String,
+            if (settingDescription!= "") Text(
+                settingDescription,
                 style = MaterialTheme.typography.bodySmall
             )
         }

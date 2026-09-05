@@ -15,6 +15,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -50,17 +51,16 @@ fun WelcomePage(
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_launcher_web),
-                contentDescription = "App-Logo"
+                contentDescription = stringResource(R.string.app_logo_description)
             )
             PremiumButton(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(Spacing.lg)
-                    .semantics { contentDescription = "Startet die Eye-Ai Anwendung" },
+                    .padding(Spacing.lg),
                 shadowElevation = if(isDark) AppElevation.level5 else AppElevation.level3,
                 onClick = { onGetStarted() }) {
                 Text(
-                    "App Starten",
+                    stringResource(R.string.start_app_button_text),
                     modifier = Modifier.clearAndSetSemantics {},
                     style = MaterialTheme.typography.labelLarge
                 )

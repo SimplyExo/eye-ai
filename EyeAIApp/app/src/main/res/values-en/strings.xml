@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="input_is_camera">Camera</string>
+
+    <string name="language_is_german">German</string>
+    <string name="language_is_english">English</string>
+    <string name="app_logo_description">EyeAI app logo</string>
+    <string name="start_app_button_text">Start app</string>
+    <string name="decline_action">Deny</string>
+    <string name="accept_action">Allow</string>
+    <string name="confirm_permission_decline_title">Deny permission?</string>
+    <string name="return_icon_description">Back</string>
+    <string name="information_not_found_text">Sorry, this information could not be found.</string>
+    <string name="confirm_decline_action">Deny anyway</string>
+
+    <string name="camera_permission_name">Camera</string>
+    <string name="camera_permission_explanation_text">To let the AI analyze your surroundings, the app needs access to the camera. The camera images are used to estimate distances and detect objects around you. This information is then conveyed to you via audio.</string>
+    <string name="camera_icon_description">Camera icon</string>
+    <string name="camera_permission_decline_semantic">Deny camera access.</string>
+    <string name="camera_permission_accept_semantic">Allow camera access.</string>
+    <string name="camera_confirm_decline_explanation_text">If you deny camera access, you will not be able to use the app.</string>
+    <string name="camera_confirm_permission_decline_semantic">Deny camera access anyway. The app will close.</string>
+
+    <string name="microphone_permission_name">Microphone</string>
+    <string name="microphone_permission_explanation_text">To interact with the app using voice commands, you need to allow microphone access.</string>
+    <string name="microphone_icon_description">Microphone icon</string>
+    <string name="microphone_permission_decline_semantic">Deny microphone access.</string>
+    <string name="microphone_permission_accept_semantic">Allow microphone access.</string>
+    <string name="microphone_confirm_permission_decline_explanation_text">If you deny microphone access, you will not be able to use voice commands.</string>
+    <string name="microphone_confirm_permission_decline_semantic">Deny microphone access anyway. Voice commands will be disabled.</string>
+
+    <string name="wifi_permission_name">Nearby Wi-Fi devices</string>
+    <string name="wifi_permission_explanation_text">To connect to an EyeAI-Vision device, the app needs access to nearby Wi-Fi devices.</string>
+    <string name="wifi_icon_description">Wi-Fi icon</string>
+    <string name="wifi_permission_decline_semantic">Deny access to nearby Wi-Fi devices.</string>
+    <string name="wifi_permission_accept_semantic">Allow access to nearby Wi-Fi devices.</string>
+    <string name="wifi_confirm_decline_explanation_text">If you deny access to nearby Wi-Fi devices, you will not be able to use an EyeAI-Vision device.</string>
+    <string name="wifi_confirm_permission_decline_semantic">Deny access to nearby Wi-Fi devices anyway. The phone’s camera will be used instead.</string>
+
+    <string name="location_permission_name">Location</string>
+    <string name="location_permission_explanation_text">Scanning for Wi-Fi networks could reveal information about your location. The app never stores or uses your location.</string>
+    <string name="location_icon_description">Location icon</string>
+    <string name="location_permission_decline_semantic">Deny access to location.</string>
+    <string name="location_permission_accept_semantic">Allow access to location.</string>
+    <string name="location_confirm_decline_explanation_text">If you deny access to your location, you will not be able to use an EyeAI-Vision device.</string>
+    <string name="location_confirm_permission_decline_semantic">Deny access to location anyway. The phone’s camera will be used instead.</string>
+
+    <string name="device_eyeaivision_name">Choose an EyeAI-Vision device</string>
+    <string name="device_audio_name">Choose audio device</string>
+    <string name="choose_eyeaivision_as_audio_text">Use EyeAI-Vision as the audio device</string>
+    <string name="eyeaivision_as_audio_text">EyeAI-Vision</string>
+    <string name="choose_system_as_audio_text">Use system audio device</string>
+    <string name="system_as_audio_text">System audio device</string>
+    <string name="choose_camera_as_input_text">Use phone camera</string>
+    <string name="camera_as_input_text">Phone camera</string>
+    <string name="no_available_devices_text">No devices found.</string>
+    <string name="standard_device_text">Default device</string>
+    <string name="refresh_icon_description">Refresh list</string>
+    <string name="return_text">Back</string>
+    <string name="connect_text">Connect</string>
+    <string name="connection_failed_title">Connection failed</string>
+    <string name="connection_failed_text">Could not connect to the device.</string>
+    <string name="location_disabled_title">Location services are disabled</string>
+    <string name="location_disabled_text">Because scanning nearby Wi-Fi networks could reveal your location, Android requires location services to be turned on. The app itself does not use your location.</string>
+    <string name="activate_text">Turn on</string>
+    <string name="object_detection_card_title">Object detection</string>
+    <string name="object_detection_card_disabled_text">Object detection disabled</string>
+    <string name="status_card_active_text">Active</string>
+    <string name="status_card_performance_text">Performance</string>
+    <string name="vision_card_title">EyeAI-Vision</string>
+    <string name="vision_card_no_vision_connected_text">No EyeAI-Vision connected. Using phone camera.</string>
+    <string name="vision_card_name_text">Name</string>
+    <string name="vision_card_connection_text">Connection</string>
+    <string name="vision_card_battery_text">Battery</string>
+    <string name="depth_estimation_card_title">Depth estimation</string>
+    <string name="vosk_card_title">Speech recognition</string>
+    <string name="vosk_card_responding">EyeAI responding…</string>
+    <string name="vosk_card_missing_permission">Microphone permission required</string>
+    <string name="vosk_card_listening">EyeAI listening…</string>
+    <string name="vosk_card_disabled">Speech recognition disabled</string>
+    <string name="vosk_card_ready">EyeAI ready – tap the button to start</string>
+    <string name="status_card_performance_poor">Poor</string>
+    <string name="status_card_performance_sufficient">Sufficient</string>
+    <string name="status_card_performance_good">Good</string>
+    <string name="status_card_performance_very_good">Very good</string>
+    <string name="status_card_performance_record">Record-breaking</string>
+
+    <string name="settings_app_bar_title">Settings</string>
+    <!-- Settings categories -->
+    <string name="settings_category_general">General</string>
+    <string name="settings_category_depth_estimation">Depth estimation</string>
+    <string name="settings_category_speech_recognition">Speech recognition</string>
+    <string name="settings_category_audio_playback">Audio playback</string>
+    <string name="settings_category_device_manager">Device manager</string>
+    <string name="settings_category_object_detection">Object detection</string>
+    <string name="settings_category_input_source">Input source</string>
+    <string name="settings_category_developer">Developer options</string>
+    <string name="settings_category_build_info">Build information</string>
+
+    <!-- General -->
+    <string name="setting_use_npu_title">Use NPU (experimental)</string>
+    <string name="setting_use_npu_description">Only enable this on devices with a supported Qualcomm NPU. On other devices, performance may degrade.</string>
+
+    <!-- Depth Estimation -->
+    <string name="setting_depth_estimation_model_title">Depth estimation model</string>
+    <string name="setting_depth_estimation_model_description">The AI model used to estimate the distance to objects.</string>
+    <string name="setting_enable_framerate_limiter_title">Enable frame rate limiter</string>
+    <string name="setting_enable_depth_framerate_limiter_description">Limits the frame rate of depth estimation to free up resources for other tasks.</string>
+    <string name="setting_framerate_limit_title">Frame rate limit</string>
+    <string name="setting_depth_framerate_limit_description">The maximum number of frames per second processed by the depth estimation.</string>
+
+    <!-- Speech Recognition -->
+    <string name="setting_speech_recognition_enabled_title">Enable speech recognition</string>
+    <string name="setting_speech_recognition_description">If enabled, you can control the app with voice commands.</string>
+
+    <!-- Audio Playback -->
+    <string name="setting_enable_depth_playback_title">Enable depth playback</string>
+    <string name="setting_enable_depth_playback_description">If enabled, you will hear sounds indicating the distance to nearby objects.</string>
+    <string name="setting_enable_object_playback_title">Enable object playback</string>
+    <string name="setting_enable_object_playback_description">If enabled, detected objects in your vicinity will be announced.</string>
+    <string name="setting_audio_frequency_title">Tone pitch</string>
+    <string name="setting_audio_frequency_description">Controls the pitch of the tone used to indicate distance.</string>
+    <string name="setting_frequency_title">Playback rate</string>
+    <string name="setting_frequency_description">Controls how many times per second a sound is played.</string>
+    <string name="setting_audio_language_title">Audio language</string>
+    <string name="setting_audio_language_description">The language used to announce detected objects.</string>
+
+    <!-- Device Manager -->
+    <string name="setting_change_default_devices_title">Change default devices</string>
+    <string name="setting_change_default_devices_description">"Current default devices: "</string>
+
+    <!-- Object Detection -->
+    <string name="setting_enabled_title">Enable object detection</string>
+    <string name="setting_object_detection_description">If enabled, the AI will detect nearby objects.</string>
+    <string name="setting_enable_object_framerate_limiter_description">Limits the frame rate of object detection to free up resources for other tasks.</string>
+    <string name="setting_object_framerate_limit_description">The maximum number of frames per second processed by the object detection.</string>
+
+    <!-- Input Source -->
+    <string name="setting_input_source_title">Input source</string>
+    <string name="setting_input_source_description">The source of the images to be analyzed by the AI.</string>
+    <string name="setting_select_media_file_title">Select media file</string>
+    <string name="setting_select_media_file_description">The media file to be used as input.</string>
+    <string name="setting_eyeaivision_ip_title">EyeAI-Vision IP address</string>
+    <string name="setting_eyeaivision_ip_description">The IP address of the EyeAI-Vision device to receive images from.</string>
+    <string name="setting_jpeg_compression_title">JPEG compression (EyeAI-Vision only)</string>
+    <string name="setting_jpeg_compression_description">The compression level of the images received from EyeAI-Vision. Higher compression reduces bandwidth but lowers image quality.</string>
+
+    <!-- Developer Settings -->
+    <string name="setting_show_profiling_information_title">Show profiling information</string>
+    <string name="setting_show_profiling_information_description">Displays profiling information for the currently active AI models.</string>
+    <string name="setting_show_debug_input_bitmap_title">Show debug input bitmap</string>
+    <string name="setting_show_debug_input_bitmap_description">Displays the image that is currently being passed to the AI models.</string>
+
+    <!-- Build Information -->
+    <string name="setting_app_version_title">App version</string>
+    <string name="setting_build_time_title">Build time</string>
+    <string name="setting_git_information_title">Git information</string>
+    <string name="setting_build_variant_title">Build variant</string>
+
+    <!-- Debug Page -->
+    <string name="activate_debug_page_text">Enable debug page</string>
+    <string name="deactivate_debug_page_text">Disable debug page</string>
+
+    <string name="audio_device">Audio device</string>
+    <string name="vision">EyeAI-Vision</string>
+    <string name="enter_text_in_text_field_text">Enter text…</string>
+    <string name="finished_editing_text">Done</string>
+
+
+</resources>
