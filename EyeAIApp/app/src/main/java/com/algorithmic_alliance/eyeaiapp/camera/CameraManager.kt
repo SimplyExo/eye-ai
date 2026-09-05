@@ -49,7 +49,8 @@ class CameraManager(
         owner: LifecycleOwner,
         preferredImageSize: Size,
         cameraPreviewView: PreviewView?,
-        frameAnalyzer: FrameAnalyzer,
+        sourceSession: AnalysisSourceSession,
+        onStartFailure: (Throwable) -> Unit = {},
     ) {
         // A null preview means headless operation; preserve a surface already
         // attached by a visible Activity in that case.
@@ -75,6 +76,7 @@ class CameraManager(
                     val provider = future.get()
                     val stillRequested = synchronized(lock) {
                         generation == bindingGeneration &&
+                            sourceSession.isCurrent() &&
                             !shutdown &&
                             lifecycleOwner.get() === owner
                     }
@@ -89,7 +91,7 @@ class CameraManager(
                         .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                         .setResolutionSelector(performanceResolutionSelector(preferredImageSize))
                         .build()
-                    analysis.setAnalyzer(cameraExecutor, CameraXFrameAdapter(frameAnalyzer))
+                    analysis.setAnalyzer(cameraExecutor, CameraXFrameAdapter(sourceSession))
 
                     // CameraManager is the sole local CameraX owner. Unbind
                     // only at a new binding boundary, never on UI recreation.
@@ -102,7 +104,7 @@ class CameraManager(
                     )
 
                     val accepted = synchronized(lock) {
-                        if (generation != bindingGeneration || shutdown) {
+                        if (generation != bindingGeneration || shutdown || !sourceSession.isCurrent()) {
                             false
                         } else {
                             cameraProvider = provider
@@ -121,7 +123,10 @@ class CameraManager(
                     onStateChanged(true, null)
                 } catch (error: Throwable) {
                     Log.e(EyeAIApp.APP_LOG_TAG, "CameraX binding failed", error)
-                    onStateChanged(false, error)
+                    if (sourceSession.isCurrent()) {
+                        onStateChanged(false, error)
+                        onStartFailure(error)
+                    }
                 } finally {
                     synchronized(lock) {
                         if (generation == bindingGeneration) bindInFlight = false

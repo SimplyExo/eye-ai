@@ -53,7 +53,7 @@ class AnalysisFrame(
     companion object {
         fun fromBitmap(
             bitmap: Bitmap,
-            timestampNanos: Long = System.nanoTime(),
+            timestampNanos: Long = com.algorithmic_alliance.eyeaiapp.inference.AnalysisClock.nowNanos(),
             rotationDegrees: Int = 0,
             onReleased: (() -> Unit)? = null,
         ): AnalysisFrame = AnalysisFrame(

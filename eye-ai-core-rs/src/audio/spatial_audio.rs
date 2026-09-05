@@ -31,6 +31,44 @@ pub enum SpatialAudioError {
 	JsonError(#[from] json::Error),
 }
 
+/// Empty input invalidates pending AND currently playing object positions. The playback
+/// epoch is taken with the item under the same lock; a clear cannot make an old item fresh.
+#[derive(Default)]
+struct ObjectAudioQueue {
+	pending: VecDeque<ObjectAudioSourceData>,
+	epoch: u64,
+}
+
+impl ObjectAudioQueue {
+	fn update(&mut self, sources: VecDeque<ObjectAudioSourceData>) {
+		if sources.is_empty() {
+			self.pending.clear();
+			self.epoch = self.epoch.wrapping_add(1);
+			return;
+		}
+		self.pending
+			.retain(|old| sources.iter().any(|new| old.object_id == new.object_id));
+		for source in sources {
+			if let Some(old) = self
+				.pending
+				.iter_mut()
+				.find(|old| old.object_id == source.object_id)
+			{
+				*old = source;
+			} else {
+				while self.pending.len() >= 6 {
+					self.pending.pop_front();
+				}
+				self.pending.push_back(source);
+			}
+		}
+	}
+
+	fn pop(&mut self) -> Option<(u64, ObjectAudioSourceData)> {
+		self.pending.pop_front().map(|source| (self.epoch, source))
+	}
+}
+
 pub struct SpatialAudio {
 	_alto: Alto,
 	_device: OutputDevice,
@@ -38,7 +76,7 @@ pub struct SpatialAudio {
 	depth_audio_sources_data: Arc<RwLock<Vec<DepthAudioSourceData>>>,
 	_depth_audio_thread: std::thread::JoinHandle<()>,
 	depth_audio_running: Arc<AtomicBool>,
-	object_audio_sources_data: Arc<RwLock<VecDeque<ObjectAudioSourceData>>>,
+	object_audio_sources_data: Arc<RwLock<ObjectAudioQueue>>,
 	_object_audio_thread: std::thread::JoinHandle<()>,
 	object_audio_running: Arc<AtomicBool>,
 	pub settings: Arc<RwLock<SpatialAudioSettings>>,
@@ -95,8 +133,7 @@ impl SpatialAudio {
 		let depth_audio_sources_data = Arc::new(RwLock::new(Vec::<DepthAudioSourceData>::new()));
 		let depth_audio_sources_data_clone = depth_audio_sources_data.clone();
 
-		let object_audio_sources_data =
-			Arc::new(RwLock::new(VecDeque::<ObjectAudioSourceData>::new()));
+		let object_audio_sources_data = Arc::new(RwLock::new(ObjectAudioQueue::default()));
 		let object_audio_sources_data_clone = object_audio_sources_data.clone();
 
 		Ok(Self {
@@ -177,31 +214,23 @@ impl SpatialAudio {
 				&self.profiling_frame,
 			);
 		}
-		if !object_audio_paused {
+		if object_detection_data.is_empty() {
+			// Invalidation must also reach the queue while user/TTS pause is active.
+			self.object_audio_sources_data
+				.write()
+				.unwrap()
+				.update(VecDeque::new());
+		} else if !object_audio_paused {
 			let new_audio_sources_data = process_object_detection_data(
 				depth_estimation_data,
 				object_detection_data,
 				&self.content.object_label_data,
 				&self.profiling_frame,
 			);
-			let mut object_audio_sources_data = self.object_audio_sources_data.write().unwrap();
-			for new_source_data in new_audio_sources_data {
-				let mut found = false;
-				for source_data in object_audio_sources_data.iter_mut() {
-					if source_data.object_id == new_source_data.object_id {
-						found = true;
-						*source_data = new_source_data.clone();
-						break;
-					}
-				}
-				if !found {
-					// max of 6 sources at once
-					while object_audio_sources_data.len() >= 6 {
-						object_audio_sources_data.pop_front();
-					}
-					object_audio_sources_data.push_back(new_source_data);
-				}
-			}
+			self.object_audio_sources_data
+				.write()
+				.unwrap()
+				.update(new_audio_sources_data);
 		}
 
 		should_restart
@@ -315,7 +344,7 @@ fn object_audio_thread(
 	settings: Arc<RwLock<SpatialAudioSettings>>,
 	coco_audio_file: &AudioFileData,
 	context: Arc<Context>,
-	object_audio_sources_data: Arc<RwLock<VecDeque<ObjectAudioSourceData>>>,
+	object_audio_sources_data: Arc<RwLock<ObjectAudioQueue>>,
 ) {
 	let coco_audio_samples: &[i16] = &coco_audio_file.samples;
 
@@ -334,7 +363,7 @@ fn object_audio_thread(
 			std::thread::sleep(Duration::from_millis(500));
 			continue;
 		}
-		let Some(source_data) = object_audio_sources_data.write().unwrap().pop_front() else {
+		let Some((epoch, source_data)) = object_audio_sources_data.write().unwrap().pop() else {
 			std::thread::sleep(Duration::from_millis(250));
 			continue;
 		};
@@ -355,11 +384,19 @@ fn object_audio_thread(
 				.new_buffer(&sound_buffer, coco_audio_file.sample_rate as i32)
 				.unwrap(),
 		);
+		if object_audio_sources_data.read().unwrap().epoch != epoch {
+			continue;
+		}
 		source.set_buffer(buffer).unwrap();
 		source.set_position(source_data.position).unwrap();
 		source.play();
 
 		while source.state() == SourceState::Playing {
+			if !running.load(Ordering::Relaxed)
+				|| object_audio_sources_data.read().unwrap().epoch != epoch
+			{
+				break;
+			}
 			std::thread::sleep(Duration::from_millis(100));
 		}
 
@@ -464,4 +501,55 @@ fn process_object_detection_data(
 	}
 
 	audio_source_data
+}
+
+#[cfg(test)]
+mod freshness_tests {
+	use super::*;
+
+	fn item(id: usize, x: f32) -> ObjectAudioSourceData {
+		ObjectAudioSourceData {
+			object_id: id,
+			name: "person".into(),
+			sound_begin: 0,
+			sound_end: 1,
+			position: Vec3 { x, y: 0.0, z: 1.0 },
+		}
+	}
+
+	#[test]
+	fn empty_snapshot_invalidates_pending_and_popped_playback() {
+		let mut queue = ObjectAudioQueue::default();
+		queue.update(VecDeque::from([item(1, 1.0), item(2, 2.0)]));
+		let (playing_epoch, _) = queue.pop().unwrap();
+		queue.update(VecDeque::new());
+		assert!(queue.pop().is_none());
+		assert_ne!(queue.epoch, playing_epoch);
+		// Reusing the same class/track ID in another generation cannot revive the old clip.
+		queue.update(VecDeque::from([item(1, 3.0)]));
+		let (new_epoch, source) = queue.pop().unwrap();
+		assert_ne!(new_epoch, playing_epoch);
+		assert_eq!(source.position.x, 3.0);
+	}
+
+	#[test]
+	fn fresh_updates_preserve_order_refresh_positions_and_remove_missing_objects() {
+		let mut queue = ObjectAudioQueue::default();
+		queue.update(VecDeque::from([item(1, 1.0), item(2, 2.0)]));
+		queue.update(VecDeque::from([item(2, 4.0), item(3, 3.0)]));
+		let (epoch, first) = queue.pop().unwrap();
+		assert_eq!(epoch, 0);
+		assert_eq!(first.object_id, 2);
+		assert_eq!(first.position.x, 4.0);
+		assert_eq!(queue.pop().unwrap().1.object_id, 3);
+		assert!(queue.pop().is_none());
+	}
+
+	#[test]
+	fn queue_keeps_existing_six_source_bound() {
+		let mut queue = ObjectAudioQueue::default();
+		queue.update((0..10).map(|id| item(id, 0.0)).collect());
+		assert_eq!(queue.pending.len(), 6);
+		assert_eq!(queue.pop().unwrap().1.object_id, 4);
+	}
 }

@@ -13,16 +13,16 @@ import com.algorithmic_alliance.eyeaiapp.NativeLib
  * all actual analysis happens in the source-neutral [FrameAnalyzer].
  */
 class CameraXFrameAdapter(
-    private val frameAnalyzer: FrameAnalyzer,
+    private val sourceSession: AnalysisSourceSession,
 ) : ImageAnalysis.Analyzer {
     @OptIn(ExperimentalGetImage::class)
     override fun analyze(image: ImageProxy) {
         try {
+            if (!sourceSession.isCurrent()) return
             val mediaImage = image.image ?: return
             val rotationDegrees = image.imageInfo.rotationDegrees
             val bitmap = NativeLib.imageToBitmap(mediaImage, rotationDegrees.toFloat())
-            frameAnalyzer.recordSourceFrame(image.imageInfo.timestamp)
-            frameAnalyzer.submitFrame(
+            sourceSession.submitFrame(
                 AnalysisFrame(
                     bitmap = bitmap,
                     pixelFormat = FramePixelFormat.RGBA_8888,

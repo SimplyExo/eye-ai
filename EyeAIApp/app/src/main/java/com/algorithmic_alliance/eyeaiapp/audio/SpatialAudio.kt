@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
+import com.algorithmic_alliance.eyeaiapp.inference.AnalysisClock
+import com.algorithmic_alliance.eyeaiapp.camera.AnalysisGeneration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.isActive
@@ -29,16 +31,28 @@ object SpatialAudio {
 
 			spatialAudioJob = scope.launch {
 				uniffi.NativeLib.createSpatialAudio()
+				// The existing native API requires a 256x256 map even to clear object positions.
+				// This all-far sentinel is never published as a measured depth result.
+				val noDepth = NativeLib.NativeFloatBuffer(256 * 256).also {
+					for (index in 0 until 256 * 256) it.floatBuffer.put(index, 1_000f)
+				}
+				var previousGeneration: AnalysisGeneration? = null
 
 				while (isActive) {
-					val depthData = eyeAIApp.aiData.depthEstimationData.get()
-					val objectData = eyeAIApp.aiData.detectedObjects.get()
-					if (depthData != null) {
-						uniffi.NativeLib.sendAiDataForSpatialAudio(
-							depthData.asUniffiWrapper(),
-							objectData?.toList() ?: emptyList()
-						)
+					val results = eyeAIApp.aiData.analysisResults.get()
+					val now = AnalysisClock.nowNanos()
+					val depth = results.freshDepth(now)?.takeIf {
+						it.width == 256 && it.height == 256 && it.prediction.floatBuffer.capacity() == 256 * 256
 					}
+					val objects = if (depth != null) results.alignedObjects(now) else emptyList()
+					if (previousGeneration != null && previousGeneration != results.generation) {
+						// A rapid source/run transition can fall entirely between two audio ticks.
+						uniffi.NativeLib.sendAiDataForSpatialAudio(noDepth.asUniffiWrapper(), emptyList())
+					}
+					previousGeneration = results.generation
+					uniffi.NativeLib.sendAiDataForSpatialAudio(
+						(depth?.prediction ?: noDepth).asUniffiWrapper(), objects,
+					)
 					delay(50)
 				}
 			}

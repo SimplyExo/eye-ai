@@ -17,7 +17,10 @@ class YoloModel(var info: YoloModelInfo) {
 	private var numChannel = 0
 	private var numElements = 0
 
+	@Volatile
 	private var initialized = false
+
+	val isReady: Boolean get() = initialized
 
 	@Synchronized
 	fun create(
@@ -29,6 +32,7 @@ class YoloModel(var info: YoloModelInfo) {
 		}
 
 		// Erstellen einer Yolo-Instanz
+		initialized = false
 		val modelBytes = info.getAsBytes(context)
 		labels = info.readLinesFromAsset(context).toList()
 
@@ -52,7 +56,7 @@ class YoloModel(var info: YoloModelInfo) {
 	private var currentEnableNpu: Boolean? = null
 
 	@Synchronized
-	fun runInference(frame: Bitmap): Array<UniffiDetectedObject>? {
+	fun runInference(frame: Bitmap, admit: () -> Boolean = { true }): Array<UniffiDetectedObject>? {
 		if (!initialized) {
 			/*Log.e(
 				"YOLO",
@@ -61,6 +65,8 @@ class YoloModel(var info: YoloModelInfo) {
 			return null
 		}
 
+		if (!admit()) return null
+		uniffi.NativeLib.newObjectFrame()
 		val resizedBitmap = frame.scale(tensorWidth, tensorHeight, false)
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(resizedBitmap)
 
