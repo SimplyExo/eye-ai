@@ -327,7 +327,6 @@ checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 [[package]]
 name = "bytetrack-cpp-rs"
 version = "0.1.1"
-source = "git+https://github.com/Peanutt42/bytetrack-cpp-rs?tag=v0.1.1#6da9136bc5e3a548fd56088f51148eef8440a59c"
 dependencies = [
  "cmake",
 ]
