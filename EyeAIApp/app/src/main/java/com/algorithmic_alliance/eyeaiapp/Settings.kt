@@ -130,7 +130,7 @@ data class Settings(
 
 			val depthAudioFrequency = sharedPreferences.getInt(context.getString(R.string.audio_frequency_range_setting), 500)
 
-			val objectAudioPlaybackLanguage = sharedPreferences.getString(context.getString(R.string.object_playback_language), "english")
+			val objectAudioPlaybackLanguage = sharedPreferences.getString(context.getString(R.string.object_playback_language), context.getString(R.string.language_is_german))
 
 			val enableNpu = sharedPreferences.getBoolean(
 				context.getString(R.string.enable_npu_delegate_setting),

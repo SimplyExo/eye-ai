@@ -202,7 +202,7 @@ object UIDataSource {
                     R.string.language_is_german
                 ),
                 "string" to R.string.object_playback_language,
-                "default" to R.string.language_is_english
+                "default" to R.string.language_is_german
             )
         ),
         R.string.settings_category_device_manager to listOf(
