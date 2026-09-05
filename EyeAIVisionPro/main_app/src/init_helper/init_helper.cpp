@@ -2,9 +2,10 @@
 
 #include <format>
 #include <fstream>
+#include <qdebug.h>
 #include <stdexcept>
 
-init_helper::init_helper(std::string service_name) {
+init_helper::init_helper(QString service_name) {
     this->service_name = service_name;
     init_used = get_init_sys();
 
@@ -13,47 +14,47 @@ init_helper::init_helper(std::string service_name) {
 }
 
 cmd_output init_helper::start_service() {
-    std::string command_to_run;
+    QString command_to_run;
 
     if (init_used == SYSTEMD)
-        command_to_run = std::format(START_SERVICE_TEMPLATE_SYSTEMD, service_name);
+        command_to_run = QString(START_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
     else if (init_used == RUNIT)
-        command_to_run = std::format(START_SERVICE_TEMPLATE_RUNIT, service_name);
+        command_to_run = QString(START_SERVICE_TEMPLATE_RUNIT).arg(service_name);
     
-    return exec(command_to_run.c_str());
+    return exec(command_to_run.toStdString().c_str());
 }
 
 cmd_output init_helper::stop_service() {
-    std::string command_to_run;
+    QString command_to_run;
 
     if (init_used == SYSTEMD)
-        command_to_run = std::format(STOP_SERVICE_TEMPLATE_SYSTEMD, service_name);
+        command_to_run = QString(STOP_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
     else if (init_used == RUNIT)
-        command_to_run = std::format(STOP_SERVICE_TEMPLATE_RUNIT, service_name);
+        command_to_run = QString(STOP_SERVICE_TEMPLATE_RUNIT).arg(service_name);
 
-    return exec(command_to_run.c_str());
+    return exec(command_to_run.toStdString().c_str());
 }
 
 cmd_output init_helper::restart_service() {
-    std::string command_to_run;
+    QString command_to_run;
 
     if (init_used == SYSTEMD)
-        command_to_run = std::format(RESTART_SERVICE_TEMPLATE_SYSTEMD, service_name);
+        command_to_run = QString(RESTART_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
     else if (init_used == RUNIT)
-        command_to_run = std::format(RESTART_SERVICE_TEMPLATE_RUNIT, service_name);
+        command_to_run = QString(RESTART_SERVICE_TEMPLATE_RUNIT).arg(service_name);
 
-    return exec(command_to_run.c_str());
+    return exec(command_to_run.toStdString().c_str());
 }
 
 cmd_output init_helper::get_logs() {
-        std::string command_to_run;
+    QString command_to_run;
 
     if (init_used == SYSTEMD)
-        command_to_run = std::format(LOGS_SERVICE_TEMPLATE_SYSTEMD, service_name);
+        command_to_run = QString(LOGS_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
     else if (init_used == RUNIT)
-        command_to_run = std::format(LOGS_SERVICE_TEMPLATE_RUNIT, service_name);
+        command_to_run = QString(LOGS_SERVICE_TEMPLATE_RUNIT).arg(service_name);
 
-    return exec(command_to_run.c_str());
+    return exec(command_to_run.toStdString().c_str());
 }
 
 INIT_SYSTEM init_helper::get_init_sys() {
@@ -85,7 +86,7 @@ cmd_output init_helper::exec(const char* cmd) {
         result += buffer.data();
     }
 
-    res_struct.text = result;
+    res_struct.text = QString::fromStdString(result);
     res_struct.exit_code = WEXITSTATUS(pclose(pipe));
 
     return res_struct;

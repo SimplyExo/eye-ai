@@ -1,22 +1,22 @@
 #pragma once
 
-#include <string>
-
 // systemd
-#define START_SERVICE_TEMPLATE_SYSTEMD "systemctl start {} 2>&1"
-#define STOP_SERVICE_TEMPLATE_SYSTEMD "systemctl stop {} 2>&1"
-#define RESTART_SERVICE_TEMPLATE_SYSTEMD "systemctl restart {} 2>&1"
-#define LOGS_SERVICE_TEMPLATE_SYSTEMD "systemctl -l status {} 2>&1"
+#include <qdebug.h>
+
+#define START_SERVICE_TEMPLATE_SYSTEMD "systemctl --user start %1 2>&1"
+#define STOP_SERVICE_TEMPLATE_SYSTEMD "systemctl --user stop %1 2>&1"
+#define RESTART_SERVICE_TEMPLATE_SYSTEMD "systemctl --user restart %1 2>&1"
+#define LOGS_SERVICE_TEMPLATE_SYSTEMD "systemctl -l --user status %1 2>&1"
 
 //runit
-#define START_SERVICE_TEMPLATE_RUNIT "sv up {} 2>&1"
-#define STOP_SERVICE_TEMPLATE_RUNIT "sv down {} 2>&1"
-#define RESTART_SERVICE_TEMPLATE_RUNIT "sv restart {} 2>&1"
-#define LOGS_SERVICE_TEMPLATE_RUNIT "sv status {} 2>&1"
+#define START_SERVICE_TEMPLATE_RUNIT "sv start %1 2>&1"
+#define STOP_SERVICE_TEMPLATE_RUNIT "sv stop %1 2>&1"
+#define RESTART_SERVICE_TEMPLATE_RUNIT "sv restart %1 2>&1"
+#define LOGS_SERVICE_TEMPLATE_RUNIT "sv status %1 2>&1"
 
 struct cmd_output {
     int exit_code;
-    std::string text;
+    QString text;
 };
 
 enum INIT_SYSTEM {
@@ -27,7 +27,7 @@ enum INIT_SYSTEM {
 
 class init_helper {
     public:
-        init_helper(std::string service_name);
+        init_helper(QString service_name);
 
         cmd_output start_service();
         cmd_output stop_service();
@@ -38,6 +38,6 @@ class init_helper {
         static cmd_output exec(const char* cmd);
         static INIT_SYSTEM get_init_sys();
         
-        std::string service_name = "";
+        QString service_name = "";
         INIT_SYSTEM init_used = UNKNOWN;
 };
