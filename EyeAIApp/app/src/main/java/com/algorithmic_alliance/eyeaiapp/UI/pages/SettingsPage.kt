@@ -19,6 +19,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -27,15 +28,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -64,8 +68,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -121,97 +125,128 @@ fun SettingsPage(
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        TopAppBar(
-            modifier = Modifier.shadow(elevation = Spacing.sm),
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ),
-            title = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    PremiumIconButton(onClick = { onReturn() }) {
-                        Icon(
-                            painter = painterResource(R.drawable.arrow_back_24px),
-                            contentDescription = "Zurück"
-                        )
-                    }
-                    Text("Einstellungen", style = MaterialTheme.typography.titleLarge)
-                }
-            },
-        )
-    }, content = { innerPadding ->
-        Column(
-            modifier = Modifier.padding(innerPadding),
-        ) {
-            key(uiState.reloadSettingsPageKey) {
-                LazyColumn(modifier = modifier) {
-                    items(
-                        items = settingsData.entries.toList(),
-                        key = { entry -> entry.key }) { entry ->
-                        if (entry.key != "Developer Settings" || (entry.key == "Developer Settings" && sharedPreferences.getBoolean(
-                                stringResource(R.string.debug_page_activated),
-                                false
-                            ))
-                        )
-                            SettingsCategoryCard(
-                                categorySettings = entry.value as List<Any>,
-                                category = entry.key,
-                                onEvent = onEvent,
-                                onOpenConnectionPage = onOpenConnectionPage,
-                                uiState = uiState
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        topBar = {
+            TopAppBar(
+                modifier = Modifier
+                    .shadow(elevation = Spacing.sm),
+                windowInsets = TopAppBarDefaults.windowInsets,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        PremiumIconButton(onClick = { onReturn() }) {
+                            Icon(
+                                painter = painterResource(R.drawable.arrow_back_24px),
+                                contentDescription = "Zurück"
                             )
+                        }
+                        Text("Einstellungen", style = MaterialTheme.typography.titleLarge)
                     }
-                    item {
-                        val interactionSource = remember { MutableInteractionSource() }
-                        val isPressed by interactionSource.collectIsPressedAsState()
-                        val scale by animateFloatAsState(
-                            targetValue = if (isPressed) 0.94f else 1f,
-                            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-                            label = "buttonScale"
-                        )
-                        Card(
-                            modifier = Modifier
-                                .graphicsLayer { scaleX = scale; scaleY = scale }
-                                .fillMaxWidth()
-                                .padding(Spacing.sm).clickable ( interactionSource = interactionSource, indication = LocalIndication.current){
-                                    if (!debugPageActivated) {
-                                        onOpenDebugPage()
-                                        sharedPreferences.edit(commit = true) {
-                                            putBoolean(debugPageActivatedKey, true)
-                                        }
-                                    } else {
-                                        onOpenHomePage()
-                                        sharedPreferences.edit(commit = true) {
-                                            putBoolean(debugPageActivatedKey, false)
-                                        }
-                                    }
-
-                                },
-                            elevation = CardDefaults.cardElevation(defaultElevation = if(isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
-                            border = BorderStroke(width = if(isSystemInDarkTheme()) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
+                },
+            )
+        }, content = { innerPadding ->
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier.padding(innerPadding),
+                ) {
+                    key(uiState.reloadSettingsPageKey) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = WindowInsets.navigationBars
+                                .asPaddingValues()
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(Spacing.md),
-                                     horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    if (!debugPageActivated) "DebugPage aktivieren" else "DebugPage deaktivieren",
-                                    style = MaterialTheme.typography.titleMedium,
+                            items(
+                                items = settingsData.entries.toList(),
+                                key = { entry -> entry.key }) { entry ->
+                                if (entry.key != "Developer Settings" || (entry.key == "Developer Settings" && sharedPreferences.getBoolean(
+                                        stringResource(R.string.debug_page_activated),
+                                        false
+                                    ))
                                 )
+                                    SettingsCategoryCard(
+                                        categorySettings = entry.value as List<Any>,
+                                        category = entry.key,
+                                        onEvent = onEvent,
+                                        onOpenConnectionPage = onOpenConnectionPage,
+                                        uiState = uiState
+                                    )
+                            }
+                            item {
+                                val interactionSource = remember { MutableInteractionSource() }
+                                val isPressed by interactionSource.collectIsPressedAsState()
+                                val scale by animateFloatAsState(
+                                    targetValue = if (isPressed) 0.94f else 1f,
+                                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                    label = "buttonScale"
+                                )
+                                Card(
+                                    modifier = Modifier
+                                        .graphicsLayer { scaleX = scale; scaleY = scale }
+                                        .fillMaxWidth()
+                                        .padding(Spacing.sm)
+                                        .clickable(
+                                            interactionSource = interactionSource,
+                                            indication = LocalIndication.current
+                                        ) {
+                                            if (!debugPageActivated) {
+                                                onOpenDebugPage()
+                                                sharedPreferences.edit(commit = true) {
+                                                    putBoolean(debugPageActivatedKey, true)
+                                                }
+                                            } else {
+                                                onOpenHomePage()
+                                                sharedPreferences.edit(commit = true) {
+                                                    putBoolean(debugPageActivatedKey, false)
+                                                }
+                                            }
+
+                                        },
+                                    elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
+                                    border = BorderStroke(
+                                        width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
+                                        color = Color.White.copy(alpha = 0.2f)
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(Spacing.md),
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(
+                                            if (!debugPageActivated) "DebugPage aktivieren" else "DebugPage deaktivieren",
+                                            style = MaterialTheme.typography.titleMedium,
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    MaterialTheme.colorScheme.background.copy(alpha = 0.85f)
+                                )
+                            )
+                        )
+                )
             }
-
-        }
-    })
+        })
 
 }
 
@@ -230,8 +265,11 @@ fun SettingsCategoryCard(
             .fillMaxWidth()
             .padding(Spacing.sm),
         shape = PremiumShapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = if(isDark) AppElevation.level2 else AppElevation.level4),
-        border = BorderStroke(width = if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) AppElevation.level2 else AppElevation.level4),
+        border = BorderStroke(
+            width = if (isDark) 1.dp else 0.dp,
+            color = Color.White.copy(alpha = 0.2f)
+        )
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
             Row(
@@ -650,10 +688,16 @@ fun TextFieldDialog(
         Row(
             modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
         ) {
-            PremiumIconButton(modifier = Modifier.height(Spacing.xl).width(Spacing.xl),onClick = { onDismiss() }) { Icon(
-                painterResource(R.drawable.arrow_back_24px),
-                contentDescription = UIDataSource.RETURN_SEMANTIC
-            )}
+            PremiumIconButton(
+                modifier = Modifier
+                    .height(Spacing.xl)
+                    .width(Spacing.xl),
+                onClick = { onDismiss() }) {
+                Icon(
+                    painterResource(R.drawable.arrow_back_24px),
+                    contentDescription = UIDataSource.RETURN_SEMANTIC
+                )
+            }
             Text(settingName, style = MaterialTheme.typography.titleLarge)
         }
     }, text = {
@@ -669,7 +713,13 @@ fun TextFieldDialog(
                 putString(settingKey, text)
             }
             onEvent(UIEvent.UpdateSettings)
-        }) { Text("Fertig", modifier = Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.labelLarge)}
+        }) {
+            Text(
+                "Fertig",
+                modifier = Modifier.clearAndSetSemantics {},
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
     })
 }
 

@@ -101,8 +101,9 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+        window.isNavigationBarContrastEnforced = false
         setContent {
             AppTheme() {
                 EyeAIAppUI(
