@@ -2,11 +2,10 @@ use crate::{
 	FloatTensorBuffer, FloatTensorFormat, ProfilingFrame,
 	audio::Vec2,
 	check_float_tensor_format,
-	litert::{
-		CreateLiteRtRuntimeInfo, LiteRtRunInferenceError, LiteRtRuntime, LiteRtRuntimeCreateError,
-		NpuConfig, NpuConfigType,
+	tflite_runtime::{
+		CreateTfLiteRuntimeError, CreateTfLiteRuntimeInfo, NpuConfig, NpuConfigType, TfLiteError,
+		TfLiteRuntime,
 	},
-	tensor_buffer::WrongFloatTensorFormatError,
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use tracing::debug;
@@ -21,12 +20,14 @@ pub struct CreateYoloModelInfo {
 	pub model_name: String,
 	pub labels: Vec<String>,
 	pub model_data: Vec<u8>,
+	pub delegate_serialization_dir: String,
+	pub model_token: String,
 	pub npu_config: Option<YoloModelNpuConfig>,
 }
 
 #[derive(Debug)]
 pub struct YoloModel<'a> {
-	runtime: LiteRtRuntime<'a>,
+	runtime: TfLiteRuntime,
 	labels: Vec<String>,
 	num_elements: usize,
 	num_channel: usize,
@@ -120,31 +121,28 @@ impl<'a> YoloModel<'a> {
 	pub fn new(
 		create_info: CreateYoloModelInfo,
 		profiling_frame: &'a ProfilingFrame,
-	) -> Result<Self, LiteRtRuntimeCreateError> {
+	) -> Result<Self, CreateTfLiteRuntimeError> {
 		debug!(
 			model_name = ?create_info.model_name,
 			npu_config = ?create_info.npu_config,
 			"new()"
 		);
 
-		let runtime_create_info = CreateLiteRtRuntimeInfo {
-			model_name: create_info.model_name,
+		let npu_config = create_info.npu_config.map(|depth_npu_config| NpuConfig {
+			skel_library_dir: depth_npu_config.skel_library_dir,
+			config_type: NpuConfigType::Yolo,
+		});
+
+		let runtime = TfLiteRuntime::new(CreateTfLiteRuntimeInfo {
 			model_data: create_info.model_data,
 			model_input_format: FloatTensorFormat::YoloImageRgb,
 			model_output_format: FloatTensorFormat::YoloOutput,
-			npu_config: create_info.npu_config.map(|depth_npu_config| NpuConfig {
-				skel_library_dir: depth_npu_config.skel_library_dir,
-				config_type: NpuConfigType::Yolo,
-			}),
-		};
+			delegate_serialization_dir: create_info.delegate_serialization_dir,
+			model_token: create_info.model_token,
+			npu_config,
+		})?;
 
-		let runtime = LiteRtRuntime::new(runtime_create_info, profiling_frame)?;
-
-		let output_shape = runtime
-			.get_output_shape()
-			.ok_or(LiteRtRuntimeCreateError::LiteRt(
-				litert::Error::Unsupported("no output shape"),
-			))?;
+		let output_shape = runtime.get_output_shape();
 
 		let num_channel = output_shape[1] as usize;
 		let num_elements = output_shape[2] as usize;
@@ -163,10 +161,10 @@ impl<'a> YoloModel<'a> {
 	pub fn run(
 		&mut self,
 		input_tensor: &mut FloatTensorBuffer,
-	) -> Result<Vec<DetectedObject>, LiteRtRunInferenceError> {
+	) -> Result<Vec<DetectedObject>, TfLiteError> {
 		check_float_tensor_format!(input_tensor, FloatTensorFormat::ImageRgb255);
 
-		yolo_image_operator(input_tensor, self.profiling_frame)?;
+		yolo_image_operator(input_tensor, self.profiling_frame);
 
 		self.run_no_preprocessing(input_tensor)
 	}
@@ -176,12 +174,14 @@ impl<'a> YoloModel<'a> {
 	pub fn run_no_preprocessing(
 		&mut self,
 		input_tensor: &mut FloatTensorBuffer,
-	) -> Result<Vec<DetectedObject>, LiteRtRunInferenceError> {
+	) -> Result<Vec<DetectedObject>, TfLiteError> {
 		check_float_tensor_format!(input_tensor, FloatTensorFormat::YoloImageRgb);
 
-		let mut output_tensor = self.runtime.allocate_output_tensor()?;
+		let mut output_tensor = self.runtime.allocate_output_tensor();
 		self.runtime
 			.run_inference(input_tensor, &mut output_tensor)?;
+
+		check_float_tensor_format!(&output_tensor, FloatTensorFormat::YoloOutput);
 
 		Ok(best_objects(
 			output_tensor.data(),
@@ -194,29 +194,24 @@ impl<'a> YoloModel<'a> {
 		))
 	}
 
-	pub fn get_input_shape(&self) -> Option<Vec<i32>> {
+	pub fn get_input_shape(&self) -> &[i32] {
 		self.runtime.get_input_shape()
 	}
 
-	pub fn get_output_shape(&self) -> Option<Vec<i32>> {
+	pub fn get_output_shape(&self) -> &[i32] {
 		self.runtime.get_output_shape()
 	}
 }
 
 /// converts a FloatTensorFormat::ImageRgb255 image to FloatTensorFormat::YoloImageRgb
 #[profile_function("profiling_frame")]
-fn yolo_image_operator<'a>(
-	image: &mut FloatTensorBuffer<'a>,
-	profiling_frame: &ProfilingFrame,
-) -> Result<(), WrongFloatTensorFormatError> {
+fn yolo_image_operator<'a>(image: &mut FloatTensorBuffer<'a>, profiling_frame: &ProfilingFrame) {
 	check_float_tensor_format!(image, FloatTensorFormat::ImageRgb255);
 
 	for value in image.data_mut() {
 		*value /= 255.0;
 	}
 	image.convert_format(FloatTensorFormat::YoloImageRgb);
-
-	Ok(())
 }
 
 #[profile_function("profiling_frame")]
