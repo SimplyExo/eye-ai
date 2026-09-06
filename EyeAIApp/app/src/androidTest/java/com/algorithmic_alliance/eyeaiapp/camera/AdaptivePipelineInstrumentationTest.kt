@@ -4,8 +4,10 @@ import android.graphics.Bitmap
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.inference.MonotonicClock
 import com.algorithmic_alliance.eyeaiapp.inference.InferenceTelemetry
+import com.algorithmic_alliance.eyeaiapp.inference.InferenceMode
 import com.algorithmic_alliance.eyeaiapp.inference.SceneChangeMonitor
 import com.algorithmic_alliance.eyeaiapp.ocr.TextBoundingBox
+import com.algorithmic_alliance.eyeaiapp.object_detection.ObjectTrackingSession
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntimeState
 import com.algorithmic_alliance.eyeaiapp.runtime.withAnalysis
 import kotlinx.coroutines.runBlocking
@@ -40,26 +42,41 @@ class AdaptivePipelineInstrumentationTest {
         var objectGate: Gate? = null
         var beforeAdmissionGate: Gate? = null
         var depthGate: Gate? = null
+        @Volatile var captureDepth = false
         var ocrGate: Gate? = null
         var throwNext = false
         val trackerSteps = AtomicInteger()
         val attempts = LinkedBlockingQueue<Boolean>()
         val inferred = LinkedBlockingQueue<Bitmap>()
-        override fun runObjects(frame: Bitmap, admit: () -> Boolean): Array<UniffiDetectedObject>? {
-            beforeAdmissionGate?.also { beforeAdmissionGate = null }?.block()
-            val allowed = admit()
-            attempts.put(allowed)
-            if (!allowed) return null
+        val depthInferred = LinkedBlockingQueue<Bitmap>()
+        private val trackingSession = ObjectTrackingSession()
+        val resets = AtomicInteger()
+        private var evidence = 0
+        override fun runObjects(
+            frame: Bitmap, trackingEpoch: TrackingEpoch, admit: () -> Boolean,
+        ): Array<UniffiDetectedObject>? = trackingSession.run(
+            epoch = trackingEpoch,
+            ready = { ready },
+            admit = {
+                beforeAdmissionGate?.also { beforeAdmissionGate = null }?.block()
+                admit().also { attempts.put(it) }
+            },
+            reset = { evidence = 0; resets.incrementAndGet() },
+        ) {
             trackerSteps.incrementAndGet()
             inferred.put(frame)
             objectGate?.also { objectGate = null }?.block()
             if (throwNext) { throwNext = false; error("Fake detector failure") }
-            return emptyArray()
+            // Mutate AFTER the barrier, like runYoloOperation after detector completion.
+            evidence++
+            if (evidence < 3) emptyArray() else arrayOf(
+                UniffiDetectedObject(0f, 0f, 1f, 1f, .5f, .5f, 1f, 1f, 1f, 0, "person", 1),
+            )
         }
         override fun runDepth(frame: AnalysisFrame): DepthFrameOutput? {
-            val gate = depthGate ?: return null
-            depthGate = null
-            gate.block()
+            if (!captureDepth && depthGate == null) return null
+            depthInferred.put(frame.bitmap)
+            depthGate?.also { depthGate = null }?.block()
             return DepthFrameOutput(NativeLib.NativeFloatBuffer(256 * 256), 256, 256)
         }
         override suspend fun runOcr(frame: Bitmap): List<TextBoundingBox> {
@@ -80,7 +97,7 @@ class AdaptivePipelineInstrumentationTest {
         }, MonotonicClock { time.get() }, store, scene, telemetry)
         var source: AnalysisSourceSession
         init {
-            analyzer.configureObjectDetection(true, null)
+            analyzer.configureObjectDetection(true, 30.0)
             analyzer.start()
             source = analyzer.beginSourceSession()
         }
@@ -120,13 +137,44 @@ class AdaptivePipelineInstrumentationTest {
 
     @Test fun hardCapAndPolicyChangePreserveLastStart() {
         Fixture().use { f ->
-            f.analyzer.configureObjectDetection(true, 2.0)
+            f.analyzer.configureObjectDetection(true, 5.0)
+            val epochBeforePolicyChange = f.store.get().generation.trackingEpoch
             f.send(0); f.attempt(true); f.result()
             f.send(100, pixels(true)); f.attempt(false)
-            f.analyzer.configureObjectDetection(true, 4.0)
-            f.send(249, pixels(true)); f.attempt(false)
-            f.send(250, pixels(true)); f.attempt(true)
-            assertEquals(250_000_000L, f.result().inferenceStartedNanos)
+            f.analyzer.configureObjectDetection(true, 8.0)
+            assertEquals(epochBeforePolicyChange, f.store.get().generation.trackingEpoch)
+            f.send(124, pixels(true)); f.attempt(false)
+            f.send(125, pixels(true)); f.attempt(true)
+            assertEquals(125_000_000L, f.result().inferenceStartedNanos)
+            assertEquals(1, f.backend.resets.get())
+        }
+    }
+
+    @Test fun quietActiveBurstQuietAndRateChangesKeepConfirmedTrackerEvidence() {
+        Fixture().use { f ->
+            f.send(0); f.attempt(true); f.result()
+            assertEquals(InferenceMode.QUIET, f.analyzer.telemetrySnapshot().inferenceMode)
+            val epoch = f.store.get().generation.trackingEpoch
+            f.backend.motion = 1.0
+            f.send(200); f.attempt(true); f.result()
+            assertEquals(InferenceMode.ACTIVE, f.analyzer.telemetrySnapshot().inferenceMode)
+            f.send(300, pixels(true)); f.attempt(true)
+            assertEquals(1, f.result().objects.size)
+            assertEquals(InferenceMode.BURST, f.analyzer.telemetrySnapshot().inferenceMode)
+            f.backend.motion = null
+            f.send(2_000, pixels(true)); f.attempt(true)
+            assertEquals(1, f.result().objects.size)
+            // The first absent-motion sample starts the existing quiet hold.
+            f.send(3_100, pixels(true)); f.attempt(true)
+            assertEquals(1, f.result().objects.size)
+            assertEquals(InferenceMode.QUIET, f.analyzer.telemetrySnapshot().inferenceMode)
+            for ((index, rate) in listOf(15.0, 3.0, 15.0).withIndex()) {
+                f.analyzer.configureObjectDetection(true, rate)
+                f.send(3_500L + index * 400); f.attempt(true)
+                assertEquals(1, f.result().objects.size)
+            }
+            assertEquals(epoch, f.store.get().generation.trackingEpoch)
+            assertEquals(1, f.backend.resets.get())
         }
     }
 
@@ -154,6 +202,34 @@ class AdaptivePipelineInstrumentationTest {
         }
     }
 
+    @Test fun blockedObjectDetectionDoesNotThrottleDepthAndDepthUsesNewestFrame() {
+        Fixture().use { f ->
+            val objectGate = Gate()
+            val depthGate = Gate()
+            f.backend.objectGate = objectGate
+            f.backend.depthGate = depthGate
+            f.backend.captureDepth = true
+
+            val first = pixels()
+            f.send(0, first)
+            assertTrue(objectGate.entered.await(3, TimeUnit.SECONDS))
+            assertTrue(depthGate.entered.await(3, TimeUnit.SECONDS))
+            assertSame(first, f.backend.depthInferred.poll(3, TimeUnit.SECONDS))
+
+            f.send(10, pixels(true))
+            val newest = Bitmap.createBitmap(16, 12, Bitmap.Config.ARGB_8888)
+            f.send(20, newest)
+
+            // OD is still blocked. Releasing only MiDaS must let it skip the queued middle
+            // frame and immediately consume the newest accepted CameraX-style frame.
+            depthGate.release.countDown()
+            assertSame(newest, f.backend.depthInferred.poll(3, TimeUnit.SECONDS))
+            assertNull(f.backend.depthInferred.poll(100, TimeUnit.MILLISECONDS))
+
+            objectGate.release.countDown()
+        }
+    }
+
     @Test fun stopDuringNativeCallDiscardsResultAndReleasesConsumer() {
         Fixture().use { f ->
             val gate = Gate(); f.backend.objectGate = gate
@@ -177,6 +253,7 @@ class AdaptivePipelineInstrumentationTest {
             f.send(0, release = { released.countDown() })
             assertTrue(gate.entered.await(3, TimeUnit.SECONDS))
             val oldSource = f.source
+            val oldEpoch = f.store.get().generation.trackingEpoch
             f.analyzer.stop(); f.analyzer.start()
             f.source = f.analyzer.beginSourceSession()
             val rejected = AtomicInteger()
@@ -186,6 +263,7 @@ class AdaptivePipelineInstrumentationTest {
             gate.release.countDown()
             val result = f.result()
             assertEquals(f.store.get().generation, result.generation)
+            assertNotEquals(oldEpoch, result.generation.trackingEpoch)
             assertEquals(400_000_000L, result.frameArrivalNanos)
             assertTrue(released.await(3, TimeUnit.SECONDS))
             assertNull(f.updates.poll())
@@ -199,6 +277,7 @@ class AdaptivePipelineInstrumentationTest {
             f.send(0, release = { released.countDown() })
             assertTrue(gate.entered.await(3, TimeUnit.SECONDS))
             val before = f.store.get().generation
+            val beforeEpoch = before.trackingEpoch
             f.analyzer.configureObjectDetection(false, null)
             f.send(400)
             gate.release.countDown()
@@ -206,7 +285,10 @@ class AdaptivePipelineInstrumentationTest {
             assertNull(f.store.get().objects)
             assertEquals(before.source, f.store.get().generation.source)
             assertNotEquals(before.objectDetection, f.store.get().generation.objectDetection)
+            assertNotEquals(beforeEpoch, f.store.get().generation.trackingEpoch)
+            val disabledEpoch = f.store.get().generation.trackingEpoch
             f.analyzer.configureObjectDetection(true, null)
+            assertNotEquals(disabledEpoch, f.store.get().generation.trackingEpoch)
             f.send(800)
             assertEquals(800_000_000L, f.result().frameArrivalNanos)
         }
@@ -220,9 +302,11 @@ class AdaptivePipelineInstrumentationTest {
             f.send(0, release = { released.countDown() })
             assertTrue(objectGate.entered.await(3, TimeUnit.SECONDS))
             assertTrue(depthGate.entered.await(3, TimeUnit.SECONDS))
+            val oldEpoch = f.store.get().generation.trackingEpoch
             val oldSource = f.source
             f.source = f.analyzer.beginSourceSession()
             assertFalse(oldSource.isCurrent())
+            assertNotEquals(oldEpoch, f.store.get().generation.trackingEpoch)
             f.send(400, pixels(true))
             assertTrue(f.scene.lastCallWasBaselineFrame)
             objectGate.release.countDown(); depthGate.release.countDown()
@@ -237,13 +321,17 @@ class AdaptivePipelineInstrumentationTest {
             f.send(0); f.attempt(true); f.result()
             f.send(100, pixels(true)); f.attempt(true); f.result()
             val oldGeneration = f.store.get().generation
+            val oldEpoch = oldGeneration.trackingEpoch
             f.send(200, rotation = 90); f.attempt(false)
             assertTrue(f.scene.lastCallWasBaselineFrame)
             assertNull(f.store.get().objects)
             assertNotEquals(oldGeneration.content, f.store.get().generation.content)
+            assertNotEquals(oldEpoch, f.store.get().generation.trackingEpoch)
+            val rotationEpoch = f.store.get().generation.trackingEpoch
             f.send(6_000, rotation = 90); f.attempt(true); f.result()
             assertTrue(f.source.isCurrent())
             assertTrue(f.scene.lastCallWasBaselineFrame)
+            assertNotEquals(rotationEpoch, f.store.get().generation.trackingEpoch)
             f.send(6_050, rotation = 90); f.attempt(false)
             val wider = Bitmap.createBitmap(32, 12, Bitmap.Config.ARGB_8888)
             f.send(6_100, wider, 90); f.attempt(false)
@@ -258,6 +346,71 @@ class AdaptivePipelineInstrumentationTest {
             f.send(2_000); f.attempt(true); f.result()
             assertFalse(f.scene.lastCallWasBaselineFrame)
             assertEquals(generation, f.store.get().generation)
+            assertEquals(generation.trackingEpoch, f.store.get().generation.trackingEpoch)
+            assertEquals(1, f.backend.resets.get())
+        }
+    }
+
+    @Test fun actualModelReplacementChangesTrackIdentityEvenWithinSameStream() {
+        Fixture().use { f ->
+            for (ms in listOf(0L, 400L, 800L)) {
+                f.send(ms); f.attempt(true); f.result()
+            }
+            val before = f.store.get().generation
+            f.analyzer.onObjectTrackerReplaced()
+            assertTrue(before.sameImageStream(f.store.get().generation))
+            assertFalse(before.sameTrackingEpoch(f.store.get().generation))
+            assertNull(f.store.get().objects)
+            f.send(1_200); f.attempt(true)
+            assertTrue(f.result().objects.isEmpty())
+            assertEquals(2, f.backend.resets.get())
+        }
+    }
+
+    @Test fun allEpochBoundariesIsolateLateTrackerMutationAndRestartTentative() {
+        for (boundary in listOf("stop_start", "source", "rotation", "geometry", "od_restart", "gap")) {
+            Fixture().use { f ->
+                for (ms in listOf(0L, 400L, 800L)) {
+                    f.send(ms); f.attempt(true)
+                    val result = f.result()
+                    if (ms == 800L) assertEquals(boundary, 1, result.objects.size)
+                }
+                val oldEpoch = f.store.get().generation.trackingEpoch
+                val gate = Gate()
+                f.backend.objectGate = gate
+                f.send(1_200); f.attempt(true)
+                assertTrue(gate.entered.await(3, TimeUnit.SECONDS))
+                try {
+                    when (boundary) {
+                        "stop_start" -> {
+                            f.analyzer.stop(); f.analyzer.start()
+                            f.source = f.analyzer.beginSourceSession()
+                        }
+                        "source" -> f.source = f.analyzer.beginSourceSession()
+                        "od_restart" -> {
+                            f.analyzer.configureObjectDetection(false, null)
+                            f.analyzer.configureObjectDetection(true, null)
+                        }
+                    }
+                    f.send(
+                        if (boundary == "gap") 6_201 else 1_600,
+                        if (boundary == "geometry") Bitmap.createBitmap(32, 12, Bitmap.Config.ARGB_8888) else pixels(),
+                        if (boundary == "rotation") 90 else 0,
+                    )
+                    assertNotEquals(boundary, oldEpoch, f.store.get().generation.trackingEpoch)
+                    assertNull(f.store.get().objects)
+                    // Boundary is non-blocking; reset cannot overtake old native work.
+                    assertEquals(boundary, 1, f.backend.resets.get())
+                } finally {
+                    gate.release.countDown()
+                }
+                f.attempt(true)
+                val fresh = f.result()
+                assertEquals(boundary, f.store.get().generation.trackingEpoch, fresh.generation.trackingEpoch)
+                assertTrue("$boundary must start TENTATIVE", fresh.objects.isEmpty())
+                assertEquals(boundary, 2, f.backend.resets.get())
+                assertNull("No late A publication for $boundary", f.updates.poll())
+            }
         }
     }
 

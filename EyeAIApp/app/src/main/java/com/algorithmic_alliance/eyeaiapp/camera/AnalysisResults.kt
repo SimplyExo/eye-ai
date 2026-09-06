@@ -4,13 +4,41 @@ import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.inference.ObjectDetectionV1Policy
 import uniffi.NativeLib.UniffiDetectedObject
 
+/**
+ * Identity of the logical stream seen by the object tracker.
+ *
+ * This is deliberately derived from the existing invalidation generations
+ * instead of introducing another mutable counter. It is therefore suitable
+ * for the serialized native reset seam and for addressing state as epoch + track ID.
+ * `run` covers runtime stop/start, `source` source-session changes, `content`
+ * geometry/long-gap resets, and `objectDetection` OD enable/disable changes or
+ * actual native model/tracker replacement.
+ * Scheduler cadence/mode changes are intentionally not part of the epoch.
+ */
+data class TrackingEpoch(
+    val run: Long,
+    val objectDetection: Long,
+    val source: Long,
+    val content: Long,
+)
+
 data class AnalysisGeneration(
+    /** Runtime run identity; changed at an explicit stop/start boundary. */
     val run: Long = 0,
+    /** OD enable/disable or tracker-replacement identity; rate policy leaves it untouched. */
     val objectDetection: Long = 0,
+    /** Bound source-session identity. */
     val source: Long = 0,
-    /** Geometry changes and stream gaps invalidate work without invalidating the source sink. */
+    /** Geometry changes and long stream gaps invalidate the content identity. */
     val content: Long = 0,
 ) {
+    /** All four invalidation axes are tracking boundaries. */
+    val trackingEpoch: TrackingEpoch
+        get() = TrackingEpoch(run, objectDetection, source, content)
+
+    fun sameTrackingEpoch(other: AnalysisGeneration): Boolean =
+        trackingEpoch == other.trackingEpoch
+
     fun sameImageStream(other: AnalysisGeneration): Boolean =
         run == other.run && source == other.source && content == other.content
 }

@@ -86,7 +86,8 @@ class CameraManager(
                         .setTargetFrameRate(Range(60, 120))
                         .build()
                     val analysis = ImageAnalysis.Builder()
-                        .setImageQueueDepth(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        // Camera acquisition is independent of the OD budget. If conversion
+                        // falls behind, CameraX drops stale proxies instead of building a queue.
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                         .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                         .setResolutionSelector(performanceResolutionSelector(preferredImageSize))

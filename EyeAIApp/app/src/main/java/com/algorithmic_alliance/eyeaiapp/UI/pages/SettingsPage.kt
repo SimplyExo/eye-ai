@@ -512,7 +512,7 @@ fun SliderSetting(
         mutableIntStateOf(
             sharedPreferences.getInt(
                 settingKey, settingData["default"] as Int
-            )
+            ).coerceIn(min.toInt(), max.toInt())
         )
     }
 

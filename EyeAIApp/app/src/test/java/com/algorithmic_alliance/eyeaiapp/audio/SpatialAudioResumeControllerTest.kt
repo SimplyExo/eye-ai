@@ -11,6 +11,30 @@ import org.junit.Test
 
 class SpatialAudioResumeControllerTest {
 	@Test
+	fun `delayed restore retains session captured when scheduled`() = runBlocking {
+		val silence = CompletableDeferred<Boolean>()
+		val restored = CompletableDeferred<ULong>()
+		var session = 1uL
+		val controller = SpatialAudioResumeController(
+			scope = this,
+			pauseSpatialAudio = {},
+			restoreSpatialAudio = { error("unscoped restore must not run") },
+			awaitTtsSilence = { silence.await() },
+			isListening = { false },
+			onOutcome = { _, _ -> },
+			captureRestoreSpatialAudio = {
+				val captured = session
+				val restore: (String) -> Unit = { restored.complete(captured) }
+				restore
+			},
+		)
+		controller.schedule("A_TTS")
+		session = 2uL
+		silence.complete(true)
+		assertEquals(1uL, restored.await())
+	}
+
+	@Test
 	fun `spatial audio stays paused until TTS is silent`() = runBlocking {
 		val silence = CompletableDeferred<Boolean>()
 		val events = mutableListOf<String>()

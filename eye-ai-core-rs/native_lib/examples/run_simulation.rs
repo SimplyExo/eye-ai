@@ -5,7 +5,8 @@ use eye_ai_core_rs::{
 	audio::{SpatialAudioSettings, Vec2},
 };
 use eye_ai_core_rs_native_lib::{
-	UniffiDetectedObject, sendAIDataForSpatialAudio, setAudioSettings, setupAudioContent,
+	UniffiDetectedObject, beginSpatialAudioSession, destroySpatialAudio, sendAIDataForSpatialAudio,
+	setAudioSettings, setupAudioContent,
 };
 use tracing::{info, level_filters::LevelFilter};
 use tracing_subscriber::{Layer, fmt::format::Format, layer::SubscriberExt};
@@ -46,7 +47,8 @@ fn main() {
 
 	setupAudioContent(coco_labels_audio_file_content, coco_labels_json_content);
 
-	setAudioSettings(SpatialAudioSettings::DEFAULT_FREQUENCY, 5);
+	let session = beginSpatialAudioSession();
+	setAudioSettings(session, SpatialAudioSettings::DEFAULT_FREQUENCY, 5);
 
 	// TODO: replace dummy depth data and object detection by running MiDaS and YOLO off a sample video feed.
 
@@ -112,7 +114,11 @@ fn main() {
 			});
 		}
 
-		sendAIDataForSpatialAudio((&mut depth_estimation_data).into(), tracked_objects.clone());
+		sendAIDataForSpatialAudio(
+			session,
+			(&mut depth_estimation_data).into(),
+			tracked_objects.clone(),
+		);
 
 		{
 			tracing::info_span!("sleep 100ms").in_scope(|| {
@@ -122,4 +128,5 @@ fn main() {
 
 		flip_flop = !flip_flop;
 	}
+	destroySpatialAudio(session);
 }

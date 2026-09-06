@@ -31,14 +31,16 @@
         <CheckBoxPreference
             app:defaultValue="true"
             app:key="@string/enable_depth_frame_rate_limit_setting"
-            app:title="Enable Framerate Limiter" />
+            app:title="Enable Framerate Limiter"
+            app:summary="Disable for unbounded MiDaS benchmark operation." />
 
         <SeekBarPreference
             app:min="1"
-            android:max="120"
+            android:max="60"
             app:showSeekBarValue="true"
             app:key="@string/max_depth_frame_rate_setting"
             app:title="Framerate Limit"
+            app:summary="Maximum MiDaS inference rate; disable the limiter for an unbounded benchmark."
             app:defaultValue="30"/>
     </PreferenceCategory>
 
@@ -99,14 +101,16 @@
         <CheckBoxPreference
             app:defaultValue="true"
             app:key="@string/enable_object_detection_frame_rate_limit_setting"
-            app:title="Enable Framerate Limiter" />
+            app:title="Enable Framerate Limiter"
+            app:summary="Disable for unbounded YOLO benchmark operation." />
 
         <SeekBarPreference
-            app:min="1"
-            android:max="120"
+            app:min="5"
+            android:max="60"
             app:defaultValue="30"
             app:key="@string/max_object_detection_frame_rate_setting"
-            app:title="Framerate Limit"
+            app:title="Maximum Object Detection FPS"
+            app:summary="Hard maximum; adaptive modes use about 35%, 65%, and 100% within this budget."
             app:showSeekBarValue="true" />
     </PreferenceCategory>
 

@@ -56,7 +56,7 @@ impl<'a> std::fmt::Debug for ObjectTracker<'a> {
 impl<'a> ObjectTracker<'a> {
 	/// For how many seconds a 100% confident tracked observation needs to be
 	/// visible before it is considered valid.
-	pub const MIN_WAITING_PREDICTION_TIME_BEFORE_VALID: f32 = 0.5;
+	pub const MIN_WAITING_PREDICTION_TIME_BEFORE_VALID: f32 = 0.45;
 
 	pub fn new(labels: Vec<String>, profiling_frame: &'a ProfilingFrame) -> Self {
 		Self {
@@ -67,6 +67,18 @@ impl<'a> ObjectTracker<'a> {
 			track_validations: HashMap::new(),
 			profiling_frame,
 		}
+	}
+
+	/// Starts a fresh tracking epoch without reloading the detector/model.
+	///
+	/// Replacing `BYTETracker` clears its Kalman/lost/ID state. The Rust state
+	/// is reset alongside it so no validation or timing evidence can cross the
+	/// epoch boundary. Labels and the profiling frame are intentionally kept.
+	pub fn reset(&mut self) {
+		self.tracker = BYTETracker::default();
+		self.last_update = None;
+		self.update_number = 0;
+		self.track_validations.clear();
 	}
 
 	fn is_track_confirmed(
@@ -907,6 +919,50 @@ mod cadence_tests {
 	}
 
 	#[test]
+	fn reset_starts_a_fresh_epoch_without_reloading_detector_state() {
+		let profiling_frame = ProfilingFrame::new("tracker_reset");
+		let mut tracker = ObjectTracker::new(vec!["object".to_string()], &profiling_frame);
+		let old_id = warm_visible_track(&mut tracker, HIGH_HZ);
+
+		assert_eq!(
+			validation_state(&tracker, old_id),
+			TrackValidationState::Confirmed
+		);
+		assert!(tracker.last_update.is_some());
+		assert!(tracker.update_number > 0);
+		let pause_at = tracker.last_update.unwrap() + Duration::from_secs(12);
+		assert!(tracker.update_at(vec![detection(0.5)], pause_at).is_empty());
+		let replacement_id = visible_id_after_detections(&mut tracker, HIGH_HZ, 12);
+		assert_ne!(replacement_id, old_id);
+
+		tracker.reset();
+
+		assert!(tracker.track_validations.is_empty());
+		assert!(tracker.last_update.is_none());
+		assert_eq!(tracker.update_number, 0);
+
+		// BYTETracker itself was replaced, so its ID counter and active/lost
+		// tracks are fresh as well. The first post-reset detection is tentative.
+		assert!(
+			tracker
+				.update_at(vec![detection(0.5)], Instant::now())
+				.is_empty()
+		);
+		let new_id = *tracker
+			.track_validations
+			.keys()
+			.next()
+			.expect("first post-reset detection should create a validation state");
+		assert_eq!(new_id, 1);
+		assert_eq!(tracker.labels, vec!["object".to_string()]);
+		assert_eq!(tentative_visible_seconds(&tracker, new_id), 0.0);
+		assert!(matches!(
+			validation_state(&tracker, new_id),
+			TrackValidationState::Tentative { .. }
+		));
+	}
+
+	#[test]
 	fn tentative_track_does_not_credit_an_unobserved_gap() {
 		let profiling_frame = ProfilingFrame::new("tentative_gap");
 		let mut tracker = ObjectTracker::new(vec!["object".to_string()], &profiling_frame);
@@ -964,7 +1020,7 @@ mod cadence_tests {
 			tracking_id = Some(id);
 
 			if validation_state(&tracker, id) == TrackValidationState::Confirmed {
-				assert_eq!(burst_index, 4);
+				assert_eq!(burst_index, 3);
 				break;
 			}
 
@@ -1015,7 +1071,7 @@ mod cadence_tests {
 		assert!(update_after(&mut tracker, 1.0 / HIGH_HZ, vec![detection(0.5)]).is_empty());
 		assert!(
 			update_after(&mut tracker, 1.0 / LOW_HZ, vec![detection(0.5)]).is_empty(),
-			"the 15 Hz contribution plus one 3 Hz observation is still below 0.5 confidence-seconds"
+			"the 15 Hz contribution plus one 3 Hz observation is still below 0.45 confidence-seconds"
 		);
 		let output = update_after(&mut tracker, 1.0 / LOW_HZ, vec![detection(0.5)]);
 

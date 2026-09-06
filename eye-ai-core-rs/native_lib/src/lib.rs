@@ -4,18 +4,18 @@ use eye_ai_core_rs::{
 	BoundingBox, CreateDepthModelInfo, CreateYoloModelInfo, DepthModelNpuConfig, DetectedObject,
 	FloatTensorBuffer, FloatTensorFormat, MetricDepthModel, ObjectTracker, ProfilingFrame,
 	TrackedObject, YoloModel, YoloModelNpuConfig,
-	audio::{
-		SpatialAudio, SpatialAudioContent, SpatialAudioSettings, read_audio_file,
-		read_object_label_data,
-	},
+	audio::{SpatialAudio, SpatialAudioContent, read_audio_file, read_object_label_data},
 	inferno_colormap,
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::{
 	ffi::CString,
-	sync::{Arc, LazyLock, RwLock},
+	sync::{Arc, LazyLock, RwLock, atomic::Ordering},
 };
 use tracing::{debug, error, trace};
+
+mod audio_session;
+use audio_session::AudioSessions;
 
 #[cfg(target_os = "android")]
 mod android_logging;
@@ -39,13 +39,13 @@ static OBJECT_PROFILING_FRAME: LazyLock<ProfilingFrame> =
 static LAST_FORMATTED_OBJECT_PROFILING_INFO: LazyLock<RwLock<String>> =
 	LazyLock::new(|| RwLock::new(String::new()));
 
-static SPATIAL_AUDIO: LazyLock<RwLock<Option<SpatialAudio>>> = LazyLock::new(|| RwLock::new(None));
-static SPATIAL_AUDIO_SETTINGS: LazyLock<Arc<RwLock<SpatialAudioSettings>>> =
-	LazyLock::new(|| Arc::new(RwLock::new(SpatialAudioSettings::default())));
+static SPATIAL_AUDIO: LazyLock<AudioSessions<SpatialAudio>> = LazyLock::new(AudioSessions::default);
 static SPATIAL_AUDIO_CONTENT: LazyLock<RwLock<Option<Arc<SpatialAudioContent>>>> =
 	LazyLock::new(|| RwLock::new(None));
+// Audio has no native finish/drain consumer, so completed scopes must not be
+// retained for the lifetime of this process.
 static AUDIO_PROFILING_FRAME: LazyLock<Arc<ProfilingFrame>> =
-	LazyLock::new(|| Arc::new(ProfilingFrame::new("Audio")));
+	LazyLock::new(|| Arc::new(ProfilingFrame::new_unretained("Audio")));
 
 /// Waits for the RwLock to be free and also waits for the Option to be Some ^= "waits for the model to be loaded"
 fn wait_for_model<M, R>(
@@ -84,25 +84,35 @@ fn wait_for_yolo_model<R>(f: impl FnOnce(&mut YoloModel) -> R) -> R {
 	)
 }
 
-fn try_change_spatial_audio<R>(f: impl FnOnce(&mut SpatialAudio) -> R) -> Option<R> {
-	let waiting_scope = AUDIO_PROFILING_FRAME.scope("try_mutate_spatial_audio");
-
-	// first, wait for the spatial audio content to be loaded
-	if let Some(content) = &(*SPATIAL_AUDIO_CONTENT.read().unwrap()) {
-		// then wait for the spatial audio lock (also: create it, if it does not exist yet)
-		let spatial_audio = &mut (*SPATIAL_AUDIO.write().unwrap());
-		let spatial_audio = spatial_audio.get_or_insert_with(|| {
-			SpatialAudio::new(
-				SPATIAL_AUDIO_SETTINGS.clone(),
-				content.clone(),
+fn try_change_spatial_audio(session_id: u64, f: impl FnOnce(&mut SpatialAudio) -> bool) {
+	let Some(session) = SPATIAL_AUDIO.get(session_id) else {
+		return;
+	};
+	if !session.is_active() {
+		return;
+	}
+	// Only clone resource data under its lock; opening a device must not block
+	// settings/content updates or any other session.
+	let content = SPATIAL_AUDIO_CONTENT.read().unwrap().clone();
+	let result = session.change(
+		|| {
+			let content = content
+				.clone()
+				.ok_or("audio content is not configured".to_owned())?;
+			SpatialAudio::new_in_session(
+				session.settings.clone(),
+				content,
 				AUDIO_PROFILING_FRAME.clone(),
+				session.active.clone(),
+				session.object_audio_playback_epoch.clone(),
 			)
-			.unwrap()
-		});
-		drop(waiting_scope);
-		Some(f(spatial_audio))
-	} else {
-		None
+			.map_err(|error| error.to_string())
+		},
+		f,
+	);
+	if let Err(error) = result {
+		// A temporary missing device is retried by the next send in THIS session.
+		error!(session_id, "Failed to create spatial audio: {error}");
 	}
 }
 
@@ -340,10 +350,23 @@ pub fn initYoloRuntime(
 
 	debug!("created yolo model");
 
-	*YOLO_MODEL.write().unwrap() = Some(yolo_model);
-
+	// Publish model + tracker atomically with respect to inference and reset.
+	// Native lock order is always YOLO_MODEL -> OBJECT_TRACKER.
+	let mut model_slot = YOLO_MODEL.write().unwrap();
 	let object_tracker = ObjectTracker::new(labels, &OBJECT_PROFILING_FRAME);
 	*OBJECT_TRACKER.write().unwrap() = Some(object_tracker);
+	*model_slot = Some(yolo_model);
+}
+
+/// Reset only tracking evidence, never the detector. Taking the model write lock
+/// waits for the ENTIRE old runYoloOperation, including its final tracker update.
+/// Callers serialize reset + the next inference together (Kotlin's model session).
+#[uniffi::export]
+pub fn resetObjectTracker() {
+	let _model = YOLO_MODEL.write().unwrap();
+	if let Some(tracker) = OBJECT_TRACKER.write().unwrap().as_mut() {
+		tracker.reset();
+	}
 }
 
 #[derive(uniffi::Record, Clone, Debug)]
@@ -508,65 +531,108 @@ pub fn setupAudioContent(
 		.replace(content.clone());
 }
 
-/// This requires the SPATIAL_AUDIO_CONTENT to be set by calling setupAudioContent before this function
+/// Allocate identity only: no device work and no engine lock on the calling thread.
+#[uniffi::export]
+pub fn beginSpatialAudioSession() -> u64 {
+	SPATIAL_AUDIO.begin()
+}
+
+/// Stop boundary, safe on the main thread even during blocked create/send/destroy.
+#[uniffi::export]
+pub fn invalidateSpatialAudioSession(session_id: u64) {
+	SPATIAL_AUDIO.invalidate(session_id);
+}
+
+/// Worker only. Content must have been configured by setupAudioContent.
 #[uniffi::export]
 #[profile_function("AUDIO_PROFILING_FRAME")]
-fn createSpatialAudio() {
-	debug!("createSpatialAudio()");
-
-	let Some(spatial_audio_content) = &(*SPATIAL_AUDIO_CONTENT.read().unwrap()) else {
-		error!(
-			"SPATIAL_AUDIO_CONTENT needs to be setup by calling setupAudioContent before calling createSpatialAudio"
-		);
-		return;
-	};
-
-	let spatial_audio = SpatialAudio::new(
-		SPATIAL_AUDIO_SETTINGS.clone(),
-		spatial_audio_content.clone(),
-		AUDIO_PROFILING_FRAME.clone(),
-	)
-	.expect("failed to create spatial audio");
-
-	SPATIAL_AUDIO.write().unwrap().replace(spatial_audio);
+pub fn createSpatialAudio(session_id: u64) {
+	try_change_spatial_audio(session_id, |_| false);
 }
 
 #[uniffi::export]
 #[profile_function("AUDIO_PROFILING_FRAME")]
-pub fn setAudioSettings(frequency: f32, incidence: i32) {
+pub fn setAudioSettings(session_id: u64, frequency: f32, incidence: i32) {
 	trace!(
 		frequency = ?frequency,
 		incidence = ?incidence,
 		"setAudioSettings()"
 	);
 
-	let mut settings = SPATIAL_AUDIO_SETTINGS.write().unwrap();
+	let Some(session) = SPATIAL_AUDIO.get(session_id) else {
+		return;
+	};
+	let mut settings = session.settings.write().unwrap();
+	if !session.is_active() {
+		return;
+	}
 	settings.frequency = frequency;
 	settings.buffer_duration = 1.0 / (incidence as f32);
 }
 
 #[uniffi::export]
 #[profile_function("AUDIO_PROFILING_FRAME")]
-pub fn setDepthAudioPaused(paused: bool) {
+pub fn setDepthAudioPaused(session_id: u64, paused: bool) {
 	trace!(paused = ?paused, "setDepthAudioPaused()");
 
-	SPATIAL_AUDIO_SETTINGS.write().unwrap().depth_audio_paused = paused;
+	let Some(session) = SPATIAL_AUDIO.get(session_id) else {
+		return;
+	};
+	let mut settings = session.settings.write().unwrap();
+	if session.is_active() {
+		settings.depth_audio_paused = paused;
+	}
 }
 
 #[uniffi::export]
 #[profile_function("AUDIO_PROFILING_FRAME")]
-pub fn setObjectAudioPaused(paused: bool) {
+pub fn setObjectAudioPaused(session_id: u64, paused: bool) {
 	trace!(paused = ?paused, "setObjectAudioPaused()");
 
-	SPATIAL_AUDIO_SETTINGS.write().unwrap().object_audio_paused = paused;
+	let Some(session) = SPATIAL_AUDIO.get(session_id) else {
+		return;
+	};
+	let mut settings = session.settings.write().unwrap();
+	if session.is_active() {
+		settings.object_audio_paused = paused;
+		if paused {
+			// Pausing is an explicit interruption, unlike a transient empty snapshot.
+			session
+				.object_audio_playback_epoch
+				.fetch_add(1, Ordering::AcqRel);
+		}
+	}
+}
+
+/// Hard boundary for a stream/content generation change. Unlike an empty object
+/// snapshot this interrupts a currently playing object announcement. The token is
+/// session-local, so a delayed call cannot affect a later audio session.
+#[uniffi::export]
+#[profile_function("AUDIO_PROFILING_FRAME")]
+pub fn invalidateObjectAudioPlayback(session_id: u64) {
+	let Some(session) = SPATIAL_AUDIO.get(session_id) else {
+		return;
+	};
+	if session.is_active() {
+		session
+			.object_audio_playback_epoch
+			.fetch_add(1, Ordering::AcqRel);
+	}
 }
 
 #[uniffi::export]
 #[profile_function("AUDIO_PROFILING_FRAME")]
 pub fn sendAIDataForSpatialAudio(
+	session_id: u64,
 	mut depth_data_buffer: UniffiFloatBufferWrapper,
 	object_data_buffer: Vec<UniffiDetectedObject>,
 ) {
+	if !SPATIAL_AUDIO
+		.get(session_id)
+		.is_some_and(|session| session.is_active())
+	{
+		return;
+	}
 	let depth_data_buffer = depth_data_buffer.as_slice_mut();
 	let depth_estimation_data: &[f32; 256 * 256] = depth_data_buffer
 		.as_ref()
@@ -578,22 +644,151 @@ pub fn sendAIDataForSpatialAudio(
 		.map(|o| o.into())
 		.collect::<Vec<TrackedObject>>();
 
-	let should_restart = try_change_spatial_audio(|spatial_audio| {
+	try_change_spatial_audio(session_id, |spatial_audio| {
 		spatial_audio.update(depth_estimation_data, &object_detection_data)
 	});
-	if let Some(should_restart) = should_restart
-		&& should_restart
-	{
-		createSpatialAudio();
-	}
 }
 
 #[uniffi::export]
 #[profile_function("AUDIO_PROFILING_FRAME")]
-pub fn destroySpatialAudio() {
-	debug!("destroySpatialAudio()");
-
-	*SPATIAL_AUDIO.write().unwrap() = None;
+pub fn destroySpatialAudio(session_id: u64) {
+	debug!(session_id, "destroySpatialAudio()");
+	SPATIAL_AUDIO.destroy(session_id);
 }
 
 uniffi::setup_scaffolding!("NativeLib");
+
+#[cfg(test)]
+mod audio_export_tests {
+	use super::*;
+	use std::{sync::mpsc, thread, time::Duration};
+
+	#[test]
+	fn delayed_settings_and_stale_exports_are_bound_to_their_original_session() {
+		let a = beginSpatialAudioSession();
+		let old = SPATIAL_AUDIO.get(a).unwrap();
+		let settings_guard = old.settings.write().unwrap();
+		let (entered_tx, entered_rx) = mpsc::channel();
+		let settings_call = thread::spawn(move || {
+			entered_tx.send(()).unwrap();
+			setAudioSettings(a, 999.0, 3);
+			setDepthAudioPaused(a, false);
+			setObjectAudioPaused(a, false);
+		});
+		entered_rx.recv_timeout(Duration::from_secs(3)).unwrap();
+		invalidateSpatialAudioSession(a);
+		let b = beginSpatialAudioSession();
+		let b_playback_epoch = SPATIAL_AUDIO
+			.get(b)
+			.unwrap()
+			.object_audio_playback_epoch
+			.clone();
+		assert_eq!(b_playback_epoch.load(Ordering::Acquire), 0);
+		setAudioSettings(b, 321.0, 5);
+		setDepthAudioPaused(b, true);
+		setObjectAudioPaused(b, true);
+		assert_eq!(b_playback_epoch.load(Ordering::Acquire), 1);
+		invalidateObjectAudioPlayback(b);
+		assert_eq!(b_playback_epoch.load(Ordering::Acquire), 2);
+		invalidateObjectAudioPlayback(a);
+		assert_eq!(b_playback_epoch.load(Ordering::Acquire), 2);
+		drop(settings_guard);
+		settings_call.join().unwrap();
+		createSpatialAudio(a); // Must not try opening a device, even without content.
+		let mut depth = [1_000.0; 256 * 256];
+		sendAIDataForSpatialAudio(a, (&mut depth).into(), vec![]);
+		destroySpatialAudio(a);
+		destroySpatialAudio(a);
+		let fresh = SPATIAL_AUDIO.get(b).unwrap();
+		assert!(fresh.is_active());
+		let settings = fresh.settings.read().unwrap();
+		assert_eq!(settings.frequency, 321.0);
+		assert!(settings.depth_audio_paused && settings.object_audio_paused);
+		drop(settings);
+		destroySpatialAudio(b);
+		assert!(SPATIAL_AUDIO.get(a).is_none());
+		assert!(SPATIAL_AUDIO.get(b).is_none());
+	}
+}
+
+#[cfg(test)]
+mod tracking_epoch_tests {
+	use super::*;
+	use std::{sync::mpsc, thread, time::Duration};
+
+	fn detection() -> DetectedObject {
+		DetectedObject::new(
+			"person".to_owned(),
+			0,
+			1.0,
+			BoundingBox::new(0.5, 0.5, 0.2, 0.2),
+		)
+	}
+
+	#[test]
+	fn reset_seam_waits_for_old_native_mutation_and_clears_confirmed_evidence() {
+		// No detector is needed: exercise the production locks and reset export,
+		// with real ByteTrack/validation and a barrier in place of detector work.
+		assert!(YOLO_MODEL.read().unwrap().is_none());
+		*OBJECT_TRACKER.write().unwrap() = Some(ObjectTracker::new(
+			vec!["person".to_owned()],
+			&OBJECT_PROFILING_FRAME,
+		));
+		let mut confirmed = vec![];
+		for _ in 0..5 {
+			confirmed = OBJECT_TRACKER
+				.write()
+				.unwrap()
+				.as_mut()
+				.unwrap()
+				.update(vec![detection()]);
+			thread::sleep(Duration::from_millis(150));
+		}
+		assert_eq!(confirmed.len(), 1);
+		assert_eq!(confirmed[0].tracking_id, 1);
+
+		let (entered_tx, entered_rx) = mpsc::channel();
+		let (release_tx, release_rx) = mpsc::channel();
+		let old = thread::spawn(move || {
+			// Same lifetime as wait_for_yolo_model in runYoloOperation:
+			// the model guard survives until AFTER tracker mutation.
+			let _model = YOLO_MODEL.write().unwrap();
+			entered_tx.send(()).unwrap();
+			release_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+			let result = OBJECT_TRACKER
+				.write()
+				.unwrap()
+				.as_mut()
+				.unwrap()
+				.update(vec![detection()]);
+			assert_eq!(result.len(), 1, "old completion still belongs to A");
+		});
+		entered_rx.recv_timeout(Duration::from_secs(3)).unwrap();
+		let (requested_tx, requested_rx) = mpsc::channel();
+		let (reset_tx, reset_rx) = mpsc::channel();
+		let reset = thread::spawn(move || {
+			requested_tx.send(()).unwrap();
+			resetObjectTracker();
+			reset_tx.send(()).unwrap();
+		});
+		requested_rx.recv_timeout(Duration::from_secs(3)).unwrap();
+		assert!(matches!(
+			reset_rx.recv_timeout(Duration::from_millis(100)),
+			Err(mpsc::RecvTimeoutError::Timeout)
+		));
+		release_tx.send(()).unwrap();
+		old.join().unwrap();
+		reset_rx.recv_timeout(Duration::from_secs(3)).unwrap();
+		reset.join().unwrap();
+
+		let _model = YOLO_MODEL.write().unwrap();
+		let mut tracker_slot = OBJECT_TRACKER.write().unwrap();
+		let first_b = tracker_slot.as_mut().unwrap().update(vec![detection()]);
+		assert!(
+			first_b.is_empty(),
+			"B at the same position must be TENTATIVE"
+		);
+		assert!(_model.is_none(), "reset must never load a detector");
+		*tracker_slot = None;
+	}
+}

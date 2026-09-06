@@ -42,18 +42,22 @@ impl<'a> ProfileScope<'a> {
 }
 impl<'a> Drop for ProfileScope<'a> {
 	fn drop(&mut self) {
-		self.profiling_frame
-			._internal_submit_scope(ProfileScopeRecord {
+		let record = self
+			.profiling_frame
+			.retain_records
+			.then(|| ProfileScopeRecord {
 				name: std::mem::take(&mut self.name),
 				scope_depth: self.scope_depth,
 				start: self.start,
 				duration: dur::Duration::from_std(Instant::now() - self.start),
 			});
+		self.profiling_frame._internal_submit_scope(record);
 	}
 }
 
 pub struct ProfilingFrame {
 	name: String,
+	retain_records: bool,
 	#[cfg(feature = "enable_tracy_profiling")]
 	frame_name: FrameName,
 	start: RwLock<Instant>,
@@ -69,9 +73,20 @@ impl std::fmt::Debug for ProfilingFrame {
 }
 impl ProfilingFrame {
 	pub fn new(name: impl Into<String>) -> Self {
+		Self::with_record_retention(name, true)
+	}
+
+	/// Creates a frame that tracks active scopes but does not retain completed
+	/// scope records. Use this when a profiling frame has no record consumer.
+	pub fn new_unretained(name: impl Into<String>) -> Self {
+		Self::with_record_retention(name, false)
+	}
+
+	fn with_record_retention(name: impl Into<String>, retain_records: bool) -> Self {
 		let name = name.into();
 		Self {
 			name: name.clone(),
+			retain_records,
 			#[cfg(feature = "enable_tracy_profiling")]
 			frame_name: FrameName::new_leak(name),
 			start: RwLock::new(Instant::now()),
@@ -87,9 +102,18 @@ impl ProfilingFrame {
 
 	/// This is only public so that `ProfileScope` can submit its records when being dropped.
 	/// Don't call this directly!
-	pub(crate) fn _internal_submit_scope(&self, record: ProfileScopeRecord) {
+	pub(crate) fn _internal_submit_scope(&self, record: Option<ProfileScopeRecord>) {
 		self.current_scope_depth.fetch_sub(1, Ordering::Relaxed);
-		self.profile_scopes.push(record);
+		if self.retain_records {
+			if let Some(record) = record {
+				self.profile_scopes.push(record);
+			}
+		}
+	}
+
+	#[cfg(test)]
+	fn retained_scope_count(&self) -> usize {
+		self.profile_scopes.len()
 	}
 
 	/// Returns None if the frame is not yet finished, i.e. current_scope_depth != 0
@@ -134,5 +158,66 @@ impl ProfilingFrame {
 			dur::Duration::from_std(frame_duration),
 			profile_scopes_formatted
 		))
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use std::sync::Arc;
+
+	#[test]
+	fn unretained_frame_does_not_accumulate_records_across_starts() {
+		let frame = ProfilingFrame::new_unretained("Audio");
+
+		for _ in 0..3 {
+			for _ in 0..10_000 {
+				drop(frame.scope("audio_scope"));
+			}
+
+			assert_eq!(frame.retained_scope_count(), 0);
+			assert!(frame.finish().is_some());
+		}
+	}
+
+	#[test]
+	fn unretained_frame_parallel_scope_completion_stays_balanced() {
+		let frame = Arc::new(ProfilingFrame::new_unretained("Audio"));
+
+		std::thread::scope(|scope| {
+			for _ in 0..8 {
+				let frame = Arc::clone(&frame);
+				scope.spawn(move || {
+					for _ in 0..1_250 {
+						drop(frame.scope("audio_scope"));
+					}
+				});
+			}
+		});
+
+		assert_eq!(frame.current_scope_depth.load(Ordering::Acquire), 0);
+		assert_eq!(frame.retained_scope_count(), 0);
+		assert!(frame.finish().is_some());
+	}
+
+	#[test]
+	fn unretained_finish_returns_while_a_scope_is_active() {
+		let frame = ProfilingFrame::new_unretained("Audio");
+		let scope = frame.scope("audio_scope");
+
+		assert!(frame.finish().is_none());
+		drop(scope);
+		assert!(frame.finish().is_some());
+	}
+
+	#[test]
+	fn retained_frame_records_are_consumed_by_finish() {
+		let frame = ProfilingFrame::new("Object");
+		drop(frame.scope("object_scope"));
+
+		assert_eq!(frame.retained_scope_count(), 1);
+		let info = frame.finish().expect("completed frame should be available");
+		assert!(info.contains("object_scope"));
+		assert_eq!(frame.retained_scope_count(), 0);
 	}
 }

@@ -42,6 +42,7 @@ data class InferenceSchedulerConfig(
 	val activeMotionExitThreshold: Double,
 	val quietMotionThreshold: Double,
 	val burstVisualEntryThreshold: Double,
+	/** Effective hard object-detection budget; policy mode intervals are derived from it. */
 	val maxObjectDetectionRateHz: Double? = null,
 ) {
 	init {
@@ -109,6 +110,8 @@ data class InferenceSchedulerConfig(
 
 	internal val maximumRateIntervalNanos: Long?
 		get() = maxObjectDetectionRateHz?.let {
+			// This is the budget interval shared by the three policy targets, not
+			// a second post-inference delay.
 			ceil(NANOS_PER_SECOND.toDouble() / it).toLong().coerceAtLeast(1L)
 		}
 

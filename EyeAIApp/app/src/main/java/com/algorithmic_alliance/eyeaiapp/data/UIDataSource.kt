@@ -158,16 +158,19 @@ object UIDataSource {
             ),
             mapOf(
                 "title" to "Enable Framerate Limiter",
-                "description" to "",
+                "description" to "Disable for unbounded MiDaS benchmark operation.",
                 "settingsType" to "checkbox",
                 "string" to R.string.enable_depth_frame_rate_limit_setting,
                 "default" to true
             ),
             mapOf(
                 "title" to "Framerate Limit",
-                "description" to "",
+                "description" to "Maximum MiDaS inference rate; CameraX continues to capture independently. Disable the limiter for an unbounded benchmark.",
                 "settingsType" to "slider",
-                "settingsOption" to mapOf("min" to 1, "max" to 120),
+                "settingsOption" to mapOf(
+                    "min" to Settings.MIN_DEPTH_FRAME_RATE,
+                    "max" to Settings.MAX_DEPTH_FRAME_RATE,
+                ),
                 "string" to R.string.max_depth_frame_rate_setting,
                 "default" to Settings.DEFAULT_FRAME_RATE_LIMIT
             )
@@ -242,16 +245,19 @@ object UIDataSource {
             ),
             mapOf(
                 "title" to "Enable Framerate Limiter",
-                "description" to "",
+                "description" to "Disable for unbounded YOLO benchmark operation.",
                 "settingsType" to "checkbox",
                 "string" to R.string.enable_object_detection_frame_rate_limit_setting,
                 "default" to true
             ),
             mapOf(
-                "title" to "Framerate Limit",
-                "description" to "",
+                "title" to "Maximum Object Detection FPS",
+                "description" to "Hard maximum detection rate; adaptive modes use about 35%, 65%, and 100% within this budget.",
                 "settingsType" to "slider",
-                "settingsOption" to mapOf("min" to 1, "max" to 120),
+                "settingsOption" to mapOf(
+                    "min" to Settings.MIN_OBJECT_DETECTION_FRAME_RATE,
+                    "max" to Settings.MAX_OBJECT_DETECTION_FRAME_RATE,
+                ),
                 "string" to R.string.max_object_detection_frame_rate_setting,
                 "default" to Settings.DEFAULT_FRAME_RATE_LIMIT
             )

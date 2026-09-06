@@ -24,7 +24,8 @@ class SpatialAudioResumeController(
 	private val restoreSpatialAudio: (trigger: String) -> Unit,
 	private val awaitTtsSilence: suspend () -> Boolean,
 	private val isListening: () -> Boolean,
-	private val onOutcome: (trigger: String, outcome: SpatialAudioResumeOutcome) -> Unit
+	private val onOutcome: (trigger: String, outcome: SpatialAudioResumeOutcome) -> Unit,
+	private val captureRestoreSpatialAudio: () -> ((String) -> Unit) = { restoreSpatialAudio },
 ) {
 	private val pendingResume = AtomicReference<Job?>(null)
 
@@ -32,13 +33,14 @@ class SpatialAudioResumeController(
 	fun schedule(trigger: String) {
 		cancel()
 		pauseSpatialAudio()
+		val restore = captureRestoreSpatialAudio()
 
 		val job = scope.launch(start = CoroutineStart.LAZY) {
 			val outcome = when {
 				!awaitTtsSilence() -> SpatialAudioResumeOutcome.TTS_SILENCE_TIMEOUT
 				isListening() -> SpatialAudioResumeOutcome.LISTENING_STATE_CHANGED
 				else -> {
-					restoreSpatialAudio(trigger)
+					restore(trigger)
 					SpatialAudioResumeOutcome.RESTORED
 				}
 			}

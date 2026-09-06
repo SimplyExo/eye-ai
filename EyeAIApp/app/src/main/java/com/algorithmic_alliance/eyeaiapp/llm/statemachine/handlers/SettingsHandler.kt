@@ -5,6 +5,7 @@ import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.EyeAIState as State
 import com.algorithmic_alliance.eyeaiapp.Settings
+import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationLabel
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.GenericCancellation
@@ -307,7 +308,7 @@ class SettingsHandler(
 						val frequency = setting.getInt("frequency")
 						val clampedFreq = frequency.coerceIn(100, 4000)
 						val currentBps = settings.depthAudioClickIncidence
-						uniffi.NativeLib.setAudioSettings(clampedFreq.toFloat(), currentBps)
+						SpatialAudio.setAudioSettings(clampedFreq.toFloat(), currentBps)
 
 						// Save settings
 						settings.depthAudioFrequency = clampedFreq
@@ -324,7 +325,7 @@ class SettingsHandler(
 						val bps = setting.getInt("bps")
 						val clampedBps = bps.coerceIn(1, 10)
 						val currentFreq = settings.depthAudioFrequency
-						uniffi.NativeLib.setAudioSettings(currentFreq.toFloat(), clampedBps)
+						SpatialAudio.setAudioSettings(currentFreq.toFloat(), clampedBps)
 
 						// Save settings
 						settings.depthAudioClickIncidence = clampedBps

@@ -46,7 +46,7 @@ interface FrameAnalysisBackend {
     val maxDepthFrameRate: Int?
     fun phoneMotionScore(): Double?
     /** Invoke admit after obtaining the model lock/readiness, immediately before actual work. */
-    fun runObjects(frame: Bitmap, admit: () -> Boolean): Array<UniffiDetectedObject>?
+    fun runObjects(frame: Bitmap, trackingEpoch: TrackingEpoch, admit: () -> Boolean): Array<UniffiDetectedObject>?
     fun runDepth(frame: AnalysisFrame): DepthFrameOutput?
     suspend fun runOcr(frame: Bitmap): List<TextBoundingBox>
 }
@@ -113,6 +113,8 @@ class FrameAnalyzer(
 
     fun start() = synchronized(stateLock) {
         if (startedValue || shutdownValue) return@synchronized
+        // A new runtime run is a tracking boundary. Cadence state is reset
+        // below, but cadence changes themselves never change this generation.
         generation = generation.copy(run = generation.run + 1, objectDetection = generation.objectDetection + 1)
         startedValue = true
         telemetry.startSession(clock.nowNanos())
@@ -127,6 +129,7 @@ class FrameAnalyzer(
     fun stop() = synchronized(stateLock) {
         if (!startedValue) return@synchronized
         startedValue = false
+        // Stop invalidates the old run; the next start receives a new epoch.
         generation = generation.copy(run = generation.run + 1, objectDetection = generation.objectDetection + 1)
         sourceSession = null
         depthJob?.cancel()
@@ -154,6 +157,8 @@ class FrameAnalyzer(
         scheduler.updateConfig(ObjectDetectionV1Policy.config(maxRateHz))
         if (odEnabled != enabled) {
             odEnabled = enabled
+            // Only an OD enable/disable transition is a tracking boundary.
+            // Changing the configured FPS policy while OD stays enabled is not.
             generation = generation.copy(objectDetection = generation.objectDetection + 1)
             scheduler.resetActivity()
             scene.reset()
@@ -166,8 +171,22 @@ class FrameAnalyzer(
         }
     }
 
+    /**
+     * A real model replacement also recreates the native tracker. Called under
+     * the YOLO session lock, after native locks have been released. Only takes
+     * stateLock and publishes state; never calls back into a model or native code.
+     */
+    fun onObjectTrackerReplaced() = synchronized(stateLock) {
+        generation = generation.copy(objectDetection = generation.objectDetection + 1)
+        scheduler.resetActivity()
+        scene.reset()
+        telemetry.resetActivity("object_tracker_replaced", clock.nowNanos())
+        clearResultsLocked(objectsOnly = true)
+    }
+
     fun beginSourceSession(): AnalysisSourceSession = synchronized(stateLock) {
         check(startedValue && !shutdownValue) { "Analyzer must be started before binding a source" }
+        // Binding a different source starts a distinct tracking stream.
         generation = generation.copy(source = generation.source + 1)
         releaseLatestLocked()
         resetStreamLocked("source_change")
@@ -177,6 +196,8 @@ class FrameAnalyzer(
 
     /** Invalidates callbacks immediately, including while a service/source stop is still pending. */
     fun invalidateSource() = synchronized(stateLock) {
+        // Invalidation is itself a source boundary, even before a replacement
+        // source session is bound.
         generation = generation.copy(source = generation.source + 1)
         sourceSession = null
         releaseLatestLocked()
@@ -198,6 +219,8 @@ class FrameAnalyzer(
             val nextGeometry = Triple(frame.width, frame.height, Math.floorMod(frame.rotationDegrees, 360))
             val gap = lastArrivalNanos?.let { now - it > ObjectDetectionV1Policy.STREAM_GAP_NANOS } == true
             if (gap || (geometry != null && geometry != nextGeometry)) {
+                // A long gap or a representation/rotation change is a content
+                // boundary. Ordinary scheduler skips do not reach this path.
                 generation = generation.copy(content = generation.content + 1)
                 scheduler.resetActivity()
                 scene.reset()
@@ -281,7 +304,7 @@ class FrameAnalyzer(
                 if (!synchronized(stateLock) { validObjects(slot) } || !backend.objectModelReady) continue
                 var admittedAt: Long? = null
                 val objects = try {
-                    backend.runObjects(slot.frame.bitmap) {
+                    backend.runObjects(slot.frame.bitmap, slot.generation.trackingEpoch) {
                         synchronized(stateLock) {
                             // A newer frame may have arrived while the model lock was busy.
                             if (!validObjects(slot) || latestFrame?.sequence != slot.sequence) {
