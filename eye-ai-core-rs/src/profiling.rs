@@ -9,6 +9,9 @@ use std::{
 #[cfg(feature = "enable_tracy_profiling")]
 use tracing_tracy::client::FrameName;
 
+#[cfg(feature = "enable_tracy_profiling")]
+tracing_tracy::client::register_demangler!();
+
 #[derive(Debug, Clone)]
 pub struct ProfileScopeRecord {
 	pub name: String,
