@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.IntentSender
@@ -8,6 +9,7 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
 import android.util.Log
+import android.view.ViewTreeObserver
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,6 +17,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,12 +52,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -77,6 +87,8 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 
@@ -112,6 +124,7 @@ fun ConnectionPage(
     val devices: List<Any> = listOf(
         mapOf(
             "name" to stringResource(R.string.device_eyeaivision_name),
+            "nameSemantic" to stringResource(R.string.choose_vision_name_semantic),
             "type" to "eye-ai-vision",
             "rememberKey" to R.string.remember_eye_ai_vision,
             "remember" to sharedPreferences.getBoolean(
@@ -124,6 +137,7 @@ fun ConnectionPage(
         ),
         mapOf(
             "name" to stringResource(R.string.device_audio_name),
+            "nameSemantic" to stringResource(R.string.choose_audio_device_name_semantic),
             "type" to "audio",
             "rememberKey" to R.string.remember_audio_device,
             "remember" to sharedPreferences.getBoolean(
@@ -166,37 +180,36 @@ fun ConnectionPage(
         }
     }
 
-    ChooseConnectionPage(
-        onConnectionSuccessful = { visionDevice ->
-            if (visionDevice == chooseCameraAsInput) {
-                sharedPreferences.edit(commit = true) {
-                    putBoolean(
-                        shouldRememberAudioDeviceKey, false
-                    )
-                    putString(
-                        selectedAudioDeviceKey, ""
-                    )
-                }
-                onConnectionSuccessful()
-            } else if (currentlyDisplayedDevices < devices.size - 1) {
-                currentlyDisplayedDevices++
-                startAutoConnect = true
-            } else onConnectionSuccessful()
-        },
-        goBack = {
-            if (currentlyDisplayedDevices != 0) {
-                currentlyDisplayedDevices--
-                startAutoConnect = false
-            } else onExitSelection()
-        },
-        devicesData = devices[currentlyDisplayedDevices] as Map<Any, Any>,
-        viewModel = viewModel,
-        onEvent = onEvent,
-        startAutoConnect = startAutoConnect
-    )
+    key(currentlyDisplayedDevices) {
+        ChooseConnectionPage(
+            onConnectionSuccessful = { visionDevice ->
+                if (visionDevice == chooseCameraAsInput) {
+                    sharedPreferences.edit(commit = true) {
+                        putBoolean(shouldRememberAudioDeviceKey, false)
+                        putString(selectedAudioDeviceKey, "")
+                    }
+                    onConnectionSuccessful()
+                } else if (currentlyDisplayedDevices < devices.size - 1) {
+                    currentlyDisplayedDevices++
+                    startAutoConnect = true
+                } else onConnectionSuccessful()
+            },
+            goBack = {
+                if (currentlyDisplayedDevices != 0) {
+                    currentlyDisplayedDevices--
+                    startAutoConnect = false
+                } else onExitSelection()
+            },
+            devicesData = devices[currentlyDisplayedDevices] as Map<Any, Any>,
+            viewModel = viewModel,
+            onEvent = onEvent,
+            startAutoConnect = startAutoConnect
+        )
+    }
 
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ChooseConnectionPage(
@@ -208,14 +221,21 @@ fun ChooseConnectionPage(
     onEvent: (UIEvent) -> Unit,
     startAutoConnect: Boolean = true
 ) {
-    DisposableEffect(Unit) {
-        onDispose {
-            Log.d(LOG_TAG, "Disposing ChooseConnectionPage")
+    val focusRequester = remember { FocusRequester() }
+    val context = LocalContext.current
+    val view = LocalView.current
+    var hasWindowFocus by remember { mutableStateOf(view.hasWindowFocus()) }
+
+    DisposableEffect(view) {
+        val listener = ViewTreeObserver.OnWindowFocusChangeListener { hasFocus ->
+            hasWindowFocus = hasFocus
         }
+        view.viewTreeObserver.addOnWindowFocusChangeListener(listener)
+        onDispose { view.viewTreeObserver.removeOnWindowFocusChangeListener(listener) }
     }
+
     val isDark = isSystemInDarkTheme()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     var shouldRememberDevice by rememberSaveable { mutableStateOf(false) }
     var selectedDevice by remember { mutableStateOf("") }
@@ -365,15 +385,23 @@ fun ChooseConnectionPage(
                 if (pageLoading) {
                     LoadingPage()
                 } else {
-                    Column {
+                    Column(modifier = Modifier.semantics{isTraversalGroup = true}) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(Spacing.md),
+                                .padding(Spacing.md)
+                                .semantics{traversalIndex = -1f},
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
                                 deviceCategory,
+                                modifier = Modifier
+                                    .focusRequester(focusRequester)
+                                    .focusable()
+                                    .clearAndSetSemantics {
+                                        contentDescription =
+                                            devicesData["nameSemantic"] as String
+                                    },
                                 style = MaterialTheme.typography.headlineLarge,
                                 textAlign = TextAlign.Center
                             )
@@ -388,6 +416,7 @@ fun ChooseConnectionPage(
                                 modifier = Modifier
                                     .padding(Spacing.sm)
                                     .fillMaxWidth()
+                                    .semantics{traversalIndex = 0f}
                             ) {
                                 items(items = devices) { item ->
                                     val index = devices.indexOf(item)
@@ -454,17 +483,20 @@ fun ChooseConnectionPage(
                                     end = Spacing.lg,
                                     top = Spacing.xs,
                                     bottom = Spacing.xs
-                                ),
+                                )
+                                .semantics{traversalIndex = 0f},
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Checkbox(
+                                    modifier = Modifier.semantics{contentDescription = context.getString(R.string.set_device_as_default_semantic)},
                                     checked = shouldRememberDevice, onCheckedChange = {
                                         shouldRememberDevice = !shouldRememberDevice
                                     })
                                 Text(
                                     stringResource(R.string.standard_device_text),
+                                    modifier = Modifier.clearAndSetSemantics{},
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
@@ -473,8 +505,9 @@ fun ChooseConnectionPage(
                                     onClick = {
                                         val locationManager =
                                             context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                                        if (locationManager.isLocationEnabled) wifiScanState.rescan()
-                                        else {
+                                        if (locationManager.isLocationEnabled) {
+                                            wifiScanState.rescan()
+                                        } else {
                                             Log.d(
                                                 LOG_TAG,
                                                 "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
@@ -501,7 +534,8 @@ fun ChooseConnectionPage(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(Spacing.md),
+                                .padding(Spacing.md)
+                                .semantics{traversalIndex = 1f},
                             horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                         ) {
                             PremiumButton(
@@ -552,7 +586,7 @@ fun ChooseConnectionPage(
                                 }) {
                                 Text(
                                     stringResource(R.string.connect_text),
-                                    modifier = Modifier.clearAndSetSemantics {},
+                                    modifier = Modifier.clearAndSetSemantics {contentDescription = context.getString(R.string.connect_to_device_semantic)},
                                     style = MaterialTheme.typography.labelLarge
                                 )
                             }
@@ -566,7 +600,8 @@ fun ChooseConnectionPage(
     if (showConnectionFailedDialog) {
         ErrorDialog(titel = {
             Text(
-                stringResource(R.string.connection_failed_title), style = MaterialTheme.typography.titleLarge
+                stringResource(R.string.connection_failed_title),
+                style = MaterialTheme.typography.titleLarge
             )
         }, content = {
             Text(
@@ -588,11 +623,14 @@ fun ChooseConnectionPage(
 
 @Composable
 fun DeviceListEntry(deviceName: String, isSelected: Boolean = false, onSelected: () -> Unit) {
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
     ) {
-        RadioButton(modifier = Modifier, onClick = { onSelected() }, selected = isSelected)
+        RadioButton(modifier = Modifier.semantics {
+            contentDescription = context.getString(R.string.radio_button_semantic) + deviceName
+        }, onClick = { onSelected() }, selected = isSelected)
         Text(
             deviceName, Modifier.clearAndSetSemantics {})
     }

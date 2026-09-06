@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -67,6 +68,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -75,6 +77,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.invisibleToUser
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
@@ -130,7 +138,8 @@ fun SettingsPage(
         topBar = {
             TopAppBar(
                 modifier = Modifier
-                    .shadow(elevation = Spacing.sm),
+                    .shadow(elevation = Spacing.sm)
+                    .semantics { isTraversalGroup = true },
                 windowInsets = TopAppBarDefaults.windowInsets,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -141,13 +150,19 @@ fun SettingsPage(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        PremiumIconButton(onClick = { onReturn() }) {
+                        PremiumIconButton(
+                            modifier = Modifier.semantics { traversalIndex = 1f },
+                            onClick = { onReturn() }) {
                             Icon(
                                 painter = painterResource(R.drawable.arrow_back_24px),
                                 contentDescription = stringResource(R.string.return_icon_description)
                             )
                         }
-                        Text(stringResource(R.string.settings_app_bar_title), style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            stringResource(R.string.settings_app_bar_title),
+                            modifier = Modifier.semantics { traversalIndex = -1f },
+                            style = MaterialTheme.typography.titleLarge
+                        )
                     }
                 },
             )
@@ -165,7 +180,9 @@ fun SettingsPage(
                             items(
                                 items = settingsData.entries.toList(),
                                 key = { entry -> entry.key }) { entry ->
-                                if (stringResource(entry.key) != stringResource(R.string.settings_category_developer) || (stringResource(entry.key) == stringResource(R.string.settings_category_developer) && sharedPreferences.getBoolean(
+                                if (stringResource(entry.key) != stringResource(R.string.settings_category_developer) || (stringResource(
+                                        entry.key
+                                    ) == stringResource(R.string.settings_category_developer) && sharedPreferences.getBoolean(
                                         stringResource(R.string.debug_page_activated),
                                         false
                                     ))
@@ -207,7 +224,7 @@ fun SettingsPage(
                                                 }
                                             }
 
-                                        },
+                                        }.clearAndSetSemantics{ hideFromAccessibility() },
                                     elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
                                     border = BorderStroke(
                                         width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
@@ -221,7 +238,9 @@ fun SettingsPage(
                                         horizontalArrangement = Arrangement.Center
                                     ) {
                                         Text(
-                                            if (!debugPageActivated) stringResource(R.string.activate_debug_page_text) else stringResource(R.string.deactivate_debug_page_text),
+                                            if (!debugPageActivated) stringResource(R.string.activate_debug_page_text) else stringResource(
+                                                R.string.deactivate_debug_page_text
+                                            ),
                                             style = MaterialTheme.typography.titleMedium,
                                         )
                                     }
@@ -249,6 +268,7 @@ fun SettingsPage(
 
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun SettingsCategoryCard(
     modifier: Modifier = Modifier,
@@ -259,6 +279,7 @@ fun SettingsCategoryCard(
     uiState: UIState
 ) {
     val isDark = isSystemInDarkTheme()
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -276,7 +297,12 @@ fun SettingsCategoryCard(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    category, style = MaterialTheme.typography.titleMedium
+                    category,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.semantics {
+                        contentDescription = context.getString(
+                            (R.string.settings_card_title_semantic)) + category
+                    }
                 )
             }
             HorizontalDivider()
@@ -331,7 +357,7 @@ fun SettingsCategoryCard(
 fun ClickSetting(
     settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit, onOpenConnectionPage: () -> Unit
 ) {
-    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
+    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -345,7 +371,7 @@ fun ClickSetting(
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
-            if (resolveString(LocalContext.current, settingData.getValue("description"))!= "")
+            if (resolveString(LocalContext.current, settingData.getValue("description")) != "")
                 Text(
                     resolveString(LocalContext.current, settingData.getValue("description")),
                     style = MaterialTheme.typography.bodySmall
@@ -357,37 +383,42 @@ fun ClickSetting(
                     sharedPreferences.getString(stringResource(R.string.selected_audio_device), "")
                 val standardVisionDevice =
                     sharedPreferences.getString(stringResource(R.string.selected_eye_ai_vision), "")
-                if(standardVisionDevice != ""){
-                    if(standardVisionDevice == stringResource(R.string.camera_as_input_text)){
+                if (standardVisionDevice != "") {
+                    if (standardVisionDevice == stringResource(R.string.camera_as_input_text)) {
                         Text(
                             "${stringResource(R.string.vision)}: ${stringResource(R.string.camera_as_input_text)}",
                             style = MaterialTheme.typography.bodySmall
                         )
-                    }else{
+                    } else {
                         Text(
                             "${stringResource(R.string.vision)}: $standardVisionDevice",
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
-                }else{
+                } else {
                     Text(
                         "${stringResource(R.string.vision)}:    -",
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-                if(standardAudioDevice != ""){
-                    if(standardVisionDevice == stringResource(R.string.camera_as_input_text)){
+                if (standardAudioDevice != "") {
+                    if (standardVisionDevice == stringResource(R.string.camera_as_input_text)) {
                         Text(
                             "${stringResource(R.string.audio_device)}: ${stringResource(R.string.system_as_audio_text)}",
                             style = MaterialTheme.typography.bodySmall
                         )
-                    }else{
+                    } else {
                         Text(
-                            "${stringResource(R.string.audio_device)}: ${if(standardAudioDevice == stringResource(R.string.choose_system_as_audio_text)) stringResource(R.string.system_as_audio_text) else standardAudioDevice}",
+                            "${stringResource(R.string.audio_device)}: ${
+                                if (standardAudioDevice == stringResource(
+                                        R.string.choose_system_as_audio_text
+                                    )
+                                ) stringResource(R.string.system_as_audio_text) else standardAudioDevice
+                            }",
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
-                }else{
+                } else {
                     Text(
                         "${stringResource(R.string.audio_device)}:    -",
                         style = MaterialTheme.typography.bodySmall
@@ -397,7 +428,8 @@ fun ClickSetting(
             }
         }
         Box {
-            val changeStandardDeviceText = stringResource(R.string.setting_change_default_devices_title)
+            val changeStandardDeviceText =
+                stringResource(R.string.setting_change_default_devices_title)
             PremiumIconButton(onClick = {
                 if (settingTitle == changeStandardDeviceText) {
                     onEvent(UIEvent.OnUpdateActionStartedFromSettings(true))
@@ -407,7 +439,7 @@ fun ClickSetting(
             }) {
                 Icon(
                     painter = painterResource(R.drawable.change_circle_24px),
-                    contentDescription = ""
+                    contentDescription = stringResource(R.string.change_devices_icon_description)
                 )
             }
 
@@ -415,6 +447,7 @@ fun ClickSetting(
     }
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun CheckBoxSetting(
     modifier: Modifier = Modifier,
@@ -433,8 +466,9 @@ fun CheckBoxSetting(
         )
     }
 
-    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
-    val settingDescription = resolveString(LocalContext.current,settingData.getValue("description"))
+    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+    val settingDescription =
+        resolveString(LocalContext.current, settingData.getValue("description"))
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -453,7 +487,7 @@ fun CheckBoxSetting(
                 style = MaterialTheme.typography.bodySmall
             )
         }
-        Checkbox(checked = checked, onCheckedChange = { isChecked ->
+        Checkbox(modifier = Modifier.semantics{ contentDescription = context.getString(R.string.check_box_setting_semantic) + settingTitle},checked = checked, onCheckedChange = { isChecked ->
 
             if (settingData["string"] == R.string.enable_speech_recognition_setting && !hasPermission(
                     context, Manifest.permission.RECORD_AUDIO
@@ -477,6 +511,7 @@ fun CheckBoxSetting(
     }
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun SelectSetting(
     modifier: Modifier = Modifier,
@@ -496,8 +531,9 @@ fun SelectSetting(
             ))
         )
     }
-    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
-    val settingDescription = resolveString(LocalContext.current,settingData.getValue("description"))
+    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+    val settingDescription =
+        resolveString(LocalContext.current, settingData.getValue("description"))
 
     Row(
         modifier = Modifier
@@ -513,7 +549,7 @@ fun SelectSetting(
                 fontWeight = FontWeight.Medium
             )
             if (settingDescription != "") Text(
-               settingDescription,
+                settingDescription,
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -521,10 +557,11 @@ fun SelectSetting(
             Row(
                 modifier = Modifier.clickable {
                     dropDownEnabled = true
-                }, verticalAlignment = Alignment.CenterVertically
+                }.semantics{contentDescription = context.getString(R.string.select_setting_semantic) + settingTitle}, verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     currentlySelected as String,
+                    modifier = Modifier.semantics{contentDescription = context.getString(R.string.currently_selected_semantic) + currentlySelected},
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -601,8 +638,9 @@ fun SliderSetting(
             )
         )
     }
-    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
-    val settingDescription = resolveString(LocalContext.current,settingData.getValue("description"))
+    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+    val settingDescription =
+        resolveString(LocalContext.current, settingData.getValue("description"))
     val audioFrequencySettingTitle = stringResource(R.string.setting_audio_frequency_title)
     AnimatedVisibility(
         visible = visible,
@@ -664,8 +702,9 @@ fun TextInputSetting(
     modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
 ) {
     var showTextFieldDialog by rememberSaveable { mutableStateOf(false) }
-    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
-    val settingDescription = resolveString(LocalContext.current,settingData.getValue("description"))
+    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+    val settingDescription =
+        resolveString(LocalContext.current, settingData.getValue("description"))
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -687,7 +726,7 @@ fun TextInputSetting(
         Box {
             PremiumIconButton(onClick = { showTextFieldDialog = true }) {
                 Icon(
-                    painter = painterResource(R.drawable.ink_pen_24px), contentDescription = ""
+                    painter = painterResource(R.drawable.ink_pen_24px), contentDescription = stringResource(R.string.text_input_setting_semantic)
                 )
             }
 
@@ -742,7 +781,12 @@ fun TextFieldDialog(
         OutlinedTextField(
             value = text ?: "",
             onValueChange = { text = it },
-            label = { Text(stringResource(R.string.enter_text_in_text_field_text), style = MaterialTheme.typography.bodySmall) })
+            label = {
+                Text(
+                    stringResource(R.string.enter_text_in_text_field_text),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            })
     }, confirmButton = {
         PremiumButton(onClick = {
             onDismiss()
@@ -770,7 +814,11 @@ fun InfoSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
                 resolveString(LocalContext.current, settingData.getValue("title")) as String,
                 style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium
             )
-            if (resolveString(LocalContext.current, settingData.getValue("description")) != "") Text(
+            if (resolveString(
+                    LocalContext.current,
+                    settingData.getValue("description")
+                ) != ""
+            ) Text(
                 resolveString(LocalContext.current, settingData.getValue("description")),
                 style = MaterialTheme.typography.bodySmall
             )
@@ -790,8 +838,9 @@ fun FileSetting(
     var selectedFileUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
 
-    val settingTitle = resolveString(LocalContext.current,settingData.getValue("title"))
-    val settingDescription = resolveString(LocalContext.current,settingData.getValue("description"))
+    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+    val settingDescription =
+        resolveString(LocalContext.current, settingData.getValue("description"))
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
@@ -830,7 +879,7 @@ fun FileSetting(
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
-            if (settingDescription!= "") Text(
+            if (settingDescription != "") Text(
                 settingDescription,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -841,7 +890,7 @@ fun FileSetting(
             )
         }) {
             Icon(
-                painter = painterResource(R.drawable.upload_file_24px), contentDescription = ""
+                painter = painterResource(R.drawable.upload_file_24px), contentDescription = stringResource(R.string.file_setting_semantic)
             )
         }
     }

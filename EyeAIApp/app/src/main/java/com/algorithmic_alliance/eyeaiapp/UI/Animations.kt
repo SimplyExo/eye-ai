@@ -1,6 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
-import android.view.MotionEvent
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -20,18 +20,11 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonElevation
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,11 +33,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 @Composable
 fun rememberShimmerBrush(backgroundColor: Color, contrastColor: Color): Brush {
@@ -72,12 +68,15 @@ fun rememberShimmerBrush(backgroundColor: Color, contrastColor: Color): Brush {
     )
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ShimmerBox(brush: Brush, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(brush)
+            .semantics{contentDescription = context.getString(R.string.loading_semantic) }
     )
 }
 
@@ -102,6 +101,8 @@ fun PremiumButton(
         label = "buttonScale"
     )
 
+    val buttonSemantic = stringResource(R.string.button_semantic)
+
     Surface(
         onClick = onClick,
         enabled = enabled,
@@ -111,7 +112,9 @@ fun PremiumButton(
         tonalElevation = if (enabled) tonalElevation else 0.dp,
         shadowElevation = if (enabled) shadowElevation else 0.dp,
         interactionSource = interactionSource,
-        modifier = modifier.graphicsLayer { scaleX = scale; scaleY = scale }
+        modifier = modifier
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .semantics { contentDescription = buttonSemantic },
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
@@ -142,6 +145,8 @@ fun PremiumIconButton(
         label = "buttonScale"
     )
 
+    val buttonSemantic = stringResource(R.string.button_semantic)
+
     Surface(
         onClick = onClick,
         enabled = enabled,
@@ -153,7 +158,8 @@ fun PremiumIconButton(
         interactionSource = interactionSource,
         modifier = modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .size(40.dp) // Standard-Touch-Target wie bei IconButton
+            .size(40.dp)
+            .semantics { contentDescription = buttonSemantic },
     ) {
         Box(contentAlignment = Alignment.Center) {
             content()
@@ -182,6 +188,8 @@ fun PremiumFloatingActionButton(
         label = "buttonScale"
     )
 
+    val buttonSemantic = stringResource(R.string.button_semantic)
+
     Surface(
         onClick = onClick,
         enabled = enabled,
@@ -193,7 +201,8 @@ fun PremiumFloatingActionButton(
         interactionSource = interactionSource,
         modifier = modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .size(56.dp) // Standard-FAB-Größe
+            .size(56.dp)
+            .semantics { contentDescription = buttonSemantic },
     ) {
         Box(contentAlignment = Alignment.Center) {
             content()

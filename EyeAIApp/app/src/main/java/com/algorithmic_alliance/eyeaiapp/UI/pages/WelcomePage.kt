@@ -61,7 +61,6 @@ fun WelcomePage(
                 onClick = { onGetStarted() }) {
                 Text(
                     stringResource(R.string.start_app_button_text),
-                    modifier = Modifier.clearAndSetSemantics {},
                     style = MaterialTheme.typography.labelLarge
                 )
             }

@@ -35,6 +35,9 @@
     <string name="enable_npu_delegate_setting" translatable="false">Use NPU (experimental)</string>
     <string name="jpeg_compression" translatable="false">jpeg_compression</string>
     <string name="debug_page_activated" translatable="false">debug_page_activated</string>
+
+
+    <!--Strings for Text in the UI  -->
     <string name="language_is_german">Deutsch</string>
     <string name="language_is_english">Englisch</string>
     <string name="app_logo_description">EyeAI-App-Logo</string>
@@ -48,7 +51,7 @@
 
     <string name="camera_permission_name">Kamera</string>
     <string name="camera_permission_explanation_text">Damit die KI Ihre Umgebung analysieren kann, benötigt die App Zugriff auf die Kamera. Die Kamerabilder werden verwendet, um Entfernungen zu schätzen und Objekte in Ihrer Umgebung zu erkennen. Diese Informationen werden Ihnen anschließend per Audio mitgeteilt.</string>
-    <string name="camera_icon_description">Kamerasymbol</string>
+    <string name="camera_icon_description">Kamerasymbol. Auf dieser Seite können Sie die Kameraberechtigung verwalten.</string>
     <string name="camera_permission_decline_semantic">Kamerazugriff ablehnen.</string>
     <string name="camera_permission_accept_semantic">Kamerazugriff zulassen.</string>
     <string name="camera_confirm_decline_explanation_text">Wenn Sie den Kamerazugriff ablehnen, können Sie die App nicht verwenden.</string>
@@ -56,7 +59,7 @@
 
     <string name="microphone_permission_name">Mikrofon</string>
     <string name="microphone_permission_explanation_text">Um die App per Sprachbefehl zu steuern, müssen Sie den Zugriff auf das Mikrofon zulassen.</string>
-    <string name="microphone_icon_description">Mikrofonsymbol</string>
+    <string name="microphone_icon_description">Mikrofonsymbol. Auf dieser Seite können Sie die Mikrofonberechtigung verwalten.</string>
     <string name="microphone_permission_decline_semantic">Mikrofonzugriff ablehnen.</string>
     <string name="microphone_permission_accept_semantic">Mikrofonzugriff zulassen.</string>
     <string name="microphone_confirm_permission_decline_explanation_text">Wenn Sie den Mikrofonzugriff ablehnen, können Sie keine Sprachbefehle verwenden.</string>
@@ -64,7 +67,7 @@
 
     <string name="wifi_permission_name">WLAN-Geräte in der Nähe</string>
     <string name="wifi_permission_explanation_text">Um eine Verbindung zu einem EyeAI-Vision-Gerät herzustellen, benötigt die App Zugriff auf WLAN-Geräte in der Nähe.</string>
-    <string name="wifi_icon_description">WLAN-Symbol</string>
+    <string name="wifi_icon_description">WLAN-Symbol. Auf dieser Seite können Sie die WLAN-Berechtigung verwalten.</string>
     <string name="wifi_permission_decline_semantic">Zugriff auf WLAN-Geräte in der Nähe ablehnen.</string>
     <string name="wifi_permission_accept_semantic">Zugriff auf WLAN-Geräte in der Nähe zulassen.</string>
     <string name="wifi_confirm_decline_explanation_text">Wenn Sie den Zugriff auf WLAN-Geräte in der Nähe ablehnen, können Sie kein EyeAI-Vision-Gerät verwenden.</string>
@@ -72,7 +75,7 @@
 
     <string name="location_permission_name">Standort</string>
     <string name="location_permission_explanation_text">Beim Suchen nach WLAN-Netzwerken könnten Informationen über Ihren Standort erfasst werden. Die App speichert oder verwendet Ihren Standort zu keinem Zeitpunkt.</string>
-    <string name="location_icon_description">Standortsymbol</string>
+    <string name="location_icon_description">Standortsymbol. Auf dieser Seite können Sie die Standort-Berechtigung verwalten.</string>
     <string name="location_permission_decline_semantic">Standortzugriff ablehnen.</string>
     <string name="location_permission_accept_semantic">Standortzugriff zulassen.</string>
     <string name="location_confirm_decline_explanation_text">Wenn Sie den Standortzugriff ablehnen, können Sie kein EyeAI-Vision-Gerät verwenden.</string>
@@ -96,22 +99,27 @@
     <string name="location_disabled_title">Standortdienste sind deaktiviert</string>
     <string name="location_disabled_text">Da die Suche nach WLAN-Netzwerken in der Nähe Rückschlüsse auf Ihren Standort zulassen könnte, verlangt Android, dass die Standortdienste aktiviert sind. Die App selbst verwendet Ihren Standort nicht.</string>
     <string name="activate_text">Aktivieren</string>
+
     <string name="object_detection_card_title">Objekterkennung</string>
     <string name="object_detection_card_disabled_text">Objekterkennung deaktiviert</string>
     <string name="status_card_active_text">Aktiv</string>
     <string name="status_card_performance_text">Leistung</string>
+
     <string name="vision_card_title">EyeAI-Vision</string>
     <string name="vision_card_no_vision_connected_text">Kein EyeAI-Vision verbunden. Telefonkamera wird verwendet.</string>
     <string name="vision_card_name_text">Name</string>
     <string name="vision_card_connection_text">Verbindung</string>
     <string name="vision_card_battery_text">Akku</string>
+
     <string name="depth_estimation_card_title">Tiefenschätzung</string>
+
     <string name="vosk_card_title">Spracherkennung</string>
     <string name="vosk_card_responding">EyeAI antwortet…</string>
     <string name="vosk_card_missing_permission">Mikrofonberechtigung erforderlich</string>
     <string name="vosk_card_listening">EyeAI hört zu…</string>
     <string name="vosk_card_disabled">Spracherkennung deaktiviert</string>
     <string name="vosk_card_ready">EyeAI bereit – zum Starten auf die Schaltfläche tippen</string>
+
     <string name="status_card_performance_poor">Schlecht</string>
     <string name="status_card_performance_sufficient">Ausreichend</string>
     <string name="status_card_performance_good">Gut</string>
@@ -198,4 +206,27 @@
     <string name="vision">EyeAI-Vision</string>
     <string name="enter_text_in_text_field_text">Text eingeben…</string>
     <string name="finished_editing_text">Fertig</string>
+    <string name="button_semantic">Schaltfläche</string>
+    <string name="choose_vision_name_semantic">Auf dieser Seite können sie sich mit ihrer EyeAI-Vision verbinden.</string>
+    <string name="choose_audio_device_name_semantic">Auf dieser Seite können Sie ein Audiogerät auswählen.</string>
+    <string name="loading_semantic">Inhalt lädt</string>
+    <string name="set_device_as_default_semantic">Das ausgewählte Gerät als Standard setzen</string>
+    <string name="radio_button_semantic">Optionsfeld für:</string>
+    <string name="connect_to_device_semantic">Mit ausgewähltem Gerät verbinden</string>
+    <string name="object_detection_card_title_semantic">Status der Objekterkennung</string>
+    <string name="depth_estimation_card_title_semantic">Status der Tiefenschätzung</string>
+    <string name="vision_card_title_semantic">Status der EyeAI-Vision</string>
+    <string name="vosk_card_title_semantic">Status der Spracherkennung</string>
+    <string name="start_vosk_button_description">Schaltfläche zum Starten und Stoppen der Spracherkennung.</string>
+    <string name="open_settings_button_description">Schaltfläche zum Öffnen der Einstellungen</string>
+    <string name="change_devices_icon_description">Schaltfläche zum Ändern der Geräte</string>
+    <string name="settings_card_title_semantic">Einstellungskategorie:</string>
+    <string name="check_box_setting_semantic">Kästchen für:</string>
+    <string name="select_setting_semantic">Liste aller Optionen für</string>
+    <string name="currently_selected_semantic">Aktuell ausgewählt</string>
+    <string name="text_input_setting_semantic">Öffnet ein Textfeld</string>
+    <string name="file_setting_semantic">Öffnet die Auswahl einer Datei</string>
+
+    <!-- Strings for semantics -->
+
 </resources>

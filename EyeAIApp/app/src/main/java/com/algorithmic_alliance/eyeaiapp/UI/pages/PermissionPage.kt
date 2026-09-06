@@ -1,12 +1,14 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
-import android.content.Context
+import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
+import android.view.ViewTreeObserver
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,21 +26,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,6 +63,8 @@ import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -82,18 +95,22 @@ fun PermissionPage(
 
     Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
         Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-            AskForPermission(
-                modifier,
-                notGrantedPermissions[currentPermission],
-                onPermissionAccepted = { if (currentPermission < notGrantedPermissions.size - 1) currentPermission++ else onPermissionsGranted() },
-                onExitPermissionPage = { onPermissionsDeclined() }, onEvent = onEvent
-            )
+            key(currentPermission) {
+                AskForPermission(
+                    modifier,
+                    notGrantedPermissions[currentPermission],
+                    onPermissionAccepted = { if (currentPermission < notGrantedPermissions.size - 1) currentPermission++ else onPermissionsGranted() },
+                    onExitPermissionPage = { onPermissionsDeclined() },
+                    onEvent = onEvent
+                )
+            }
         }
 
     }
 
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun AskForPermission(
     modifier: Modifier = Modifier,
@@ -102,8 +119,20 @@ fun AskForPermission(
     onExitPermissionPage: () -> Unit,
     onEvent: (UIEvent) -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    val focusRequester = remember { FocusRequester() }
     val context = LocalContext.current
+    val view = LocalView.current
+    var hasWindowFocus by remember { mutableStateOf(view.hasWindowFocus()) }
+
+    DisposableEffect(view) {
+        val listener = ViewTreeObserver.OnWindowFocusChangeListener { hasFocus ->
+            hasWindowFocus = hasFocus
+        }
+        view.viewTreeObserver.addOnWindowFocusChangeListener(listener)
+        onDispose { view.viewTreeObserver.removeOnWindowFocusChangeListener(listener) }
+    }
+    val isDark = isSystemInDarkTheme()
+
     Log.d(
         LOG_TAG,
         "[PermissionPage.AskForPermission] Asking for permission ${permissionData["permissions"]}"
@@ -157,25 +186,32 @@ fun AskForPermission(
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
-        Column(modifier = Modifier.padding(Spacing.md)) {
+        Column(modifier = Modifier
+            .padding(Spacing.md)
+            .semantics { isTraversalGroup = true }) {
             Row(
                 modifier = Modifier
                     .padding(Spacing.md)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .semantics { traversalIndex = -1f },
                 horizontalArrangement = Arrangement.Center
             ) {
                 Icon(
                     modifier = Modifier
                         .height(Spacing.xxxxl)
-                        .width(Spacing.xxxxl),
+                        .width(Spacing.xxxxl)
+                        .focusRequester(focusRequester)
+                        .focusable(),
                     painter = painterResource(permissionIcon as Int),
                     contentDescription = stringResource(permissionData["iconDescription"] as Int),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
             Text(
-                permissionExplanation as String,
-                modifier = Modifier.padding(Spacing.md),
+                permissionExplanation,
+                modifier = Modifier
+                    .padding(Spacing.md)
+                    .semantics { traversalIndex = 0f },
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
@@ -183,7 +219,8 @@ fun AskForPermission(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = Spacing.md),
+                    .padding(top = Spacing.md)
+                    .semantics { traversalIndex = 1f },
                 horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
             ) {
                 PremiumButton(
@@ -193,7 +230,7 @@ fun AskForPermission(
                     onClick = { showDeclineDialog = !showDeclineDialog }) {
                     Text(
                         stringResource(R.string.decline_action),
-                        modifier = Modifier.clearAndSetSemantics {},
+                        modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(permissionData["permissionDeclineSemantic"] as Int)},
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -210,7 +247,7 @@ fun AskForPermission(
                     }) {
                     Text(
                         stringResource(R.string.accept_action),
-                        modifier = Modifier.clearAndSetSemantics {},
+                        modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(permissionData["permissionAcceptSemantic"] as Int)},
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -231,6 +268,7 @@ fun AskForPermission(
 
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ConfirmPermissionDecline(
     modifier: Modifier = Modifier,
@@ -249,7 +287,9 @@ fun ConfirmPermissionDecline(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                PremiumIconButton(modifier = Modifier, onClick = { onDialogDismissed() }) {
+                PremiumIconButton(
+                    modifier = Modifier.semantics { traversalIndex = 1f },
+                    onClick = { onDialogDismissed() }) {
                     Icon(
                         modifier = Modifier
                             .width(Spacing.xl)
@@ -258,7 +298,14 @@ fun ConfirmPermissionDecline(
                         contentDescription = stringResource(R.string.return_icon_description)
                     )
                 }
-                Text(stringResource(R.string.confirm_permission_decline_title), style = MaterialTheme.typography.titleLarge)
+                Text(
+                    stringResource(R.string.confirm_permission_decline_title),
+                    modifier = Modifier.semantics {
+                        traversalIndex = -1f
+                        heading()
+                    },
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
         },
         text = {
@@ -287,7 +334,7 @@ fun ConfirmPermissionDecline(
                 }) {
                 Text(
                     stringResource(R.string.confirm_decline_action),
-                    modifier = Modifier.clearAndSetSemantics {},
+                    modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(permissionData["confirmPermissionDeclineSemantic"] as Int)},
                     style = MaterialTheme.typography.labelLarge
                 )
             }

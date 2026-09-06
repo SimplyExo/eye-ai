@@ -16,7 +16,7 @@
 
     <string name="camera_permission_name">Camera</string>
     <string name="camera_permission_explanation_text">To let the AI analyze your surroundings, the app needs access to the camera. The camera images are used to estimate distances and detect objects around you. This information is then conveyed to you via audio.</string>
-    <string name="camera_icon_description">Camera icon</string>
+    <string name="camera_icon_description">Camera icon. On this page, you can manage camera permissions.</string>
     <string name="camera_permission_decline_semantic">Deny camera access.</string>
     <string name="camera_permission_accept_semantic">Allow camera access.</string>
     <string name="camera_confirm_decline_explanation_text">If you deny camera access, you will not be able to use the app.</string>
@@ -24,7 +24,7 @@
 
     <string name="microphone_permission_name">Microphone</string>
     <string name="microphone_permission_explanation_text">To interact with the app using voice commands, you need to allow microphone access.</string>
-    <string name="microphone_icon_description">Microphone icon</string>
+    <string name="microphone_icon_description">Microphone icon. On this page, you can manage microphone permissions.</string>
     <string name="microphone_permission_decline_semantic">Deny microphone access.</string>
     <string name="microphone_permission_accept_semantic">Allow microphone access.</string>
     <string name="microphone_confirm_permission_decline_explanation_text">If you deny microphone access, you will not be able to use voice commands.</string>
@@ -32,7 +32,7 @@
 
     <string name="wifi_permission_name">Nearby Wi-Fi devices</string>
     <string name="wifi_permission_explanation_text">To connect to an EyeAI-Vision device, the app needs access to nearby Wi-Fi devices.</string>
-    <string name="wifi_icon_description">Wi-Fi icon</string>
+    <string name="wifi_icon_description">Wi-Fi icon. On this page, you can manage wifi permissions.</string>
     <string name="wifi_permission_decline_semantic">Deny access to nearby Wi-Fi devices.</string>
     <string name="wifi_permission_accept_semantic">Allow access to nearby Wi-Fi devices.</string>
     <string name="wifi_confirm_decline_explanation_text">If you deny access to nearby Wi-Fi devices, you will not be able to use an EyeAI-Vision device.</string>
@@ -40,7 +40,7 @@
 
     <string name="location_permission_name">Location</string>
     <string name="location_permission_explanation_text">Scanning for Wi-Fi networks could reveal information about your location. The app never stores or uses your location.</string>
-    <string name="location_icon_description">Location icon</string>
+    <string name="location_icon_description">Location icon. On this page, you can manage location permissions.</string>
     <string name="location_permission_decline_semantic">Deny access to location.</string>
     <string name="location_permission_accept_semantic">Allow access to location.</string>
     <string name="location_confirm_decline_explanation_text">If you deny access to your location, you will not be able to use an EyeAI-Vision device.</string>
@@ -166,6 +166,26 @@
     <string name="vision">EyeAI-Vision</string>
     <string name="enter_text_in_text_field_text">Enter text…</string>
     <string name="finished_editing_text">Done</string>
+    <string name="button_semantic">Button</string>
+    <string name="choose_vision_name_semantic">On this page, you can connect to your EyeAI Vision.</string>
+    <string name="choose_audio_device_name_semantic">On this page, you can select an audio device.</string>
+    <string name="loading_semantic">Loading content</string>
+    <string name="set_device_as_default_semantic">Set the selected device as default</string>
+    <string name="radio_button_semantic">Radio button for:</string>
+    <string name="connect_to_device_semantic">Connect to selected device</string>
+    <string name="object_detection_card_title_semantic">Object detection status</string>
+    <string name="depth_estimation_card_title_semantic">Depth estimation status</string>
+    <string name="vision_card_title_semantic">EyeAI Vision status</string>
+    <string name="vosk_card_title_semantic">Speech recognition status</string>
+    <string name="start_vosk_button_description">Button to start and stop speech recognition.</string>
+    <string name="open_settings_button_description">Button to open settings</string>
+    <string name="change_devices_icon_description">Button to change devices</string>
+    <string name="settings_card_title_semantic">Settings category:</string>
+    <string name="check_box_setting_semantic">Checkbox for:</string>
+    <string name="select_setting_semantic">List of all options for</string>
+    <string name="currently_selected_semantic">Currently selected</string>
+    <string name="text_input_setting_semantic">Opens a text field</string>
+    <string name="file_setting_semantic">Opens file selection</string>
 
 
 </resources>

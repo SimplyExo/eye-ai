@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
@@ -43,6 +44,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -160,7 +163,7 @@ fun HomePage(
                             )
                         } else {
                             painterResource(R.drawable.play_arrow_24px)
-                        }, contentDescription = "Start Vosk"
+                        }, contentDescription = stringResource(R.string.start_vosk_button_description)
                     )
                 }
 
@@ -169,7 +172,7 @@ fun HomePage(
                     onClick = { onOpenSettings() }) {
                     Icon(
                         painter = painterResource(R.drawable.settings_24px),
-                        contentDescription = "Open Settings"
+                        contentDescription = stringResource(R.string.open_settings_button_description)
                     )
                 }
             }
@@ -193,6 +196,7 @@ fun HomePage(
 
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -215,6 +219,7 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
         ) {
             Text(
                 stringResource(R.string.object_detection_card_title),
+                modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(R.string.object_detection_card_title_semantic)},
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
@@ -256,6 +261,7 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
     }
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun VisionStatusCard(viewModel: MainViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -276,6 +282,7 @@ fun VisionStatusCard(viewModel: MainViewModel) {
         ) {
             Text(
                 stringResource(R.string.vision_card_title),
+                modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(R.string.vision_card_title_semantic)},
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
@@ -316,6 +323,7 @@ fun VisionStatusCard(viewModel: MainViewModel) {
     }
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -335,6 +343,7 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
         ) {
             Text(
                 stringResource(R.string.depth_estimation_card_title),
+                modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(R.string.depth_estimation_card_title_semantic)},
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium
             )
@@ -366,10 +375,12 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
     }
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun VoskStatusCard(viewModel: MainViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isSystemInDarkTheme()
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .padding(Spacing.sm)
@@ -383,6 +394,7 @@ fun VoskStatusCard(viewModel: MainViewModel) {
         ) {
             Text(
                 stringResource(R.string.vosk_card_title),
+                modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(R.string.vosk_card_title_semantic)},
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
