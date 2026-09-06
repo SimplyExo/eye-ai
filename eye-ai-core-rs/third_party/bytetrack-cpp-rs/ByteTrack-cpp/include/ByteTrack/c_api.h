@@ -15,6 +15,11 @@ typedef struct {
   float height;
 } byte_track_Rect_float;
 
+// Test-only inspection hook for the native Rect implementation. It is not
+// exposed by the Rust production API.
+extern float byte_track_Rect_float_calc_iou_for_testing(
+    byte_track_Rect_float first, byte_track_Rect_float second);
+
 typedef struct {
   byte_track_Rect_float rect;
   int label;
@@ -55,6 +60,18 @@ extern void byte_track_BYTETracker_update(void *tracker,
                                           uint64_t elapsed_nanoseconds,
                                           byte_track_STrack **out_stracks,
                                           int *out_num_stracks);
+
+// Benchmark-only strategy control. It deliberately shares the exact same
+// BYTETracker instance and association path as the production update above.
+extern void byte_track_BYTETracker_update_for_benchmark(
+    void *tracker,
+    const byte_track_Object *objects,
+    int num_objects,
+    uint64_t elapsed_nanoseconds,
+    bool enable_motion_prediction,
+    float process_noise_scale,
+    byte_track_STrack **out_stracks,
+    int *out_num_stracks);
 
 extern void byte_track_STrack_array_destroy(byte_track_STrack *stracks_array);
 

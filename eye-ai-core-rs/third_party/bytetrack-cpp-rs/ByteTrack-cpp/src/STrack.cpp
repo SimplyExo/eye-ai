@@ -119,13 +119,15 @@ void byte_track::STrack::reActivate(const STrack &new_track, const size_t &frame
     last_observation_time_nanoseconds_ = observation_time_nanoseconds;
 }
 
-void byte_track::STrack::predict(double elapsed_seconds)
+void byte_track::STrack::predict(double elapsed_seconds,
+                                 float process_noise_scale)
 {
     if (state_ != STrackState::Tracked)
     {
         mean_[7] = 0;
     }
-    kalman_filter_.predict(mean_, covariance_, elapsed_seconds);
+    kalman_filter_.predict(mean_, covariance_, elapsed_seconds,
+                           process_noise_scale);
     updateRect();
 }
 
@@ -142,6 +144,47 @@ void byte_track::STrack::update(const STrack &new_track, const size_t &frame_id,
     label_ = new_track.getLabel();
     frame_id_ = frame_id;
     tracklet_len_++;
+    last_observation_time_nanoseconds_ = observation_time_nanoseconds;
+}
+
+void byte_track::STrack::updateWithoutPrediction(
+    const STrack &new_track, const size_t &frame_id,
+    std::uint64_t observation_time_nanoseconds)
+{
+    // Benchmark A deliberately keeps the exact last measurement as its next
+    // association box. Re-initiating also prevents a hidden Kalman posterior
+    // or learned velocity from leaking into the no-prediction variant.
+    rect_ = new_track.getRect();
+    kalman_filter_.initiate(mean_, covariance_, rect_.getXyah());
+    updateRect();
+
+    state_ = STrackState::Tracked;
+    is_activated_ = true;
+    score_ = new_track.getScore();
+    label_ = new_track.getLabel();
+    frame_id_ = frame_id;
+    tracklet_len_++;
+    last_observation_time_nanoseconds_ = observation_time_nanoseconds;
+}
+
+void byte_track::STrack::reActivateWithoutPrediction(
+    const STrack &new_track, const size_t &frame_id,
+    std::uint64_t observation_time_nanoseconds, const int &new_track_id)
+{
+    rect_ = new_track.getRect();
+    kalman_filter_.initiate(mean_, covariance_, rect_.getXyah());
+    updateRect();
+
+    state_ = STrackState::Tracked;
+    is_activated_ = true;
+    score_ = new_track.getScore();
+    label_ = new_track.getLabel();
+    if (0 <= new_track_id)
+    {
+        track_id_ = new_track_id;
+    }
+    frame_id_ = frame_id;
+    tracklet_len_ = 0;
     last_observation_time_nanoseconds_ = observation_time_nanoseconds;
 }
 

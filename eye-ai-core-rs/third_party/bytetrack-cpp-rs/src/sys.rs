@@ -58,6 +58,11 @@ pub struct byte_track_STrack {
 }
 
 unsafe extern "C" {
+	#[cfg(test)]
+	pub unsafe fn byte_track_Rect_float_calc_iou_for_testing(
+		first: byte_track_Rect_float,
+		second: byte_track_Rect_float,
+	) -> c_float;
 	pub unsafe fn byte_track_BYTETracker_create(
 		max_time_lost_seconds: c_double,
 		track_thresh: c_float,
@@ -70,6 +75,17 @@ unsafe extern "C" {
 		objects: *const byte_track_Object,
 		num_objects: i32,
 		elapsed_nanoseconds: u64,
+		out_stracks: *mut *mut byte_track_STrack,
+		out_num_stracks: *mut i32,
+	);
+	#[cfg(feature = "kalman-motion-benchmark")]
+	pub unsafe fn byte_track_BYTETracker_update_for_benchmark(
+		tracker: *mut c_void,
+		objects: *const byte_track_Object,
+		num_objects: i32,
+		elapsed_nanoseconds: u64,
+		enable_motion_prediction: bool,
+		process_noise_scale: c_float,
 		out_stracks: *mut *mut byte_track_STrack,
 		out_num_stracks: *mut i32,
 	);

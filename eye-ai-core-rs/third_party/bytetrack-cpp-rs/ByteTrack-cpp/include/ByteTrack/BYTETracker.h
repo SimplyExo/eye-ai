@@ -30,9 +30,22 @@ public:
     std::vector<STrackPtr> update(const std::vector<Object>& objects,
                                   std::uint64_t elapsed_nanoseconds);
 
+    // Isolated benchmark entry point. Production uses update(), whose behavior
+    // remains prediction enabled with an unscaled process-noise covariance.
+    std::vector<STrackPtr> updateForBenchmark(
+        const std::vector<Object>& objects,
+        std::uint64_t elapsed_nanoseconds,
+        bool enable_motion_prediction,
+        float process_noise_scale);
+
     void setMaxTimeLost(double max_time_lost_seconds);
 
 private:
+    std::vector<STrackPtr> updateImpl(const std::vector<Object>& objects,
+                                      std::uint64_t elapsed_nanoseconds,
+                                      bool enable_motion_prediction,
+                                      float process_noise_scale);
+
     std::vector<STrackPtr> jointStracks(const std::vector<STrackPtr> &a_tlist,
                                         const std::vector<STrackPtr> &b_tlist) const;
 

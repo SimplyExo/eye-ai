@@ -40,9 +40,16 @@ public:
                     std::uint64_t observation_time_nanoseconds,
                     const int &new_track_id = -1);
 
-    void predict(double elapsed_seconds);
+    void predict(double elapsed_seconds, float process_noise_scale = 1.0f);
     void update(const STrack &new_track, const size_t &frame_id,
                 std::uint64_t observation_time_nanoseconds);
+    void updateWithoutPrediction(const STrack &new_track,
+                                 const size_t &frame_id,
+                                 std::uint64_t observation_time_nanoseconds);
+    void reActivateWithoutPrediction(
+        const STrack &new_track, const size_t &frame_id,
+        std::uint64_t observation_time_nanoseconds,
+        const int &new_track_id = -1);
 
     void markAsLost();
     void markAsRemoved();

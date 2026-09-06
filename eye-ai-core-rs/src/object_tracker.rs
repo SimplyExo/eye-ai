@@ -734,12 +734,16 @@ mod cadence_tests {
 			),
 			run_scenario("K_fast_constant_high", &d_intervals, &d_present, 1.2),
 			run_scenario("L_fast_high_low_high", &e_intervals, &e_present, 1.2),
-			run_scenario("M_linear_constant_low", &b_intervals, &b_present, 0.6),
+			// At 3 Hz, 0.6 would move a 0.2-wide normalized box by its full
+			// width per update (continuous IoU = 0). Keep this regression inside
+			// the actual 0.8 association-cost geometry instead of relying on the
+			// old pixel-style +1 IoU behavior.
+			run_scenario("M_linear_constant_low", &b_intervals, &b_present, 0.3),
 			run_scenario(
 				"N_linear_3_to_15",
 				&low_to_high_intervals,
 				&low_to_high_present,
-				0.6,
+				0.3,
 			),
 		];
 

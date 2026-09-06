@@ -41,7 +41,12 @@ ndarray-npy = "0.10.0"
 dirs = "6.0"
 
 [features]
+kalman-motion-benchmark = ["bytetrack-cpp-rs/kalman-motion-benchmark"]
 enable_tracy_profiling = [
   "eye-ai-core-rs-profiling_attribute/enable_tracy",
   "tracing-tracy/enable"
 ]
+
+[[example]]
+name = "kalman_motion_simulation"
+required-features = ["kalman-motion-benchmark"]

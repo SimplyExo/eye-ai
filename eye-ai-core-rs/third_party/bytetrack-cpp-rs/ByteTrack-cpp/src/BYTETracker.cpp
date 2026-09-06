@@ -58,6 +58,22 @@ byte_track::BYTETracker::~BYTETracker()
 std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
     const std::vector<Object>& objects, std::uint64_t elapsed_nanoseconds)
 {
+    return updateImpl(objects, elapsed_nanoseconds, true, 1.0f);
+}
+
+std::vector<byte_track::BYTETracker::STrackPtr>
+byte_track::BYTETracker::updateForBenchmark(
+    const std::vector<Object>& objects, std::uint64_t elapsed_nanoseconds,
+    bool enable_motion_prediction, float process_noise_scale)
+{
+    return updateImpl(objects, elapsed_nanoseconds, enable_motion_prediction,
+                      process_noise_scale);
+}
+
+std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::updateImpl(
+    const std::vector<Object>& objects, std::uint64_t elapsed_nanoseconds,
+    bool enable_motion_prediction, float process_noise_scale)
+{
     ////////////////// Step 1: Get detections //////////////////
     current_time_nanoseconds_ =
         saturatingAdd(current_time_nanoseconds_, elapsed_nanoseconds);
@@ -133,7 +149,10 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
         static_cast<double>(elapsed_nanoseconds) / NANOSECONDS_PER_SECOND;
     for (auto &strack : strack_pool)
     {
-        strack->predict(elapsed_seconds);
+        if (enable_motion_prediction)
+        {
+            strack->predict(elapsed_seconds, process_noise_scale);
+        }
     }
 
     ////////////////// Step 2: First association, with IoU //////////////////
@@ -156,12 +175,28 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
             const auto det = det_stracks[match_idx[1]];
             if (track->getSTrackState() == STrackState::Tracked)
             {
-                track->update(*det, frame_id_, current_time_nanoseconds_);
+                if (enable_motion_prediction)
+                {
+                    track->update(*det, frame_id_, current_time_nanoseconds_);
+                }
+                else
+                {
+                    track->updateWithoutPrediction(
+                        *det, frame_id_, current_time_nanoseconds_);
+                }
                 current_tracked_stracks.push_back(track);
             }
             else
             {
-                track->reActivate(*det, frame_id_, current_time_nanoseconds_);
+                if (enable_motion_prediction)
+                {
+                    track->reActivate(*det, frame_id_, current_time_nanoseconds_);
+                }
+                else
+                {
+                    track->reActivateWithoutPrediction(
+                        *det, frame_id_, current_time_nanoseconds_);
+                }
                 refind_stracks.push_back(track);
             }
         }
@@ -197,12 +232,28 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
             const auto det = det_low_stracks[match_idx[1]];
             if (track->getSTrackState() == STrackState::Tracked)
             {
-                track->update(*det, frame_id_, current_time_nanoseconds_);
+                if (enable_motion_prediction)
+                {
+                    track->update(*det, frame_id_, current_time_nanoseconds_);
+                }
+                else
+                {
+                    track->updateWithoutPrediction(
+                        *det, frame_id_, current_time_nanoseconds_);
+                }
                 current_tracked_stracks.push_back(track);
             }
             else
             {
-                track->reActivate(*det, frame_id_, current_time_nanoseconds_);
+                if (enable_motion_prediction)
+                {
+                    track->reActivate(*det, frame_id_, current_time_nanoseconds_);
+                }
+                else
+                {
+                    track->reActivateWithoutPrediction(
+                        *det, frame_id_, current_time_nanoseconds_);
+                }
                 refind_stracks.push_back(track);
             }
         }
@@ -231,9 +282,18 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
 
         for (const auto &match_idx : matches_idx)
         {
-            non_active_stracks[match_idx[0]]->update(
-                *remain_det_stracks[match_idx[1]], frame_id_,
-                current_time_nanoseconds_);
+            if (enable_motion_prediction)
+            {
+                non_active_stracks[match_idx[0]]->update(
+                    *remain_det_stracks[match_idx[1]], frame_id_,
+                    current_time_nanoseconds_);
+            }
+            else
+            {
+                non_active_stracks[match_idx[0]]->updateWithoutPrediction(
+                    *remain_det_stracks[match_idx[1]], frame_id_,
+                    current_time_nanoseconds_);
+            }
             current_tracked_stracks.push_back(non_active_stracks[match_idx[0]]);
         }
 

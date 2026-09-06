@@ -36,6 +36,12 @@ byte_track_Object to_c_style_Object(const Object &object) {
 }
 
 extern "C" {
+float byte_track_Rect_float_calc_iou_for_testing(byte_track_Rect_float first,
+                                                 byte_track_Rect_float second) {
+  return from_c_style_rect_float(first).calcIoU(
+      from_c_style_rect_float(second));
+}
+
 void *byte_track_BYTETracker_create(double max_time_lost_seconds,
                                     float track_thresh,
                                     float high_thresh, float match_thresh) {
@@ -69,6 +75,31 @@ void byte_track_BYTETracker_update(void *tracker,
   for (size_t i = 0; i < stracks.size(); ++i) {
     const auto &s = stracks[i];
     stracks_array[i] = from_c_style_STrack(s);
+  }
+  *out_stracks = stracks_array;
+  *out_num_stracks = stracks.size();
+}
+
+void byte_track_BYTETracker_update_for_benchmark(
+    void *tracker, const byte_track_Object *objects, int num_objects,
+    uint64_t elapsed_nanoseconds, bool enable_motion_prediction,
+    float process_noise_scale, byte_track_STrack **out_stracks,
+    int *out_num_stracks) {
+  std::vector<Object> objects_vec;
+  objects_vec.reserve(num_objects);
+  for (int i = 0; i < num_objects; ++i) {
+    objects_vec.push_back(from_c_style_Object(objects[i]));
+  }
+
+  BYTETracker *byte_tracker = static_cast<BYTETracker *>(tracker);
+  std::vector<BYTETracker::STrackPtr> stracks =
+      byte_tracker->updateForBenchmark(objects_vec, elapsed_nanoseconds,
+                                       enable_motion_prediction,
+                                       process_noise_scale);
+
+  byte_track_STrack *stracks_array = new byte_track_STrack[stracks.size()];
+  for (size_t i = 0; i < stracks.size(); ++i) {
+    stracks_array[i] = from_c_style_STrack(stracks[i]);
   }
   *out_stracks = stracks_array;
   *out_num_stracks = stracks.size();

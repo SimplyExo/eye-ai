@@ -33,7 +33,8 @@ void byte_track::KalmanFilter::initiate(StateMean &mean, StateCov &covariance, c
 }
 
 void byte_track::KalmanFilter::predict(StateMean &mean, StateCov &covariance,
-                                       double elapsed_seconds)
+                                       double elapsed_seconds,
+                                       float process_noise_scale)
 {
     constexpr size_t ndim = 4;
     const double normalized_dt_double =
@@ -80,6 +81,15 @@ void byte_track::KalmanFilter::predict(StateMean &mean, StateCov &covariance,
         motion_cov(ndim + i, i) = motion_cov(i, ndim + i);
         motion_cov(ndim + i, ndim + i) = velocity_diffusion * dt;
     }
+
+    // The production caller always uses 1.0. The bounded multiplier is exposed
+    // solely to the isolated Kalman motion benchmark so it can change Q without
+    // changing the transition, velocity state, measurement, or association.
+    const float bounded_process_noise_scale =
+        std::isfinite(process_noise_scale)
+            ? std::clamp(process_noise_scale, 0.25f, 4.0f)
+            : 1.0f;
+    motion_cov *= bounded_process_noise_scale;
 
     mean = motion_mat_ * mean.transpose();
     covariance = motion_mat_ * covariance * (motion_mat_.transpose()) + motion_cov;

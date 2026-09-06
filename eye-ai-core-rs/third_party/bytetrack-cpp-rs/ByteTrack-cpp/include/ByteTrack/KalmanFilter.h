@@ -30,7 +30,7 @@ public:
     void initiate(StateMean& mean, StateCov& covariance, const DetectBox& measurement);
 
     void predict(StateMean& mean, StateCov& covariance,
-                 double elapsed_seconds);
+                 double elapsed_seconds, float process_noise_scale = 1.0f);
 
     void update(StateMean& mean, StateCov& covariance, const DetectBox& measurement);
 
