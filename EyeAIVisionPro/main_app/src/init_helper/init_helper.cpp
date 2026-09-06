@@ -1,6 +1,5 @@
 #include <init_helper/init_helper.hpp>
 
-#include <format>
 #include <fstream>
 #include <qdebug.h>
 #include <stdexcept>
