@@ -122,9 +122,20 @@ class CameraFrameAnalyzer(
                         // analyzing the frame
                         val objects = eyeAIApp.yoloModel.runInference(frame)
                         eyeAIApp.aiData.detectedObjects.set(objects)
-
                         // showing objects
-
+                        if (objects != null) {
+                            for (item in objects) {
+                                Log.d(
+                                    "DetectedObject",
+                                    "class=${item.clsName}(${item.cls}), " +
+                                            "confidence=${"%.2f".format(item.cnf)}, " +
+                                            "trackingId=${item.trackingId}, " +
+                                            "box=[${item.x1}, ${item.y1}, ${item.x2}, ${item.y2}], " +
+                                            "center=[${item.cx}, ${item.cy}], " +
+                                            "size=[${item.w} x ${item.h}]"
+                                )
+                            }
+                        }
                         withContext(Dispatchers.Main) {
                             if (objects != null) {
                                 setOverlayODResults(objects)

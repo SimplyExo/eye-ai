@@ -1,40 +1,41 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
+import android.Manifest
+import android.app.Activity
 import android.content.pm.ActivityInfo
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.core.content.edit
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.preference.PreferenceManager
-import kotlinx.serialization.Serializable
 import android.os.Build
 import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalContext
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.app.ActivityCompat
+import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.pages.ConnectionPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.DebugPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.HomePage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.PermissionPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.SettingsPage
+import com.algorithmic_alliance.eyeaiapp.UI.pages.TutorialPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.WelcomePage
-import android.Manifest
-import android.app.Activity
-import androidx.core.app.ActivityCompat
+import kotlinx.serialization.Serializable
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 
 @Serializable
@@ -55,6 +56,9 @@ object SettingsRoute
 @Serializable
 object DebugRoute
 
+@Serializable
+object TutorialRoute
+
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun EyeAIAppUI(
@@ -67,6 +71,7 @@ fun EyeAIAppUI(
     val activity = LocalActivity.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
+    val tutorialCompleted = sharedPreferences.getBoolean(stringResource(R.string.app_tutorial_completed), false)
 
     LaunchedEffect(Unit) {
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -74,24 +79,24 @@ fun EyeAIAppUI(
     }
     NavHost(
         navController = navController,
-        startDestination = WelcomeRoute,
+        startDestination = if(!tutorialCompleted) WelcomeRoute else PermissionRoute,
         modifier = Modifier.fillMaxSize(),
     ) {
         composable<WelcomeRoute> {
-            LaunchedEffect(Unit) { //setting these to false because the app will do the check when loading PermissionPage
-                onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
-                onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
-                onEvent(UIEvent.OnUpdatePermissionTutorialCompleted(false))
-                onEvent(UIEvent.OnUpdateConnectionTutorialCompleted(false))
-                onEvent(UIEvent.OnUpdateActionStartedFromSettings(false))
-            }
             WelcomePage(
                 modifier = Modifier.fillMaxSize(),
                 onGetStarted = {
                     navController.navigate(PermissionRoute)
                 },
+                onStartTutorial = {
+                    navController.navigate(TutorialRoute)
+                },
                 onEvent = onEvent
             )
+        }
+        composable<TutorialRoute> {
+            TutorialPage(onAbortTutorial = { navController.popBackStack() }, onFinishTutorial = {navController.navigate(PermissionRoute){popUpTo(
+                WelcomeRoute){inclusive = true}} })
         }
         composable<PermissionRoute> {
             PermissionPage(
@@ -105,29 +110,29 @@ fun EyeAIAppUI(
         }
         composable<ConnectionRoute> {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-            ConnectionPage(modifier = Modifier.fillMaxSize(), onConnectionSuccessful = {
+            ConnectionPage(onConnectionSuccessful = {
                 onEvent(UIEvent.OnUpdateConnectionTutorialCompleted(true))
-                if (uiState.actionStartedFromSettings){
+                if (uiState.actionStartedFromSettings) {
                     onEvent(UIEvent.OnUpdateActionStartedFromSettings(false))
                     navController.popBackStack()
-                } else if(!sharedPreferences.getBoolean(debugPageActivatedKey, false)) {
+                } else if (!sharedPreferences.getBoolean(debugPageActivatedKey, false)) {
                     navController.navigate(
                         HomeRoute
-                    ) { popUpTo(WelcomeRoute) { inclusive = false } }
+                    ) { popUpTo(WelcomeRoute) { inclusive = true } }
                 } else {
                     navController.navigate(
                         DebugRoute
-                    ) { popUpTo(WelcomeRoute) { inclusive = false } }
+                    ) { popUpTo(WelcomeRoute) { inclusive = true } }
                 }
 
             }, onExitSelection = {
-                if(!uiState.actionStartedFromSettings){
+                if (!uiState.actionStartedFromSettings) {
                     navController.navigate(WelcomeRoute) {
                         popUpTo(WelcomeRoute) {
-                            inclusive = false
+                            inclusive = true
                         }
                     }
-                }else{
+                } else {
                     onEvent(UIEvent.OnUpdateActionStartedFromSettings(false))
                     navController.popBackStack()
                 }
@@ -147,7 +152,7 @@ fun EyeAIAppUI(
             }, onOpenDebugPage = {
                 navController.navigate(DebugRoute) {
                     popUpTo(WelcomeRoute) {
-                        inclusive = false
+                        inclusive = true
                     }
                 }
             }, onOpenHomePage = {
@@ -155,7 +160,7 @@ fun EyeAIAppUI(
                     HomeRoute
                 ) {
                     popUpTo(WelcomeRoute) {
-                        inclusive = false
+                        inclusive = true
                     }
                 }
             }, onEvent = onEvent, viewModel = viewModel, onOpenConnectionPage = {

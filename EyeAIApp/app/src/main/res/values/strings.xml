@@ -35,6 +35,7 @@
     <string name="enable_npu_delegate_setting" translatable="false">Use NPU (experimental)</string>
     <string name="jpeg_compression" translatable="false">jpeg_compression</string>
     <string name="debug_page_activated" translatable="false">debug_page_activated</string>
+    <string name="app_tutorial_completed" translatable="false">app_tutorial_completed</string>
 
 
     <!--Strings for Text in the UI  -->
@@ -228,6 +229,8 @@
     <string name="file_setting_semantic">Öffnet die Auswahl einer Datei</string>
     <string name="understood_button_text">Verstanden</string>
     <string name="understood_button_semantic">Verstanden. Dialogfeld verlassen</string>
+    <string name="accept_tutorial_text">Tutorial starten</string>
+    <string name="reject_tutorial_text">Nein Danke</string>
 
     <!-- Strings for semantics -->
 
