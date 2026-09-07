@@ -16,7 +16,6 @@ static void signalHandler(int signal)
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-
     controller main_control(&app);
 
     // Pipe für Unix-Signale
