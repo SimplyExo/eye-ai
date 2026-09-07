@@ -57,7 +57,13 @@ class controller : public QObject {
                 qCCritical(logNetwork).noquote() << "Couldn't start HTTP server!";
             }
 
-            qCInfo(logGeneral).noquote() << "Done!";
+            connect(&web, &webserver::requestReceived, [](const QHttpServerRequest &request) {
+                qCInfo(logNetwork).noquote() << webserver::methodToString(request.method()) << " | "
+                 << request.url().toDisplayString() << " | " 
+                 << QHostAddress(request.remoteAddress().toIPv4Address()).toString();
+            });
+
+            qCInfo(logGeneral).noquote() << "Finished initialization!";
         }
 
         void on_quit();

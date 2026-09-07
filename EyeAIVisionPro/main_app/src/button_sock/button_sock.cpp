@@ -2,7 +2,6 @@
 
 #include <QFile>
 #include <QTimer>
-#include <QDebug>
 
 bool button_sock::start_server()
 {
@@ -13,12 +12,9 @@ bool button_sock::start_server()
             this, &button_sock::newConnection);
 
     if (!listen(QHostAddress::Any, TCP_PORT)) {
-        qDebug() << "Server konnte nicht gestartet werden:"
-                 << errorString();
         return false;
     }
 
-    qDebug() << "Server läuft auf Port" << TCP_PORT;
     return true;
 }
 
@@ -30,10 +26,6 @@ void button_sock::newConnection()
         if (!socket) {
             continue;
         }
-
-        qDebug() << "Client verbunden:"
-                 << socket->peerAddress()
-                 << socket->peerPort();
 
         emit clientConnected(socket->peerAddress(),
                              socket->peerPort());
@@ -59,17 +51,14 @@ void button_sock::newConnection()
 
                     switch (click) {
                     case SINGLE:
-                        qDebug() << "Single";
                         data.append('a');
                         break;
 
                     case DOUBLE:
-                        qDebug() << "Double";
                         data.append('b');
                         break;
 
                     case TRIPLE:
-                        qDebug() << "Triple";
                         data.append('c');
                         break;
 
@@ -86,10 +75,6 @@ void button_sock::newConnection()
         connect(socket, &QTcpSocket::disconnected,
                 this,
                 [this, socket]() {
-                    qDebug() << "Client getrennt:"
-                             << socket->peerAddress()
-                             << socket->peerPort();
-
                     emit clientDisconnected(socket->peerAddress(),
                                             socket->peerPort());
                 });
@@ -103,8 +88,6 @@ void button_sock::newConnection()
 
 void button_sock::stop_server()
 {
-    qDebug() << "Stoppe Server...";
-
     close();
 
     const auto sockets = findChildren<QTcpSocket *>();
@@ -114,14 +97,8 @@ void button_sock::stop_server()
             continue;
         }
 
-        qDebug() << "Trenne Client:"
-                 << socket->peerAddress()
-                 << socket->peerPort();
-
         socket->disconnectFromHost();
     }
-
-    qDebug() << "Server gestoppt.";
 }
 
 button_sock::BUTTON_STATE button_sock::get_button_state()
@@ -161,20 +138,14 @@ void button_sock::update_click_detection()
         if (clickCount == 0) {
             clickCount = 1;
             clickTimer.restart();
-
-            qDebug() << "Click 1";
         }
         else if (clickCount == 1 &&
                  now <= CLICK_THRESHOLD) {
             clickCount = 2;
-
-            qDebug() << "Click 2";
         }
         else if (clickCount == 2 &&
                  now <= CLICK_THRESHOLD) {
             clickCount = 3;
-
-            qDebug() << "Click 3";
         }
     }
 

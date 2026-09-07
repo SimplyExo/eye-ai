@@ -12,10 +12,15 @@ class webserver : public QObject {
         webserver();
 
         int start_server();
+        static QString methodToString(QHttpServerRequest::Method method);
+        static QString get_bt_mac();
 
     private:
         QHttpServer server;
         quint16 port;
 
         void register_url();
+
+    signals: 
+        void requestReceived(const QHttpServerRequest &request);
 };

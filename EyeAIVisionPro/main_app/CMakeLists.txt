@@ -33,7 +33,7 @@ else()
 
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Core Network HttpServer)
+find_package(Qt6 REQUIRED COMPONENTS Core Network HttpServer Bluetooth)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -52,6 +52,7 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Core
         Qt6::Network
         Qt6::HttpServer
+        Qt6::Bluetooth
 )
 
 set_target_properties(EyeAIVision_Main PROPERTIES
