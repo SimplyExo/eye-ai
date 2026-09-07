@@ -2,6 +2,7 @@
 
 #include <init_helper/init_helper.hpp>
 #include <button_sock/button_sock.hpp>
+#include <webserver/webserver.hpp>
 #include <QLoggingCategory>
 #include <qdebug.h>
 #include <qhostaddress.h>
@@ -50,6 +51,12 @@ class controller : public QObject {
             if (!sock_result) 
                 qCCritical(logNetwork).noquote() << "Couldn't start button tcp socket!";
 
+            qCInfo(logNetwork).noquote() << "Starting HTTP server";
+            
+            if (!web.start_server()) {
+                qCCritical(logNetwork).noquote() << "Couldn't start HTTP server!";
+            }
+
             qCInfo(logGeneral).noquote() << "Done!";
         }
 
@@ -58,6 +65,7 @@ class controller : public QObject {
     private:
         init_helper mediamtx_init = init_helper("mediamtx");
         button_sock socket_btn = button_sock();
+        webserver web = webserver();
 
         cmd_output start_mediamtx();
         void start_socket();

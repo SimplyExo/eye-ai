@@ -33,7 +33,7 @@ else()
 
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Core Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Network HttpServer)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -51,6 +51,7 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE
         Qt6::Core
         Qt6::Network
+        Qt6::HttpServer
 )
 
 set_target_properties(EyeAIVision_Main PROPERTIES
