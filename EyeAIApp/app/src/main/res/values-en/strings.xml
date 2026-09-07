@@ -186,6 +186,7 @@
     <string name="currently_selected_semantic">Currently selected</string>
     <string name="text_input_setting_semantic">Opens a text field</string>
     <string name="file_setting_semantic">Opens file selection</string>
+    <string name="understood_button_text">Understood</string>
 
 
 </resources>

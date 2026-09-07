@@ -1,17 +1,14 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.IntentSender
-import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
 import android.util.Log
 import android.view.ViewTreeObserver
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -66,7 +63,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
@@ -87,70 +83,52 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
+private const val AUDIO_DEVICE_TYPE = "audio"
+private const val VISION_DEVICE_TYPE = "eye-ai-vision"
+
+
+private data class ConnectionCategory(
+    val name: String,
+    val nameSemantic: String,
+    val type: String,
+    val rememberKey: Int,
+    val selectedKey: Int,
+)
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ConnectionPage(
-    modifier: Modifier = Modifier,
     onConnectionSuccessful: () -> Unit,
     onExitSelection: () -> Unit,
     viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    BackHandler() {
+    BackHandler {
         onExitSelection()
     }
 
     Log.d(LOG_TAG, "[ConnectionPage] Loading ConnectionPage")
     val context = LocalContext.current
 
-    if (ActivityCompat.checkSelfPermission(
-            context, Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        Log.d(
-            LOG_TAG, "[ConnectionPage] Canceling WIFI-Scan due to permissions not being granted."
-        )
-        return
-    }
-
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
-    val devices: List<Any> = listOf(
-        mapOf(
-            "name" to stringResource(R.string.device_eyeaivision_name),
-            "nameSemantic" to stringResource(R.string.choose_vision_name_semantic),
-            "type" to "eye-ai-vision",
-            "rememberKey" to R.string.remember_eye_ai_vision,
-            "remember" to sharedPreferences.getBoolean(
-                stringResource(R.string.remember_eye_ai_vision), false
-            ),
-            "selectedKey" to R.string.selected_eye_ai_vision,
-            "selected" to sharedPreferences.getString(
-                stringResource(R.string.selected_eye_ai_vision), ""
-            ),
+    val categories = listOf(
+        ConnectionCategory(
+            name = stringResource(R.string.device_eyeaivision_name),
+            nameSemantic = stringResource(R.string.choose_vision_name_semantic),
+            type = VISION_DEVICE_TYPE,
+            rememberKey = R.string.remember_eye_ai_vision,
+            selectedKey = R.string.selected_eye_ai_vision,
         ),
-        mapOf(
-            "name" to stringResource(R.string.device_audio_name),
-            "nameSemantic" to stringResource(R.string.choose_audio_device_name_semantic),
-            "type" to "audio",
-            "rememberKey" to R.string.remember_audio_device,
-            "remember" to sharedPreferences.getBoolean(
-                stringResource(R.string.remember_audio_device), false
-            ),
-            "selectedKey" to R.string.selected_audio_device,
-            "selected" to sharedPreferences.getString(
-                stringResource(R.string.selected_audio_device), ""
-            ),
-            "devices" to listOf(
-                stringResource(R.string.choose_eyeaivision_as_audio_text),
-                stringResource(R.string.choose_system_as_audio_text)
-            )
+        ConnectionCategory(
+            name = stringResource(R.string.device_audio_name),
+            nameSemantic = stringResource(R.string.choose_audio_device_name_semantic),
+            type = AUDIO_DEVICE_TYPE,
+            rememberKey = R.string.remember_audio_device,
+            selectedKey = R.string.selected_audio_device,
         ),
     )
 
@@ -189,7 +167,7 @@ fun ConnectionPage(
                         putString(selectedAudioDeviceKey, "")
                     }
                     onConnectionSuccessful()
-                } else if (currentlyDisplayedDevices < devices.size - 1) {
+                } else if (currentlyDisplayedDevices < categories.size - 1) {
                     currentlyDisplayedDevices++
                     startAutoConnect = true
                 } else onConnectionSuccessful()
@@ -200,7 +178,7 @@ fun ConnectionPage(
                     startAutoConnect = false
                 } else onExitSelection()
             },
-            devicesData = devices[currentlyDisplayedDevices] as Map<Any, Any>,
+            devicesData = categories[currentlyDisplayedDevices],
             viewModel = viewModel,
             onEvent = onEvent,
             startAutoConnect = startAutoConnect
@@ -212,11 +190,10 @@ fun ConnectionPage(
 @SuppressLint("LocalContextGetResourceValueCall")
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun ChooseConnectionPage(
-    modifier: Modifier = Modifier,
+private fun ChooseConnectionPage(
     onConnectionSuccessful: (String) -> Unit,
     goBack: () -> Unit,
-    devicesData: Map<Any, Any>,
+    devicesData: ConnectionCategory,
     viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit,
     startAutoConnect: Boolean = true
@@ -243,17 +220,24 @@ fun ChooseConnectionPage(
     var showLocationDisabledDialog by remember { mutableStateOf(false) }
     var scanningForDevices by rememberSaveable { mutableStateOf(false) }
 
-    val shouldRememberKey = stringResource(devicesData["rememberKey"] as Int)
-    val selectedDeviceKey = stringResource(devicesData["selectedKey"] as Int)
-    val deviceCategory = devicesData["name"] as String
+    val shouldRememberKey = stringResource(devicesData.rememberKey)
+    val selectedDeviceKey = stringResource(devicesData.selectedKey)
+    val rememberedDevice = sharedPreferences.getString(
+        selectedDeviceKey, ""
+    )
+    val deviceCategory = devicesData.name
     val wifiScanState = rememberWifiScanState(
         context, autoScanOnStart = false, setScannState = { bool -> scanningForDevices = bool })
-    val devices: List<String> = when (devicesData["type"]) {
-        "audio" -> devicesData["devices"] as List<String>
-        "eye-ai-vision" -> wifiScanState.networks
+    val devices: List<String> = when (devicesData.type) {
+        AUDIO_DEVICE_TYPE -> listOf(
+            stringResource(R.string.choose_eyeaivision_as_audio_text),
+            stringResource(R.string.choose_system_as_audio_text)
+        )
+
+        VISION_DEVICE_TYPE -> wifiScanState.networks
         else -> emptyList()
     }
-    val deviceType = devicesData["type"] as String
+    val deviceType = devicesData.type
     val shimmerBrush = rememberShimmerBrush(
         backgroundColor = MaterialTheme.colorScheme.primaryContainer,
         contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -267,21 +251,21 @@ fun ChooseConnectionPage(
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         if (!startAutoConnect) {
-            if (deviceType == "eye-ai-vision" && locationManager.isLocationEnabled) wifiScanState.rescan()
-            else if (deviceType == "eye-ai-vision" && !locationManager.isLocationEnabled) {
+            if (deviceType == VISION_DEVICE_TYPE && locationManager.isLocationEnabled) wifiScanState.rescan()
+            else if (deviceType == VISION_DEVICE_TYPE && !locationManager.isLocationEnabled) {
                 showLocationDisabledDialog = true
             }
             return@LaunchedEffect
         }
         //If opened from the settings, the auto-connection is not needed, but in case of the
-        //eye-ai-vision a wifi scan is started for the user
+        //eye-ai-vision a Wi-Fi scan is started for the user
         if (uiState.connectionTutorialCompleted) {
             Log.d(
                 LOG_TAG,
                 "[ConnectionPage:LaunchedEffect] ConnectionTutorial completed, not automatic connection: Exiting LaunchedEffect"
             )
-            if (deviceType == "eye-ai-vision" && locationManager.isLocationEnabled) wifiScanState.rescan()
-            else if (deviceType == "eye-ai-vision" && !locationManager.isLocationEnabled) {
+            if (deviceType == VISION_DEVICE_TYPE && locationManager.isLocationEnabled) wifiScanState.rescan()
+            else if (deviceType == VISION_DEVICE_TYPE && !locationManager.isLocationEnabled) {
                 showLocationDisabledDialog = true
             }
             pageLoading = false
@@ -289,15 +273,15 @@ fun ChooseConnectionPage(
         }
 
         //If the user does not want to automatically connect, exit
-        //in case of the eye-ai-vision a wifi scan is started for the user
-        if (devicesData["remember"] == false) {
+        //in case of the eye-ai-vision a Wi-Fi scan is started for the user
+        if (!sharedPreferences.getBoolean(shouldRememberKey, false)) {
             Log.d(
                 LOG_TAG,
                 "[ConnectionPage:LaunchedEffect] User does not want automatic connection: Exiting LaunchedEffect"
             )
             pageLoading = false
-            if (deviceType == "eye-ai-vision" && locationManager.isLocationEnabled) wifiScanState.rescan()
-            else if (deviceType == "eye-ai-vision" && !locationManager.isLocationEnabled) {
+            if (deviceType == VISION_DEVICE_TYPE && locationManager.isLocationEnabled) wifiScanState.rescan()
+            else if (deviceType == VISION_DEVICE_TYPE && !locationManager.isLocationEnabled) {
                 showLocationDisabledDialog = true
             }
             return@LaunchedEffect
@@ -306,7 +290,7 @@ fun ChooseConnectionPage(
         // WIFI-Scan only necessary for eye-ai-vision, but not if user automatically connects to
         // phone camera
         var scanNetworks: List<String>? = null
-        if (deviceType == "eye-ai-vision" && devicesData["selected"] != chooseCameraAsInput) {
+        if (deviceType == VISION_DEVICE_TYPE && rememberedDevice != chooseCameraAsInput) {
             Log.d(LOG_TAG, "[ConnectionPage:LaunchedEffect] WIFI-Scan necessary, starting")
             if (locationManager.isLocationEnabled) scanNetworks = wifiScanState.awaitScan()
             else {
@@ -320,14 +304,18 @@ fun ChooseConnectionPage(
             Log.d(LOG_TAG, "[ConnectionPage:LaunchedEffect] WIFI-Scan not necessary, not starting")
         }
         val availableDevices = when (deviceType) {
-            "eye-ai-vision" -> scanNetworks ?: emptyList()
-            "audio" -> devicesData["devices"] as List<String>
+            VISION_DEVICE_TYPE -> scanNetworks ?: emptyList()
+            AUDIO_DEVICE_TYPE -> listOf(
+                context.getString(R.string.choose_eyeaivision_as_audio_text),
+                context.getString(R.string.choose_system_as_audio_text)
+            )
+
             else -> emptyList()
         }
 
         //If the device the user wants to automatically connect to is not available, exit
         //Because phone camera is handled outside the devices list, it needs extra checking
-        if (!availableDevices.contains(devicesData["selected"]) && devicesData["selected"] != chooseCameraAsInput) {
+        if (!availableDevices.contains(rememberedDevice) && rememberedDevice != chooseCameraAsInput) {
             Log.d(
                 LOG_TAG,
                 "[ConnectionPage:LaunchedEffect] Device for automatic connection not available: Exiting LaunchedEffect"
@@ -337,12 +325,12 @@ fun ChooseConnectionPage(
         }
         Log.d(
             LOG_TAG,
-            "[ConnectionPage:LaunchedEffect] Attempting to connect to remembered ${devicesData["type"]} device"
+            "[ConnectionPage:LaunchedEffect] Attempting to connect to remembered ${devicesData.type} device"
         )
         connectToDevice(
             context,
-            devicesData["type"] as String,
-            devicesData["selected"] as String,
+            devicesData.type,
+            rememberedDevice as String,
             onEvent = onEvent
         ) { success ->
             if (success) {
@@ -350,7 +338,7 @@ fun ChooseConnectionPage(
                     LOG_TAG,
                     "[ConnectionPage:LaunchedEffect] Connection to remembered device successful"
                 )
-                onConnectionSuccessful(devicesData["selected"] as String)
+                onConnectionSuccessful(rememberedDevice)
             } else {
                 pageLoading = false
                 Log.d(
@@ -385,12 +373,12 @@ fun ChooseConnectionPage(
                 if (pageLoading) {
                     LoadingPage()
                 } else {
-                    Column(modifier = Modifier.semantics{isTraversalGroup = true}) {
+                    Column(modifier = Modifier.semantics { isTraversalGroup = true }) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(Spacing.md)
-                                .semantics{traversalIndex = -1f},
+                                .semantics { traversalIndex = -1f },
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
@@ -400,7 +388,7 @@ fun ChooseConnectionPage(
                                     .focusable()
                                     .clearAndSetSemantics {
                                         contentDescription =
-                                            devicesData["nameSemantic"] as String
+                                            devicesData.nameSemantic
                                     },
                                 style = MaterialTheme.typography.headlineLarge,
                                 textAlign = TextAlign.Center
@@ -416,18 +404,17 @@ fun ChooseConnectionPage(
                                 modifier = Modifier
                                     .padding(Spacing.sm)
                                     .fillMaxWidth()
-                                    .semantics{traversalIndex = 0f}
+                                    .semantics { traversalIndex = 0f }
                             ) {
                                 items(items = devices) { item ->
-                                    val index = devices.indexOf(item)
                                     DeviceListEntry(
-                                        item as String, onSelected = {
+                                        item, onSelected = {
                                             selectedDevice =
                                                 if (selectedDevice != item) item else ""
                                         }, isSelected = item == selectedDevice
                                     )
                                 }
-                                if (devicesData["type"] == "eye-ai-vision") {
+                                if (devicesData.type == VISION_DEVICE_TYPE) {
                                     item {
                                         DeviceListEntry(
                                             stringResource(R.string.choose_camera_as_input_text),
@@ -484,23 +471,26 @@ fun ChooseConnectionPage(
                                     top = Spacing.xs,
                                     bottom = Spacing.xs
                                 )
-                                .semantics{traversalIndex = 0f},
+                                .semantics { traversalIndex = 0f },
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Checkbox(
-                                    modifier = Modifier.semantics{contentDescription = context.getString(R.string.set_device_as_default_semantic)},
+                                    modifier = Modifier.semantics {
+                                        contentDescription =
+                                            context.getString(R.string.set_device_as_default_semantic)
+                                    },
                                     checked = shouldRememberDevice, onCheckedChange = {
                                         shouldRememberDevice = !shouldRememberDevice
                                     })
                                 Text(
                                     stringResource(R.string.standard_device_text),
-                                    modifier = Modifier.clearAndSetSemantics{},
+                                    modifier = Modifier.clearAndSetSemantics {},
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
-                            if (deviceType == "eye-ai-vision") {
+                            if (deviceType == VISION_DEVICE_TYPE) {
                                 PremiumIconButton(
                                     onClick = {
                                         val locationManager =
@@ -535,7 +525,7 @@ fun ChooseConnectionPage(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(Spacing.md)
-                                .semantics{traversalIndex = 1f},
+                                .semantics { traversalIndex = 1f },
                             horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                         ) {
                             PremiumButton(
@@ -554,7 +544,7 @@ fun ChooseConnectionPage(
                                 onClick = {
                                     connectToDevice(
                                         context,
-                                        devicesData["type"] as String,
+                                        devicesData.type,
                                         selectedDevice,
                                         onEvent = onEvent
                                     ) { success ->
@@ -586,7 +576,10 @@ fun ChooseConnectionPage(
                                 }) {
                                 Text(
                                     stringResource(R.string.connect_text),
-                                    modifier = Modifier.clearAndSetSemantics {contentDescription = context.getString(R.string.connect_to_device_semantic)},
+                                    modifier = Modifier.clearAndSetSemantics {
+                                        contentDescription =
+                                            context.getString(R.string.connect_to_device_semantic)
+                                    },
                                     style = MaterialTheme.typography.labelLarge
                                 )
                             }
@@ -621,6 +614,7 @@ fun ChooseConnectionPage(
     }
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun DeviceListEntry(deviceName: String, isSelected: Boolean = false, onSelected: () -> Unit) {
     val context = LocalContext.current
@@ -639,7 +633,6 @@ fun DeviceListEntry(deviceName: String, isSelected: Boolean = false, onSelected:
 @Composable
 fun ActivateLocationServicesDialog(onDismissed: () -> Unit, onGranted: () -> Unit) {
     val context = LocalContext.current
-    val activity = LocalActivity.current
 
     val locationRequest = remember {
         LocationRequest.Builder(
@@ -676,7 +669,7 @@ fun ActivateLocationServicesDialog(onDismissed: () -> Unit, onGranted: () -> Uni
                     ).build()
 
                     launcher.launch(intentSenderRequest)
-                } catch (e: IntentSender.SendIntentException) {
+                } catch (_: IntentSender.SendIntentException) {
                     // Systemdialog konnte nicht geöffnet werden
                 }
             }
@@ -704,10 +697,12 @@ fun ActivateLocationServicesDialog(onDismissed: () -> Unit, onGranted: () -> Uni
         })
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ErrorDialog(
     titel: @Composable () -> Unit, content: @Composable () -> Unit, onDismissed: () -> Unit
 ) {
+    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = { onDismissed() },
         title = titel,
@@ -715,8 +710,8 @@ fun ErrorDialog(
         confirmButton = {
             PremiumButton(onClick = { onDismissed() }) {
                 Text(
-                    "Verstanden", modifier = Modifier.clearAndSetSemantics {
-                        contentDescription = "Verstanden. Dialog-Feld verlassen."
+                    stringResource(R.string.understood_button_text), modifier = Modifier.clearAndSetSemantics {
+                        contentDescription = context.getString(R.string.understood_button_semantic)
                     })
             }
         })

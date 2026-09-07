@@ -226,6 +226,8 @@
     <string name="currently_selected_semantic">Aktuell ausgewählt</string>
     <string name="text_input_setting_semantic">Öffnet ein Textfeld</string>
     <string name="file_setting_semantic">Öffnet die Auswahl einer Datei</string>
+    <string name="understood_button_text">Verstanden</string>
+    <string name="understood_button_semantic">Verstanden. Dialogfeld verlassen</string>
 
     <!-- Strings for semantics -->
 
