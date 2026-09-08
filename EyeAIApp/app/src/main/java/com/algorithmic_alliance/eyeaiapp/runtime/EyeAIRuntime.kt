@@ -262,6 +262,7 @@ class EyeAIRuntime internal constructor(
     }
 
     /** Starts the active local source under the foreground service lifecycle. */
+    @RequiresApi(Build.VERSION_CODES.P)
     fun start(owner: LifecycleOwner) {
         synchronized(stateLock) {
             check(!runtimeClosed) { "EyeAI runtime is closed" }
@@ -298,6 +299,7 @@ class EyeAIRuntime internal constructor(
     fun detachPreview(previewView: PreviewView? = null) = cameraManager.detachPreview(previewView)
 
     /** Explicit user stop. Models stay cached; active input resources do not. */
+    @RequiresApi(Build.VERSION_CODES.P)
     fun stopOperation() {
         if (!lifecycleGate.stop()) return
         cleanupStep("spatial-audio resume controller") {
@@ -620,6 +622,7 @@ class EyeAIRuntime internal constructor(
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     private fun stopVideoSource() {
         cameraManager.stop()
         mediaPlayerValue?.shutdown()
@@ -649,7 +652,6 @@ class EyeAIRuntime internal constructor(
                 metricDepthModelValue?.name == modelName &&
                 metricDepthModelValue?.enableNpu == settings.enableNpu
             ) return@write
-            metricDepthModelValue?.close()
             metricDepthModelValue = findDepthModelInfo(modelName).createDepthModel(
                 context,
                 npuQnnDelegateDirectory,
@@ -690,6 +692,7 @@ class EyeAIRuntime internal constructor(
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     private fun stopAfterStartFailure() {
         stopOperation()
     }
@@ -703,6 +706,7 @@ class EyeAIRuntime internal constructor(
     }
 
     /** Releases all runtime resources; only the Application calls this at shutdown. */
+    @RequiresApi(Build.VERSION_CODES.P)
     fun close() {
         synchronized(stateLock) {
             if (runtimeClosed) return
@@ -721,7 +725,6 @@ class EyeAIRuntime internal constructor(
             textToSpeechInstanceValue = null
         }
         modelLock.write {
-            metricDepthModelValue?.close()
             metricDepthModelValue = null
         }
         nlpModel.close()

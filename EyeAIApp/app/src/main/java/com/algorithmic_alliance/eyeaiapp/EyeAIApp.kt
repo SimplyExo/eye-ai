@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Size
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
@@ -154,6 +155,7 @@ class EyeAIApp : Application() {
         runtime.initializeModels()
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onTerminate() {
         if (::runtime.isInitialized) runtime.close()
         super.onTerminate()

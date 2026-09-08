@@ -1,4 +1,4 @@
-use crate::ProfilingFrame;
+use crate::FormattedProfilingFrame;
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use json::JsonValue;
 use std::collections::HashMap;
@@ -34,7 +34,7 @@ pub struct ObjectLabelData {
 #[profile_function("profiling_frame")]
 pub fn read_object_label_data(
 	json_content: &str,
-	profiling_frame: &ProfilingFrame,
+	profiling_frame: &FormattedProfilingFrame,
 ) -> Result<HashMap<String, ObjectLabelData>, json::Error> {
 	debug!("read_object_label_data()");
 
@@ -82,7 +82,7 @@ impl std::fmt::Debug for AudioFileData {
 #[profile_function("profiling_frame")]
 pub fn read_audio_file(
 	audio_file_content: Box<[u8]>,
-	profiling_frame: &ProfilingFrame,
+	profiling_frame: &FormattedProfilingFrame,
 ) -> Result<AudioFileData, Error> {
 	debug!("read_audio_file()");
 

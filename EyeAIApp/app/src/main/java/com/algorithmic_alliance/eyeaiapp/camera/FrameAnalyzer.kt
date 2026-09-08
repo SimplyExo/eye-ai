@@ -187,6 +187,12 @@ class FrameAnalyzer(
                         modelInference.inputDim,
                     )
 
+					/*
+					 *
+					 * performanceText.text =
+									"Metric Depth model: ${metricDepthModel.name}\nCamera resolution: $formattedInputResolution -> Depth model input: $formattedDepthModelInputSize\n\n${uniffi.NativeLib.formattedDepthFrame()}\n$formattedCameraFrame\n${uniffi.NativeLib.formattedObjectFrame()}\n${uniffi.NativeLib.formattedAudioFrame()}\n${uniffi.NativeLib.formattedDepthAudioThreadFrame()}\n${uniffi.NativeLib.formattedObjectAudioThreadFrame()}"
+					 */
+
                     val performanceText = if (runtime.settings.showProfilingInfo) {
                         val inputResolution = "${frame.width}x${frame.height}"
                         val modelInput =
@@ -196,10 +202,13 @@ class FrameAnalyzer(
                             "${uniffi.NativeLib.formattedDepthFrame()}\n" +
                             "$formattedSourceFrame\n" +
                             if (runtime.settings.enableObjectDetection) {
-                                uniffi.NativeLib.formattedObjectFrame()
+                                "${uniffi.NativeLib.formattedObjectFrame()}\n"
                             } else {
                                 ""
-                            }
+                            } + 
+							"${uniffi.NativeLib.formattedAudioFrame()}\n" +
+							"${uniffi.NativeLib.formattedDepthAudioThreadFrame()}\n" +
+							uniffi.NativeLib.formattedObjectAudioThreadFrame()
                     } else {
                         ""
                     }
