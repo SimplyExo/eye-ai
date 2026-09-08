@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -29,7 +29,7 @@ import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
@@ -37,8 +37,6 @@ import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
-import uniffi.NativeLib.UniffiDetectedObject
-import androidx.core.content.edit
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -54,81 +52,85 @@ fun WelcomePage(
     val isDark = isSystemInDarkTheme()
     Log.d(LOG_TAG, "[WelcomePage] Loading WelcomePage")
 
-
-    Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.md),
-            shape = PremiumShapes.large,
-            elevation = CardDefaults.cardElevation(AppElevation.level5),
-            border = BorderStroke(
-                width = if (isDark) 2.dp else 0.dp,
-                color = Color.White.copy(alpha = 0.2f)
-            ),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        ) {
-            Column(
+    Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
+        Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+            Card(
                 modifier = Modifier
-                    .padding(Spacing.md)
-                    .semantics { isTraversalGroup = true }
-            ) {
-
-                Row(
-                    modifier = Modifier
-                        .padding(Spacing.md)
-                        .fillMaxWidth()
-                        .semantics { traversalIndex = -1f },
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_launcher_web),
-                        contentDescription = stringResource(R.string.app_logo_description)
-                    )
-                }
-                Text(
-                    "Möchten Sie eine interaktive Einführung in die App bekommen?",
-                    modifier = Modifier
-                        .padding(Spacing.md)
-                        .semantics { traversalIndex = 0f },
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
+                    .fillMaxWidth()
+                    .padding(Spacing.md),
+                shape = PremiumShapes.large,
+                elevation = CardDefaults.cardElevation(AppElevation.level5),
+                border = BorderStroke(
+                    width = if (isDark) 2.dp else 0.dp,
+                    color = Color.White.copy(alpha = 0.2f)
+                ),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                Row(
+            ) {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = Spacing.md)
-                        .semantics { traversalIndex = 1f },
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+                        .padding(Spacing.md)
+                        .semantics { isTraversalGroup = true }
                 ) {
-                    PremiumButton(
+
+                    Row(
                         modifier = Modifier
-                            .weight(1f),
-                        shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
-                        onClick = {
-                            sharedPreferences.edit(commit = true) {
-                                putBoolean(context.getString(R.string.app_tutorial_completed), true)
-                            }
-                            onGetStarted()
-                        }) {
-                        Text(
-                            stringResource(R.string.reject_tutorial_text),
-                            style = MaterialTheme.typography.labelLarge
+                            .padding(Spacing.md)
+                            .fillMaxWidth()
+                            .semantics { traversalIndex = -1f },
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_launcher_web),
+                            contentDescription = stringResource(R.string.app_logo_description)
                         )
                     }
-                    PremiumButton(
+                    Text(
+                        "Möchten Sie eine interaktive Einführung in die App bekommen?",
                         modifier = Modifier
-                            .weight(1f),
-                        shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
-                        onClick = { onStartTutorial() }) {
-                        Text(
-                            stringResource(R.string.accept_tutorial_text),
-                            style = MaterialTheme.typography.labelLarge
-                        )
+                            .padding(Spacing.md)
+                            .semantics { traversalIndex = 0f },
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = Spacing.md)
+                            .semantics { traversalIndex = 1f },
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+                    ) {
+                        PremiumButton(
+                            modifier = Modifier
+                                .weight(1f),
+                            shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
+                            onClick = {
+                                sharedPreferences.edit(commit = true) {
+                                    putBoolean(
+                                        context.getString(R.string.app_tutorial_completed),
+                                        true
+                                    )
+                                }
+                                onGetStarted()
+                            }) {
+                            Text(
+                                stringResource(R.string.reject_tutorial_text),
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
+                        PremiumButton(
+                            modifier = Modifier
+                                .weight(1f),
+                            shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
+                            onClick = { onStartTutorial() }) {
+                            Text(
+                                stringResource(R.string.accept_tutorial_text),
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
                     }
                 }
             }
@@ -140,5 +142,11 @@ fun WelcomePage(
 @Preview(showBackground = true, name = "WelcomePage Preview")
 @Composable
 fun Preview() {
-    MaterialTheme { WelcomePage(Modifier.fillMaxSize(), onGetStarted = {}, onEvent = {}, onStartTutorial = {}) }
+    MaterialTheme {
+        WelcomePage(
+            Modifier.fillMaxSize(),
+            onGetStarted = {},
+            onEvent = {},
+            onStartTutorial = {})
+    }
 }

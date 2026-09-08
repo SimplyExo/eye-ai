@@ -30,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -105,216 +106,230 @@ fun DebugPage(
         onEvent(UIEvent.UpdateSpeechStatusText)
     }
     key(uiState.reloadDebugPageKey) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            contentWindowInsets = WindowInsets.safeDrawing,
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Debug", style = MaterialTheme.typography.titleLarge)
-                        }
-                    },
-                    modifier = Modifier.shadow(elevation = Spacing.sm),
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
-                )
-            },
-            floatingActionButton = {
-                Row(
-                    modifier = Modifier
-                        .padding(Spacing.sm)
-                        .fillMaxWidth(0.35f),
-                    horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
-                ) {
-                    if (speechRecognitionEnabled) PremiumFloatingActionButton(
-                        onClick = {
-                            onEvent(UIEvent.VoskListeningChanged)
-                        },
-                    ) {
-                        Icon(
-                            painter = if (uiState.voskListening) {
-                                painterResource(R.drawable.stop_24px)
-                            } else if (uiState.ttsSpeaking) {
-                                painterResource(
-                                    R.drawable.pause_playback_24px
-                                )
-                            } else {
-                                painterResource(R.drawable.play_arrow_24px)
-                            }, contentDescription = "Start Vosk"
-                        )
-                    }
-
-                    PremiumFloatingActionButton(onClick = { onOpenSettings() }) {
-                        Icon(
-                            painter = painterResource(R.drawable.settings_24px),
-                            contentDescription = "Open Settings"
-                        )
-                    }
-                }
-            },
-            content = { paddingValues ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .fillMaxHeight()
-                        .padding(paddingValues),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .padding(
-                                top = Spacing.sm,
-                                bottom = Spacing.sm,
-                                start = Spacing.xs,
-                                end = Spacing.xs
-                            ),
-
-                        shape = PremiumShapes.medium,
-                        elevation = CardDefaults.cardElevation(defaultElevation = if(isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
-                        border = BorderStroke(width = if(isSystemInDarkTheme()) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f)),
-                    ) {
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            if (sharedPreferences.getString(
-                                    stringResource(R.string.input_source_setting),
-                                    stringResource(R.string.input_is_camera)
-                                ) == stringResource(R.string.input_is_camera) && !sharedPreferences.getBoolean(
-                                    stringResource(R.string.show_debug_input_bitmap_setting), false
-                                )
-                            ) CameraPreview(onEvent = onEvent)
-                            if (sharedPreferences.getString(
-                                    stringResource(R.string.input_source_setting),
-                                    stringResource(R.string.input_is_camera)
-                                ) == stringResource(R.string.input_is_media) && !sharedPreferences.getBoolean(
-                                    stringResource(R.string.show_debug_input_bitmap_setting), false
-                                )
-                            ) {
-                                MediaPreview(bitmap = uiState.mediaPreviewBitmap, onEvent = onEvent)
-                                if (sharedPreferences.getString(
-                                        stringResource(R.string.media_path_setting), ""
-                                    ) == ""
-                                ) Column(
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .padding(Spacing.sm),
-                                    verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        "Bitte in den Einstellungen eine Media-Quelle auswählen!",
-                                        fontSize = 26.sp,
-                                    )
-                                }
+        Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                contentWindowInsets = WindowInsets.safeDrawing,
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("Debug", style = MaterialTheme.typography.titleLarge)
                             }
-                            if (sharedPreferences.getBoolean(
-                                    stringResource(R.string.show_debug_input_bitmap_setting), false
-                                )
-                            ) DebugInputPreview(
-                                bitmap = uiState.debugInputPreviewBitmap, onEvent = onEvent
+                        },
+                        modifier = Modifier.shadow(elevation = Spacing.sm),
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                    )
+                },
+                floatingActionButton = {
+                    Row(
+                        modifier = Modifier
+                            .padding(Spacing.sm)
+                            .fillMaxWidth(0.35f),
+                        horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
+                    ) {
+                        if (speechRecognitionEnabled) PremiumFloatingActionButton(
+                            onClick = {
+                                onEvent(UIEvent.VoskListeningChanged)
+                            },
+                        ) {
+                            Icon(
+                                painter = if (uiState.voskListening) {
+                                    painterResource(R.drawable.stop_24px)
+                                } else if (uiState.ttsSpeaking) {
+                                    painterResource(
+                                        R.drawable.pause_playback_24px
+                                    )
+                                } else {
+                                    painterResource(R.drawable.play_arrow_24px)
+                                }, contentDescription = "Start Vosk"
                             )
-                            ObjectDetectionOverlay(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .padding(Spacing.sm),
-                                uiState.detectedObjects,
-                                cameraResolution = uiState.cameraResolution
+                        }
+
+                        PremiumFloatingActionButton(onClick = { onOpenSettings() }) {
+                            Icon(
+                                painter = painterResource(R.drawable.settings_24px),
+                                contentDescription = "Open Settings"
                             )
-                            OCROverlay(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .padding(Spacing.sm),
-                                results = uiState.ocrResults,
-                                cameraResolution = uiState.cameraResolution
-                            )
-                            if (sharedPreferences.getBoolean(
-                                    stringResource(R.string.enable_speech_recognition_setting), true
-                                )
-                            ) {
-                                Card(
-                                    modifier = Modifier
-                                        .padding(bottom = Spacing.md)
-                                        .align(Alignment.BottomCenter)
-                                        .fillMaxWidth(0.75f)
-                                        .heightIn(min = Spacing.xxl, max = Spacing.xxxxl),
-                                    shape = PremiumShapes.medium,
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
-                                            alpha = 0.75f
-                                        )
+                        }
+                    }
+                },
+                content = { paddingValues ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .fillMaxHeight()
+                            .padding(paddingValues),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .padding(
+                                    top = Spacing.sm,
+                                    bottom = Spacing.sm,
+                                    start = Spacing.xs,
+                                    end = Spacing.xs
+                                ),
+
+                            shape = PremiumShapes.medium,
+                            elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
+                            border = BorderStroke(
+                                width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
+                                color = Color.White.copy(alpha = 0.2f)
+                            ),
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                if (sharedPreferences.getString(
+                                        stringResource(R.string.input_source_setting),
+                                        stringResource(R.string.input_is_camera)
+                                    ) == stringResource(R.string.input_is_camera) && !sharedPreferences.getBoolean(
+                                        stringResource(R.string.show_debug_input_bitmap_setting),
+                                        false
+                                    )
+                                ) CameraPreview(onEvent = onEvent)
+                                if (sharedPreferences.getString(
+                                        stringResource(R.string.input_source_setting),
+                                        stringResource(R.string.input_is_camera)
+                                    ) == stringResource(R.string.input_is_media) && !sharedPreferences.getBoolean(
+                                        stringResource(R.string.show_debug_input_bitmap_setting),
+                                        false
                                     )
                                 ) {
-                                    LazyColumn(
+                                    MediaPreview(
+                                        bitmap = uiState.mediaPreviewBitmap,
+                                        onEvent = onEvent
+                                    )
+                                    if (sharedPreferences.getString(
+                                            stringResource(R.string.media_path_setting), ""
+                                        ) == ""
+                                    ) Column(
                                         modifier = Modifier
-                                            .padding(Spacing.sm)
-                                            .fillMaxWidth(),
+                                            .fillMaxHeight()
+                                            .padding(Spacing.sm),
+                                        verticalArrangement = Arrangement.Center,
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        item {
-                                            Text(
-                                                uiState.speechRecognitionPartialResultText,
-                                                style = MaterialTheme.typography.bodyMedium
-                                            )
-                                            Text(
-                                                uiState.speechRecognitionFinalResultText,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Text(
-                                                uiState.speechResponseText,
-                                                style = MaterialTheme.typography.bodyMedium
-                                            )
-                                        }
+                                        Text(
+                                            "Bitte in den Einstellungen eine Media-Quelle auswählen!",
+                                            fontSize = 26.sp,
+                                        )
                                     }
                                 }
-
-                            }
-                        }
-                    }
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .padding(bottom = Spacing.sm, start = Spacing.xs, end = Spacing.xs),
-                        shape = PremiumShapes.medium,
-                        elevation = CardDefaults.cardElevation(defaultElevation = if(isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
-                        border = BorderStroke(width = if(isSystemInDarkTheme()) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f)),
-                    ) {
-                        Box(Modifier.fillMaxSize()) {
-                            if (sharedPreferences.getString(
-                                    stringResource(R.string.media_path_setting), ""
-                                ) == "" && sharedPreferences.getString(
-                                    stringResource(R.string.input_source_setting),
-                                    "camera"
-                                ) == "media"
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .padding(Spacing.sm),
-                                    verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        "Bitte in den Einstellungen eine Media-Quelle auswählen!",
-                                        fontSize = 26.sp,
+                                if (sharedPreferences.getBoolean(
+                                        stringResource(R.string.show_debug_input_bitmap_setting),
+                                        false
                                     )
+                                ) DebugInputPreview(
+                                    bitmap = uiState.debugInputPreviewBitmap, onEvent = onEvent
+                                )
+                                ObjectDetectionOverlay(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .padding(Spacing.sm),
+                                    uiState.detectedObjects,
+                                    cameraResolution = uiState.cameraResolution
+                                )
+                                OCROverlay(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .padding(Spacing.sm),
+                                    results = uiState.ocrResults,
+                                    cameraResolution = uiState.cameraResolution
+                                )
+                                if (sharedPreferences.getBoolean(
+                                        stringResource(R.string.enable_speech_recognition_setting),
+                                        true
+                                    )
+                                ) {
+                                    Card(
+                                        modifier = Modifier
+                                            .padding(bottom = Spacing.md)
+                                            .align(Alignment.BottomCenter)
+                                            .fillMaxWidth(0.75f)
+                                            .heightIn(min = Spacing.xxl, max = Spacing.xxxxl),
+                                        shape = PremiumShapes.medium,
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                                alpha = 0.75f
+                                            )
+                                        )
+                                    ) {
+                                        LazyColumn(
+                                            modifier = Modifier
+                                                .padding(Spacing.sm)
+                                                .fillMaxWidth(),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            item {
+                                                Text(
+                                                    uiState.speechRecognitionPartialResultText,
+                                                    style = MaterialTheme.typography.bodyMedium
+                                                )
+                                                Text(
+                                                    uiState.speechRecognitionFinalResultText,
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Text(
+                                                    uiState.speechResponseText,
+                                                    style = MaterialTheme.typography.bodyMedium
+                                                )
+                                            }
+                                        }
+                                    }
+
                                 }
                             }
-                            DepthPreview(
-                                bitmap = uiState.depthPreviewBitmap,
-                                performanceText = uiState.performanceText
-                            )
                         }
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .padding(bottom = Spacing.sm, start = Spacing.xs, end = Spacing.xs),
+                            shape = PremiumShapes.medium,
+                            elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
+                            border = BorderStroke(
+                                width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
+                                color = Color.White.copy(alpha = 0.2f)
+                            ),
+                        ) {
+                            Box(Modifier.fillMaxSize()) {
+                                if (sharedPreferences.getString(
+                                        stringResource(R.string.media_path_setting), ""
+                                    ) == "" && sharedPreferences.getString(
+                                        stringResource(R.string.input_source_setting),
+                                        "camera"
+                                    ) == "media"
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .padding(Spacing.sm),
+                                        verticalArrangement = Arrangement.Center,
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            "Bitte in den Einstellungen eine Media-Quelle auswählen!",
+                                            fontSize = 26.sp,
+                                        )
+                                    }
+                                }
+                                DepthPreview(
+                                    bitmap = uiState.depthPreviewBitmap,
+                                    performanceText = uiState.performanceText
+                                )
+                            }
+                        }
+
+
                     }
-
-
-                }
-            })
-
+                })
+        }
     }
 }
 

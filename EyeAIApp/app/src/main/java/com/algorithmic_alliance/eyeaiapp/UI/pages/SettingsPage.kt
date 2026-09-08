@@ -53,6 +53,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -131,141 +132,141 @@ fun SettingsPage(
             }
         }
     }
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        topBar = {
-            TopAppBar(
-                modifier = Modifier
-                    .shadow(elevation = Spacing.sm)
-                    .semantics { isTraversalGroup = true },
-                windowInsets = TopAppBarDefaults.windowInsets,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                title = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        PremiumIconButton(
-                            modifier = Modifier.semantics { traversalIndex = 1f },
-                            onClick = { onReturn() }) {
-                            Icon(
-                                painter = painterResource(R.drawable.arrow_back_24px),
-                                contentDescription = stringResource(R.string.return_icon_description)
+    Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            topBar = {
+                TopAppBar(
+                    modifier = Modifier
+                        .shadow(elevation = Spacing.sm)
+                        .semantics { isTraversalGroup = true },
+                    windowInsets = TopAppBarDefaults.windowInsets,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    title = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            PremiumIconButton(
+                                modifier = Modifier.semantics { traversalIndex = 1f },
+                                onClick = { onReturn() }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.arrow_back_24px),
+                                    contentDescription = stringResource(R.string.return_icon_description)
+                                )
+                            }
+                            Text(
+                                stringResource(R.string.settings_app_bar_title),
+                                modifier = Modifier.semantics { traversalIndex = -1f },
+                                style = MaterialTheme.typography.titleLarge
                             )
                         }
-                        Text(
-                            stringResource(R.string.settings_app_bar_title),
-                            modifier = Modifier.semantics { traversalIndex = -1f },
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-                },
-            )
-        }, content = { innerPadding ->
-            Box(modifier = Modifier.fillMaxSize()) {
-                Column(
-                    modifier = Modifier.padding(innerPadding),
-                ) {
-                    key(uiState.reloadSettingsPageKey) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = WindowInsets.navigationBars
-                                .asPaddingValues()
-                        ) {
-                            items(
-                                items = settingsData.entries.toList(),
-                                key = { entry -> entry.key }) { entry ->
-                                if (stringResource(entry.key) != stringResource(R.string.settings_category_developer) || (stringResource(
-                                        entry.key
-                                    ) == stringResource(R.string.settings_category_developer) && sharedPreferences.getBoolean(
-                                        stringResource(R.string.debug_page_activated),
-                                        false
-                                    ))
-                                )
-                                    SettingsCategoryCard(
-                                        categorySettings = entry.value as List<Any>,
-                                        category = stringResource(entry.key),
-                                        onEvent = onEvent,
-                                        onOpenConnectionPage = onOpenConnectionPage,
-                                        uiState = uiState
+                    },
+                )
+            }, content = { innerPadding ->
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(
+                        modifier = Modifier.padding(innerPadding),
+                    ) {
+                        key(uiState.reloadSettingsPageKey) {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = WindowInsets.navigationBars
+                                    .asPaddingValues()
+                            ) {
+                                items(
+                                    items = settingsData.entries.toList(),
+                                    key = { entry -> entry.key }) { entry ->
+                                    if (stringResource(entry.key) != stringResource(R.string.settings_category_developer) || (stringResource(
+                                            entry.key
+                                        ) == stringResource(R.string.settings_category_developer) && sharedPreferences.getBoolean(
+                                            stringResource(R.string.debug_page_activated),
+                                            false
+                                        ))
                                     )
-                            }
-                            item {
-                                val interactionSource = remember { MutableInteractionSource() }
-                                val isPressed by interactionSource.collectIsPressedAsState()
-                                val scale by animateFloatAsState(
-                                    targetValue = if (isPressed) 0.94f else 1f,
-                                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-                                    label = "buttonScale"
-                                )
-                                Card(
-                                    modifier = Modifier
-                                        .graphicsLayer { scaleX = scale; scaleY = scale }
-                                        .fillMaxWidth()
-                                        .padding(Spacing.sm)
-                                        .clickable(
-                                            interactionSource = interactionSource,
-                                            indication = LocalIndication.current
-                                        ) {
-                                            if (!debugPageActivated) {
-                                                onOpenDebugPage()
-                                                sharedPreferences.edit(commit = true) {
-                                                    putBoolean(debugPageActivatedKey, true)
-                                                }
-                                            } else {
-                                                onOpenHomePage()
-                                                sharedPreferences.edit(commit = true) {
-                                                    putBoolean(debugPageActivatedKey, false)
-                                                }
-                                            }
-
-                                        }.clearAndSetSemantics{ hideFromAccessibility() },
-                                    elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
-                                    border = BorderStroke(
-                                        width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
-                                        color = Color.White.copy(alpha = 0.2f)
-                                    )
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(Spacing.md),
-                                        horizontalArrangement = Arrangement.Center
-                                    ) {
-                                        Text(
-                                            if (!debugPageActivated) stringResource(R.string.activate_debug_page_text) else stringResource(
-                                                R.string.deactivate_debug_page_text
-                                            ),
-                                            style = MaterialTheme.typography.titleMedium,
+                                        SettingsCategoryCard(
+                                            categorySettings = entry.value as List<Any>,
+                                            category = stringResource(entry.key),
+                                            onEvent = onEvent,
+                                            onOpenConnectionPage = onOpenConnectionPage,
+                                            uiState = uiState
                                         )
+                                }
+                                item {
+                                    val interactionSource = remember { MutableInteractionSource() }
+                                    val isPressed by interactionSource.collectIsPressedAsState()
+                                    val scale by animateFloatAsState(
+                                        targetValue = if (isPressed) 0.94f else 1f,
+                                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                        label = "buttonScale"
+                                    )
+                                    Card(
+                                        modifier = Modifier
+                                            .graphicsLayer { scaleX = scale; scaleY = scale }
+                                            .fillMaxWidth()
+                                            .padding(Spacing.sm)
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = LocalIndication.current
+                                            ) {
+                                                if (!debugPageActivated) {
+                                                    onOpenDebugPage()
+                                                    sharedPreferences.edit(commit = true) {
+                                                        putBoolean(debugPageActivatedKey, true)
+                                                    }
+                                                } else {
+                                                    onOpenHomePage()
+                                                    sharedPreferences.edit(commit = true) {
+                                                        putBoolean(debugPageActivatedKey, false)
+                                                    }
+                                                }
+
+                                            }.clearAndSetSemantics { hideFromAccessibility() },
+                                        elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
+                                        border = BorderStroke(
+                                            width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
+                                            color = Color.White.copy(alpha = 0.2f)
+                                        )
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(Spacing.md),
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                if (!debugPageActivated) stringResource(R.string.activate_debug_page_text) else stringResource(
+                                                    R.string.deactivate_debug_page_text
+                                                ),
+                                                style = MaterialTheme.typography.titleMedium,
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .height(64.dp)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    MaterialTheme.colorScheme.background.copy(alpha = 0.85f)
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        MaterialTheme.colorScheme.background.copy(alpha = 0.85f)
+                                    )
                                 )
                             )
-                        )
-                )
-            }
-        })
-
+                    )
+                }
+            })
+    }
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")

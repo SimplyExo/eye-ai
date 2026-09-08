@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.os.Build
 import android.util.Log
-import android.view.ViewTreeObserver
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.focusable
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,6 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -38,7 +39,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -53,7 +53,6 @@ import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
-import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
@@ -64,7 +63,6 @@ enum class TutorialStage {
     DepthTutorial,
     NLPTutorial,
 }
-
 
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -79,65 +77,70 @@ fun TutorialPage(
 
     var currentTutorialStage by rememberSaveable { mutableStateOf(TutorialStage.DepthTutorial) }
     key(currentTutorialStage) {
-        Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-            val isDark = isSystemInDarkTheme()
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Spacing.md),
-                shape = PremiumShapes.large,
-                elevation = CardDefaults.cardElevation(AppElevation.level5),
-                border = BorderStroke(
-                    width = if (isDark) 2.dp else 0.dp,
-                    color = Color.White.copy(alpha = 0.2f)
-                ),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            ) {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+            Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+                val isDark = isSystemInDarkTheme()
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(Spacing.md),
+                    shape = PremiumShapes.large,
+                    elevation = CardDefaults.cardElevation(AppElevation.level5),
+                    border = BorderStroke(
+                        width = if (isDark) 2.dp else 0.dp,
+                        color = Color.White.copy(alpha = 0.2f)
+                    ),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
 
-                when (currentTutorialStage) {
-                    TutorialStage.DepthTutorial -> {
-                        Tutorial(
-                            onBack = { onAbortTutorial() },
+                    when (currentTutorialStage) {
+                        TutorialStage.DepthTutorial -> {
+                            Tutorial(
+                                onBack = { onAbortTutorial() },
+                                onGoOn = {
+                                    currentTutorialStage =
+                                        TutorialStage.ObjectTutorial
+                                },
+                                title = stringResource(R.string.depth_tutorial_title_text),
+                                audioRes = R.raw.depth_tutorial
+                            )
+                        }
+
+                        TutorialStage.ObjectTutorial -> Tutorial(
+                            onBack = {
+                                currentTutorialStage =
+                                    TutorialStage.DepthTutorial
+                            },
                             onGoOn = {
                                 currentTutorialStage =
-                                    TutorialStage.ObjectTutorial
+                                    TutorialStage.NLPTutorial
                             },
-                            title = stringResource(R.string.depth_tutorial_title_text),
-                            audioRes = R.raw.depth_tutorial
+                            title = stringResource(R.string.object_tutorial_title_text),
+                            audioRes = R.raw.object_tutorial,
+                        )
+
+                        TutorialStage.NLPTutorial -> Tutorial(
+                            onBack = {
+                                currentTutorialStage = TutorialStage.ObjectTutorial
+                            },
+                            onGoOn = {
+                                val sharedPreferences =
+                                    PreferenceManager.getDefaultSharedPreferences(context)
+                                sharedPreferences.edit(commit = true) {
+                                    putBoolean(
+                                        context.getString(R.string.app_tutorial_completed),
+                                        true
+                                    )
+                                }
+                                onFinishTutorial()
+                            },
+                            title = stringResource(R.string.nlp_tutorial_title_text),
+                            audioRes = R.raw.nlp_tutorial
                         )
                     }
-
-                    TutorialStage.ObjectTutorial -> Tutorial(
-                        onBack = {
-                            currentTutorialStage =
-                                TutorialStage.DepthTutorial
-                        },
-                        onGoOn = {
-                            currentTutorialStage =
-                                TutorialStage.NLPTutorial
-                        },
-                        title = stringResource(R.string.object_tutorial_title_text),
-                        audioRes = R.raw.object_tutorial,
-                    )
-
-                    TutorialStage.NLPTutorial -> Tutorial(
-                        onBack = {
-                            currentTutorialStage = TutorialStage.ObjectTutorial
-                        },
-                        onGoOn = {
-                            val sharedPreferences =
-                                PreferenceManager.getDefaultSharedPreferences(context)
-                            sharedPreferences.edit(commit = true) {
-                                putBoolean(context.getString(R.string.app_tutorial_completed), true)
-                            }
-                            onFinishTutorial()
-                        },
-                        title = stringResource(R.string.nlp_tutorial_title_text),
-                        audioRes = R.raw.nlp_tutorial
-                    )
                 }
             }
         }

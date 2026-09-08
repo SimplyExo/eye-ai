@@ -28,6 +28,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -125,75 +126,79 @@ fun HomePage(
         }
     }
 
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text("EyeAI App", style = MaterialTheme.typography.titleLarge)
-                },
-                modifier = Modifier.shadow(elevation = Spacing.sm),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-            )
-        },
-        floatingActionButton = {
-            Row(
-                modifier = Modifier
-                    .padding(Spacing.sm)
-                    .fillMaxWidth(0.35f),
-                horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
-            ) {
-                if (speechRecognitionEnabled) PremiumFloatingActionButton(
-                    shadowElevation = 8.dp,
-                    onClick = {
-                        onEvent(UIEvent.VoskListeningChanged)
+    Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            contentWindowInsets = WindowInsets.safeDrawing,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text("EyeAI App", style = MaterialTheme.typography.titleLarge)
                     },
+                    modifier = Modifier.shadow(elevation = Spacing.sm),
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                )
+            },
+            floatingActionButton = {
+                Row(
+                    modifier = Modifier
+                        .padding(Spacing.sm)
+                        .fillMaxWidth(0.35f),
+                    horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
                 ) {
-                    Icon(
-                        painter = if (uiState.voskListening) {
-                            painterResource(R.drawable.stop_24px)
-                        } else if (uiState.ttsSpeaking) {
-                            painterResource(
-                                R.drawable.pause_playback_24px
-                            )
-                        } else {
-                            painterResource(R.drawable.play_arrow_24px)
-                        }, contentDescription = stringResource(R.string.start_vosk_button_description)
-                    )
+                    if (speechRecognitionEnabled) PremiumFloatingActionButton(
+                        shadowElevation = 8.dp,
+                        onClick = {
+                            onEvent(UIEvent.VoskListeningChanged)
+                        },
+                    ) {
+                        Icon(
+                            painter = if (uiState.voskListening) {
+                                painterResource(R.drawable.stop_24px)
+                            } else if (uiState.ttsSpeaking) {
+                                painterResource(
+                                    R.drawable.pause_playback_24px
+                                )
+                            } else {
+                                painterResource(R.drawable.play_arrow_24px)
+                            },
+                            contentDescription = stringResource(R.string.start_vosk_button_description)
+                        )
+                    }
+
+                    PremiumFloatingActionButton(
+                        shadowElevation = 8.dp,
+                        onClick = { onOpenSettings() }) {
+                        Icon(
+                            painter = painterResource(R.drawable.settings_24px),
+                            contentDescription = stringResource(R.string.open_settings_button_description)
+                        )
+                    }
+                }
+            },
+            content = { paddingValues ->
+                LazyVerticalGrid(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .fillMaxHeight(),
+                    columns = GridCells.Fixed(2)
+                ) {
+                    item {
+                        VoskStatusCard(viewModel = viewModel)
+                    }
+                    item {
+                        DepthStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush)
+                    }
+                    item { ObjectStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush) }
+                    item { VisionStatusCard(viewModel = viewModel) }
+
                 }
 
-                PremiumFloatingActionButton(
-                    shadowElevation = 8.dp,
-                    onClick = { onOpenSettings() }) {
-                    Icon(
-                        painter = painterResource(R.drawable.settings_24px),
-                        contentDescription = stringResource(R.string.open_settings_button_description)
-                    )
-                }
-            }
-        },
-        content = { paddingValues ->
-            LazyVerticalGrid(
-                modifier = Modifier.padding(paddingValues).fillMaxHeight(), columns = GridCells.Fixed(2)
-            ) {
-                item {
-                    VoskStatusCard(viewModel = viewModel)
-                }
-                item {
-                    DepthStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush)
-                }
-                item { ObjectStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush) }
-                item { VisionStatusCard(viewModel = viewModel) }
-
-            }
-
-        })
-
+            })
+    }
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -209,7 +214,7 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
             .aspectRatio(4f / 3f),
         shape = PremiumShapes.medium,
         elevation = CardDefaults.cardElevation(AppElevation.level3),
-        border = BorderStroke(if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
+        border = BorderStroke(if (isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier
@@ -219,7 +224,10 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
         ) {
             Text(
                 stringResource(R.string.object_detection_card_title),
-                modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(R.string.object_detection_card_title_semantic)},
+                modifier = Modifier.clearAndSetSemantics {
+                    contentDescription =
+                        context.getString(R.string.object_detection_card_title_semantic)
+                },
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
@@ -249,7 +257,12 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${stringResource(R.string.status_card_performance_text)}: ${getPerformance(LocalContext.current,getObjectFPS(uiState.performanceText))}",
+                            text = "${stringResource(R.string.status_card_performance_text)}: ${
+                                getPerformance(
+                                    LocalContext.current,
+                                    getObjectFPS(uiState.performanceText)
+                                )
+                            }",
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -273,8 +286,8 @@ fun VisionStatusCard(viewModel: MainViewModel) {
             .padding(Spacing.sm)
             .aspectRatio(4f / 3f),
         shape = PremiumShapes.medium,
-                elevation = CardDefaults.cardElevation(AppElevation.level3),
-        border = BorderStroke(if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
+        elevation = CardDefaults.cardElevation(AppElevation.level3),
+        border = BorderStroke(if (isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier.padding(Spacing.xs),
@@ -282,7 +295,9 @@ fun VisionStatusCard(viewModel: MainViewModel) {
         ) {
             Text(
                 stringResource(R.string.vision_card_title),
-                modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(R.string.vision_card_title_semantic)},
+                modifier = Modifier.clearAndSetSemantics {
+                    contentDescription = context.getString(R.string.vision_card_title_semantic)
+                },
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
@@ -334,8 +349,8 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
         modifier = Modifier
             .padding(Spacing.sm)
             .aspectRatio(4f / 3f),
-        shape = PremiumShapes.medium,elevation = CardDefaults.cardElevation(AppElevation.level3),
-        border = BorderStroke(if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
+        shape = PremiumShapes.medium, elevation = CardDefaults.cardElevation(AppElevation.level3),
+        border = BorderStroke(if (isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier.padding(Spacing.xs),
@@ -343,7 +358,10 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
         ) {
             Text(
                 stringResource(R.string.depth_estimation_card_title),
-                modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(R.string.depth_estimation_card_title_semantic)},
+                modifier = Modifier.clearAndSetSemantics {
+                    contentDescription =
+                        context.getString(R.string.depth_estimation_card_title_semantic)
+                },
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium
             )
@@ -360,10 +378,16 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
                         Text(
                             text = stringResource(R.string.status_card_active_text),
                             textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${stringResource(R.string.status_card_performance_text)}: ${getPerformance(LocalContext.current,getDepthFPS(uiState.performanceText))}",
+                            text = "${stringResource(R.string.status_card_performance_text)}: ${
+                                getPerformance(
+                                    LocalContext.current,
+                                    getDepthFPS(uiState.performanceText)
+                                )
+                            }",
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -385,8 +409,8 @@ fun VoskStatusCard(viewModel: MainViewModel) {
         modifier = Modifier
             .padding(Spacing.sm)
             .aspectRatio(4f / 3f),
-        shape = PremiumShapes.medium,elevation = CardDefaults.cardElevation(AppElevation.level3),
-        border = BorderStroke(if(isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
+        shape = PremiumShapes.medium, elevation = CardDefaults.cardElevation(AppElevation.level3),
+        border = BorderStroke(if (isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier.padding(Spacing.xs),
@@ -394,7 +418,9 @@ fun VoskStatusCard(viewModel: MainViewModel) {
         ) {
             Text(
                 stringResource(R.string.vosk_card_title),
-                modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(R.string.vosk_card_title_semantic)},
+                modifier = Modifier.clearAndSetSemantics {
+                    contentDescription = context.getString(R.string.vosk_card_title_semantic)
+                },
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
