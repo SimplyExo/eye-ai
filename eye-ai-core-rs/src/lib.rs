@@ -64,3 +64,5 @@ pub use profiling::{FormattedProfilingFrame, ProfilingFrame};
 
 mod colormap;
 pub use colormap::inferno_colormap;
+
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");

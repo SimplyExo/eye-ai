@@ -324,6 +324,11 @@ object UIDataSource {
                 "settingsType" to "Info",
             ),
             mapOf(
+                "title" to "eye-ai-core-rs Version",
+                "description" to uniffi.NativeLib.getEyeAiCoreVersion(),
+                "settingsType" to "Info",
+            ),
+            mapOf(
                 "title" to "Build Time",
                 "description" to BuildInfoHelper.getFormattedBuildTime(),
                 "settingsType" to "Info",

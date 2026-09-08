@@ -599,6 +599,11 @@ pub fn sendAIDataForSpatialAudio(
 }
 
 #[uniffi::export]
+pub fn getEyeAICoreVersion() -> String {
+	eye_ai_core_rs::VERSION.to_string()
+}
+
+#[uniffi::export]
 #[profile_function("LLM_PROFILING_FRAME")]
 pub fn configureLlm() {}
 
