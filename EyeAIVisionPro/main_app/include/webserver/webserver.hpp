@@ -1,5 +1,6 @@
 #pragma once
 
+#include <init_helper/init_helper.hpp>
 #include <QHttpServer>
 #include <qtmetamacros.h>
 
@@ -9,7 +10,7 @@ class webserver : public QObject {
     Q_OBJECT
 
     public:
-        webserver();
+        webserver(init_helper* mediamtx);
 
         int start_server();
         static QString methodToString(QHttpServerRequest::Method method);
@@ -18,6 +19,8 @@ class webserver : public QObject {
     private:
         QHttpServer server;
         quint16 port;
+
+        init_helper* mediamtx;
 
         void register_url();
 

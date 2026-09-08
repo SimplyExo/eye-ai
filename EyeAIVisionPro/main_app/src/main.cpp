@@ -1,4 +1,5 @@
-#include "controller/controller.hpp"
+#include <controller/controller.hpp>
+#include <logger/logger.hpp>
 
 #include <QCoreApplication>
 #include <QSocketNotifier>
@@ -16,6 +17,8 @@ static void signalHandler(int signal)
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
+    Logger::install();
+
     controller main_control(&app);
 
     // Pipe für Unix-Signale

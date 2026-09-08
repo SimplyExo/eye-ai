@@ -71,7 +71,7 @@ class controller : public QObject {
     private:
         init_helper mediamtx_init = init_helper("mediamtx");
         button_sock socket_btn = button_sock();
-        webserver web = webserver();
+        webserver web = webserver(&mediamtx_init);
 
         cmd_output start_mediamtx();
         void start_socket();

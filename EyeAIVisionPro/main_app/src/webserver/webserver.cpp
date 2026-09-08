@@ -1,11 +1,16 @@
 #include <qhttpserverresponse.h>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <webserver/webserver.hpp>
 #include <QHttpServerResponse>
 #include <QJsonDocument>
 #include <connectivity/bluetooth.hpp>
 
-webserver::webserver() {
+#include <logger/logger.hpp>
+
+webserver::webserver(init_helper* mediamtx) {
+    this->mediamtx = mediamtx;
+    
     register_url();
 }
 
@@ -15,6 +20,44 @@ void webserver::register_url() {
 
         QJsonObject json;
         json["mac_addr"] = bluetooth::get_bt_mac();
+        
+        return QHttpServerResponse(
+            "application/json",
+            QJsonDocument(json).toJson(QJsonDocument::Compact)
+        );
+    });
+
+    server.route("/api/logs/eyai", [this](const QHttpServerRequest &request) {
+        emit requestReceived(request);
+
+        QJsonObject json;
+        QJsonArray logsArray;
+
+        for (const QString &log : Logger::logs()) {
+            logsArray.append(log);
+        }
+
+        json["logs"] = logsArray;
+        
+        return QHttpServerResponse(
+            "application/json",
+            QJsonDocument(json).toJson(QJsonDocument::Compact)
+        );
+    });
+
+    server.route("/api/logs/mediamtx", [this](const QHttpServerRequest &request) {
+        emit requestReceived(request);
+
+        QJsonObject json;
+        QJsonArray logsArray;
+        auto logs = mediamtx->get_logs();
+
+        for (const QString &log : logs.text.split("\n")) {
+            logsArray.append(log);
+        }
+
+        json["exit_code"] = logs.exit_code;
+        json["logs"] = logsArray;
         
         return QHttpServerResponse(
             "application/json",
