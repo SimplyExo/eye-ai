@@ -36,6 +36,14 @@ byte_track_Object to_c_style_Object(const Object &object) {
 }
 
 extern "C" {
+#if defined(BYTE_TRACK_ENABLE_TEST_API)
+float byte_track_Rect_float_calc_iou_for_testing(byte_track_Rect_float first,
+                                                 byte_track_Rect_float second) {
+  return from_c_style_rect_float(first).calcIoU(
+      from_c_style_rect_float(second));
+}
+#endif
+
 void *byte_track_BYTETracker_create(double max_time_lost_seconds,
                                     float track_thresh,
                                     float high_thresh, float match_thresh) {

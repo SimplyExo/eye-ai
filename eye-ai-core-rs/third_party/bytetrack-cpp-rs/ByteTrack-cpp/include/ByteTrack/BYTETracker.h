@@ -55,9 +55,6 @@ private:
     std::vector<std::vector<float>> calcIouDistance(const std::vector<STrackPtr> &a_tracks,
                                                     const std::vector<STrackPtr> &b_tracks) const;
 
-    std::vector<std::vector<float>> calcIous(const std::vector<Rect<float>> &a_rect,
-                                             const std::vector<Rect<float>> &b_rect) const;
-
     double execLapjv(const std::vector<std::vector<float> > &cost,
                      std::vector<int> &rowsol,
                      std::vector<int> &colsol,

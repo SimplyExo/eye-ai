@@ -58,6 +58,11 @@ pub struct byte_track_STrack {
 }
 
 unsafe extern "C" {
+	#[cfg(all(test, feature = "native-test-api"))]
+	pub unsafe fn byte_track_Rect_float_calc_iou_for_testing(
+		first: byte_track_Rect_float,
+		second: byte_track_Rect_float,
+	) -> c_float;
 	pub unsafe fn byte_track_BYTETracker_create(
 		max_time_lost_seconds: c_double,
 		track_thresh: c_float,

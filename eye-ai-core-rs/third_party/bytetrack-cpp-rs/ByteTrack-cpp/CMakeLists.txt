@@ -49,6 +49,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
 
+option(BYTE_TRACK_ENABLE_TEST_API "Expose native inspection hooks for tests" OFF)
+if(BYTE_TRACK_ENABLE_TEST_API)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE BYTE_TRACK_ENABLE_TEST_API)
+endif()
+
 # Build the tests if the 'BUILD_BYTETRACK_TEST' variable is set to 'ON'
 set(BUILD_BYTETRACK_TEST OFF CACHE BOOL "The flag whether to build the tests or not")
 if(BUILD_BYTETRACK_TEST)

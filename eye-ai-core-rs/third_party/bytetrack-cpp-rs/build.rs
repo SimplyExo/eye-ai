@@ -5,23 +5,30 @@ fn main() {
 	println!("cargo::rerun-if-changed=ByteTrack-cpp/CMakeLists.txt");
 	println!("cargo::rerun-if-changed=ByteTrack-cpp/include");
 	println!("cargo::rerun-if-changed=ByteTrack-cpp/src");
+	println!("cargo::rerun-if-env-changed=CARGO_FEATURE_NATIVE_TEST_API");
 
 	let repo_dir =
 		PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("ByteTrack-cpp");
+	let native_test_api = if std::env::var_os("CARGO_FEATURE_NATIVE_TEST_API").is_some() {
+		"ON"
+	} else {
+		"OFF"
+	};
 
 	match std::env::var("TARGET") {
 		Ok(target) if target.contains("android") => {
-			build_with_cmake_for_android(&repo_dir);
+			build_with_cmake_for_android(&repo_dir, native_test_api);
 		}
-		_ => build_with_cmake(&repo_dir),
+		_ => build_with_cmake(&repo_dir, native_test_api),
 	}
 
 	link_with_cpp_stdlib();
 }
 
-fn build_with_cmake(repo_dir: &PathBuf) {
+fn build_with_cmake(repo_dir: &PathBuf, native_test_api: &str) {
 	let cmake_build_output = cmake::Config::new(repo_dir)
 		.define("BUILD_BYTETRACK_TEST", "OFF")
+		.define("BYTE_TRACK_ENABLE_TEST_API", native_test_api)
 		.no_build_target(true)
 		.build_target("bytetrack")
 		.build();
@@ -33,7 +40,7 @@ fn build_with_cmake(repo_dir: &PathBuf) {
 	println!("cargo::rustc-link-lib=static=bytetrack");
 }
 
-fn build_with_cmake_for_android(repo_dir: &PathBuf) {
+fn build_with_cmake_for_android(repo_dir: &PathBuf, native_test_api: &str) {
 	println!("cargo::rerun-if-env-changed=ANDROID_NDK_ROOT");
 	println!("cargo::rerun-if-env-changed=NDK_HOME");
 	let ndk_dir = std::env::var("ANDROID_NDK_ROOT").or(std::env::var("NDK_HOME"))
@@ -59,6 +66,7 @@ fn build_with_cmake_for_android(repo_dir: &PathBuf) {
 		.define("ANDROID_NATIVE_API_LEVEL", api_level.to_string())
 		.define("ANDROID_PLATFORM", platform)
 		.define("BUILD_BYTETRACK_TEST", "OFF")
+		.define("BYTE_TRACK_ENABLE_TEST_API", native_test_api)
 		.no_build_target(true)
 		.build_target("bytetrack")
 		.build();

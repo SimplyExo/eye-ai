@@ -15,6 +15,12 @@ typedef struct {
   float height;
 } byte_track_Rect_float;
 
+#if defined(BYTE_TRACK_ENABLE_TEST_API)
+// Native geometry inspection used only by the feature-gated Rust tests.
+extern float byte_track_Rect_float_calc_iou_for_testing(
+    byte_track_Rect_float first, byte_track_Rect_float second);
+#endif
+
 typedef struct {
   byte_track_Rect_float rect;
   int label;

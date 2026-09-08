@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <stdexcept>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -288,20 +289,20 @@ void byte_track::BYTETracker::setMaxTimeLost(double max_time_lost_seconds)
 std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::jointStracks(const std::vector<STrackPtr> &a_tlist,
                                                                                       const std::vector<STrackPtr> &b_tlist) const
 {
-    std::map<int, int> exists;
+    std::unordered_set<size_t> seen_track_ids;
+    seen_track_ids.reserve(a_tlist.size() + b_tlist.size());
     std::vector<STrackPtr> res;
-    for (size_t i = 0; i < a_tlist.size(); i++)
+    res.reserve(a_tlist.size() + b_tlist.size());
+    for (const auto& track : a_tlist)
     {
-        exists.emplace(a_tlist[i]->getTrackId(), 1);
-        res.push_back(a_tlist[i]);
+        seen_track_ids.insert(track->getTrackId());
+        res.push_back(track);
     }
-    for (size_t i = 0; i < b_tlist.size(); i++)
+    for (const auto& track : b_tlist)
     {
-        const int &tid = b_tlist[i]->getTrackId();
-        if (!exists[tid] || exists.count(tid) == 0)
+        if (seen_track_ids.insert(track->getTrackId()).second)
         {
-            exists[tid] = 1;
-            res.push_back(b_tlist[i]);
+            res.push_back(track);
         }
     }
     return res;
@@ -437,56 +438,23 @@ void byte_track::BYTETracker::linearAssignment(const std::vector<std::vector<flo
     }
 }
 
-std::vector<std::vector<float>> byte_track::BYTETracker::calcIous(const std::vector<Rect<float>> &a_rect,
-                                                                  const std::vector<Rect<float>> &b_rect) const
-{
-    std::vector<std::vector<float>> ious;
-    if (a_rect.size() * b_rect.size() == 0)
-    {
-        return ious;
-    }
-
-    ious.resize(a_rect.size());
-    for (size_t i = 0; i < ious.size(); i++)
-    {
-        ious[i].resize(b_rect.size());
-    }
-
-    for (size_t bi = 0; bi < b_rect.size(); bi++)
-    {
-        for (size_t ai = 0; ai < a_rect.size(); ai++)
-        {
-            ious[ai][bi] = b_rect[bi].calcIoU(a_rect[ai]);
-        }
-    }
-    return ious;
-}
-
 std::vector<std::vector<float> > byte_track::BYTETracker::calcIouDistance(const std::vector<STrackPtr> &a_tracks,
                                                                           const std::vector<STrackPtr> &b_tracks) const
 {
-    std::vector<byte_track::Rect<float>> a_rects, b_rects;
-    for (size_t i = 0; i < a_tracks.size(); i++)
+    if (a_tracks.empty() || b_tracks.empty())
     {
-        a_rects.push_back(a_tracks[i]->getRect());
+        return {};
     }
 
-    for (size_t i = 0; i < b_tracks.size(); i++)
+    std::vector<std::vector<float>> cost_matrix(
+        a_tracks.size(), std::vector<float>(b_tracks.size()));
+    for (size_t ai = 0; ai < a_tracks.size(); ai++)
     {
-        b_rects.push_back(b_tracks[i]->getRect());
-    }
-
-    const auto ious = calcIous(a_rects, b_rects);
-
-    std::vector<std::vector<float>> cost_matrix;
-    for (size_t i = 0; i < ious.size(); i++)
-    {
-        std::vector<float> iou;
-        for (size_t j = 0; j < ious[i].size(); j++)
+        for (size_t bi = 0; bi < b_tracks.size(); bi++)
         {
-            iou.push_back(1 - ious[i][j]);
+            cost_matrix[ai][bi] =
+                1.0f - a_tracks[ai]->getRect().calcIoU(b_tracks[bi]->getRect());
         }
-        cost_matrix.push_back(iou);
     }
 
     return cost_matrix;
@@ -578,10 +546,13 @@ double byte_track::BYTETracker::execLapjv(const std::vector<std::vector<float>> 
         cost_c.assign(cost_c_extended.begin(), cost_c_extended.end());
     }
 
-    double **cost_ptr;
-    cost_ptr = new double *[sizeof(double *) * n];
+    const auto matrix_size = static_cast<size_t>(n);
+    std::vector<double> cost_storage(matrix_size * matrix_size);
+    std::vector<double*> cost_ptr(matrix_size);
     for (int i = 0; i < n; i++)
-        cost_ptr[i] = new double[sizeof(double) * n];
+    {
+        cost_ptr[i] = cost_storage.data() + static_cast<size_t>(i) * matrix_size;
+    }
 
     for (int i = 0; i < n; i++)
     {
@@ -591,10 +562,10 @@ double byte_track::BYTETracker::execLapjv(const std::vector<std::vector<float>> 
         }
     }
 
-    int* x_c = new int[sizeof(int) * n];
-    int *y_c = new int[sizeof(int) * n];
+    std::vector<int> x_c(matrix_size);
+    std::vector<int> y_c(matrix_size);
 
-    int ret = lapjv_internal(n, cost_ptr, x_c, y_c);
+    int ret = lapjv_internal(n, cost_ptr.data(), x_c.data(), y_c.data());
     if (ret != 0)
     {
         throw std::runtime_error("The result of lapjv_internal() is invalid.");
@@ -638,14 +609,6 @@ double byte_track::BYTETracker::execLapjv(const std::vector<std::vector<float>> 
             opt += cost_ptr[i][rowsol[i]];
         }
     }
-
-    for (int i = 0; i < n; i++)
-    {
-        delete[]cost_ptr[i];
-    }
-    delete[]cost_ptr;
-    delete[]x_c;
-    delete[]y_c;
 
     return opt;
 }

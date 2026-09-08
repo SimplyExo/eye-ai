@@ -1,4 +1,6 @@
 mod sys;
+#[cfg(all(test, feature = "native-test-api"))]
+mod tests;
 use sys::{
 	byte_track_BYTETracker_create, byte_track_BYTETracker_destroy,
 	byte_track_BYTETracker_set_max_time_lost, byte_track_BYTETracker_update, byte_track_Object,
