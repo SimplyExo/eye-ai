@@ -36,12 +36,12 @@ byte_track_Object to_c_style_Object(const Object &object) {
 }
 
 extern "C" {
-void *byte_track_BYTETracker_create(float max_time_lost_seconds,
-                                    float frame_rate, float track_thresh,
+void *byte_track_BYTETracker_create(double max_time_lost_seconds,
+                                    float track_thresh,
                                     float high_thresh, float match_thresh) {
   BYTETracker *tracker =
-      new BYTETracker(max_time_lost_seconds, frame_rate, track_thresh,
-                      high_thresh, match_thresh);
+      new BYTETracker(max_time_lost_seconds, track_thresh, high_thresh,
+                      match_thresh);
   return tracker;
 }
 
@@ -52,6 +52,7 @@ void byte_track_BYTETracker_destroy(void *tracker) {
 void byte_track_BYTETracker_update(void *tracker,
                                    const byte_track_Object *objects,
                                    int num_objects,
+                                   uint64_t elapsed_nanoseconds,
                                    byte_track_STrack **out_stracks,
                                    int *out_num_stracks) {
   std::vector<Object> objects_vec;
@@ -62,7 +63,7 @@ void byte_track_BYTETracker_update(void *tracker,
 
   BYTETracker *byte_tracker = static_cast<BYTETracker *>(tracker);
   std::vector<BYTETracker::STrackPtr> stracks =
-      byte_tracker->update(objects_vec);
+      byte_tracker->update(objects_vec, elapsed_nanoseconds);
 
   byte_track_STrack *stracks_array = new byte_track_STrack[stracks.size()];
   for (size_t i = 0; i < stracks.size(); ++i) {
@@ -78,9 +79,8 @@ void byte_track_STrack_array_destroy(byte_track_STrack *stracks_array) {
 }
 
 void byte_track_BYTETracker_set_max_time_lost(void *tracker,
-                                              float max_time_lost_seconds,
-                                              float frame_rate) {
+                                              double max_time_lost_seconds) {
   BYTETracker *byte_tracker = static_cast<BYTETracker *>(tracker);
-  byte_tracker->setMaxTimeLost(max_time_lost_seconds, frame_rate);
+  byte_tracker->setMaxTimeLost(max_time_lost_seconds);
 }
 }

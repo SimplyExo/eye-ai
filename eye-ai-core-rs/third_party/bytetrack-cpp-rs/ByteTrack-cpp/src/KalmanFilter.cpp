@@ -1,5 +1,7 @@
 #include "ByteTrack/KalmanFilter.h"
 
+#include <algorithm>
+#include <cmath>
 #include <cstddef>
 
 byte_track::KalmanFilter::KalmanFilter(const float& std_weight_position,
@@ -7,16 +9,8 @@ byte_track::KalmanFilter::KalmanFilter(const float& std_weight_position,
     std_weight_position_(std_weight_position),
     std_weight_velocity_(std_weight_velocity)
 {
-    constexpr size_t ndim = 4;
-    constexpr float dt = 1;
-
     motion_mat_ = Eigen::MatrixXf::Identity(8, 8);
     update_mat_ = Eigen::MatrixXf::Identity(4, 8);
-
-    for (size_t i = 0; i < ndim; i++)
-    {
-        motion_mat_(i, ndim + i) = dt;
-    }
 }
 
 void byte_track::KalmanFilter::initiate(StateMean &mean, StateCov &covariance, const DetectBox &measurement)
@@ -38,8 +32,21 @@ void byte_track::KalmanFilter::initiate(StateMean &mean, StateCov &covariance, c
     covariance = tmp.asDiagonal();
 }
 
-void byte_track::KalmanFilter::predict(StateMean &mean, StateCov &covariance)
+void byte_track::KalmanFilter::predict(StateMean &mean, StateCov &covariance,
+                                       double elapsed_seconds)
 {
+    constexpr size_t ndim = 4;
+    const double normalized_dt_double =
+        std::isfinite(elapsed_seconds) && elapsed_seconds > 0.0
+            ? elapsed_seconds / REFERENCE_INTERVAL_SECONDS
+            : 0.0;
+    const float dt = static_cast<float>(normalized_dt_double);
+
+    for (size_t i = 0; i < ndim; i++)
+    {
+        motion_mat_(i, ndim + i) = dt;
+    }
+
     StateMean std;
     std(0) = std_weight_position_ * mean(3);
     std(1) = std_weight_position_ * mean(3);
@@ -50,8 +57,29 @@ void byte_track::KalmanFilter::predict(StateMean &mean, StateCov &covariance)
     std(6) = 1e-5;
     std(7) = std_weight_velocity_ * mean(3);
 
-    StateMean tmp = std.array().square();
-    StateCov motion_cov = tmp.asDiagonal();
+    // Preserve the original marginal process-noise variances at dt=1 while
+    // extending them to variable time with a continuous constant-velocity
+    // model. Each position component has independent diffusion and each
+    // velocity component has white noise whose exact discretization adds the
+    // dt^3/3 position variance and dt^2/2 position/velocity covariance terms.
+    // Subtracting q_velocity/3 from q_position keeps the dt=1 position
+    // variance calibrated to the original ByteTrack value.
+    StateCov motion_cov = StateCov::Zero();
+    const float dt_squared = dt * dt;
+    const float dt_cubed = dt_squared * dt;
+    for (size_t i = 0; i < ndim; i++)
+    {
+        const float reference_position_variance = std(i) * std(i);
+        const float velocity_diffusion = std(ndim + i) * std(ndim + i);
+        const float position_diffusion =
+            std::max(0.0f, reference_position_variance - velocity_diffusion / 3.0f);
+
+        motion_cov(i, i) =
+            position_diffusion * dt + velocity_diffusion * dt_cubed / 3.0f;
+        motion_cov(i, ndim + i) = velocity_diffusion * dt_squared / 2.0f;
+        motion_cov(ndim + i, i) = motion_cov(i, ndim + i);
+        motion_cov(ndim + i, ndim + i) = velocity_diffusion * dt;
+    }
 
     mean = motion_mat_ * mean.transpose();
     covariance = motion_mat_ * covariance * (motion_mat_.transpose()) + motion_cov;

@@ -5,6 +5,7 @@
 #include "ByteTrack/Object.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <map>
 #include <memory>
@@ -17,16 +18,19 @@ class BYTETracker
 public:
     using STrackPtr = std::shared_ptr<STrack>;
 
-    BYTETracker(float max_time_lost_seconds = 5.0,
-                float frame_rate = 30.0,
+    BYTETracker(double max_time_lost_seconds = 5.0,
                 const float& track_thresh = 0.5,
                 const float& high_thresh = 0.6,
                 const float& match_thresh = 0.8);
     ~BYTETracker();
 
-    std::vector<STrackPtr> update(const std::vector<Object>& objects);
+    // elapsed_nanoseconds is the monotonic duration since the previous actual
+    // detector/tracker update. A source frame skipped before detection must not
+    // call this method.
+    std::vector<STrackPtr> update(const std::vector<Object>& objects,
+                                  std::uint64_t elapsed_nanoseconds);
 
-    void setMaxTimeLost(float max_time_lost_seconds, float frame_rate);
+    void setMaxTimeLost(double max_time_lost_seconds);
 
 private:
     std::vector<STrackPtr> jointStracks(const std::vector<STrackPtr> &a_tlist,
@@ -65,8 +69,11 @@ private:
     const float track_thresh_;
     const float high_thresh_;
     const float match_thresh_;
-    size_t max_time_lost_;
+    std::uint64_t max_time_lost_nanoseconds_;
+    std::uint64_t current_time_nanoseconds_;
 
+    // Sequence number retained for ByteTrack's ordering/output semantics; it
+    // no longer represents elapsed time or lost-track lifetime.
     size_t frame_id_;
     size_t track_id_count_;
 

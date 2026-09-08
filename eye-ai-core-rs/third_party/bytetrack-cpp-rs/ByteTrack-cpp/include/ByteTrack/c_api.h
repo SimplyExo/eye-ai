@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef struct {
   float x;
@@ -39,8 +40,8 @@ typedef struct {
   int label;
 } byte_track_STrack;
 
-extern void *byte_track_BYTETracker_create(float max_time_lost_seconds,
-                                           float frame_rate, float track_thresh,
+extern void *byte_track_BYTETracker_create(double max_time_lost_seconds,
+                                           float track_thresh,
                                            float high_thresh,
                                            float match_thresh);
 
@@ -51,13 +52,14 @@ extern void byte_track_BYTETracker_destroy(void *tracker);
 extern void byte_track_BYTETracker_update(void *tracker,
                                           const byte_track_Object *objects,
                                           int num_objects,
+                                          uint64_t elapsed_nanoseconds,
                                           byte_track_STrack **out_stracks,
                                           int *out_num_stracks);
 
 extern void byte_track_STrack_array_destroy(byte_track_STrack *stracks_array);
 
 extern void byte_track_BYTETracker_set_max_time_lost(
-    void *tracker, float max_time_lost_seconds, float frame_rate);
+    void *tracker, double max_time_lost_seconds);
 
 #ifdef __cplusplus
 }

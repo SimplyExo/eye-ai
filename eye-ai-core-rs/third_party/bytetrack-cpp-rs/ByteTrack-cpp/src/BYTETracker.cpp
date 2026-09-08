@@ -1,6 +1,8 @@
 #include "ByteTrack/BYTETracker.h"
 
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <map>
 #include <memory>
@@ -8,15 +10,42 @@
 #include <utility>
 #include <vector>
 
-byte_track::BYTETracker::BYTETracker(float max_time_lost_seconds,
-                                     float frame_rate,
+namespace
+{
+constexpr double NANOSECONDS_PER_SECOND = 1'000'000'000.0;
+
+std::uint64_t secondsToNanoseconds(double seconds)
+{
+    if (!std::isfinite(seconds) || seconds <= 0.0)
+    {
+        return 0;
+    }
+    const double maximum_seconds =
+        static_cast<double>(std::numeric_limits<std::uint64_t>::max())
+        / NANOSECONDS_PER_SECOND;
+    if (seconds >= maximum_seconds)
+    {
+        return std::numeric_limits<std::uint64_t>::max();
+    }
+    return static_cast<std::uint64_t>(seconds * NANOSECONDS_PER_SECOND + 0.5);
+}
+
+std::uint64_t saturatingAdd(std::uint64_t left, std::uint64_t right)
+{
+    const auto maximum = std::numeric_limits<std::uint64_t>::max();
+    return right > maximum - left ? maximum : left + right;
+}
+} // namespace
+
+byte_track::BYTETracker::BYTETracker(double max_time_lost_seconds,
                                      const float& track_thresh,
                                      const float& high_thresh,
                                      const float& match_thresh) :
     track_thresh_(track_thresh),
     high_thresh_(high_thresh),
     match_thresh_(match_thresh),
-    max_time_lost_(static_cast<size_t>(frame_rate * max_time_lost_seconds)),
+    max_time_lost_nanoseconds_(secondsToNanoseconds(max_time_lost_seconds)),
+    current_time_nanoseconds_(0),
     frame_id_(0),
     track_id_count_(0)
 {
@@ -26,10 +55,42 @@ byte_track::BYTETracker::~BYTETracker()
 {
 }
 
-std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(const std::vector<Object>& objects)
+std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
+    const std::vector<Object>& objects, std::uint64_t elapsed_nanoseconds)
 {
     ////////////////// Step 1: Get detections //////////////////
+    current_time_nanoseconds_ =
+        saturatingAdd(current_time_nanoseconds_, elapsed_nanoseconds);
     frame_id_++;
+
+    // Expire both active and already-lost tracks before association. This is
+    // essential after a stream/inference pause: an observation older than the
+    // real-time lifetime must not be matched merely because no update calls
+    // occurred during the pause.
+    std::vector<STrackPtr> current_removed_stracks;
+    const auto remove_expired =
+        [this, &current_removed_stracks](std::vector<STrackPtr>& tracks)
+    {
+        std::vector<STrackPtr> retained_tracks;
+        retained_tracks.reserve(tracks.size());
+        for (const auto& track : tracks)
+        {
+            const std::uint64_t age_nanoseconds = current_time_nanoseconds_
+                - track->getLastObservationTimeNanoseconds();
+            if (age_nanoseconds > max_time_lost_nanoseconds_)
+            {
+                track->markAsRemoved();
+                current_removed_stracks.push_back(track);
+            }
+            else
+            {
+                retained_tracks.push_back(track);
+            }
+        }
+        tracks = std::move(retained_tracks);
+    };
+    remove_expired(tracked_stracks_);
+    remove_expired(lost_stracks_);
 
     // Create new STracks using the result of object detection
     std::vector<STrackPtr> det_stracks;
@@ -68,9 +129,11 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
     strack_pool = jointStracks(active_stracks, lost_stracks_);
 
     // Predict current pose by KF
+    const double elapsed_seconds =
+        static_cast<double>(elapsed_nanoseconds) / NANOSECONDS_PER_SECOND;
     for (auto &strack : strack_pool)
     {
-        strack->predict();
+        strack->predict(elapsed_seconds);
     }
 
     ////////////////// Step 2: First association, with IoU //////////////////
@@ -93,12 +156,12 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
             const auto det = det_stracks[match_idx[1]];
             if (track->getSTrackState() == STrackState::Tracked)
             {
-                track->update(*det, frame_id_);
+                track->update(*det, frame_id_, current_time_nanoseconds_);
                 current_tracked_stracks.push_back(track);
             }
             else
             {
-                track->reActivate(*det, frame_id_);
+                track->reActivate(*det, frame_id_, current_time_nanoseconds_);
                 refind_stracks.push_back(track);
             }
         }
@@ -134,12 +197,12 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
             const auto det = det_low_stracks[match_idx[1]];
             if (track->getSTrackState() == STrackState::Tracked)
             {
-                track->update(*det, frame_id_);
+                track->update(*det, frame_id_, current_time_nanoseconds_);
                 current_tracked_stracks.push_back(track);
             }
             else
             {
-                track->reActivate(*det, frame_id_);
+                track->reActivate(*det, frame_id_, current_time_nanoseconds_);
                 refind_stracks.push_back(track);
             }
         }
@@ -156,8 +219,6 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
     }
 
     ////////////////// Step 4: Init new stracks //////////////////
-    std::vector<STrackPtr> current_removed_stracks;
-
     {
         std::vector<int> unmatch_detection_idx;
         std::vector<int> unmatch_unconfirmed_idx;
@@ -170,7 +231,9 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
 
         for (const auto &match_idx : matches_idx)
         {
-            non_active_stracks[match_idx[0]]->update(*remain_det_stracks[match_idx[1]], frame_id_);
+            non_active_stracks[match_idx[0]]->update(
+                *remain_det_stracks[match_idx[1]], frame_id_,
+                current_time_nanoseconds_);
             current_tracked_stracks.push_back(non_active_stracks[match_idx[0]]);
         }
 
@@ -190,21 +253,12 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
                 continue;
             }
             track_id_count_++;
-            track->activate(frame_id_, track_id_count_);
+            track->activate(frame_id_, track_id_count_, current_time_nanoseconds_);
             current_tracked_stracks.push_back(track);
         }
     }
 
     ////////////////// Step 5: Update state //////////////////
-    for (const auto &lost_strack : lost_stracks_)
-    {
-        if (frame_id_ - lost_strack->getFrameId() > max_time_lost_)
-        {
-            lost_strack->markAsRemoved();
-            current_removed_stracks.push_back(lost_strack);
-        }
-    }
-
     tracked_stracks_ = jointStracks(current_tracked_stracks, refind_stracks);
     lost_stracks_ = subStracks(jointStracks(subStracks(lost_stracks_, tracked_stracks_), current_lost_stracks), removed_stracks_);
     removed_stracks_ = jointStracks(removed_stracks_, current_removed_stracks);
@@ -226,9 +280,9 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
     return output_stracks;
 }
 
-void byte_track::BYTETracker::setMaxTimeLost(float max_time_lost_seconds, float frame_rate) {
-	// amount of frames that are tracked
-	max_time_lost_ = static_cast<size_t>(frame_rate * max_time_lost_seconds);
+void byte_track::BYTETracker::setMaxTimeLost(double max_time_lost_seconds)
+{
+    max_time_lost_nanoseconds_ = secondsToNanoseconds(max_time_lost_seconds);
 }
 
 std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::jointStracks(const std::vector<STrackPtr> &a_tlist,
@@ -303,8 +357,12 @@ void byte_track::BYTETracker::removeDuplicateStracks(const std::vector<STrackPtr
     std::vector<bool> a_overlapping(a_stracks.size(), false), b_overlapping(b_stracks.size(), false);
     for (const auto &[a_idx, b_idx] : overlapping_combinations)
     {
-        const int timep = a_stracks[a_idx]->getFrameId() - a_stracks[a_idx]->getStartFrameId();
-        const int timeq = b_stracks[b_idx]->getFrameId() - b_stracks[b_idx]->getStartFrameId();
+        const std::uint64_t timep =
+            a_stracks[a_idx]->getLastObservationTimeNanoseconds()
+            - a_stracks[a_idx]->getStartTimeNanoseconds();
+        const std::uint64_t timeq =
+            b_stracks[b_idx]->getLastObservationTimeNanoseconds()
+            - b_stracks[b_idx]->getStartTimeNanoseconds();
         if (timep > timeq)
         {
             b_overlapping[b_idx] = true;

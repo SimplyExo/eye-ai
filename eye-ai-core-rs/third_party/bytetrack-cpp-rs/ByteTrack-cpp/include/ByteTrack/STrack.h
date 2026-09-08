@@ -4,6 +4,7 @@
 #include "ByteTrack/KalmanFilter.h"
 
 #include <cstddef>
+#include <cstdint>
 
 namespace byte_track
 {
@@ -29,13 +30,19 @@ public:
     const size_t& getFrameId() const;
     const size_t& getStartFrameId() const;
     const size_t& getTrackletLength() const;
+    const std::uint64_t& getLastObservationTimeNanoseconds() const;
+    const std::uint64_t& getStartTimeNanoseconds() const;
     int getLabel() const;
 
-    void activate(const size_t& frame_id, const size_t& track_id);
-    void reActivate(const STrack &new_track, const size_t &frame_id, const int &new_track_id = -1);
+    void activate(const size_t& frame_id, const size_t& track_id,
+                  std::uint64_t observation_time_nanoseconds);
+    void reActivate(const STrack &new_track, const size_t &frame_id,
+                    std::uint64_t observation_time_nanoseconds,
+                    const int &new_track_id = -1);
 
-    void predict();
-    void update(const STrack &new_track, const size_t &frame_id);
+    void predict(double elapsed_seconds);
+    void update(const STrack &new_track, const size_t &frame_id,
+                std::uint64_t observation_time_nanoseconds);
 
     void markAsLost();
     void markAsRemoved();
@@ -54,6 +61,8 @@ private:
     size_t frame_id_;
     size_t start_frame_id_;
     size_t tracklet_len_;
+    std::uint64_t last_observation_time_nanoseconds_;
+    std::uint64_t start_time_nanoseconds_;
     int label_;
 
     void updateRect();

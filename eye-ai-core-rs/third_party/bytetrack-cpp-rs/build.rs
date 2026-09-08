@@ -1,15 +1,13 @@
-use std::{path::PathBuf, process::Command};
-
-const REPO_URL: &str = "https://github.com/Peanutt42/ByteTrack-cpp";
-
-const GIT_TAG: &str = "1.1.1";
+use std::path::PathBuf;
 
 fn main() {
 	println!("cargo::rerun-if-changed=build.rs");
+	println!("cargo::rerun-if-changed=ByteTrack-cpp/CMakeLists.txt");
+	println!("cargo::rerun-if-changed=ByteTrack-cpp/include");
+	println!("cargo::rerun-if-changed=ByteTrack-cpp/src");
 
-	let repo_dir = PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("bytetrack-cpp");
-
-	clone_repo(&repo_dir);
+	let repo_dir =
+		PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("ByteTrack-cpp");
 
 	match std::env::var("TARGET") {
 		Ok(target) if target.contains("android") => {
@@ -19,30 +17,6 @@ fn main() {
 	}
 
 	link_with_cpp_stdlib();
-}
-
-fn clone_repo(repo_dir: &PathBuf) {
-	let status = Command::new("git")
-		.arg("clone")
-		.arg("--branch")
-		.arg(GIT_TAG)
-		.arg("--depth")
-		.arg("1")
-		.arg(REPO_URL)
-		.arg(repo_dir)
-		.status()
-		.expect("failed to run git clone to clone ByteTrack-cpp repo");
-
-	if !status.success() {
-		let status = Command::new("git")
-			.arg("clean")
-			.arg("-fdx")
-			.current_dir(repo_dir)
-			.status()
-			.expect("failed to run git in order to clean local repo");
-
-		assert!(status.success(), "failed to clone ByteTrack-cpp repo");
-	}
 }
 
 fn build_with_cmake(repo_dir: &PathBuf) {

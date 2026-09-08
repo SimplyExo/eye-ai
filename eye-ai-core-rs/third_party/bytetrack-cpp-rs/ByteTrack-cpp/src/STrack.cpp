@@ -14,6 +14,8 @@ byte_track::STrack::STrack(const Rect<float>& rect, const float& score, int labe
     frame_id_(0),
     start_frame_id_(0),
     tracklet_len_(0),
+    last_observation_time_nanoseconds_(0),
+    start_time_nanoseconds_(0),
     label_(label)
 {
 }
@@ -61,12 +63,23 @@ const size_t& byte_track::STrack::getTrackletLength() const
     return tracklet_len_;
 }
 
+const std::uint64_t& byte_track::STrack::getLastObservationTimeNanoseconds() const
+{
+    return last_observation_time_nanoseconds_;
+}
+
+const std::uint64_t& byte_track::STrack::getStartTimeNanoseconds() const
+{
+    return start_time_nanoseconds_;
+}
+
 int byte_track::STrack::getLabel() const
 {
 	return label_;
 }
 
-void byte_track::STrack::activate(const size_t& frame_id, const size_t& track_id)
+void byte_track::STrack::activate(const size_t& frame_id, const size_t& track_id,
+                                  std::uint64_t observation_time_nanoseconds)
 {
     kalman_filter_.initiate(mean_, covariance_, rect_.getXyah());
 
@@ -81,9 +94,13 @@ void byte_track::STrack::activate(const size_t& frame_id, const size_t& track_id
     frame_id_ = frame_id;
     start_frame_id_ = frame_id;
     tracklet_len_ = 0;
+    last_observation_time_nanoseconds_ = observation_time_nanoseconds;
+    start_time_nanoseconds_ = observation_time_nanoseconds;
 }
 
-void byte_track::STrack::reActivate(const STrack &new_track, const size_t &frame_id, const int &new_track_id)
+void byte_track::STrack::reActivate(const STrack &new_track, const size_t &frame_id,
+                                    std::uint64_t observation_time_nanoseconds,
+                                    const int &new_track_id)
 {
     kalman_filter_.update(mean_, covariance_, new_track.getRect().getXyah());
 
@@ -99,18 +116,21 @@ void byte_track::STrack::reActivate(const STrack &new_track, const size_t &frame
     }
     frame_id_ = frame_id;
     tracklet_len_ = 0;
+    last_observation_time_nanoseconds_ = observation_time_nanoseconds;
 }
 
-void byte_track::STrack::predict()
+void byte_track::STrack::predict(double elapsed_seconds)
 {
     if (state_ != STrackState::Tracked)
     {
         mean_[7] = 0;
     }
-    kalman_filter_.predict(mean_, covariance_);
+    kalman_filter_.predict(mean_, covariance_, elapsed_seconds);
+    updateRect();
 }
 
-void byte_track::STrack::update(const STrack &new_track, const size_t &frame_id)
+void byte_track::STrack::update(const STrack &new_track, const size_t &frame_id,
+                                std::uint64_t observation_time_nanoseconds)
 {
     kalman_filter_.update(mean_, covariance_, new_track.getRect().getXyah());
 
@@ -122,6 +142,7 @@ void byte_track::STrack::update(const STrack &new_track, const size_t &frame_id)
     label_ = new_track.getLabel();
     frame_id_ = frame_id;
     tracklet_len_++;
+    last_observation_time_nanoseconds_ = observation_time_nanoseconds;
 }
 
 void byte_track::STrack::markAsLost()
