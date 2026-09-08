@@ -22,6 +22,24 @@ macro_rules! profile_scope {
 	};
 }
 
+#[cfg(not(feature = "enable_tracy_profiling"))]
+#[macro_export]
+macro_rules! inline_profile_scope {
+	($frame:expr, $name:literal) => {
+		$frame._internal_scope(concat!(concat!(module_path!(), "::"), $name))
+	};
+}
+
+#[cfg(feature = "enable_tracy_profiling")]
+#[macro_export]
+macro_rules! inline_profile_scope {
+	($frame:expr, $name:literal) => {
+		let ___scope = $frame._internal_scope(concat!(concat!(module_path!(), "::"), $name));
+		let ___tracy_scope = tracing_tracy::client::span!($name);
+		(___scope, ___tracy_scope)
+	};
+}
+
 #[derive(Debug, Clone)]
 pub struct ProfileScopeRecord {
 	pub name: String,

@@ -9,7 +9,7 @@ use eye_ai_core_rs::{
 		SpatialAudio, SpatialAudioContent, SpatialAudioSettings, read_audio_file,
 		read_object_label_data,
 	},
-	inferno_colormap, profile_scope,
+	inferno_colormap, inline_profile_scope, profile_scope,
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::{
@@ -38,7 +38,7 @@ static OBJECT_PROFILING_FRAME: LazyLock<ProfilingFrame> =
 static LAST_FORMATTED_OBJECT_PROFILING_INFO: LazyLock<ArcSwap<String>> =
 	LazyLock::new(|| ArcSwap::new(Arc::new(String::new())));
 
-static SPATIAL_AUDIO: OnceLock<RwLock<SpatialAudio>> = OnceLock::new();
+static SPATIAL_AUDIO: LazyLock<RwLock<Option<SpatialAudio>>> = LazyLock::new(|| RwLock::new(None));
 static SPATIAL_AUDIO_SETTINGS: LazyLock<Arc<RwLock<SpatialAudioSettings>>> =
 	LazyLock::new(|| Arc::new(RwLock::new(SpatialAudioSettings::default())));
 static SPATIAL_AUDIO_CONTENT: OnceLock<Arc<SpatialAudioContent>> = OnceLock::new();
@@ -75,33 +75,28 @@ fn wait_for_yolo_model<R>(f: impl FnOnce(&mut YoloModel) -> R) -> R {
 }
 
 fn try_change_spatial_audio<R>(f: impl FnOnce(&mut SpatialAudio) -> R) -> Option<R> {
-	let mut spatial_audio = {
-		profile_scope!(AUDIO_PROFILING_FRAME, "try_mutate_spatial_audio");
+	let waiting_scope = inline_profile_scope!(AUDIO_PROFILING_FRAME, "try_mutate_spatial_audio");
 
-		// first, wait for the spatial audio content to be loaded
-		if let Some(content) = SPATIAL_AUDIO_CONTENT.get() {
-			// then wait for the spatial audio lock (also: create it, if it does not exist yet)
-			SPATIAL_AUDIO
-				.get_or_init(|| {
-					RwLock::new(
-						SpatialAudio::new(
-							SPATIAL_AUDIO_SETTINGS.clone(),
-							content.clone(),
-							AUDIO_PROFILING_FRAME.clone(),
-							DEPTH_AUDIO_THREAD_PROFILING_FRAME.clone(),
-							OBJECT_AUDIO_THREAD_PROFILING_FRAME.clone(),
-						)
-						.unwrap(),
-					)
-				})
-				.write()
-				.unwrap()
-		} else {
-			return None;
-		}
-	};
+	// first, wait for the spatial audio content to be loaded
+	if let Some(content) = SPATIAL_AUDIO_CONTENT.get() {
+		// then wait for the spatial audio lock (also: create it, if it does not exist yet)
+		let spatial_audio = &mut (*SPATIAL_AUDIO.write().unwrap());
+		let spatial_audio = spatial_audio.get_or_insert_with(|| {
+			SpatialAudio::new(
+				SPATIAL_AUDIO_SETTINGS.clone(),
+				content.clone(),
+				AUDIO_PROFILING_FRAME.clone(),
+				DEPTH_AUDIO_THREAD_PROFILING_FRAME.clone(),
+				OBJECT_AUDIO_THREAD_PROFILING_FRAME.clone(),
+			)
+			.unwrap()
+		});
+		drop(waiting_scope);
 
-	Some(f(&mut spatial_audio))
+		Some(f(spatial_audio))
+	} else {
+		None
+	}
 }
 
 fn wait_for_audio_settings<R>(f: impl FnOnce(&mut SpatialAudioSettings) -> R) -> R {
@@ -538,9 +533,7 @@ fn createSpatialAudio() {
 	)
 	.expect("failed to create spatial audio");
 
-	SPATIAL_AUDIO
-		.set(RwLock::new(spatial_audio))
-		.expect("already set SPATIAL_AUDIO");
+	*SPATIAL_AUDIO.write().unwrap() = Some(spatial_audio);
 }
 
 #[uniffi::export]
