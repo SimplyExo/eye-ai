@@ -7,7 +7,7 @@
     <string name="nlp_model_setting" translatable="false">nlp_model</string>
     <string name="enable_ocr_setting" translatable="false">enable_ocr_setting</string>
     <string name="input_source_setting" translatable="false">input_source_setting</string>
-    <string name="input_is_camera">Camera</string>
+    <string name="input_is_camera">Kamera</string>
     <string name="input_is_media" translatable="false">Media</string>
     <string name="media_path_setting" translatable="false">media_path_setting</string>
     <string name="eyeaivision_ip_setting" translatable="false">eyeaivision_ip_setting</string>
@@ -229,8 +229,8 @@
     <string name="file_setting_semantic">Öffnet die Auswahl einer Datei</string>
     <string name="understood_button_text">Verstanden</string>
     <string name="understood_button_semantic">Verstanden. Dialogfeld verlassen</string>
-    <string name="accept_tutorial_text">Tutorial starten</string>
-    <string name="reject_tutorial_text">Nein Danke</string>
+    <string name="accept_tutorial_text">Ja, bitte</string>
+    <string name="reject_tutorial_text">Nein, danke</string>
     <string name="depth_tutorial_title_text">Einführung: Entfernungsschätzung</string>
     <string name="object_tutorial_title_text">Einführung: Objekterkennung</string>
     <string name="nlp_tutorial_title_text">Einführung: Sprachassistent</string>

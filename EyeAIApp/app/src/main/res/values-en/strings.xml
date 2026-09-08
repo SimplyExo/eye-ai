@@ -187,6 +187,17 @@
     <string name="text_input_setting_semantic">Opens a text field</string>
     <string name="file_setting_semantic">Opens file selection</string>
     <string name="understood_button_text">Understood</string>
+    <string name="understood_button_semantic">Understood. Leave dialog</string>
+    <string name="accept_tutorial_text">Yes, please</string>
+    <string name="reject_tutorial_text">No, thanks</string>
+    <string name="depth_tutorial_title_text">Introduction: Depth-Estimation</string>
+    <string name="object_tutorial_title_text">Introduction: Object-Detection</string>
+    <string name="nlp_tutorial_title_text">Introduction: Voice Assistant</string>
+    <string name="restart_tutorial_audio_button_semantic">Restart tutorial audio</string>
+    <string name="restart_tutorial_button_text">Restart tutorial</string>
+    <string name="pause_tutorial_audio_button_text">Stop playback</string>
+    <string name="start_tutorial_audio_button_text">Start playback</string>
+    <string name="start_pause_tutorial_audio_button_semantic">Start or stop audio playback</string>
 
 
 </resources>
