@@ -10,6 +10,7 @@ import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.Settings
+import uniffi.NativeLib.UniffiDetectedObject
 import kotlin.collections.listOf
 
 object UIDataSource {

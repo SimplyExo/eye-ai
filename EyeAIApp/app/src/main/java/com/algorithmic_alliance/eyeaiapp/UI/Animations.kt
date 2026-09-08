@@ -134,6 +134,7 @@ fun PremiumIconButton(
     shadowElevation: Dp = 0.dp,
     containerColor: Color = Color.Transparent,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    disabledContainerColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
     disabledContentColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
     content: @Composable () -> Unit
 ) {
@@ -151,7 +152,7 @@ fun PremiumIconButton(
         onClick = onClick,
         enabled = enabled,
         shape = PremiumShapes.small,
-        color = containerColor,
+        color = if (enabled) containerColor else disabledContainerColor,
         contentColor = if (enabled) contentColor else disabledContentColor,
         tonalElevation = if (enabled) tonalElevation else 0.dp,
         shadowElevation = if (enabled) shadowElevation else 0.dp,

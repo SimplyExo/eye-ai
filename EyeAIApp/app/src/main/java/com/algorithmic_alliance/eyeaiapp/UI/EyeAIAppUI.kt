@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -59,7 +60,7 @@ object DebugRoute
 @Serializable
 object TutorialRoute
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun EyeAIAppUI(
     viewModel: MainViewModel,
@@ -71,7 +72,8 @@ fun EyeAIAppUI(
     val activity = LocalActivity.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
-    val tutorialCompleted = sharedPreferences.getBoolean(stringResource(R.string.app_tutorial_completed), false)
+    val tutorialCompleted =
+        sharedPreferences.getBoolean(stringResource(R.string.app_tutorial_completed), false)
 
     LaunchedEffect(Unit) {
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -79,14 +81,18 @@ fun EyeAIAppUI(
     }
     NavHost(
         navController = navController,
-        startDestination = if(!tutorialCompleted) WelcomeRoute else PermissionRoute,
+        startDestination = if (!tutorialCompleted) WelcomeRoute else PermissionRoute,
         modifier = Modifier.fillMaxSize(),
     ) {
         composable<WelcomeRoute> {
             WelcomePage(
                 modifier = Modifier.fillMaxSize(),
                 onGetStarted = {
-                    navController.navigate(PermissionRoute)
+                    navController.navigate(PermissionRoute){
+                        popUpTo<WelcomeRoute> {
+                            inclusive = true
+                        }
+                    }
                 },
                 onStartTutorial = {
                     navController.navigate(TutorialRoute)
@@ -95,16 +101,26 @@ fun EyeAIAppUI(
             )
         }
         composable<TutorialRoute> {
-            TutorialPage(onAbortTutorial = { navController.popBackStack() }, onFinishTutorial = {navController.navigate(PermissionRoute){popUpTo(
-                WelcomeRoute){inclusive = true}} })
+            TutorialPage(onAbortTutorial = { navController.popBackStack() }, onFinishTutorial = {
+                navController.navigate(PermissionRoute) {
+                    popUpTo(
+                        WelcomeRoute
+                    ) { inclusive = true }
+                }
+            })
         }
         composable<PermissionRoute> {
             PermissionPage(
                 modifier = Modifier.fillMaxSize(), onPermissionsDeclined = {
-                    navController.popBackStack()
+                    (context as? Activity)?.finish()
                 }, onPermissionsGranted = {
                     onEvent(UIEvent.OnUpdatePermissionTutorialCompleted(true))
-                    navController.navigate(ConnectionRoute)
+                    Log.d(LOG_TAG, "1")
+                    navController.navigate(ConnectionRoute){
+                        popUpTo<PermissionRoute> {
+                            inclusive = true
+                        }
+                    }
                 }, onEvent = onEvent
             )
         }
@@ -118,20 +134,20 @@ fun EyeAIAppUI(
                 } else if (!sharedPreferences.getBoolean(debugPageActivatedKey, false)) {
                     navController.navigate(
                         HomeRoute
-                    ) { popUpTo(WelcomeRoute) { inclusive = true } }
+                    ) { popUpTo<ConnectionRoute> {
+                        inclusive = true
+                    } }
                 } else {
                     navController.navigate(
                         DebugRoute
-                    ) { popUpTo(WelcomeRoute) { inclusive = true } }
+                    ) { popUpTo<ConnectionRoute> {
+                        inclusive = true
+                    }}
                 }
 
             }, onExitSelection = {
                 if (!uiState.actionStartedFromSettings) {
-                    navController.navigate(WelcomeRoute) {
-                        popUpTo(WelcomeRoute) {
-                            inclusive = true
-                        }
-                    }
+                    (context as? Activity)?.finish()
                 } else {
                     onEvent(UIEvent.OnUpdateActionStartedFromSettings(false))
                     navController.popBackStack()
@@ -139,7 +155,6 @@ fun EyeAIAppUI(
             }, viewModel = viewModel, onEvent = onEvent)
         }
         composable<HomeRoute> {
-            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             HomePage(modifier = Modifier.fillMaxSize(), onOpenSettings = {
                 navController.navigate(
                     SettingsRoute
@@ -151,7 +166,7 @@ fun EyeAIAppUI(
                 navController.popBackStack()
             }, onOpenDebugPage = {
                 navController.navigate(DebugRoute) {
-                    popUpTo(WelcomeRoute) {
+                    popUpTo(HomeRoute) {
                         inclusive = true
                     }
                 }
@@ -159,7 +174,7 @@ fun EyeAIAppUI(
                 navController.navigate(
                     HomeRoute
                 ) {
-                    popUpTo(WelcomeRoute) {
+                    popUpTo(DebugRoute) {
                         inclusive = true
                     }
                 }

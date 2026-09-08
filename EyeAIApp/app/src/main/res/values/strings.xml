@@ -112,7 +112,7 @@
     <string name="vision_card_connection_text">Verbindung</string>
     <string name="vision_card_battery_text">Akku</string>
 
-    <string name="depth_estimation_card_title">Tiefenschätzung</string>
+    <string name="depth_estimation_card_title">Entfernungsschätzung</string>
 
     <string name="vosk_card_title">Spracherkennung</string>
     <string name="vosk_card_responding">EyeAI antwortet…</string>
@@ -130,7 +130,7 @@
     <string name="settings_app_bar_title">Einstellungen</string>
     <!-- Settings categories -->
     <string name="settings_category_general">Allgemein</string>
-    <string name="settings_category_depth_estimation">Tiefenschätzung</string>
+    <string name="settings_category_depth_estimation">Entfernungsschätzung</string>
     <string name="settings_category_speech_recognition">Spracherkennung</string>
     <string name="settings_category_audio_playback">Audiowiedergabe</string>
     <string name="settings_category_device_manager">Geräteverwaltung</string>
@@ -144,12 +144,12 @@
     <string name="setting_use_npu_description">Nur auf Geräten mit unterstützter Qualcomm-NPU aktivieren. Auf anderen Geräten kann sich die Leistung verschlechtern.</string>
 
     <!-- Depth Estimation -->
-    <string name="setting_depth_estimation_model_title">Modell für Tiefenschätzung</string>
+    <string name="setting_depth_estimation_model_title">Modell für Entfernungsschätzung</string>
     <string name="setting_depth_estimation_model_description">Das KI-Modell, das zur Schätzung der Entfernung zu Objekten verwendet wird.</string>
     <string name="setting_enable_framerate_limiter_title">Bildratenbegrenzung aktivieren</string>
-    <string name="setting_enable_depth_framerate_limiter_description">Begrenzt die Bildrate der Tiefenschätzung, um Ressourcen für andere Aufgaben freizugeben.</string>
+    <string name="setting_enable_depth_framerate_limiter_description">Begrenzt die Bildrate der Entfernungsschätzung, um Ressourcen für andere Aufgaben freizugeben.</string>
     <string name="setting_framerate_limit_title">Bildratenlimit</string>
-    <string name="setting_depth_framerate_limit_description">Die maximale Anzahl an Bildern pro Sekunde, die von der Tiefenschätzung verarbeitet werden.</string>
+    <string name="setting_depth_framerate_limit_description">Die maximale Anzahl an Bildern pro Sekunde, die von der Entfernungsschätzung verarbeitet werden.</string>
 
     <!-- Speech Recognition -->
     <string name="setting_speech_recognition_enabled_title">Spracherkennung aktivieren</string>
@@ -215,7 +215,7 @@
     <string name="radio_button_semantic">Optionsfeld für:</string>
     <string name="connect_to_device_semantic">Mit ausgewähltem Gerät verbinden</string>
     <string name="object_detection_card_title_semantic">Status der Objekterkennung</string>
-    <string name="depth_estimation_card_title_semantic">Status der Tiefenschätzung</string>
+    <string name="depth_estimation_card_title_semantic">Status der Entfernungsschätzung</string>
     <string name="vision_card_title_semantic">Status der EyeAI-Vision</string>
     <string name="vosk_card_title_semantic">Status der Spracherkennung</string>
     <string name="start_vosk_button_description">Schaltfläche zum Starten und Stoppen der Spracherkennung.</string>
@@ -231,6 +231,14 @@
     <string name="understood_button_semantic">Verstanden. Dialogfeld verlassen</string>
     <string name="accept_tutorial_text">Tutorial starten</string>
     <string name="reject_tutorial_text">Nein Danke</string>
+    <string name="depth_tutorial_title_text">Einführung: Entfernungsschätzung</string>
+    <string name="object_tutorial_title_text">Einführung: Objekterkennung</string>
+    <string name="nlp_tutorial_title_text">Einführung: Sprachassistent</string>
+    <string name="restart_tutorial_audio_button_semantic">Tutorial-Audio zurücksetzen</string>
+    <string name="restart_tutorial_button_text">Tutorial zurücksetzen</string>
+    <string name="pause_tutorial_audio_button_text">Wiedergabe stoppen</string>
+    <string name="start_tutorial_audio_button_text">Wiedergabe starten</string>
+    <string name="start_pause_tutorial_audio_button_semantic">Audio-Wiedergabe starten oder stoppen</string>
 
     <!-- Strings for semantics -->
 

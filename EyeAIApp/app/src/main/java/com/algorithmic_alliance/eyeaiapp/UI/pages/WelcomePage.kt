@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -38,7 +39,7 @@ import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import uniffi.NativeLib.UniffiDetectedObject
 import androidx.core.content.edit
-
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
@@ -51,12 +52,8 @@ fun WelcomePage(
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val isDark = isSystemInDarkTheme()
+    Log.d(LOG_TAG, "[WelcomePage] Loading WelcomePage")
 
-    DisposableEffect(Unit) {
-        onDispose {
-            onEvent(UIEvent.OnReturnFromSettings)
-        }
-    }
 
     Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
         Card(

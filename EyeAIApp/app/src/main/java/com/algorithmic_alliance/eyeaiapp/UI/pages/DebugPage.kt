@@ -79,6 +79,7 @@ fun DebugPage(
     onEvent: (UIEvent) -> Unit,
     uiState: UIState,
 ) {
+    Log.d(LOG_TAG, "[DebugPage] Loading DebugPage")
     val activity = LocalActivity.current
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
