@@ -134,7 +134,7 @@ class EyeAIRuntime internal constructor(
 
     val speechThreadExecutorForStateMachine = speechThreadExecutor
     val voskUserStart = AtomicBoolean(false)
-    val yoloModel = YoloModel(YoloModelInfo("model.tflite", "coco.names", 640))
+    val yoloModel = YoloModel(YoloModelInfo("yolo26n.tflite", "coco.names", 640))
     val nlpModel = NLPModel(NLPModelInfo.findById(NLPModelInfo.DEFAULT_MODEL_ID))
     val ocrModel = GoogleOCR()
     val voskModel = VoskModel(context, "model-de")

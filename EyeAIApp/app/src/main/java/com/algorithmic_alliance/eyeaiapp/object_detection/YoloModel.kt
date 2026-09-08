@@ -39,8 +39,8 @@ class YoloModel(var info: YoloModelInfo) {
 		)
 
 		val inputShape = uniffi.NativeLib.getYoloInputShape()
-		tensorWidth = inputShape[1]
-		tensorHeight = inputShape[2]
+		tensorWidth = inputShape[2]
+		tensorHeight = inputShape[3]
 		val outputShape = uniffi.NativeLib.getYoloOutputShape()
 		numChannel = outputShape[1]
 		numElements = outputShape[2]
