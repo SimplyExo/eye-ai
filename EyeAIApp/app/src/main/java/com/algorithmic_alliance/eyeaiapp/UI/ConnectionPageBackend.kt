@@ -29,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
@@ -163,10 +164,10 @@ data class WifiScanState(
 
 @Composable
 fun rememberWifiScanState(
-    context: Context,
     autoScanOnStart: Boolean = true,
     setScannState: (Boolean) -> Unit
 ): WifiScanState {
+    val context = LocalContext.current
     val wifiManager = remember { context.getSystemService(Context.WIFI_SERVICE) as WifiManager }
     var networks by remember { mutableStateOf<List<String>>(emptyList()) }
     val scope = rememberCoroutineScope()

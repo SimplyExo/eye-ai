@@ -80,6 +80,14 @@ android {
 	kotlin {
 		compilerOptions {
 			jvmTarget = JvmTarget.fromTarget("11")
+			freeCompilerArgs.addAll(
+				"-P",
+				"plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
+						layout.buildDirectory.dir("compose_metrics").get().asFile.absolutePath,
+				"-P",
+				"plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
+						layout.buildDirectory.dir("compose_reports").get().asFile.absolutePath
+			)
 		}
 	}
 	buildFeatures {
@@ -125,6 +133,7 @@ dependencies {
 	implementation(libs.androidx.ui.tooling.preview)
 	implementation(libs.androidx.material3)
 	implementation(libs.androidx.preference.ktx)
+	implementation(libs.kotlinx.collections.immutable)
 
 	// Camera
 	implementation(libs.androidx.camera.camera2)

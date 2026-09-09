@@ -61,8 +61,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumFloatingActionButton
@@ -82,9 +84,10 @@ fun DebugPage(
     modifier: Modifier = Modifier,
     onOpenSettings: () -> Unit,
     onEvent: (UIEvent) -> Unit,
-    uiState: UIState,
+    viewModel: MainViewModel,
 ) {
     Log.d(LOG_TAG, "[DebugPage] Loading DebugPage")
+    val uiState by viewModel.debugPageUIState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val speechRecognitionKey = stringResource(R.string.enable_speech_recognition_setting)
@@ -202,7 +205,7 @@ fun DebugPage(
                                     )
                                 ) {
                                     MediaPreview(
-                                        bitmap = uiState.mediaPreviewBitmap,
+                                        viewModel = viewModel,
                                         onEvent = onEvent
                                     )
                                     if (sharedPreferences.getString(
@@ -226,22 +229,22 @@ fun DebugPage(
                                         false
                                     )
                                 ) DebugInputPreview(
-                                    bitmap = uiState.debugInputPreviewBitmap, onEvent = onEvent
+                                    viewModel = viewModel, onEvent = onEvent
                                 )
                                 ObjectDetectionOverlay(
                                     modifier = Modifier
                                         .matchParentSize()
                                         .padding(Spacing.sm),
-                                    uiState.detectedObjects,
-                                    cameraResolution = uiState.cameraResolution
+                                    viewModel = viewModel
                                 )
+                                /*
                                 OCROverlay(
                                     modifier = Modifier
                                         .matchParentSize()
                                         .padding(Spacing.sm),
                                     results = uiState.ocrResults,
                                     cameraResolution = uiState.cameraResolution
-                                )
+                                */
                                 if (sharedPreferences.getBoolean(
                                         stringResource(R.string.enable_speech_recognition_setting),
                                         true
@@ -321,8 +324,7 @@ fun DebugPage(
                                     }
                                 }
                                 DepthPreview(
-                                    bitmap = uiState.depthPreviewBitmap,
-                                    performanceText = uiState.performanceText
+                                    viewModel = viewModel
                                 )
                             }
                         }
@@ -337,20 +339,21 @@ fun DebugPage(
 @Composable
 fun ObjectDetectionOverlay(
     modifier: Modifier = Modifier,
-    results: Array<UniffiDetectedObject>,
-    cameraResolution: Size,
+    viewModel: MainViewModel,
     onOverlayCreated: (OverlayViewOD) -> Unit = {},
 ) {
+    val uiState by viewModel.objectDetectionOverlayUIState.collectAsStateWithLifecycle()
     AndroidView(
         modifier = modifier,
         factory = { context -> OverlayViewOD(context, null).also(onOverlayCreated) },
         update = { overlayView ->
-            overlayView.setCameraResolution(cameraResolution)
-            overlayView.setResults(results)
+            overlayView.setCameraResolution(uiState.cameraResolution)
+            overlayView.setResults(uiState.detectedObjects)
         },
     )
 }
 
+/*
 @Composable
 fun OCROverlay(
     modifier: Modifier = Modifier,
@@ -367,13 +370,14 @@ fun OCROverlay(
         },
     )
 }
-
+*/
 @Composable
 fun DebugInputPreview(
     modifier: Modifier = Modifier,
-    bitmap: Bitmap?,
+    viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit,
 ) {
+    val uiState by viewModel.debugInputBitmapPreviewUIState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         // No PreviewView is attached in this mode; the foreground runtime keeps processing.
         onEvent(UIEvent.UIinitCamera(previewView = null))
@@ -387,7 +391,7 @@ fun DebugInputPreview(
         contentAlignment = Alignment.Center,
 
         ) {
-        bitmap?.let {
+        uiState.debugInputPreviewBitmap?.let {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Image(
                     bitmap = it.asImageBitmap(),
@@ -406,9 +410,10 @@ fun DebugInputPreview(
 @Composable
 fun MediaPreview(
     modifier: Modifier = Modifier,
-    bitmap: Bitmap?,
+    viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit,
 ) {
+    val uiState by viewModel.mediaPreviewUIState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         // Media processing is owned by the runtime, independently of this composable.
         onEvent(UIEvent.UIinitCamera(previewView = null))
@@ -422,7 +427,7 @@ fun MediaPreview(
             .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
-        bitmap?.let {
+        uiState.mediaPreviewBitmap?.let {
             Image(
                 bitmap = it.asImageBitmap(),
                 contentDescription = "Media preview",
@@ -437,9 +442,9 @@ fun MediaPreview(
 @Composable
 fun DepthPreview(
     modifier: Modifier = Modifier,
-    bitmap: Bitmap?,
-    performanceText: String,
+    viewModel: MainViewModel
 ) {
+    val uiState by viewModel.depthOverlayUIState.collectAsStateWithLifecycle()
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -448,7 +453,7 @@ fun DepthPreview(
             .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
-        bitmap?.let {
+        uiState.depthPreviewBitmap?.let {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Box(modifier = Modifier.aspectRatio(1f / 1f)) {
                     Image(
@@ -466,7 +471,7 @@ fun DepthPreview(
                     ) {
                         item {
                             Text(
-                                text = performanceText,
+                                text = uiState.performanceText,
                                 style = MaterialTheme.typography.bodySmall,
                                 fontSize = 8.sp,
                                 lineHeight = 10.sp,
@@ -500,13 +505,3 @@ fun CameraPreview(onEvent: (UIEvent) -> Unit) {
     )
 }
 
-@Preview(showBackground = true, name = "DebugPagePreview")
-@Composable
-private fun DebugPagePreview() {
-    DebugPage(
-        modifier = Modifier.fillMaxSize(),
-        onOpenSettings = {},
-        onEvent = {},
-        uiState = UIState(),
-    )
-}

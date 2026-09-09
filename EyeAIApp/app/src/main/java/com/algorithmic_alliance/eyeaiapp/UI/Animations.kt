@@ -70,12 +70,18 @@ fun rememberShimmerBrush(backgroundColor: Color, contrastColor: Color): Brush {
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-fun ShimmerBox(brush: Brush, modifier: Modifier = Modifier) {
+fun ShimmerBox(modifier: Modifier = Modifier, backgroundColor: Color, contrastColor: Color) {
     val context = LocalContext.current
+
+    val shimmerBrush = rememberShimmerBrush(
+        backgroundColor = backgroundColor,
+        contrastColor = contrastColor
+    )
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(brush)
+            .background(shimmerBrush)
             .semantics{contentDescription = context.getString(R.string.loading_semantic) }
     )
 }

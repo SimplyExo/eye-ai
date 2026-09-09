@@ -128,7 +128,7 @@ fun SettingsPage(
     onOpenConnectionPage: () -> Unit
 ) {
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.settingsPageUIState.collectAsStateWithLifecycle()
 
     val settingsData = UIDataSource.APP_SETTINGS
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
@@ -206,7 +206,7 @@ fun SettingsPage(
                                             category = stringResource(entry.key),
                                             onEvent = onEvent,
                                             onOpenConnectionPage = onOpenConnectionPage,
-                                            uiState = uiState
+                                            viewModel = viewModel
                                         )
                                 }
                                 item {
@@ -290,7 +290,7 @@ fun SettingsCategoryCard(
     category: String,
     onEvent: (UIEvent) -> Unit,
     onOpenConnectionPage: () -> Unit,
-    uiState: UIState
+    viewModel: MainViewModel
 ) {
     val isDark = isSystemInDarkTheme()
     val context = LocalContext.current
@@ -335,7 +335,7 @@ fun SettingsCategoryCard(
                         modifier = Modifier,
                         settingData = settingData,
                         onEvent = onEvent,
-                        uiState = uiState
+                        viewModel = viewModel
                     )
 
                     "slider" -> SliderSetting(
@@ -570,8 +570,9 @@ fun SelectSetting(
     modifier: Modifier = Modifier,
     settingData: Map<String, Any>,
     onEvent: (UIEvent) -> Unit,
-    uiState: UIState
+    viewModel: MainViewModel
 ) {
+    val uiState by viewModel.selectSettingUIState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val settingKey = stringResource(settingData["string"] as Int)

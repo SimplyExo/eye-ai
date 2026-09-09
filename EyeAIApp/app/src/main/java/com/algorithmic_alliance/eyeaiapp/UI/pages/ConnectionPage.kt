@@ -105,7 +105,7 @@ fun ConnectionPage(
     viewModel: MainViewModel,
     onEvent: (UIEvent) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.connectionPageUIState.collectAsStateWithLifecycle()
     BackHandler {
         onExitSelection()
     }
@@ -213,7 +213,7 @@ private fun ChooseConnectionPage(
     }
 
     val isDark = isSystemInDarkTheme()
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.chooseConnectionPageUIState.collectAsStateWithLifecycle()
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     var shouldRememberDevice by rememberSaveable { mutableStateOf(false) }
     var selectedDevice by remember { mutableStateOf("") }
@@ -228,21 +228,18 @@ private fun ChooseConnectionPage(
     )
     val deviceCategory = devicesData.name
     val wifiScanState = rememberWifiScanState(
-        context, autoScanOnStart = false, setScannState = { bool -> scanningForDevices = bool })
-    val devices: List<String> = when (devicesData.type) {
-        AUDIO_DEVICE_TYPE -> listOf(
-            stringResource(R.string.choose_eyeaivision_as_audio_text),
-            stringResource(R.string.choose_system_as_audio_text)
-        )
-
-        VISION_DEVICE_TYPE -> wifiScanState.networks
-        else -> emptyList()
+        autoScanOnStart = false, setScannState = { bool -> scanningForDevices = bool })
+    val devices: List<String> = remember(devicesData.type, wifiScanState.networks) {
+        when (devicesData.type) {
+            AUDIO_DEVICE_TYPE -> listOf(
+                context.getString(R.string.choose_eyeaivision_as_audio_text),
+                context.getString(R.string.choose_system_as_audio_text)
+            )
+            VISION_DEVICE_TYPE -> wifiScanState.networks
+            else -> emptyList()
+        }
     }
     val deviceType = devicesData.type
-    val shimmerBrush = rememberShimmerBrush(
-        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
-    )
     var pageLoading by rememberSaveable { mutableStateOf(true) }
     val chooseCameraAsInput = stringResource(R.string.choose_camera_as_input_text)
 
@@ -439,12 +436,14 @@ private fun ChooseConnectionPage(
                                         end = Spacing.sm
                                     )
                             ) {
-                                if (scanningForDevices) ShimmerBox(
-                                    shimmerBrush, Modifier
-                                        .height(Spacing.md)
-                                        .fillMaxWidth(0.6f)
-                                )
-                                else Text(
+                                if (scanningForDevices) {
+                                    ShimmerBox(
+                                        modifier = Modifier
+                                            .height(Spacing.md)
+                                            .fillMaxWidth(0.6f), backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                                        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                } else Text(
                                     stringResource(R.string.no_available_devices_text),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
@@ -492,20 +491,21 @@ private fun ChooseConnectionPage(
                                 )
                             }
                             if (deviceType == VISION_DEVICE_TYPE) {
-                                PremiumIconButton(
-                                    onClick = {
-                                        val locationManager =
-                                            context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                                val locationManager = remember(context) {
+                                    context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                                }
+                                val onRescanClick = remember(wifiScanState) {
+                                    {
                                         if (locationManager.isLocationEnabled) {
                                             wifiScanState.rescan()
                                         } else {
-                                            Log.d(
-                                                LOG_TAG,
-                                                "[ChooseConnectionPage] Wifi-Scan failed. Location services are not turned on."
-                                            )
                                             showLocationDisabledDialog = true
                                         }
-                                    }) {
+                                    }
+                                }
+                                PremiumIconButton(
+                                    onClick = onRescanClick
+                                ) {
                                     Icon(
                                         modifier = Modifier
                                             .heightIn(Spacing.xl)
@@ -722,10 +722,6 @@ fun ErrorDialog(
 
 @Composable
 fun LoadingPage() {
-    val shimmerBrush = rememberShimmerBrush(
-        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
-    )
     Column(verticalArrangement = Arrangement.Center) {
         Card(
             modifier = Modifier
@@ -744,9 +740,11 @@ fun LoadingPage() {
                     horizontalArrangement = Arrangement.Center
                 ) {
                     ShimmerBox(
-                        shimmerBrush, Modifier
+                        modifier = Modifier
                             .fillMaxWidth(0.7f)
-                            .height(Spacing.xxxl)
+                            .height(Spacing.xxxl),
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 HorizontalDivider(
@@ -764,9 +762,11 @@ fun LoadingPage() {
                         )
                 ) {
                     ShimmerBox(
-                        shimmerBrush, Modifier
+                        modifier = Modifier
                             .fillMaxWidth(0.6f)
-                            .height(Spacing.md)
+                            .height(Spacing.md),
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 Row(
@@ -780,9 +780,11 @@ fun LoadingPage() {
                         )
                 ) {
                     ShimmerBox(
-                        shimmerBrush, Modifier
+                        modifier = Modifier
                             .fillMaxWidth(0.6f)
-                            .height(Spacing.md)
+                            .height(Spacing.md),
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 Row(
@@ -796,9 +798,11 @@ fun LoadingPage() {
                         )
                 ) {
                     ShimmerBox(
-                        shimmerBrush, Modifier
+                        modifier =  Modifier
                             .fillMaxWidth(0.6f)
-                            .height(Spacing.md)
+                            .height(Spacing.md),
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 HorizontalDivider(
@@ -819,9 +823,11 @@ fun LoadingPage() {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     ShimmerBox(
-                        shimmerBrush, Modifier
+                        modifier =  Modifier
                             .fillMaxWidth(0.7f)
-                            .height(Spacing.xl)
+                            .height(Spacing.xl),
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 HorizontalDivider(
@@ -836,14 +842,18 @@ fun LoadingPage() {
                     horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                 ) {
                     ShimmerBox(
-                        shimmerBrush, Modifier
+                        modifier = Modifier
                             .weight(1f)
-                            .height(Spacing.xxl)
+                            .height(Spacing.xxl),
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     ShimmerBox(
-                        shimmerBrush, Modifier
+                        modifier = Modifier
                             .weight(1f)
-                            .height(Spacing.xxl)
+                            .height(Spacing.xxl),
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        contrastColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }

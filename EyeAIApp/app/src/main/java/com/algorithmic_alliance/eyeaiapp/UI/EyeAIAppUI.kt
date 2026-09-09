@@ -97,7 +97,6 @@ fun EyeAIAppUI(
                 onStartTutorial = {
                     navController.navigate(TutorialRoute)
                 },
-                onEvent = onEvent
             )
         }
         composable<TutorialRoute> {
@@ -185,13 +184,12 @@ fun EyeAIAppUI(
             })
         }
         composable<DebugRoute> {
-            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             DebugPage(
                 modifier = Modifier.fillMaxSize(), onOpenSettings = {
                     navController.navigate(
                         SettingsRoute
                     )
-                }, onEvent = onEvent, uiState = uiState
+                }, onEvent = onEvent, viewModel = viewModel
             )
         }
     }

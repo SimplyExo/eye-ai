@@ -45,7 +45,6 @@ fun WelcomePage(
     modifier: Modifier = Modifier,
     onGetStarted: () -> Unit,
     onStartTutorial: () -> Unit,
-    onEvent: (UIEvent) -> Unit
 ) {
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -146,7 +145,6 @@ fun Preview() {
         WelcomePage(
             Modifier.fillMaxSize(),
             onGetStarted = {},
-            onEvent = {},
             onStartTutorial = {})
     }
 }

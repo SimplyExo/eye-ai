@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -64,6 +65,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,10 +75,10 @@ fun HomePage(
     onEvent: (UIEvent) -> Unit,
     viewModel: MainViewModel,
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.homePageUIState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
-    //Log.d(LOG_TAG, "[HomePage] Loading HomePage")
+    Log.d(LOG_TAG, "[HomePage] Loading HomePage")
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val speechRecognitionKey = stringResource(R.string.enable_speech_recognition_setting)
     val speechRecognitionEnabled by remember {
@@ -87,10 +89,6 @@ fun HomePage(
         )
     }
     val profilingInformationKey = stringResource(R.string.show_profiling_info_setting)
-    val shimmerBrush = rememberShimmerBrush(
-        backgroundColor = MaterialTheme.colorScheme.surface,
-        contrastColor = MaterialTheme.colorScheme.onSurface,
-    )
 
     // Status cards need profiling values, but this is strictly a UI preference:
     // the runtime and foreground service continue independently of this effect.
@@ -192,12 +190,11 @@ fun HomePage(
                         VoskStatusCard(viewModel = viewModel)
                     }
                     item {
-                        DepthStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush)
+                        DepthStatusCard(viewModel = viewModel)
                     }
                     item {
                         ObjectStatusCard(
                             viewModel = viewModel,
-                            shimmerBrush = shimmerBrush
                         )
                     }
                     item { VisionStatusCard(viewModel = viewModel) }
@@ -210,8 +207,7 @@ fun HomePage(
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+fun ObjectStatusCard(viewModel: MainViewModel) {
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val isDark = isSystemInDarkTheme()
@@ -240,6 +236,7 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
             )
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                val uiState by viewModel.performanceStatusCardUIState.collectAsStateWithLifecycle()
                 if (!sharedPreferences.getBoolean(
                         stringResource(R.string.enable_object_detection_setting), true
                     )
@@ -251,9 +248,11 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
                     )
                 } else if (getObjectFPS(uiState.performanceText) == -1) {
                     ShimmerBox(
-                        shimmerBrush, Modifier
+                        modifier = Modifier
                             .fillMaxWidth(0.75f)
-                            .height(Spacing.xl)
+                            .height(Spacing.xl),
+                        backgroundColor = MaterialTheme.colorScheme.surface,
+                        contrastColor = MaterialTheme.colorScheme.onSurface,
                     )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -284,7 +283,7 @@ fun ObjectStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun VisionStatusCard(viewModel: MainViewModel) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.performanceStatusCardUIState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val isDark = isSystemInDarkTheme()
@@ -347,8 +346,7 @@ fun VisionStatusCard(viewModel: MainViewModel) {
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+fun DepthStatusCard(viewModel: MainViewModel) {
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val isDark = isSystemInDarkTheme()
@@ -374,11 +372,14 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
             )
             HorizontalDivider()
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                val uiState by viewModel.performanceStatusCardUIState.collectAsStateWithLifecycle()
                 if (getDepthFPS(uiState.performanceText) == -1) {
                     ShimmerBox(
-                        shimmerBrush, Modifier
+                        modifier = Modifier
                             .fillMaxWidth(0.75f)
-                            .height(Spacing.xl)
+                            .height(Spacing.xl),
+                        backgroundColor = MaterialTheme.colorScheme.surface,
+                        contrastColor = MaterialTheme.colorScheme.onSurface,
                     )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -409,7 +410,7 @@ fun DepthStatusCard(viewModel: MainViewModel, shimmerBrush: Brush) {
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun VoskStatusCard(viewModel: MainViewModel) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.voskStatusCardUIState.collectAsStateWithLifecycle()
     val isDark = isSystemInDarkTheme()
     val context = LocalContext.current
     Card(
