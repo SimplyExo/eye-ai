@@ -34,7 +34,7 @@ fn run_midas_depth_model() {
 		.map(|x| *x as f32)
 		.collect::<Vec<_>>();
 	let mut input = FloatTensorBuffer::new(input_buffer_255f, FloatTensorFormat::ImageRgb255);
-	image_rgb_255_to_midas_image(&mut input).expect("failed to convert rgb255 to midas image");
+	image_rgb_255_to_midas_image(&mut input);
 
 	let expected_output = ndarray_npy::read_npy::<_, ndarray::Array2<f32>>(
 		"tests/00022_00193_outdoor_010_030_expected.npy",
@@ -48,15 +48,15 @@ fn run_midas_depth_model() {
 		model_name: "MiDaS 256x256".to_string(),
 		model_data: std::fs::read("../EyeAIApp/app/src/main/assets/midas_v2_1_256x256.tflite")
 			.expect("failed to load midas.tflite model file"),
+		delegate_serialization_dir: String::new(),
+		model_token: "MiDaS 256x256 testing".to_string(),
 		npu_config: None,
 	};
 
 	let mut depth_model = DepthModel::new(depth_model_create_info, &depth_profiling_frame)
 		.expect("failed to create interpreter");
 
-	let mut output_tensor_buffer = depth_model
-		.allocate_output_tensor()
-		.expect("failed to allocate output tensor");
+	let mut output_tensor_buffer = depth_model.allocate_output_tensor();
 
 	depth_model
 		.run(&mut input, &mut output_tensor_buffer)

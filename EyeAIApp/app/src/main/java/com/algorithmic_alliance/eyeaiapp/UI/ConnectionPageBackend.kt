@@ -1,25 +1,26 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
+import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.Context
 import androidx.core.content.edit
+import android.content.Intent
+import android.content.IntentFilter
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import android.net.ConnectivityManager
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.net.wifi.WifiNetworkSpecifier
-import android.os.Handler
-import android.os.Looper
-import androidx.annotation.RequiresApi
-import android.Manifest
-import android.content.BroadcastReceiver
-import android.content.Intent
-import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
+import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import androidx.annotation.RequiresApi
+import android.content.pm.PackageManager
 import androidx.annotation.RequiresPermission
 import com.algorithmic_alliance.eyeaiapp.R
 import androidx.compose.runtime.Composable
@@ -30,10 +31,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
+import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.coroutines.resume
+import java.util.concurrent.atomic.AtomicBoolean
+
+private const val WIFI_SCAN_TIMEOUT_MS = 15_000L
 
 @RequiresApi(Build.VERSION_CODES.S)
 fun connectToDevice(

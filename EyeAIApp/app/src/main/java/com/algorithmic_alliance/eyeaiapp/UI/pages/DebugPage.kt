@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.util.Log
 import android.util.Size
-import androidx.activity.compose.LocalActivity
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -13,6 +12,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -54,10 +57,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
@@ -65,9 +68,10 @@ import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumFloatingActionButton
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.UIState
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
-import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.ocr.TextBoundingBox
 import uniffi.NativeLib.UniffiDetectedObject
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
@@ -81,30 +85,27 @@ fun DebugPage(
     uiState: UIState,
 ) {
     Log.d(LOG_TAG, "[DebugPage] Loading DebugPage")
-    val activity = LocalActivity.current
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val speechRecognitionKey = stringResource(R.string.enable_speech_recognition_setting)
     var speechRecognitionEnabled by rememberSaveable { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         speechRecognitionEnabled = sharedPreferences.getBoolean(speechRecognitionKey, true)
-        if (ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
+        if (
+            ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
+            PackageManager.PERMISSION_GRANTED
         ) {
             if (speechRecognitionEnabled) {
-                Log.d(LOG_TAG, "[DebugPage] Loading Vosk model")
                 onEvent(UIEvent.InitVoskService)
             } else {
-                Log.d(LOG_TAG, "[DebugPage] Speech Recognition disabled not loading Vosk model")
                 onEvent(UIEvent.CloseVoskService)
             }
         }
         onEvent(UIEvent.UpdateVoskStatusText)
         onEvent(UIEvent.UpdateSpeechStatusText)
     }
+
     key(uiState.reloadDebugPageKey) {
         Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
             Scaffold(
@@ -338,14 +339,16 @@ fun ObjectDetectionOverlay(
     modifier: Modifier = Modifier,
     results: Array<UniffiDetectedObject>,
     cameraResolution: Size,
-    onOverlayCreated: (OverlayViewOD) -> Unit = {}
+    onOverlayCreated: (OverlayViewOD) -> Unit = {},
 ) {
-    AndroidView(modifier = modifier, factory = { context ->
-        OverlayViewOD(context, null).also { onOverlayCreated(it) }
-    }, update = { overlayView ->
-        overlayView.setCameraResolution(cameraResolution)
-        overlayView.setResults(results)
-    })
+    AndroidView(
+        modifier = modifier,
+        factory = { context -> OverlayViewOD(context, null).also(onOverlayCreated) },
+        update = { overlayView ->
+            overlayView.setCameraResolution(cameraResolution)
+            overlayView.setResults(results)
+        },
+    )
 }
 
 @Composable
@@ -353,25 +356,27 @@ fun OCROverlay(
     modifier: Modifier = Modifier,
     results: Array<TextBoundingBox>,
     cameraResolution: Size,
-    onOverlayCreated: (OverlayViewOCR) -> Unit = {}
+    onOverlayCreated: (OverlayViewOCR) -> Unit = {},
 ) {
-    AndroidView(modifier = modifier, factory = { context ->
-        OverlayViewOCR(context, null).also { onOverlayCreated(it) }
-    }, update = { overlayView ->
-        overlayView.setCameraResolution(cameraResolution)
-        overlayView.setResults(results)
-    })
+    AndroidView(
+        modifier = modifier,
+        factory = { context -> OverlayViewOCR(context, null).also(onOverlayCreated) },
+        update = { overlayView ->
+            overlayView.setCameraResolution(cameraResolution)
+            overlayView.setResults(results)
+        },
+    )
 }
 
 @Composable
 fun DebugInputPreview(
-    modifier: Modifier = Modifier, bitmap: Bitmap?, onEvent: (UIEvent) -> Unit
+    modifier: Modifier = Modifier,
+    bitmap: Bitmap?,
+    onEvent: (UIEvent) -> Unit,
 ) {
-
-    val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(Unit) {
-        Log.d(LOG_TAG, "Loading DebugInputPreview")
-        onEvent(UIEvent.UIinitCamera(previewView = null, lifecycleOwner = lifecycleOwner))
+        // No PreviewView is attached in this mode; the foreground runtime keeps processing.
+        onEvent(UIEvent.UIinitCamera(previewView = null))
     }
     Box(
         modifier = modifier
@@ -400,14 +405,13 @@ fun DebugInputPreview(
 
 @Composable
 fun MediaPreview(
-    modifier: Modifier = Modifier, bitmap: Bitmap?, onEvent: (UIEvent) -> Unit
+    modifier: Modifier = Modifier,
+    bitmap: Bitmap?,
+    onEvent: (UIEvent) -> Unit,
 ) {
-
-    val lifecycleOwner = LocalLifecycleOwner.current
-
     LaunchedEffect(Unit) {
-        Log.d(LOG_TAG, "[DebugPage.MediaPreview] Loading Media Preview")
-        onEvent(UIEvent.UIinitCamera(previewView = null, lifecycleOwner = lifecycleOwner))
+        // Media processing is owned by the runtime, independently of this composable.
+        onEvent(UIEvent.UIinitCamera(previewView = null))
     }
 
     Box(
@@ -432,7 +436,9 @@ fun MediaPreview(
 
 @Composable
 fun DepthPreview(
-    modifier: Modifier = Modifier, bitmap: Bitmap?, performanceText: String
+    modifier: Modifier = Modifier,
+    bitmap: Bitmap?,
+    performanceText: String,
 ) {
     Box(
         modifier = modifier
@@ -471,39 +477,36 @@ fun DepthPreview(
                 }
             }
         }
-
-
     }
 }
 
 @Composable
 fun CameraPreview(onEvent: (UIEvent) -> Unit) {
-    Log.d(LOG_TAG, "Loading CameraPreview")
-    val lifecycleOwner = LocalLifecycleOwner.current
-
     AndroidView(
         modifier = Modifier
             .padding(Spacing.sm)
             .clip(PremiumShapes.small),
         factory = { context ->
-            PreviewView(context).apply { scaleType = PreviewView.ScaleType.FIT_CENTER }.also {
-                onEvent(
-                    UIEvent.UIinitCamera(
-                        it, lifecycleOwner
-                    )
-                )
+            PreviewView(context).apply {
+                scaleType = PreviewView.ScaleType.FIT_CENTER
+            }.also { previewView ->
+                // The PreviewView is an optional surface only; camera processing stays headless.
+                onEvent(UIEvent.UIinitCamera(previewView))
             }
-        })
-
+        },
+        onRelease = { previewView ->
+            onEvent(UIEvent.UIDetachCameraPreview(previewView))
+        },
+    )
 }
 
 @Preview(showBackground = true, name = "DebugPagePreview")
 @Composable
-fun DebugPagePreview() {
+private fun DebugPagePreview() {
     DebugPage(
         modifier = Modifier.fillMaxSize(),
         onOpenSettings = {},
         onEvent = {},
-        uiState = UIState()
+        uiState = UIState(),
     )
 }

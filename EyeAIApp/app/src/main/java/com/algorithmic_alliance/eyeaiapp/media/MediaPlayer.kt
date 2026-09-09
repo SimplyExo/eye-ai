@@ -24,7 +24,9 @@ class MediaPlayer(
 	private val context: Context,
 	private val uri: Uri? = null,
 	private val updateTargetImageView: (Bitmap) -> Unit,
-	private val bitmapFlow: Flow<Bitmap>? = null
+	private val bitmapFlow: Flow<Bitmap>? = null,
+	/** Optional source adapter callback into the common EyeAI FrameAnalyzer. */
+	private val onFrame: ((Bitmap) -> Unit)? = null,
 ) {
 
 	private var retriever: MediaMetadataRetriever? = null
@@ -53,6 +55,7 @@ class MediaPlayer(
 	private suspend fun collectBitmapFlow(flow: Flow<Bitmap>) {
 
 		flow.collect { bitmap ->
+			onFrame?.invoke(bitmap)
 
 			withContext(Dispatchers.Main) {
 				try {
@@ -79,6 +82,7 @@ class MediaPlayer(
 					}
 
 					val bmp = BitmapFactory.decodeStream(input, null, options)
+					bmp?.let { onFrame?.invoke(it) }
 					withContext(Dispatchers.Main) {
 						bmp?.let{
 							updateTargetImageView(bmp)
@@ -94,6 +98,7 @@ class MediaPlayer(
 
 					try {
 						val frame = retriever!!.getFrameAtIndex(index)?.toARGB8888()
+						frame?.let { onFrame?.invoke(it) }
 						withContext(Dispatchers.Main) {
 							frame?.let{
 								updateTargetImageView(frame)

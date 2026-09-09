@@ -21,6 +21,12 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -65,7 +71,9 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,6 +96,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
@@ -99,7 +110,10 @@ import com.algorithmic_alliance.eyeaiapp.UI.hasPermission
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
+import com.algorithmic_alliance.eyeaiapp.data.SelectOption
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
+import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import kotlin.math.roundToInt
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
@@ -359,6 +373,30 @@ fun ClickSetting(
     settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit, onOpenConnectionPage: () -> Unit
 ) {
     val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val action = settingData["action"] as? String
+    var batteryOptimizationExempt by remember(action) {
+        mutableStateOf(
+            action == UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION &&
+                BatteryOptimization.isExempt(context)
+        )
+    }
+
+    DisposableEffect(lifecycleOwner, action) {
+        if (action != UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION) {
+            onDispose { }
+        } else {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    batteryOptimizationExempt = BatteryOptimization.isExempt(context)
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -377,7 +415,7 @@ fun ClickSetting(
                     resolveString(LocalContext.current, settingData.getValue("description")),
                     style = MaterialTheme.typography.bodySmall
                 )
-            if (settingTitle == stringResource(R.string.setting_change_default_devices_title)) {
+            if (action == UIDataSource.ACTION_OPEN_DEVICE_MANAGER) {
                 val sharedPreferences =
                     PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
                 val standardAudioDevice =
@@ -427,14 +465,27 @@ fun ClickSetting(
                 }
 
             }
+            if (action == UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION) {
+                Text(
+                    if (batteryOptimizationExempt) {
+                        "Status: von der Batterieoptimierung ausgenommen"
+                    } else {
+                        "Status: Batterieoptimierung aktiv"
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
         Box {
-            val changeStandardDeviceText =
-                stringResource(R.string.setting_change_default_devices_title)
-            PremiumIconButton(onClick = {
-                if (settingTitle == changeStandardDeviceText) {
-                    onEvent(UIEvent.OnUpdateActionStartedFromSettings(true))
-                    onOpenConnectionPage()
+            IconButton(onClick = {
+                when (action) {
+                    UIDataSource.ACTION_OPEN_DEVICE_MANAGER -> {
+                        onEvent(UIEvent.OnUpdateActionStartedFromSettings(true))
+                        onOpenConnectionPage()
+                    }
+                    UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION -> {
+                        BatteryOptimization.openSettings(context)
+                    }
                 }
 
             }) {
@@ -443,6 +494,7 @@ fun ClickSetting(
                     contentDescription = stringResource(R.string.change_devices_icon_description)
                 )
             }
+
 
         }
     }
@@ -508,6 +560,7 @@ fun CheckBoxSetting(
                 )
             }
             onEvent(UIEvent.UpdateSettings)
+
         })
     }
 }

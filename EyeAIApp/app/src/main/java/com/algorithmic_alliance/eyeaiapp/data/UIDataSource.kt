@@ -2,8 +2,12 @@ package com.algorithmic_alliance.eyeaiapp.data
 
 import android.Manifest
 import android.os.Build
-import androidx.annotation.RequiresApi
+import android.util.Log
+import androidx.annotation.StringRes
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
 import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
@@ -14,6 +18,11 @@ import uniffi.NativeLib.UniffiDetectedObject
 import kotlin.collections.listOf
 
 object UIDataSource {
+
+    const val ACTION_OPEN_DEVICE_MANAGER = "open_device_manager"
+    const val ACTION_OPEN_BATTERY_OPTIMIZATION = "open_battery_optimization"
+
+
     const val INFORMATION_NOT_FOUND =
         "Die Information konnte nicht geladen werden. Wir bitten um Entschuldigung."
 
@@ -127,6 +136,12 @@ object UIDataSource {
                 "settingsType" to "checkbox",
                 "string" to R.string.enable_npu_delegate_setting,
                 "default" to true
+            ),
+            mapOf(
+                "title" to "Batterieoptimierung",
+                "description" to "Optional: EyeAI in den Android-Systemeinstellungen von der Akkuoptimierung ausnehmen. Das kann den Dauerbetrieb stabilisieren, erhöht aber den Akkuverbrauch.",
+                "settingsType" to "click",
+                "action" to ACTION_OPEN_BATTERY_OPTIMIZATION
             )
         ),
         R.string.settings_category_depth_estimation to listOf(
@@ -210,7 +225,8 @@ object UIDataSource {
             mapOf(
                 "title" to R.string.setting_change_default_devices_title,
                 "description" to R.string.setting_change_default_devices_description,
-                "settingsType" to "click"
+                "settingsType" to "click",
+                "action" to ACTION_OPEN_DEVICE_MANAGER
             )
         ),
         R.string.settings_category_object_detection to listOf(
@@ -344,3 +360,7 @@ val PremiumShapes = Shapes(
     large = RoundedCornerShape(24.dp),       // große Container, Bottom Sheets
     extraLarge = RoundedCornerShape(32.dp)   // Hero-Elemente, Modals
 )
+
+/** A user-facing label paired with the stable value consumed by the runtime. */
+data class SelectOption(@StringRes val labelRes: Int, val value: String)
+

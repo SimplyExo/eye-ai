@@ -3,8 +3,8 @@ package com.algorithmic_alliance.eyeaiapp.llm.statemachine
 import android.util.Log
 import android.widget.TextView
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
-import com.algorithmic_alliance.eyeaiapp.MainActivity.State
-import com.algorithmic_alliance.eyeaiapp.camera.CameraFrameAnalyzer
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.EyeAIState as State
+import com.algorithmic_alliance.eyeaiapp.camera.FrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.JsonParser
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SpeechOutputHandler
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.ContextSwitchConfirmationResult
@@ -36,7 +36,7 @@ class StateMachine(
     private val textToSpeechInstance: TextToSpeechInstance,
 	private var lastDialogContext: String?,
 	private val setSpeechResponseText: (String) -> Unit,
-	private val cameraFrameAnalyzer: CameraFrameAnalyzer? = null
+	private val frameAnalyzer: FrameAnalyzer? = null
 ) {
 
 	private val speechOutputHandler = SpeechOutputHandler(
@@ -217,7 +217,7 @@ class StateMachine(
 	}
 
     private suspend fun handleTextRecognitionDirectly(): StateUpdate {
-        val ocrSuccess = cameraFrameAnalyzer?.runOcrAnalysis() ?: false
+		val ocrSuccess = frameAnalyzer?.runOcrAnalysis() ?: false
 
         if (!ocrSuccess) {
             Log.d(EyeAIApp.APP_LOG_TAG, "OCR analysis failed")

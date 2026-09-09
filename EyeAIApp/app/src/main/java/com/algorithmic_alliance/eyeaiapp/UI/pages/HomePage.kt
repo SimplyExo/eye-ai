@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +33,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,7 +64,6 @@ import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,8 +79,6 @@ fun HomePage(
     //Log.d(LOG_TAG, "[HomePage] Loading HomePage")
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val speechRecognitionKey = stringResource(R.string.enable_speech_recognition_setting)
-    val profilingInformationKey = stringResource(R.string.show_profiling_info_setting)
-    var initialShowProfilingInformationSetting = false
     val speechRecognitionEnabled by remember {
         mutableStateOf(
             sharedPreferences.getBoolean(
@@ -89,41 +86,46 @@ fun HomePage(
             )
         )
     }
+    val profilingInformationKey = stringResource(R.string.show_profiling_info_setting)
     val shimmerBrush = rememberShimmerBrush(
         backgroundColor = MaterialTheme.colorScheme.surface,
-        contrastColor = MaterialTheme.colorScheme.onSurface
+        contrastColor = MaterialTheme.colorScheme.onSurface,
     )
-    DisposableEffect(Unit) {
-        initialShowProfilingInformationSetting =
-            sharedPreferences.getBoolean(profilingInformationKey, false)
-        sharedPreferences.edit(commit = true) {
-            putBoolean(profilingInformationKey, true)
-        }
-        onEvent(UIEvent.UpdateSettings)
 
-
-        if (speechRecognitionEnabled) {
-            if (ActivityCompat.checkSelfPermission(
-                    context, Manifest.permission.RECORD_AUDIO
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.d(LOG_TAG, "[HomePage] Loading Vosk model")
-                onEvent(UIEvent.InitVoskService)
-            }
-        } else {
-            Log.d(LOG_TAG, "[HomePage] Speech Recognition disabled not loading Vosk model")
-            onEvent(UIEvent.CloseVoskService)
-        }
-
-        onEvent(UIEvent.UIinitCamera(null, lifecycleOwner))
-        onEvent(UIEvent.UpdateVoskStatusText)
-        onEvent(UIEvent.UpdateSpeechStatusText)
-        onDispose {
-            sharedPreferences.edit(commit = true) {
-                putBoolean(profilingInformationKey, initialShowProfilingInformationSetting)
-            }
+    // Status cards need profiling values, but this is strictly a UI preference:
+    // the runtime and foreground service continue independently of this effect.
+    DisposableEffect(sharedPreferences, profilingInformationKey) {
+        val previousValue = sharedPreferences.getBoolean(profilingInformationKey, false)
+        if (!previousValue) {
+            sharedPreferences.edit(commit = true) { putBoolean(profilingInformationKey, true) }
             onEvent(UIEvent.UpdateSettings)
         }
+        onDispose {
+            if (!previousValue) {
+                sharedPreferences.edit(commit = true) {
+                    putBoolean(
+                        profilingInformationKey,
+                        false
+                    )
+                }
+                onEvent(UIEvent.UpdateSettings)
+            }
+        }
+    }
+
+    LaunchedEffect(speechRecognitionEnabled) {
+        if (
+            ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            if (speechRecognitionEnabled) onEvent(UIEvent.InitVoskService)
+            else onEvent(UIEvent.CloseVoskService)
+        }
+
+        // A null surface starts/keeps the service-owned source headlessly.
+        onEvent(UIEvent.UIinitCamera(null))
+        onEvent(UIEvent.UpdateVoskStatusText)
+        onEvent(UIEvent.UpdateSpeechStatusText)
     }
 
     Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
@@ -192,13 +194,19 @@ fun HomePage(
                     item {
                         DepthStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush)
                     }
-                    item { ObjectStatusCard(viewModel = viewModel, shimmerBrush = shimmerBrush) }
+                    item {
+                        ObjectStatusCard(
+                            viewModel = viewModel,
+                            shimmerBrush = shimmerBrush
+                        )
+                    }
                     item { VisionStatusCard(viewModel = viewModel) }
 
                 }
 
             })
     }
+}
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")

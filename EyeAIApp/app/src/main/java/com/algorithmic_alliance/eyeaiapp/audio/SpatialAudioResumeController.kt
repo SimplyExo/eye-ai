@@ -6,7 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 
-internal enum class SpatialAudioResumeOutcome {
+enum class SpatialAudioResumeOutcome {
 	RESTORED,
 	TTS_SILENCE_TIMEOUT,
 	LISTENING_STATE_CHANGED
@@ -18,7 +18,7 @@ internal enum class SpatialAudioResumeOutcome {
  * The controller is deliberately independent of Android and the native audio
  * implementation so it can be covered by local unit tests.
  */
-internal class SpatialAudioResumeController(
+class SpatialAudioResumeController(
 	private val scope: CoroutineScope,
 	private val pauseSpatialAudio: () -> Unit,
 	private val restoreSpatialAudio: (trigger: String) -> Unit,

@@ -1,5 +1,3 @@
-use thiserror::Error;
-
 #[derive(Debug)]
 pub enum TensorBufferContainer<'a, T> {
 	Vec(Vec<T>),
@@ -62,22 +60,6 @@ impl std::fmt::Display for FloatTensorFormat {
 
 pub type FloatTensorBuffer<'a> = TensorBuffer<'a, f32, FloatTensorFormat>;
 
-#[derive(Debug, Clone, Copy, Error)]
-pub struct WrongFloatTensorFormatError {
-	expected: FloatTensorFormat,
-	given: FloatTensorFormat,
-	tensor_name: &'static str,
-}
-impl std::fmt::Display for WrongFloatTensorFormatError {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(
-			f,
-			"tensor {} needs to be {}, but was provided as {}",
-			self.tensor_name, self.expected, self.given
-		)
-	}
-}
-
 #[derive(Debug)]
 pub struct TensorBuffer<'a, T: Clone, Format: Eq + Copy> {
 	container: TensorBufferContainer<'a, T>,
@@ -122,33 +104,29 @@ impl<'a, T: Clone, Format: Eq + Copy> TensorBuffer<'a, T, Format> {
 	}
 }
 
+/// panics when the given tensor's format does not match the expected format
 pub fn check_float_tensor_format(
 	tensor: &FloatTensorBuffer,
 	tensor_name: &'static str,
 	expected_format: FloatTensorFormat,
-) -> Result<(), WrongFloatTensorFormatError> {
-	if tensor.format() == expected_format {
-		Ok(())
-	} else {
-		Err(WrongFloatTensorFormatError {
-			expected: expected_format,
-			given: tensor.format(),
-			tensor_name,
-		})
+) {
+	let actual_format = tensor.format();
+	if actual_format != expected_format {
+		panic!(
+			"tensor {tensor_name} needs to be in {expected_format} format, but was in {actual_format} format"
+		);
 	}
 }
 
 #[macro_export]
 macro_rules! check_float_tensor_format {
 	($tensor:expr,$expected_format:expr) => {{
-		check_float_tensor_format($tensor, stringify!($tensor), $expected_format)?;
+		check_float_tensor_format($tensor, stringify!($tensor), $expected_format);
 	}};
 }
 
 /// takes FloatTensorFormat::ImageRgb255, returns FloatTensorFormat::MiDaSImageRgb
-pub fn image_rgb_255_to_midas_image<'a>(
-	image_rgb_tensor: &mut FloatTensorBuffer<'a>,
-) -> Result<(), WrongFloatTensorFormatError> {
+pub fn image_rgb_255_to_midas_image<'a>(image_rgb_tensor: &mut FloatTensorBuffer<'a>) {
 	check_float_tensor_format!(image_rgb_tensor, FloatTensorFormat::ImageRgb255);
 
 	let mean = [123.675, 116.28, 103.53];
@@ -164,6 +142,4 @@ pub fn image_rgb_255_to_midas_image<'a>(
 		values[3 * i + 2] = (values[3 * i + 2] - mean[2]) / std[2];
 	}
 	image_rgb_tensor.convert_format(FloatTensorFormat::MiDaSImageRgb);
-
-	Ok(())
 }

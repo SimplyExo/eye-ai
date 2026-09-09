@@ -37,7 +37,7 @@ pub mod additional_documentation {
 
 pub mod audio;
 
-pub mod litert;
+pub mod tflite_runtime;
 
 mod tensor_buffer;
 pub use tensor_buffer::{
@@ -60,7 +60,9 @@ mod object_tracker;
 pub use object_tracker::{ObjectTracker, TrackedObject};
 
 mod profiling;
-pub use profiling::ProfilingFrame;
+pub use profiling::{FormattedProfilingFrame, ProfilingFrame};
 
 mod colormap;
 pub use colormap::inferno_colormap;
+
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");

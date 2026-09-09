@@ -1,7 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.UI
 
 import androidx.camera.view.PreviewView
-import androidx.lifecycle.LifecycleOwner
 
 
 sealed interface UIEvent {
@@ -44,7 +43,10 @@ sealed interface UIEvent {
     data class OnUpdateSettingsOpened(val value: Boolean) : UIEvent
 
     data class UIinitCamera(
-        val previewView: PreviewView?,
-        val lifecycleOwner: LifecycleOwner
+        val previewView: PreviewView?
+    ) : UIEvent
+
+    data class UIDetachCameraPreview(
+        val previewView: PreviewView
     ) : UIEvent
 }

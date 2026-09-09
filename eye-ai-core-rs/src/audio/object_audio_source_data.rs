@@ -7,4 +7,6 @@ pub struct ObjectAudioSourceData {
 	pub sound_begin: usize,
 	pub sound_end: usize,
 	pub position: Vec3,
+	/// distance from camera in meters
+	pub distance: f32,
 }

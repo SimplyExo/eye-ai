@@ -1,15 +1,19 @@
 package com.algorithmic_alliance.eyeaiapp
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.PixelFormat
 import android.media.Image
+import android.os.Build
 import android.util.Log
 import android.util.Size
 import androidx.core.graphics.createBitmap
 import uniffi.NativeLib.UniffiDetectedObject
 import uniffi.NativeLib.UniffiFloatBufferWrapper
 import uniffi.NativeLib.UniffiIntBufferWrapper
+import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -143,4 +147,18 @@ object NativeLib {
 			Matrix().apply { postRotate(rotationDegrees) },
 			false
 		)
+
+	fun createSerializedDelegateCacheDirectory(context: Context): File {
+		val gpuDelegateCacheDirectory = File(context.cacheDir, "gpu_delegate_cache")
+		if (!gpuDelegateCacheDirectory.exists()) gpuDelegateCacheDirectory.mkdirs()
+		return gpuDelegateCacheDirectory
+	}
+
+	/**
+	 * generates a unique token based on the model file name and last install/update time of this app
+	 */
+	fun getModelToken(context: Context, modelFilename: String): String {
+		val lastUpdateTime = getLastAppUpdateTime(context)
+		return "${modelFilename}_${lastUpdateTime}"
+	}
 }

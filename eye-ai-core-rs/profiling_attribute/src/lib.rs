@@ -44,8 +44,8 @@ pub fn profile_function(attr: TokenStream, input: TokenStream) -> TokenStream {
 	let fn_name = fn_item.sig.ident.to_string();
 
 	let profiling_frame_scope: syn::Stmt = match syn::parse_str(&format!(
-		"let _scope = {}.scope(concat!(concat!(module_path!(), \"::\"), \"{}\"));",
-		arg.profiling_frame_placeholder, fn_name
+		"crate::profile_scope!({}, \"{fn_name}\");",
+		arg.profiling_frame_placeholder
 	)) {
 		Ok(profiling_frame_scope) => profiling_frame_scope,
 		Err(e) => {
@@ -58,20 +58,7 @@ pub fn profile_function(attr: TokenStream, input: TokenStream) -> TokenStream {
 		}
 	};
 
-	// as tracy already gets the full function name + module path + source file,
-	// we dont have to provide the full fn_name like with the ProfilingScope
-	#[cfg(feature = "enable_tracy")]
-	let tracy_span_code_at_top = quote! {
-		let ___zone = tracing_tracy::client::span!(#fn_name);
-	};
-
 	fn_item.block.stmts.insert(0, profiling_frame_scope);
-
-	#[cfg(feature = "enable_tracy")]
-	fn_item
-		.block
-		.stmts
-		.insert(0, syn::parse(tracy_span_code_at_top.into()).unwrap());
 
 	item.into_token_stream().into()
 }

@@ -42,6 +42,8 @@ fn run_yolo_model() {
 		model_name: "YOLO".to_string(),
 		model_data: std::fs::read("../EyeAIApp/app/src/main/assets/model.tflite")
 			.expect("failed to load yolo model.tflite file"),
+		delegate_serialization_dir: String::new(),
+		model_token: "YOLO testing".to_string(),
 		labels,
 		npu_config: None,
 	};
