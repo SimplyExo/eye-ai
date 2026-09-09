@@ -22,7 +22,6 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import android.content.pm.PackageManager
 import androidx.annotation.RequiresPermission
-import com.algorithmic_alliance.eyeaiapp.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue

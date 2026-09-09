@@ -141,8 +141,8 @@ class VoskModel(context: Context, val modelName: String) {
 
 	@Synchronized
 	private fun ensureSoundPlayers() {
-		if (activateSound == null) activateSound = createSoundPlayer(context, R.raw.activate)
-		if (deactivateSound == null) deactivateSound = createSoundPlayer(context, R.raw.deactivate)
+		if (activateSound == null) activateSound = MediaPlayer.create(context, R.raw.activate)
+		if (deactivateSound == null) deactivateSound = MediaPlayer.create(context, R.raw.deactivate)
 	}
 
 	@Synchronized

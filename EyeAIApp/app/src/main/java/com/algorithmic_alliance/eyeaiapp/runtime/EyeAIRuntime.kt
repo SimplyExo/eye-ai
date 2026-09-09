@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.camera.view.PreviewView
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.geometry.RoundRect
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.R
@@ -512,15 +513,16 @@ class EyeAIRuntime internal constructor(
 
     fun updateVoskStatusText() {
         val text = when {
-            !hasRecordAudioPermission() -> "Mikrophon-Berechtigung erforderlich"
-            !settings.enableSpeechRecognition -> "Spracherkennung deaktiviert"
-            voskUserStart.get() -> context.getString(R.string.speech_recognition_ready)
-            else -> "Vosk bereit - Button klicken zum Starten"
+            !hasRecordAudioPermission() -> context.getString(R.string.vosk_card_missing_permission)
+            !settings.enableSpeechRecognition -> context.getString(R.string.vosk_card_disabled)
+            voskUserStart.get() -> context.getString(R.string.vosk_card_listening)
+            else -> context.getString(R.string.vosk_card_ready)
         }
         _state.update { it.copy(speechRecognitionFinalResultText = text) }
     }
 
     private fun publishVoskStatus(status: Boolean) {
+        updateVoskStatusText()
         _state.update { it.copy(voskListening = status) }
     }
 

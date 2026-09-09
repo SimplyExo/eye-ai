@@ -2,12 +2,8 @@ package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.IntentSender
-import android.content.IntentSender
-import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
 import android.util.Log
@@ -20,7 +16,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -68,35 +63,26 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.UI.PHONE_CAMERA_DEVICE
-import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
 import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
-import com.algorithmic_alliance.eyeaiapp.UI.rememberAudioDeviceState
-import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.UI.rememberShimmerBrush
 import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
-import com.algorithmic_alliance.eyeaiapp.data.Shapes
+import com.algorithmic_alliance.eyeaiapp.data.AppElevation
+import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
-import com.algorithmic_alliance.eyeaiapp.data.AppElevation
-import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 private const val AUDIO_DEVICE_TYPE = "audio"
@@ -725,7 +711,8 @@ fun ErrorDialog(
         confirmButton = {
             PremiumButton(onClick = { onDismissed() }) {
                 Text(
-                    stringResource(R.string.understood_button_text), modifier = Modifier.clearAndSetSemantics {
+                    stringResource(R.string.understood_button_text),
+                    modifier = Modifier.clearAndSetSemantics {
                         contentDescription = context.getString(R.string.understood_button_semantic)
                     })
             }

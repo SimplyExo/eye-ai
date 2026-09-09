@@ -86,6 +86,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             UIEvent.VoskListeningChanged -> {
                 Log.d(LOG_TAG, "[MainViewModel] VoskListeningChanged")
                 runtime.toggleListening()
+                runtime.updateVoskStatusText()
             }
             UIEvent.UpdateVoskStatusText -> runtime.updateVoskStatusText()
             UIEvent.OnReloadSettingsPage -> reloadSettingsPage()

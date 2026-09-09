@@ -207,7 +207,6 @@ fun HomePage(
             })
     }
 }
-}
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable

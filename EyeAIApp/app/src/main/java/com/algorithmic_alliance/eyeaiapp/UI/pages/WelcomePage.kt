@@ -38,7 +38,6 @@ import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
-import com.algorithmic_alliance.eyeaiapp.data.Spacing
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
