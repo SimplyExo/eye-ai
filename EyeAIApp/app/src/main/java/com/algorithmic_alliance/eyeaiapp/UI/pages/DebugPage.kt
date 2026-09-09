@@ -474,6 +474,7 @@ fun DepthPreview(
                                 text = uiState.performanceText,
                                 style = MaterialTheme.typography.bodySmall,
                                 fontSize = 8.sp,
+                                fontFamily = FontFamily.Monospace,
                                 lineHeight = 10.sp,
                                 letterSpacing = (-0.2).sp
                             )
