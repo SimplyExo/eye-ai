@@ -87,7 +87,7 @@ fun WelcomePage(
                         )
                     }
                     Text(
-                        "Möchten Sie eine interaktive Einführung in die App bekommen?",
+                        text = stringResource(R.string.welcome_screen_text),
                         modifier = Modifier
                             .padding(Spacing.md)
                             .semantics { traversalIndex = 0f },

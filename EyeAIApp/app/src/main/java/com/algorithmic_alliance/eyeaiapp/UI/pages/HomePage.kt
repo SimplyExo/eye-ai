@@ -133,7 +133,7 @@ fun HomePage(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text("EyeAI App", style = MaterialTheme.typography.titleLarge)
+                        Text(text =stringResource(R.string.home_page_app_bar_title_text), style = MaterialTheme.typography.titleLarge)
                     },
                     modifier = Modifier.shadow(elevation = Spacing.sm),
                     colors = TopAppBarDefaults.topAppBarColors(
