@@ -49,7 +49,7 @@ object UIDataSource {
          */
         mapOf(
             "permissionName" to R.string.camera_permission_name,
-            "permissions" to listOf(Manifest.permission.CAMERA),
+            "permissions" to Manifest.permission.CAMERA,
             "permissionExplanation" to R.string.camera_permission_explanation_text,
             "icon" to R.drawable.photo_camera_24px,
             "iconDescription" to R.string.camera_icon_description,
@@ -61,7 +61,7 @@ object UIDataSource {
         ),
         mapOf(
             "permissionName" to R.string.microphone_permission_name,
-            "permissions" to listOf(Manifest.permission.RECORD_AUDIO),
+            "permissions" to Manifest.permission.RECORD_AUDIO,
             "permissionExplanation" to R.string.microphone_permission_explanation_text,
             "icon" to R.drawable.mic_24px,
             "iconDescription" to R.string.microphone_icon_description,
@@ -73,7 +73,7 @@ object UIDataSource {
         ),
         mapOf(
             "permissionName" to R.string.wifi_permission_name,
-            "permissions" to listOf(Manifest.permission.NEARBY_WIFI_DEVICES),
+            "permissions" to Manifest.permission.NEARBY_WIFI_DEVICES,
             "permissionExplanation" to R.string.wifi_permission_explanation_text,
             "icon" to R.drawable.wifi_24px,
             "iconDescription" to R.string.wifi_icon_description,
@@ -85,7 +85,7 @@ object UIDataSource {
         ),
         mapOf(
             "permissionName" to R.string.location_permission_name,
-            "permissions" to listOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            "permissions" to Manifest.permission.ACCESS_FINE_LOCATION,
             "permissionExplanation" to R.string.location_permission_explanation_text,
             "icon" to R.drawable.location_on_24px,
             "iconDescription" to R.string.location_icon_description,

@@ -58,7 +58,7 @@ fun checkPermissionsStatus(
     val notGrantedPermissions = mutableListOf<Map<String, Any>>()
 
     for (map in neededPermissions) {
-        for (permission in map["permissions"] as List<*>) {
+        val permission = map["permissions"]
             val hasPermission = ContextCompat.checkSelfPermission(
                 context,
                 permission as String
@@ -70,7 +70,7 @@ fun checkPermissionsStatus(
             } else {
                 Log.d(LOG_TAG, "[PermissionPage] App already has permission for $permission")
             }
-        }
+
     }
     return notGrantedPermissions
 }

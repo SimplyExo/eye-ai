@@ -2,24 +2,39 @@ package com.algorithmic_alliance.eyeaiapp.UI
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -38,6 +53,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.pages.PermissionPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.SettingsPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.TutorialPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.WelcomePage
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import kotlinx.serialization.Serializable
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
@@ -275,16 +291,30 @@ fun AppMissingSelectedMediaSourceDialog(onEvent: (UIEvent) -> Unit, onOpenSettin
 }
 
 
+
 @Composable
 fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -> Unit) {
     val context = LocalContext.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val sharedPreferences = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+    val hasRequestedKey = "has_requested_camera_permission"
 
-    val activity = context as? Activity
-    val shouldShowRationale = activity?.let {
-        ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.CAMERA)
-    } ?: false
-    if (!shouldShowRationale) {
-        onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                val isGranted = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+
+                if (isGranted) {
+                    onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
+                    onEvent(UIEvent.OnReloadDebugPage)
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     val launcher = rememberLauncherForActivityResult(
@@ -299,39 +329,102 @@ fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -
         }
     }
 
+    AlertDialog(
+        onDismissRequest = {
+            onExitApp()
+            onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
+        },
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                PremiumIconButton(
+                    modifier = Modifier.semantics { traversalIndex = 1f },
+                    onClick = {
+                        onExitApp()
+                        onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
+                    }
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .width(Spacing.xl)
+                            .height(Spacing.xl),
+                        painter = painterResource(R.drawable.arrow_back_24px),
+                        contentDescription = stringResource(R.string.return_icon_description)
+                    )
+                }
+                Text(
+                    stringResource(R.string.missing_permission_altert_dialog_title_text),
+                    modifier = Modifier.semantics {
+                        traversalIndex = -1f
+                        heading()
+                    },
+                )
+            }
+        },
+        text = {
+            Text("Damit die KI ihre Umgebung analysieren kann, braucht die App Zugriff auf Ihre Kamera. Wollen Sie die Berechtigung erteilen?")
+        },
+        confirmButton = {
+            Button(onClick = {
+                val activity = context as? Activity
+                val shouldShowRationale = activity?.let {
+                    ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.CAMERA)
+                } ?: false
 
-    AlertDialog(onDismissRequest = {
-        onExitApp()
-        onEvent(UIEvent.OnUpdateAppMissingCameraPermission(false))
-    }, title = {
-        Text("Fehlende Berechtigung")
-    }, text = {
-        Text("Damit die KI ihre Umgebung analysieren kann, braucht die App zugriff auf ihre Kamera. Wollen sie die Berechtigung erteilen?")
-    }, confirmButton = {
-        Button(onClick = {
-            launcher.launch(Manifest.permission.CAMERA)
-        }) {
-            Text(
-                "Berechtigung erteilen"
-            )
+                val hasRequestedBefore = sharedPreferences.getBoolean(hasRequestedKey, false)
+
+                if (hasRequestedBefore && !shouldShowRationale) {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                    context.startActivity(intent)
+                } else {
+                    sharedPreferences.edit().putBoolean(hasRequestedKey, true).apply()
+                    launcher.launch(Manifest.permission.CAMERA)
+                }
+            }) {
+                Text("Berechtigung erteilen")
+            }
         }
-    })
+    )
 }
 
 @Composable
 fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
-
-
     val context = LocalContext.current
-
-    val activity = context as? Activity
-    val shouldShowRationale = activity?.let {
-        ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.RECORD_AUDIO)
-    } ?: false
-    if (!shouldShowRationale) {
-        onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
-    }
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val sharedPreferences = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+    val hasRequestedKey = "has_requested_record_audio_permission"
     val speechRecognitionEnabledKey = stringResource(R.string.enable_speech_recognition_setting)
+
+    fun disableSpeechSetting() {
+        if (sharedPreferences.getBoolean(speechRecognitionEnabledKey, true)) {
+            sharedPreferences.edit(commit = true) {
+                putBoolean(speechRecognitionEnabledKey, false)
+            }
+            onEvent(UIEvent.UpdateSettings)
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                val isGranted = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.RECORD_AUDIO
+                ) == PackageManager.PERMISSION_GRANTED
+
+                if (isGranted) {
+                    onEvent(UIEvent.OnReloadSettingsPage)
+                    onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -340,40 +433,76 @@ fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
             onEvent(UIEvent.OnReloadSettingsPage)
             onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
         } else {
-            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-            if (sharedPreferences.getBoolean(speechRecognitionEnabledKey, true)) {
-                sharedPreferences.edit(commit = true) {
-                    putBoolean(speechRecognitionEnabledKey, false)
-                }
-                onEvent(UIEvent.UpdateSettings)
-            }
+            disableSpeechSetting()
             onEvent(UIEvent.OnReloadSettingsPage)
             onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
         }
     }
 
-
-    AlertDialog(onDismissRequest = {
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-        if (sharedPreferences.getBoolean(speechRecognitionEnabledKey, true)) {
-            sharedPreferences.edit(commit = true) {
-                putBoolean(speechRecognitionEnabledKey, false)
+    AlertDialog(
+        onDismissRequest = {
+            disableSpeechSetting()
+            onEvent(UIEvent.OnReloadSettingsPage)
+            onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
+        },
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                PremiumIconButton(
+                    modifier = Modifier.semantics { traversalIndex = 1f },
+                    onClick = {
+                        disableSpeechSetting()
+                        onEvent(UIEvent.OnReloadSettingsPage)
+                        onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
+                    }) {
+                    Icon(
+                        modifier = Modifier
+                            .width(Spacing.xl)
+                            .height(Spacing.xl),
+                        painter = painterResource(R.drawable.arrow_back_24px),
+                        contentDescription = stringResource(R.string.return_icon_description)
+                    )
+                }
+                Text(
+                    stringResource(R.string.missing_permission_altert_dialog_title_text),
+                    modifier = Modifier.semantics {
+                        traversalIndex = -1f
+                        heading()
+                    },
+                )
             }
-            onEvent(UIEvent.UpdateSettings)
+        },
+        text = {
+            Text(stringResource(R.string.missing_permission_altert_dialog_vosk_text))
+        },
+        confirmButton = {
+            Button(onClick = {
+                val activity = context as? Activity
+                val shouldShowRationale = activity?.let {
+                    ActivityCompat.shouldShowRequestPermissionRationale(
+                        it,
+                        Manifest.permission.RECORD_AUDIO
+                    )
+                } ?: false
+
+                val hasRequestedBefore = sharedPreferences.getBoolean(hasRequestedKey, false)
+
+                if (hasRequestedBefore && !shouldShowRationale) {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                    context.startActivity(intent)
+                } else {
+                    sharedPreferences.edit { putBoolean(hasRequestedKey, true) }
+                    launcher.launch(Manifest.permission.RECORD_AUDIO)
+                }
+            }) {
+                Text(
+                    stringResource(R.string.missing_permission_alter_dialog_grant_permission_text)
+                )
+            }
         }
-        onEvent(UIEvent.OnReloadSettingsPage)
-        onEvent(UIEvent.OnUpdateAppMissingVoskPermission(false))
-    }, title = {
-        Text("Fehlende Berechtigung")
-    }, text = {
-        Text("Um die Spracherkennung zu aktivieren, braucht die App die Berechtigung für das Mikrophon. Wollen sie die Berechtigung erteilen?")
-    }, confirmButton = {
-        Button(onClick = {
-            launcher.launch(Manifest.permission.RECORD_AUDIO)
-        }) {
-            Text(
-                "Berechtigung erteilen"
-            )
-        }
-    })
+    )
 }

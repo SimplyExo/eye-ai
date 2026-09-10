@@ -1,7 +1,12 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import android.view.ViewTreeObserver
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -53,6 +58,11 @@ import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
@@ -63,9 +73,8 @@ import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
+import androidx.core.content.edit
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -120,9 +129,16 @@ fun AskForPermission(
     onEvent: (UIEvent) -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
+    val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     val view = LocalView.current
     var hasWindowFocus by remember { mutableStateOf(view.hasWindowFocus()) }
+    val permission = permissionData["permissions"] as String
+
+    val sharedPreferences = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+    val hasRequestedKey = "has_requested_$permission"
+
+    var wentToSettings by rememberSaveable { mutableStateOf(false) }
 
     DisposableEffect(view) {
         val listener = ViewTreeObserver.OnWindowFocusChangeListener { hasFocus ->
@@ -133,10 +149,53 @@ fun AskForPermission(
     }
     val isDark = isSystemInDarkTheme()
 
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                // WICHTIG: Nur prüfen, wenn wir den Nutzer vorher explizit in die Einstellungen geschickt haben!
+                if (wentToSettings) {
+                    wentToSettings = false // Direkt zurücksetzen
+
+                    val isGranted = ContextCompat.checkSelfPermission(
+                        context,
+                        permission
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    if (isGranted) {
+                        onPermissionAccepted()
+                        Log.d(
+                            LOG_TAG,
+                            "[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} granted via settings"
+                        )
+                    } else {
+                        Log.d(
+                            LOG_TAG,
+                            "[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} declined after settings"
+                        )
+                        onPermissionDecline(
+                            permissionData,
+                            onExitPermissionSelection = onExitPermissionPage,
+                            context = context,
+                            onEvent = onEvent,
+                            onPermissionDecline = onPermissionAccepted
+                        )
+                    }
+                }
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     Log.d(
         LOG_TAG,
         "[PermissionPage.AskForPermission] Asking for permission ${permissionData["permissions"]}"
     )
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -149,16 +208,15 @@ fun AskForPermission(
         } else {
             Log.d(
                 LOG_TAG,
-                "[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} declined"
+                "[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} declined in system popup"
             )
             onPermissionDecline(
                 permissionData,
                 onExitPermissionSelection = onExitPermissionPage,
-                context,
+                context = context,
                 onEvent = onEvent,
                 onPermissionDecline = onPermissionAccepted
             )
-
         }
     }
 
@@ -167,9 +225,6 @@ fun AskForPermission(
     val permissionExplanation =
         stringResource(permissionData["permissionExplanation"] as Int)
     val permissionIcon = permissionData["icon"] ?: UIDataSource.ICON_NOT_FOUND
-    val iconDescription = stringResource(permissionData["iconDescription"] as Int)
-    val permissions = permissionData["permissions"]
-
 
     Card(
         modifier = Modifier
@@ -186,9 +241,10 @@ fun AskForPermission(
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
-        Column(modifier = Modifier
-            .padding(Spacing.md)
-            .semantics { isTraversalGroup = true }) {
+        Column(
+            modifier = Modifier
+                .padding(Spacing.md)
+                .semantics { isTraversalGroup = true }) {
             Row(
                 modifier = Modifier
                     .padding(Spacing.md)
@@ -230,7 +286,10 @@ fun AskForPermission(
                     onClick = { showDeclineDialog = !showDeclineDialog }) {
                     Text(
                         stringResource(R.string.decline_action),
-                        modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(permissionData["permissionDeclineSemantic"] as Int)},
+                        modifier = Modifier.clearAndSetSemantics {
+                            contentDescription =
+                                context.getString(permissionData["permissionDeclineSemantic"] as Int)
+                        },
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -239,22 +298,37 @@ fun AskForPermission(
                         .weight(1f),
                     shadowElevation = if (isDark) AppElevation.level4 else AppElevation.level2,
                     onClick = {
-                        for (permission in permissions as List<*>) {
-                            permissionLauncher.launch(permission as String)
+                        val activity = context as? Activity
+                        val shouldShowRationale = activity?.let {
+                            ActivityCompat.shouldShowRequestPermissionRationale(it, permission)
+                        } ?: false
+
+                        val hasRequestedBefore = sharedPreferences.getBoolean(hasRequestedKey, false)
+
+                        if (hasRequestedBefore && !shouldShowRationale) {
+                            wentToSettings = true
+                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = Uri.fromParts("package", context.packageName, null)
+                            }
+                            context.startActivity(intent)
+                        } else {
+                            sharedPreferences.edit { putBoolean(hasRequestedKey, true) }
+                            permissionLauncher.launch(permission)
                         }
-
-
                     }) {
                     Text(
                         stringResource(R.string.accept_action),
-                        modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(permissionData["permissionAcceptSemantic"] as Int)},
+                        modifier = Modifier.clearAndSetSemantics {
+                            contentDescription =
+                                context.getString(permissionData["permissionAcceptSemantic"] as Int)
+                        },
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
-
             }
         }
     }
+
     if (showDeclineDialog) {
         ConfirmPermissionDecline(
             modifier = modifier,
@@ -265,7 +339,6 @@ fun AskForPermission(
             onPermissionDecline = onPermissionAccepted
         )
     }
-
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -334,7 +407,10 @@ fun ConfirmPermissionDecline(
                 }) {
                 Text(
                     stringResource(R.string.confirm_decline_action),
-                    modifier = Modifier.clearAndSetSemantics{contentDescription = context.getString(permissionData["confirmPermissionDeclineSemantic"] as Int)},
+                    modifier = Modifier.clearAndSetSemantics {
+                        contentDescription =
+                            context.getString(permissionData["confirmPermissionDeclineSemantic"] as Int)
+                    },
                     style = MaterialTheme.typography.labelLarge
                 )
             }
