@@ -1,14 +1,11 @@
 package com.algorithmic_alliance.eyeaiapp.settingsparser
 
 enum class MagnitudeParseStatus {
-	CLEAR,
-	AMBIGUOUS
+	CLEAR, AMBIGUOUS
 }
 
 data class MagnitudeParseResult(
-	val value: ChangeMagnitude?,
-	val status: MagnitudeParseStatus,
-	val diagnostic: String? = null
+	val value: ChangeMagnitude?, val status: MagnitudeParseStatus, val diagnostic: String? = null
 )
 
 class GermanMagnitudeParser {
@@ -33,26 +30,25 @@ class GermanMagnitudeParser {
 	)
 
 	fun parse(
-		text: String,
-		operation: SettingOperation,
-		numericValue: Double?
+		text: String, operation: SettingOperation, numericValue: Double?
 	): MagnitudeParseResult {
-		if (operation !in setOf(SettingOperation.INCREASE, SettingOperation.DECREASE) || numericValue != null) {
+		if (operation !in setOf(
+				SettingOperation.INCREASE, SettingOperation.DECREASE
+			) || numericValue != null
+		) {
 			return MagnitudeParseResult(null, MagnitudeParseStatus.CLEAR)
 		}
 		val small = smallPatterns.any { it.containsMatchIn(text) }
 		val large = largePatterns.any { it.containsMatchIn(text) }
 		return when {
 			negatedMarker.containsMatchIn(text) -> MagnitudeParseResult(
-				null,
-				MagnitudeParseStatus.AMBIGUOUS,
-				"NEGATED_MAGNITUDE"
+				null, MagnitudeParseStatus.AMBIGUOUS, "NEGATED_MAGNITUDE"
 			)
+
 			small && large -> MagnitudeParseResult(
-				null,
-				MagnitudeParseStatus.AMBIGUOUS,
-				"CONFLICTING_MAGNITUDE_MARKERS"
+				null, MagnitudeParseStatus.AMBIGUOUS, "CONFLICTING_MAGNITUDE_MARKERS"
 			)
+
 			small -> MagnitudeParseResult(ChangeMagnitude.SMALL, MagnitudeParseStatus.CLEAR)
 			large -> MagnitudeParseResult(ChangeMagnitude.LARGE, MagnitudeParseStatus.CLEAR)
 			else -> MagnitudeParseResult(ChangeMagnitude.DEFAULT, MagnitudeParseStatus.CLEAR)
@@ -78,7 +74,8 @@ class SettingUnitParser {
 		"\\b(?:sprechgeschwindigkeit|sprachgeschwindigkeit|speech\\s*rate)\\b",
 		RegexOption.IGNORE_CASE
 	)
-	private val unsupported = Regex("\\b(?:kiloherz|kilohertz|khz|prozent)\\b|%", RegexOption.IGNORE_CASE)
+	private val unsupported =
+		Regex("\\b(?:kiloherz|kilohertz|khz|prozent)\\b|%", RegexOption.IGNORE_CASE)
 
 	fun parse(target: SettingTarget, text: String): UnitParseResult {
 		unsupported.find(text)?.let {
@@ -88,11 +85,10 @@ class SettingUnitParser {
 		val foundHertz = hertz.containsMatchIn(text)
 		// "BPS auf ... Hertz" names the target and carries one explicit wrong
 		// unit. The target mention must not turn this into a fake conflict.
-		if (
-			target == SettingTarget.BPS &&
-			foundHertz &&
-			foundBps &&
-			Regex("\\bbps\\b", RegexOption.IGNORE_CASE).containsMatchIn(text)
+		if (target == SettingTarget.BPS && foundHertz && foundBps && Regex(
+				"\\bbps\\b",
+				RegexOption.IGNORE_CASE
+			).containsMatchIn(text)
 		) {
 			foundBps = false
 		}

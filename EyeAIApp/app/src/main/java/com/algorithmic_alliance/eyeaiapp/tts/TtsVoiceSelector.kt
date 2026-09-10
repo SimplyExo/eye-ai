@@ -14,8 +14,7 @@ internal data class TtsVoiceDescriptor(
 )
 
 internal data class TtsVoiceSelection(
-	val voice: TtsVoiceDescriptor?,
-	val requestedSpeakerAvailable: Boolean
+	val voice: TtsVoiceDescriptor?, val requestedSpeakerAvailable: Boolean
 )
 
 /**
@@ -36,16 +35,15 @@ internal object TtsVoiceSelector {
 		currentVoiceName: String? = null,
 		defaultVoiceName: String? = null
 	): TtsVoiceSelection {
-		val usableVoices = voices
-			.filter { it.name.isNotBlank() && isInstalled(it) }
-			.distinctBy { it.name }
-		val germanVoices = usableVoices
-			.filter(::isGerman)
-			.sortedWith(voiceComparator)
+		val usableVoices =
+			voices.filter { it.name.isNotBlank() && isInstalled(it) }.distinctBy { it.name }
+		val germanVoices = usableVoices.filter(::isGerman).sortedWith(voiceComparator)
 		val requestedVoice = speakerSlots(germanVoices)[requestedSpeaker]
 
 		if (requestedVoice != null) {
-			return TtsVoiceSelection(requestedVoice, requestedSpeakerAvailable = requestedSpeaker in 0..1)
+			return TtsVoiceSelection(
+				requestedVoice, requestedSpeakerAvailable = requestedSpeaker in 0..1
+			)
 		}
 
 		return TtsVoiceSelection(
@@ -65,8 +63,7 @@ internal object TtsVoiceSelector {
 		if (explicitFemale == null && explicitMale == null) {
 			val pair = mostDistinctPair(germanVoices)
 			return mapOf(
-				FEMALE to pair?.first,
-				MALE to pair?.second
+				FEMALE to pair?.first, MALE to pair?.second
 			)
 		}
 
@@ -107,8 +104,7 @@ internal object TtsVoiceSelector {
 	}
 
 	private fun mostDistinctPartner(
-		reference: TtsVoiceDescriptor,
-		voices: List<TtsVoiceDescriptor>
+		reference: TtsVoiceDescriptor, voices: List<TtsVoiceDescriptor>
 	): TtsVoiceDescriptor? {
 		var bestVoice: TtsVoiceDescriptor? = null
 		var bestScore: VoicePairScore? = null
@@ -133,8 +129,7 @@ internal object TtsVoiceSelector {
 	)
 
 	private fun pairScore(
-		first: TtsVoiceDescriptor,
-		second: TtsVoiceDescriptor
+		first: TtsVoiceDescriptor, second: TtsVoiceDescriptor
 	): VoicePairScore {
 		val firstFamily = familyKey(first)
 		val secondFamily = familyKey(second)
@@ -142,13 +137,8 @@ internal object TtsVoiceSelector {
 		val secondTokens = voiceTokens(second)
 
 		return VoicePairScore(
-			differentFamily = if (
-				firstFamily.isNotBlank() &&
-				secondFamily.isNotBlank() &&
-				firstFamily != secondFamily
-			) 1 else 0,
-			tokenDifference = (firstTokens - secondTokens).size +
-				(secondTokens - firstTokens).size,
+			differentFamily = if (firstFamily.isNotBlank() && secondFamily.isNotBlank() && firstFamily != secondFamily) 1 else 0,
+			tokenDifference = (firstTokens - secondTokens).size + (secondTokens - firstTokens).size,
 			localVoiceCount = listOf(first, second).count {
 				!it.isNetworkConnectionRequired
 			},
@@ -158,13 +148,15 @@ internal object TtsVoiceSelector {
 	}
 
 	private fun comparePairScores(
-		left: VoicePairScore,
-		right: VoicePairScore?
+		left: VoicePairScore, right: VoicePairScore?
 	): Int {
 		if (right == null) return 1
-		compareValues(left.differentFamily, right.differentFamily).takeIf { it != 0 }?.let { return it }
-		compareValues(left.tokenDifference, right.tokenDifference).takeIf { it != 0 }?.let { return it }
-		compareValues(left.localVoiceCount, right.localVoiceCount).takeIf { it != 0 }?.let { return it }
+		compareValues(left.differentFamily, right.differentFamily).takeIf { it != 0 }
+			?.let { return it }
+		compareValues(left.tokenDifference, right.tokenDifference).takeIf { it != 0 }
+			?.let { return it }
+		compareValues(left.localVoiceCount, right.localVoiceCount).takeIf { it != 0 }
+			?.let { return it }
 		compareValues(left.quality, right.quality).takeIf { it != 0 }?.let { return it }
 
 		// Keep selection deterministic when the backend reports equivalent metadata.
@@ -172,14 +164,11 @@ internal object TtsVoiceSelector {
 	}
 
 	private fun familyKey(voice: TtsVoiceDescriptor): String =
-		voiceTokens(voice)
-			.filterNot { it in GENERIC_VOICE_TOKENS || it.all(Char::isDigit) }
+		voiceTokens(voice).filterNot { it in GENERIC_VOICE_TOKENS || it.all(Char::isDigit) }
 			.joinToString("|")
 
 	private fun voiceTokens(voice: TtsVoiceDescriptor): Set<String> =
-		(listOf(voice.name) + voice.features)
-			.flatMap(::tokens)
-			.toSet()
+		(listOf(voice.name) + voice.features).flatMap(::tokens).toSet()
 
 	private val GENERIC_VOICE_TOKENS = setOf(
 		"de",
@@ -209,9 +198,7 @@ internal object TtsVoiceSelector {
 	)
 
 	private fun safeFallback(
-		voices: List<TtsVoiceDescriptor>,
-		currentVoiceName: String?,
-		defaultVoiceName: String?
+		voices: List<TtsVoiceDescriptor>, currentVoiceName: String?, defaultVoiceName: String?
 	): TtsVoiceDescriptor? {
 		val germanVoices = voices.filter {
 			it.locale.language.equals(Locale.GERMAN.language, ignoreCase = true)
@@ -222,17 +209,15 @@ internal object TtsVoiceSelector {
 			?: preferredPool.minWithOrNull(voiceComparator)
 	}
 
-	private fun isInstalled(voice: TtsVoiceDescriptor): Boolean =
-		voice.features.none { feature ->
-			normalize(feature).replace(" ", "").contains("notinstalled")
-		}
+	private fun isInstalled(voice: TtsVoiceDescriptor): Boolean = voice.features.none { feature ->
+		normalize(feature).replace(" ", "").contains("notinstalled")
+	}
 
 	private fun isGerman(voice: TtsVoiceDescriptor): Boolean =
 		voice.locale.language.equals(Locale.GERMAN.language, ignoreCase = true)
 
 	private fun matchesSpeaker(voice: TtsVoiceDescriptor, requestedSpeaker: Int): Boolean {
-		val tokens = (listOf(voice.name) + voice.features)
-			.flatMap(::tokens)
+		val tokens = (listOf(voice.name) + voice.features).flatMap(::tokens)
 		val female = tokens.any(::isFemaleToken)
 		val male = tokens.any(::isMaleToken)
 		return when (requestedSpeaker) {
@@ -243,31 +228,23 @@ internal object TtsVoiceSelector {
 	}
 
 	private fun isFemaleToken(token: String): Boolean =
-		token.startsWith("female") ||
-			token.startsWith("fem") ||
-			token.startsWith("weib") ||
-			token.startsWith("frau") ||
-			token.startsWith("woman") ||
-			token.startsWith("dame")
+		token.startsWith("female") || token.startsWith("fem") || token.startsWith("weib") || token.startsWith(
+			"frau"
+		) || token.startsWith("woman") || token.startsWith("dame")
 
 	private fun isMaleToken(token: String): Boolean =
-		token.startsWith("male") ||
-			token.startsWith("masc") ||
-			token.startsWith("mann") ||
-			token.startsWith("man") ||
-			token.startsWith("herr")
+		token.startsWith("male") || token.startsWith("masc") || token.startsWith("mann") || token.startsWith(
+			"man"
+		) || token.startsWith("herr")
 
 	private fun tokens(value: String): List<String> =
-		normalize(value).split(Regex("[^a-z0-9]+"))
-			.filter(String::isNotBlank)
+		normalize(value).split(Regex("[^a-z0-9]+")).filter(String::isNotBlank)
 
 	private fun normalize(value: String): String =
-		Normalizer.normalize(value, Normalizer.Form.NFKD)
-			.replace(Regex("\\p{M}+"), "")
+		Normalizer.normalize(value, Normalizer.Form.NFKD).replace(Regex("\\p{M}+"), "")
 			.lowercase(Locale.ROOT)
 
-	private val voiceComparator = compareByDescending<TtsVoiceDescriptor> { !it.isNetworkConnectionRequired }
-		.thenByDescending { it.quality }
-		.thenBy { it.latency }
-		.thenBy { it.name }
+	private val voiceComparator =
+		compareByDescending<TtsVoiceDescriptor> { !it.isNetworkConnectionRequired }.thenByDescending { it.quality }
+			.thenBy { it.latency }.thenBy { it.name }
 }

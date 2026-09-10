@@ -51,8 +51,7 @@ class JsonParser {
 	fun parseSettingsOriginalText(jsonString: String?): String? {
 		if (jsonString == null) return null
 		return try {
-			JSONObject(jsonString)
-				.optString(SETTINGS_ORIGINAL_TEXT_KEY, "")
+			JSONObject(jsonString).optString(SETTINGS_ORIGINAL_TEXT_KEY, "")
 				.takeIf { it.isNotEmpty() }
 		} catch (_: JSONException) {
 			null
@@ -86,8 +85,7 @@ class JsonParser {
 
 	/** Keeps exactly one validated change so a confirmation can apply it only once. */
 	fun normalizedExpectedSettingChange(
-		jsonString: String,
-		settingIntent: SettingIntent
+		jsonString: String, settingIntent: SettingIntent
 	): String? {
 		val expectedKey = settingIntent.changedSettingKey ?: return null
 		return try {
@@ -135,19 +133,23 @@ class JsonParser {
 						val newSpeed = firstChange.getDouble("tts_speed")
 						return "Verstanden. Soll ich die Sprachgeschwindigkeit auf $newSpeed setzen?"
 					}
+
 					firstChange.has("voice") -> {
 						val voice = firstChange.getInt("voice")
 						return if (voice == 1) "Verstanden. Soll die Assistentenstimme nun männlich sein?"
 						else "Verstanden. Soll die Assistentenstimme nun weiblich sein?"
 					}
+
 					firstChange.has("frequency") -> {
 						val frequency = firstChange.getInt("frequency")
 						return "Verstanden. Soll ich die Audio-Frequenz auf $frequency Hz setzen?"
 					}
+
 					firstChange.has("bps") -> {
 						val bps = firstChange.getInt("bps")
 						return "Verstanden. Soll ich die BPS auf $bps setzen?"
 					}
+
 					firstChange.has("leave") -> return "Möchten Sie die Einstellungen wirklich verlassen?"
 				}
 			}
@@ -164,17 +166,22 @@ class JsonParser {
 			if (changedSettings != null && changedSettings.length() > 0) {
 				val firstChange = changedSettings.getJSONObject(0)
 				return when {
-					firstChange.has("tts_speed") ->
-						"die Sprachgeschwindigkeit auf ${firstChange.getDouble("tts_speed")} setzen"
+					firstChange.has("tts_speed") -> "die Sprachgeschwindigkeit auf ${
+						firstChange.getDouble(
+							"tts_speed"
+						)
+					} setzen"
+
 					firstChange.has("voice") -> if (firstChange.getInt("voice") == 1) {
 						"zur männlichen Assistentenstimme wechseln"
 					} else {
 						"zur weiblichen Assistentenstimme wechseln"
 					}
-					firstChange.has("frequency") ->
-						"die Audio-Frequenz auf ${firstChange.getInt("frequency")} Hz setzen"
-					firstChange.has("bps") ->
-						"die BPS auf ${firstChange.getInt("bps")} setzen"
+
+					firstChange.has("frequency") -> "die Audio-Frequenz auf ${firstChange.getInt("frequency")} Hz setzen"
+
+					firstChange.has("bps") -> "die BPS auf ${firstChange.getInt("bps")} setzen"
+
 					firstChange.has("leave") -> "die Einstellungen verlassen"
 					else -> "die angeforderte Änderung durchführen"
 				}
@@ -201,6 +208,7 @@ class JsonParser {
 					0 -> false
 					else -> null
 				}
+
 				else -> null
 			}
 		} catch (e: JSONException) {

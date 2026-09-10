@@ -7,7 +7,6 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.util.Log
-import android.widget.ImageView
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -84,7 +83,7 @@ class MediaPlayer(
 					val bmp = BitmapFactory.decodeStream(input, null, options)
 					bmp?.let { onFrame?.invoke(it) }
 					withContext(Dispatchers.Main) {
-						bmp?.let{
+						bmp?.let {
 							updateTargetImageView(bmp)
 						}
 					}
@@ -100,7 +99,7 @@ class MediaPlayer(
 						val frame = retriever!!.getFrameAtIndex(index)?.toARGB8888()
 						frame?.let { onFrame?.invoke(it) }
 						withContext(Dispatchers.Main) {
-							frame?.let{
+							frame?.let {
 								updateTargetImageView(frame)
 							}
 						}

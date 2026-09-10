@@ -9,22 +9,23 @@ import android.os.PowerManager
  * It is intentionally not a global lock and is released by every stop path.
  */
 internal class EyeAIWakeLock(context: Context) {
-    private val wakeLock = (context.applicationContext
-        .getSystemService(Context.POWER_SERVICE) as PowerManager)
-        .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "EyeAI::ContinuousInference")
-        .apply { setReferenceCounted(false) }
+	private val wakeLock =
+		(context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager).newWakeLock(
+				PowerManager.PARTIAL_WAKE_LOCK,
+				"EyeAI::ContinuousInference"
+			).apply { setReferenceCounted(false) }
 
-    @Synchronized
-    @SuppressLint("WakelockTimeout")
-    fun acquire() {
-        if (!wakeLock.isHeld) wakeLock.acquire()
-    }
+	@Synchronized
+	@SuppressLint("WakelockTimeout")
+	fun acquire() {
+		if (!wakeLock.isHeld) wakeLock.acquire()
+	}
 
-    @Synchronized
-    fun release() {
-        if (wakeLock.isHeld) wakeLock.release()
-    }
+	@Synchronized
+	fun release() {
+		if (wakeLock.isHeld) wakeLock.release()
+	}
 
-    val isHeld: Boolean
-        @Synchronized get() = wakeLock.isHeld
+	val isHeld: Boolean
+		@Synchronized get() = wakeLock.isHeld
 }

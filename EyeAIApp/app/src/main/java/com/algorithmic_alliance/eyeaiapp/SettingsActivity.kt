@@ -1,6 +1,5 @@
 package com.algorithmic_alliance.eyeaiapp
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,9 +15,7 @@ class SettingsActivity : AppCompatActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
-		supportFragmentManager
-			.beginTransaction()
-			.replace(android.R.id.content, SettingsFragment())
+		supportFragmentManager.beginTransaction().replace(android.R.id.content, SettingsFragment())
 			.commit()
 
 		supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -35,7 +32,7 @@ class SettingsActivity : AppCompatActivity() {
 		private val openDocument = registerForActivityResult(
 			ActivityResultContracts.StartActivityForResult()
 		) { result ->
-			if (result.resultCode == Activity.RESULT_OK) {
+			if (result.resultCode == RESULT_OK) {
 				result.data?.data?.let { uri ->
 					try {
 						requireContext().contentResolver.takePersistableUriPermission(
@@ -46,10 +43,8 @@ class SettingsActivity : AppCompatActivity() {
 					}
 
 					val path = uri.toString()
-					preferenceManager.sharedPreferences
-						?.edit()
-						?.putString(getString(R.string.media_path_setting), path)
-						?.apply()
+					preferenceManager.sharedPreferences?.edit()
+						?.putString(getString(R.string.media_path_setting), path)?.apply()
 					mediaPref?.summary = path
 				}
 			}
@@ -60,16 +55,15 @@ class SettingsActivity : AppCompatActivity() {
 
 			val showDevelopmentSettings = BuildConfig.BUILD_VARIANT != "Production"
 
-			findPreference<PreferenceCategory>(getString(R.string.debugging_settings_category))
-				?.isVisible = showDevelopmentSettings
+			findPreference<PreferenceCategory>(getString(R.string.debugging_settings_category))?.isVisible =
+				showDevelopmentSettings
 
-			findPreference<PreferenceCategory>(getString(R.string.build_info_settings_category))
-				?.isVisible = showDevelopmentSettings
+			findPreference<PreferenceCategory>(getString(R.string.build_info_settings_category))?.isVisible =
+				showDevelopmentSettings
 
 			// Depth Model selector
 			findPreference<ListPreference>(getString(R.string.depth_model_setting))?.let { list ->
-				val modelNames =
-					EyeAIApp.DEPTH_MODELS.map { it.name }.toTypedArray()
+				val modelNames = EyeAIApp.DEPTH_MODELS.map { it.name }.toTypedArray()
 
 				list.entries = modelNames
 				list.entryValues = modelNames
@@ -93,13 +87,16 @@ class SettingsActivity : AppCompatActivity() {
 			mediaPref = findPreference(this.getString(R.string.media_path_setting))
 
 			// Falls schon gespeichert -> direkt anzeigen
-			val savedPath = preferenceManager.sharedPreferences
-				?.getString(this.getString(R.string.media_path_setting), null)
+			val savedPath = preferenceManager.sharedPreferences?.getString(
+					this.getString(R.string.media_path_setting),
+					null
+				)
 			if (savedPath != null) {
 				mediaPref?.summary = savedPath
 			}
 
-			val openFilePref: Preference? = findPreference(this.getString(R.string.media_path_setting))
+			val openFilePref: Preference? =
+				findPreference(this.getString(R.string.media_path_setting))
 			openFilePref?.setOnPreferenceClickListener {
 				openFile()
 				true

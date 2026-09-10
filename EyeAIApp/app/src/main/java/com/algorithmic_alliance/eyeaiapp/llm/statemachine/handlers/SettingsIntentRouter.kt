@@ -5,8 +5,7 @@ import com.algorithmic_alliance.eyeaiapp.nlp.IntentResult
 
 /** Identifies whether a settings conversation was opened explicitly or directly. */
 enum class SettingsFlow(val wireValue: String) {
-	GUIDED("guided"),
-	DIRECT("direct");
+	GUIDED("guided"), DIRECT("direct");
 
 	companion object {
 		fun fromWireValue(value: String): SettingsFlow =
@@ -19,8 +18,7 @@ sealed class SettingsIntentRoute {
 	data object NotSettings : SettingsIntentRoute()
 	data object GuidedMenu : SettingsIntentRoute()
 	data class Direct(
-		val settingIntent: SettingIntent,
-		val intentResult: IntentResult
+		val settingIntent: SettingIntent, val intentResult: IntentResult
 	) : SettingsIntentRoute()
 }
 
@@ -35,7 +33,6 @@ object SettingsIntentRouter {
 	}
 
 	private fun direct(
-		settingIntent: SettingIntent,
-		intentResult: IntentResult
+		settingIntent: SettingIntent, intentResult: IntentResult
 	) = SettingsIntentRoute.Direct(settingIntent, intentResult)
 }

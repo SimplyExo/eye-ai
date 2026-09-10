@@ -4,10 +4,7 @@ import com.algorithmic_alliance.eyeaiapp.nlp.Intent
 
 /** Settings target supplied by the existing intent classifier; it is never reclassified here. */
 enum class SettingTarget {
-	FREQUENCY,
-	BPS,
-	SPEECH_SPEED,
-	SPEAKER;
+	FREQUENCY, BPS, SPEECH_SPEED, SPEAKER;
 
 	companion object {
 		fun fromIntent(intent: Intent): SettingTarget? = when (intent) {
@@ -21,51 +18,31 @@ enum class SettingTarget {
 }
 
 enum class SettingOperation {
-	SET_ABSOLUTE,
-	INCREASE,
-	DECREASE,
-	TOGGLE,
-	UNSPECIFIED
+	SET_ABSOLUTE, INCREASE, DECREASE, TOGGLE, UNSPECIFIED
 }
 
 enum class SpeakerChoice {
-	MALE,
-	FEMALE,
-	UNSPECIFIED
+	MALE, FEMALE, UNSPECIFIED
 }
 
 enum class ChangeMagnitude {
-	SMALL,
-	DEFAULT,
-	LARGE
+	SMALL, DEFAULT, LARGE
 }
 
 enum class SettingUnit {
-	HZ,
-	BPS,
-	SPEECH_RATE
+	HZ, BPS, SPEECH_RATE
 }
 
 enum class NumberNormalizationStatus {
-	SUCCESS,
-	NO_NUMBER,
-	AMBIGUOUS,
-	PARTIAL_FAILURE,
-	INVALID
+	SUCCESS, NO_NUMBER, AMBIGUOUS, PARTIAL_FAILURE, INVALID
 }
 
 enum class NumberOccurrenceStatus {
-	SUCCESS,
-	PARTIAL_FAILURE,
-	INVALID
+	SUCCESS, PARTIAL_FAILURE, INVALID
 }
 
 enum class SettingParseStatus {
-	COMPLETE,
-	NEEDS_VALUE,
-	NEEDS_CLARIFICATION,
-	INVALID_VALUE,
-	INVALID_UNIT
+	COMPLETE, NEEDS_VALUE, NEEDS_CLARIFICATION, INVALID_VALUE, INVALID_UNIT
 }
 
 data class NumberOccurrence(
@@ -87,8 +64,9 @@ data class NumberOccurrence(
 			"Invalid mask offsets"
 		}
 		require(
-			maskStart == null || start == null ||
-			(maskStart >= start && requireNotNull(maskEnd) <= requireNotNull(end))
+			maskStart == null || start == null || (maskStart >= start && requireNotNull(maskEnd) <= requireNotNull(
+				end
+			))
 		) { "Mask range must be contained in occurrence range" }
 		require((status == NumberOccurrenceStatus.SUCCESS) == (value != null)) {
 			"Only successful occurrences expose a reliable value"
@@ -107,16 +85,17 @@ data class NumberNormalizationResult(
 ) {
 	init {
 		require(values.all { it.isFinite() }) { "Numeric values must be finite" }
-		require(occurrences.filter { it.status == NumberOccurrenceStatus.SUCCESS }.map { requireNotNull(it.value) } == values) {
+		require(occurrences.filter { it.status == NumberOccurrenceStatus.SUCCESS }
+			.map { requireNotNull(it.value) } == values) {
 			"Values must equal successful occurrences in spoken order"
 		}
 		require(status != NumberNormalizationStatus.NO_NUMBER || (values.isEmpty() && occurrences.isEmpty()))
 		require(status != NumberNormalizationStatus.SUCCESS || values.size == 1)
 		require(status != NumberNormalizationStatus.AMBIGUOUS || values.size >= 2)
 		require(
-			status !in setOf(NumberNormalizationStatus.PARTIAL_FAILURE, NumberNormalizationStatus.INVALID) ||
-				occurrences.any { it.status != NumberOccurrenceStatus.SUCCESS }
-		)
+			status !in setOf(
+				NumberNormalizationStatus.PARTIAL_FAILURE, NumberNormalizationStatus.INVALID
+			) || occurrences.any { it.status != NumberOccurrenceStatus.SUCCESS })
 	}
 }
 
@@ -191,6 +170,7 @@ object SettingsTfliteContract {
 	const val SIGNATURE_KEY = "serving_default"
 	const val WORD_MAX_LEN = 32
 	const val CHARACTER_MAX_LEN = 96
+
 	/** Compatibility alias for the word tokenizer contract. */
 	const val MAX_LEN = WORD_MAX_LEN
 	const val INPUT_NAME = "token_ids"

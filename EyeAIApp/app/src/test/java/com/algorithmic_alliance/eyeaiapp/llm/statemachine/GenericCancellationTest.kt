@@ -11,8 +11,7 @@ class GenericCancellationTest {
 
 		contexts.forEach { _ ->
 			assertEquals(
-				"Ich habe den Vorgang abgebrochen.",
-				GenericCancellation.responseFor("abbrechen")
+				"Ich habe den Vorgang abgebrochen.", GenericCancellation.responseFor("abbrechen")
 			)
 		}
 	}

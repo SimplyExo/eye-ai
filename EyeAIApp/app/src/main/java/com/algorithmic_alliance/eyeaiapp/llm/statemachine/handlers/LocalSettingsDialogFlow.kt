@@ -46,18 +46,18 @@ internal class LocalSettingsDialogFlow(
 		parser: LocalSettingsParser?
 	): LocalSettingsDialogResult {
 		val settingIntent = currentJson?.let(jsonParser::parseSettingIntent) ?: SettingIntent.NONE
-		val target = settingIntent.toLocalTarget()
-			?: return followUp(
-				settingIntent = settingIntent,
-				question = settingIntent.missingOperationQuestion(),
-				currentJson = currentJson,
-				diagnostic = "MISSING_SETTING_TARGET"
-			)
+		val target = settingIntent.toLocalTarget() ?: return followUp(
+			settingIntent = settingIntent,
+			question = settingIntent.missingOperationQuestion(),
+			currentJson = currentJson,
+			diagnostic = "MISSING_SETTING_TARGET"
+		)
 		val localParser = parser ?: return localRuntimeUnavailable(settingIntent, currentJson)
 		val command = localParser.parse(target, input)
 		return when (val execution = commandExecutor.execute(command, currentState)) {
 			is LocalSettingsCommandExecution.Ready -> {
-				val confirmationJson = jsonParser.carrySettingsContext(execution.settingsJson, currentJson)
+				val confirmationJson =
+					jsonParser.carrySettingsContext(execution.settingsJson, currentJson)
 				LocalSettingsDialogResult.Ready(
 					execution = execution,
 					confirmationJson = confirmationJson,
@@ -80,8 +80,7 @@ internal class LocalSettingsDialogFlow(
 
 			is LocalSettingsCommandExecution.UnsupportedAppRepresentation -> followUp(
 				settingIntent = settingIntent,
-				question = "Die aktuelle Audioausgabe unterstützt für BPS nur ganze Werte. " +
-					"Bitte nennen Sie eine ganze Anzahl von Schlägen pro Sekunde.",
+				question = "Die aktuelle Audioausgabe unterstützt für BPS nur ganze Werte. " + "Bitte nennen Sie eine ganze Anzahl von Schlägen pro Sekunde.",
 				currentJson = currentJson,
 				command = execution.command,
 				diagnostic = execution.diagnostic
@@ -95,12 +94,10 @@ internal class LocalSettingsDialogFlow(
 	}
 
 	private fun localRuntimeUnavailable(
-		settingIntent: SettingIntent,
-		currentJson: String?
+		settingIntent: SettingIntent, currentJson: String?
 	): LocalSettingsDialogResult.FollowUp = followUp(
 		settingIntent = settingIntent,
-		question = "Die lokale Verarbeitung dieser Einstellung ist gerade nicht verfügbar. " +
-			"Bitte wiederholen Sie die gewünschte Änderung.",
+		question = "Die lokale Verarbeitung dieser Einstellung ist gerade nicht verfügbar. " + "Bitte wiederholen Sie die gewünschte Änderung.",
 		currentJson = currentJson,
 		diagnostic = "LOCAL_RUNTIME_UNAVAILABLE"
 	)
@@ -130,26 +127,24 @@ internal class LocalSettingsDialogFlow(
 	}
 
 	private fun localRecoveryQuestion(
-		settingIntent: SettingIntent,
-		status: SettingParseStatus,
-		command: SettingCommand
+		settingIntent: SettingIntent, status: SettingParseStatus, command: SettingCommand
 	): String = when (status) {
-		SettingParseStatus.NEEDS_VALUE ->
-			if (command.operation == SettingOperation.UNSPECIFIED) {
-				settingIntent.missingOperationQuestion()
-			} else {
-				settingIntent.missingValueQuestion()
-			}
-		SettingParseStatus.INVALID_UNIT ->
-			"Die genannte Einheit passt nicht zu dieser Einstellung. ${settingIntent.missingValueQuestion()}"
-		SettingParseStatus.INVALID_VALUE ->
-			"Der genannte Wert kann nicht verwendet werden. ${settingIntent.missingValueQuestion()}"
-		SettingParseStatus.NEEDS_CLARIFICATION ->
-			if (command.operation == SettingOperation.UNSPECIFIED) {
-				settingIntent.missingOperationQuestion()
-			} else {
-				"Die gewünschte Änderung ist noch nicht eindeutig. ${settingIntent.missingValueQuestion()}"
-			}
+		SettingParseStatus.NEEDS_VALUE -> if (command.operation == SettingOperation.UNSPECIFIED) {
+			settingIntent.missingOperationQuestion()
+		} else {
+			settingIntent.missingValueQuestion()
+		}
+
+		SettingParseStatus.INVALID_UNIT -> "Die genannte Einheit passt nicht zu dieser Einstellung. ${settingIntent.missingValueQuestion()}"
+
+		SettingParseStatus.INVALID_VALUE -> "Der genannte Wert kann nicht verwendet werden. ${settingIntent.missingValueQuestion()}"
+
+		SettingParseStatus.NEEDS_CLARIFICATION -> if (command.operation == SettingOperation.UNSPECIFIED) {
+			settingIntent.missingOperationQuestion()
+		} else {
+			"Die gewünschte Änderung ist noch nicht eindeutig. ${settingIntent.missingValueQuestion()}"
+		}
+
 		SettingParseStatus.COMPLETE -> error("A complete local command must be prepared for confirmation")
 	}
 

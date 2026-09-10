@@ -1,11 +1,11 @@
 package com.algorithmic_alliance.eyeaiapp.nlp
 
+import com.algorithmic_alliance.eyeaiapp.nlp.IntentTokenizer.Companion.NORMALIZATION_ID
 import java.text.Normalizer
 import java.util.Locale
 
 enum class IntentTokenizerType(val serializedName: String) {
-	WORD("deterministic_word_level"),
-	BPE("deterministic_word_boundary_bpe");
+	WORD("deterministic_word_level"), BPE("deterministic_word_boundary_bpe");
 
 	companion object {
 		fun fromSerializedName(value: String): IntentTokenizerType =
@@ -15,10 +15,7 @@ enum class IntentTokenizerType(val serializedName: String) {
 }
 
 data class BpeMerge(
-	val rank: Int,
-	val left: String,
-	val right: String,
-	val merged: String
+	val rank: Int, val left: String, val right: String, val merged: String
 )
 
 /**
@@ -100,19 +97,14 @@ class IntentTokenizer(
 		}
 
 		while (symbols.size > 1) {
-			val selectedMerge = symbols.zipWithNext()
-				.mapNotNull { mergesByPair[it] }
-				.minByOrNull { it.rank }
-				?: break
+			val selectedMerge =
+				symbols.zipWithNext().mapNotNull { mergesByPair[it] }.minByOrNull { it.rank }
+					?: break
 
 			val mergedSymbols = ArrayList<String>(symbols.size)
 			var index = 0
 			while (index < symbols.size) {
-				if (
-					index + 1 < symbols.size &&
-					symbols[index] == selectedMerge.left &&
-					symbols[index + 1] == selectedMerge.right
-				) {
+				if (index + 1 < symbols.size && symbols[index] == selectedMerge.left && symbols[index + 1] == selectedMerge.right) {
 					mergedSymbols.add(selectedMerge.merged)
 					index += 2
 				} else {
@@ -146,29 +138,20 @@ class IntentTokenizer(
 
 		/** Exact Android port of [NORMALIZATION_ID] from the training pipeline. */
 		fun normalize(text: String): String {
-			val normalized = Normalizer.normalize(text, Normalizer.Form.NFKC)
-				.lowercase(Locale.ROOT)
+			val normalized = Normalizer.normalize(text, Normalizer.Form.NFKC).lowercase(Locale.ROOT)
 			val characters = StringBuilder(normalized.length)
 			normalized.codePoints().forEach { codePoint ->
-				if (
-					isPythonWhitespace(codePoint) ||
-					Character.getType(codePoint) in punctuationTypes
-				) {
+				if (isPythonWhitespace(codePoint) || Character.getType(codePoint) in punctuationTypes) {
 					characters.append(' ')
 				} else {
 					characters.appendCodePoint(codePoint)
 				}
 			}
-			return characters.toString()
-				.trim()
-				.split(Regex(" +"))
-				.filter { it.isNotEmpty() }
+			return characters.toString().trim().split(Regex(" +")).filter { it.isNotEmpty() }
 				.joinToString(" ")
 		}
 
 		private fun isPythonWhitespace(codePoint: Int): Boolean =
-			Character.isWhitespace(codePoint) ||
-				Character.isSpaceChar(codePoint) ||
-				codePoint == 0x0085
+			Character.isWhitespace(codePoint) || Character.isSpaceChar(codePoint) || codePoint == 0x0085
 	}
 }

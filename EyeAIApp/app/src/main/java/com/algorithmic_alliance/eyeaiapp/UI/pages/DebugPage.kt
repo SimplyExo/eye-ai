@@ -2,9 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.util.Log
-import android.util.Size
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -12,10 +10,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -54,10 +48,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
@@ -65,292 +58,284 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
-import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOCR
 import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumFloatingActionButton
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
-import com.algorithmic_alliance.eyeaiapp.UI.UIState
-import com.algorithmic_alliance.eyeaiapp.data.Spacing
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
-import com.algorithmic_alliance.eyeaiapp.ocr.TextBoundingBox
-import uniffi.NativeLib.UniffiDetectedObject
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DebugPage(
-    modifier: Modifier = Modifier,
-    onOpenSettings: () -> Unit,
-    onEvent: (UIEvent) -> Unit,
-    viewModel: MainViewModel,
+	modifier: Modifier = Modifier,
+	onOpenSettings: () -> Unit,
+	onEvent: (UIEvent) -> Unit,
+	viewModel: MainViewModel,
 ) {
-    Log.d(LOG_TAG, "[DebugPage] Loading DebugPage")
-    val uiState by viewModel.debugPageUIState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-    val speechRecognitionKey = stringResource(R.string.enable_speech_recognition_setting)
-    var speechRecognitionEnabled by rememberSaveable { mutableStateOf(true) }
+	Log.d(LOG_TAG, "[DebugPage] Loading DebugPage")
+	val uiState by viewModel.debugPageUIState.collectAsStateWithLifecycle()
+	val context = LocalContext.current
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+	val speechRecognitionKey = stringResource(R.string.enable_speech_recognition_setting)
+	var speechRecognitionEnabled by rememberSaveable { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
-        speechRecognitionEnabled = sharedPreferences.getBoolean(speechRecognitionKey, true)
-        if (
-            ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            if (speechRecognitionEnabled) {
-                onEvent(UIEvent.InitVoskService)
-            } else {
-                onEvent(UIEvent.CloseVoskService)
-            }
-        }
-        onEvent(UIEvent.UpdateVoskStatusText)
-        onEvent(UIEvent.UpdateSpeechStatusText)
-    }
+	LaunchedEffect(Unit) {
+		speechRecognitionEnabled = sharedPreferences.getBoolean(speechRecognitionKey, true)
+		if (ActivityCompat.checkSelfPermission(
+				context, Manifest.permission.RECORD_AUDIO
+			) == PackageManager.PERMISSION_GRANTED
+		) {
+			if (speechRecognitionEnabled) {
+				onEvent(UIEvent.InitVoskService)
+			} else {
+				onEvent(UIEvent.CloseVoskService)
+			}
+		}
+		onEvent(UIEvent.UpdateVoskStatusText)
+		onEvent(UIEvent.UpdateSpeechStatusText)
+	}
 
-    key(uiState.reloadDebugPageKey) {
-        Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                contentWindowInsets = WindowInsets.safeDrawing,
-                topBar = {
-                    TopAppBar(
-                        title = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Debug", style = MaterialTheme.typography.titleLarge)
-                            }
-                        },
-                        modifier = Modifier.shadow(elevation = Spacing.sm),
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
-                    )
-                },
-                floatingActionButton = {
-                    Row(
-                        modifier = Modifier
-                            .padding(Spacing.sm)
-                            .fillMaxWidth(0.35f),
-                        horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
-                    ) {
-                        if (speechRecognitionEnabled) PremiumFloatingActionButton(
-                            onClick = {
-                                onEvent(UIEvent.VoskListeningChanged)
-                            },
-                        ) {
-                            Icon(
-                                painter = if (uiState.voskListening) {
-                                    painterResource(R.drawable.stop_24px)
-                                } else if (uiState.ttsSpeaking) {
-                                    painterResource(
-                                        R.drawable.pause_playback_24px
-                                    )
-                                } else {
-                                    painterResource(R.drawable.play_arrow_24px)
-                                }, contentDescription = "Start Vosk"
-                            )
-                        }
+	key(uiState.reloadDebugPageKey) {
+		Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
+			Scaffold(
+				modifier = Modifier.fillMaxSize(),
+				contentWindowInsets = WindowInsets.safeDrawing,
+				topBar = {
+					TopAppBar(
+						title = {
+							Row(verticalAlignment = Alignment.CenterVertically) {
+								Text("Debug", style = MaterialTheme.typography.titleLarge)
+							}
+						},
+						modifier = Modifier.shadow(elevation = Spacing.sm),
+						colors = TopAppBarDefaults.topAppBarColors(
+							containerColor = MaterialTheme.colorScheme.primaryContainer,
+							titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+						),
+					)
+				},
+				floatingActionButton = {
+					Row(
+						modifier = Modifier
+							.padding(Spacing.sm)
+							.fillMaxWidth(0.35f),
+						horizontalArrangement = if (speechRecognitionEnabled) Arrangement.SpaceBetween else Arrangement.End
+					) {
+						if (speechRecognitionEnabled) PremiumFloatingActionButton(
+							onClick = {
+								onEvent(UIEvent.VoskListeningChanged)
+							},
+						) {
+							Icon(
+								painter = if (uiState.voskListening) {
+									painterResource(R.drawable.stop_24px)
+								} else if (uiState.ttsSpeaking) {
+									painterResource(
+										R.drawable.pause_playback_24px
+									)
+								} else {
+									painterResource(R.drawable.play_arrow_24px)
+								}, contentDescription = "Start Vosk"
+							)
+						}
 
-                        PremiumFloatingActionButton(onClick = { onOpenSettings() }) {
-                            Icon(
-                                painter = painterResource(R.drawable.settings_24px),
-                                contentDescription = "Open Settings"
-                            )
-                        }
-                    }
-                },
-                content = { paddingValues ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .fillMaxHeight()
-                            .padding(paddingValues),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Card(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
-                                .padding(
-                                    top = Spacing.sm,
-                                    bottom = Spacing.sm,
-                                    start = Spacing.xs,
-                                    end = Spacing.xs
-                                ),
+						PremiumFloatingActionButton(onClick = { onOpenSettings() }) {
+							Icon(
+								painter = painterResource(R.drawable.settings_24px),
+								contentDescription = "Open Settings"
+							)
+						}
+					}
+				},
+				content = { paddingValues ->
+					Column(
+						modifier = Modifier
+							.fillMaxSize()
+							.fillMaxHeight()
+							.padding(paddingValues),
+						horizontalAlignment = Alignment.CenterHorizontally,
+					) {
+						Card(
+							modifier = Modifier
+								.weight(1f)
+								.fillMaxWidth()
+								.padding(
+									top = Spacing.sm,
+									bottom = Spacing.sm,
+									start = Spacing.xs,
+									end = Spacing.xs
+								),
 
-                            shape = PremiumShapes.medium,
-                            elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
-                            border = BorderStroke(
-                                width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
-                                color = Color.White.copy(alpha = 0.2f)
-                            ),
-                        ) {
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                if (sharedPreferences.getString(
-                                        stringResource(R.string.input_source_setting),
-                                        stringResource(R.string.input_is_camera)
-                                    ) == stringResource(R.string.input_is_camera) && !sharedPreferences.getBoolean(
-                                        stringResource(R.string.show_debug_input_bitmap_setting),
-                                        false
-                                    )
-                                ) CameraPreview(onEvent = onEvent)
-                                if (sharedPreferences.getString(
-                                        stringResource(R.string.input_source_setting),
-                                        stringResource(R.string.input_is_camera)
-                                    ) == stringResource(R.string.input_is_media) && !sharedPreferences.getBoolean(
-                                        stringResource(R.string.show_debug_input_bitmap_setting),
-                                        false
-                                    )
-                                ) {
-                                    MediaPreview(
-                                        viewModel = viewModel,
-                                        onEvent = onEvent
-                                    )
-                                    if (sharedPreferences.getString(
-                                            stringResource(R.string.media_path_setting), ""
-                                        ) == ""
-                                    ) Column(
-                                        modifier = Modifier
-                                            .fillMaxHeight()
-                                            .padding(Spacing.sm),
-                                        verticalArrangement = Arrangement.Center,
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Text(
-                                            "Bitte in den Einstellungen eine Media-Quelle auswählen!",
-                                            fontSize = 26.sp,
-                                        )
-                                    }
-                                }
-                                if (sharedPreferences.getBoolean(
-                                        stringResource(R.string.show_debug_input_bitmap_setting),
-                                        false
-                                    )
-                                ) DebugInputPreview(
-                                    viewModel = viewModel, onEvent = onEvent
-                                )
-                                ObjectDetectionOverlay(
-                                    modifier = Modifier
-                                        .matchParentSize()
-                                        .padding(Spacing.sm),
-                                    viewModel = viewModel
-                                )
-                                /*
-                                OCROverlay(
-                                    modifier = Modifier
-                                        .matchParentSize()
-                                        .padding(Spacing.sm),
-                                    results = uiState.ocrResults,
-                                    cameraResolution = uiState.cameraResolution
-                                */
-                                if (sharedPreferences.getBoolean(
-                                        stringResource(R.string.enable_speech_recognition_setting),
-                                        true
-                                    )
-                                ) {
-                                    Card(
-                                        modifier = Modifier
-                                            .padding(bottom = Spacing.md)
-                                            .align(Alignment.BottomCenter)
-                                            .fillMaxWidth(0.75f)
-                                            .heightIn(min = Spacing.xxl, max = Spacing.xxxxl),
-                                        shape = PremiumShapes.medium,
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
-                                                alpha = 0.75f
-                                            )
-                                        )
-                                    ) {
-                                        LazyColumn(
-                                            modifier = Modifier
-                                                .padding(Spacing.sm)
-                                                .fillMaxWidth(),
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            item {
-                                                Text(
-                                                    uiState.speechRecognitionPartialResultText,
-                                                    style = MaterialTheme.typography.bodyMedium
-                                                )
-                                                Text(
-                                                    uiState.speechRecognitionFinalResultText,
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                                Text(
-                                                    uiState.speechResponseText,
-                                                    style = MaterialTheme.typography.bodyMedium
-                                                )
-                                            }
-                                        }
-                                    }
+							shape = PremiumShapes.medium,
+							elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
+							border = BorderStroke(
+								width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
+								color = Color.White.copy(alpha = 0.2f)
+							),
+						) {
+							Box(modifier = Modifier.fillMaxSize()) {
+								if (sharedPreferences.getString(
+										stringResource(R.string.input_source_setting),
+										stringResource(R.string.input_is_camera)
+									) == stringResource(R.string.input_is_camera) && !sharedPreferences.getBoolean(
+										stringResource(R.string.show_debug_input_bitmap_setting),
+										false
+									)
+								) CameraPreview(onEvent = onEvent)
+								if (sharedPreferences.getString(
+										stringResource(R.string.input_source_setting),
+										stringResource(R.string.input_is_camera)
+									) == stringResource(R.string.input_is_media) && !sharedPreferences.getBoolean(
+										stringResource(R.string.show_debug_input_bitmap_setting),
+										false
+									)
+								) {
+									MediaPreview(
+										viewModel = viewModel, onEvent = onEvent
+									)
+									if (sharedPreferences.getString(
+											stringResource(R.string.media_path_setting), ""
+										) == ""
+									) Column(
+										modifier = Modifier
+											.fillMaxHeight()
+											.padding(Spacing.sm),
+										verticalArrangement = Arrangement.Center,
+										horizontalAlignment = Alignment.CenterHorizontally
+									) {
+										Text(
+											"Bitte in den Einstellungen eine Media-Quelle auswählen!",
+											fontSize = 26.sp,
+										)
+									}
+								}
+								if (sharedPreferences.getBoolean(
+										stringResource(R.string.show_debug_input_bitmap_setting),
+										false
+									)
+								) DebugInputPreview(
+									viewModel = viewModel, onEvent = onEvent
+								)
+								ObjectDetectionOverlay(
+									modifier = Modifier
+										.matchParentSize()
+										.padding(Spacing.sm),
+									viewModel = viewModel
+								)                                /*
+								OCROverlay(
+									modifier = Modifier
+										.matchParentSize()
+										.padding(Spacing.sm),
+									results = uiState.ocrResults,
+									cameraResolution = uiState.cameraResolution
+								*/
+								if (sharedPreferences.getBoolean(
+										stringResource(R.string.enable_speech_recognition_setting),
+										true
+									)
+								) {
+									Card(
+										modifier = Modifier
+											.padding(bottom = Spacing.md)
+											.align(Alignment.BottomCenter)
+											.fillMaxWidth(0.75f)
+											.heightIn(min = Spacing.xxl, max = Spacing.xxxxl),
+										shape = PremiumShapes.medium,
+										colors = CardDefaults.cardColors(
+											containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+												alpha = 0.75f
+											)
+										)
+									) {
+										LazyColumn(
+											modifier = Modifier
+												.padding(Spacing.sm)
+												.fillMaxWidth(),
+											horizontalAlignment = Alignment.CenterHorizontally
+										) {
+											item {
+												Text(
+													uiState.speechRecognitionPartialResultText,
+													style = MaterialTheme.typography.bodyMedium
+												)
+												Text(
+													uiState.speechRecognitionFinalResultText,
+													style = MaterialTheme.typography.bodyMedium,
+													fontWeight = FontWeight.Bold
+												)
+												Text(
+													uiState.speechResponseText,
+													style = MaterialTheme.typography.bodyMedium
+												)
+											}
+										}
+									}
 
-                                }
-                            }
-                        }
-                        Card(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
-                                .padding(bottom = Spacing.sm, start = Spacing.xs, end = Spacing.xs),
-                            shape = PremiumShapes.medium,
-                            elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
-                            border = BorderStroke(
-                                width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
-                                color = Color.White.copy(alpha = 0.2f)
-                            ),
-                        ) {
-                            Box(Modifier.fillMaxSize()) {
-                                if (sharedPreferences.getString(
-                                        stringResource(R.string.media_path_setting), ""
-                                    ) == "" && sharedPreferences.getString(
-                                        stringResource(R.string.input_source_setting),
-                                        "camera"
-                                    ) == "media"
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxHeight()
-                                            .padding(Spacing.sm),
-                                        verticalArrangement = Arrangement.Center,
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Text(
-                                            "Bitte in den Einstellungen eine Media-Quelle auswählen!",
-                                            fontSize = 26.sp,
-                                        )
-                                    }
-                                }
-                                DepthPreview(
-                                    viewModel = viewModel
-                                )
-                            }
-                        }
+								}
+							}
+						}
+						Card(
+							modifier = Modifier
+								.weight(1f)
+								.fillMaxWidth()
+								.padding(bottom = Spacing.sm, start = Spacing.xs, end = Spacing.xs),
+							shape = PremiumShapes.medium,
+							elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
+							border = BorderStroke(
+								width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
+								color = Color.White.copy(alpha = 0.2f)
+							),
+						) {
+							Box(Modifier.fillMaxSize()) {
+								if (sharedPreferences.getString(
+										stringResource(R.string.media_path_setting), ""
+									) == "" && sharedPreferences.getString(
+										stringResource(R.string.input_source_setting), "camera"
+									) == "media"
+								) {
+									Column(
+										modifier = Modifier
+											.fillMaxHeight()
+											.padding(Spacing.sm),
+										verticalArrangement = Arrangement.Center,
+										horizontalAlignment = Alignment.CenterHorizontally
+									) {
+										Text(
+											"Bitte in den Einstellungen eine Media-Quelle auswählen!",
+											fontSize = 26.sp,
+										)
+									}
+								}
+								DepthPreview(
+									viewModel = viewModel
+								)
+							}
+						}
 
 
-                    }
-                })
-        }
-    }
+					}
+				})
+		}
+	}
 }
 
 @Composable
 fun ObjectDetectionOverlay(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel,
-    onOverlayCreated: (OverlayViewOD) -> Unit = {},
+	modifier: Modifier = Modifier,
+	viewModel: MainViewModel,
+	onOverlayCreated: (OverlayViewOD) -> Unit = {},
 ) {
-    val uiState by viewModel.objectDetectionOverlayUIState.collectAsStateWithLifecycle()
-    AndroidView(
-        modifier = modifier,
-        factory = { context -> OverlayViewOD(context, null).also(onOverlayCreated) },
-        update = { overlayView ->
-            overlayView.setCameraResolution(uiState.cameraResolution)
-            overlayView.setResults(uiState.detectedObjects)
-        },
-    )
+	val uiState by viewModel.objectDetectionOverlayUIState.collectAsStateWithLifecycle()
+	AndroidView(
+		modifier = modifier,
+		factory = { context -> OverlayViewOD(context, null).also(onOverlayCreated) },
+		update = { overlayView ->
+			overlayView.setCameraResolution(uiState.cameraResolution)
+			overlayView.setResults(uiState.detectedObjects)
+		},
+	)
 }
 
 /*
@@ -373,136 +358,133 @@ fun OCROverlay(
 */
 @Composable
 fun DebugInputPreview(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel,
-    onEvent: (UIEvent) -> Unit,
+	modifier: Modifier = Modifier,
+	viewModel: MainViewModel,
+	onEvent: (UIEvent) -> Unit,
 ) {
-    val uiState by viewModel.debugInputBitmapPreviewUIState.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) {
-        // No PreviewView is attached in this mode; the foreground runtime keeps processing.
-        onEvent(UIEvent.UIinitCamera(previewView = null))
-    }
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(Spacing.sm)
-            .clip(PremiumShapes.small)
-            .background(Color.Black),
-        contentAlignment = Alignment.Center,
+	val uiState by viewModel.debugInputBitmapPreviewUIState.collectAsStateWithLifecycle()
+	LaunchedEffect(Unit) {
+		// No PreviewView is attached in this mode; the foreground runtime keeps processing.
+		onEvent(UIEvent.UIinitCamera(previewView = null))
+	}
+	Box(
+		modifier = modifier
+			.fillMaxSize()
+			.padding(Spacing.sm)
+			.clip(PremiumShapes.small)
+			.background(Color.Black),
+		contentAlignment = Alignment.Center,
 
-        ) {
-        uiState.debugInputPreviewBitmap?.let {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Image(
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = "Depth preview",
-                    modifier = Modifier
-                        .clip(PremiumShapes.small),
-                    contentScale = ContentScale.Fit
+		) {
+		uiState.debugInputPreviewBitmap?.let {
+			Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+				Image(
+					bitmap = it.asImageBitmap(),
+					contentDescription = "Depth preview",
+					modifier = Modifier.clip(PremiumShapes.small),
+					contentScale = ContentScale.Fit
 
-                )
-            }
+				)
+			}
 
-        }
-    }
+		}
+	}
 }
 
 @Composable
 fun MediaPreview(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel,
-    onEvent: (UIEvent) -> Unit,
+	modifier: Modifier = Modifier,
+	viewModel: MainViewModel,
+	onEvent: (UIEvent) -> Unit,
 ) {
-    val uiState by viewModel.mediaPreviewUIState.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) {
-        // Media processing is owned by the runtime, independently of this composable.
-        onEvent(UIEvent.UIinitCamera(previewView = null))
-    }
+	val uiState by viewModel.mediaPreviewUIState.collectAsStateWithLifecycle()
+	LaunchedEffect(Unit) {
+		// Media processing is owned by the runtime, independently of this composable.
+		onEvent(UIEvent.UIinitCamera(previewView = null))
+	}
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(Spacing.sm)
-            .clip(PremiumShapes.small)
-            .background(Color.Black),
-        contentAlignment = Alignment.Center,
-    ) {
-        uiState.mediaPreviewBitmap?.let {
-            Image(
-                bitmap = it.asImageBitmap(),
-                contentDescription = "Media preview",
-                modifier = Modifier
-                    .clip(PremiumShapes.small),
-                contentScale = ContentScale.Fit
-            )
-        }
-    }
+	Box(
+		modifier = modifier
+			.fillMaxSize()
+			.padding(Spacing.sm)
+			.clip(PremiumShapes.small)
+			.background(Color.Black),
+		contentAlignment = Alignment.Center,
+	) {
+		uiState.mediaPreviewBitmap?.let {
+			Image(
+				bitmap = it.asImageBitmap(),
+				contentDescription = "Media preview",
+				modifier = Modifier.clip(PremiumShapes.small),
+				contentScale = ContentScale.Fit
+			)
+		}
+	}
 }
 
 @Composable
 fun DepthPreview(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel
+	modifier: Modifier = Modifier, viewModel: MainViewModel
 ) {
-    val uiState by viewModel.depthOverlayUIState.collectAsStateWithLifecycle()
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(Spacing.sm)
-            .clip(PremiumShapes.small)
-            .background(Color.Black),
-        contentAlignment = Alignment.Center,
-    ) {
-        uiState.depthPreviewBitmap?.let {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Box(modifier = Modifier.aspectRatio(1f / 1f)) {
-                    Image(
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = "Depth preview",
-                        modifier = Modifier
-                            .aspectRatio(1f / 1f)
-                            .clip(PremiumShapes.small),
-                        contentScale = ContentScale.Fit
-                    )
-                    LazyColumn(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(start = Spacing.xs, top = Spacing.xs)
-                    ) {
-                        item {
-                            Text(
-                                text = uiState.performanceText,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontSize = 8.sp,
-                                fontFamily = FontFamily.Monospace,
-                                lineHeight = 10.sp,
-                                letterSpacing = (-0.2).sp
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
+	val uiState by viewModel.depthOverlayUIState.collectAsStateWithLifecycle()
+	Box(
+		modifier = modifier
+			.fillMaxSize()
+			.padding(Spacing.sm)
+			.clip(PremiumShapes.small)
+			.background(Color.Black),
+		contentAlignment = Alignment.Center,
+	) {
+		uiState.depthPreviewBitmap?.let {
+			Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+				Box(modifier = Modifier.aspectRatio(1f / 1f)) {
+					Image(
+						bitmap = it.asImageBitmap(),
+						contentDescription = "Depth preview",
+						modifier = Modifier
+							.aspectRatio(1f / 1f)
+							.clip(PremiumShapes.small),
+						contentScale = ContentScale.Fit
+					)
+					LazyColumn(
+						modifier = Modifier
+							.align(Alignment.TopStart)
+							.padding(start = Spacing.xs, top = Spacing.xs)
+					) {
+						item {
+							Text(
+								text = uiState.performanceText,
+								style = MaterialTheme.typography.bodySmall,
+								fontSize = 8.sp,
+								fontFamily = FontFamily.Monospace,
+								lineHeight = 10.sp,
+								letterSpacing = (-0.2).sp
+							)
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 @Composable
 fun CameraPreview(onEvent: (UIEvent) -> Unit) {
-    AndroidView(
-        modifier = Modifier
-            .padding(Spacing.sm)
-            .clip(PremiumShapes.small),
-        factory = { context ->
-            PreviewView(context).apply {
-                scaleType = PreviewView.ScaleType.FIT_CENTER
-            }.also { previewView ->
-                // The PreviewView is an optional surface only; camera processing stays headless.
-                onEvent(UIEvent.UIinitCamera(previewView))
-            }
-        },
-        onRelease = { previewView ->
-            onEvent(UIEvent.UIDetachCameraPreview(previewView))
-        },
-    )
+	AndroidView(
+		modifier = Modifier
+			.padding(Spacing.sm)
+			.clip(PremiumShapes.small),
+		factory = { context ->
+			PreviewView(context).apply {
+				scaleType = PreviewView.ScaleType.FIT_CENTER
+			}.also { previewView ->
+				// The PreviewView is an optional surface only; camera processing stays headless.
+				onEvent(UIEvent.UIinitCamera(previewView))
+			}
+		},
+		onRelease = { previewView ->
+			onEvent(UIEvent.UIDetachCameraPreview(previewView))
+		},
+	)
 }
 

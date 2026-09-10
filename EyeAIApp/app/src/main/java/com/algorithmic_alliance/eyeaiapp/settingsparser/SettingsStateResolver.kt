@@ -2,10 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.settingsparser
 
 /** Current values are supplied by a future integration adapter, never by ML. */
 data class CurrentSettingsState(
-	val frequency: Int,
-	val bps: Double,
-	val speechSpeed: Double,
-	val speaker: SpeakerChoice
+	val frequency: Int, val bps: Double, val speechSpeed: Double, val speaker: SpeakerChoice
 )
 
 sealed interface ResolvedSettingValue {
@@ -35,8 +32,7 @@ class SettingsStateResolver(
 				validated.target,
 				null,
 				validated.status,
-				validated.diagnostics.joinToString(";").ifBlank { null }
-			)
+				validated.diagnostics.joinToString(";").ifBlank { null })
 		}
 		if (validated.target == SettingTarget.SPEAKER) {
 			if (validated.operation == SettingOperation.TOGGLE && current.speaker == SpeakerChoice.UNSPECIFIED) {
@@ -51,15 +47,19 @@ class SettingsStateResolver(
 				SettingOperation.TOGGLE -> if (current.speaker == SpeakerChoice.MALE) SpeakerChoice.FEMALE else SpeakerChoice.MALE
 				else -> requireNotNull(validated.speaker)
 			}
-			return SettingResolution(validated.target, ResolvedSettingValue.Speaker(speaker), SettingParseStatus.COMPLETE)
+			return SettingResolution(
+				validated.target, ResolvedSettingValue.Speaker(speaker), SettingParseStatus.COMPLETE
+			)
 		}
 		val value = resolveNumeric(validated, current)
 		return if (validator.isValidAbsolute(validated.target, value)) {
-			SettingResolution(validated.target, ResolvedSettingValue.Numeric(value), SettingParseStatus.COMPLETE)
+			SettingResolution(
+				validated.target, ResolvedSettingValue.Numeric(value), SettingParseStatus.COMPLETE
+			)
 		} else {
 			SettingResolution(
 				validated.target,
-					null,
+				null,
 				SettingParseStatus.INVALID_VALUE,
 				"RESOLVED_VALUE_OUT_OF_RANGE"
 			)

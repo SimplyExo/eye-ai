@@ -11,9 +11,7 @@ import kotlin.math.ln
 import kotlin.math.sqrt
 
 enum class ConfirmationLabel {
-	ACCEPT,
-	REJECT,
-	UNKNOWN
+	ACCEPT, REJECT, UNKNOWN
 }
 
 data class ConfirmationResult(
@@ -27,21 +25,16 @@ data class ConfirmationResult(
 ) {
 	fun toDecisionTraceFields(): String {
 		val serializedScores = ConfirmationLabel.entries.joinToString(
-			prefix = "[",
-			postfix = "]"
+			prefix = "[", postfix = "]"
 		) { label -> "$label=${formatProbability(scores.getValue(label))}" }
-		return "model=${ConfirmationModel.MODEL_ID} decision=$label " +
-			"confirmed=${label == ConfirmationLabel.ACCEPT} " +
-			"rejected=${label == ConfirmationLabel.REJECT} " +
-			"requiresClarification=${label == ConfirmationLabel.UNKNOWN} " +
-			"rawLabel=$rawLabel confidence=${formatProbability(confidence)} " +
-			"threshold=${formatProbability(confidenceThreshold)} " +
-			"confidenceRejected=${decisionReason == "low_char_confidence"} " +
-			"source=$source reason=$decisionReason scores=$serializedScores"
+		return "model=${ConfirmationModel.MODEL_ID} decision=$label " + "confirmed=${label == ConfirmationLabel.ACCEPT} " + "rejected=${label == ConfirmationLabel.REJECT} " + "requiresClarification=${label == ConfirmationLabel.UNKNOWN} " + "rawLabel=$rawLabel confidence=${
+			formatProbability(
+				confidence
+			)
+		} " + "threshold=${formatProbability(confidenceThreshold)} " + "confidenceRejected=${decisionReason == "low_char_confidence"} " + "source=$source reason=$decisionReason scores=$serializedScores"
 	}
 
-	private fun formatProbability(value: Double): String =
-		String.format(Locale.US, "%.4f", value)
+	private fun formatProbability(value: Double): String = String.format(Locale.US, "%.4f", value)
 }
 
 /**
@@ -115,8 +108,7 @@ class ConfirmationModel private constructor(
 			for ((featureIndex, value) in weightedFeatures) {
 				val normalizedValue = value / norm
 				for (classIndex in labels.indices) {
-					logits[classIndex] +=
-						coefficients[classIndex][featureIndex] * normalizedValue
+					logits[classIndex] += coefficients[classIndex][featureIndex] * normalizedValue
 				}
 			}
 		}
@@ -145,8 +137,8 @@ class ConfirmationModel private constructor(
 
 	private fun fastRule(question: String, answer: String): ConfirmationResult? {
 		val normalizedAnswer = normalizeRuleText(answer)
-		val label = normalizedRules.entries.firstOrNull { normalizedAnswer in it.value }?.key
-			?: return null
+		val label =
+			normalizedRules.entries.firstOrNull { normalizedAnswer in it.value }?.key ?: return null
 		if (label != ConfirmationLabel.UNKNOWN && questionIsNegated(question)) return null
 
 		return ConfirmationResult(
@@ -174,31 +166,101 @@ class ConfirmationModel private constructor(
 
 		private val rules = mapOf(
 			ConfirmationLabel.ACCEPT to setOf(
-				"ja", "ja bitte", "ja genau", "jo", "joa", "jep", "jap", "jup",
-				"klar", "gerne", "okay", "ok", "mach", "mach das", "bitte",
-				"von mir aus", "warum nicht", "kannst machen", "ja kannst du machen",
-				"jau", "jawohl", "passt", "tu das", "meinetwegen", "ja gern",
-				"genau", "stimmt", "absolut", "auf jeden fall", "natürlich",
-				"einverstanden", "klar doch", "geht klar", "klingt gut", "richtig",
-				"mach weiter", "sehr gern", "sehr gerne", "selbstverständlich"
-			),
-			ConfirmationLabel.REJECT to setOf(
-				"nein", "nee", "ne", "nö", "nein danke", "lieber nicht",
-				"nicht nötig", "auf keinen fall", "brauch ich nicht", "lass es",
-				"nein lieber nicht", "ähm nein", "bitte nicht", "keinesfalls",
-				"lass mal", "bloß nicht", "muss nicht sein", "besser nicht", "stop",
-				"stopp", "abbrechen", "niemals", "negativ", "absolut nicht",
-				"auf gar keinen fall", "kommt nicht in frage", "vergiss es",
-				"leider nicht", "kein interesse"
-			),
-			ConfirmationLabel.UNKNOWN to setOf(
-				"weiß nicht", "weiß ich nicht", "keine ahnung", "vielleicht",
-				"mal schauen", "moment", "wie meinst du das",
-				"kann ich gerade nicht sagen", "äh keine ahnung",
-				"unentschieden", "schwierig", "unklar", "eventuell", "noch offen",
-				"kann sein", "hm", "möglicherweise", "kommt drauf an",
-				"es kommt drauf an", "ich bin unsicher", "keine entscheidung",
-				"was genau", "später", "noch nicht", "schwer zu sagen",
+				"ja",
+				"ja bitte",
+				"ja genau",
+				"jo",
+				"joa",
+				"jep",
+				"jap",
+				"jup",
+				"klar",
+				"gerne",
+				"okay",
+				"ok",
+				"mach",
+				"mach das",
+				"bitte",
+				"von mir aus",
+				"warum nicht",
+				"kannst machen",
+				"ja kannst du machen",
+				"jau",
+				"jawohl",
+				"passt",
+				"tu das",
+				"meinetwegen",
+				"ja gern",
+				"genau",
+				"stimmt",
+				"absolut",
+				"auf jeden fall",
+				"natürlich",
+				"einverstanden",
+				"klar doch",
+				"geht klar",
+				"klingt gut",
+				"richtig",
+				"mach weiter",
+				"sehr gern",
+				"sehr gerne",
+				"selbstverständlich"
+			), ConfirmationLabel.REJECT to setOf(
+				"nein",
+				"nee",
+				"ne",
+				"nö",
+				"nein danke",
+				"lieber nicht",
+				"nicht nötig",
+				"auf keinen fall",
+				"brauch ich nicht",
+				"lass es",
+				"nein lieber nicht",
+				"ähm nein",
+				"bitte nicht",
+				"keinesfalls",
+				"lass mal",
+				"bloß nicht",
+				"muss nicht sein",
+				"besser nicht",
+				"stop",
+				"stopp",
+				"abbrechen",
+				"niemals",
+				"negativ",
+				"absolut nicht",
+				"auf gar keinen fall",
+				"kommt nicht in frage",
+				"vergiss es",
+				"leider nicht",
+				"kein interesse"
+			), ConfirmationLabel.UNKNOWN to setOf(
+				"weiß nicht",
+				"weiß ich nicht",
+				"keine ahnung",
+				"vielleicht",
+				"mal schauen",
+				"moment",
+				"wie meinst du das",
+				"kann ich gerade nicht sagen",
+				"äh keine ahnung",
+				"unentschieden",
+				"schwierig",
+				"unklar",
+				"eventuell",
+				"noch offen",
+				"kann sein",
+				"hm",
+				"möglicherweise",
+				"kommt drauf an",
+				"es kommt drauf an",
+				"ich bin unsicher",
+				"keine entscheidung",
+				"was genau",
+				"später",
+				"noch nicht",
+				"schwer zu sagen",
 				"kannst du das erklären"
 			)
 		)
@@ -287,8 +349,7 @@ class ConfirmationModel private constructor(
 		}
 
 		private fun normalizeRuleText(text: String): String {
-			val normalized = Normalizer.normalize(text, Normalizer.Form.NFKC)
-				.lowercase(Locale.ROOT)
+			val normalized = Normalizer.normalize(text, Normalizer.Form.NFKC).lowercase(Locale.ROOT)
 				.replace("ß", "ss")
 			val output = StringBuilder(normalized.length)
 			var previousWasSpace = true
@@ -306,8 +367,6 @@ class ConfirmationModel private constructor(
 		}
 
 		private fun isPythonWhitespace(codePoint: Int): Boolean =
-			Character.isWhitespace(codePoint) ||
-				Character.isSpaceChar(codePoint) ||
-				codePoint == 0x0085
+			Character.isWhitespace(codePoint) || Character.isSpaceChar(codePoint) || codePoint == 0x0085
 	}
 }

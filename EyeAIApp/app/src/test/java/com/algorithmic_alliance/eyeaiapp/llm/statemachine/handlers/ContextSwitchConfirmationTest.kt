@@ -11,14 +11,12 @@ class ContextSwitchConfirmationTest {
 	private val model by lazy(ConfirmationModelTestFixture::load)
 	private val pending = PendingExternalIntent(
 		IntentResult(
-			intent = Intent.TEXT_RECOGNITION,
-			confidence = 1f,
-			originalText = "Lies das Schild.",
-			probabilities = FloatArray(Intent.CLASS_ORDER.size).apply {
-				this[Intent.TEXT_RECOGNITION.ordinal] = 1f
-			}
-		)
-	)
+		intent = Intent.TEXT_RECOGNITION,
+		confidence = 1f,
+		originalText = "Lies das Schild.",
+		probabilities = FloatArray(Intent.CLASS_ORDER.size).apply {
+			this[Intent.TEXT_RECOGNITION.ordinal] = 1f
+		}))
 
 	@Test
 	fun approvalIsEvaluatedLocally() {
@@ -26,8 +24,7 @@ class ContextSwitchConfirmationTest {
 		val confirmation = ContextSwitchConfirmation({ model }, traces::add)
 
 		assertEquals(
-			ContextSwitchConfirmationResult.APPROVED,
-			confirmation.evaluate("Ja.", pending)
+			ContextSwitchConfirmationResult.APPROVED, confirmation.evaluate("Ja.", pending)
 		)
 		assertTrue(traces.any { it.contains("[ConfirmationModel][EVALUATE]") })
 		assertTrue(traces.any { it.contains("evaluator=LOCAL_CONFIRMATION_MODEL") })
@@ -42,8 +39,7 @@ class ContextSwitchConfirmationTest {
 		val confirmation = ContextSwitchConfirmation({ model })
 
 		assertEquals(
-			ContextSwitchConfirmationResult.REJECTED,
-			confirmation.evaluate("Nein.", pending)
+			ContextSwitchConfirmationResult.REJECTED, confirmation.evaluate("Nein.", pending)
 		)
 	}
 

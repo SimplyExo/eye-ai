@@ -1,11 +1,11 @@
 package com.algorithmic_alliance.eyeaiapp.tts
 
-import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Locale
 
 class TtsVoiceSelectorTest {
 	@Test
@@ -14,8 +14,7 @@ class TtsVoiceSelectorTest {
 		val male = voice("de-de-male", "male")
 
 		val result = TtsVoiceSelector.select(
-			requestedSpeaker = TtsVoiceSelector.FEMALE,
-			voices = listOf(male, female)
+			requestedSpeaker = TtsVoiceSelector.FEMALE, voices = listOf(male, female)
 		)
 
 		assertTrue(result.requestedSpeakerAvailable)
@@ -28,8 +27,7 @@ class TtsVoiceSelectorTest {
 		val male = voice("de-de-male", "male")
 
 		val result = TtsVoiceSelector.select(
-			requestedSpeaker = TtsVoiceSelector.MALE,
-			voices = listOf(female, male)
+			requestedSpeaker = TtsVoiceSelector.MALE, voices = listOf(female, male)
 		)
 
 		assertTrue(result.requestedSpeakerAvailable)
@@ -42,12 +40,10 @@ class TtsVoiceSelectorTest {
 		val second = voice("de-de-x-deb-local")
 
 		val female = TtsVoiceSelector.select(
-			requestedSpeaker = TtsVoiceSelector.FEMALE,
-			voices = listOf(second, first)
+			requestedSpeaker = TtsVoiceSelector.FEMALE, voices = listOf(second, first)
 		)
 		val male = TtsVoiceSelector.select(
-			requestedSpeaker = TtsVoiceSelector.MALE,
-			voices = listOf(second, first)
+			requestedSpeaker = TtsVoiceSelector.MALE, voices = listOf(second, first)
 		)
 
 		assertTrue(female.requestedSpeakerAvailable)
@@ -59,18 +55,14 @@ class TtsVoiceSelectorTest {
 	@Test
 	fun prefersDifferentVoiceFamiliesOverTwoVariants() {
 		val voices = listOf(
-			voice("de-de-x-dea-local"),
-			voice("de-de-x-dea-embedded"),
-			voice("de-de-x-deb-local")
+			voice("de-de-x-dea-local"), voice("de-de-x-dea-embedded"), voice("de-de-x-deb-local")
 		)
 
 		val female = TtsVoiceSelector.select(
-			requestedSpeaker = TtsVoiceSelector.FEMALE,
-			voices = voices
+			requestedSpeaker = TtsVoiceSelector.FEMALE, voices = voices
 		)
 		val male = TtsVoiceSelector.select(
-			requestedSpeaker = TtsVoiceSelector.MALE,
-			voices = voices
+			requestedSpeaker = TtsVoiceSelector.MALE, voices = voices
 		)
 
 		assertTrue(female.requestedSpeakerAvailable)
@@ -114,8 +106,7 @@ class TtsVoiceSelectorTest {
 		val male = voice("de-de-male", "male")
 		val backend = FakeTtsBackend(listOf(female, male))
 		val selection = TtsVoiceSelector.select(
-			requestedSpeaker = TtsVoiceSelector.MALE,
-			voices = backend.voices
+			requestedSpeaker = TtsVoiceSelector.MALE, voices = backend.voices
 		)
 
 		val selected = requireNotNull(selection.voice)
@@ -129,9 +120,7 @@ class TtsVoiceSelectorTest {
 	}
 
 	private fun voice(name: String, vararg features: String) = TtsVoiceDescriptor(
-		name = name,
-		locale = Locale.GERMANY,
-		features = features.toSet()
+		name = name, locale = Locale.GERMANY, features = features.toSet()
 	)
 
 	private class FakeTtsBackend(val voices: List<TtsVoiceDescriptor>) {

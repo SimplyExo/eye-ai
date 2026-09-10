@@ -64,8 +64,7 @@ object PendingExternalIntentCodec {
 object PendingExternalIntentPresentation {
 	fun confirmationQuestion(intent: Intent): String {
 		val action = actionWithoutSettingsExit(intent)
-		return "Sie befinden sich noch in den Einstellungen. " +
-			"Möchten Sie die Einstellungen verlassen und $action?"
+		return "Sie befinden sich noch in den Einstellungen. " + "Möchten Sie die Einstellungen verlassen und $action?"
 	}
 
 	fun pendingAction(intent: Intent): String = when (intent) {
@@ -76,9 +75,9 @@ object PendingExternalIntentPresentation {
 	}
 
 	private fun actionWithoutSettingsExit(intent: Intent): String = when (intent) {
-			Intent.TEXT_RECOGNITION -> "die Texterkennung ausführen"
-			Intent.OBJECT_DETECTION -> "die Objekterkennung ausführen"
-			Intent.MEASURE_DISTANCE -> "die Entfernung messen"
-			else -> throw IllegalArgumentException("Intent $intent is not external to settings")
-		}
+		Intent.TEXT_RECOGNITION -> "die Texterkennung ausführen"
+		Intent.OBJECT_DETECTION -> "die Objekterkennung ausführen"
+		Intent.MEASURE_DISTANCE -> "die Entfernung messen"
+		else -> throw IllegalArgumentException("Intent $intent is not external to settings")
+	}
 }

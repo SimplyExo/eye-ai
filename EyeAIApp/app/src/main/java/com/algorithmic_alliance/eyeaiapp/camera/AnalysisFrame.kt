@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /** Pixel representation handed to the common image-analysis path. */
 enum class FramePixelFormat {
-    RGBA_8888,
+	RGBA_8888,
 }
 
 /**
@@ -17,53 +17,53 @@ enum class FramePixelFormat {
  * here because the depth and object workers may use it concurrently.
  */
 class AnalysisFrame(
-    val bitmap: Bitmap,
-    val pixelFormat: FramePixelFormat,
-    val width: Int,
-    val height: Int,
-    /** Rotation of the source image that the source adapter applied. */
-    val rotationDegrees: Int,
-    val timestampNanos: Long,
-    private val onReleased: (() -> Unit)? = null,
+	val bitmap: Bitmap,
+	val pixelFormat: FramePixelFormat,
+	val width: Int,
+	val height: Int,
+	/** Rotation of the source image that the source adapter applied. */
+	val rotationDegrees: Int,
+	val timestampNanos: Long,
+	private val onReleased: (() -> Unit)? = null,
 ) : AutoCloseable {
-    private val references = AtomicInteger(1)
+	private val references = AtomicInteger(1)
 
-    init {
-        require(width > 0 && height > 0) { "Frame dimensions must be positive" }
-    }
+	init {
+		require(width > 0 && height > 0) { "Frame dimensions must be positive" }
+	}
 
-    /** Acquires a consumer reference unless the frame has already been released. */
-    fun tryRetain(): Boolean {
-        while (true) {
-            val current = references.get()
-            if (current <= 0) return false
-            if (references.compareAndSet(current, current + 1)) return true
-        }
-    }
+	/** Acquires a consumer reference unless the frame has already been released. */
+	fun tryRetain(): Boolean {
+		while (true) {
+			val current = references.get()
+			if (current <= 0) return false
+			if (references.compareAndSet(current, current + 1)) return true
+		}
+	}
 
-    /** Releases one reference and invokes the source callback exactly once. */
-    fun release() {
-        val remaining = references.decrementAndGet()
-        check(remaining >= 0) { "AnalysisFrame released more than once" }
-        if (remaining == 0) onReleased?.invoke()
-    }
+	/** Releases one reference and invokes the source callback exactly once. */
+	fun release() {
+		val remaining = references.decrementAndGet()
+		check(remaining >= 0) { "AnalysisFrame released more than once" }
+		if (remaining == 0) onReleased?.invoke()
+	}
 
-    override fun close() = release()
+	override fun close() = release()
 
-    companion object {
-        fun fromBitmap(
-            bitmap: Bitmap,
-            timestampNanos: Long = System.nanoTime(),
-            rotationDegrees: Int = 0,
-            onReleased: (() -> Unit)? = null,
-        ): AnalysisFrame = AnalysisFrame(
-            bitmap = bitmap,
-            pixelFormat = FramePixelFormat.RGBA_8888,
-            width = bitmap.width,
-            height = bitmap.height,
-            rotationDegrees = rotationDegrees,
-            timestampNanos = timestampNanos,
-            onReleased = onReleased,
-        )
-    }
+	companion object {
+		fun fromBitmap(
+			bitmap: Bitmap,
+			timestampNanos: Long = System.nanoTime(),
+			rotationDegrees: Int = 0,
+			onReleased: (() -> Unit)? = null,
+		): AnalysisFrame = AnalysisFrame(
+			bitmap = bitmap,
+			pixelFormat = FramePixelFormat.RGBA_8888,
+			width = bitmap.width,
+			height = bitmap.height,
+			rotationDegrees = rotationDegrees,
+			timestampNanos = timestampNanos,
+			onReleased = onReleased,
+		)
+	}
 }

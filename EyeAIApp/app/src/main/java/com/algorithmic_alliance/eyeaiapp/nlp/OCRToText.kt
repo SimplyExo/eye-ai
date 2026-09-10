@@ -3,15 +3,11 @@ package com.algorithmic_alliance.eyeaiapp.nlp
 import com.algorithmic_alliance.eyeaiapp.ocr.TextBoundingBox
 
 class OCRToText(
-	private val screenWidth: Float = 1.0f,
-	private val screenHeight: Float = 1.0f
+	private val screenWidth: Float = 1.0f, private val screenHeight: Float = 1.0f
 ) {
 
 	data class TextBlockInfo(
-		val text: String,
-		val position: String,
-		val size: String,
-		val linePosition: String
+		val text: String, val position: String, val size: String, val linePosition: String
 	)
 
 	fun generateReadableText(textBoxes: List<TextBoundingBox>): String {
@@ -94,8 +90,7 @@ class OCRToText(
 	}
 
 	private fun generatePositionalDescription(
-		lines: List<List<TextBoundingBox>>,
-		layoutInfo: Map<String, Any>
+		lines: List<List<TextBoundingBox>>, layoutInfo: Map<String, Any>
 	): String {
 		val result = StringBuilder()
 
@@ -135,7 +130,9 @@ class OCRToText(
 		return result.toString()
 	}
 
-	private fun generateEnhancedLineDescription(line: List<TextBoundingBox>, isSingleLine: Boolean): String {
+	private fun generateEnhancedLineDescription(
+		line: List<TextBoundingBox>, isSingleLine: Boolean
+	): String {
 		if (line.isEmpty()) return ""
 
 		if (line.size == 1) {

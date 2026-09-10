@@ -1,17 +1,15 @@
 package com.algorithmic_alliance.eyeaiapp.settingsparser
 
+import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import org.json.JSONObject
 
 class SettingsStateResolverTest {
 	private val resolver = SettingsStateResolver()
 
 	private fun command(
-		operation: SettingOperation,
-		value: Double? = null,
-		magnitude: ChangeMagnitude? = null
+		operation: SettingOperation, value: Double? = null, magnitude: ChangeMagnitude? = null
 	) = SettingCommand(
 		target = SettingTarget.FREQUENCY,
 		operation = operation,
@@ -58,13 +56,10 @@ class SettingsStateResolverTest {
 	@Test
 	fun `speaker toggle with unknown current speaker never selects a default`() {
 		val speakerCommand = command(SettingOperation.TOGGLE).copy(
-			target = SettingTarget.SPEAKER,
-			speaker = SpeakerChoice.UNSPECIFIED,
-			unit = null
+			target = SettingTarget.SPEAKER, speaker = SpeakerChoice.UNSPECIFIED, unit = null
 		)
 		val resolution = resolver.resolve(
-			speakerCommand,
-			CurrentSettingsState(600, 2.0, 1.0, SpeakerChoice.UNSPECIFIED)
+			speakerCommand, CurrentSettingsState(600, 2.0, 1.0, SpeakerChoice.UNSPECIFIED)
 		)
 		assertEquals(SettingParseStatus.NEEDS_CLARIFICATION, resolution.status)
 		assertNull(resolution.requestedValue)
@@ -78,22 +73,30 @@ class SettingsStateResolverTest {
 		for (index in 0 until cases.length()) {
 			val item = cases.getJSONObject(index)
 			val current = item.getJSONObject("current")
-			val unit = if (item.isNull("unit")) null else SettingUnit.valueOf(item.getString("unit"))
+			val unit =
+				if (item.isNull("unit")) null else SettingUnit.valueOf(item.getString("unit"))
 			val result = resolver.resolve(
 				SettingCommand(
 					target = SettingTarget.valueOf(item.getString("target")),
 					operation = SettingOperation.valueOf(item.getString("operation")),
 					operationConfidence = 1f,
 					numericValue = if (item.isNull("numeric_value")) null else item.getDouble("numeric_value"),
-					magnitude = if (item.isNull("magnitude")) null else ChangeMagnitude.valueOf(item.getString("magnitude")),
-					speaker = if (item.isNull("speaker")) null else SpeakerChoice.valueOf(item.getString("speaker")),
+					magnitude = if (item.isNull("magnitude")) null else ChangeMagnitude.valueOf(
+						item.getString(
+							"magnitude"
+						)
+					),
+					speaker = if (item.isNull("speaker")) null else SpeakerChoice.valueOf(
+						item.getString(
+							"speaker"
+						)
+					),
 					speakerConfidence = null,
 					unit = unit,
 					status = SettingParseStatus.COMPLETE,
 					originalText = "golden state",
 					normalizedText = "golden state"
-				),
-				CurrentSettingsState(
+				), CurrentSettingsState(
 					current.getInt("frequency"),
 					current.getDouble("bps"),
 					current.getDouble("speech_speed"),
@@ -111,10 +114,12 @@ class SettingsStateResolverTest {
 					(result.requestedValue as ResolvedSettingValue.Numeric).value,
 					1e-9
 				)
+
 				!item.isNull("expected_speaker") -> assertEquals(
 					SpeakerChoice.valueOf(item.getString("expected_speaker")),
 					(result.requestedValue as ResolvedSettingValue.Speaker).value
 				)
+
 				else -> assertNull(result.requestedValue)
 			}
 		}

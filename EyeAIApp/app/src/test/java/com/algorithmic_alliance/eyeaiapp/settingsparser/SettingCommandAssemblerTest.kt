@@ -11,21 +11,22 @@ class SettingCommandAssemblerTest {
 
 	private fun operation(operation: SettingOperation) = OperationPrediction(operation, 0.9f)
 
-	private fun numbers(vararg values: Double): NumberNormalizationResult = NumberNormalizationResult(
-		originalText = "test",
-		normalizedText = if (values.isEmpty()) "test" else values.joinToString(" ") { "<NUM>" },
-		values = values.toList(),
-		occurrences = values.map {
-			NumberOccurrence(it.toString(), it, status = NumberOccurrenceStatus.SUCCESS)
-		},
-		status = when (values.size) {
-			0 -> NumberNormalizationStatus.NO_NUMBER
-			1 -> NumberNormalizationStatus.SUCCESS
-			else -> NumberNormalizationStatus.AMBIGUOUS
-		},
-		normalizerId = "test",
-		normalizerVersion = "1"
-	)
+	private fun numbers(vararg values: Double): NumberNormalizationResult =
+		NumberNormalizationResult(
+			originalText = "test",
+			normalizedText = if (values.isEmpty()) "test" else values.joinToString(" ") { "<NUM>" },
+			values = values.toList(),
+			occurrences = values.map {
+				NumberOccurrence(it.toString(), it, status = NumberOccurrenceStatus.SUCCESS)
+			},
+			status = when (values.size) {
+				0 -> NumberNormalizationStatus.NO_NUMBER
+				1 -> NumberNormalizationStatus.SUCCESS
+				else -> NumberNormalizationStatus.AMBIGUOUS
+			},
+			normalizerId = "test",
+			normalizerVersion = "1"
+		)
 
 	private fun magnitude(value: ChangeMagnitude?): MagnitudeParseResult =
 		MagnitudeParseResult(value, MagnitudeParseStatus.CLEAR)

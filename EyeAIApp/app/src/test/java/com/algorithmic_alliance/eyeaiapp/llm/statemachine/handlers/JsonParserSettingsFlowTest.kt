@@ -12,9 +12,7 @@ class JsonParserSettingsFlowTest {
 	fun directContextPreservesOriginalVoskTextExactly() {
 		val originalText = "  Setze bitte die Frequenz auf ungefähr \"700 Hertz\".\n"
 		val context = parser.createSettingsContext(
-			SettingIntent.FREQUENCY,
-			SettingsFlow.DIRECT,
-			originalText
+			SettingIntent.FREQUENCY, SettingsFlow.DIRECT, originalText
 		)
 
 		assertEquals(SettingIntent.FREQUENCY, parser.parseSettingIntent(context))
@@ -56,8 +54,7 @@ class JsonParserSettingsFlowTest {
 		)
 		assertFalse(
 			parser.hasExpectedSettingChange(
-				"""{"setting_intent":"frequency"}""",
-				SettingIntent.FREQUENCY
+				"""{"setting_intent":"frequency"}""", SettingIntent.FREQUENCY
 			)
 		)
 	}
@@ -66,13 +63,10 @@ class JsonParserSettingsFlowTest {
 	fun directMetadataSurvivesLocalSettingsResult() {
 		val originalText = "Stell die Stimme auf männlich."
 		val context = parser.createSettingsContext(
-			SettingIntent.VOICE,
-			SettingsFlow.DIRECT,
-			originalText
+			SettingIntent.VOICE, SettingsFlow.DIRECT, originalText
 		)
 		val extracted = parser.carrySettingsContext(
-			"""{"settings_parameter_complete":true,"changed_settings":[{"voice":1}]}""",
-			context
+			"""{"settings_parameter_complete":true,"changed_settings":[{"voice":1}]}""", context
 		)
 
 		assertTrue(parser.hasExpectedSettingChange(extracted, SettingIntent.VOICE))

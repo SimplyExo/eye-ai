@@ -29,7 +29,9 @@ class DeterministicSettingsParsersTest {
 
 	@Test
 	fun `negation and conflicting modifiers are ambiguous`() {
-		listOf("nicht stark erhöhen", "kein bisschen schneller", "etwas deutlich erhöhen").forEach { text ->
+		listOf(
+			"nicht stark erhöhen", "kein bisschen schneller", "etwas deutlich erhöhen"
+		).forEach { text ->
 			val result = magnitude.parse(text, SettingOperation.INCREASE, null)
 			assertNull(result.value)
 			assertEquals(MagnitudeParseStatus.AMBIGUOUS, result.status)

@@ -3,7 +3,6 @@ package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers
 import android.content.Context
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
-import com.algorithmic_alliance.eyeaiapp.llm.statemachine.EyeAIState as State
 import com.algorithmic_alliance.eyeaiapp.Settings
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationLabel
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
@@ -20,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.EyeAIState as State
 
 class SettingsHandler(
 	private val textToSpeechInstance: TextToSpeechInstance,
@@ -31,8 +31,7 @@ class SettingsHandler(
 	private val localSettingsCommandExecutor: SettingsCommandExecutor = SettingsCommandExecutor()
 ) {
 	private val localSettingsDialogFlow = LocalSettingsDialogFlow(
-		jsonParser = jsonParser,
-		commandExecutor = localSettingsCommandExecutor
+		jsonParser = jsonParser, commandExecutor = localSettingsCommandExecutor
 	)
 	private val settingsConfirmation = LocalSettingsConfirmation(
 		confirmationModelProvider = confirmationModelProvider,
@@ -55,18 +54,13 @@ class SettingsHandler(
 		val evaluator = if (modelInvoked) "LOCAL_CONFIRMATION_MODEL" else "STATE_MACHINE_CONTROL"
 		Log.i(
 			EyeAIApp.APP_LOG_TAG,
-			"[DecisionTrace][StateMachine][CONFIRMATION_TRANSITION] " +
-				"state=SETTINGS_ACTION role=$role evaluator=$evaluator " +
-				"apiCalled=false modelInvoked=$modelInvoked decision=$decision " +
-				"action=$action nextState=$nextState contextRetained=$contextRetained"
+			"[DecisionTrace][StateMachine][CONFIRMATION_TRANSITION] " + "state=SETTINGS_ACTION role=$role evaluator=$evaluator " + "apiCalled=false modelInvoked=$modelInvoked decision=$decision " + "action=$action nextState=$nextState contextRetained=$contextRetained"
 		)
 	}
 
 	/** Command extraction and every parameter follow-up use the local frozen parser path. */
 	suspend fun handleSettingsChoice(
-		input: String,
-		currentJson: String?,
-		onJsonUpdate: (String?) -> Unit
+		input: String, currentJson: String?, onJsonUpdate: (String?) -> Unit
 	): StateUpdate {
 		val settings = Settings.load(eyeAIApp)
 		val voicePreferences = eyeAIApp.getSharedPreferences("tts_settings", Context.MODE_PRIVATE)
@@ -93,8 +87,7 @@ class SettingsHandler(
 			if (error is CancellationException) throw error
 			Log.e(
 				EyeAIApp.APP_LOG_TAG,
-				"[DecisionTrace][SettingsParser][ROUTE] outcome=UNAVAILABLE " +
-					"nextEvaluator=NONE role=SETTINGS_PARAMETER_EXTRACTION",
+				"[DecisionTrace][SettingsParser][ROUTE] outcome=UNAVAILABLE " + "nextEvaluator=NONE role=SETTINGS_PARAMETER_EXTRACTION",
 				error
 			)
 			localSettingsDialogFlow.localRuntimeUnavailable(currentJson)
@@ -104,16 +97,13 @@ class SettingsHandler(
 	}
 
 	private suspend fun handleLocalSettingsDialogResult(
-		result: LocalSettingsDialogResult,
-		onJsonUpdate: (String?) -> Unit
+		result: LocalSettingsDialogResult, onJsonUpdate: (String?) -> Unit
 	): StateUpdate = when (result) {
 		is LocalSettingsDialogResult.Ready -> {
 			val execution = result.execution
 			Log.i(
 				EyeAIApp.APP_LOG_TAG,
-				"[DecisionTrace][SettingsParser][RESULT] execution=LOCAL apiCalled=false " +
-					"target=${execution.command.target} operation=${execution.command.operation} " +
-					"status=${execution.command.status} action=REQUEST_CONFIRMATION"
+				"[DecisionTrace][SettingsParser][RESULT] execution=LOCAL apiCalled=false " + "target=${execution.command.target} operation=${execution.command.operation} " + "status=${execution.command.status} action=REQUEST_CONFIRMATION"
 			)
 			speakAndHandleUi(result.confirmationQuestion)
 			onJsonUpdate(result.confirmationJson)
@@ -124,32 +114,27 @@ class SettingsHandler(
 			val command = result.command
 			Log.i(
 				EyeAIApp.APP_LOG_TAG,
-				"[DecisionTrace][SettingsParser][RESULT] execution=LOCAL apiCalled=false " +
-					"target=${command?.target ?: result.settingIntent} " +
-					"operation=${command?.operation} " +
-					"status=${result.status ?: result.diagnostic ?: "NEEDS_CLARIFICATION"} " +
-					"diagnostic=${result.diagnostic} action=REQUEST_REPHRASE " +
-					"nextState=SETTINGS_CHOICE " +
-					"contextRetained=${result.retainedContextJson != null}"
+				"[DecisionTrace][SettingsParser][RESULT] execution=LOCAL apiCalled=false " + "target=${command?.target ?: result.settingIntent} " + "operation=${command?.operation} " + "status=${result.status ?: result.diagnostic ?: "NEEDS_CLARIFICATION"} " + "diagnostic=${result.diagnostic} action=REQUEST_REPHRASE " + "nextState=SETTINGS_CHOICE " + "contextRetained=${result.retainedContextJson != null}"
 			)
 			speakAndHandleUi(result.question)
 			onJsonUpdate(result.retainedContextJson)
-			StateUpdate(State.SETTINGS_CHOICE, result.retainedContextJson, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
+			StateUpdate(
+				State.SETTINGS_CHOICE,
+				result.retainedContextJson,
+				voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS
+			)
 		}
 	}
 
 	suspend fun handleSettingsAction(
-		input: String,
-		currentJson: String?,
-		onJsonUpdate: (String?) -> Unit
+		input: String, currentJson: String?, onJsonUpdate: (String?) -> Unit
 	): StateUpdate {
 
 		if (currentJson != null && jsonParser.isLeaveRequest(currentJson)) {
 			return when (settingsConfirmation.evaluate(input, currentJson)) {
 				ConfirmationLabel.ACCEPT -> {
 					logConfirmationTransition(
-						"LEAVE_SETTINGS_CONFIRMATION", "ACCEPT",
-						"LEAVE_SETTINGS", State.IDLE, false
+						"LEAVE_SETTINGS_CONFIRMATION", "ACCEPT", "LEAVE_SETTINGS", State.IDLE, false
 					)
 					speakAndHandleUi("Die Einstellungen werden verlassen.")
 					onJsonUpdate(null)
@@ -158,8 +143,11 @@ class SettingsHandler(
 
 				ConfirmationLabel.REJECT -> {
 					logConfirmationTransition(
-						"LEAVE_SETTINGS_CONFIRMATION", "REJECT",
-						"STAY_IN_SETTINGS", State.SETTINGS_MENU, false
+						"LEAVE_SETTINGS_CONFIRMATION",
+						"REJECT",
+						"STAY_IN_SETTINGS",
+						State.SETTINGS_MENU,
+						false
 					)
 					speakAndHandleUi("Okay, Sie bleiben in den Einstellungen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
 					onJsonUpdate(null)
@@ -168,20 +156,25 @@ class SettingsHandler(
 
 				ConfirmationLabel.UNKNOWN -> {
 					logConfirmationTransition(
-						"LEAVE_SETTINGS_CONFIRMATION", "UNKNOWN",
-						"REQUEST_CLARIFICATION", State.SETTINGS_ACTION, true
+						"LEAVE_SETTINGS_CONFIRMATION",
+						"UNKNOWN",
+						"REQUEST_CLARIFICATION",
+						State.SETTINGS_ACTION,
+						true
 					)
 					speakAndHandleUi(
-						"Ich konnte die Bestätigung nicht eindeutig zuordnen. " +
-							"Bitte antworten Sie mit Ja oder Nein."
+						"Ich konnte die Bestätigung nicht eindeutig zuordnen. " + "Bitte antworten Sie mit Ja oder Nein."
 					)
 					StateUpdate(State.SETTINGS_ACTION, currentJson)
 				}
 
 				null -> {
 					logConfirmationTransition(
-						"LEAVE_SETTINGS_CONFIRMATION", "FAILED",
-						"KEEP_CONFIRMATION_PENDING", State.SETTINGS_ACTION, true
+						"LEAVE_SETTINGS_CONFIRMATION",
+						"FAILED",
+						"KEEP_CONFIRMATION_PENDING",
+						State.SETTINGS_ACTION,
+						true
 					)
 					speakAndHandleUi("Fehler bei der Verarbeitung.")
 					StateUpdate(State.SETTINGS_ACTION, currentJson)
@@ -189,18 +182,18 @@ class SettingsHandler(
 			}
 		}
 
-		return when (
-			settingsConfirmation.confirmAndApplyWithResult(input, currentJson, ::applySettings)
-		) {
+		return when (settingsConfirmation.confirmAndApplyWithResult(
+			input,
+			currentJson,
+			::applySettings
+		)) {
 			SettingsConfirmationResult.APPLIED -> {
 				logConfirmationTransition(
-					"SETTINGS_CONFIRMATION", "ACCEPT",
-					"APPLY_SETTINGS", State.IDLE, false
+					"SETTINGS_CONFIRMATION", "ACCEPT", "APPLY_SETTINGS", State.IDLE, false
 				)
 				Log.i(
 					EyeAIApp.APP_LOG_TAG,
-					"[DecisionTrace][SettingsHandler][APPLY] outcome=SUCCESS; " +
-						"Vosk will require a button press before listening again"
+					"[DecisionTrace][SettingsHandler][APPLY] outcome=SUCCESS; " + "Vosk will require a button press before listening again"
 				)
 				onJsonUpdate(null)
 				StateUpdate(
@@ -212,47 +205,55 @@ class SettingsHandler(
 
 			SettingsConfirmationResult.REJECTED -> {
 				logConfirmationTransition(
-					"SETTINGS_CONFIRMATION", "REJECT",
-					"CANCEL_SETTINGS_ACTION", State.IDLE, false
+					"SETTINGS_CONFIRMATION", "REJECT", "CANCEL_SETTINGS_ACTION", State.IDLE, false
 				)
 				onJsonUpdate(null)
 				speakAndHandleUi(GenericCancellation.RESPONSE)
-				StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
+				StateUpdate(
+					State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS
+				)
 			}
 
 			SettingsConfirmationResult.NOT_APPLIED -> {
 				logConfirmationTransition(
-					"SETTINGS_CONFIRMATION", "ACCEPT",
-					"REJECT_UNAVAILABLE_VOICE", State.IDLE, false
+					"SETTINGS_CONFIRMATION", "ACCEPT", "REJECT_UNAVAILABLE_VOICE", State.IDLE, false
 				)
 				speakAndHandleUi(
-					"Die gewünschte Assistentenstimme ist auf diesem Gerät nicht verfügbar. " +
-						"Die bisherige Stimme bleibt aktiv."
+					"Die gewünschte Assistentenstimme ist auf diesem Gerät nicht verfügbar. " + "Die bisherige Stimme bleibt aktiv."
 				)
 				onJsonUpdate(null)
-				StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
+				StateUpdate(
+					State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART
+				)
 			}
 
 			SettingsConfirmationResult.UNKNOWN -> {
 				logConfirmationTransition(
-					"SETTINGS_CONFIRMATION", "UNKNOWN",
-					"REQUEST_CLARIFICATION", State.SETTINGS_ACTION, true
+					"SETTINGS_CONFIRMATION",
+					"UNKNOWN",
+					"REQUEST_CLARIFICATION",
+					State.SETTINGS_ACTION,
+					true
 				)
 				speakAndHandleUi(
-					"Ich konnte die Bestätigung nicht eindeutig zuordnen. " +
-						"Bitte antworten Sie mit Ja oder Nein."
+					"Ich konnte die Bestätigung nicht eindeutig zuordnen. " + "Bitte antworten Sie mit Ja oder Nein."
 				)
-				StateUpdate(State.SETTINGS_ACTION, currentJson, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
+				StateUpdate(
+					State.SETTINGS_ACTION,
+					currentJson,
+					voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS
+				)
 			}
 
 			SettingsConfirmationResult.FAILED -> {
 				logConfirmationTransition(
-					"SETTINGS_CONFIRMATION", "FAILED",
-					"RETURN_TO_IDLE", State.IDLE, false
+					"SETTINGS_CONFIRMATION", "FAILED", "RETURN_TO_IDLE", State.IDLE, false
 				)
 				speakAndHandleUi("Fehler bei der Verarbeitung.")
 				onJsonUpdate(null)
-				StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
+				StateUpdate(
+					State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS
+				)
 			}
 		}
 	}
@@ -277,8 +278,7 @@ class SettingsHandler(
 						ttsEditor.putFloat("tts_speech_rate", newSpeed)
 						Log.d(
 							EyeAIApp.APP_LOG_TAG,
-							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " +
-								"setting=TTS_SPEED value=$newSpeed"
+							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " + "setting=TTS_SPEED value=$newSpeed"
 						)
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
@@ -288,8 +288,7 @@ class SettingsHandler(
 						if (!textToSpeechInstance.setVoice(voice)) {
 							Log.w(
 								EyeAIApp.APP_LOG_TAG,
-								"[DecisionTrace][SettingsHandler][APPLY] outcome=NOT_APPLIED " +
-									"setting=VOICE value=$voice"
+								"[DecisionTrace][SettingsHandler][APPLY] outcome=NOT_APPLIED " + "setting=VOICE value=$voice"
 							)
 							return SettingsApplyResult.NOT_APPLIED
 						}
@@ -297,8 +296,7 @@ class SettingsHandler(
 						ttsEditor.putInt("tts_voice", voice)
 						Log.d(
 							EyeAIApp.APP_LOG_TAG,
-							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " +
-								"setting=VOICE value=$voice"
+							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " + "setting=VOICE value=$voice"
 						)
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
@@ -314,8 +312,7 @@ class SettingsHandler(
 						settings.save(eyeAIApp)
 						Log.d(
 							EyeAIApp.APP_LOG_TAG,
-							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " +
-								"setting=FREQUENCY value=${clampedFreq}Hz"
+							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " + "setting=FREQUENCY value=${clampedFreq}Hz"
 						)
 						speakAndHandleUi("Die Audio-Frequenz wurde erfolgreich auf $clampedFreq Hz geändert.")
 					}
@@ -331,8 +328,7 @@ class SettingsHandler(
 						settings.save(eyeAIApp)
 						Log.d(
 							EyeAIApp.APP_LOG_TAG,
-							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " +
-								"setting=BPS value=$clampedBps"
+							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " + "setting=BPS value=$clampedBps"
 						)
 						speakAndHandleUi("Die BPS wurde erfolgreich auf $clampedBps geändert.")
 					}

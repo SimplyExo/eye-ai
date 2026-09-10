@@ -1,10 +1,10 @@
 package com.algorithmic_alliance.eyeaiapp.settingsparser
 
 import android.content.res.AssetManager
+import org.json.JSONObject
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
-import org.json.JSONObject
 
 /** Frozen, APK-safe Clean-v2 artifact identity. No training artifact is loaded at runtime. */
 object SettingsParserAssetContract {
@@ -16,13 +16,15 @@ object SettingsParserAssetContract {
 	const val CHARACTER_TOKENIZER_ASSET = "$ASSET_DIRECTORY/character_tokenizer.json"
 
 	const val WORD_MODEL_SHA256 = "0b992d94767c87629d4e1044d097638bcc2a85a9c4050ea3719e7c55009f0519"
-	const val CHARACTER_MODEL_SHA256 = "fd61e69b450378cf91991c3900dd966fd412492ff9e5be10db82e231989b4a79"
-	const val WORD_TOKENIZER_SHA256 = "6f87b77a9609b82c7bec09c4450d98b892a84549edd1086e8d03419c9da64405"
-	const val CHARACTER_TOKENIZER_SHA256 = "6b7a7b71f686a07eb14e45c37bb99653d1855e5a26e2e8c41a5cdef5285067d0"
+	const val CHARACTER_MODEL_SHA256 =
+		"fd61e69b450378cf91991c3900dd966fd412492ff9e5be10db82e231989b4a79"
+	const val WORD_TOKENIZER_SHA256 =
+		"6f87b77a9609b82c7bec09c4450d98b892a84549edd1086e8d03419c9da64405"
+	const val CHARACTER_TOKENIZER_SHA256 =
+		"6b7a7b71f686a07eb14e45c37bb99653d1855e5a26e2e8c41a5cdef5285067d0"
 
 	data class VerifiedAssets(
-		val wordTokenizerJson: String,
-		val characterTokenizerJson: String
+		val wordTokenizerJson: String, val characterTokenizerJson: String
 	)
 
 	private data class ExpectedAsset(val path: String, val sha256: String)
@@ -36,7 +38,8 @@ object SettingsParserAssetContract {
 
 	/** Verifies the exact package contents once before interpreter creation. */
 	fun verifyAssets(assetManager: AssetManager): VerifiedAssets {
-		val expectedFileNames = (expectedAssets.map { fileName(it.path) } + fileName(CONTRACT_ASSET)).sorted()
+		val expectedFileNames =
+			(expectedAssets.map { fileName(it.path) } + fileName(CONTRACT_ASSET)).sorted()
 		val actualFileNames = assetManager.list(ASSET_DIRECTORY)?.sorted().orEmpty()
 		require(actualFileNames == expectedFileNames) {
 			"Settings-parser APK asset directory contains non-production files: $actualFileNames"
@@ -52,7 +55,9 @@ object SettingsParserAssetContract {
 		verifyContract(contract)
 		return VerifiedAssets(
 			wordTokenizerJson = requireNotNull(content[WORD_TOKENIZER_ASSET]).toString(Charsets.UTF_8),
-			characterTokenizerJson = requireNotNull(content[CHARACTER_TOKENIZER_ASSET]).toString(Charsets.UTF_8)
+			characterTokenizerJson = requireNotNull(content[CHARACTER_TOKENIZER_ASSET]).toString(
+				Charsets.UTF_8
+			)
 		)
 	}
 
@@ -79,8 +84,7 @@ object SettingsParserAssetContract {
 		)
 	}
 
-	private fun readUtf8(file: Path): String =
-		String(Files.readAllBytes(file), Charsets.UTF_8)
+	private fun readUtf8(file: Path): String = String(Files.readAllBytes(file), Charsets.UTF_8)
 
 	private fun verifyContract(serialized: String) {
 		val contract = JSONObject(serialized)
@@ -88,8 +92,9 @@ object SettingsParserAssetContract {
 		require(contract.getString("architecture") == SettingsTfliteContract.ARCHITECTURE)
 		val normalizer = contract.getJSONObject("normalizer")
 		require(
-			normalizer.getString("id") == SettingsTfliteContract.NORMALIZER_ID &&
-				normalizer.getString("version") == SettingsTfliteContract.NORMALIZER_VERSION
+			normalizer.getString("id") == SettingsTfliteContract.NORMALIZER_ID && normalizer.getString(
+				"version"
+			) == SettingsTfliteContract.NORMALIZER_VERSION
 		)
 		verifyModelContract(
 			contract.getJSONObject("word_operation"),
@@ -136,22 +141,20 @@ object SettingsParserAssetContract {
 		require(contract.getString("normalization_spec_version") == normalization)
 		val input = contract.getJSONObject("input")
 		require(
-			input.getString("name") == SettingsTfliteContract.INPUT_NAME &&
-				input.getString("dtype") == SettingsTfliteContract.INPUT_DTYPE &&
-				input.getJSONArray("shape").let { it.getInt(0) == 1 && it.getInt(1) == maxLen }
-		)
+			input.getString("name") == SettingsTfliteContract.INPUT_NAME && input.getString("dtype") == SettingsTfliteContract.INPUT_DTYPE && input.getJSONArray(
+				"shape"
+			).let { it.getInt(0) == 1 && it.getInt(1) == maxLen })
 		val output = contract.getJSONObject("active_output")
 		require(
-			output.getString("name") == activeOutput &&
-				output.getString("dtype") == "float32" &&
-				output.getJSONArray("shape").let { it.getInt(0) == 1 && it.getInt(1) == outputSize } &&
-				output.getJSONArray("classes").length() == outputSize
-		)
+			output.getString("name") == activeOutput && output.getString("dtype") == "float32" && output.getJSONArray(
+			"shape"
+		).let { it.getInt(0) == 1 && it.getInt(1) == outputSize } && output.getJSONArray("classes")
+			.length() == outputSize)
 	}
 
-	private fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256")
-		.digest(bytes)
-		.joinToString("") { byte -> "%02x".format(byte.toInt() and 0xff) }
+	private fun sha256(bytes: ByteArray): String =
+		MessageDigest.getInstance("SHA-256").digest(bytes)
+			.joinToString("") { byte -> "%02x".format(byte.toInt() and 0xff) }
 
 	private fun fileName(path: String): String = path.substringAfterLast('/')
 }

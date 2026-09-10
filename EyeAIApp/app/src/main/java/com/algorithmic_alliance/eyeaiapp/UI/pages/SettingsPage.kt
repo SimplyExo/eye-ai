@@ -1,6 +1,5 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
-
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -21,12 +20,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -71,13 +64,10 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -88,29 +78,26 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
-import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
 import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
-import com.algorithmic_alliance.eyeaiapp.UI.UIState
 import com.algorithmic_alliance.eyeaiapp.UI.hasPermission
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
-import com.algorithmic_alliance.eyeaiapp.data.SelectOption
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import kotlin.math.roundToInt
@@ -119,863 +106,862 @@ import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsPage(
-    viewModel: MainViewModel,
-    modifier: Modifier = Modifier,
-    onReturn: () -> Unit,
-    onOpenDebugPage: () -> Unit,
-    onOpenHomePage: () -> Unit,
-    onEvent: (UIEvent) -> Unit,
-    onOpenConnectionPage: () -> Unit
+	viewModel: MainViewModel,
+	modifier: Modifier = Modifier,
+	onReturn: () -> Unit,
+	onOpenDebugPage: () -> Unit,
+	onOpenHomePage: () -> Unit,
+	onEvent: (UIEvent) -> Unit,
+	onOpenConnectionPage: () -> Unit
 ) {
 
-    val uiState by viewModel.settingsPageUIState.collectAsStateWithLifecycle()
+	val uiState by viewModel.settingsPageUIState.collectAsStateWithLifecycle()
 
-    val settingsData = UIDataSource.APP_SETTINGS
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
-    val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
-    val debugPageActivated = sharedPreferences.getBoolean(debugPageActivatedKey, false)
+	val settingsData = UIDataSource.APP_SETTINGS
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+	val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
+	val debugPageActivated = sharedPreferences.getBoolean(debugPageActivatedKey, false)
 
-    DisposableEffect(Unit) {
-        onEvent(UIEvent.OnOpenSettings)
-        onEvent(UIEvent.OnUpdateSettingsOpened(true))
-        onDispose {
-            if (!viewModel.uiState.value.actionStartedFromSettings) {
-                onEvent(UIEvent.OnReturnFromSettings)
-                onEvent(UIEvent.OnUpdateSettingsOpened(false))
-            }
-        }
-    }
-    Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
-            topBar = {
-                TopAppBar(
-                    modifier = Modifier
-                        .shadow(elevation = Spacing.sm)
-                        .semantics { isTraversalGroup = true },
-                    windowInsets = TopAppBarDefaults.windowInsets,
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
-                    title = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            PremiumIconButton(
-                                modifier = Modifier.semantics { traversalIndex = 1f },
-                                onClick = { onReturn() }) {
-                                Icon(
-                                    painter = painterResource(R.drawable.arrow_back_24px),
-                                    contentDescription = stringResource(R.string.return_icon_description)
-                                )
-                            }
-                            Text(
-                                stringResource(R.string.settings_app_bar_title),
-                                modifier = Modifier.semantics { traversalIndex = -1f },
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        }
-                    },
-                )
-            }, content = { innerPadding ->
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Column(
-                        modifier = Modifier.padding(innerPadding),
-                    ) {
-                        key(uiState.reloadSettingsPageKey) {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = WindowInsets.navigationBars
-                                    .asPaddingValues()
-                            ) {
-                                items(
-                                    items = settingsData.entries.toList(),
-                                    key = { entry -> entry.key }) { entry ->
-                                    if (stringResource(entry.key) != stringResource(R.string.settings_category_developer) || (stringResource(
-                                            entry.key
-                                        ) == stringResource(R.string.settings_category_developer) && sharedPreferences.getBoolean(
-                                            stringResource(R.string.debug_page_activated),
-                                            false
-                                        ))
-                                    )
-                                        SettingsCategoryCard(
-                                            categorySettings = entry.value as List<Any>,
-                                            category = stringResource(entry.key),
-                                            onEvent = onEvent,
-                                            onOpenConnectionPage = onOpenConnectionPage,
-                                            viewModel = viewModel
-                                        )
-                                }
-                                item {
-                                    val interactionSource = remember { MutableInteractionSource() }
-                                    val isPressed by interactionSource.collectIsPressedAsState()
-                                    val scale by animateFloatAsState(
-                                        targetValue = if (isPressed) 0.94f else 1f,
-                                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-                                        label = "buttonScale"
-                                    )
-                                    Card(
-                                        modifier = Modifier
-                                            .graphicsLayer { scaleX = scale; scaleY = scale }
-                                            .fillMaxWidth()
-                                            .padding(Spacing.sm)
-                                            .clickable(
-                                                interactionSource = interactionSource,
-                                                indication = LocalIndication.current
-                                            ) {
-                                                if (!debugPageActivated) {
-                                                    onOpenDebugPage()
-                                                    sharedPreferences.edit(commit = true) {
-                                                        putBoolean(debugPageActivatedKey, true)
-                                                    }
-                                                } else {
-                                                    onOpenHomePage()
-                                                    sharedPreferences.edit(commit = true) {
-                                                        putBoolean(debugPageActivatedKey, false)
-                                                    }
-                                                }
+	DisposableEffect(Unit) {
+		onEvent(UIEvent.OnOpenSettings)
+		onEvent(UIEvent.OnUpdateSettingsOpened(true))
+		onDispose {
+			if (!viewModel.uiState.value.actionStartedFromSettings) {
+				onEvent(UIEvent.OnReturnFromSettings)
+				onEvent(UIEvent.OnUpdateSettingsOpened(false))
+			}
+		}
+	}
+	Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
+		Scaffold(
+			modifier = Modifier.fillMaxSize(),
+			contentWindowInsets = WindowInsets(0, 0, 0, 0),
+			topBar = {
+				TopAppBar(
+					modifier = Modifier
+						.shadow(elevation = Spacing.sm)
+						.semantics { isTraversalGroup = true },
+					windowInsets = TopAppBarDefaults.windowInsets,
+					colors = TopAppBarDefaults.topAppBarColors(
+						containerColor = MaterialTheme.colorScheme.primaryContainer,
+						titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+					),
+					title = {
+						Row(
+							modifier = Modifier.fillMaxWidth(),
+							verticalAlignment = Alignment.CenterVertically
+						) {
+							PremiumIconButton(
+								modifier = Modifier.semantics { traversalIndex = 1f },
+								onClick = { onReturn() }) {
+								Icon(
+									painter = painterResource(R.drawable.arrow_back_24px),
+									contentDescription = stringResource(R.string.return_icon_description)
+								)
+							}
+							Text(
+								stringResource(R.string.settings_app_bar_title),
+								modifier = Modifier.semantics { traversalIndex = -1f },
+								style = MaterialTheme.typography.titleLarge
+							)
+						}
+					},
+				)
+			},
+			content = { innerPadding ->
+				Box(modifier = Modifier.fillMaxSize()) {
+					Column(
+						modifier = Modifier.padding(innerPadding),
+					) {
+						key(uiState.reloadSettingsPageKey) {
+							LazyColumn(
+								modifier = Modifier.fillMaxSize(),
+								contentPadding = WindowInsets.navigationBars.asPaddingValues()
+							) {
+								items(
+									items = settingsData.entries.toList(),
+									key = { entry -> entry.key }) { entry ->
+									if (stringResource(entry.key) != stringResource(R.string.settings_category_developer) || (stringResource(
+											entry.key
+										) == stringResource(R.string.settings_category_developer) && sharedPreferences.getBoolean(
+											stringResource(R.string.debug_page_activated), false
+										))
+									) SettingsCategoryCard(
+										categorySettings = entry.value as List<Any>,
+										category = stringResource(entry.key),
+										onEvent = onEvent,
+										onOpenConnectionPage = onOpenConnectionPage,
+										viewModel = viewModel
+									)
+								}
+								item {
+									val interactionSource = remember { MutableInteractionSource() }
+									val isPressed by interactionSource.collectIsPressedAsState()
+									val scale by animateFloatAsState(
+										targetValue = if (isPressed) 0.94f else 1f,
+										animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+										label = "buttonScale"
+									)
+									Card(
+										modifier = Modifier
+											.graphicsLayer {
+												scaleX = scale; scaleY = scale
+											}
+											.fillMaxWidth()
+											.padding(Spacing.sm)
+											.clickable(
+												interactionSource = interactionSource,
+												indication = LocalIndication.current
+											) {
+												if (!debugPageActivated) {
+													onOpenDebugPage()
+													sharedPreferences.edit(commit = true) {
+														putBoolean(debugPageActivatedKey, true)
+													}
+												} else {
+													onOpenHomePage()
+													sharedPreferences.edit(commit = true) {
+														putBoolean(debugPageActivatedKey, false)
+													}
+												}
 
-                                            }.clearAndSetSemantics { hideFromAccessibility() },
-                                        elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
-                                        border = BorderStroke(
-                                            width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
-                                            color = Color.White.copy(alpha = 0.2f)
-                                        )
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(Spacing.md),
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Text(
-                                                if (!debugPageActivated) stringResource(R.string.activate_debug_page_text) else stringResource(
-                                                    R.string.deactivate_debug_page_text
-                                                ),
-                                                style = MaterialTheme.typography.titleMedium,
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        MaterialTheme.colorScheme.background.copy(alpha = 0.85f)
-                                    )
-                                )
-                            )
-                    )
-                }
-            })
-    }
+											}
+											.clearAndSetSemantics { hideFromAccessibility() },
+										elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
+										border = BorderStroke(
+											width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
+											color = Color.White.copy(alpha = 0.2f)
+										)
+									) {
+										Row(
+											modifier = Modifier
+												.fillMaxWidth()
+												.padding(Spacing.md),
+											horizontalArrangement = Arrangement.Center
+										) {
+											Text(
+												if (!debugPageActivated) stringResource(R.string.activate_debug_page_text) else stringResource(
+													R.string.deactivate_debug_page_text
+												),
+												style = MaterialTheme.typography.titleMedium,
+											)
+										}
+									}
+								}
+							}
+						}
+					}
+					Box(
+						modifier = Modifier
+							.align(Alignment.BottomCenter)
+							.fillMaxWidth()
+							.height(64.dp)
+							.background(
+								Brush.verticalGradient(
+									colors = listOf(
+										Color.Transparent,
+										MaterialTheme.colorScheme.background.copy(alpha = 0.85f)
+									)
+								)
+							)
+					)
+				}
+			})
+	}
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun SettingsCategoryCard(
-    modifier: Modifier = Modifier,
-    categorySettings: List<Any>,
-    category: String,
-    onEvent: (UIEvent) -> Unit,
-    onOpenConnectionPage: () -> Unit,
-    viewModel: MainViewModel
+	modifier: Modifier = Modifier,
+	categorySettings: List<Any>,
+	category: String,
+	onEvent: (UIEvent) -> Unit,
+	onOpenConnectionPage: () -> Unit,
+	viewModel: MainViewModel
 ) {
-    val isDark = isSystemInDarkTheme()
-    val context = LocalContext.current
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(Spacing.sm),
-        shape = PremiumShapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) AppElevation.level2 else AppElevation.level4),
-        border = BorderStroke(
-            width = if (isDark) 1.dp else 0.dp,
-            color = Color.White.copy(alpha = 0.2f)
-        )
-    ) {
-        Column(modifier = Modifier.padding(Spacing.md)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    category,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.semantics {
-                        contentDescription = context.getString(
-                            (R.string.settings_card_title_semantic)) + category
-                    }
-                )
-            }
-            HorizontalDivider()
-            for (item in categorySettings) {
+	val isDark = isSystemInDarkTheme()
+	val context = LocalContext.current
+	Card(
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(Spacing.sm),
+		shape = PremiumShapes.medium,
+		elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) AppElevation.level2 else AppElevation.level4),
+		border = BorderStroke(
+			width = if (isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f)
+		)
+	) {
+		Column(modifier = Modifier.padding(Spacing.md)) {
+			Row(
+				modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+			) {
+				Text(
+					category,
+					style = MaterialTheme.typography.titleMedium,
+					modifier = Modifier.semantics {
+						contentDescription = context.getString(
+							(R.string.settings_card_title_semantic)
+						) + category
+					})
+			}
+			HorizontalDivider()
+			for (item in categorySettings) {
 
-                val settingData = item as Map<String, Any>
+				val settingData = item as Map<String, Any>
 
-                when (settingData.getValue("settingsType")) {
-                    "checkbox" -> CheckBoxSetting(
-                        modifier = Modifier,
-                        settingData = settingData,
-                        onEvent = onEvent,
-                    )
+				when (settingData.getValue("settingsType")) {
+					"checkbox" -> CheckBoxSetting(
+						modifier = Modifier,
+						settingData = settingData,
+						onEvent = onEvent,
+					)
 
-                    "select" -> SelectSetting(
-                        modifier = Modifier,
-                        settingData = settingData,
-                        onEvent = onEvent,
-                        viewModel = viewModel
-                    )
+					"select" -> SelectSetting(
+						modifier = Modifier,
+						settingData = settingData,
+						onEvent = onEvent,
+						viewModel = viewModel
+					)
 
-                    "slider" -> SliderSetting(
-                        modifier = Modifier, settingData = settingData, onEvent = onEvent
-                    )
+					"slider" -> SliderSetting(
+						modifier = Modifier, settingData = settingData, onEvent = onEvent
+					)
 
-                    "textInput" -> TextInputSetting(
-                        modifier = Modifier, settingData = settingData, onEvent = onEvent
-                    )
+					"textInput" -> TextInputSetting(
+						modifier = Modifier, settingData = settingData, onEvent = onEvent
+					)
 
-                    "file" -> FileSetting(
-                        modifier = Modifier, settingData = settingData, onEvent = onEvent
-                    )
+					"file" -> FileSetting(
+						modifier = Modifier, settingData = settingData, onEvent = onEvent
+					)
 
-                    "Info" -> InfoSetting(
-                        modifier = Modifier, settingData = settingData,
-                    )
+					"Info" -> InfoSetting(
+						modifier = Modifier, settingData = settingData,
+					)
 
-                    "click" -> ClickSetting(
-                        settingData = settingData,
-                        onEvent = onEvent,
-                        onOpenConnectionPage = onOpenConnectionPage
-                    )
-                }
-            }
+					"click" -> ClickSetting(
+						settingData = settingData,
+						onEvent = onEvent,
+						onOpenConnectionPage = onOpenConnectionPage
+					)
+				}
+			}
 
-        }
+		}
 
-    }
+	}
 }
 
 @Composable
 fun ClickSetting(
-    settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit, onOpenConnectionPage: () -> Unit
+	settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit, onOpenConnectionPage: () -> Unit
 ) {
-    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val action = settingData["action"] as? String
-    var batteryOptimizationExempt by remember(action) {
-        mutableStateOf(
-            action == UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION &&
-                BatteryOptimization.isExempt(context)
-        )
-    }
+	val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+	val context = LocalContext.current
+	val lifecycleOwner = LocalLifecycleOwner.current
+	val action = settingData["action"] as? String
+	var batteryOptimizationExempt by remember(action) {
+		mutableStateOf(
+			action == UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION && BatteryOptimization.isExempt(
+				context
+			)
+		)
+	}
 
-    DisposableEffect(lifecycleOwner, action) {
-        if (action != UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION) {
-            onDispose { }
-        } else {
-            val observer = LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_RESUME) {
-                    batteryOptimizationExempt = BatteryOptimization.isExempt(context)
-                }
-            }
-            lifecycleOwner.lifecycle.addObserver(observer)
-            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-        }
-    }
+	DisposableEffect(lifecycleOwner, action) {
+		if (action != UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION) {
+			onDispose { }
+		} else {
+			val observer = LifecycleEventObserver { _, event ->
+				if (event == Lifecycle.Event.ON_RESUME) {
+					batteryOptimizationExempt = BatteryOptimization.isExempt(context)
+				}
+			}
+			lifecycleOwner.lifecycle.addObserver(observer)
+			onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+		}
+	}
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(Spacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                settingTitle,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
-            )
-            if (resolveString(LocalContext.current, settingData.getValue("description")) != "")
-                Text(
-                    resolveString(LocalContext.current, settingData.getValue("description")),
-                    style = MaterialTheme.typography.bodySmall
-                )
-            if (action == UIDataSource.ACTION_OPEN_DEVICE_MANAGER) {
-                val sharedPreferences =
-                    PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
-                val standardAudioDevice =
-                    sharedPreferences.getString(stringResource(R.string.selected_audio_device), "")
-                val standardVisionDevice =
-                    sharedPreferences.getString(stringResource(R.string.selected_eye_ai_vision), "")
-                if (standardVisionDevice != "") {
-                    if (standardVisionDevice == stringResource(R.string.camera_as_input_text)) {
-                        Text(
-                            "${stringResource(R.string.vision)}: ${stringResource(R.string.camera_as_input_text)}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    } else {
-                        Text(
-                            "${stringResource(R.string.vision)}: $standardVisionDevice",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                } else {
-                    Text(
-                        "${stringResource(R.string.vision)}:    -",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                if (standardAudioDevice != "") {
-                    if (standardVisionDevice == stringResource(R.string.camera_as_input_text)) {
-                        Text(
-                            "${stringResource(R.string.audio_device)}: ${stringResource(R.string.system_as_audio_text)}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    } else {
-                        Text(
-                            "${stringResource(R.string.audio_device)}: ${
-                                if (standardAudioDevice == stringResource(
-                                        R.string.choose_system_as_audio_text
-                                    )
-                                ) stringResource(R.string.system_as_audio_text) else standardAudioDevice
-                            }",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                } else {
-                    Text(
-                        "${stringResource(R.string.audio_device)}:    -",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(Spacing.sm),
+		horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		Column(modifier = Modifier.weight(1f)) {
+			Text(
+				settingTitle,
+				style = MaterialTheme.typography.bodyLarge,
+				fontWeight = FontWeight.Medium
+			)
+			if (resolveString(
+					LocalContext.current, settingData.getValue("description")
+				) != ""
+			) Text(
+				resolveString(LocalContext.current, settingData.getValue("description")),
+				style = MaterialTheme.typography.bodySmall
+			)
+			if (action == UIDataSource.ACTION_OPEN_DEVICE_MANAGER) {
+				val sharedPreferences =
+					PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+				val standardAudioDevice =
+					sharedPreferences.getString(stringResource(R.string.selected_audio_device), "")
+				val standardVisionDevice =
+					sharedPreferences.getString(stringResource(R.string.selected_eye_ai_vision), "")
+				if (standardVisionDevice != "") {
+					if (standardVisionDevice == stringResource(R.string.camera_as_input_text)) {
+						Text(
+							"${stringResource(R.string.vision)}: ${stringResource(R.string.camera_as_input_text)}",
+							style = MaterialTheme.typography.bodySmall
+						)
+					} else {
+						Text(
+							"${stringResource(R.string.vision)}: $standardVisionDevice",
+							style = MaterialTheme.typography.bodySmall
+						)
+					}
+				} else {
+					Text(
+						"${stringResource(R.string.vision)}:    -",
+						style = MaterialTheme.typography.bodySmall
+					)
+				}
+				if (standardAudioDevice != "") {
+					if (standardVisionDevice == stringResource(R.string.camera_as_input_text)) {
+						Text(
+							"${stringResource(R.string.audio_device)}: ${stringResource(R.string.system_as_audio_text)}",
+							style = MaterialTheme.typography.bodySmall
+						)
+					} else {
+						Text(
+							"${stringResource(R.string.audio_device)}: ${
+								if (standardAudioDevice == stringResource(
+										R.string.choose_system_as_audio_text
+									)
+								) stringResource(R.string.system_as_audio_text) else standardAudioDevice
+							}", style = MaterialTheme.typography.bodySmall
+						)
+					}
+				} else {
+					Text(
+						"${stringResource(R.string.audio_device)}:    -",
+						style = MaterialTheme.typography.bodySmall
+					)
+				}
 
-            }
-            if (action == UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION) {
-                Text(
-                    if (batteryOptimizationExempt) {
-                        "Status: von der Batterieoptimierung ausgenommen"
-                    } else {
-                        "Status: Batterieoptimierung aktiv"
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-        }
-        Box {
-            IconButton(onClick = {
-                when (action) {
-                    UIDataSource.ACTION_OPEN_DEVICE_MANAGER -> {
-                        onEvent(UIEvent.OnUpdateActionStartedFromSettings(true))
-                        onOpenConnectionPage()
-                    }
-                    UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION -> {
-                        BatteryOptimization.openSettings(context)
-                    }
-                }
+			}
+			if (action == UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION) {
+				Text(
+					if (batteryOptimizationExempt) {
+						"Status: von der Batterieoptimierung ausgenommen"
+					} else {
+						"Status: Batterieoptimierung aktiv"
+					},
+					style = MaterialTheme.typography.bodySmall,
+				)
+			}
+		}
+		Box {
+			IconButton(onClick = {
+				when (action) {
+					UIDataSource.ACTION_OPEN_DEVICE_MANAGER -> {
+						onEvent(UIEvent.OnUpdateActionStartedFromSettings(true))
+						onOpenConnectionPage()
+					}
 
-            }) {
-                Icon(
-                    painter = painterResource(R.drawable.change_circle_24px),
-                    contentDescription = stringResource(R.string.change_devices_icon_description)
-                )
-            }
+					UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION -> {
+						BatteryOptimization.openSettings(context)
+					}
+				}
+
+			}) {
+				Icon(
+					painter = painterResource(R.drawable.change_circle_24px),
+					contentDescription = stringResource(R.string.change_devices_icon_description)
+				)
+			}
 
 
-        }
-    }
+		}
+	}
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun CheckBoxSetting(
-    modifier: Modifier = Modifier,
-    settingData: Map<String, Any>,
-    onEvent: (UIEvent) -> Unit,
+	modifier: Modifier = Modifier,
+	settingData: Map<String, Any>,
+	onEvent: (UIEvent) -> Unit,
 ) {
-    val context = LocalContext.current
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
-    val settingKey = stringResource(settingData["string"] as Int)
+	val context = LocalContext.current
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+	val settingKey = stringResource(settingData["string"] as Int)
 
-    var checked by rememberSaveable {
-        mutableStateOf(
-            sharedPreferences.getBoolean(
-                settingKey, settingData["default"] as Boolean
-            )
-        )
-    }
+	var checked by rememberSaveable {
+		mutableStateOf(
+			sharedPreferences.getBoolean(
+				settingKey, settingData["default"] as Boolean
+			)
+		)
+	}
 
-    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
-    val settingDescription =
-        resolveString(LocalContext.current, settingData.getValue("description"))
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(Spacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                settingTitle,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
-            )
-            if (settingDescription != "") Text(
-                settingDescription,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        Checkbox(modifier = Modifier.semantics{ contentDescription = context.getString(R.string.check_box_setting_semantic) + settingTitle},checked = checked, onCheckedChange = { isChecked ->
+	val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+	val settingDescription =
+		resolveString(LocalContext.current, settingData.getValue("description"))
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(Spacing.sm),
+		horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		Column(modifier = Modifier.weight(1f)) {
+			Text(
+				settingTitle,
+				style = MaterialTheme.typography.bodyLarge,
+				fontWeight = FontWeight.Medium
+			)
+			if (settingDescription != "") Text(
+				settingDescription, style = MaterialTheme.typography.bodySmall
+			)
+		}
+		Checkbox(modifier = Modifier.semantics {
+			contentDescription =
+				context.getString(R.string.check_box_setting_semantic) + settingTitle
+		}, checked = checked, onCheckedChange = { isChecked ->
 
-            if (settingData["string"] == R.string.enable_speech_recognition_setting && !hasPermission(
-                    context, Manifest.permission.RECORD_AUDIO
-                )
-            ) {
-                onEvent(UIEvent.OnUpdateAppMissingVoskPermission(true))
-                return@Checkbox
-            }
+			if (settingData["string"] == R.string.enable_speech_recognition_setting && !hasPermission(
+					context, Manifest.permission.RECORD_AUDIO
+				)
+			) {
+				onEvent(UIEvent.OnUpdateAppMissingVoskPermission(true))
+				return@Checkbox
+			}
 
-            Log.d(
-                LOG_TAG, "[SettingsPage.CheckBoxSetting] Setting $settingKey changed to $isChecked"
-            )
-            checked = isChecked
-            sharedPreferences.edit(commit = true) {
-                putBoolean(
-                    settingKey, isChecked
-                )
-            }
-            onEvent(UIEvent.UpdateSettings)
+			Log.d(
+				LOG_TAG, "[SettingsPage.CheckBoxSetting] Setting $settingKey changed to $isChecked"
+			)
+			checked = isChecked
+			sharedPreferences.edit(commit = true) {
+				putBoolean(
+					settingKey, isChecked
+				)
+			}
+			onEvent(UIEvent.UpdateSettings)
 
-        })
-    }
+		})
+	}
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun SelectSetting(
-    modifier: Modifier = Modifier,
-    settingData: Map<String, Any>,
-    onEvent: (UIEvent) -> Unit,
-    viewModel: MainViewModel
+	modifier: Modifier = Modifier,
+	settingData: Map<String, Any>,
+	onEvent: (UIEvent) -> Unit,
+	viewModel: MainViewModel
 ) {
-    val uiState by viewModel.selectSettingUIState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
-    val settingKey = stringResource(settingData["string"] as Int)
+	val uiState by viewModel.selectSettingUIState.collectAsStateWithLifecycle()
+	val context = LocalContext.current
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+	val settingKey = stringResource(settingData["string"] as Int)
 
-    var dropDownEnabled by rememberSaveable { mutableStateOf(false) }
-    var currentlySelected by rememberSaveable {
-        mutableStateOf(
-            (sharedPreferences.getString(
-                settingKey, resolveString(context, settingData["default"] as Any)
-            ))
-        )
-    }
-    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
-    val settingDescription =
-        resolveString(LocalContext.current, settingData.getValue("description"))
+	var dropDownEnabled by rememberSaveable { mutableStateOf(false) }
+	var currentlySelected by rememberSaveable {
+		mutableStateOf(
+			(sharedPreferences.getString(
+				settingKey, resolveString(context, settingData["default"] as Any)
+			))
+		)
+	}
+	val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+	val settingDescription =
+		resolveString(LocalContext.current, settingData.getValue("description"))
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(Spacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                settingTitle,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
-            )
-            if (settingDescription != "") Text(
-                settingDescription,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        Box {
-            Row(
-                modifier = Modifier.clickable {
-                    dropDownEnabled = true
-                }.semantics{contentDescription = context.getString(R.string.select_setting_semantic) + settingTitle}, verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    currentlySelected as String,
-                    modifier = Modifier.semantics{contentDescription = context.getString(R.string.currently_selected_semantic) + currentlySelected},
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Icon(
-                    painter = painterResource(R.drawable.arrow_drop_down_24px),
-                    contentDescription = ""
-                )
-            }
-            DropdownMenu(
-                expanded = dropDownEnabled, onDismissRequest = { dropDownEnabled = false }) {
-                for (item in (settingData.getValue("settingsOptions") as List<Any>)) {
-                    if (resolveString(
-                            LocalContext.current,
-                            item
-                        ) == stringResource(R.string.input_is_eyeaivision) && uiState.visionPermissionsNotGranted
-                    )
-                        continue
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                resolveString(LocalContext.current, item),
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }, onClick = {
-                            currentlySelected = resolveString(context, item)
-                            Log.d(
-                                LOG_TAG,
-                                "[SettingsPage.SelectSetting] Changed setting $settingKey to $currentlySelected"
-                            )
-                            sharedPreferences.edit(commit = true) {
-                                putString(settingKey, currentlySelected)
-                            }
-                            onEvent(UIEvent.UpdateSettings)
-                            dropDownEnabled = false
-                        })
-                }
-            }
-        }
-    }
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(Spacing.sm),
+		horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		Column(modifier = Modifier.weight(1f)) {
+			Text(
+				settingTitle,
+				style = MaterialTheme.typography.bodyLarge,
+				fontWeight = FontWeight.Medium
+			)
+			if (settingDescription != "") Text(
+				settingDescription, style = MaterialTheme.typography.bodySmall
+			)
+		}
+		Box {
+			Row(
+				modifier = Modifier
+					.clickable {
+						dropDownEnabled = true
+					}
+					.semantics {
+						contentDescription =
+							context.getString(R.string.select_setting_semantic) + settingTitle
+					}, verticalAlignment = Alignment.CenterVertically
+			) {
+				Text(
+					currentlySelected as String, modifier = Modifier.semantics {
+						contentDescription =
+							context.getString(R.string.currently_selected_semantic) + currentlySelected
+					}, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold
+				)
+				Icon(
+					painter = painterResource(R.drawable.arrow_drop_down_24px),
+					contentDescription = ""
+				)
+			}
+			DropdownMenu(
+				expanded = dropDownEnabled, onDismissRequest = { dropDownEnabled = false }) {
+				for (item in (settingData.getValue("settingsOptions") as List<Any>)) {
+					if (resolveString(
+							LocalContext.current, item
+						) == stringResource(R.string.input_is_eyeaivision) && uiState.visionPermissionsNotGranted
+					) continue
+					DropdownMenuItem(text = {
+						Text(
+							resolveString(LocalContext.current, item),
+							style = MaterialTheme.typography.bodySmall
+						)
+					}, onClick = {
+						currentlySelected = resolveString(context, item)
+						Log.d(
+							LOG_TAG,
+							"[SettingsPage.SelectSetting] Changed setting $settingKey to $currentlySelected"
+						)
+						sharedPreferences.edit(commit = true) {
+							putString(settingKey, currentlySelected)
+						}
+						onEvent(UIEvent.UpdateSettings)
+						dropDownEnabled = false
+					})
+				}
+			}
+		}
+	}
 }
 
 @Composable
 fun SliderSetting(
-    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
+	modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
 ) {
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
 
-    val isDepthFrameRate = settingData["string"] as Int == R.string.max_depth_frame_rate_setting
-    val isObjectDetectionFrameRate =
-        settingData["string"] as Int == R.string.max_object_detection_frame_rate_setting
+	val isDepthFrameRate = settingData["string"] as Int == R.string.max_depth_frame_rate_setting
+	val isObjectDetectionFrameRate =
+		settingData["string"] as Int == R.string.max_object_detection_frame_rate_setting
 
-    val depthEnabled by rememberPreferenceBooleanState(
-        stringResource(R.string.enable_depth_frame_rate_limit_setting), true
-    )
-    val objectDetectionEnabled by rememberPreferenceBooleanState(
-        stringResource(R.string.enable_object_detection_frame_rate_limit_setting), true
-    )
+	val depthEnabled by rememberPreferenceBooleanState(
+		stringResource(R.string.enable_depth_frame_rate_limit_setting), true
+	)
+	val objectDetectionEnabled by rememberPreferenceBooleanState(
+		stringResource(R.string.enable_object_detection_frame_rate_limit_setting), true
+	)
 
-    val visible = when {
-        isDepthFrameRate -> depthEnabled
-        isObjectDetectionFrameRate -> objectDetectionEnabled
-        else -> true
-    }
+	val visible = when {
+		isDepthFrameRate -> depthEnabled
+		isObjectDetectionFrameRate -> objectDetectionEnabled
+		else -> true
+	}
 
-    val settingKey = stringResource(settingData["string"] as Int)
-    val settingsOptions = settingData.getValue("settingsOption") as Map<Any, Any>
-    val min = (settingsOptions.getValue("min") as Number).toFloat()
-    val max = (settingsOptions.getValue("max") as Number).toFloat()
+	val settingKey = stringResource(settingData["string"] as Int)
+	val settingsOptions = settingData.getValue("settingsOption") as Map<Any, Any>
+	val min = (settingsOptions.getValue("min") as Number).toFloat()
+	val max = (settingsOptions.getValue("max") as Number).toFloat()
 
-    var currentValue by rememberSaveable {
-        mutableIntStateOf(
-            sharedPreferences.getInt(
-                settingKey, settingData["default"] as Int
-            )
-        )
-    }
-    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
-    val settingDescription =
-        resolveString(LocalContext.current, settingData.getValue("description"))
-    val audioFrequencySettingTitle = stringResource(R.string.setting_audio_frequency_title)
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn() + expandVertically(),
-        exit = fadeOut() + shrinkVertically()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.sm),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.md)
-                ) {
-                    Text(
-                        settingTitle,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        "$currentValue",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-                if (settingDescription != "") Text(
-                    settingDescription,
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Slider(
-                    value = currentValue.toFloat(), onValueChange = {
-                        if (settingTitle == audioFrequencySettingTitle)
-                            currentValue = (it / 10.0).roundToInt() * 10
-                        else
-                            currentValue = it.roundToInt()
-                        Log.d(
-                            LOG_TAG,
-                            "[SettingsPage.SliderSetting] Changed setting $settingKey to $currentValue"
-                        )
-                        sharedPreferences.edit(commit = true) {
-                            putInt(settingKey, currentValue)
-                        }
-                        onEvent(UIEvent.UpdateSettings)
-                    }, valueRange = min..max
-                )
-            }
+	var currentValue by rememberSaveable {
+		mutableIntStateOf(
+			sharedPreferences.getInt(
+				settingKey, settingData["default"] as Int
+			)
+		)
+	}
+	val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+	val settingDescription =
+		resolveString(LocalContext.current, settingData.getValue("description"))
+	val audioFrequencySettingTitle = stringResource(R.string.setting_audio_frequency_title)
+	AnimatedVisibility(
+		visible = visible,
+		enter = fadeIn() + expandVertically(),
+		exit = fadeOut() + shrinkVertically()
+	) {
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(Spacing.sm),
+			horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			Column(modifier = Modifier.weight(1f)) {
+				Row(
+					verticalAlignment = Alignment.CenterVertically,
+					horizontalArrangement = Arrangement.spacedBy(Spacing.md)
+				) {
+					Text(
+						settingTitle,
+						style = MaterialTheme.typography.bodyLarge,
+						fontWeight = FontWeight.Medium,
+						modifier = Modifier.weight(1f)
+					)
+					Text(
+						"$currentValue",
+						style = MaterialTheme.typography.labelLarge,
+						fontWeight = FontWeight.SemiBold
+					)
+				}
+				if (settingDescription != "") Text(
+					settingDescription, style = MaterialTheme.typography.bodySmall
+				)
+				Slider(
+					value = currentValue.toFloat(), onValueChange = {
+						if (settingTitle == audioFrequencySettingTitle) currentValue =
+							(it / 10.0).roundToInt() * 10
+						else currentValue = it.roundToInt()
+						Log.d(
+							LOG_TAG,
+							"[SettingsPage.SliderSetting] Changed setting $settingKey to $currentValue"
+						)
+						sharedPreferences.edit(commit = true) {
+							putInt(settingKey, currentValue)
+						}
+						onEvent(UIEvent.UpdateSettings)
+					}, valueRange = min..max
+				)
+			}
 
-        }
-    }
+		}
+	}
 }
 
 @Composable
 fun TextInputSetting(
-    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
+	modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
 ) {
-    var showTextFieldDialog by rememberSaveable { mutableStateOf(false) }
-    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
-    val settingDescription =
-        resolveString(LocalContext.current, settingData.getValue("description"))
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(Spacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                settingTitle,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
-            )
-            if (settingDescription != "") Text(
-                settingDescription as String,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        Box {
-            PremiumIconButton(onClick = { showTextFieldDialog = true }) {
-                Icon(
-                    painter = painterResource(R.drawable.ink_pen_24px), contentDescription = stringResource(R.string.text_input_setting_semantic)
-                )
-            }
+	var showTextFieldDialog by rememberSaveable { mutableStateOf(false) }
+	val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+	val settingDescription =
+		resolveString(LocalContext.current, settingData.getValue("description"))
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(Spacing.sm),
+		horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		Column(modifier = Modifier.weight(1f)) {
+			Text(
+				settingTitle,
+				style = MaterialTheme.typography.bodyLarge,
+				fontWeight = FontWeight.Medium
+			)
+			if (settingDescription != "") Text(
+				settingDescription as String, style = MaterialTheme.typography.bodySmall
+			)
+		}
+		Box {
+			PremiumIconButton(onClick = { showTextFieldDialog = true }) {
+				Icon(
+					painter = painterResource(R.drawable.ink_pen_24px),
+					contentDescription = stringResource(R.string.text_input_setting_semantic)
+				)
+			}
 
-        }
+		}
 
-    }
+	}
 
-    if (showTextFieldDialog) {
-        TextFieldDialog(
-            onDismiss = { showTextFieldDialog = false },
-            settingName = settingTitle,
-            settingData = settingData,
-            onEvent = onEvent
-        )
-    }
+	if (showTextFieldDialog) {
+		TextFieldDialog(
+			onDismiss = { showTextFieldDialog = false },
+			settingName = settingTitle,
+			settingData = settingData,
+			onEvent = onEvent
+		)
+	}
 }
 
 @Composable
 fun TextFieldDialog(
-    modifier: Modifier = Modifier,
-    onDismiss: () -> Unit,
-    settingName: String,
-    settingData: Map<String, Any>,
-    onEvent: (UIEvent) -> Unit
+	modifier: Modifier = Modifier,
+	onDismiss: () -> Unit,
+	settingName: String,
+	settingData: Map<String, Any>,
+	onEvent: (UIEvent) -> Unit
 ) {
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
-    val settingKey = stringResource(settingData["string"] as Int)
-    var text by rememberSaveable {
-        mutableStateOf(
-            sharedPreferences.getString(
-                settingKey, settingData["default"]?.toString()
-            )
-        )
-    }
-    AlertDialog(onDismissRequest = { onDismiss() }, title = {
-        Row(
-            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
-        ) {
-            PremiumIconButton(
-                modifier = Modifier
-                    .height(Spacing.xl)
-                    .width(Spacing.xl),
-                onClick = { onDismiss() }) {
-                Icon(
-                    painterResource(R.drawable.arrow_back_24px),
-                    contentDescription = UIDataSource.RETURN_SEMANTIC
-                )
-            }
-            Text(settingName, style = MaterialTheme.typography.titleLarge)
-        }
-    }, text = {
-        OutlinedTextField(
-            value = text ?: "",
-            onValueChange = { text = it },
-            label = {
-                Text(
-                    stringResource(R.string.enter_text_in_text_field_text),
-                    style = MaterialTheme.typography.bodySmall
-                )
-            })
-    }, confirmButton = {
-        PremiumButton(onClick = {
-            onDismiss()
-            Log.d(LOG_TAG, "[SettingsPage.TextFieldSetting] Changed setting $settingKey to $text")
-            sharedPreferences.edit(commit = true) {
-                putString(settingKey, text)
-            }
-            onEvent(UIEvent.UpdateSettings)
-        }) {
-            Text(
-                stringResource(R.string.finished_editing_text),
-                modifier = Modifier.clearAndSetSemantics {},
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-    })
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+	val settingKey = stringResource(settingData["string"] as Int)
+	var text by rememberSaveable {
+		mutableStateOf(
+			sharedPreferences.getString(
+				settingKey, settingData["default"]?.toString()
+			)
+		)
+	}
+	AlertDialog(onDismissRequest = { onDismiss() }, title = {
+		Row(
+			modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
+		) {
+			PremiumIconButton(
+				modifier = Modifier
+					.height(Spacing.xl)
+					.width(Spacing.xl),
+				onClick = { onDismiss() }) {
+				Icon(
+					painterResource(R.drawable.arrow_back_24px),
+					contentDescription = UIDataSource.RETURN_SEMANTIC
+				)
+			}
+			Text(settingName, style = MaterialTheme.typography.titleLarge)
+		}
+	}, text = {
+		OutlinedTextField(value = text ?: "", onValueChange = { text = it }, label = {
+			Text(
+				stringResource(R.string.enter_text_in_text_field_text),
+				style = MaterialTheme.typography.bodySmall
+			)
+		})
+	}, confirmButton = {
+		PremiumButton(onClick = {
+			onDismiss()
+			Log.d(LOG_TAG, "[SettingsPage.TextFieldSetting] Changed setting $settingKey to $text")
+			sharedPreferences.edit(commit = true) {
+				putString(settingKey, text)
+			}
+			onEvent(UIEvent.UpdateSettings)
+		}) {
+			Text(
+				stringResource(R.string.finished_editing_text),
+				modifier = Modifier.clearAndSetSemantics {},
+				style = MaterialTheme.typography.labelLarge
+			)
+		}
+	})
 }
 
 @Composable
 fun InfoSetting(modifier: Modifier = Modifier, settingData: Map<String, Any>) {
 
-    Row(modifier = Modifier.padding(Spacing.md)) {
-        Column {
-            Text(
-                resolveString(LocalContext.current, settingData.getValue("title")) as String,
-                style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium
-            )
-            if (resolveString(
-                    LocalContext.current,
-                    settingData.getValue("description")
-                ) != ""
-            ) Text(
-                resolveString(LocalContext.current, settingData.getValue("description")),
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-    }
+	Row(modifier = Modifier.padding(Spacing.md)) {
+		Column {
+			Text(
+				resolveString(LocalContext.current, settingData.getValue("title")) as String,
+				style = MaterialTheme.typography.bodyLarge,
+				fontWeight = FontWeight.Medium
+			)
+			if (resolveString(
+					LocalContext.current, settingData.getValue("description")
+				) != ""
+			) Text(
+				resolveString(LocalContext.current, settingData.getValue("description")),
+				style = MaterialTheme.typography.bodySmall
+			)
+		}
+	}
 
 
 }
 
 @Composable
 fun FileSetting(
-    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
+	modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
 ) {
-    val context = LocalContext.current
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
-    val settingKey = stringResource(settingData["string"] as Int)
-    var selectedFileUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+	val context = LocalContext.current
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+	val settingKey = stringResource(settingData["string"] as Int)
+	var selectedFileUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
 
-    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
-    val settingDescription =
-        resolveString(LocalContext.current, settingData.getValue("description"))
-    val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? ->
-        if (uri == null) {
-            return@rememberLauncherForActivityResult
-        }
+	val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+	val settingDescription =
+		resolveString(LocalContext.current, settingData.getValue("description"))
+	val filePickerLauncher = rememberLauncherForActivityResult(
+		contract = ActivityResultContracts.OpenDocument()
+	) { uri: Uri? ->
+		if (uri == null) {
+			return@rememberLauncherForActivityResult
+		}
 
-        try {
-            context.contentResolver.takePersistableUriPermission(
-                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-        } catch (e: SecurityException) {
-            Log.e(LOG_TAG, "Could not persist URI permission", e)
-        }
+		try {
+			context.contentResolver.takePersistableUriPermission(
+				uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+			)
+		} catch (e: SecurityException) {
+			Log.e(LOG_TAG, "Could not persist URI permission", e)
+		}
 
-        selectedFileUri = uri
+		selectedFileUri = uri
 
-        sharedPreferences.edit {
-            putString(settingKey, uri.toString())
-        }
-        Log.d(LOG_TAG, "[SettingsPage.FileSetting] Changed setting $settingKey to $uri")
-        onEvent(UIEvent.UpdateSettings)
-    }
+		sharedPreferences.edit {
+			putString(settingKey, uri.toString())
+		}
+		Log.d(LOG_TAG, "[SettingsPage.FileSetting] Changed setting $settingKey to $uri")
+		onEvent(UIEvent.UpdateSettings)
+	}
 
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(Spacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                settingTitle,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
-            )
-            if (settingDescription != "") Text(
-                settingDescription,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        IconButton(onClick = {
-            filePickerLauncher.launch(
-                arrayOf("image/*", "video/*")
-            )
-        }) {
-            Icon(
-                painter = painterResource(R.drawable.upload_file_24px), contentDescription = stringResource(R.string.file_setting_semantic)
-            )
-        }
-    }
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(Spacing.sm),
+		horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		Column(modifier = Modifier.weight(1f)) {
+			Text(
+				settingTitle,
+				style = MaterialTheme.typography.bodyLarge,
+				fontWeight = FontWeight.Medium
+			)
+			if (settingDescription != "") Text(
+				settingDescription, style = MaterialTheme.typography.bodySmall
+			)
+		}
+		IconButton(onClick = {
+			filePickerLauncher.launch(
+				arrayOf("image/*", "video/*")
+			)
+		}) {
+			Icon(
+				painter = painterResource(R.drawable.upload_file_24px),
+				contentDescription = stringResource(R.string.file_setting_semantic)
+			)
+		}
+	}
 }
 
 private fun resolveString(context: Context, value: Any): String {
-    return when (value) {
-        is Int -> context.getString(value)
-        is String -> value
-        else -> value.toString()
-    }
+	return when (value) {
+		is Int -> context.getString(value)
+		is String -> value
+		else -> value.toString()
+	}
 }
 
 @Composable
 fun rememberPreferenceBooleanState(
-    key: String,
-    default: Boolean
+	key: String, default: Boolean
 ): State<Boolean> {
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
-    val state = remember { mutableStateOf(sharedPreferences.getBoolean(key, default)) }
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+	val state = remember { mutableStateOf(sharedPreferences.getBoolean(key, default)) }
 
-    DisposableEffect(key) {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, changedKey ->
-            if (changedKey == key) {
-                state.value = prefs.getBoolean(key, default)
-            }
-        }
-        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
-    return state
+	DisposableEffect(key) {
+		val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, changedKey ->
+			if (changedKey == key) {
+				state.value = prefs.getBoolean(key, default)
+			}
+		}
+		sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+		onDispose {
+			sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+		}
+	}
+	return state
 }

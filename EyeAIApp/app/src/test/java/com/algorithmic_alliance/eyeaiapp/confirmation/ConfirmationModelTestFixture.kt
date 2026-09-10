@@ -4,8 +4,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 object ConfirmationModelTestFixture {
-	fun load(): ConfirmationModel =
-		Files.newInputStream(modelAsset()).use(ConfirmationModel::load)
+	fun load(): ConfirmationModel = Files.newInputStream(modelAsset()).use(ConfirmationModel::load)
 
 	private fun modelAsset(): Path {
 		val candidates = listOf(

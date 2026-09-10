@@ -23,8 +23,7 @@ class NLPModel(initialInfo: NLPModelInfo) : AutoCloseable {
 		}
 
 		val newInterpreter = Interpreter(
-			modelInfo.loadModelFile(context),
-			Interpreter.Options().setNumThreads(2)
+			modelInfo.loadModelFile(context), Interpreter.Options().setNumThreads(2)
 		)
 		try {
 			validateModel(newInterpreter, loadedTokenizer.tokenizer)

@@ -5,14 +5,12 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.util.Log
 import android.util.Size
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.withScale
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.ocr.TextBoundingBox
-import androidx.core.graphics.withScale
-import kotlin.math.abs
 
 class OverlayViewOCR(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
@@ -61,13 +59,11 @@ class OverlayViewOCR(context: Context?, attrs: AttributeSet?) : View(context, at
 
 		val cameraPreviewImageSize = if (viewAspectRatio > cameraAspectRatio) {
 			Size(
-				(height.toFloat() * cameraAspectRatio).toInt(),
-				height
+				(height.toFloat() * cameraAspectRatio).toInt(), height
 			)
 		} else {
 			Size(
-				width,
-				(width.toFloat() / cameraAspectRatio).toInt()
+				width, (width.toFloat() / cameraAspectRatio).toInt()
 			)
 		}
 
@@ -103,8 +99,7 @@ class OverlayViewOCR(context: Context?, attrs: AttributeSet?) : View(context, at
 
 				val textWidthBoxWidthRatio = textWidth / boxWidth
 
-				if (textWidthBoxWidthRatio > 1 ||
-					(textWidthBoxWidthRatio < 0.8f && lines.size == 1)) {
+				if (textWidthBoxWidthRatio > 1 || (textWidthBoxWidthRatio < 0.8f && lines.size == 1)) {
 					val scaleX = boxWidth / textWidth
 					canvas.withScale(scaleX, 1f, left, 0f) {
 						drawText(line, left, top + charHeight * (i + 1), textPaint)
@@ -119,8 +114,7 @@ class OverlayViewOCR(context: Context?, attrs: AttributeSet?) : View(context, at
 	fun setCameraResolution(newCameraResolution: Size) {
 		val changed = cameraResolution != newCameraResolution
 		cameraResolution = newCameraResolution
-		if (changed)
-			invalidate()
+		if (changed) invalidate()
 	}
 
 	fun setResults(boundingBoxes: Array<TextBoundingBox>) {

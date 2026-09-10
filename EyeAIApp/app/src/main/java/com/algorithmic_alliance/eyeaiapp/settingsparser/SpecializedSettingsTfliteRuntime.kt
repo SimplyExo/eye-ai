@@ -1,13 +1,13 @@
 package com.algorithmic_alliance.eyeaiapp.settingsparser
 
 import android.content.Context
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.Interpreter
 
 /** Narrow interfaces make the frozen head-routing independently testable. */
 interface WordOperationHead {
@@ -28,7 +28,9 @@ class SpecializedSettingsTflitePredictors(
 	private val wordOperationHead: WordOperationHead,
 	private val characterSpeakerHead: CharacterSpeakerHead
 ) : OperationPredictor, SpeakerPredictor {
-	override fun predictOperation(target: SettingTarget, normalizedText: String): OperationPrediction {
+	override fun predictOperation(
+		target: SettingTarget, normalizedText: String
+	): OperationPrediction {
 		val probabilities = wordOperationHead.inferOperation(
 			wordTokenizer.encodeWithContext(target, normalizedText)
 		)
@@ -82,15 +84,14 @@ class SpecializedSettingsTfliteRuntime private constructor(
 	characterTokenizer: FrozenCharacterSettingsTokenizer
 ) : OperationPredictor, SpeakerPredictor, AutoCloseable {
 	private val predictors = SpecializedSettingsTflitePredictors(
-		wordTokenizer,
-		characterTokenizer,
-		wordHead,
-		characterHead
+		wordTokenizer, characterTokenizer, wordHead, characterHead
 	)
 	private var closed = false
 
 	@Synchronized
-	override fun predictOperation(target: SettingTarget, normalizedText: String): OperationPrediction {
+	override fun predictOperation(
+		target: SettingTarget, normalizedText: String
+	): OperationPrediction {
 		check(!closed) { "Settings parser runtime is closed" }
 		return predictors.predictOperation(target, normalizedText)
 	}
@@ -114,7 +115,9 @@ class SpecializedSettingsTfliteRuntime private constructor(
 			val verified = SettingsParserAssetContract.verifyAssets(context.assets)
 			return create(
 				wordBuffer = mapAsset(context, SettingsParserAssetContract.WORD_MODEL_ASSET),
-				characterBuffer = mapAsset(context, SettingsParserAssetContract.CHARACTER_MODEL_ASSET),
+				characterBuffer = mapAsset(
+					context, SettingsParserAssetContract.CHARACTER_MODEL_ASSET
+				),
 				wordTokenizer = FrozenSettingsTokenizer.fromJson(verified.wordTokenizerJson),
 				characterTokenizer = FrozenCharacterSettingsTokenizer.fromJson(verified.characterTokenizerJson)
 			)
@@ -142,7 +145,9 @@ class SpecializedSettingsTfliteRuntime private constructor(
 			try {
 				word = TfliteWordOperationHead(createInterpreter(wordBuffer))
 				character = TfliteCharacterSpeakerHead(createInterpreter(characterBuffer))
-				return SpecializedSettingsTfliteRuntime(word, character, wordTokenizer, characterTokenizer)
+				return SpecializedSettingsTfliteRuntime(
+					word, character, wordTokenizer, characterTokenizer
+				)
 			} catch (error: Throwable) {
 				word?.close()
 				character?.close()
@@ -151,8 +156,7 @@ class SpecializedSettingsTfliteRuntime private constructor(
 		}
 
 		private fun createInterpreter(buffer: MappedByteBuffer): Interpreter = Interpreter(
-			buffer,
-			Interpreter.Options().setNumThreads(2)
+			buffer, Interpreter.Options().setNumThreads(2)
 		)
 
 		private fun mapAsset(context: Context, assetPath: String): MappedByteBuffer =
@@ -184,17 +188,19 @@ private abstract class TfliteSingleHead(
 		require(SettingsTfliteContract.SIGNATURE_KEY in interpreter.signatureKeys) {
 			"Frozen settings model is missing ${SettingsTfliteContract.SIGNATURE_KEY}"
 		}
-		require(SettingsTfliteContract.INPUT_NAME in interpreter.getSignatureInputs(SettingsTfliteContract.SIGNATURE_KEY))
+		require(
+			SettingsTfliteContract.INPUT_NAME in interpreter.getSignatureInputs(
+				SettingsTfliteContract.SIGNATURE_KEY
+			)
+		)
 		require(outputName in interpreter.getSignatureOutputs(SettingsTfliteContract.SIGNATURE_KEY)) {
 			"Frozen settings model is missing signature output $outputName"
 		}
 		val input = interpreter.getInputTensorFromSignature(
-			SettingsTfliteContract.INPUT_NAME,
-			SettingsTfliteContract.SIGNATURE_KEY
+			SettingsTfliteContract.INPUT_NAME, SettingsTfliteContract.SIGNATURE_KEY
 		)
 		val output = interpreter.getOutputTensorFromSignature(
-			outputName,
-			SettingsTfliteContract.SIGNATURE_KEY
+			outputName, SettingsTfliteContract.SIGNATURE_KEY
 		)
 		require(input.shape().contentEquals(intArrayOf(1, expectedLength))) {
 			"Unexpected settings input shape: ${input.shape().contentToString()}"
@@ -220,22 +226,20 @@ private abstract class TfliteSingleHead(
 	override fun close() = interpreter.close()
 }
 
-private class TfliteWordOperationHead(interpreter: Interpreter) :
-	TfliteSingleHead(
-		interpreter,
-		SettingsTfliteContract.WORD_MAX_LEN,
-		SettingsTfliteContract.OPERATION_OUTPUT_NAME,
-		SettingOperation.entries.size
-	), WordOperationHead {
+private class TfliteWordOperationHead(interpreter: Interpreter) : TfliteSingleHead(
+	interpreter,
+	SettingsTfliteContract.WORD_MAX_LEN,
+	SettingsTfliteContract.OPERATION_OUTPUT_NAME,
+	SettingOperation.entries.size
+), WordOperationHead {
 	override fun inferOperation(tokenIds: IntArray): FloatArray = infer(tokenIds)
 }
 
-private class TfliteCharacterSpeakerHead(interpreter: Interpreter) :
-	TfliteSingleHead(
-		interpreter,
-		SettingsTfliteContract.CHARACTER_MAX_LEN,
-		SettingsTfliteContract.SPEAKER_OUTPUT_NAME,
-		SpeakerChoice.entries.size
-	), CharacterSpeakerHead {
+private class TfliteCharacterSpeakerHead(interpreter: Interpreter) : TfliteSingleHead(
+	interpreter,
+	SettingsTfliteContract.CHARACTER_MAX_LEN,
+	SettingsTfliteContract.SPEAKER_OUTPUT_NAME,
+	SpeakerChoice.entries.size
+), CharacterSpeakerHead {
 	override fun inferSpeaker(tokenIds: IntArray): FloatArray = infer(tokenIds)
 }

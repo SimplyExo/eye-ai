@@ -14,14 +14,26 @@
     "normalization_spec_version": "eyeai_word_v1",
     "input": {
       "name": "token_ids",
-      "shape": [1, 32],
+      "shape": [
+        1,
+        32
+      ],
       "dtype": "int32"
     },
     "active_output": {
       "name": "operation",
-      "shape": [1, 5],
+      "shape": [
+        1,
+        5
+      ],
       "dtype": "float32",
-      "classes": ["SET_ABSOLUTE", "INCREASE", "DECREASE", "TOGGLE", "UNSPECIFIED"]
+      "classes": [
+        "SET_ABSOLUTE",
+        "INCREASE",
+        "DECREASE",
+        "TOGGLE",
+        "UNSPECIFIED"
+      ]
     }
   },
   "character_speaker": {
@@ -33,14 +45,24 @@
     "normalization_spec_version": "eyeai_char_v1",
     "input": {
       "name": "token_ids",
-      "shape": [1, 96],
+      "shape": [
+        1,
+        96
+      ],
       "dtype": "int32"
     },
     "active_output": {
       "name": "speaker",
-      "shape": [1, 3],
+      "shape": [
+        1,
+        3
+      ],
       "dtype": "float32",
-      "classes": ["MALE", "FEMALE", "UNSPECIFIED"]
+      "classes": [
+        "MALE",
+        "FEMALE",
+        "UNSPECIFIED"
+      ]
     }
   },
   "head_routing": {

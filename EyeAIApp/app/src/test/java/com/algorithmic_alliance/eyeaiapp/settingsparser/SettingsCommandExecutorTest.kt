@@ -12,22 +12,36 @@ class SettingsCommandExecutorTest {
 	@Test
 	fun `validated local command is translated into existing confirmation JSON`() {
 		val execution = executor.execute(
-			command(SettingTarget.FREQUENCY, SettingOperation.SET_ABSOLUTE, numeric = 700.0, unit = SettingUnit.HZ),
-			current
+			command(
+				SettingTarget.FREQUENCY,
+				SettingOperation.SET_ABSOLUTE,
+				numeric = 700.0,
+				unit = SettingUnit.HZ
+			), current
 		)
 		assertTrue(execution is LocalSettingsCommandExecution.Ready)
 		val json = JSONObject((execution as LocalSettingsCommandExecution.Ready).settingsJson)
 		assertTrue(json.getBoolean("settings_parameter_complete"))
-		assertEquals(700, json.getJSONArray("changed_settings").getJSONObject(0).getInt("frequency"))
+		assertEquals(
+			700, json.getJSONArray("changed_settings").getJSONObject(0).getInt("frequency")
+		)
 	}
 
 	@Test
 	fun `relative command is resolved before existing confirmation JSON is created`() {
 		val execution = executor.execute(
-			command(SettingTarget.FREQUENCY, SettingOperation.INCREASE, magnitude = ChangeMagnitude.SMALL, unit = SettingUnit.HZ),
-			current
+			command(
+				SettingTarget.FREQUENCY,
+				SettingOperation.INCREASE,
+				magnitude = ChangeMagnitude.SMALL,
+				unit = SettingUnit.HZ
+			), current
 		) as LocalSettingsCommandExecution.Ready
-		assertEquals(650, JSONObject(execution.settingsJson).getJSONArray("changed_settings").getJSONObject(0).getInt("frequency"))
+		assertEquals(
+			650,
+			JSONObject(execution.settingsJson).getJSONArray("changed_settings").getJSONObject(0)
+				.getInt("frequency")
+		)
 	}
 
 	@Test
@@ -38,17 +52,24 @@ class SettingsCommandExecutorTest {
 				SettingOperation.TOGGLE,
 				speaker = SpeakerChoice.UNSPECIFIED,
 				unit = null
-			),
-			current
+			), current
 		) as LocalSettingsCommandExecution.Ready
-		assertEquals(0, JSONObject(execution.settingsJson).getJSONArray("changed_settings").getJSONObject(0).getInt("voice"))
+		assertEquals(
+			0,
+			JSONObject(execution.settingsJson).getJSONArray("changed_settings").getJSONObject(0)
+				.getInt("voice")
+		)
 	}
 
 	@Test
 	fun `fractional valid BPS command remains a parser command but is explicit at Android boundary`() {
 		val execution = executor.execute(
-			command(SettingTarget.BPS, SettingOperation.SET_ABSOLUTE, numeric = 5.5, unit = SettingUnit.BPS),
-			current
+			command(
+				SettingTarget.BPS,
+				SettingOperation.SET_ABSOLUTE,
+				numeric = 5.5,
+				unit = SettingUnit.BPS
+			), current
 		)
 		assertTrue(execution is LocalSettingsCommandExecution.UnsupportedAppRepresentation)
 		assertEquals(

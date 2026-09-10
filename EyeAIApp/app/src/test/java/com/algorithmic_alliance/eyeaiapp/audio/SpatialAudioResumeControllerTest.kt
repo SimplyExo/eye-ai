@@ -18,8 +18,7 @@ class SpatialAudioResumeControllerTest {
 		val controller = controller(
 			awaitTtsSilence = { silence.await() },
 			events = events,
-			onOutcome = { outcome.complete(it) }
-		)
+			onOutcome = { outcome.complete(it) })
 
 		controller.schedule("SETTINGS_APPLIED")
 		assertEquals(listOf("pause"), events)
@@ -37,8 +36,7 @@ class SpatialAudioResumeControllerTest {
 		val controller = controller(
 			awaitTtsSilence = { false },
 			events = events,
-			onOutcome = { outcome.complete(it) }
-		)
+			onOutcome = { outcome.complete(it) })
 
 		controller.schedule("SETTINGS_APPLIED")
 
@@ -54,8 +52,7 @@ class SpatialAudioResumeControllerTest {
 			awaitTtsSilence = { true },
 			events = events,
 			isListening = { true },
-			onOutcome = { outcome.complete(it) }
-		)
+			onOutcome = { outcome.complete(it) })
 
 		controller.schedule("SETTINGS_APPLIED")
 
@@ -68,8 +65,7 @@ class SpatialAudioResumeControllerTest {
 		val silence = CompletableDeferred<Boolean>()
 		val events = mutableListOf<String>()
 		val controller = controller(
-			awaitTtsSilence = { silence.await() },
-			events = events
+			awaitTtsSilence = { silence.await() }, events = events
 		)
 
 		controller.schedule("SETTINGS_APPLIED")
@@ -92,6 +88,5 @@ class SpatialAudioResumeControllerTest {
 		restoreSpatialAudio = { events += "restore:$it" },
 		awaitTtsSilence = awaitTtsSilence,
 		isListening = isListening,
-		onOutcome = { _, outcome -> onOutcome(outcome) }
-	)
+		onOutcome = { _, outcome -> onOutcome(outcome) })
 }

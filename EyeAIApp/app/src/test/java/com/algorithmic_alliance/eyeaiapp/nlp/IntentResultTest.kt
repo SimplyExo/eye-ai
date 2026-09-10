@@ -20,25 +20,14 @@ class IntentResultTest {
 				"SET_BPS",
 				"MEASURE_DISTANCE",
 				"ABORT"
-			),
-			Intent.CLASS_ORDER.map { it.name }
-		)
+			), Intent.CLASS_ORDER.map { it.name })
 	}
 
 	@Test
 	fun resultPreservesOriginalTextAndAllProbabilities() {
 		val originalText = "  ÖFFNE, bitte die Einstellungen!  "
 		val modelOutput = floatArrayOf(
-			0.01f,
-			0.02f,
-			0.03f,
-			0.04f,
-			0.05f,
-			0.70f,
-			0.06f,
-			0.02f,
-			0.03f,
-			0.04f
+			0.01f, 0.02f, 0.03f, 0.04f, 0.05f, 0.70f, 0.06f, 0.02f, 0.03f, 0.04f
 		)
 
 		val result = IntentResult.fromProbabilities(originalText, modelOutput)

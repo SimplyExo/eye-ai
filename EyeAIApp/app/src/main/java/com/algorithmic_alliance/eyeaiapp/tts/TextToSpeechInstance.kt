@@ -1,7 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.tts
 
 import android.content.Context
-import android.media.AudioAttributes
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
@@ -20,8 +19,7 @@ import java.util.UUID
 import kotlin.random.Random
 
 class TextToSpeechInstance(
-	private val context: Context,
-	private val onTTSFinishedSpeaking: (() -> Unit)? = null
+	private val context: Context, private val onTTSFinishedSpeaking: (() -> Unit)? = null
 ) : TextToSpeech.OnInitListener {
 
 	var tts: TextToSpeech? = TextToSpeech(context, this)
@@ -48,7 +46,10 @@ class TextToSpeechInstance(
 
 	override fun onInit(status: Int) {
 		if (status == TextToSpeech.SUCCESS) {
-			try { tts?.language = Locale.GERMAN } catch (_: Exception) {}
+			try {
+				tts?.language = Locale.GERMAN
+			} catch (_: Exception) {
+			}
 			isReady = true
 			Log.d(EyeAIApp.APP_LOG_TAG, "TextToSpeech initialized.")
 			Log.d(EyeAIApp.APP_LOG_TAG, "Loading saved settings...")
@@ -87,14 +88,13 @@ class TextToSpeechInstance(
 
 	}
 
-	private fun finishUtterance(utteranceId: String?){
+	private fun finishUtterance(utteranceId: String?) {
 		decrementUtteranceCount()
-		utteranceId?.let {
-			id ->
+		utteranceId?.let { id ->
 			pendingCallbacks.remove(id)?.invoke()
 			hasSpecificCallback.remove(id)
 		}
-		if(getActiveUtteranceCount() == 0){
+		if (getActiveUtteranceCount() == 0) {
 			invokeOnFinishedWhenPlaybackStops()
 		}
 	}
@@ -114,7 +114,10 @@ class TextToSpeechInstance(
 				finishUtterance(utteranceId)
 
 				if (getActiveUtteranceCount() == 0) {
-					Log.d(EyeAIApp.APP_LOG_TAG, "No active utterances left -> schedule global callback when playback stops")
+					Log.d(
+						EyeAIApp.APP_LOG_TAG,
+						"No active utterances left -> schedule global callback when playback stops"
+					)
 					invokeOnFinishedWhenPlaybackStops()
 				}
 			}
@@ -124,17 +127,26 @@ class TextToSpeechInstance(
 				finishUtterance(utteranceId)
 
 				if (getActiveUtteranceCount() == 0) {
-					Log.d(EyeAIApp.APP_LOG_TAG, "No active utterances left -> schedule global callback when playback stops")
+					Log.d(
+						EyeAIApp.APP_LOG_TAG,
+						"No active utterances left -> schedule global callback when playback stops"
+					)
 					invokeOnFinishedWhenPlaybackStops()
 				}
 			}
 
 			override fun onStop(utteranceId: String?, interrupted: Boolean) {
-				Log.d(EyeAIApp.APP_LOG_TAG, "TTS onStop utterance=$utteranceId interrupted=$interrupted")
+				Log.d(
+					EyeAIApp.APP_LOG_TAG,
+					"TTS onStop utterance=$utteranceId interrupted=$interrupted"
+				)
 				finishUtterance(utteranceId)
 
 				if (getActiveUtteranceCount() == 0) {
-					Log.d(EyeAIApp.APP_LOG_TAG, "No active utterances left -> schedule global callback when playback stops")
+					Log.d(
+						EyeAIApp.APP_LOG_TAG,
+						"No active utterances left -> schedule global callback when playback stops"
+					)
 					invokeOnFinishedWhenPlaybackStops()
 				}
 			}
@@ -156,20 +168,32 @@ class TextToSpeechInstance(
 		synchronized(this) { activeUtteranceCount = 0 }
 		invokeOnFinishedWhenPlaybackStops()
 	}
+
 	//Should only be used if necessary, completely shuts down the TTS-Service
 	fun shutdown() {
 		pendingCallbacks.clear()
 		hasSpecificCallback.clear()
 		synchronized(this) { activeUtteranceCount = 0 }
-		try { tts?.stop() } catch (_: Exception) {}
-		try { tts?.shutdown() } catch (_: Exception) {}
+		try {
+			tts?.stop()
+		} catch (_: Exception) {
+		}
+		try {
+			tts?.shutdown()
+		} catch (_: Exception) {
+		}
 		tts = null
 		callbackScope.coroutineContext.cancel()
 	}
 
 	//ensuring silence when starting to listen with vosk
-	suspend fun awaitSilence(quietMs: Long = 500L, maxWaitMs: Long = 15_000L, pollIntervalMs: Long = 50L): Boolean {
-		Log.d(EyeAIApp.APP_LOG_TAG, "awaitSilence: Starting wait for ${quietMs}ms of silence (max ${maxWaitMs}ms).")
+	suspend fun awaitSilence(
+		quietMs: Long = 500L, maxWaitMs: Long = 15_000L, pollIntervalMs: Long = 50L
+	): Boolean {
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"awaitSilence: Starting wait for ${quietMs}ms of silence (max ${maxWaitMs}ms)."
+		)
 		val start = System.currentTimeMillis()
 		var silentStart = -1L
 		while (System.currentTimeMillis() - start < maxWaitMs) {
@@ -181,7 +205,10 @@ class TextToSpeechInstance(
 
 			if (speakingNow) {
 				if (silentStart != -1L || (System.currentTimeMillis() - start) % 500 < pollIntervalMs) {
-					Log.d(EyeAIApp.APP_LOG_TAG, "awaitSilence: Not silent. isSpeaking=$isSpeakingFlag, activeUtterances=$utteranceCount")
+					Log.d(
+						EyeAIApp.APP_LOG_TAG,
+						"awaitSilence: Not silent. isSpeaking=$isSpeakingFlag, activeUtterances=$utteranceCount"
+					)
 				}
 				// Reset silent window
 				silentStart = -1L
@@ -191,14 +218,20 @@ class TextToSpeechInstance(
 					Log.d(EyeAIApp.APP_LOG_TAG, "awaitSilence: Potential silent period started.")
 				} else {
 					if (System.currentTimeMillis() - silentStart >= quietMs) {
-						Log.d(EyeAIApp.APP_LOG_TAG, "awaitSilence: stable quiet window ${quietMs}ms reached")
+						Log.d(
+							EyeAIApp.APP_LOG_TAG,
+							"awaitSilence: stable quiet window ${quietMs}ms reached"
+						)
 						return true
 					}
 				}
 			}
 			delay(pollIntervalMs)
 		}
-		Log.w(EyeAIApp.APP_LOG_TAG, "awaitSilence: timeout after ${maxWaitMs}ms (silentStart=$silentStart)")
+		Log.w(
+			EyeAIApp.APP_LOG_TAG,
+			"awaitSilence: timeout after ${maxWaitMs}ms (silentStart=$silentStart)"
+		)
 		return false
 	}
 
@@ -211,7 +244,10 @@ class TextToSpeechInstance(
 		// cancel old wait and restart if there is an active one
 		invokeFinishedJob?.cancel()
 
-		Log.d(EyeAIApp.APP_LOG_TAG, "invokeOnFinishedWhenPlaybackStops: launching wait-for-silence job.")
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"invokeOnFinishedWhenPlaybackStops: launching wait-for-silence job."
+		)
 		invokeFinishedJob = callbackScope.launch {
 			try {
 				val silent = try {
@@ -221,8 +257,15 @@ class TextToSpeechInstance(
 					false
 				}
 
-				Log.d(EyeAIApp.APP_LOG_TAG, "invokeOnFinishedWhenPlaybackStops: silent=$silent -> invoking global callback")
-				try { callback() } catch (e: Exception) { Log.e(EyeAIApp.APP_LOG_TAG, "Exception in onTTSFinishedSpeaking", e) }
+				Log.d(
+					EyeAIApp.APP_LOG_TAG,
+					"invokeOnFinishedWhenPlaybackStops: silent=$silent -> invoking global callback"
+				)
+				try {
+					callback()
+				} catch (e: Exception) {
+					Log.e(EyeAIApp.APP_LOG_TAG, "Exception in onTTSFinishedSpeaking", e)
+				}
 			} finally {
 				invokeFinishedJob = null
 			}
@@ -255,15 +298,29 @@ class TextToSpeechInstance(
 			pendingCallbacks[utteranceId] = onComplete
 			hasSpecificCallback.add(utteranceId)
 			incrementUtteranceCount()
-			val params = Bundle().apply { putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId) }
-			Log.d(EyeAIApp.APP_LOG_TAG, "speak enqueued utterance=$utteranceId (with specific callback) and queueMode=$queueMode")
+			val params = Bundle().apply {
+				putString(
+					TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId
+				)
+			}
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"speak enqueued utterance=$utteranceId (with specific callback) and queueMode=$queueMode"
+			)
 			tts?.speak(text, queueMode, params, utteranceId)
 		} else {
 			val utteranceId = "utt_${System.currentTimeMillis()}_${Random.nextInt(10000)}"
 			incrementUtteranceCount()
 			val queueModeStr = if (queueMode == QUEUE_FLUSH) "QUEUE_FLUSH" else "QUEUE_ADD"
-			val params = Bundle().apply { putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId) }
-			Log.d(EyeAIApp.APP_LOG_TAG, "speak enqueued utterance=$utteranceId with queueMode=$queueModeStr")
+			val params = Bundle().apply {
+				putString(
+					TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId
+				)
+			}
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"speak enqueued utterance=$utteranceId with queueMode=$queueModeStr"
+			)
 			tts?.speak(text, queueMode, params, utteranceId)
 		}
 	}
@@ -278,7 +335,7 @@ class TextToSpeechInstance(
 	 * Uses `_speechRate` to avoid any JVM setter collision.
 	 */
 	fun setSpeechRate(rate: Float) {
-		if (isReady){
+		if (isReady) {
 			tts?.setSpeechRate(rate)
 			_speechRate = rate
 		} else {
@@ -319,12 +376,11 @@ class TextToSpeechInstance(
 		val defaultVoice = runCatching { engine.defaultVoice }.getOrNull()
 		Log.d(
 			EyeAIApp.APP_LOG_TAG,
-			"[TTS][VOICES] engine=${runCatching { engine.defaultEngine }.getOrNull()} " +
-				"current=${currentVoice?.name} default=${defaultVoice?.name} " +
-				"available=${availableVoices.joinToString { voice ->
+			"[TTS][VOICES] engine=${runCatching { engine.defaultEngine }.getOrNull()} " + "current=${currentVoice?.name} default=${defaultVoice?.name} " + "available=${
+				availableVoices.joinToString { voice ->
 					"${voice.name}[${voice.locale},features=${voice.features}]"
-				}}"
-		)
+				}
+			}")
 
 		val descriptors = availableVoices.map { it.toTtsVoiceDescriptor() }
 		val selection = TtsVoiceSelector.select(
@@ -337,13 +393,14 @@ class TextToSpeechInstance(
 			Log.w(EyeAIApp.APP_LOG_TAG, "No usable TTS voice is available for speaker=$number")
 			return false
 		}
-		val selectedVoice = availableVoices.firstOrNull { it.name == selectedDescriptor.name } ?: run {
-			Log.w(
-				EyeAIApp.APP_LOG_TAG,
-				"Selected TTS voice disappeared from the active engine catalog: ${selectedDescriptor.name}"
-			)
-			return false
-		}
+		val selectedVoice =
+			availableVoices.firstOrNull { it.name == selectedDescriptor.name } ?: run {
+				Log.w(
+					EyeAIApp.APP_LOG_TAG,
+					"Selected TTS voice disappeared from the active engine catalog: ${selectedDescriptor.name}"
+				)
+				return false
+			}
 
 		if (applyVoice(engine, selectedVoice)) {
 			if (selection.requestedSpeakerAvailable) {
@@ -399,9 +456,8 @@ class TextToSpeechInstance(
 		defaultVoice: Voice?,
 		failedVoiceName: String
 	) {
-		val availableDescriptors = availableVoices
-			.filter { it.name != failedVoiceName }
-			.map { it.toTtsVoiceDescriptor() }
+		val availableDescriptors =
+			availableVoices.filter { it.name != failedVoiceName }.map { it.toTtsVoiceDescriptor() }
 		val safeDescriptor = TtsVoiceSelector.select(
 			requestedSpeaker = -1,
 			voices = availableDescriptors,

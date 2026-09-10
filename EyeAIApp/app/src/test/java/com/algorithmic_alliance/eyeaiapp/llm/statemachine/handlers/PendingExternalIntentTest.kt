@@ -13,8 +13,7 @@ class PendingExternalIntentTest {
 	fun codecPreservesCompleteOriginalIntentResultAcrossStateMachineInstances() {
 		val originalText = "  Lies bitte das \"Schild\".\n"
 		val probabilities = floatArrayOf(
-			0.64f, 0.05f, 0.04f, 0.03f, 0.06f,
-			0.02f, 0.05f, 0.03f, 0.04f, 0.04f
+			0.64f, 0.05f, 0.04f, 0.03f, 0.06f, 0.02f, 0.05f, 0.03f, 0.04f, 0.04f
 		)
 		val original = IntentResult(
 			intent = Intent.TEXT_RECOGNITION,
@@ -42,9 +41,7 @@ class PendingExternalIntentTest {
 	@Test
 	fun everyGlobalIntentGetsAnExplicitSettingsContextQuestion() {
 		listOf(
-			Intent.TEXT_RECOGNITION,
-			Intent.OBJECT_DETECTION,
-			Intent.MEASURE_DISTANCE
+			Intent.TEXT_RECOGNITION, Intent.OBJECT_DETECTION, Intent.MEASURE_DISTANCE
 		).forEach { intent ->
 			val question = PendingExternalIntentPresentation.confirmationQuestion(intent)
 			assertTrue(question.startsWith("Sie befinden sich noch in den Einstellungen."))

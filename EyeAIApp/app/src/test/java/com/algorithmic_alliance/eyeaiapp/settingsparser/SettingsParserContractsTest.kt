@@ -1,24 +1,27 @@
 package com.algorithmic_alliance.eyeaiapp.settingsparser
 
 import com.algorithmic_alliance.eyeaiapp.nlp.Intent
+import org.json.JSONObject
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.json.JSONObject
 
 class SettingsParserContractsTest {
 	@Test
 	fun `existing intents map to targets without adding a new classifier`() {
 		assertEquals(SettingTarget.FREQUENCY, SettingTarget.fromIntent(Intent.SET_FREQUENCY))
 		assertEquals(SettingTarget.BPS, SettingTarget.fromIntent(Intent.SET_BPS))
-		assertEquals(SettingTarget.SPEECH_SPEED, SettingTarget.fromIntent(Intent.CHANGE_SPEECH_SPEED))
+		assertEquals(
+			SettingTarget.SPEECH_SPEED, SettingTarget.fromIntent(Intent.CHANGE_SPEECH_SPEED)
+		)
 		assertEquals(SettingTarget.SPEAKER, SettingTarget.fromIntent(Intent.CHANGE_SPEAKER))
 		assertEquals(null, SettingTarget.fromIntent(Intent.OBJECT_DETECTION))
 	}
 
 	@Test
 	fun `frozen tokenizer prepends stable context and masks unknown words`() {
-		val vocabulary = FrozenSettingsTokenizer.SPECIAL_TOKENS.withIndex().associate { it.value to it.index } + mapOf("erhöhe" to 7)
+		val vocabulary = FrozenSettingsTokenizer.SPECIAL_TOKENS.withIndex()
+			.associate { it.value to it.index } + mapOf("erhöhe" to 7)
 		val tokenizer = FrozenSettingsTokenizer(vocabulary)
 		val encoded = tokenizer.encodeWithContext(SettingTarget.FREQUENCY, "erhöhe <NUM> unbekannt")
 		assertArrayEquals(intArrayOf(2, 7, 6, 1) + IntArray(28), encoded)
@@ -26,8 +29,10 @@ class SettingsParserContractsTest {
 
 	@Test
 	fun `shared Python Kotlin tokenizer golden vectors are identical`() {
-		val tokenizerJson = requireNotNull(javaClass.getResource("/tokenizer_golden_tokenizer.json")).readText()
-		val vectorsJson = requireNotNull(javaClass.getResource("/tokenizer_golden_vectors.json")).readText()
+		val tokenizerJson =
+			requireNotNull(javaClass.getResource("/tokenizer_golden_tokenizer.json")).readText()
+		val vectorsJson =
+			requireNotNull(javaClass.getResource("/tokenizer_golden_vectors.json")).readText()
 		val tokenizer = FrozenSettingsTokenizer.fromJson(tokenizerJson)
 		val payload = JSONObject(vectorsJson)
 		assertEquals(
@@ -44,8 +49,9 @@ class SettingsParserContractsTest {
 			)
 			val expected = vector.getJSONArray("expected_token_ids")
 			assertArrayEquals(
-				IntArray(expected.length()) { expected.getInt(it) },
-				tokenizer.encodeWithContext(SettingTarget.valueOf(vector.getString("target")), input)
+				IntArray(expected.length()) { expected.getInt(it) }, tokenizer.encodeWithContext(
+					SettingTarget.valueOf(vector.getString("target")), input
+				)
 			)
 		}
 	}

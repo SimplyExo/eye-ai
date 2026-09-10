@@ -2,8 +2,8 @@ package com.algorithmic_alliance.eyeaiapp.object_detection
 
 import android.content.Context
 import android.graphics.Bitmap
-import com.algorithmic_alliance.eyeaiapp.NativeLib
 import androidx.core.graphics.scale
+import com.algorithmic_alliance.eyeaiapp.NativeLib
 import uniffi.NativeLib.UniffiDetectedObject
 
 class YoloModel(var info: YoloModelInfo) {
@@ -18,8 +18,7 @@ class YoloModel(var info: YoloModelInfo) {
 
 	@Synchronized
 	fun create(
-		context: Context, skelDirectory: String,
-		enableNpu: Boolean
+		context: Context, skelDirectory: String, enableNpu: Boolean
 	) {
 		if (initialized && enableNpu == currentEnableNpu) {
 			return
@@ -29,13 +28,17 @@ class YoloModel(var info: YoloModelInfo) {
 		val modelBytes = info.getAsBytes(context)
 		labels = info.readLinesFromAsset(context).toList()
 
-		val delegateCacheDirectory =
-			NativeLib.createSerializedDelegateCacheDirectory(context)
+		val delegateCacheDirectory = NativeLib.createSerializedDelegateCacheDirectory(context)
 		val modelToken = NativeLib.getModelToken(context, info.tfliteFilename)
 
 		uniffi.NativeLib.initYoloRuntime(
-			info.tfliteFilename, modelBytes,delegateCacheDirectory.absolutePath, modelToken, labels,
-			 enableNpu, skelDirectory
+			info.tfliteFilename,
+			modelBytes,
+			delegateCacheDirectory.absolutePath,
+			modelToken,
+			labels,
+			enableNpu,
+			skelDirectory
 		)
 
 		val inputShape = uniffi.NativeLib.getYoloInputShape()
@@ -54,8 +57,7 @@ class YoloModel(var info: YoloModelInfo) {
 
 	@Synchronized
 	fun runInference(frame: Bitmap): Array<UniffiDetectedObject>? {
-		if (!initialized) {
-			/*Log.e(
+		if (!initialized) {			/*Log.e(
 				"YOLO",
 				"Tried to run YOLO inference on uninitialized yolo model, call create first!"
 			)*/

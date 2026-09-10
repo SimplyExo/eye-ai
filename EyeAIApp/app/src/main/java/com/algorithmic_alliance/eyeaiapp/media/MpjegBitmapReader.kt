@@ -4,7 +4,16 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -34,14 +43,17 @@ class MjpegBitmapReader(
 
 	private val trustAllCertificates: Boolean = true
 
-	private val scope: CoroutineScope = parentScope ?: CoroutineScope(Dispatchers.IO + SupervisorJob())
+	private val scope: CoroutineScope =
+		parentScope ?: CoroutineScope(Dispatchers.IO + SupervisorJob())
 	private var job: Job? = null
 
 	private val urlObj = URL("http://$ip/cam0")
-	private val connRaw = urlObj.openConnection() ?: throw IllegalStateException("Cannot open connection")
+	private val connRaw =
+		urlObj.openConnection() ?: throw IllegalStateException("Cannot open connection")
 
 	@Volatile
-	private var connection = (connRaw as? HttpURLConnection) ?: throw IllegalStateException("Not an HTTP connection")
+	private var connection =
+		(connRaw as? HttpURLConnection) ?: throw IllegalStateException("Not an HTTP connection")
 
 	fun start() {
 		if (job?.isActive == true) return
@@ -69,7 +81,8 @@ class MjpegBitmapReader(
 	private fun disconnect() {
 		try {
 			connection.disconnect()
-		} catch (_: Throwable) { }
+		} catch (_: Throwable) {
+		}
 		//connection = null
 	}
 
@@ -147,7 +160,8 @@ class MjpegBitmapReader(
 				}
 
 
-				val remaining = if (end + 2 < data.size) data.copyOfRange(end + 2, data.size) else ByteArray(0)
+				val remaining =
+					if (end + 2 < data.size) data.copyOfRange(end + 2, data.size) else ByteArray(0)
 				buffer.reset()
 				if (remaining.isNotEmpty()) buffer.write(remaining)
 			} else {
@@ -175,13 +189,21 @@ class MjpegBitmapReader(
 
 	@SuppressLint("TrustAllX509TrustManager")
 	private fun createInsecureSsl(): Pair<SSLSocketFactory, HostnameVerifier> {
-		val trustAll = arrayOf<TrustManager>(@SuppressLint("CustomX509TrustManager")
-		object : X509TrustManager {
-			override fun checkClientTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
+		val trustAll = arrayOf<TrustManager>(
+			@SuppressLint("CustomX509TrustManager") object : X509TrustManager {
+				override fun checkClientTrusted(
+					chain: Array<java.security.cert.X509Certificate>, authType: String
+				) {
+				}
 
-			override fun checkServerTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
-			override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> = arrayOf()
-		})
+				override fun checkServerTrusted(
+					chain: Array<java.security.cert.X509Certificate>, authType: String
+				) {
+				}
+
+				override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> =
+					arrayOf()
+			})
 
 		val sslContext = SSLContext.getInstance("TLS")
 		sslContext.init(null, trustAll, java.security.SecureRandom())

@@ -66,13 +66,15 @@ class Text2NumGermanNumberNormalizer : GermanNumberNormalizer {
 			val words = mutableListOf<String>()
 			while (endIndex < matches.size) {
 				val candidate = matches[endIndex]
-				if (endIndex > valueIndex && !isContiguous(text, matches[endIndex - 1].end, candidate.start)) {
+				if (endIndex > valueIndex && !isContiguous(
+						text, matches[endIndex - 1].end, candidate.start
+					)
+				) {
 					break
 				}
-				if (
-					digitToken.matches(candidate.raw) ||
-					!isNumberishWord(candidate.raw) ||
-					!articleIsNumeric(matches, endIndex, text)
+				if (digitToken.matches(candidate.raw) || !isNumberishWord(candidate.raw) || !articleIsNumeric(
+						matches, endIndex, text
+					)
 				) break
 				words += candidate.raw
 				endIndex++
@@ -83,7 +85,9 @@ class Text2NumGermanNumberNormalizer : GermanNumberNormalizer {
 			val value = parsed?.first
 			if (value != null) {
 				val end = matches[valueIndex + parsedWordCount - 1].end
-				occurrences += successfulOccurrence(text, start, end, value * sign, matches[valueIndex].start)
+				occurrences += successfulOccurrence(
+					text, start, end, value * sign, matches[valueIndex].start
+				)
 				index = valueIndex + parsedWordCount
 			} else {
 				// Match text2num's token API behavior: keep an unparseable grammar
@@ -100,8 +104,12 @@ class Text2NumGermanNumberNormalizer : GermanNumberNormalizer {
 			}
 		}
 
-		val ordered = occurrences.sortedWith(compareBy<NumberOccurrence> { it.start == null }.thenBy { it.start ?: 0 })
-		val values = ordered.filter { it.status == NumberOccurrenceStatus.SUCCESS }.map { requireNotNull(it.value) }
+		val ordered =
+			occurrences.sortedWith(compareBy<NumberOccurrence> { it.start == null }.thenBy {
+				it.start ?: 0
+			})
+		val values = ordered.filter { it.status == NumberOccurrenceStatus.SUCCESS }
+			.map { requireNotNull(it.value) }
 		return NumberNormalizationResult(
 			originalText = text,
 			normalizedText = maskedText(text, ordered),
@@ -114,11 +122,7 @@ class Text2NumGermanNumberNormalizer : GermanNumberNormalizer {
 	}
 
 	private fun successfulOccurrence(
-		text: String,
-		start: Int,
-		end: Int,
-		value: Double,
-		maskStart: Int
+		text: String, start: Int, end: Int, value: Double, maskStart: Int
 	): NumberOccurrence = NumberOccurrence(
 		originalText = text.substring(start, end),
 		value = value,
@@ -161,8 +165,9 @@ class Text2NumGermanNumberNormalizer : GermanNumberNormalizer {
 		if (fold(matches[index].raw) !in signWords || index + 1 >= matches.size) return false
 		val following = matches[index + 1]
 		if (!isContiguous(text, matches[index].end, following.start)) return false
-		return digitToken.matches(following.raw) ||
-			(isNumberishWord(following.raw) && articleIsNumeric(matches, index + 1, text))
+		return digitToken.matches(following.raw) || (isNumberishWord(following.raw) && articleIsNumeric(
+			matches, index + 1, text
+		))
 	}
 
 	private fun articleIsNumeric(matches: List<TokenMatch>, index: Int, text: String): Boolean {
@@ -191,19 +196,15 @@ class Text2NumGermanNumberNormalizer : GermanNumberNormalizer {
 	}
 
 	private fun connectorTouchesNumber(
-		matches: List<TokenMatch>,
-		index: Int,
-		occurrences: List<NumberOccurrence>,
-		text: String
+		matches: List<TokenMatch>, index: Int, occurrences: List<NumberOccurrence>, text: String
 	): Boolean {
 		val previousTokenClaimed = index > 0 && occurrences.any { occurrence ->
-			occurrence.status == NumberOccurrenceStatus.SUCCESS &&
-			occurrence.start != null && occurrence.end != null &&
-			occurrence.start <= matches[index - 1].start && occurrence.end >= matches[index - 1].end
+			occurrence.status == NumberOccurrenceStatus.SUCCESS && occurrence.start != null && occurrence.end != null && occurrence.start <= matches[index - 1].start && occurrence.end >= matches[index - 1].end
 		}
-		val nextIsNumberish = index + 1 < matches.size &&
-			isNumberishWord(matches[index + 1].raw) &&
-			articleIsNumeric(matches, index + 1, text)
+		val nextIsNumberish =
+			index + 1 < matches.size && isNumberishWord(matches[index + 1].raw) && articleIsNumeric(
+				matches, index + 1, text
+			)
 		return previousTokenClaimed || nextIsNumberish
 	}
 
@@ -235,7 +236,8 @@ class Text2NumGermanNumberNormalizer : GermanNumberNormalizer {
 				val leftValue = if (left.isEmpty()) 1 else parseCompound(left) ?: return null
 				var result = leftValue * multiplier
 				val additiveRight = right.removePrefix("und")
-				if (additiveRight.isNotEmpty()) result += parseCompound(additiveRight) ?: return null
+				if (additiveRight.isNotEmpty()) result += parseCompound(additiveRight)
+					?: return null
 				return result
 			}
 		}
@@ -250,11 +252,9 @@ class Text2NumGermanNumberNormalizer : GermanNumberNormalizer {
 
 	private fun coerceNumber(raw: String): Double = raw.replace(',', '.').toDouble()
 
-	private fun fold(word: String): String = word.lowercase(Locale.ROOT)
-		.replace("ä", "ae")
-		.replace("ö", "oe")
-		.replace("ü", "ue")
-		.replace("ß", "ss")
+	private fun fold(word: String): String =
+		word.lowercase(Locale.ROOT).replace("ä", "ae").replace("ö", "oe").replace("ü", "ue")
+			.replace("ß", "ss")
 
 	private data class TokenMatch(val raw: String, val start: Int, val end: Int) {
 		constructor(match: MatchResult) : this(match.value, match.range.first, match.range.last + 1)
@@ -270,14 +270,39 @@ class Text2NumGermanNumberNormalizer : GermanNumberNormalizer {
 		private val signWords = mapOf("minus" to -1.0, "plus" to 1.0)
 		private val connectorWords = setOf("komma", "und")
 		private val direct = mapOf(
-			"null" to 0, "ein" to 1, "eins" to 1, "eine" to 1, "einen" to 1,
-			"einem" to 1, "einer" to 1, "zwei" to 2, "drei" to 3, "vier" to 4,
-			"fuenf" to 5, "sechs" to 6, "sieben" to 7, "acht" to 8, "neun" to 9,
-			"zehn" to 10, "elf" to 11, "zwoelf" to 12, "dreizehn" to 13,
-			"vierzehn" to 14, "fuenfzehn" to 15, "sechzehn" to 16, "siebzehn" to 17,
-			"achtzehn" to 18, "neunzehn" to 19, "zwanzig" to 20, "dreissig" to 30,
-			"vierzig" to 40, "fuenfzig" to 50, "sechzig" to 60, "siebzig" to 70,
-			"achtzig" to 80, "neunzig" to 90
+			"null" to 0,
+			"ein" to 1,
+			"eins" to 1,
+			"eine" to 1,
+			"einen" to 1,
+			"einem" to 1,
+			"einer" to 1,
+			"zwei" to 2,
+			"drei" to 3,
+			"vier" to 4,
+			"fuenf" to 5,
+			"sechs" to 6,
+			"sieben" to 7,
+			"acht" to 8,
+			"neun" to 9,
+			"zehn" to 10,
+			"elf" to 11,
+			"zwoelf" to 12,
+			"dreizehn" to 13,
+			"vierzehn" to 14,
+			"fuenfzehn" to 15,
+			"sechzehn" to 16,
+			"siebzehn" to 17,
+			"achtzehn" to 18,
+			"neunzehn" to 19,
+			"zwanzig" to 20,
+			"dreissig" to 30,
+			"vierzig" to 40,
+			"fuenfzig" to 50,
+			"sechzig" to 60,
+			"siebzig" to 70,
+			"achtzig" to 80,
+			"neunzig" to 90
 		)
 		private val tens = direct.filterValues { it in 20..90 && it % 10 == 0 }
 		private val articleForms = setOf("ein", "eine", "einen", "einem", "einer")

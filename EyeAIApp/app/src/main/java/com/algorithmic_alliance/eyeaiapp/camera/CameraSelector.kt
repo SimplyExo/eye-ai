@@ -25,10 +25,9 @@ fun mostWideCameraSelector(cameraProvider: ProcessCameraProvider): CameraSelecto
 		}
 
 		val camera2CameraInfo = Camera2CameraInfo.from(cameraInfo)
-		val focalLengths =
-			camera2CameraInfo.getCameraCharacteristic(
-				CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS
-			)
+		val focalLengths = camera2CameraInfo.getCameraCharacteristic(
+			CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS
+		)
 
 		if (focalLengths != null && focalLengths.isNotEmpty()) {
 			// focalLengths in ascending order: smallest at first
@@ -52,6 +51,5 @@ fun performanceResolutionSelector(inputSize: Size): ResolutionSelector {
 		.setAllowedResolutionMode(ResolutionSelector.PREFER_CAPTURE_RATE_OVER_HIGHER_RESOLUTION)
 		.setResolutionStrategy(
 			ResolutionStrategy(inputSize, ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER)
-		)
-		.build()
+		).build()
 }

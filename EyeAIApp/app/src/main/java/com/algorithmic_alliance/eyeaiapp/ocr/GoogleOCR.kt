@@ -1,7 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.ocr
 
 import android.graphics.Bitmap
-import android.util.Log
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
@@ -16,8 +15,8 @@ class GoogleOCR {
 		private set
 
 	fun create() {
-		if (ocrModel == null)
-			ocrModel = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+		if (ocrModel == null) ocrModel =
+			TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 	}
 
 	suspend fun analyzeFrame(frame: Bitmap): List<TextBoundingBox> {
@@ -27,8 +26,7 @@ class GoogleOCR {
 
 		return suspendCoroutine { continuation ->
 			val converted = InputImage.fromBitmap(frame, 0)
-			ocrModel?.process(converted)
-				?.addOnSuccessListener { visionText ->
+			ocrModel?.process(converted)?.addOnSuccessListener { visionText ->
 					val tbb = ArrayList<TextBoundingBox>()
 					val sb = StringBuilder()
 
@@ -53,8 +51,7 @@ class GoogleOCR {
 					lastResult = sb.toString().trim()
 
 					continuation.resume(tbb)
-				}
-				?.addOnFailureListener { e ->
+				}?.addOnFailureListener { e ->
 					continuation.resumeWithException(e)
 				}
 		}

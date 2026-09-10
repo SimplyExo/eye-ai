@@ -18,7 +18,11 @@ class SettingsIntentRouterTest {
 	@Test
 	fun concreteSettingsIntentsRouteDirectlyWithUnchangedOriginalText() {
 		val examples = listOf(
-			Triple(Intent.SET_FREQUENCY, SettingIntent.FREQUENCY, "Setze bitte die Frequenz auf ungefähr 700 Hertz."),
+			Triple(
+				Intent.SET_FREQUENCY,
+				SettingIntent.FREQUENCY,
+				"Setze bitte die Frequenz auf ungefähr 700 Hertz."
+			),
 			Triple(Intent.CHANGE_SPEAKER, SettingIntent.VOICE, "Stell die Stimme auf männlich."),
 			Triple(Intent.CHANGE_SPEECH_SPEED, SettingIntent.TTS_SPEED, "Sprich schneller."),
 			Triple(Intent.SET_BPS, SettingIntent.BPS, "Setze die Signalrate auf 4 BPS.")
@@ -46,7 +50,13 @@ class SettingsIntentRouterTest {
 		)
 
 		examples.forEach { (intent, originalText) ->
-			assertTrue(SettingsIntentRouter.route(intentResult(intent, originalText)) is SettingsIntentRoute.Direct)
+			assertTrue(
+				SettingsIntentRouter.route(
+					intentResult(
+						intent, originalText
+					)
+				) is SettingsIntentRoute.Direct
+			)
 		}
 	}
 

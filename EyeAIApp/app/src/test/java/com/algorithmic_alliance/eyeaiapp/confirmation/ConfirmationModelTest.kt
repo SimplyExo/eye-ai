@@ -12,11 +12,9 @@ class ConfirmationModelTest {
 		val examples = mapOf(
 			ConfirmationLabel.ACCEPT to listOf(
 				"Ja.", "genau", "auf jeden Fall", "klingt gut", "mach weiter"
-			),
-			ConfirmationLabel.REJECT to listOf(
+			), ConfirmationLabel.REJECT to listOf(
 				"Nein.", "stopp", "abbrechen", "auf gar keinen Fall", "vergiss es"
-			),
-			ConfirmationLabel.UNKNOWN to listOf(
+			), ConfirmationLabel.UNKNOWN to listOf(
 				"weiß nicht", "hm", "kommt drauf an", "ich bin unsicher", "noch nicht"
 			)
 		)
@@ -52,31 +50,23 @@ class ConfirmationModelTest {
 				pendingAction = ACTION_FREQUENCY,
 				expectedLabel = ConfirmationLabel.ACCEPT,
 				expectedScores = doubleArrayOf(
-					0.6673445232598857,
-					0.14911717954675985,
-					0.1835382971933545
+					0.6673445232598857, 0.14911717954675985, 0.1835382971933545
 				)
-			),
-			ParityCase(
+			), ParityCase(
 				question = "Verstanden. Soll ich die BPS auf 4.0 setzen?",
 				answer = "Die neue BPS-Einstellung möchte ich nicht übernehmen.",
 				pendingAction = "die BPS auf 4.0 setzen",
 				expectedLabel = ConfirmationLabel.REJECT,
 				expectedScores = doubleArrayOf(
-					0.21652127261776946,
-					0.6603168998255656,
-					0.12316182755666504
+					0.21652127261776946, 0.6603168998255656, 0.12316182755666504
 				)
-			),
-			ParityCase(
+			), ParityCase(
 				question = "Verstanden. Soll die Assistentenstimme nun männlich sein?",
 				answer = "Welche Stimme ist gerade aktiv?",
 				pendingAction = "zur männlichen Assistentenstimme wechseln",
 				expectedLabel = ConfirmationLabel.UNKNOWN,
 				expectedScores = doubleArrayOf(
-					0.07925037063787671,
-					0.05348262080018633,
-					0.867267008561937
+					0.07925037063787671, 0.05348262080018633, 0.867267008561937
 				)
 			)
 		)
@@ -98,8 +88,7 @@ class ConfirmationModelTest {
 	@Test
 	fun lowConfidenceActionablePredictionBecomesUnknownWithoutChangingRawLabel() {
 		val result = model.classify(
-			question = "Sie befinden sich noch in den Einstellungen. Möchten Sie die " +
-				"Einstellungen verlassen und die Entfernung messen?",
+			question = "Sie befinden sich noch in den Einstellungen. Möchten Sie die " + "Einstellungen verlassen und die Entfernung messen?",
 			answer = "herr lasse das einstellung menü nicht für die entfernungsmessung",
 			pendingAction = "die Einstellungen verlassen und die Entfernung messen"
 		)

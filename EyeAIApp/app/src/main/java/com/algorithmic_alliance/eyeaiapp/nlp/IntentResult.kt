@@ -9,16 +9,7 @@ import kotlin.math.abs
  * order synchronized with the frozen `labels.json` artifacts.
  */
 enum class Intent {
-	TEXT_RECOGNITION,
-	OBJECT_DETECTION,
-	CHANGE_SPEECH_SPEED,
-	CHANGE_SPEAKER,
-	REDIRECT_TO_LLM,
-	OPEN_SETTINGS,
-	SET_FREQUENCY,
-	SET_BPS,
-	MEASURE_DISTANCE,
-	ABORT;
+	TEXT_RECOGNITION, OBJECT_DETECTION, CHANGE_SPEECH_SPEED, CHANGE_SPEAKER, REDIRECT_TO_LLM, OPEN_SETTINGS, SET_FREQUENCY, SET_BPS, MEASURE_DISTANCE, ABORT;
 
 	companion object {
 		/** Stable class-index order of every NLP V2 BaselineCNN model. */
@@ -66,8 +57,7 @@ data class IntentResult(
 		private const val PROBABILITY_SUM_TOLERANCE = 1e-3f
 
 		internal fun fromProbabilities(
-			originalText: String,
-			probabilities: FloatArray
+			originalText: String, probabilities: FloatArray
 		): IntentResult {
 			require(probabilities.size == Intent.CLASS_ORDER.size) {
 				"Expected ${Intent.CLASS_ORDER.size} intent probabilities, got ${probabilities.size}"

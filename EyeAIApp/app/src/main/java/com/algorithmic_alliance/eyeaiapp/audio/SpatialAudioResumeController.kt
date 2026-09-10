@@ -7,9 +7,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 
 enum class SpatialAudioResumeOutcome {
-	RESTORED,
-	TTS_SILENCE_TIMEOUT,
-	LISTENING_STATE_CHANGED
+	RESTORED, TTS_SILENCE_TIMEOUT, LISTENING_STATE_CHANGED
 }
 
 /**

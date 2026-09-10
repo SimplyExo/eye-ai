@@ -9,8 +9,7 @@ import java.nio.channels.FileChannel
 import java.security.MessageDigest
 
 data class LoadedIntentTokenizer(
-	val tokenizer: IntentTokenizer,
-	val labels: List<String>
+	val tokenizer: IntentTokenizer, val labels: List<String>
 )
 
 data class NLPModelInfo(
@@ -59,8 +58,7 @@ data class NLPModelInfo(
 				maxLength = config.getInt("max_length"),
 				type = tokenizerType,
 				bpeMerges = merges
-			),
-			labels = labels
+			), labels = labels
 		)
 	}
 
@@ -90,12 +88,10 @@ data class NLPModelInfo(
 		val padding = reservedTokens.getJSONObject("PAD")
 		val unknown = reservedTokens.getJSONObject("UNK")
 		require(
-			padding.getString("token") == IntentTokenizer.PAD_TOKEN &&
-				padding.getInt("id") == IntentTokenizer.PAD_TOKEN_ID
+			padding.getString("token") == IntentTokenizer.PAD_TOKEN && padding.getInt("id") == IntentTokenizer.PAD_TOKEN_ID
 		) { "Unexpected NLP V2 padding token contract" }
 		require(
-			unknown.getString("token") == IntentTokenizer.UNKNOWN_TOKEN &&
-				unknown.getInt("id") == IntentTokenizer.UNKNOWN_TOKEN_ID
+			unknown.getString("token") == IntentTokenizer.UNKNOWN_TOKEN && unknown.getInt("id") == IntentTokenizer.UNKNOWN_TOKEN_ID
 		) { "Unexpected NLP V2 unknown token contract" }
 
 		val expectedVocabularySize = when (tokenizerType) {
@@ -128,8 +124,8 @@ data class NLPModelInfo(
 	private fun vocabularyChecksum(vocabulary: List<String>): String {
 		// The training exporter hashes the compact, UTF-8 JSON representation.
 		val canonicalJson = JSONArray(vocabulary).toString()
-		val digest = MessageDigest.getInstance("SHA-256")
-			.digest(canonicalJson.toByteArray(Charsets.UTF_8))
+		val digest =
+			MessageDigest.getInstance("SHA-256").digest(canonicalJson.toByteArray(Charsets.UTF_8))
 		return buildString(digest.size * 2) {
 			digest.forEach { byte ->
 				val value = byte.toInt() and 0xff
@@ -153,8 +149,7 @@ data class NLPModelInfo(
 	}
 
 	private fun readAssetText(context: Context, filename: String): String =
-		context.assets.open("$tokenizerAssetDirectory/$filename")
-			.bufferedReader()
+		context.assets.open("$tokenizerAssetDirectory/$filename").bufferedReader()
 			.use { it.readText() }
 
 	companion object {
@@ -169,44 +164,37 @@ data class NLPModelInfo(
 				displayName = "M0 – Clean only – T1 Word – Seed 20260812",
 				tfliteAssetPath = "nlp-v2/models/m0_t1_seed_20260812.tflite",
 				tokenizerAssetDirectory = "nlp-v2/tokenizers/T1"
-			),
-			NLPModelInfo(
+			), NLPModelInfo(
 				id = "M0_T2",
 				displayName = "M0 – Clean only – T2 BPE – Seed 20260814",
 				tfliteAssetPath = "nlp-v2/models/m0_t2_seed_20260814.tflite",
 				tokenizerAssetDirectory = "nlp-v2/tokenizers/T2"
-			),
-			NLPModelInfo(
+			), NLPModelInfo(
 				id = "M1_T1",
 				displayName = "M1 – Joint Clean + Vosk – T1 Word – Seed 20260814",
 				tfliteAssetPath = "nlp-v2/models/m1_t1_seed_20260814.tflite",
 				tokenizerAssetDirectory = "nlp-v2/tokenizers/T1"
-			),
-			NLPModelInfo(
+			), NLPModelInfo(
 				id = "M1_T2",
 				displayName = "M1 – Joint Clean + Vosk – T2 BPE – Seed 20260812",
 				tfliteAssetPath = "nlp-v2/models/m1_t2_seed_20260812.tflite",
 				tokenizerAssetDirectory = "nlp-v2/tokenizers/T2"
-			),
-			NLPModelInfo(
+			), NLPModelInfo(
 				id = "M2_T1",
 				displayName = "M2 – Clean → Joint – T1 Word – Seed 20260813",
 				tfliteAssetPath = "nlp-v2/models/m2_t1_seed_20260813.tflite",
 				tokenizerAssetDirectory = "nlp-v2/tokenizers/T1"
-			),
-			NLPModelInfo(
+			), NLPModelInfo(
 				id = "M2_T2",
 				displayName = "M2 – Clean → Joint – T2 BPE – Seed 20260814",
 				tfliteAssetPath = "nlp-v2/models/m2_t2_seed_20260814.tflite",
 				tokenizerAssetDirectory = "nlp-v2/tokenizers/T2"
-			),
-			NLPModelInfo(
+			), NLPModelInfo(
 				id = "M3_T1",
 				displayName = "M3 – Clean → Vosk only – T1 Word – Seed 20260813",
 				tfliteAssetPath = "nlp-v2/models/m3_t1_seed_20260813.tflite",
 				tokenizerAssetDirectory = "nlp-v2/tokenizers/T1"
-			),
-			NLPModelInfo(
+			), NLPModelInfo(
 				id = "M3_T2",
 				displayName = "M3 – Clean → Vosk only – T2 BPE – Seed 20260810",
 				tfliteAssetPath = "nlp-v2/models/m3_t2_seed_20260810.tflite",
@@ -214,8 +202,7 @@ data class NLPModelInfo(
 			)
 		)
 
-		fun findById(id: String): NLPModelInfo =
-			BASELINE_MODELS.firstOrNull { it.id == id }
-				?: BASELINE_MODELS.first { it.id == DEFAULT_MODEL_ID }
+		fun findById(id: String): NLPModelInfo = BASELINE_MODELS.firstOrNull { it.id == id }
+			?: BASELINE_MODELS.first { it.id == DEFAULT_MODEL_ID }
 	}
 }

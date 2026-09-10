@@ -16,7 +16,9 @@
       "status": "COMPLETE",
       "normalized_text": "ich hätte die frequenz gern auf <NUM> hertz",
       "number_status": "SUCCESS",
-      "extracted_numeric_values": [540.0],
+      "extracted_numeric_values": [
+        540.0
+      ],
       "diagnostics": []
     },
     {
@@ -31,7 +33,9 @@
       "status": "COMPLETE",
       "normalized_text": "um <NUM> hertz soll die frequenz höher werden",
       "number_status": "SUCCESS",
-      "extracted_numeric_values": [100.0],
+      "extracted_numeric_values": [
+        100.0
+      ],
       "diagnostics": []
     },
     {
@@ -46,7 +50,9 @@
       "status": "COMPLETE",
       "normalized_text": "um <NUM> hertz soll die frequenz niedriger werden",
       "number_status": "SUCCESS",
-      "extracted_numeric_values": [100.0],
+      "extracted_numeric_values": [
+        100.0
+      ],
       "diagnostics": []
     },
     {
@@ -61,8 +67,12 @@
       "status": "COMPLETE",
       "normalized_text": "ich möchte beim frequenzwert minus <NUM> hertz",
       "number_status": "SUCCESS",
-      "extracted_numeric_values": [70.0],
-      "raw_number_occurrence_values": [-70.0],
+      "extracted_numeric_values": [
+        70.0
+      ],
+      "raw_number_occurrence_values": [
+        -70.0
+      ],
       "diagnostics": []
     },
     {
@@ -93,7 +103,9 @@
       "normalized_text": "für die frequenz bitte einen wert einstellen",
       "number_status": "NO_NUMBER",
       "extracted_numeric_values": [],
-      "diagnostics": ["NUMERIC_VALUE_REQUIRED"]
+      "diagnostics": [
+        "NUMERIC_VALUE_REQUIRED"
+      ]
     },
     {
       "id": "speaker_male",
@@ -153,7 +165,9 @@
       "normalized_text": "wechsel die stimme und nimm die feminine",
       "number_status": "NO_NUMBER",
       "extracted_numeric_values": [],
-      "diagnostics": ["TOGGLE_SPEAKER_MUST_BE_UNSPECIFIED"]
+      "diagnostics": [
+        "TOGGLE_SPEAKER_MUST_BE_UNSPECIFIED"
+      ]
     }
   ]
 }

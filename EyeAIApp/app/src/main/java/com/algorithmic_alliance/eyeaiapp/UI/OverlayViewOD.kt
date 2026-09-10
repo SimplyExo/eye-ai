@@ -61,13 +61,11 @@ class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, att
 
 		val cameraPreviewImageSize = if (viewAspectRatio > cameraAspectRatio) {
 			Size(
-				(height.toFloat() * cameraAspectRatio).toInt(),
-				height
+				(height.toFloat() * cameraAspectRatio).toInt(), height
 			)
 		} else {
 			Size(
-				width,
-				(width.toFloat() / cameraAspectRatio).toInt()
+				width, (width.toFloat() / cameraAspectRatio).toInt()
 			)
 		}
 
@@ -108,16 +106,14 @@ class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, att
 	fun setResults(boundingBoxes: Array<UniffiDetectedObject>) {
 		val changed = !results.contentEquals(boundingBoxes)
 		results = boundingBoxes
-		if (changed)
-			invalidate()
+		if (changed) invalidate()
 	}
 
 	fun setCameraResolution(newCameraResolution: Size) {
 		val changed = cameraResolution != newCameraResolution
 		cameraResolution = newCameraResolution
 
-		if (changed)
-			invalidate()
+		if (changed) invalidate()
 	}
 
 	companion object {

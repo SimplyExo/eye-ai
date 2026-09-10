@@ -2,18 +2,19 @@ package com.algorithmic_alliance.eyeaiapp.audio
 
 import android.content.Context
 import android.util.Log
-import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
-import com.algorithmic_alliance.eyeaiapp.NativeLib
+import com.algorithmic_alliance.eyeaiapp.R
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.concurrent.Executors
-import kotlinx.coroutines.*
-import java.io.InputStream
 import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 
 object SpatialAudio {
@@ -36,8 +37,7 @@ object SpatialAudio {
 					val objectData = eyeAIApp.aiData.detectedObjects.get()
 					if (depthData != null) {
 						uniffi.NativeLib.sendAiDataForSpatialAudio(
-							depthData.asUniffiWrapper(),
-							objectData?.toList() ?: emptyList()
+							depthData.asUniffiWrapper(), objectData?.toList() ?: emptyList()
 						)
 					}
 					delay(50)
@@ -59,7 +59,9 @@ object SpatialAudio {
 
 		uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
-		uniffi.NativeLib.setAudioSettings(settings.depthAudioFrequency.toFloat(), settings.depthAudioClickIncidence)
+		uniffi.NativeLib.setAudioSettings(
+			settings.depthAudioFrequency.toFloat(), settings.depthAudioClickIncidence
+		)
 
 		synchronized(lock) {
 			if (!::executor.isInitialized || executor.isShutdown) {

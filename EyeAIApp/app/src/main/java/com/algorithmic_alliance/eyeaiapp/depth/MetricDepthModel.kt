@@ -2,29 +2,22 @@ package com.algorithmic_alliance.eyeaiapp.depth
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Size
 import android.util.Log
+import android.util.Size
 import androidx.core.graphics.scale
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 
 /** All needed information to create and use a depth model */
 class MetricDepthModelInfo(
-	val name: String,
-	val relativeDepthFileName: String
+	val name: String, val relativeDepthFileName: String
 ) {
 	/** @return null if model type is not supported */
 	fun createDepthModel(
-		context: Context,
-		skelDirectory: String,
-		enableNpu: Boolean
+		context: Context, skelDirectory: String, enableNpu: Boolean
 	): MetricDepthModel {
 		return MetricDepthModel(
-			context,
-			name,
-			relativeDepthFileName,
-			skelDirectory,
-			enableNpu
+			context, name, relativeDepthFileName, skelDirectory, enableNpu
 		)
 	}
 }
@@ -41,8 +34,7 @@ class MetricDepthModel(
 	init {
 		val relativeDepthModelData = context.assets.open(relativeDepthFileName).readBytes()
 
-		val delegateCacheDirectory =
-			NativeLib.createSerializedDelegateCacheDirectory(context)
+		val delegateCacheDirectory = NativeLib.createSerializedDelegateCacheDirectory(context)
 		val relativeDepthModelToken = NativeLib.getModelToken(context, relativeDepthFileName)
 
 		uniffi.NativeLib.initMetricDepthModel(

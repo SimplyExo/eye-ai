@@ -1,16 +1,13 @@
 package com.algorithmic_alliance.eyeaiapp
 
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.PixelFormat
 import android.media.Image
-import android.os.Build
 import android.util.Log
 import android.util.Size
 import androidx.core.graphics.createBitmap
-import uniffi.NativeLib.UniffiDetectedObject
 import uniffi.NativeLib.UniffiFloatBufferWrapper
 import uniffi.NativeLib.UniffiIntBufferWrapper
 import java.io.File
@@ -29,39 +26,34 @@ object NativeLib {
 	external fun getByteBufferPtr(buffer: ByteBuffer): Long
 
 	class NativeFloatBuffer(length: Int) {
-		var byteBuffer = ByteBuffer
-			.allocateDirect(length * Float.SIZE_BYTES)
-			.order(ByteOrder.nativeOrder())
+		var byteBuffer =
+			ByteBuffer.allocateDirect(length * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
 
 		var floatBuffer = byteBuffer.asFloatBuffer()
 
 		fun asUniffiWrapper(): UniffiFloatBufferWrapper {
 			return UniffiFloatBufferWrapper(
-				getByteBufferPtr(byteBuffer),
-				floatBuffer.capacity()
+				getByteBufferPtr(byteBuffer), floatBuffer.capacity()
 			)
 		}
 	}
 
 	class NativeIntBuffer(length: Int) {
-		var byteBuffer = ByteBuffer
-			.allocateDirect(length * Int.SIZE_BYTES)
-			.order(ByteOrder.nativeOrder())
+		var byteBuffer =
+			ByteBuffer.allocateDirect(length * Int.SIZE_BYTES).order(ByteOrder.nativeOrder())
 
 		var intBuffer = byteBuffer.asIntBuffer()
 
 		fun asUniffiWrapper(): UniffiIntBufferWrapper {
 			return UniffiIntBufferWrapper(
-				getByteBufferPtr(byteBuffer),
-				intBuffer.capacity()
+				getByteBufferPtr(byteBuffer), intBuffer.capacity()
 			)
 		}
 	}
 
 
 	external fun bitmapToRgbHwc255FloatArray(
-		bitmap: Bitmap,
-		outFloatBuffer: FloatBuffer
+		bitmap: Bitmap, outFloatBuffer: FloatBuffer
 	)
 
 
@@ -78,8 +70,7 @@ object NativeLib {
 		val colormappedPixels = NativeIntBuffer(input.length)
 
 		uniffi.NativeLib.metricDepthColormap(
-			input,
-			colormappedPixels.asUniffiWrapper()
+			input, colormappedPixels.asUniffiWrapper()
 		)
 		//metricDepthColormap(input, colormappedPixels)
 
@@ -137,16 +128,15 @@ object NativeLib {
 		return rotateBitmap(bitmap, rotationDegrees)
 	}
 
-	fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Float): Bitmap =
-		Bitmap.createBitmap(
-			bitmap,
-			0,
-			0,
-			bitmap.width,
-			bitmap.height,
-			Matrix().apply { postRotate(rotationDegrees) },
-			false
-		)
+	fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Float): Bitmap = Bitmap.createBitmap(
+		bitmap,
+		0,
+		0,
+		bitmap.width,
+		bitmap.height,
+		Matrix().apply { postRotate(rotationDegrees) },
+		false
+	)
 
 	fun createSerializedDelegateCacheDirectory(context: Context): File {
 		val gpuDelegateCacheDirectory = File(context.cacheDir, "gpu_delegate_cache")

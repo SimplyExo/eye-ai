@@ -1,8 +1,8 @@
 package com.algorithmic_alliance.eyeaiapp.settingsparser
 
+import org.json.JSONObject
 import java.text.Normalizer
 import java.util.Locale
-import org.json.JSONObject
 
 /** Exact text and target-context preparation shared by the two frozen encoders. */
 private object SettingsTokenizerTextContract {
@@ -25,10 +25,11 @@ private object SettingsTokenizerTextContract {
 		" "
 	).trim()
 
-	fun tokenizedWords(text: String): List<String> = tokenPattern.findAll(normalize(text)).map { match ->
-		val token = match.value
-		if (token in wordSpecialTokens) token else token.lowercase(Locale.ROOT)
-	}.toList()
+	fun tokenizedWords(text: String): List<String> =
+		tokenPattern.findAll(normalize(text)).map { match ->
+			val token = match.value
+			if (token in wordSpecialTokens) token else token.lowercase(Locale.ROOT)
+		}.toList()
 
 	fun contextualText(target: SettingTarget, normalizedText: String): String =
 		"${contextToken(target)} $normalizedText"
@@ -65,7 +66,8 @@ class FrozenSettingsTokenizer(
 		return ids
 	}
 
-	internal fun tokenize(text: String): List<String> = SettingsTokenizerTextContract.tokenizedWords(text)
+	internal fun tokenize(text: String): List<String> =
+		SettingsTokenizerTextContract.tokenizedWords(text)
 
 	companion object {
 		const val TOKENIZER_SCHEMA_VERSION = 2
@@ -82,7 +84,8 @@ class FrozenSettingsTokenizer(
 		fun contextTokenForTarget(target: SettingTarget): String =
 			SettingsTokenizerTextContract.contextToken(target)
 
-		fun normalizeTokenizerText(text: String): String = SettingsTokenizerTextContract.normalize(text)
+		fun normalizeTokenizerText(text: String): String =
+			SettingsTokenizerTextContract.normalize(text)
 
 		fun fromJson(json: String): FrozenSettingsTokenizer {
 			val payload = JSONObject(json)
@@ -124,7 +127,8 @@ class FrozenCharacterSettingsTokenizer(
 	fun encode(text: String): IntArray {
 		val ids = IntArray(maxLen) { vocabulary.getValue(PAD) }
 		text.codePoints().iterator().asSequence().take(maxLen).forEachIndexed { index, codePoint ->
-			ids[index] = vocabulary[String(Character.toChars(codePoint))] ?: vocabulary.getValue(UNK)
+			ids[index] =
+				vocabulary[String(Character.toChars(codePoint))] ?: vocabulary.getValue(UNK)
 		}
 		return ids
 	}

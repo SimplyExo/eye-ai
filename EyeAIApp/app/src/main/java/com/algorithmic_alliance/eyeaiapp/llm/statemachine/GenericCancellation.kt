@@ -24,9 +24,6 @@ object GenericCancellation {
 	fun responseFor(input: String): String? = RESPONSE.takeIf { matches(input) }
 
 	private fun normalize(input: String): String =
-		Normalizer.normalize(input, Normalizer.Form.NFKC)
-			.lowercase(Locale.ROOT)
-			.replace(Regex("[^\\p{L}\\p{N}_]+"), " ")
-			.trim()
-			.replace(Regex(" +"), " ")
+		Normalizer.normalize(input, Normalizer.Form.NFKC).lowercase(Locale.ROOT)
+			.replace(Regex("[^\\p{L}\\p{N}_]+"), " ").trim().replace(Regex(" +"), " ")
 }

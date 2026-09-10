@@ -14,10 +14,7 @@ class SettingsMenuIntentRouterTest {
 	@Test
 	fun existingConcreteSettingsIntentsKeepLocalRouting() {
 		val intents = listOf(
-			Intent.SET_FREQUENCY,
-			Intent.CHANGE_SPEAKER,
-			Intent.SET_BPS,
-			Intent.CHANGE_SPEECH_SPEED
+			Intent.SET_FREQUENCY, Intent.CHANGE_SPEAKER, Intent.SET_BPS, Intent.CHANGE_SPEECH_SPEED
 		)
 
 		intents.forEach { intent ->
@@ -40,9 +37,7 @@ class SettingsMenuIntentRouterTest {
 	@Test
 	fun allSupportedGlobalTop1IntentsRequestContextSwitch() {
 		val globalIntents = listOf(
-			Intent.TEXT_RECOGNITION,
-			Intent.OBJECT_DETECTION,
-			Intent.MEASURE_DISTANCE
+			Intent.TEXT_RECOGNITION, Intent.OBJECT_DETECTION, Intent.MEASURE_DISTANCE
 		)
 
 		globalIntents.forEach { intent ->
@@ -75,14 +70,12 @@ class SettingsMenuIntentRouterTest {
 				topConfidence = 0.94f,
 				bestSettingsIntent = Intent.SET_FREQUENCY,
 				bestSettingsConfidence = 0.63f
-			),
-			threshold
+			), threshold
 		)
 
 		assertTrue(route is SettingsMenuIntentRoute.ExternalIntent)
 		assertEquals(
-			Intent.TEXT_RECOGNITION,
-			(route as SettingsMenuIntentRoute.ExternalIntent).intent
+			Intent.TEXT_RECOGNITION, (route as SettingsMenuIntentRoute.ExternalIntent).intent
 		)
 	}
 
@@ -94,14 +87,12 @@ class SettingsMenuIntentRouterTest {
 				topConfidence = 0.90f,
 				bestSettingsIntent = Intent.SET_FREQUENCY,
 				bestSettingsConfidence = 0.90f
-			),
-			threshold
+			), threshold
 		)
 
 		assertTrue(route is SettingsMenuIntentRoute.LocalSetting)
 		assertEquals(
-			Intent.SET_FREQUENCY,
-			(route as SettingsMenuIntentRoute.LocalSetting).intent
+			Intent.SET_FREQUENCY, (route as SettingsMenuIntentRoute.LocalSetting).intent
 		)
 	}
 
@@ -113,8 +104,7 @@ class SettingsMenuIntentRouterTest {
 				topConfidence = 0.59f,
 				bestSettingsIntent = Intent.SET_FREQUENCY,
 				bestSettingsConfidence = 0.59f
-			),
-			threshold
+			), threshold
 		)
 
 		assertSame(SettingsMenuIntentRoute.Unresolved, route)
@@ -128,8 +118,7 @@ class SettingsMenuIntentRouterTest {
 				topConfidence = 0.3913814f,
 				bestSettingsIntent = Intent.ABORT,
 				bestSettingsConfidence = 0.3526614f
-			),
-			threshold
+			), threshold
 		)
 
 		assertSame(SettingsMenuIntentRoute.Unresolved, route)

@@ -1,9 +1,9 @@
-#include <jni.h>
-#include <android/log.h>
 #include <android/bitmap.h>
+#include <android/log.h>
+#include <format>
+#include <jni.h>
 #include <memory>
 #include <span>
-#include <format>
 
 template<typename... Args>
 static void formatted_log(int priority, const char* format, Args... args) {
@@ -16,7 +16,7 @@ static void formatted_log(int priority, const char* format, Args... args) {
 
 	try {
 		const std::string formatted =
-		std::vformat(format, std::make_format_args(args...));
+			std::vformat(format, std::make_format_args(args...));
 
 		__android_log_write(priority, TAG, formatted.c_str());
 	} catch (const std::format_error& e) {
@@ -27,13 +27,14 @@ static void formatted_log(int priority, const char* format, Args... args) {
 #define LOG_INFO(...) formatted_log(ANDROID_LOG_INFO, __VA_ARGS__)
 #define LOG_ERROR(...) formatted_log(ANDROID_LOG_ERROR, __VA_ARGS__)
 
-
 constexpr static uint8_t red_channel_from_argb_color(int color) {
 	return (color >> 16) & 255;
 }
+
 constexpr static uint8_t green_channel_from_argb_color(int color) {
 	return (color >> 8) & 255;
 }
+
 constexpr static uint8_t blue_channel_from_argb_color(int color) {
 	return color & 255;
 }
@@ -52,7 +53,8 @@ struct [[nodiscard]] BitmapError {
 	}
 };
 
-[[nodiscard]] static std::optional<BitmapError> check_android_bitmap_result(int result) {
+[[nodiscard]] static std::optional<BitmapError>
+check_android_bitmap_result(int result) {
 	switch (result) {
 	case ANDROID_BITMAP_RESULT_SUCCESS:
 		return std::nullopt;
@@ -72,7 +74,8 @@ struct [[nodiscard]] BitmapError {
 /// converts pixel from bitmap into float array with (height, width, channel)
 /// shape and 3 rgb-channels each in the range of 0.0f to 255.0f
 /// often the right format for use with tflite models
-[[nodiscard]] static std::optional<BitmapError> bitmap_to_rgb_hwc_255_float_array(
+[[nodiscard]] static std::optional<BitmapError>
+bitmap_to_rgb_hwc_255_float_array(
 	JNIEnv* env,
 	jobject bitmap,
 	std::span<float> out_float_array
@@ -91,7 +94,8 @@ struct [[nodiscard]] BitmapError {
 		);
 	}
 
-	if (out_float_array.size() != static_cast<size_t>(info.width) * static_cast<size_t>(info.height) * 3)
+	if (out_float_array.size() !=
+		static_cast<size_t>(info.width) * static_cast<size_t>(info.height) * 3)
 		throw std::invalid_argument("out_float_array");
 
 	void* address_ptr = nullptr;
@@ -116,10 +120,12 @@ struct [[nodiscard]] BitmapError {
 	size_t j = 0;
 	for (; i < static_cast<size_t>(info.width) * (size_t)info.height; i++) {
 		const int pixel_color = pixel_ptr[i];
-		out_float_array[j++] = static_cast<float>(red_channel_from_argb_color(pixel_color));
+		out_float_array[j++] =
+			static_cast<float>(red_channel_from_argb_color(pixel_color));
 		out_float_array[j++] =
 			static_cast<float>(green_channel_from_argb_color(pixel_color));
-		out_float_array[j++] = static_cast<float>(blue_channel_from_argb_color(pixel_color));
+		out_float_array[j++] =
+			static_cast<float>(blue_channel_from_argb_color(pixel_color));
 	}
 
 	return check_android_bitmap_result(AndroidBitmap_unlockPixels(env, bitmap));
@@ -151,9 +157,8 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 	};
 	// NativeFloatArrayScope out_float_array_scope(env, out_float_array);
 
-	if (const auto error = bitmap_to_rgb_hwc_255_float_array(
-			env, bitmap, out_float_span
-		)) {
+	if (const auto error =
+			bitmap_to_rgb_hwc_255_float_array(env, bitmap, out_float_span)) {
 		LOG_ERROR("bitmapToRgbHwc255FloatArray failed: {}", error->to_string());
 	}
 }

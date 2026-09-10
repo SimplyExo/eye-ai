@@ -1,8 +1,8 @@
 package com.algorithmic_alliance.eyeaiapp
 
 import android.content.Context
-import androidx.preference.PreferenceManager
 import androidx.core.content.edit
+import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 
 data class Settings(
@@ -19,7 +19,7 @@ data class Settings(
 	val mediaSource: String?,
 	val eyeAIVisionIP: String?,
 	var depthAudioPlayback: Boolean,
-	var objectAudioPlayback: Boolean,	
+	var objectAudioPlayback: Boolean,
 	var depthAudioFrequency: Int,
 	var depthAudioClickIncidence: Int,
 	var objectAudioPlaybackLanguage: String?,
@@ -34,13 +34,11 @@ data class Settings(
 			val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
 			val depthModel = sharedPreferences.getString(
-				context.getString(R.string.depth_model_setting),
-				EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
+				context.getString(R.string.depth_model_setting), EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
 			).toString()
 
 			val depthFrameRateLimitEnabled = sharedPreferences.getBoolean(
-				context.getString(R.string.enable_depth_frame_rate_limit_setting),
-				true
+				context.getString(R.string.enable_depth_frame_rate_limit_setting), true
 			)
 
 			val maxDepthFrameRate = if (depthFrameRateLimitEnabled) {
@@ -53,34 +51,28 @@ data class Settings(
 			}
 
 			val showProfilingInfo = sharedPreferences.getBoolean(
-				context.getString(R.string.show_profiling_info_setting),
-				false
+				context.getString(R.string.show_profiling_info_setting), false
 			)
 
 			val showDebugInputBitmap = sharedPreferences.getBoolean(
-				context.getString(R.string.show_debug_input_bitmap_setting),
-				false
+				context.getString(R.string.show_debug_input_bitmap_setting), false
 			)
 
 			val enableSpeechRecognition = sharedPreferences.getBoolean(
-				context.getString(R.string.enable_speech_recognition_setting),
-				true
+				context.getString(R.string.enable_speech_recognition_setting), true
 			)
 
 			val configuredNlpModel = sharedPreferences.getString(
-				context.getString(R.string.nlp_model_setting),
-				NLPModelInfo.DEFAULT_MODEL_ID
+				context.getString(R.string.nlp_model_setting), NLPModelInfo.DEFAULT_MODEL_ID
 			).toString()
 			val nlpModel = NLPModelInfo.findById(configuredNlpModel).id
 
 			val enableObjectDetection = sharedPreferences.getBoolean(
-				context.getString(R.string.enable_object_detection_setting),
-				true
+				context.getString(R.string.enable_object_detection_setting), true
 			)
 
 			val objectDetectionFrameRateLimitEnabled = sharedPreferences.getBoolean(
-				context.getString(R.string.enable_object_detection_frame_rate_limit_setting),
-				true
+				context.getString(R.string.enable_object_detection_frame_rate_limit_setting), true
 			)
 
 			val maxObjectDetectionFrameRate = if (objectDetectionFrameRateLimitEnabled) {
@@ -93,8 +85,7 @@ data class Settings(
 			}
 
 			val enableOCR = sharedPreferences.getBoolean(
-				context.getString(R.string.enable_ocr_setting),
-				true
+				context.getString(R.string.enable_ocr_setting), true
 			)
 
 			val inputSource = sharedPreferences.getString(
@@ -103,38 +94,39 @@ data class Settings(
 			)
 
 			val mediaSource = sharedPreferences.getString(
-				context.getString(R.string.media_path_setting),
-				""
+				context.getString(R.string.media_path_setting), ""
 			)
 
 			val eyeAIVisionIP = sharedPreferences.getString(
-				context.getString(R.string.eyeaivision_ip_setting),
-				""
+				context.getString(R.string.eyeaivision_ip_setting), ""
 			)
 
 			val depthAudioPlayback = sharedPreferences.getBoolean(
-				context.getString(R.string.depth_playback_setting),
-				true
+				context.getString(R.string.depth_playback_setting), true
 			)
 
 			val objectAudioPlayback = sharedPreferences.getBoolean(
-				context.getString(R.string.object_playback_setting),
-				true
+				context.getString(R.string.object_playback_setting), true
 			)
 
-			val jpegCompression = sharedPreferences.getInt(context.getString(R.string.jpeg_compression),
-				15
+			val jpegCompression = sharedPreferences.getInt(
+				context.getString(R.string.jpeg_compression), 15
 			)
 
-			val depthAudioClickIncidence = sharedPreferences.getInt(context.getString(R.string.audio_playback_rate_setting), 2)
+			val depthAudioClickIncidence =
+				sharedPreferences.getInt(context.getString(R.string.audio_playback_rate_setting), 2)
 
-			val depthAudioFrequency = sharedPreferences.getInt(context.getString(R.string.audio_frequency_range_setting), 500)
+			val depthAudioFrequency = sharedPreferences.getInt(
+				context.getString(R.string.audio_frequency_range_setting), 500
+			)
 
-			val objectAudioPlaybackLanguage = sharedPreferences.getString(context.getString(R.string.object_playback_language), context.getString(R.string.language_is_german))
+			val objectAudioPlaybackLanguage = sharedPreferences.getString(
+				context.getString(R.string.object_playback_language),
+				context.getString(R.string.language_is_german)
+			)
 
 			val enableNpu = sharedPreferences.getBoolean(
-				context.getString(R.string.enable_npu_delegate_setting),
-				true
+				context.getString(R.string.enable_npu_delegate_setting), true
 			)
 
 			return Settings(
@@ -196,8 +188,7 @@ data class Settings(
 			putString(context.getString(R.string.depth_model_setting), depthModel)
 			putBoolean(context.getString(R.string.show_profiling_info_setting), showProfilingInfo)
 			putBoolean(
-				context.getString(R.string.show_debug_input_bitmap_setting),
-				showDebugInputBitmap
+				context.getString(R.string.show_debug_input_bitmap_setting), showDebugInputBitmap
 			)
 			putBoolean(
 				context.getString(R.string.enable_speech_recognition_setting),
@@ -205,8 +196,7 @@ data class Settings(
 			)
 			putString(context.getString(R.string.nlp_model_setting), nlpModel)
 			putBoolean(
-				context.getString(R.string.enable_object_detection_setting),
-				enableObjectDetection
+				context.getString(R.string.enable_object_detection_setting), enableObjectDetection
 			)
 			putBoolean(context.getString(R.string.enable_ocr_setting), enableOCR)
 			putBoolean(context.getString(R.string.depth_playback_setting), depthAudioPlayback)
@@ -219,8 +209,7 @@ data class Settings(
 				putBoolean(context.getString(R.string.enable_depth_frame_rate_limit_setting), true)
 				putInt(context.getString(R.string.max_depth_frame_rate_setting), it)
 			} ?: putBoolean(
-				context.getString(R.string.enable_depth_frame_rate_limit_setting),
-				false
+				context.getString(R.string.enable_depth_frame_rate_limit_setting), false
 			)
 
 			maxObjectDetectionFrameRate?.let {
@@ -230,8 +219,7 @@ data class Settings(
 				)
 				putInt(context.getString(R.string.max_object_detection_frame_rate_setting), it)
 			} ?: putBoolean(
-				context.getString(R.string.enable_object_detection_frame_rate_limit_setting),
-				false
+				context.getString(R.string.enable_object_detection_frame_rate_limit_setting), false
 			)
 
 		}

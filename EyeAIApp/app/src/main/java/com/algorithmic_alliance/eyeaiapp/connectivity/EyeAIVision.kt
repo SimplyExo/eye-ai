@@ -1,19 +1,18 @@
 package com.algorithmic_alliance.eyeaiapp.connectivity
 
 import android.graphics.Bitmap
-import androidx.lifecycle.LifecycleCoroutineScope
-import androidx.lifecycle.lifecycleScope
 import com.algorithmic_alliance.eyeaiapp.media.MjpegBitmapReader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.io.*
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.Socket
-import java.net.SocketException
 import java.net.URL
 import java.net.UnknownHostException
 import java.util.concurrent.Executors
@@ -82,7 +81,7 @@ open class EyeAIVision(
 				onMjpegError(e)
 			},
 
-		)
+			)
 
 		mjpegBitmapReader?.start()
 	}

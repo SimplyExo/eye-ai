@@ -20,18 +20,13 @@ class LocalSettingsDialogFlowTest {
 	private val jsonParser = JsonParser()
 	private val flow = LocalSettingsDialogFlow(jsonParser)
 	private val currentState = CurrentSettingsState(
-		frequency = 600,
-		bps = 2.0,
-		speechSpeed = 1.0,
-		speaker = SpeakerChoice.FEMALE
+		frequency = 600, bps = 2.0, speechSpeed = 1.0, speaker = SpeakerChoice.FEMALE
 	)
 
 	@Test
 	fun `complete command enters the existing local confirmation path`() {
 		val context = jsonParser.createSettingsContext(
-			SettingIntent.FREQUENCY,
-			SettingsFlow.DIRECT,
-			"Setze die Frequenz auf 700"
+			SettingIntent.FREQUENCY, SettingsFlow.DIRECT, "Setze die Frequenz auf 700"
 		)
 
 		val result = flow.process(
@@ -45,8 +40,11 @@ class LocalSettingsDialogFlowTest {
 		result as LocalSettingsDialogResult.Ready
 		assertEquals(SettingTarget.FREQUENCY, result.execution.command.target)
 		assertEquals(SettingParseStatus.COMPLETE, result.execution.command.status)
-		assertEquals(700, JSONObject(result.confirmationJson)
-			.getJSONArray("changed_settings").getJSONObject(0).getInt("frequency"))
+		assertEquals(
+			700,
+			JSONObject(result.confirmationJson).getJSONArray("changed_settings").getJSONObject(0)
+				.getInt("frequency")
+		)
 		assertEquals(SettingsFlow.DIRECT, jsonParser.parseSettingsFlow(result.confirmationJson))
 	}
 
@@ -76,8 +74,11 @@ class LocalSettingsDialogFlowTest {
 		assertTrue(complete is LocalSettingsDialogResult.Ready)
 		complete as LocalSettingsDialogResult.Ready
 		assertEquals(listOf(SettingTarget.FREQUENCY), parsedTargets)
-		assertEquals(120, JSONObject(complete.confirmationJson)
-			.getJSONArray("changed_settings").getJSONObject(0).getInt("frequency"))
+		assertEquals(
+			120,
+			JSONObject(complete.confirmationJson).getJSONArray("changed_settings").getJSONObject(0)
+				.getInt("frequency")
+		)
 	}
 
 	@Test
@@ -92,8 +93,7 @@ class LocalSettingsDialogFlowTest {
 		) as LocalSettingsDialogResult.FollowUp
 
 		assertEquals(
-			"Verstanden, Sie möchten die Frequenz der Distanzhinweistöne anpassen. " +
-				"Möchten Sie die Frequenz erhöhen, verringern oder einen konkreten Wert einstellen?",
+			"Verstanden, Sie möchten die Frequenz der Distanzhinweistöne anpassen. " + "Möchten Sie die Frequenz erhöhen, verringern oder einen konkreten Wert einstellen?",
 			result.question
 		)
 		assertEquals(context, result.retainedContextJson)
@@ -103,8 +103,7 @@ class LocalSettingsDialogFlowTest {
 
 	@Test
 	fun `missing operation questions are derived from the known target`() {
-		SettingIntent.entries
-			.filter { it != SettingIntent.LEAVE && it != SettingIntent.NONE }
+		SettingIntent.entries.filter { it != SettingIntent.LEAVE && it != SettingIntent.NONE }
 			.forEach { settingIntent ->
 				val context = jsonParser.createSettingsContext(settingIntent)
 				val result = flow.process(
@@ -143,8 +142,11 @@ class LocalSettingsDialogFlowTest {
 
 		assertTrue(complete is LocalSettingsDialogResult.Ready)
 		complete as LocalSettingsDialogResult.Ready
-		assertEquals(1, JSONObject(complete.confirmationJson)
-			.getJSONArray("changed_settings").getJSONObject(0).getInt("voice"))
+		assertEquals(
+			1,
+			JSONObject(complete.confirmationJson).getJSONArray("changed_settings").getJSONObject(0)
+				.getInt("voice")
+		)
 	}
 
 	@Test
@@ -171,8 +173,8 @@ class LocalSettingsDialogFlowTest {
 			assertEquals(
 				input,
 				expectation.second,
-				JSONObject(result.confirmationJson)
-					.getJSONArray("changed_settings").getJSONObject(0).getInt("frequency")
+				JSONObject(result.confirmationJson).getJSONArray("changed_settings")
+					.getJSONObject(0).getInt("frequency")
 			)
 		}
 	}
@@ -204,10 +206,7 @@ class LocalSettingsDialogFlowTest {
 		val context = jsonParser.createSettingsContext(SettingIntent.FREQUENCY)
 
 		val result = flow.process(
-			input = "700",
-			currentJson = context,
-			currentState = currentState,
-			parser = null
+			input = "700", currentJson = context, currentState = currentState, parser = null
 		)
 
 		assertTrue(result is LocalSettingsDialogResult.FollowUp)
@@ -225,8 +224,7 @@ class LocalSettingsDialogFlowTest {
 		numberNormalizer = Text2NumGermanNumberNormalizer(),
 		operationPredictor = object : OperationPredictor {
 			override fun predictOperation(
-				target: SettingTarget,
-				normalizedText: String
+				target: SettingTarget, normalizedText: String
 			): OperationPrediction {
 				parsedTargets?.add(target)
 				return OperationPrediction(operation, 1f)
@@ -234,9 +232,7 @@ class LocalSettingsDialogFlowTest {
 		},
 		speakerPredictor = object : SpeakerPredictor {
 			override fun predictSpeaker(
-				target: SettingTarget,
-				normalizedText: String
+				target: SettingTarget, normalizedText: String
 			): SpeakerPrediction = SpeakerPrediction(speaker, 1f)
-		}
-	)
+		})
 }

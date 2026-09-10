@@ -90,11 +90,12 @@ class TranslateEnglishToGerman {
 
 		fun translateToGerman(englishLabel: String): String {
 			val translation = englishToGermanMap[englishLabel] ?: englishLabel
-			Log.d(EyeAIApp.Companion.APP_LOG_TAG, "TranslateToGerman: '$englishLabel' -> '$translation'")
+			Log.d(
+				EyeAIApp.APP_LOG_TAG, "TranslateToGerman: '$englishLabel' -> '$translation'"
+			)
 			return translation
 		}
 
-		fun isKnownEnglishLabel(englishLabel: String): Boolean =
-			englishLabel in englishToGermanMap
+		fun isKnownEnglishLabel(englishLabel: String): Boolean = englishLabel in englishToGermanMap
 	}
 }

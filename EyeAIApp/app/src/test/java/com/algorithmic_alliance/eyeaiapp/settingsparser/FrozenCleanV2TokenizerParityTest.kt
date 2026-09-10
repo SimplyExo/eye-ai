@@ -1,9 +1,9 @@
 package com.algorithmic_alliance.eyeaiapp.settingsparser
 
-import java.nio.file.Files
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.nio.file.Files
 
 /** Python reference vectors generated with the frozen Clean-v2 tokenizer artifacts. */
 class FrozenCleanV2TokenizerParityTest {
@@ -36,24 +36,102 @@ class FrozenCleanV2TokenizerParityTest {
 		)
 		val cases = listOf(
 			Triple(
-				SettingTarget.FREQUENCY,
-				"erhöhe <NUM> hertz",
-				intArrayOf(5, 10, 27, 31, 7, 13, 25, 12, 24, 6, 2, 12, 25, 15, 34, 15, 12, 2, 3, 21, 28, 20, 4, 2, 15, 12, 25, 27, 32)
-			),
-			Triple(
-				SettingTarget.BPS,
-				"minus <NUM> bps",
-				intArrayOf(5, 10, 27, 31, 7, 9, 23, 26, 6, 2, 20, 16, 21, 28, 26, 2, 3, 21, 28, 20, 4, 2, 9, 23, 26)
-			),
-			Triple(
-				SettingTarget.SPEECH_SPEED,
-				"schneller",
-				intArrayOf(5, 10, 27, 31, 7, 26, 23, 12, 12, 11, 6, 2, 26, 10, 15, 21, 12, 19, 19, 12, 25)
-			),
-			Triple(
-				SettingTarget.SPEAKER,
-				"männliche stimme",
-				intArrayOf(5, 10, 27, 31, 7, 26, 23, 12, 8, 18, 12, 25, 6, 2, 20, 33, 21, 21, 19, 16, 10, 15, 12, 2, 26, 27, 16, 20, 20, 12)
+				SettingTarget.FREQUENCY, "erhöhe <NUM> hertz", intArrayOf(
+					5,
+					10,
+					27,
+					31,
+					7,
+					13,
+					25,
+					12,
+					24,
+					6,
+					2,
+					12,
+					25,
+					15,
+					34,
+					15,
+					12,
+					2,
+					3,
+					21,
+					28,
+					20,
+					4,
+					2,
+					15,
+					12,
+					25,
+					27,
+					32
+				)
+			), Triple(
+				SettingTarget.BPS, "minus <NUM> bps", intArrayOf(
+					5,
+					10,
+					27,
+					31,
+					7,
+					9,
+					23,
+					26,
+					6,
+					2,
+					20,
+					16,
+					21,
+					28,
+					26,
+					2,
+					3,
+					21,
+					28,
+					20,
+					4,
+					2,
+					9,
+					23,
+					26
+				)
+			), Triple(
+				SettingTarget.SPEECH_SPEED, "schneller", intArrayOf(
+					5, 10, 27, 31, 7, 26, 23, 12, 12, 11, 6, 2, 26, 10, 15, 21, 12, 19, 19, 12, 25
+				)
+			), Triple(
+				SettingTarget.SPEAKER, "männliche stimme", intArrayOf(
+					5,
+					10,
+					27,
+					31,
+					7,
+					26,
+					23,
+					12,
+					8,
+					18,
+					12,
+					25,
+					6,
+					2,
+					20,
+					33,
+					21,
+					21,
+					19,
+					16,
+					10,
+					15,
+					12,
+					2,
+					26,
+					27,
+					16,
+					20,
+					20,
+					12
+				)
 			)
 		)
 		for ((target, text, prefix) in cases) {
@@ -63,6 +141,9 @@ class FrozenCleanV2TokenizerParityTest {
 				tokenizer.encodeWithContext(target, text)
 			)
 		}
-		assertEquals("[ctx_speaker] männliche stimme", tokenizer.contextualText(SettingTarget.SPEAKER, "männliche stimme"))
+		assertEquals(
+			"[ctx_speaker] männliche stimme",
+			tokenizer.contextualText(SettingTarget.SPEAKER, "männliche stimme")
+		)
 	}
 }

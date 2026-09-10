@@ -13,13 +13,11 @@ data class SettingsMenuIntentEvidence(
 
 sealed class SettingsMenuIntentRoute {
 	data class LocalSetting(
-		val intent: Intent,
-		val confidence: Float
+		val intent: Intent, val confidence: Float
 	) : SettingsMenuIntentRoute()
 
 	data class ExternalIntent(
-		val intent: Intent,
-		val confidence: Float
+		val intent: Intent, val confidence: Float
 	) : SettingsMenuIntentRoute()
 
 	data object Abort : SettingsMenuIntentRoute()
@@ -41,23 +39,18 @@ object SettingsMenuIntentRouter {
 	)
 
 	private val externalIntents = setOf(
-		Intent.TEXT_RECOGNITION,
-		Intent.OBJECT_DETECTION,
-		Intent.MEASURE_DISTANCE
+		Intent.TEXT_RECOGNITION, Intent.OBJECT_DETECTION, Intent.MEASURE_DISTANCE
 	)
 
 	fun route(
-		intentResult: IntentResult,
-		confidenceThreshold: Float
+		intentResult: IntentResult, confidenceThreshold: Float
 	): SettingsMenuIntentRoute = route(
-		evidence = evidenceFrom(intentResult),
-		confidenceThreshold = confidenceThreshold
+		evidence = evidenceFrom(intentResult), confidenceThreshold = confidenceThreshold
 	)
 
 	/** Public evidence overload keeps conflict behavior directly unit-testable. */
 	fun route(
-		evidence: SettingsMenuIntentEvidence,
-		confidenceThreshold: Float
+		evidence: SettingsMenuIntentEvidence, confidenceThreshold: Float
 	): SettingsMenuIntentRoute {
 		if (evidence.topIntent == Intent.REDIRECT_TO_LLM) {
 			return SettingsMenuIntentRoute.Unresolved
@@ -66,8 +59,7 @@ object SettingsMenuIntentRouter {
 		if (evidence.topConfidence >= confidenceThreshold) {
 			when (evidence.topIntent) {
 				in externalIntents -> return SettingsMenuIntentRoute.ExternalIntent(
-					intent = evidence.topIntent,
-					confidence = evidence.topConfidence
+					intent = evidence.topIntent, confidence = evidence.topConfidence
 				)
 
 				Intent.OPEN_SETTINGS -> return SettingsMenuIntentRoute.AlreadyInSettings
@@ -77,16 +69,12 @@ object SettingsMenuIntentRouter {
 		}
 
 		val settingsIntent = evidence.bestSettingsIntent
-		if (
-			settingsIntent != null &&
-			evidence.bestSettingsConfidence >= confidenceThreshold
-		) {
+		if (settingsIntent != null && evidence.bestSettingsConfidence >= confidenceThreshold) {
 			return if (settingsIntent == Intent.ABORT) {
 				SettingsMenuIntentRoute.Abort
 			} else {
 				SettingsMenuIntentRoute.LocalSetting(
-					intent = settingsIntent,
-					confidence = evidence.bestSettingsConfidence
+					intent = settingsIntent, confidence = evidence.bestSettingsConfidence
 				)
 			}
 		}
@@ -104,8 +92,7 @@ object SettingsMenuIntentRouter {
 			bestSettingsIntent = bestSettingsIntent,
 			bestSettingsConfidence = bestSettingsIntent?.let {
 				intentResult.probabilityFor(it)
-			} ?: 0f
-		)
+			} ?: 0f)
 	}
 
 	fun isExternalIntent(intent: Intent): Boolean = intent in externalIntents

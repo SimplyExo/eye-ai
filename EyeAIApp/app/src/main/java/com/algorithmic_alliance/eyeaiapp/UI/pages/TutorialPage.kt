@@ -59,9 +59,7 @@ import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 enum class TutorialStage {
-    ObjectTutorial,
-    DepthTutorial,
-    NLPTutorial,
+	ObjectTutorial, DepthTutorial, NLPTutorial,
 }
 
 
@@ -69,252 +67,241 @@ enum class TutorialStage {
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun TutorialPage(
-    onFinishTutorial: () -> Unit,
-    onAbortTutorial: () -> Unit,
+	onFinishTutorial: () -> Unit,
+	onAbortTutorial: () -> Unit,
 ) {
-    val context = LocalContext.current
-    Log.d(LOG_TAG, "[TutorialPage] Loading TutorialPage")
+	val context = LocalContext.current
+	Log.d(LOG_TAG, "[TutorialPage] Loading TutorialPage")
 
-    var currentTutorialStage by rememberSaveable { mutableStateOf(TutorialStage.DepthTutorial) }
-    key(currentTutorialStage) {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-            Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-                val isDark = isSystemInDarkTheme()
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Spacing.md),
-                    shape = PremiumShapes.large,
-                    elevation = CardDefaults.cardElevation(AppElevation.level5),
-                    border = BorderStroke(
-                        width = if (isDark) 2.dp else 0.dp,
-                        color = Color.White.copy(alpha = 0.2f)
-                    ),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                ) {
+	var currentTutorialStage by rememberSaveable { mutableStateOf(TutorialStage.DepthTutorial) }
+	key(currentTutorialStage) {
+		Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+			Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+				val isDark = isSystemInDarkTheme()
+				Card(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(Spacing.md),
+					shape = PremiumShapes.large,
+					elevation = CardDefaults.cardElevation(AppElevation.level5),
+					border = BorderStroke(
+						width = if (isDark) 2.dp else 0.dp, color = Color.White.copy(alpha = 0.2f)
+					),
+					colors = CardDefaults.cardColors(
+						containerColor = MaterialTheme.colorScheme.primaryContainer,
+						contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+					)
+				) {
 
-                    when (currentTutorialStage) {
-                        TutorialStage.DepthTutorial -> {
-                            Tutorial(
-                                onBack = { onAbortTutorial() },
-                                onGoOn = {
-                                    currentTutorialStage =
-                                        TutorialStage.ObjectTutorial
-                                },
-                                title = stringResource(R.string.depth_tutorial_title_text),
-                                audioRes = R.raw.depth_tutorial
-                            )
-                        }
+					when (currentTutorialStage) {
+						TutorialStage.DepthTutorial -> {
+							Tutorial(
+								onBack = { onAbortTutorial() },
+								onGoOn = {
+									currentTutorialStage = TutorialStage.ObjectTutorial
+								},
+								title = stringResource(R.string.depth_tutorial_title_text),
+								audioRes = R.raw.depth_tutorial
+							)
+						}
 
-                        TutorialStage.ObjectTutorial -> Tutorial(
-                            onBack = {
-                                currentTutorialStage =
-                                    TutorialStage.DepthTutorial
-                            },
-                            onGoOn = {
-                                currentTutorialStage =
-                                    TutorialStage.NLPTutorial
-                            },
-                            title = stringResource(R.string.object_tutorial_title_text),
-                            audioRes = R.raw.object_tutorial,
-                        )
+						TutorialStage.ObjectTutorial -> Tutorial(
+							onBack = {
+								currentTutorialStage = TutorialStage.DepthTutorial
+							},
+							onGoOn = {
+								currentTutorialStage = TutorialStage.NLPTutorial
+							},
+							title = stringResource(R.string.object_tutorial_title_text),
+							audioRes = R.raw.object_tutorial,
+						)
 
-                        TutorialStage.NLPTutorial -> Tutorial(
-                            onBack = {
-                                currentTutorialStage = TutorialStage.ObjectTutorial
-                            },
-                            onGoOn = {
-                                val sharedPreferences =
-                                    PreferenceManager.getDefaultSharedPreferences(context)
-                                sharedPreferences.edit(commit = true) {
-                                    putBoolean(
-                                        context.getString(R.string.app_tutorial_completed),
-                                        true
-                                    )
-                                }
-                                onFinishTutorial()
-                            },
-                            title = stringResource(R.string.nlp_tutorial_title_text),
-                            audioRes = R.raw.nlp_tutorial
-                        )
-                    }
-                }
-            }
-        }
-    }
+						TutorialStage.NLPTutorial -> Tutorial(
+							onBack = {
+							currentTutorialStage = TutorialStage.ObjectTutorial
+						},
+							onGoOn = {
+								val sharedPreferences =
+									PreferenceManager.getDefaultSharedPreferences(context)
+								sharedPreferences.edit(commit = true) {
+									putBoolean(
+										context.getString(R.string.app_tutorial_completed), true
+									)
+								}
+								onFinishTutorial()
+							},
+							title = stringResource(R.string.nlp_tutorial_title_text),
+							audioRes = R.raw.nlp_tutorial
+						)
+					}
+				}
+			}
+		}
+	}
 }
 
 @Composable
 fun Tutorial(
-    onBack: () -> Unit,
-    onGoOn: () -> Unit,
-    title: String,
-    audioRes: Int
+	onBack: () -> Unit, onGoOn: () -> Unit, title: String, audioRes: Int
 ) {
-    val context = LocalContext.current
-    val focusRequester = remember { FocusRequester() }
-    val mediaPlayer = remember(audioRes) {
-        MediaPlayer.create(context, audioRes)
-    }
-    LaunchedEffect(mediaPlayer) {
-        focusRequester.requestFocus()
-        mediaPlayer.seekTo(0)
-    }
+	val context = LocalContext.current
+	val focusRequester = remember { FocusRequester() }
+	val mediaPlayer = remember(audioRes) {
+		MediaPlayer.create(context, audioRes)
+	}
+	LaunchedEffect(mediaPlayer) {
+		focusRequester.requestFocus()
+		mediaPlayer.seekTo(0)
+	}
 
-    var isPlaying by remember { mutableStateOf(false) }
-    DisposableEffect(mediaPlayer) {
-        mediaPlayer.setOnCompletionListener { isPlaying = false }
+	var isPlaying by remember { mutableStateOf(false) }
+	DisposableEffect(mediaPlayer) {
+		mediaPlayer.setOnCompletionListener { isPlaying = false }
 
-        onDispose {
-            mediaPlayer.setOnCompletionListener(null)
-            mediaPlayer.pause()
-            mediaPlayer.seekTo(0)
-        }
-    }
-    val isDark = isSystemInDarkTheme()
-    Column(
-        modifier = Modifier
-            .padding(Spacing.md)
-            .semantics { isTraversalGroup = true }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .semantics { traversalIndex = -1f },
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                title,
-                modifier = Modifier
-                    .padding(Spacing.sm)
-                    .focusRequester(focusRequester)
-                    .focusable(),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center
-            )
-        }
-        HorizontalDivider(
-            color = MaterialTheme.colorScheme.outline,
-            modifier = Modifier
-                .padding(Spacing.sm, bottom = Spacing.lg, top = Spacing.sm, end = Spacing.sm)
-                .clearAndSetSemantics {})
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .semantics { traversalIndex = 0f },
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                PremiumIconButton(
-                    modifier = Modifier
-                        .width(Spacing.xxl)
-                        .height(Spacing.xxl),
-                    onClick = {
-                        mediaPlayer.seekTo(0)
-                        if (!mediaPlayer.isPlaying) {
-                            mediaPlayer.start()
-                            isPlaying = true
-                        }
-                    },
-                    shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .width(Spacing.xl)
-                            .height(Spacing.xl),
-                        painter = painterResource(R.drawable.refresh_24px),
-                        contentDescription = stringResource(R.string.restart_tutorial_audio_button_semantic)
-                    )
-                }
-                Text(
-                    modifier = Modifier
-                        .padding(Spacing.sm)
-                        .clearAndSetSemantics {},
-                    text = stringResource(R.string.restart_tutorial_button_text),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                PremiumIconButton(
-                    modifier = Modifier
-                        .width(Spacing.xxl)
-                        .height(Spacing.xxl),
-                    onClick = {
-                        if (!isPlaying)
-                            mediaPlayer.start()
-                        else
-                            mediaPlayer.pause()
-                        isPlaying = !isPlaying
-                    },
-                    shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .width(Spacing.xl)
-                            .height(Spacing.xl),
-                        painter = if (isPlaying) painterResource(R.drawable.pause_playback_24px) else painterResource(
-                            R.drawable.play_arrow_24px
-                        ),
-                        contentDescription = stringResource(R.string.start_pause_tutorial_audio_button_semantic)
-                    )
-                }
-                Text(
-                    modifier = Modifier
-                        .padding(Spacing.sm)
-                        .clearAndSetSemantics {},
-                    text = if (isPlaying) stringResource(R.string.pause_tutorial_audio_button_text) else stringResource(
-                        R.string.start_tutorial_audio_button_text
-                    ),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-        HorizontalDivider(
-            color = MaterialTheme.colorScheme.outline,
-            modifier = Modifier
-                .padding(Spacing.sm, bottom = Spacing.sm, top = Spacing.lg, end = Spacing.sm)
-                .clearAndSetSemantics {})
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = Spacing.md)
-                .semantics { traversalIndex = 1f },
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-        ) {
-            PremiumButton(
-                modifier = Modifier
-                    .weight(1f),
-                shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
-                onClick = {
-                    onBack()
-                }) {
-                Text(
-                    stringResource(R.string.return_text),
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
-            PremiumButton(
-                modifier = Modifier
-                    .weight(1f),
-                shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
-                onClick = { onGoOn() }) {
-                Text(
-                    stringResource(R.string.understood_button_text),
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
-        }
+		onDispose {
+			mediaPlayer.setOnCompletionListener(null)
+			mediaPlayer.pause()
+			mediaPlayer.seekTo(0)
+		}
+	}
+	val isDark = isSystemInDarkTheme()
+	Column(
+		modifier = Modifier
+			.padding(Spacing.md)
+			.semantics { isTraversalGroup = true }) {
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.semantics { traversalIndex = -1f },
+			horizontalArrangement = Arrangement.Center
+		) {
+			Text(
+				title,
+				modifier = Modifier
+					.padding(Spacing.sm)
+					.focusRequester(focusRequester)
+					.focusable(),
+				color = MaterialTheme.colorScheme.onPrimaryContainer,
+				style = MaterialTheme.typography.headlineLarge,
+				fontWeight = FontWeight.Medium,
+				textAlign = TextAlign.Center
+			)
+		}
+		HorizontalDivider(
+			color = MaterialTheme.colorScheme.outline, modifier = Modifier
+				.padding(
+					Spacing.sm, bottom = Spacing.lg, top = Spacing.sm, end = Spacing.sm
+				)
+				.clearAndSetSemantics {})
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.semantics { traversalIndex = 0f },
+			horizontalArrangement = Arrangement.SpaceEvenly
+		) {
+			Column(horizontalAlignment = Alignment.CenterHorizontally) {
+				PremiumIconButton(
+					modifier = Modifier
+						.width(Spacing.xxl)
+						.height(Spacing.xxl),
+					onClick = {
+						mediaPlayer.seekTo(0)
+						if (!mediaPlayer.isPlaying) {
+							mediaPlayer.start()
+							isPlaying = true
+						}
+					},
+					shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
+					containerColor = MaterialTheme.colorScheme.primary,
+					contentColor = MaterialTheme.colorScheme.onPrimary,
+				) {
+					Icon(
+						modifier = Modifier
+							.width(Spacing.xl)
+							.height(Spacing.xl),
+						painter = painterResource(R.drawable.refresh_24px),
+						contentDescription = stringResource(R.string.restart_tutorial_audio_button_semantic)
+					)
+				}
+				Text(
+					modifier = Modifier
+						.padding(Spacing.sm)
+						.clearAndSetSemantics {},
+					text = stringResource(R.string.restart_tutorial_button_text),
+					style = MaterialTheme.typography.labelMedium,
+					fontWeight = FontWeight.Bold
+				)
+			}
+			Column(horizontalAlignment = Alignment.CenterHorizontally) {
+				PremiumIconButton(
+					modifier = Modifier
+						.width(Spacing.xxl)
+						.height(Spacing.xxl),
+					onClick = {
+						if (!isPlaying) mediaPlayer.start()
+						else mediaPlayer.pause()
+						isPlaying = !isPlaying
+					},
+					shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
+					containerColor = MaterialTheme.colorScheme.primary,
+					contentColor = MaterialTheme.colorScheme.onPrimary
+				) {
+					Icon(
+						modifier = Modifier
+							.width(Spacing.xl)
+							.height(Spacing.xl),
+						painter = if (isPlaying) painterResource(R.drawable.pause_playback_24px) else painterResource(
+							R.drawable.play_arrow_24px
+						),
+						contentDescription = stringResource(R.string.start_pause_tutorial_audio_button_semantic)
+					)
+				}
+				Text(
+					modifier = Modifier
+						.padding(Spacing.sm)
+						.clearAndSetSemantics {},
+					text = if (isPlaying) stringResource(R.string.pause_tutorial_audio_button_text) else stringResource(
+						R.string.start_tutorial_audio_button_text
+					),
+					style = MaterialTheme.typography.labelMedium,
+					fontWeight = FontWeight.Bold
+				)
+			}
+		}
+		HorizontalDivider(
+			color = MaterialTheme.colorScheme.outline, modifier = Modifier
+				.padding(
+					Spacing.sm, bottom = Spacing.sm, top = Spacing.lg, end = Spacing.sm
+				)
+				.clearAndSetSemantics {})
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = Spacing.md)
+				.semantics { traversalIndex = 1f },
+			horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+		) {
+			PremiumButton(
+				modifier = Modifier.weight(1f),
+				shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
+				onClick = {
+					onBack()
+				}) {
+				Text(
+					stringResource(R.string.return_text),
+					style = MaterialTheme.typography.labelLarge
+				)
+			}
+			PremiumButton(
+				modifier = Modifier.weight(1f),
+				shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
+				onClick = { onGoOn() }) {
+				Text(
+					stringResource(R.string.understood_button_text),
+					style = MaterialTheme.typography.labelLarge
+				)
+			}
+		}
 
-    }
+	}
 }

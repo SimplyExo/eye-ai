@@ -21,8 +21,7 @@ class LocalSettingsConfirmationTest {
 		)
 
 		val result = confirmation.confirmAndApply(
-			"Ja.",
-			"""{"changed_settings":[{"frequency":700}]}"""
+			"Ja.", """{"changed_settings":[{"frequency":700}]}"""
 		) {
 			applyCount++
 			true
@@ -40,8 +39,7 @@ class LocalSettingsConfirmationTest {
 		val confirmation = LocalSettingsConfirmation({ confirmationModel }, parser)
 
 		val result = confirmation.confirmAndApplyWithResult(
-			"Ja.",
-			"""{"changed_settings":[{"voice":1}]}"""
+			"Ja.", """{"changed_settings":[{"voice":1}]}"""
 		) {
 			SettingsApplyResult.NOT_APPLIED
 		}
@@ -55,8 +53,7 @@ class LocalSettingsConfirmationTest {
 		val confirmation = LocalSettingsConfirmation({ confirmationModel }, parser)
 
 		val result = confirmation.confirmAndApply(
-			"Nein.",
-			"""{"changed_settings":[{"frequency":700}]}"""
+			"Nein.", """{"changed_settings":[{"frequency":700}]}"""
 		) {
 			applyCount++
 			true
@@ -72,8 +69,7 @@ class LocalSettingsConfirmationTest {
 		val confirmation = LocalSettingsConfirmation({ confirmationModel }, parser)
 
 		val result = confirmation.confirmAndApply(
-			"Ich bin unsicher.",
-			"""{"changed_settings":[{"frequency":700}]}"""
+			"Ich bin unsicher.", """{"changed_settings":[{"frequency":700}]}"""
 		) {
 			applyCount++
 			true

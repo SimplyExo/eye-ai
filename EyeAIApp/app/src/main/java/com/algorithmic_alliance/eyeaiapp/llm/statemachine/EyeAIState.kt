@@ -6,9 +6,5 @@ package com.algorithmic_alliance.eyeaiapp.llm.statemachine
  * becoming part of the conversation lifecycle.
  */
 enum class EyeAIState {
-    IDLE,
-    SETTINGS_MENU,
-    SETTINGS_CHOICE,
-    SETTINGS_ACTION,
-    SETTINGS_EXTERNAL_CONFIRMATION,
+	IDLE, SETTINGS_MENU, SETTINGS_CHOICE, SETTINGS_ACTION, SETTINGS_EXTERNAL_CONFIRMATION,
 }

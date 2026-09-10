@@ -33,7 +33,6 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
-import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
@@ -42,109 +41,101 @@ import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun WelcomePage(
-    modifier: Modifier = Modifier,
-    onGetStarted: () -> Unit,
-    onStartTutorial: () -> Unit,
+	modifier: Modifier = Modifier,
+	onGetStarted: () -> Unit,
+	onStartTutorial: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-    val isDark = isSystemInDarkTheme()
-    Log.d(LOG_TAG, "[WelcomePage] Loading WelcomePage")
+	val context = LocalContext.current
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+	val isDark = isSystemInDarkTheme()
+	Log.d(LOG_TAG, "[WelcomePage] Loading WelcomePage")
 
-    Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
-        Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Spacing.md),
-                shape = PremiumShapes.large,
-                elevation = CardDefaults.cardElevation(AppElevation.level5),
-                border = BorderStroke(
-                    width = if (isDark) 2.dp else 0.dp,
-                    color = Color.White.copy(alpha = 0.2f)
-                ),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(Spacing.md)
-                        .semantics { isTraversalGroup = true }
-                ) {
+	Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
+		Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+			Card(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(Spacing.md),
+				shape = PremiumShapes.large,
+				elevation = CardDefaults.cardElevation(AppElevation.level5),
+				border = BorderStroke(
+					width = if (isDark) 2.dp else 0.dp, color = Color.White.copy(alpha = 0.2f)
+				),
+				colors = CardDefaults.cardColors(
+					containerColor = MaterialTheme.colorScheme.primaryContainer,
+					contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+				)
+			) {
+				Column(
+					modifier = Modifier
+						.padding(Spacing.md)
+						.semantics { isTraversalGroup = true }) {
 
-                    Row(
-                        modifier = Modifier
-                            .padding(Spacing.md)
-                            .fillMaxWidth()
-                            .semantics { traversalIndex = -1f },
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_launcher_web),
-                            contentDescription = stringResource(R.string.app_logo_description)
-                        )
-                    }
-                    Text(
-                        text = stringResource(R.string.welcome_screen_text),
-                        modifier = Modifier
-                            .padding(Spacing.md)
-                            .semantics { traversalIndex = 0f },
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = Spacing.md)
-                            .semantics { traversalIndex = 1f },
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-                    ) {
-                        PremiumButton(
-                            modifier = Modifier
-                                .weight(1f),
-                            shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
-                            onClick = {
-                                sharedPreferences.edit(commit = true) {
-                                    putBoolean(
-                                        context.getString(R.string.app_tutorial_completed),
-                                        true
-                                    )
-                                }
-                                onGetStarted()
-                            }) {
-                            Text(
-                                stringResource(R.string.reject_tutorial_text),
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                        }
-                        PremiumButton(
-                            modifier = Modifier
-                                .weight(1f),
-                            shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
-                            onClick = { onStartTutorial() }) {
-                            Text(
-                                stringResource(R.string.accept_tutorial_text),
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
+					Row(
+						modifier = Modifier
+							.padding(Spacing.md)
+							.fillMaxWidth()
+							.semantics { traversalIndex = -1f },
+						horizontalArrangement = Arrangement.Center
+					) {
+						Image(
+							painter = painterResource(R.drawable.ic_launcher_web),
+							contentDescription = stringResource(R.string.app_logo_description)
+						)
+					}
+					Text(
+						text = stringResource(R.string.welcome_screen_text),
+						modifier = Modifier
+							.padding(Spacing.md)
+							.semantics { traversalIndex = 0f },
+						color = MaterialTheme.colorScheme.onPrimaryContainer,
+						style = MaterialTheme.typography.bodyLarge,
+						fontWeight = FontWeight.Medium
+					)
+					Row(
+						modifier = Modifier
+							.fillMaxWidth()
+							.padding(top = Spacing.md)
+							.semantics { traversalIndex = 1f },
+						horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+					) {
+						PremiumButton(
+							modifier = Modifier.weight(1f),
+							shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
+							onClick = {
+								sharedPreferences.edit(commit = true) {
+									putBoolean(
+										context.getString(R.string.app_tutorial_completed), true
+									)
+								}
+								onGetStarted()
+							}) {
+							Text(
+								stringResource(R.string.reject_tutorial_text),
+								style = MaterialTheme.typography.labelLarge
+							)
+						}
+						PremiumButton(
+							modifier = Modifier.weight(1f),
+							shadowElevation = if (isDark) AppElevation.level5 else AppElevation.level3,
+							onClick = { onStartTutorial() }) {
+							Text(
+								stringResource(R.string.accept_tutorial_text),
+								style = MaterialTheme.typography.labelLarge
+							)
+						}
+					}
+				}
+			}
+		}
+	}
 
 }
 
 @Preview(showBackground = true, name = "WelcomePage Preview")
 @Composable
 fun Preview() {
-    MaterialTheme {
-        WelcomePage(
-            Modifier.fillMaxSize(),
-            onGetStarted = {},
-            onStartTutorial = {})
-    }
+	MaterialTheme {
+		WelcomePage(Modifier.fillMaxSize(), onGetStarted = {}, onStartTutorial = {})
+	}
 }

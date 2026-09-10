@@ -1,10 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects
 
-import android.util.Log
-
 class ObjectPositionClassifier(
-	private val screenWidth: Float = 640f,
-	private val screenHeight: Float = 640f
+	private val screenWidth: Float = 640f, private val screenHeight: Float = 640f
 ) {
 
 	data class ObjectData(
@@ -26,7 +23,8 @@ class ObjectPositionClassifier(
 		val distanceDescription = formatDistance(obj.distance)
 
 		val positionText = buildPositionText(horizontalPosition, verticalPosition)
-		var description = "Das Objekt ${obj.label} befindet sich $positionText vor Ihnen und ist etwa $distanceDescription von Ihnen entfernt."
+		var description =
+			"Das Objekt ${obj.label} befindet sich $positionText vor Ihnen und ist etwa $distanceDescription von Ihnen entfernt."
 
 		// Size analysis
 		val sizeAnalysis = analyzeObjectSizeAndDistance(obj)
@@ -97,6 +95,7 @@ class ObjectPositionClassifier(
 					"Das Objekt nimmt einen großen Teil des Bildschirms ein."
 				}
 			}
+
 			screenPercentage > 10 -> {
 				if (obj.distance < 1.0f) {
 					"Das Objekt erscheint aufgrund der geringen Entfernung groß."
@@ -104,6 +103,7 @@ class ObjectPositionClassifier(
 					"Das Objekt ist gut sichtbar."
 				}
 			}
+
 			screenPercentage > 2 -> {
 				if (obj.distance > 10.0f) {
 					"Das Objekt ist trotz der Entfernung gut erkennbar."
@@ -111,6 +111,7 @@ class ObjectPositionClassifier(
 					"Das Objekt hat eine mittlere Größe im Bild."
 				}
 			}
+
 			else -> {
 				if (obj.distance > 20.0f) {
 					"Das Objekt erscheint sehr klein aufgrund der großen Entfernung."

@@ -44,175 +44,169 @@ import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 
 @Composable
 fun rememberShimmerBrush(backgroundColor: Color, contrastColor: Color): Brush {
-    val transition = rememberInfiniteTransition(label = "shimmer")
-    val translateAnim by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1000f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "shimmerTranslate"
-    )
+	val transition = rememberInfiniteTransition(label = "shimmer")
+	val translateAnim by transition.animateFloat(
+		initialValue = 0f, targetValue = 1000f, animationSpec = infiniteRepeatable(
+			animation = tween(1200, easing = LinearEasing), repeatMode = RepeatMode.Restart
+		), label = "shimmerTranslate"
+	)
 
-    val baseColor = lerp(backgroundColor, contrastColor, 0.15f)
-    val highlightColor = lerp(backgroundColor, contrastColor, 0.4f)
+	val baseColor = lerp(backgroundColor, contrastColor, 0.15f)
+	val highlightColor = lerp(backgroundColor, contrastColor, 0.4f)
 
-    val shimmerColors = listOf(baseColor, highlightColor, baseColor)
+	val shimmerColors = listOf(baseColor, highlightColor, baseColor)
 
 
-    return Brush.linearGradient(
-        colors = shimmerColors,
-        start = Offset(translateAnim - 500f, translateAnim - 500f),
-        end = Offset(translateAnim, translateAnim)
-    )
+	return Brush.linearGradient(
+		colors = shimmerColors,
+		start = Offset(translateAnim - 500f, translateAnim - 500f),
+		end = Offset(translateAnim, translateAnim)
+	)
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ShimmerBox(modifier: Modifier = Modifier, backgroundColor: Color, contrastColor: Color) {
-    val context = LocalContext.current
+	val context = LocalContext.current
 
-    val shimmerBrush = rememberShimmerBrush(
-        backgroundColor = backgroundColor,
-        contrastColor = contrastColor
-    )
+	val shimmerBrush = rememberShimmerBrush(
+		backgroundColor = backgroundColor, contrastColor = contrastColor
+	)
 
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(shimmerBrush)
-            .semantics{contentDescription = context.getString(R.string.loading_semantic) }
-    )
+	Box(
+		modifier = modifier
+			.clip(RoundedCornerShape(8.dp))
+			.background(shimmerBrush)
+			.semantics { contentDescription = context.getString(R.string.loading_semantic) })
 }
 
 @Composable
 fun PremiumButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    enabled: Boolean = true,
-    tonalElevation: Dp = 0.dp,
-    shadowElevation: Dp = 3.dp,
-    containerColor: Color = MaterialTheme.colorScheme.primary,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
-    disabledContainerColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-    disabledContentColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-    content: @Composable RowScope.() -> Unit
+	modifier: Modifier = Modifier,
+	onClick: () -> Unit,
+	enabled: Boolean = true,
+	tonalElevation: Dp = 0.dp,
+	shadowElevation: Dp = 3.dp,
+	containerColor: Color = MaterialTheme.colorScheme.primary,
+	contentColor: Color = MaterialTheme.colorScheme.onPrimary,
+	disabledContainerColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+	disabledContentColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+	content: @Composable RowScope.() -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.94f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "buttonScale"
-    )
+	val interactionSource = remember { MutableInteractionSource() }
+	val isPressed by interactionSource.collectIsPressedAsState()
+	val scale by animateFloatAsState(
+		targetValue = if (isPressed) 0.94f else 1f,
+		animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+		label = "buttonScale"
+	)
 
-    val buttonSemantic = stringResource(R.string.button_semantic)
+	val buttonSemantic = stringResource(R.string.button_semantic)
 
-    Surface(
-        onClick = onClick,
-        enabled = enabled,
-        shape = PremiumShapes.small,
-        color = if (enabled) containerColor else disabledContainerColor,
-        contentColor = if (enabled) contentColor else disabledContentColor,
-        tonalElevation = if (enabled) tonalElevation else 0.dp,
-        shadowElevation = if (enabled) shadowElevation else 0.dp,
-        interactionSource = interactionSource,
-        modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .semantics { contentDescription = buttonSemantic },
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            content = content
-        )
-    }
+	Surface(
+		onClick = onClick,
+		enabled = enabled,
+		shape = PremiumShapes.small,
+		color = if (enabled) containerColor else disabledContainerColor,
+		contentColor = if (enabled) contentColor else disabledContentColor,
+		tonalElevation = if (enabled) tonalElevation else 0.dp,
+		shadowElevation = if (enabled) shadowElevation else 0.dp,
+		interactionSource = interactionSource,
+		modifier = modifier
+			.graphicsLayer { scaleX = scale; scaleY = scale }
+			.semantics { contentDescription = buttonSemantic },
+	) {
+		Row(
+			modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+			horizontalArrangement = Arrangement.Center,
+			verticalAlignment = Alignment.CenterVertically,
+			content = content
+		)
+	}
 }
 
 @Composable
 fun PremiumIconButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    enabled: Boolean = true,
-    tonalElevation: Dp = 0.dp,
-    shadowElevation: Dp = 0.dp,
-    containerColor: Color = Color.Transparent,
-    contentColor: Color = MaterialTheme.colorScheme.onSurface,
-    disabledContainerColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-    disabledContentColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-    content: @Composable () -> Unit
+	modifier: Modifier = Modifier,
+	onClick: () -> Unit,
+	enabled: Boolean = true,
+	tonalElevation: Dp = 0.dp,
+	shadowElevation: Dp = 0.dp,
+	containerColor: Color = Color.Transparent,
+	contentColor: Color = MaterialTheme.colorScheme.onSurface,
+	disabledContainerColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+	disabledContentColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+	content: @Composable () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.94f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "buttonScale"
-    )
+	val interactionSource = remember { MutableInteractionSource() }
+	val isPressed by interactionSource.collectIsPressedAsState()
+	val scale by animateFloatAsState(
+		targetValue = if (isPressed) 0.94f else 1f,
+		animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+		label = "buttonScale"
+	)
 
-    val buttonSemantic = stringResource(R.string.button_semantic)
+	val buttonSemantic = stringResource(R.string.button_semantic)
 
-    Surface(
-        onClick = onClick,
-        enabled = enabled,
-        shape = PremiumShapes.small,
-        color = if (enabled) containerColor else disabledContainerColor,
-        contentColor = if (enabled) contentColor else disabledContentColor,
-        tonalElevation = if (enabled) tonalElevation else 0.dp,
-        shadowElevation = if (enabled) shadowElevation else 0.dp,
-        interactionSource = interactionSource,
-        modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .size(40.dp)
-            .semantics { contentDescription = buttonSemantic },
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            content()
-        }
-    }
+	Surface(
+		onClick = onClick,
+		enabled = enabled,
+		shape = PremiumShapes.small,
+		color = if (enabled) containerColor else disabledContainerColor,
+		contentColor = if (enabled) contentColor else disabledContentColor,
+		tonalElevation = if (enabled) tonalElevation else 0.dp,
+		shadowElevation = if (enabled) shadowElevation else 0.dp,
+		interactionSource = interactionSource,
+		modifier = modifier
+			.graphicsLayer { scaleX = scale; scaleY = scale }
+			.size(40.dp)
+			.semantics { contentDescription = buttonSemantic },
+	) {
+		Box(contentAlignment = Alignment.Center) {
+			content()
+		}
+	}
 }
 
 @Composable
 fun PremiumFloatingActionButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    enabled: Boolean = true,
-    tonalElevation: Dp = 0.dp,
-    shadowElevation: Dp = 6.dp,
-    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
-    disabledContainerColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-    disabledContentColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-    content: @Composable () -> Unit
+	modifier: Modifier = Modifier,
+	onClick: () -> Unit,
+	enabled: Boolean = true,
+	tonalElevation: Dp = 0.dp,
+	shadowElevation: Dp = 6.dp,
+	containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+	contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+	disabledContainerColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+	disabledContentColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+	content: @Composable () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "buttonScale"
-    )
+	val interactionSource = remember { MutableInteractionSource() }
+	val isPressed by interactionSource.collectIsPressedAsState()
+	val scale by animateFloatAsState(
+		targetValue = if (isPressed) 0.95f else 1f,
+		animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+		label = "buttonScale"
+	)
 
-    val buttonSemantic = stringResource(R.string.button_semantic)
+	val buttonSemantic = stringResource(R.string.button_semantic)
 
-    Surface(
-        onClick = onClick,
-        enabled = enabled,
-        shape = PremiumShapes.small,
-        color = if (enabled) containerColor else disabledContainerColor,
-        contentColor = if (enabled) contentColor else disabledContentColor,
-        tonalElevation = if (enabled) tonalElevation else 0.dp,
-        shadowElevation = if (enabled) shadowElevation else 0.dp,
-        interactionSource = interactionSource,
-        modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .size(56.dp)
-            .semantics { contentDescription = buttonSemantic },
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            content()
-        }
-    }
+	Surface(
+		onClick = onClick,
+		enabled = enabled,
+		shape = PremiumShapes.small,
+		color = if (enabled) containerColor else disabledContainerColor,
+		contentColor = if (enabled) contentColor else disabledContentColor,
+		tonalElevation = if (enabled) tonalElevation else 0.dp,
+		shadowElevation = if (enabled) shadowElevation else 0.dp,
+		interactionSource = interactionSource,
+		modifier = modifier
+			.graphicsLayer { scaleX = scale; scaleY = scale }
+			.size(56.dp)
+			.semantics { contentDescription = buttonSemantic },
+	) {
+		Box(contentAlignment = Alignment.Center) {
+			content()
+		}
+	}
 }
