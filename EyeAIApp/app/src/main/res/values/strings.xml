@@ -198,6 +198,7 @@
     <string name="setting_build_time_title">Build-Zeitpunkt</string>
     <string name="setting_git_information_title">Git-Informationen</string>
     <string name="setting_build_variant_title">Build-Variante</string>
+    <string name="setting_eye_ai_core_rs_version_title">EyeAI-Core Rust version</string>
 
     <!-- Debug Page -->
     <string name="activate_debug_page_text">Debug-Seite aktivieren</string>
