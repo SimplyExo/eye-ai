@@ -205,6 +205,11 @@
     <string name="missing_permission_alert_dialog_vosk_text">To enable speech recognition, the app needs permission to use the microphone. Would you like to grant this permission?</string>
     <string name="missing_permission_alert_dialog_grant_permission_text">Grant Permission?</string>
     <string name="missing_permission_alert_dialog_camera_text">To allow the AI to analyze its surroundings, the app needs access to your camera. Would you like to grant this permission?</string>
+    <string name="missing_permission_alert_dialog_vision_text">To connect the EyeAI app to EyeAI Vision, the app requires permissions for nearby Wi-Fi networks and location</string>
+    <string name="missing_media_source_alert_dialog_title">Missing Media Source</string>
+    <string name="missing_media_source_alert_dialog_text">The input source \'Media\' is selected in the settings. However, no media file has been selected. Would you like to open the settings to select a file or choose a different input source?</string>
+    <string name="button_open_settings_text">Open Settings</string>
+
 
 
 </resources>
