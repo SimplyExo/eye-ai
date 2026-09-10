@@ -13,7 +13,6 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -295,7 +294,7 @@ fun AppMissingSelectedMediaSourceDialog(onEvent: (UIEvent) -> Unit, onOpenSettin
 fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-    val sharedPreferences = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val hasRequestedKey = "has_requested_camera_permission"
 
     DisposableEffect(lifecycleOwner) {
@@ -354,7 +353,7 @@ fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -
                     )
                 }
                 Text(
-                    stringResource(R.string.missing_permission_altert_dialog_title_text),
+                    stringResource(R.string.missing_permission_alert_dialog_title_text),
                     modifier = Modifier.semantics {
                         traversalIndex = -1f
                         heading()
@@ -363,7 +362,7 @@ fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -
             }
         },
         text = {
-            Text("Damit die KI ihre Umgebung analysieren kann, braucht die App Zugriff auf Ihre Kamera. Wollen Sie die Berechtigung erteilen?")
+            Text(stringResource(R.string.missing_permission_alert_dialog_camera_text))
         },
         confirmButton = {
             Button(onClick = {
@@ -380,11 +379,11 @@ fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -
                     }
                     context.startActivity(intent)
                 } else {
-                    sharedPreferences.edit().putBoolean(hasRequestedKey, true).apply()
+                    sharedPreferences.edit { putBoolean(hasRequestedKey, true) }
                     launcher.launch(Manifest.permission.CAMERA)
                 }
             }) {
-                Text("Berechtigung erteilen")
+                Text(stringResource(R.string.missing_permission_alert_dialog_grant_permission_text))
             }
         }
     )
@@ -394,7 +393,7 @@ fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -
 fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-    val sharedPreferences = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     val hasRequestedKey = "has_requested_record_audio_permission"
     val speechRecognitionEnabledKey = stringResource(R.string.enable_speech_recognition_setting)
 
@@ -465,7 +464,7 @@ fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
                     )
                 }
                 Text(
-                    stringResource(R.string.missing_permission_altert_dialog_title_text),
+                    stringResource(R.string.missing_permission_alert_dialog_title_text),
                     modifier = Modifier.semantics {
                         traversalIndex = -1f
                         heading()
@@ -474,7 +473,7 @@ fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
             }
         },
         text = {
-            Text(stringResource(R.string.missing_permission_altert_dialog_vosk_text))
+            Text(stringResource(R.string.missing_permission_alert_dialog_vosk_text))
         },
         confirmButton = {
             Button(onClick = {
@@ -499,7 +498,7 @@ fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
                 }
             }) {
                 Text(
-                    stringResource(R.string.missing_permission_alter_dialog_grant_permission_text)
+                    stringResource(R.string.missing_permission_alert_dialog_grant_permission_text)
                 )
             }
         }
