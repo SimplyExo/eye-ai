@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
@@ -33,8 +34,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 	private val app = application as EyeAIApp
 	private val runtime = app.runtime
 
-	private val _uiState = MutableStateFlow(UIState())
-	val uiState: StateFlow<UIState> = _uiState.asStateFlow()
+    fun isSpeechRecognitionEnabled(): Boolean = eyeAIApp().settings.enableSpeechRecognition
+
+    private val _uiState = MutableStateFlow(UIState())
+    val uiState: StateFlow<UIState> = _uiState.asStateFlow()
 
 	val connectionPageUIState: StateFlow<ConnectionPageUIState> = _uiState.map {
 		ConnectionPageUIState(
@@ -83,23 +86,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 	}.distinctUntilChanged()
 		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsPageUIState())
 
-	val selectSettingUIState: StateFlow<SelectSettingUIState> = _uiState.map {
-		SelectSettingUIState(
-			visionPermissionsNotGranted = it.visionPermissionsNotGranted,
-		)
-	}.distinctUntilChanged()
-		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SelectSettingUIState())
-	val debugPageUIState: StateFlow<DebugPageUIState> = _uiState.map {
-		DebugPageUIState(
-			reloadDebugPageKey = it.reloadDebugPageKey,
-			voskListening = it.voskListening,
-			ttsSpeaking = it.ttsSpeaking,
-			speechRecognitionFinalResultText = it.speechRecognitionFinalResultText,
-			speechRecognitionPartialResultText = it.speechRecognitionPartialResultText,
-			speechResponseText = it.speechResponseText
-		)
-	}.distinctUntilChanged()
-		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DebugPageUIState())
+    val selectSettingUIState: StateFlow<SelectSettingUIState> = _uiState.map {
+        SelectSettingUIState(
+            visionPermissionsNotGranted = it.visionPermissionsNotGranted,
+            reloadSettingsPageKey = it.reloadSettingsPageKey
+        )
+    }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SelectSettingUIState())
+    val debugPageUIState: StateFlow<DebugPageUIState> = _uiState.map {
+        DebugPageUIState(
+            reloadDebugPageKey = it.reloadDebugPageKey,
+            voskListening = it.voskListening,
+            ttsSpeaking = it.ttsSpeaking,
+            speechRecognitionFinalResultText = it.speechRecognitionFinalResultText,
+            speechRecognitionPartialResultText = it.speechRecognitionPartialResultText,
+            speechResponseText = it.speechResponseText
+        )
+    }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DebugPageUIState())
 
 	val mediaPreviewUIState: StateFlow<MediaPreviewUIState> = _uiState.map {
 		MediaPreviewUIState(
@@ -221,20 +227,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 		}
 	}
 
-	/** Refreshes UI permission/status data; it intentionally leaves runtime resources alone. */
-	fun onResume() {
-		Log.d(LOG_TAG, "[MainViewModel] OnResume: refreshing UI projection")
-		if (!_uiState.value.actionStartedFromSettings && !_uiState.value.settingsOpened) {
-			reloadDebugPage()
-		}
-		if (!hasPermission(Manifest.permission.CAMERA) && _uiState.value.permissionTutorialCompleted) {
-			_uiState.update { it.copy(appMissingCameraPermission = true) }
-		}
-		if (app.settings.enableSpeechRecognition && !hasPermission(Manifest.permission.RECORD_AUDIO) && _uiState.value.permissionTutorialCompleted) {
-			_uiState.update { it.copy(appMissingVoskPermission = true) }
-		}
-		runtime.updateVoskStatusText()
-	}
+    /** Refreshes UI permission/status data; it intentionally leaves runtime resources alone. */
+    fun onResume() {
+        Log.d(LOG_TAG, "[MainViewModel] OnResume: refreshing UI projection")
+        if (!_uiState.value.actionStartedFromSettings && !_uiState.value.settingsOpened) {
+            reloadDebugPage()
+        }
+        // permission checks after onResume are now handled bei EyeAIUI.kt
+        runtime.updateVoskStatusText()
+    }
 
 	/** Kept for callers that used the old ViewModel API; no lifecycle shutdown occurs here. */
 	fun onPause() = Unit

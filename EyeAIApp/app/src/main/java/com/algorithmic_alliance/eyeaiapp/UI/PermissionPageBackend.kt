@@ -60,19 +60,20 @@ fun checkPermissionsStatus(
 ): List<Map<String, Any>> {
 	val notGrantedPermissions = mutableListOf<Map<String, Any>>()
 
-	for (map in neededPermissions) {
-		for (permission in map["permissions"] as List<*>) {
-			val hasPermission = ContextCompat.checkSelfPermission(
-				context, permission as String
-			) == PackageManager.PERMISSION_GRANTED
-			if (!hasPermission) {
-				Log.d(LOG_TAG, "[PermissionPage] App does not have permission for $permission")
-				notGrantedPermissions.add(map)
-				continue
-			} else {
-				Log.d(LOG_TAG, "[PermissionPage] App already has permission for $permission")
-			}
-		}
-	}
-	return notGrantedPermissions
+    for (map in neededPermissions) {
+        val permission = map["permissions"]
+            val hasPermission = ContextCompat.checkSelfPermission(
+                context,
+                permission as String
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!hasPermission) {
+                Log.d(LOG_TAG, "[PermissionPage] App does not have permission for $permission")
+                notGrantedPermissions.add(map)
+                continue
+            } else {
+                Log.d(LOG_TAG, "[PermissionPage] App already has permission for $permission")
+            }
+
+    }
+    return notGrantedPermissions
 }

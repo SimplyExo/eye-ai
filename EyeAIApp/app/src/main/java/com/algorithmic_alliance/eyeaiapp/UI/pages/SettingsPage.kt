@@ -114,160 +114,155 @@ fun SettingsPage(
 	onEvent: (UIEvent) -> Unit,
 	onOpenConnectionPage: () -> Unit
 ) {
+    val settingsData = UIDataSource.APP_SETTINGS
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
+    val debugPageActivated = sharedPreferences.getBoolean(debugPageActivatedKey, false)
 
-	val uiState by viewModel.settingsPageUIState.collectAsStateWithLifecycle()
+    DisposableEffect(Unit) {
+        onEvent(UIEvent.OnOpenSettings)
+        onEvent(UIEvent.OnUpdateSettingsOpened(true))
+        onDispose {
+            if (!viewModel.uiState.value.actionStartedFromSettings) {
+                onEvent(UIEvent.OnReturnFromSettings)
+                onEvent(UIEvent.OnUpdateSettingsOpened(false))
+            }
+        }
+    }
+    Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            topBar = {
+                TopAppBar(
+                    modifier = Modifier
+                        .shadow(elevation = Spacing.sm)
+                        .semantics { isTraversalGroup = true },
+                    windowInsets = TopAppBarDefaults.windowInsets,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    title = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            PremiumIconButton(
+                                modifier = Modifier.semantics { traversalIndex = 1f },
+                                onClick = { onReturn() }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.arrow_back_24px),
+                                    contentDescription = stringResource(R.string.return_icon_description)
+                                )
+                            }
+                            Text(
+                                stringResource(R.string.settings_app_bar_title),
+                                modifier = Modifier.semantics { traversalIndex = -1f },
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                        }
+                    },
+                )
+            }, content = { innerPadding ->
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(
+                        modifier = Modifier.padding(innerPadding),
+                    ) {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = WindowInsets.navigationBars
+                                    .asPaddingValues()
+                            ) {
+                                items(
+                                    items = settingsData.entries.toList(),
+                                    key = { entry -> entry.key }) { entry ->
+                                    if (stringResource(entry.key) != stringResource(R.string.settings_category_developer) || (stringResource(
+                                            entry.key
+                                        ) == stringResource(R.string.settings_category_developer) && sharedPreferences.getBoolean(
+                                            stringResource(R.string.debug_page_activated),
+                                            false
+                                        ))
+                                    )
+                                        SettingsCategoryCard(
+                                            categorySettings = entry.value as List<Any>,
+                                            category = stringResource(entry.key),
+                                            onEvent = onEvent,
+                                            onOpenConnectionPage = onOpenConnectionPage,
+                                            viewModel = viewModel
+                                        )
+                                }
+                                item {
+                                    val interactionSource = remember { MutableInteractionSource() }
+                                    val isPressed by interactionSource.collectIsPressedAsState()
+                                    val scale by animateFloatAsState(
+                                        targetValue = if (isPressed) 0.94f else 1f,
+                                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                        label = "buttonScale"
+                                    )
+                                    Card(
+                                        modifier = Modifier
+                                            .graphicsLayer { scaleX = scale; scaleY = scale }
+                                            .fillMaxWidth()
+                                            .padding(Spacing.sm)
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = LocalIndication.current
+                                            ) {
+                                                if (!debugPageActivated) {
+                                                    onOpenDebugPage()
+                                                    sharedPreferences.edit(commit = true) {
+                                                        putBoolean(debugPageActivatedKey, true)
+                                                    }
+                                                } else {
+                                                    onOpenHomePage()
+                                                    sharedPreferences.edit(commit = true) {
+                                                        putBoolean(debugPageActivatedKey, false)
+                                                    }
+                                                }
 
-	val settingsData = UIDataSource.APP_SETTINGS
-	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
-	val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
-	val debugPageActivated = sharedPreferences.getBoolean(debugPageActivatedKey, false)
+                                            }.clearAndSetSemantics { hideFromAccessibility() },
+                                        elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
+                                        border = BorderStroke(
+                                            width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
+                                            color = Color.White.copy(alpha = 0.2f)
+                                        )
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(Spacing.md),
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                if (!debugPageActivated) stringResource(R.string.activate_debug_page_text) else stringResource(
+                                                    R.string.deactivate_debug_page_text
+                                                ),
+                                                style = MaterialTheme.typography.titleMedium,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
-	DisposableEffect(Unit) {
-		onEvent(UIEvent.OnOpenSettings)
-		onEvent(UIEvent.OnUpdateSettingsOpened(true))
-		onDispose {
-			if (!viewModel.uiState.value.actionStartedFromSettings) {
-				onEvent(UIEvent.OnReturnFromSettings)
-				onEvent(UIEvent.OnUpdateSettingsOpened(false))
-			}
-		}
-	}
-	Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface) {
-		Scaffold(
-			modifier = Modifier.fillMaxSize(),
-			contentWindowInsets = WindowInsets(0, 0, 0, 0),
-			topBar = {
-				TopAppBar(
-					modifier = Modifier
-						.shadow(elevation = Spacing.sm)
-						.semantics { isTraversalGroup = true },
-					windowInsets = TopAppBarDefaults.windowInsets,
-					colors = TopAppBarDefaults.topAppBarColors(
-						containerColor = MaterialTheme.colorScheme.primaryContainer,
-						titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-					),
-					title = {
-						Row(
-							modifier = Modifier.fillMaxWidth(),
-							verticalAlignment = Alignment.CenterVertically
-						) {
-							PremiumIconButton(
-								modifier = Modifier.semantics { traversalIndex = 1f },
-								onClick = { onReturn() }) {
-								Icon(
-									painter = painterResource(R.drawable.arrow_back_24px),
-									contentDescription = stringResource(R.string.return_icon_description)
-								)
-							}
-							Text(
-								stringResource(R.string.settings_app_bar_title),
-								modifier = Modifier.semantics { traversalIndex = -1f },
-								style = MaterialTheme.typography.titleLarge
-							)
-						}
-					},
-				)
-			},
-			content = { innerPadding ->
-				Box(modifier = Modifier.fillMaxSize()) {
-					Column(
-						modifier = Modifier.padding(innerPadding),
-					) {
-						key(uiState.reloadSettingsPageKey) {
-							LazyColumn(
-								modifier = Modifier.fillMaxSize(),
-								contentPadding = WindowInsets.navigationBars.asPaddingValues()
-							) {
-								items(
-									items = settingsData.entries.toList(),
-									key = { entry -> entry.key }) { entry ->
-									if (stringResource(entry.key) != stringResource(R.string.settings_category_developer) || (stringResource(
-											entry.key
-										) == stringResource(R.string.settings_category_developer) && sharedPreferences.getBoolean(
-											stringResource(R.string.debug_page_activated), false
-										))
-									) SettingsCategoryCard(
-										categorySettings = entry.value as List<Any>,
-										category = stringResource(entry.key),
-										onEvent = onEvent,
-										onOpenConnectionPage = onOpenConnectionPage,
-										viewModel = viewModel
-									)
-								}
-								item {
-									val interactionSource = remember { MutableInteractionSource() }
-									val isPressed by interactionSource.collectIsPressedAsState()
-									val scale by animateFloatAsState(
-										targetValue = if (isPressed) 0.94f else 1f,
-										animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-										label = "buttonScale"
-									)
-									Card(
-										modifier = Modifier
-											.graphicsLayer {
-												scaleX = scale; scaleY = scale
-											}
-											.fillMaxWidth()
-											.padding(Spacing.sm)
-											.clickable(
-												interactionSource = interactionSource,
-												indication = LocalIndication.current
-											) {
-												if (!debugPageActivated) {
-													onOpenDebugPage()
-													sharedPreferences.edit(commit = true) {
-														putBoolean(debugPageActivatedKey, true)
-													}
-												} else {
-													onOpenHomePage()
-													sharedPreferences.edit(commit = true) {
-														putBoolean(debugPageActivatedKey, false)
-													}
-												}
-
-											}
-											.clearAndSetSemantics { hideFromAccessibility() },
-										elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) AppElevation.level2 else AppElevation.level4),
-										border = BorderStroke(
-											width = if (isSystemInDarkTheme()) 1.dp else 0.dp,
-											color = Color.White.copy(alpha = 0.2f)
-										)
-									) {
-										Row(
-											modifier = Modifier
-												.fillMaxWidth()
-												.padding(Spacing.md),
-											horizontalArrangement = Arrangement.Center
-										) {
-											Text(
-												if (!debugPageActivated) stringResource(R.string.activate_debug_page_text) else stringResource(
-													R.string.deactivate_debug_page_text
-												),
-												style = MaterialTheme.typography.titleMedium,
-											)
-										}
-									}
-								}
-							}
-						}
-					}
-					Box(
-						modifier = Modifier
-							.align(Alignment.BottomCenter)
-							.fillMaxWidth()
-							.height(64.dp)
-							.background(
-								Brush.verticalGradient(
-									colors = listOf(
-										Color.Transparent,
-										MaterialTheme.colorScheme.background.copy(alpha = 0.85f)
-									)
-								)
-							)
-					)
-				}
-			})
-	}
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        MaterialTheme.colorScheme.background.copy(alpha = 0.85f)
+                                    )
+                                )
+                            )
+                    )
+                }
+            })
+    }
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -310,12 +305,13 @@ fun SettingsCategoryCard(
 
 				val settingData = item as Map<String, Any>
 
-				when (settingData.getValue("settingsType")) {
-					"checkbox" -> CheckBoxSetting(
-						modifier = Modifier,
-						settingData = settingData,
-						onEvent = onEvent,
-					)
+                when (settingData.getValue("settingsType")) {
+                    "checkbox" -> CheckBoxSetting(
+                        modifier = Modifier,
+                        settingData = settingData,
+                        onEvent = onEvent,
+                        viewModel = viewModel
+                    )
 
 					"select" -> SelectSetting(
 						modifier = Modifier,
@@ -324,9 +320,9 @@ fun SettingsCategoryCard(
 						viewModel = viewModel
 					)
 
-					"slider" -> SliderSetting(
-						modifier = Modifier, settingData = settingData, onEvent = onEvent
-					)
+                    "slider" -> SliderSetting(
+                        modifier = Modifier, settingData = settingData, onEvent = onEvent, viewModel =viewModel
+                    )
 
 					"textInput" -> TextInputSetting(
 						modifier = Modifier, settingData = settingData, onEvent = onEvent
@@ -491,21 +487,23 @@ fun ClickSetting(
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun CheckBoxSetting(
-	modifier: Modifier = Modifier,
-	settingData: Map<String, Any>,
-	onEvent: (UIEvent) -> Unit,
+    modifier: Modifier = Modifier,
+    settingData: Map<String, Any>,
+    onEvent: (UIEvent) -> Unit,
+    viewModel: MainViewModel,
 ) {
-	val context = LocalContext.current
-	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
-	val settingKey = stringResource(settingData["string"] as Int)
+    val uiState by viewModel.settingsPageUIState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val settingKey = stringResource(settingData["string"] as Int)
 
-	var checked by rememberSaveable {
-		mutableStateOf(
-			sharedPreferences.getBoolean(
-				settingKey, settingData["default"] as Boolean
-			)
-		)
-	}
+    var checked by rememberSaveable(uiState.reloadSettingsPageKey) {
+        mutableStateOf(
+            sharedPreferences.getBoolean(
+                settingKey, settingData["default"] as Boolean
+            )
+        )
+    }
 
 	val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
 	val settingDescription =
@@ -568,6 +566,17 @@ fun SelectSetting(
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
 	val settingKey = stringResource(settingData["string"] as Int)
 
+    var dropDownEnabled by rememberSaveable { mutableStateOf(false) }
+    var currentlySelected by rememberSaveable(uiState.reloadSettingsPageKey) {
+        mutableStateOf(
+            (sharedPreferences.getString(
+                settingKey, resolveString(context, settingData["default"] as Any)
+            ))
+        )
+    }
+    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+    val settingDescription =
+        resolveString(LocalContext.current, settingData.getValue("description"))
 	var dropDownEnabled by rememberSaveable { mutableStateOf(false) }
 	var currentlySelected by rememberSaveable {
 		mutableStateOf(
@@ -651,9 +660,10 @@ fun SelectSetting(
 
 @Composable
 fun SliderSetting(
-	modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
+    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit, viewModel: MainViewModel
 ) {
-	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+    val uiState by viewModel.settingsPageUIState.collectAsStateWithLifecycle()
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
 
 	val isDepthFrameRate = settingData["string"] as Int == R.string.max_depth_frame_rate_setting
 	val isObjectDetectionFrameRate =
@@ -677,65 +687,67 @@ fun SliderSetting(
 	val min = (settingsOptions.getValue("min") as Number).toFloat()
 	val max = (settingsOptions.getValue("max") as Number).toFloat()
 
-	var currentValue by rememberSaveable {
-		mutableIntStateOf(
-			sharedPreferences.getInt(
-				settingKey, settingData["default"] as Int
-			)
-		)
-	}
-	val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
-	val settingDescription =
-		resolveString(LocalContext.current, settingData.getValue("description"))
-	val audioFrequencySettingTitle = stringResource(R.string.setting_audio_frequency_title)
-	AnimatedVisibility(
-		visible = visible,
-		enter = fadeIn() + expandVertically(),
-		exit = fadeOut() + shrinkVertically()
-	) {
-		Row(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(Spacing.sm),
-			horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-			verticalAlignment = Alignment.CenterVertically
-		) {
-			Column(modifier = Modifier.weight(1f)) {
-				Row(
-					verticalAlignment = Alignment.CenterVertically,
-					horizontalArrangement = Arrangement.spacedBy(Spacing.md)
-				) {
-					Text(
-						settingTitle,
-						style = MaterialTheme.typography.bodyLarge,
-						fontWeight = FontWeight.Medium,
-						modifier = Modifier.weight(1f)
-					)
-					Text(
-						"$currentValue",
-						style = MaterialTheme.typography.labelLarge,
-						fontWeight = FontWeight.SemiBold
-					)
-				}
-				if (settingDescription != "") Text(
-					settingDescription, style = MaterialTheme.typography.bodySmall
-				)
-				Slider(
-					value = currentValue.toFloat(), onValueChange = {
-						if (settingTitle == audioFrequencySettingTitle) currentValue =
-							(it / 10.0).roundToInt() * 10
-						else currentValue = it.roundToInt()
-						Log.d(
-							LOG_TAG,
-							"[SettingsPage.SliderSetting] Changed setting $settingKey to $currentValue"
-						)
-						sharedPreferences.edit(commit = true) {
-							putInt(settingKey, currentValue)
-						}
-						onEvent(UIEvent.UpdateSettings)
-					}, valueRange = min..max
-				)
-			}
+    var currentValue by rememberSaveable(uiState.reloadSettingsPageKey) {
+        mutableIntStateOf(
+            sharedPreferences.getInt(
+                settingKey, settingData["default"] as Int
+            )
+        )
+    }
+    val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
+    val settingDescription =
+        resolveString(LocalContext.current, settingData.getValue("description"))
+    val audioFrequencySettingTitle = stringResource(R.string.setting_audio_frequency_title)
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.md)
+                ) {
+                    Text(
+                        settingTitle,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        "$currentValue",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                if (settingDescription != "") Text(
+                    settingDescription,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Slider(
+                    value = currentValue.toFloat(), onValueChange = {
+                        if (settingTitle == audioFrequencySettingTitle)
+                            currentValue = (it / 10.0).roundToInt() * 10
+                        else
+                            currentValue = it.roundToInt()
+                        Log.d(
+                            LOG_TAG,
+                            "[SettingsPage.SliderSetting] Changed setting $settingKey to $currentValue"
+                        )
+                        sharedPreferences.edit(commit = true) {
+                            putInt(settingKey, currentValue)
+                        }
+                        onEvent(UIEvent.UpdateSettings)
+                    }, valueRange = min..max
+                )
+            }
 
 		}
 	}

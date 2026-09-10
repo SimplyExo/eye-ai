@@ -1,7 +1,12 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import android.view.ViewTreeObserver
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -53,6 +58,11 @@ import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
 import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
@@ -64,6 +74,7 @@ import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
+import androidx.core.content.edit
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -117,10 +128,17 @@ fun AskForPermission(
 	onExitPermissionPage: () -> Unit,
 	onEvent: (UIEvent) -> Unit
 ) {
-	val focusRequester = remember { FocusRequester() }
-	val context = LocalContext.current
-	val view = LocalView.current
-	var hasWindowFocus by remember { mutableStateOf(view.hasWindowFocus()) }
+    val focusRequester = remember { FocusRequester() }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
+    val view = LocalView.current
+    var hasWindowFocus by remember { mutableStateOf(view.hasWindowFocus()) }
+    val permission = permissionData["permissions"] as String
+
+    val sharedPreferences = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+    val hasRequestedKey = "has_requested_$permission"
+
+    var wentToSettings by rememberSaveable { mutableStateOf(false) }
 
 	DisposableEffect(view) {
 		val listener = ViewTreeObserver.OnWindowFocusChangeListener { hasFocus ->
@@ -131,141 +149,196 @@ fun AskForPermission(
 	}
 	val isDark = isSystemInDarkTheme()
 
-	Log.d(
-		LOG_TAG,
-		"[PermissionPage.AskForPermission] Asking for permission ${permissionData["permissions"]}"
-	)
-	val permissionLauncher = rememberLauncherForActivityResult(
-		contract = ActivityResultContracts.RequestPermission()
-	) { isGranted ->
-		if (isGranted) {
-			onPermissionAccepted()
-			Log.d(
-				LOG_TAG,
-				"[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} granted"
-			)
-		} else {
-			Log.d(
-				LOG_TAG,
-				"[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} declined"
-			)
-			onPermissionDecline(
-				permissionData,
-				onExitPermissionSelection = onExitPermissionPage,
-				context,
-				onEvent = onEvent,
-				onPermissionDecline = onPermissionAccepted
-			)
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                // WICHTIG: Nur prüfen, wenn wir den Nutzer vorher explizit in die Einstellungen geschickt haben!
+                if (wentToSettings) {
+                    wentToSettings = false // Direkt zurücksetzen
 
-		}
-	}
+                    val isGranted = ContextCompat.checkSelfPermission(
+                        context,
+                        permission
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    if (isGranted) {
+                        onPermissionAccepted()
+                        Log.d(
+                            LOG_TAG,
+                            "[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} granted via settings"
+                        )
+                    } else {
+                        Log.d(
+                            LOG_TAG,
+                            "[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} declined after settings"
+                        )
+                        onPermissionDecline(
+                            permissionData,
+                            onExitPermissionSelection = onExitPermissionPage,
+                            context = context,
+                            onEvent = onEvent,
+                            onPermissionDecline = onPermissionAccepted
+                        )
+                    }
+                }
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    Log.d(
+        LOG_TAG,
+        "[PermissionPage.AskForPermission] Asking for permission ${permissionData["permissions"]}"
+    )
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            onPermissionAccepted()
+            Log.d(
+                LOG_TAG,
+                "[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} granted"
+            )
+        } else {
+            Log.d(
+                LOG_TAG,
+                "[PermissionPage.AskForPermission] Permission ${permissionData["permissions"]} declined in system popup"
+            )
+            onPermissionDecline(
+                permissionData,
+                onExitPermissionSelection = onExitPermissionPage,
+                context = context,
+                onEvent = onEvent,
+                onPermissionDecline = onPermissionAccepted
+            )
+        }
+    }
 
 	var showDeclineDialog by rememberSaveable { mutableStateOf(false) }
 
-	val permissionExplanation = stringResource(permissionData["permissionExplanation"] as Int)
-	val permissionIcon = permissionData["icon"] ?: UIDataSource.ICON_NOT_FOUND
-	val iconDescription = stringResource(permissionData["iconDescription"] as Int)
-	val permissions = permissionData["permissions"]
+    val permissionExplanation =
+        stringResource(permissionData["permissionExplanation"] as Int)
+    val permissionIcon = permissionData["icon"] ?: UIDataSource.ICON_NOT_FOUND
 
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Spacing.md),
+        shape = PremiumShapes.large,
+        elevation = CardDefaults.cardElevation(AppElevation.level5),
+        border = BorderStroke(
+            width = if (isDark) 2.dp else 0.dp,
+            color = Color.White.copy(alpha = 0.2f)
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(Spacing.md)
+                .semantics { isTraversalGroup = true }) {
+            Row(
+                modifier = Modifier
+                    .padding(Spacing.md)
+                    .fillMaxWidth()
+                    .semantics { traversalIndex = -1f },
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .height(Spacing.xxxxl)
+                        .width(Spacing.xxxxl)
+                        .focusRequester(focusRequester)
+                        .focusable(),
+                    painter = painterResource(permissionIcon as Int),
+                    contentDescription = stringResource(permissionData["iconDescription"] as Int),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+            Text(
+                permissionExplanation,
+                modifier = Modifier
+                    .padding(Spacing.md)
+                    .semantics { traversalIndex = 0f },
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = Spacing.md)
+                    .semantics { traversalIndex = 1f },
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+            ) {
+                PremiumButton(
+                    modifier = Modifier
+                        .weight(1f),
+                    shadowElevation = if (isDark) AppElevation.level4 else AppElevation.level2,
+                    onClick = { showDeclineDialog = !showDeclineDialog }) {
+                    Text(
+                        stringResource(R.string.decline_action),
+                        modifier = Modifier.clearAndSetSemantics {
+                            contentDescription =
+                                context.getString(permissionData["permissionDeclineSemantic"] as Int)
+                        },
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+                PremiumButton(
+                    modifier = Modifier
+                        .weight(1f),
+                    shadowElevation = if (isDark) AppElevation.level4 else AppElevation.level2,
+                    onClick = {
+                        val activity = context as? Activity
+                        val shouldShowRationale = activity?.let {
+                            ActivityCompat.shouldShowRequestPermissionRationale(it, permission)
+                        } ?: false
 
-	Card(
-		modifier = Modifier
-			.fillMaxWidth()
-			.padding(Spacing.md),
-		shape = PremiumShapes.large,
-		elevation = CardDefaults.cardElevation(AppElevation.level5),
-		border = BorderStroke(
-			width = if (isDark) 2.dp else 0.dp, color = Color.White.copy(alpha = 0.2f)
-		),
-		colors = CardDefaults.cardColors(
-			containerColor = MaterialTheme.colorScheme.primaryContainer,
-			contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-		)
-	) {
-		Column(
-			modifier = Modifier
-				.padding(Spacing.md)
-				.semantics { isTraversalGroup = true }) {
-			Row(
-				modifier = Modifier
-					.padding(Spacing.md)
-					.fillMaxWidth()
-					.semantics { traversalIndex = -1f }, horizontalArrangement = Arrangement.Center
-			) {
-				Icon(
-					modifier = Modifier
-						.height(Spacing.xxxxl)
-						.width(Spacing.xxxxl)
-						.focusRequester(focusRequester)
-						.focusable(),
-					painter = painterResource(permissionIcon as Int),
-					contentDescription = stringResource(permissionData["iconDescription"] as Int),
-					tint = MaterialTheme.colorScheme.onPrimaryContainer
-				)
-			}
-			Text(
-				permissionExplanation,
-				modifier = Modifier
-					.padding(Spacing.md)
-					.semantics { traversalIndex = 0f },
-				color = MaterialTheme.colorScheme.onPrimaryContainer,
-				style = MaterialTheme.typography.bodyLarge,
-				fontWeight = FontWeight.Medium
-			)
-			Row(
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(top = Spacing.md)
-					.semantics { traversalIndex = 1f },
-				horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-			) {
-				PremiumButton(
-					modifier = Modifier.weight(1f),
-					shadowElevation = if (isDark) AppElevation.level4 else AppElevation.level2,
-					onClick = { showDeclineDialog = !showDeclineDialog }) {
-					Text(
-						stringResource(R.string.decline_action),
-						modifier = Modifier.clearAndSetSemantics {
-							contentDescription =
-								context.getString(permissionData["permissionDeclineSemantic"] as Int)
-						},
-						style = MaterialTheme.typography.labelLarge
-					)
-				}
-				PremiumButton(
-					modifier = Modifier.weight(1f),
-					shadowElevation = if (isDark) AppElevation.level4 else AppElevation.level2,
-					onClick = {
-						for (permission in permissions as List<*>) {
-							permissionLauncher.launch(permission as String)
-						}
+                        val hasRequestedBefore = sharedPreferences.getBoolean(hasRequestedKey, false)
 
+                        if (hasRequestedBefore && !shouldShowRationale) {
+                            wentToSettings = true
+                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = Uri.fromParts("package", context.packageName, null)
+                            }
+                            context.startActivity(intent)
+                        } else {
+                            sharedPreferences.edit { putBoolean(hasRequestedKey, true) }
+                            permissionLauncher.launch(permission)
+                        }
+                    }) {
+                    Text(
+                        stringResource(R.string.accept_action),
+                        modifier = Modifier.clearAndSetSemantics {
+                            contentDescription =
+                                context.getString(permissionData["permissionAcceptSemantic"] as Int)
+                        },
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+        }
+    }
 
-					}) {
-					Text(
-						stringResource(R.string.accept_action),
-						modifier = Modifier.clearAndSetSemantics {
-							contentDescription =
-								context.getString(permissionData["permissionAcceptSemantic"] as Int)
-						},
-						style = MaterialTheme.typography.labelLarge
-					)
-				}
-
-			}
-		}
-	}
-	if (showDeclineDialog) {
-		ConfirmPermissionDecline(
-			modifier = modifier,
-			permissionData = permissionData,
-			onDialogDismissed = { showDeclineDialog = false },
-			onExitPermissionSelection = onExitPermissionPage,
-			onEvent = onEvent,
-			onPermissionDecline = onPermissionAccepted
-		)
-	}
-
+    if (showDeclineDialog) {
+        ConfirmPermissionDecline(
+            modifier = modifier,
+            permissionData = permissionData,
+            onDialogDismissed = { showDeclineDialog = false },
+            onExitPermissionSelection = onExitPermissionPage,
+            onEvent = onEvent,
+            onPermissionDecline = onPermissionAccepted
+        )
+    }
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -278,63 +351,71 @@ fun ConfirmPermissionDecline(
 	onEvent: (UIEvent) -> Unit,
 	onPermissionDecline: () -> Unit
 ) {
-	val context = LocalContext.current
-	val isDark = isSystemInDarkTheme()
-	AlertDialog(onDismissRequest = { onDialogDismissed() }, title = {
-		Row(
-			modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
-		) {
-			PremiumIconButton(
-				modifier = Modifier.semantics { traversalIndex = 1f },
-				onClick = { onDialogDismissed() }) {
-				Icon(
-					modifier = Modifier
-						.width(Spacing.xl)
-						.height(Spacing.xl),
-					painter = painterResource(R.drawable.arrow_back_24px),
-					contentDescription = stringResource(R.string.return_icon_description)
-				)
-			}
-			Text(
-				stringResource(R.string.confirm_permission_decline_title),
-				modifier = Modifier.semantics {
-					traversalIndex = -1f
-					heading()
-				},
-				style = MaterialTheme.typography.titleLarge
-			)
-		}
-	}, text = {
-		Text(
-			(stringResource(permissionData["confirmPermissionDeclineExplanation"] as Int)),
-			style = MaterialTheme.typography.bodyMedium
-		)
-	}, confirmButton = {
-		PremiumButton(
-			modifier = Modifier, shadowElevation = if (isDark) 8.dp else 3.dp, onClick = {
-				Log.d(
-					LOG_TAG,
-					"[PermissionPage.ConfirmPermissionDecline] Permission ${permissionData["permissions"]}declined"
-				)
-				onDialogDismissed()
-				onPermissionDecline(
-					permissionData,
-					onExitPermissionSelection,
-					context = context,
-					onEvent = onEvent,
-					onPermissionDecline = onPermissionDecline
-				)
-			}) {
-			Text(
-				stringResource(R.string.confirm_decline_action),
-				modifier = Modifier.clearAndSetSemantics {
-					contentDescription =
-						context.getString(permissionData["confirmPermissionDeclineSemantic"] as Int)
-				},
-				style = MaterialTheme.typography.labelLarge
-			)
-		}
-	})
+    val context = LocalContext.current
+    val isDark = isSystemInDarkTheme()
+    AlertDialog(
+        onDismissRequest = { onDialogDismissed() },
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PremiumIconButton(
+                    modifier = Modifier.semantics { traversalIndex = 1f },
+                    onClick = { onDialogDismissed() }) {
+                    Icon(
+                        modifier = Modifier
+                            .width(Spacing.xl)
+                            .height(Spacing.xl),
+                        painter = painterResource(R.drawable.arrow_back_24px),
+                        contentDescription = stringResource(R.string.return_icon_description)
+                    )
+                }
+                Text(
+                    stringResource(R.string.confirm_permission_decline_title),
+                    modifier = Modifier.semantics {
+                        traversalIndex = -1f
+                        heading()
+                    },
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+        },
+        text = {
+            Text(
+                (stringResource(permissionData["confirmPermissionDeclineExplanation"] as Int)),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        confirmButton = {
+            PremiumButton(
+                modifier = Modifier,
+                shadowElevation = if (isDark) 8.dp else 3.dp,
+                onClick = {
+                    Log.d(
+                        LOG_TAG,
+                        "[PermissionPage.ConfirmPermissionDecline] Permission ${permissionData["permissions"]}declined"
+                    )
+                    onDialogDismissed()
+                    onPermissionDecline(
+                        permissionData,
+                        onExitPermissionSelection,
+                        context = context,
+                        onEvent = onEvent,
+                        onPermissionDecline = onPermissionDecline
+                    )
+                }) {
+                Text(
+                    stringResource(R.string.confirm_decline_action),
+                    modifier = Modifier.clearAndSetSemantics {
+                        contentDescription =
+                            context.getString(permissionData["confirmPermissionDeclineSemantic"] as Int)
+                    },
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+    )
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
