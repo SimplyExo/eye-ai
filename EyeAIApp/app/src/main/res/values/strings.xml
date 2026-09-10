@@ -247,6 +247,10 @@
     <string name="missing_permission_alert_dialog_vosk_text">Um die Spracherkennung zu aktivieren, braucht die App die Berechtigung für das Mikrofon. Wollen sie die Berechtigung erteilen?</string>
     <string name="missing_permission_alert_dialog_grant_permission_text">Berechtigung erteilen?</string>
 	<string name="missing_permission_alert_dialog_camera_text">Damit die KI ihre Umgebung analysieren kann, braucht die App Zugriff auf Ihre Kamera. Wollen Sie die Berechtigung erteilen?</string>
+	<string name="missing_permission_alert_dialog_vision_text">Damit sich die EyeAI-App mit der EyeAI-Vision verbinden kann, braucht die App die Berechtigungen für nahe WLAN-Netzwerke und Standort</string>
+	<string name="missing_media_source_alert_dialog_title">Fehlende Media-Quelle</string>
+	<string name="missing_media_source_alert_dialog_text">In den Einstellungen ist als Eingabequelle \'Media\' ausgewählt. Es wurde jedoch keine Media Datei ausgewählt. Wollen Sie die Einstellungen öffnen, um eine Datei oder eine andere Eingabequelle auszuwählen?</string>
+	<string name="button_open_settings_text">Einstellungen öffnen</string>
 
 	<!-- Strings for semantics -->
 

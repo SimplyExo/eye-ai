@@ -85,7 +85,7 @@ fun PermissionPage(
 	onEvent: (UIEvent) -> Unit
 ) {
 	LaunchedEffect(Unit) {
-		onEvent(UIEvent.OnUpdateVisionPermissionsNotGranted(false))
+		onEvent(UIEvent.OnUpdateAppMissingVisionPermission(false))
 	}
 	Log.d(LOG_TAG, "[PermissionPage] Loading PermissionPage")
 	val context = LocalContext.current

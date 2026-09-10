@@ -74,3 +74,11 @@ data class DepthOverlayUIState(
 	val performanceText: String = "",
 )
 
+@Immutable
+data class UIDialogsUIState(
+	val appMissingSelectedMediaSource: Boolean = false,
+	val appMissingVoskPermission: Boolean = false,
+	val appMissingCameraPermission: Boolean = false,
+	val appMissingVisionPermission: Boolean = false,
+)
+

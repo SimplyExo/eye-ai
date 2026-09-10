@@ -35,7 +35,7 @@ fun onPermissionDecline(
 			}
 
 			context.getString(R.string.wifi_permission_name), context.getString(R.string.location_permission_name) -> {
-				onEvent(UIEvent.OnUpdateVisionPermissionsNotGranted(true))
+				onEvent(UIEvent.OnUpdateAppMissingVisionPermission(true))
 				sharedPreferences.edit(commit = true) {
 					putString(
 						context.getString(R.string.input_source_setting),
