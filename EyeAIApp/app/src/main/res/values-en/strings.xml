@@ -198,6 +198,9 @@
     <string name="pause_tutorial_audio_button_text">Stop playback</string>
     <string name="start_tutorial_audio_button_text">Start playback</string>
     <string name="start_pause_tutorial_audio_button_semantic">Start or stop audio playback</string>
+    <string name="home_page_app_bar_title_text">EyeAI App</string>
+    <string name="setting_eye_ai_core_rs_version_title">EyeAI-Core Rust version</string>
+    <string name="welcome_screen_text">Would you like an introduction to the app?</string>
 
 
 </resources>
