@@ -315,25 +315,19 @@ fn apply_nms(
 		return Vec::new();
 	}
 
-	// sorted descending
 	let mut sorted_objects = objects.to_vec();
 	sorted_objects.sort_by(|a, b| b.confidence.total_cmp(&a.confidence));
 
+	let mut suppressed = vec![false; sorted_objects.len()];
 	let mut selected_objects = Vec::new();
 
-	// TODO: pop elements in reverse instead -> not so much reallocations
-	while let Some(first) = sorted_objects.first().cloned() {
-		selected_objects.push(first.clone());
-		sorted_objects.remove(0);
-
-		let mut i = 0;
-		while i < sorted_objects.len() {
-			let iou = calculate_iou(&first, &sorted_objects[i]);
-			if iou >= iou_threshold {
-				sorted_objects.remove(i);
-			} else {
-				i += 1;
-			}
+	for i in 0..sorted_objects.len() {
+		if suppressed[i] {
+			continue;
+		}
+		selected_objects.push(sorted_objects[i].clone());
+		for j in i + 1..sorted_objects.len() {
+			suppressed[j] |= calculate_iou(&sorted_objects[i], &sorted_objects[j]) >= iou_threshold;
 		}
 	}
 
@@ -343,8 +337,8 @@ fn apply_nms(
 fn calculate_iou(object_a: &DetectedObject, object_b: &DetectedObject) -> f32 {
 	let x1 = f32::max(object_a.bbox.x1(), object_b.bbox.x1());
 	let y1 = f32::max(object_a.bbox.y1(), object_b.bbox.y1());
-	let x2 = f32::max(object_a.bbox.x2(), object_b.bbox.x2());
-	let y2 = f32::max(object_a.bbox.y2(), object_b.bbox.y2());
+	let x2 = f32::min(object_a.bbox.x2(), object_b.bbox.x2());
+	let y2 = f32::min(object_a.bbox.y2(), object_b.bbox.y2());
 
 	let intersection_width = f32::max(0.0, x2 - x1);
 	let intersection_height = f32::max(0.0, y2 - y1);
@@ -352,6 +346,14 @@ fn calculate_iou(object_a: &DetectedObject, object_b: &DetectedObject) -> f32 {
 
 	let a_area = object_a.bbox.width * object_a.bbox.height;
 	let b_area = object_b.bbox.width * object_b.bbox.height;
+	let union_area = a_area + b_area - intersection_area;
+	if union_area <= 0.0 {
+		return 0.0;
+	}
 
-	intersection_area / (a_area + b_area - intersection_area)
+	intersection_area / union_area
 }
+
+#[cfg(test)]
+#[path = "yolo_model/tests/mod.rs"]
+mod tests;

@@ -5,11 +5,13 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
 import com.algorithmic_alliance.eyeaiapp.NativeLib
+import com.algorithmic_alliance.eyeaiapp.camera.TrackingEpoch
 import java.io.File
 import androidx.core.graphics.scale
 import uniffi.NativeLib.UniffiDetectedObject
 
 class YoloModel(var info: YoloModelInfo) {
+	private val trackingSession = ObjectTrackingSession()
 	private lateinit var labels: List<String>
 
 	private var tensorWidth = 0
@@ -17,18 +19,22 @@ class YoloModel(var info: YoloModelInfo) {
 	private var numChannel = 0
 	private var numElements = 0
 
+	@Volatile
 	private var initialized = false
 
-	@Synchronized
+	val isReady: Boolean get() = initialized
+
 	fun create(
 		context: Context, skelDirectory: String,
-		enableNpu: Boolean
-	) {
+		enableNpu: Boolean,
+		onTrackerReplaced: () -> Unit,
+	) = trackingSession.withModelLock {
 		if (initialized && enableNpu == currentEnableNpu) {
-			return
+			return@withModelLock
 		}
 
 		// Erstellen einer Yolo-Instanz
+		initialized = false
 		val modelBytes = info.getAsBytes(context)
 		labels = info.readLinesFromAsset(context).toList()
 
@@ -36,6 +42,8 @@ class YoloModel(var info: YoloModelInfo) {
 			info.tfliteFilename, modelBytes, labels,
 			enableNpu, skelDirectory
 		)
+		trackingSession.modelReplaced()
+		onTrackerReplaced()
 
 		val inputShape = uniffi.NativeLib.getYoloInputShape()
 		tensorWidth = inputShape[1]
@@ -51,20 +59,21 @@ class YoloModel(var info: YoloModelInfo) {
 	@Volatile
 	private var currentEnableNpu: Boolean? = null
 
-	@Synchronized
-	fun runInference(frame: Bitmap): Array<UniffiDetectedObject>? {
-		if (!initialized) {
-			/*Log.e(
-				"YOLO",
-				"Tried to run YOLO inference on uninitialized yolo model, call create first!"
-			)*/
-			return null
-		}
-
+	fun runInference(
+		frame: Bitmap,
+		trackingEpoch: TrackingEpoch,
+		admit: () -> Boolean,
+	): Array<UniffiDetectedObject>? = trackingSession.run(
+		epoch = trackingEpoch,
+		ready = { initialized },
+		admit = admit,
+		reset = { uniffi.NativeLib.resetObjectTracker() },
+	) {
+		uniffi.NativeLib.newObjectFrame()
 		val resizedBitmap = frame.scale(tensorWidth, tensorHeight, false)
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(resizedBitmap)
 
-		return uniffi.NativeLib.runYoloOperation(input.asUniffiWrapper()).toTypedArray()
+		uniffi.NativeLib.runYoloOperation(input.asUniffiWrapper()).toTypedArray()
 	}
 
 	fun createSerializedGpuDelegateCacheDirectory(context: Context): File {

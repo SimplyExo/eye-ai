@@ -14,7 +14,6 @@ fn main() {
 	} else {
 		"OFF"
 	};
-
 	match std::env::var("TARGET") {
 		Ok(target) if target.contains("android") => {
 			build_with_cmake_for_android(&repo_dir, native_test_api);

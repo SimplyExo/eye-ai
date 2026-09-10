@@ -54,9 +54,8 @@ impl<'a> std::fmt::Debug for ObjectTracker<'a> {
 	}
 }
 impl<'a> ObjectTracker<'a> {
-	/// For how many seconds a 100% confident tracked observation needs to be
-	/// visible before it is considered valid.
-	pub const MIN_WAITING_PREDICTION_TIME_BEFORE_VALID: f32 = 0.5;
+	pub const MIN_WAITING_PREDICTION_TIME_BEFORE_VALID: f32 = 0.45;
+	const MAX_RELIABLE_VALIDATION_INTERVAL: Duration = Duration::from_secs(2);
 
 	pub fn new(labels: Vec<String>, profiling_frame: &'a ProfilingFrame) -> Self {
 		Self {
@@ -67,6 +66,13 @@ impl<'a> ObjectTracker<'a> {
 			track_validations: HashMap::new(),
 			profiling_frame,
 		}
+	}
+
+	pub fn reset(&mut self) {
+		self.tracker = BYTETracker::default();
+		self.last_update = None;
+		self.update_number = 0;
+		self.track_validations.clear();
 	}
 
 	fn is_track_confirmed(
@@ -99,12 +105,8 @@ impl<'a> ObjectTracker<'a> {
 			return true;
 		};
 
-		// A duration is only evidence of visibility if this ID was observed in the
-		// previous tracker update. The first ByteTrack output and a longer
-		// unobserved gap are never credited.
-		let max_unobserved_interval =
-			Duration::from_secs_f32(Self::MIN_WAITING_PREDICTION_TIME_BEFORE_VALID);
-		if was_seen_in_previous_update && update_duration <= max_unobserved_interval {
+		if was_seen_in_previous_update && update_duration <= Self::MAX_RELIABLE_VALIDATION_INTERVAL
+		{
 			let bounded_confidence = if confidence.is_finite() {
 				confidence.clamp(0.0, 1.0)
 			} else {
@@ -139,9 +141,6 @@ impl<'a> ObjectTracker<'a> {
 		detected_objects: Vec<DetectedObject>,
 		now: Instant,
 	) -> Vec<TrackedObject> {
-		// `Instant` is monotonic. The first update has no predecessor and therefore
-		// advances native tracking by zero; there cannot be an existing track to
-		// predict or expire at that point.
 		let update_duration = self.last_update.map_or(Duration::ZERO, |last_update| {
 			now.saturating_duration_since(last_update)
 		});
@@ -157,11 +156,11 @@ impl<'a> ObjectTracker<'a> {
 
 		let mut tracked_objects = Vec::with_capacity(byte_track_tracked_objects.len());
 		for byte_track_tracked_object in byte_track_tracked_objects {
-			let label = byte_track_tracked_object.label;
-			if label < 0 {
-				continue;
-			}
-			let Some(label) = self.labels.get(label as usize).cloned() else {
+			let Some(label) = self
+				.labels
+				.get(byte_track_tracked_object.label as usize)
+				.cloned()
+			else {
 				continue;
 			};
 			let tracking_id = byte_track_tracked_object.track_id;

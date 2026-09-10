@@ -29,6 +29,19 @@ data class Settings(
 ) : Cloneable {
 	companion object {
 		const val DEFAULT_FRAME_RATE_LIMIT: Int = 30
+		const val MIN_DEPTH_FRAME_RATE: Int = 1
+		const val MAX_DEPTH_FRAME_RATE: Int = 60
+		const val MIN_OBJECT_DETECTION_FRAME_RATE: Int = 1
+		const val MAX_OBJECT_DETECTION_FRAME_RATE: Int = 60
+
+		fun normalizeDepthFrameRate(value: Int): Int =
+			value.coerceIn(MIN_DEPTH_FRAME_RATE, MAX_DEPTH_FRAME_RATE)
+
+		fun effectiveDepthFrameRate(value: Int?): Int? =
+			value?.let(::normalizeDepthFrameRate)
+
+		fun normalizeObjectDetectionFrameRate(value: Int): Int =
+			value.coerceIn(MIN_OBJECT_DETECTION_FRAME_RATE, MAX_OBJECT_DETECTION_FRAME_RATE)
 
 		fun load(context: Context): Settings {
 			val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -44,10 +57,10 @@ data class Settings(
 			)
 
 			val maxDepthFrameRate = if (depthFrameRateLimitEnabled) {
-				sharedPreferences.getInt(
+				normalizeDepthFrameRate(sharedPreferences.getInt(
 					context.getString(R.string.max_depth_frame_rate_setting),
 					DEFAULT_FRAME_RATE_LIMIT
-				)
+				))
 			} else {
 				null
 			}
@@ -84,10 +97,10 @@ data class Settings(
 			)
 
 			val maxObjectDetectionFrameRate = if (objectDetectionFrameRateLimitEnabled) {
-				sharedPreferences.getInt(
+				normalizeObjectDetectionFrameRate(sharedPreferences.getInt(
 					context.getString(R.string.max_object_detection_frame_rate_setting),
 					DEFAULT_FRAME_RATE_LIMIT
-				)
+				))
 			} else {
 				null
 			}
@@ -217,7 +230,10 @@ data class Settings(
 			// Frame Rate Limits
 			maxDepthFrameRate?.let {
 				putBoolean(context.getString(R.string.enable_depth_frame_rate_limit_setting), true)
-				putInt(context.getString(R.string.max_depth_frame_rate_setting), it)
+				putInt(
+					context.getString(R.string.max_depth_frame_rate_setting),
+					normalizeDepthFrameRate(it),
+				)
 			} ?: putBoolean(
 				context.getString(R.string.enable_depth_frame_rate_limit_setting),
 				false
@@ -228,7 +244,10 @@ data class Settings(
 					context.getString(R.string.enable_object_detection_frame_rate_limit_setting),
 					true
 				)
-				putInt(context.getString(R.string.max_object_detection_frame_rate_setting), it)
+				putInt(
+					context.getString(R.string.max_object_detection_frame_rate_setting),
+					normalizeObjectDetectionFrameRate(it),
+				)
 			} ?: putBoolean(
 				context.getString(R.string.enable_object_detection_frame_rate_limit_setting),
 				false

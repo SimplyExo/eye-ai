@@ -11,7 +11,31 @@ import org.junit.Test
 
 class SpatialAudioResumeControllerTest {
 	@Test
-	fun `spatial audio stays paused until TTS is silent`() = runBlocking {
+	fun delayedRestoreRetainsSessionCapturedWhenScheduled() = runBlocking {
+		val silence = CompletableDeferred<Boolean>()
+		val restored = CompletableDeferred<ULong>()
+		var session = 1uL
+		val controller = SpatialAudioResumeController(
+			scope = this,
+			pauseSpatialAudio = {},
+			restoreSpatialAudio = { error("unscoped restore must not run") },
+			awaitTtsSilence = { silence.await() },
+			isListening = { false },
+			onOutcome = { _, _ -> },
+			captureRestoreSpatialAudio = {
+				val captured = session
+				val restore: (String) -> Unit = { restored.complete(captured) }
+				restore
+			},
+		)
+		controller.schedule("A_TTS")
+		session = 2uL
+		silence.complete(true)
+		assertEquals(1uL, restored.await())
+	}
+
+	@Test
+	fun spatialAudioStaysPausedUntilTtsIsSilent() = runBlocking {
 		val silence = CompletableDeferred<Boolean>()
 		val events = mutableListOf<String>()
 		val outcome = CompletableDeferred<SpatialAudioResumeOutcome>()
@@ -31,7 +55,7 @@ class SpatialAudioResumeControllerTest {
 	}
 
 	@Test
-	fun `spatial audio is not restored when TTS silence times out`() = runBlocking {
+	fun spatialAudioIsNotRestoredWhenTtsSilenceTimesOut() = runBlocking {
 		val events = mutableListOf<String>()
 		val outcome = CompletableDeferred<SpatialAudioResumeOutcome>()
 		val controller = controller(
@@ -47,7 +71,7 @@ class SpatialAudioResumeControllerTest {
 	}
 
 	@Test
-	fun `spatial audio is not restored after listening starts again`() = runBlocking {
+	fun spatialAudioIsNotRestoredAfterListeningStartsAgain() = runBlocking {
 		val events = mutableListOf<String>()
 		val outcome = CompletableDeferred<SpatialAudioResumeOutcome>()
 		val controller = controller(
@@ -64,7 +88,7 @@ class SpatialAudioResumeControllerTest {
 	}
 
 	@Test
-	fun `cancelling a pending resume keeps spatial audio paused`() = runBlocking {
+	fun cancellingAPendingResumeKeepsSpatialAudioPaused() = runBlocking {
 		val silence = CompletableDeferred<Boolean>()
 		val events = mutableListOf<String>()
 		val controller = controller(

@@ -1,4 +1,5 @@
 use super::*;
+use std::collections::BTreeSet;
 
 #[test]
 fn lower_confidence_needs_more_reliable_visible_time() {
@@ -86,7 +87,7 @@ fn tentative_evidence_pauses_and_accumulates_across_short_bursts() {
 		tracking_id = Some(id);
 
 		if validation_state(&tracker, id) == TrackValidationState::Confirmed {
-			assert_eq!(burst_index, 4);
+			assert_eq!(burst_index, 3);
 			break;
 		}
 
@@ -118,6 +119,63 @@ fn continuous_reliable_detection_transitions_to_confirmed() {
 		validation_state(&tracker, tracking_id),
 		TrackValidationState::Confirmed
 	);
+}
+
+#[test]
+fn continuous_detection_transitions_to_confirmed_at_supported_low_rates() {
+	for hz in [1.0, 2.0, 2.1] {
+		let profiling_frame = ProfilingFrame::new(format!("continuous_confirmed_{hz}hz"));
+		let mut tracker = ObjectTracker::new(vec!["object".to_string()], &profiling_frame);
+		let tracking_id = warm_visible_track(&mut tracker, hz);
+
+		assert_eq!(
+			validation_state(&tracker, tracking_id),
+			TrackValidationState::Confirmed,
+			"continuous detections must become valid at {hz} FPS"
+		);
+	}
+}
+
+#[test]
+fn reset_starts_a_fresh_epoch_without_reloading_detector_state() {
+	let profiling_frame = ProfilingFrame::new("tracker_reset");
+	let mut tracker = ObjectTracker::new(vec!["object".to_string()], &profiling_frame);
+	let old_id = warm_visible_track(&mut tracker, HIGH_HZ);
+
+	assert_eq!(
+		validation_state(&tracker, old_id),
+		TrackValidationState::Confirmed
+	);
+	assert!(tracker.last_update.is_some());
+	assert!(tracker.update_number > 0);
+	let pause_at = tracker.last_update.unwrap() + Duration::from_secs(12);
+	assert!(tracker.update_at(vec![detection(0.5)], pause_at).is_empty());
+	let replacement_id = visible_id_after_detections(&mut tracker, HIGH_HZ, 12);
+	assert_ne!(replacement_id, old_id);
+
+	tracker.reset();
+
+	assert!(tracker.track_validations.is_empty());
+	assert!(tracker.last_update.is_none());
+	assert_eq!(tracker.update_number, 0);
+
+	assert!(
+		tracker
+			.update_at(vec![detection(0.5)], Instant::now())
+			.is_empty()
+	);
+	let new_id = *tracker
+		.track_validations
+		.keys()
+		.next()
+		.expect("first post-reset detection should create validation state");
+	assert_eq!(new_id, 1);
+	assert_eq!(tracker.labels, vec!["object".to_string()]);
+	assert_eq!(tentative_visible_seconds(&tracker, new_id), 0.0);
+	assert!(matches!(
+		validation_state(&tracker, new_id),
+		TrackValidationState::Tentative { .. }
+	));
 }
 #[test]
 fn stale_validation_states_are_cleaned_up_after_the_nominal_track_lifetime() {

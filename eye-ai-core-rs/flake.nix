@@ -47,6 +47,7 @@
             cmake
             ninja
             ccache
+            eigen
 
             clang-tools # clang-tidy
 

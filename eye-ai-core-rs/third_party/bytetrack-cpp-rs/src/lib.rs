@@ -16,6 +16,27 @@ pub type Rect = byte_track_Rect_float;
 pub type Object = byte_track_Object;
 pub type STrack = byte_track_STrack;
 
+fn copy_and_destroy_tracks(
+	tracks: *mut byte_track_STrack,
+	track_count: c_int,
+) -> Vec<byte_track_STrack> {
+	assert!(
+		track_count >= 0,
+		"ByteTrack returned a negative result length"
+	);
+	if track_count == 0 {
+		unsafe { byte_track_STrack_array_destroy(tracks) };
+		return Vec::new();
+	}
+	assert!(
+		!tracks.is_null(),
+		"ByteTrack returned a null result pointer for a non-empty result"
+	);
+	let result = unsafe { std::slice::from_raw_parts(tracks, track_count as usize) }.to_vec();
+	unsafe { byte_track_STrack_array_destroy(tracks) };
+	result
+}
+
 pub struct BYTETracker {
 	tracker: *mut c_void,
 }
@@ -65,22 +86,7 @@ impl BYTETracker {
 				&mut out_stracks_ptr,
 				&mut out_stracks_len,
 			);
-			assert!(
-				out_stracks_len >= 0,
-				"ByteTrack returned a negative result length"
-			);
-			if out_stracks_len == 0 {
-				byte_track_STrack_array_destroy(out_stracks_ptr);
-				return Vec::new();
-			}
-			assert!(
-				!out_stracks_ptr.is_null(),
-				"ByteTrack returned a null result pointer for a non-empty result"
-			);
-			let stracks_vec =
-				std::slice::from_raw_parts(out_stracks_ptr, out_stracks_len as usize).to_vec();
-			byte_track_STrack_array_destroy(out_stracks_ptr);
-			stracks_vec
+			copy_and_destroy_tracks(out_stracks_ptr, out_stracks_len)
 		}
 	}
 

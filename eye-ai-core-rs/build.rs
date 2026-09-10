@@ -1,6 +1,6 @@
 use std::env;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 fn main() {
 	println!("cargo::rerun-if-changed=build.rs");
@@ -21,11 +21,7 @@ fn main() {
 		if entry.file_type().unwrap().is_file() {
 			let path = entry.path();
 			let filename = path.file_name().unwrap();
-			std::fs::copy(
-				entry.path(),
-				format!("{}/{}", target_output_dir, filename.to_str().unwrap()),
-			)
-			.expect("failed to copy .so file to target output directory");
+			copy_replacing_read_only(entry.path(), Path::new(&target_output_dir).join(filename));
 		}
 	}
 
@@ -37,6 +33,28 @@ fn main() {
 	if let Some(dir) = find_litert_cache_dir() {
 		println!("cargo::rustc-link-arg=-Wl,-rpath,{}", dir.display());
 	}
+}
+
+/// Prebuilt vendor libraries may intentionally be read-only. Cargo reuses the
+/// target directory, so make only an existing generated destination writable
+/// before replacing it on a later build.
+fn copy_replacing_read_only(source: impl AsRef<Path>, destination: impl AsRef<Path>) {
+	let destination = destination.as_ref();
+	if let Ok(metadata) = fs::metadata(destination) {
+		let mut permissions = metadata.permissions();
+		if permissions.readonly() {
+			#[cfg(unix)]
+			{
+				use std::os::unix::fs::PermissionsExt;
+				permissions.set_mode(permissions.mode() | 0o200);
+			}
+			#[cfg(not(unix))]
+			permissions.set_readonly(false);
+			fs::set_permissions(destination, permissions)
+				.expect("failed to make generated native library writable");
+		}
+	}
+	fs::copy(source, destination).expect("failed to copy .so file to target output directory");
 }
 
 /// see https://docs.rs/crate/litert-sys/0.2.1/source/build.rs for more detail

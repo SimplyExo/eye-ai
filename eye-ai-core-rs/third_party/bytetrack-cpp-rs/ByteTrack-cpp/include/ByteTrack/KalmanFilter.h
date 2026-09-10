@@ -9,11 +9,7 @@ namespace byte_track
 class KalmanFilter
 {
 public:
-    // The original ByteTrack tuning models one abstract frame per Kalman step.
-    // EyeAI defines that reference step explicitly as 1/15 s to preserve the
-    // established 15 Hz regression baseline. This is a Kalman tuning unit, not
-    // a cadence restriction. Velocity states contain position change per
-    // reference step; prediction receives and normalizes real elapsed seconds.
+    // Normalized to the 15 Hz baseline.
     static constexpr double REFERENCE_INTERVAL_SECONDS = 1.0 / 15.0;
 
     using DetectBox = Xyah<float>;
@@ -29,8 +25,7 @@ public:
 
     void initiate(StateMean& mean, StateCov& covariance, const DetectBox& measurement);
 
-    void predict(StateMean& mean, StateCov& covariance,
-                 double elapsed_seconds);
+    void predict(StateMean& mean, StateCov& covariance, double elapsed_seconds);
 
     void update(StateMean& mean, StateCov& covariance, const DetectBox& measurement);
 

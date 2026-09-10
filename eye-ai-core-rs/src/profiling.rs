@@ -42,18 +42,22 @@ impl<'a> ProfileScope<'a> {
 }
 impl<'a> Drop for ProfileScope<'a> {
 	fn drop(&mut self) {
-		self.profiling_frame
-			._internal_submit_scope(ProfileScopeRecord {
+		let record = self
+			.profiling_frame
+			.retain_records
+			.then(|| ProfileScopeRecord {
 				name: std::mem::take(&mut self.name),
 				scope_depth: self.scope_depth,
 				start: self.start,
 				duration: dur::Duration::from_std(Instant::now() - self.start),
 			});
+		self.profiling_frame._internal_submit_scope(record);
 	}
 }
 
 pub struct ProfilingFrame {
 	name: String,
+	retain_records: bool,
 	#[cfg(feature = "enable_tracy_profiling")]
 	frame_name: FrameName,
 	start: RwLock<Instant>,
@@ -69,9 +73,18 @@ impl std::fmt::Debug for ProfilingFrame {
 }
 impl ProfilingFrame {
 	pub fn new(name: impl Into<String>) -> Self {
+		Self::with_record_retention(name, true)
+	}
+
+	pub fn new_unretained(name: impl Into<String>) -> Self {
+		Self::with_record_retention(name, false)
+	}
+
+	fn with_record_retention(name: impl Into<String>, retain_records: bool) -> Self {
 		let name = name.into();
 		Self {
 			name: name.clone(),
+			retain_records,
 			#[cfg(feature = "enable_tracy_profiling")]
 			frame_name: FrameName::new_leak(name),
 			start: RwLock::new(Instant::now()),
@@ -87,9 +100,13 @@ impl ProfilingFrame {
 
 	/// This is only public so that `ProfileScope` can submit its records when being dropped.
 	/// Don't call this directly!
-	pub(crate) fn _internal_submit_scope(&self, record: ProfileScopeRecord) {
+	pub(crate) fn _internal_submit_scope(&self, record: Option<ProfileScopeRecord>) {
 		self.current_scope_depth.fetch_sub(1, Ordering::Relaxed);
-		self.profile_scopes.push(record);
+		if self.retain_records
+			&& let Some(record) = record
+		{
+			self.profile_scopes.push(record);
+		}
 	}
 
 	/// Returns None if the frame is not yet finished, i.e. current_scope_depth != 0
@@ -136,3 +153,7 @@ impl ProfilingFrame {
 		))
 	}
 }
+
+#[cfg(test)]
+#[path = "profiling/tests/mod.rs"]
+mod tests;

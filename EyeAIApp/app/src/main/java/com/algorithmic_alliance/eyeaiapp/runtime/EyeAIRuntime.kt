@@ -23,6 +23,12 @@ import com.algorithmic_alliance.eyeaiapp.audio.AudioFrameSink
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.camera.FrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.camera.FrameAnalysisUpdate
+import com.algorithmic_alliance.eyeaiapp.camera.FrameAnalysisBackend
+import com.algorithmic_alliance.eyeaiapp.camera.AnalysisFrame
+import com.algorithmic_alliance.eyeaiapp.camera.DepthFrameOutput
+import com.algorithmic_alliance.eyeaiapp.inference.throttling.AnalysisClock
+import com.algorithmic_alliance.eyeaiapp.inference.throttling.motion.PhoneMotionLifecycle
+import com.algorithmic_alliance.eyeaiapp.inference.throttling.motion.PhoneMotionMonitor
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
@@ -59,7 +65,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
-import uniffi.NativeLib.UniffiDetectedObject
 
 /** Output of a depth inference while the model read lock is held. */
 data class DepthInferenceResult(
@@ -79,6 +84,7 @@ class EyeAIRuntime internal constructor(
     private val context: Context = app.applicationContext
     private val lifecycleGate = RuntimeLifecycleGate()
     private val stateLock = Any()
+    private val operationLock = Any()
     private val modelLock = ReentrantReadWriteLock()
 
     private val _state = MutableStateFlow(EyeAIRuntimeState())
@@ -111,6 +117,11 @@ class EyeAIRuntime internal constructor(
         scope = runtimeScope,
         pauseSpatialAudio = ::pauseSpatialAudio,
         restoreSpatialAudio = ::restoreSpatialAudioFromSettings,
+        captureRestoreSpatialAudio = {
+            val session = SpatialAudio.currentSessionId()
+            val restore: (String) -> Unit = { trigger -> restoreSpatialAudioForSession(trigger, session) }
+            restore
+        },
         awaitTtsSilence = {
             textToSpeechInstance.awaitSilence(quietMs = 500L, maxWaitMs = 30_000L)
         },
@@ -138,7 +149,39 @@ class EyeAIRuntime internal constructor(
     val nlpModel = NLPModel(NLPModelInfo.findById(NLPModelInfo.DEFAULT_MODEL_ID))
     val ocrModel = GoogleOCR()
     val voskModel = VoskModel(context, "model-de")
-    val frameAnalyzer = FrameAnalyzer(this, ::onFrameAnalysisUpdate)
+    private val phoneMotion = PhoneMotionLifecycle { PhoneMotionMonitor(context, clock = AnalysisClock) }
+    val frameAnalyzer = FrameAnalyzer(object : FrameAnalysisBackend {
+        override val objectModelReady: Boolean get() = yoloModel.isReady
+        override val maxDepthFrameRate: Int?
+            get() = Settings.effectiveDepthFrameRate(settings.maxDepthFrameRate)
+        override fun phoneMotionScore(): Double? = phoneMotion.score()
+        override fun runObjects(
+            frame: Bitmap,
+            trackingEpoch: com.algorithmic_alliance.eyeaiapp.camera.TrackingEpoch,
+            admit: () -> Boolean,
+        ) = yoloModel.runInference(frame, trackingEpoch, admit)
+        override fun runDepth(frame: AnalysisFrame): DepthFrameOutput? {
+            val result = runDepthInference(frame.bitmap) ?: return null
+            val postProcessingStart = AnalysisClock.nowNanos()
+            uniffi.NativeLib.newDepthFrame()
+            val preview = NativeLib.metricDepthColormap(result.prediction.asUniffiWrapper(), result.inputDim)
+            val current = settings
+            val profiling = if (current.showProfilingInfo) {
+                "Metric Depth model: ${result.modelName}\n" +
+                    "Camera resolution: ${frame.width}x${frame.height} -> " +
+                    "Depth model input: ${result.inputDim.width}x${result.inputDim.height}\n\n" +
+                    "${uniffi.NativeLib.formattedDepthFrame()}\n" +
+                    if (current.enableObjectDetection) uniffi.NativeLib.formattedObjectFrame() else ""
+            } else ""
+            return DepthFrameOutput(result.prediction, result.inputDim.width, result.inputDim.height,
+                FrameAnalysisUpdate(depthPreviewBitmap = preview,
+                    debugInputBitmap = frame.bitmap.takeIf { current.showDebugInputBitmap },
+                    performanceText = profiling),
+                postProcessingNanos = AnalysisClock.nowNanos() - postProcessingStart)
+        }
+        override suspend fun runOcr(frame: Bitmap) = runOcrInference(frame)
+    }, ::onFrameAnalysisUpdate, profilingEnabled = { settings.showProfilingInfo })
+    val inferenceTelemetry get() = frameAnalyzer.telemetrySnapshot()
     val cameraManager = CameraManager(::onCameraStateChanged)
     val npuQnnDelegateDirectory: String = app.applicationInfo.nativeLibraryDir
 
@@ -182,7 +225,8 @@ class EyeAIRuntime internal constructor(
             try {
                 switchDepthModel(settings.depthModel)
                 if (settings.enableObjectDetection) {
-                    yoloModel.create(context, npuQnnDelegateDirectory, settings.enableNpu)
+                    yoloModel.create(context, npuQnnDelegateDirectory, settings.enableNpu,
+                        frameAnalyzer::onObjectTrackerReplaced)
                 }
                 switchNlpModel(settings.nlpModel)
                 if (settings.enableOCR) ocrModel.create()
@@ -195,17 +239,35 @@ class EyeAIRuntime internal constructor(
     /** Called by the Application after settings have been reloaded. */
     fun onSettingsChanged(oldSettings: Settings) {
         val newSettings = settings
+        synchronized(operationLock) {
+            frameAnalyzer.configureObjectDetection(
+                newSettings.enableObjectDetection, newSettings.maxObjectDetectionFrameRate?.toDouble(),
+            )
+            phoneMotion.update(
+                isActive,
+                newSettings.enableObjectDetection,
+                newSettings.maxObjectDetectionFrameRate != null,
+                newSettings.showProfilingInfo,
+            )
+            if (oldSettings.inputSource != newSettings.inputSource ||
+                oldSettings.mediaSource != newSettings.mediaSource ||
+                oldSettings.eyeAIVisionIP != newSettings.eyeAIVisionIP
+            ) {
+                frameAnalyzer.invalidateSource()
+                if (isActive) EyeAIRuntimeService.stop(context)
+            }
+        }
         if (oldSettings.depthAudioPlayback != newSettings.depthAudioPlayback) {
-            uniffi.NativeLib.setDepthAudioPaused(!newSettings.depthAudioPlayback)
+            SpatialAudio.setDepthAudioPaused(!newSettings.depthAudioPlayback)
         }
         if (oldSettings.objectAudioPlayback != newSettings.objectAudioPlayback) {
-            uniffi.NativeLib.setObjectAudioPaused(!newSettings.objectAudioPlayback)
+            SpatialAudio.setObjectAudioPaused(!newSettings.objectAudioPlayback)
         }
         if (
             oldSettings.depthAudioFrequency != newSettings.depthAudioFrequency ||
             oldSettings.depthAudioClickIncidence != newSettings.depthAudioClickIncidence
         ) {
-            uniffi.NativeLib.setAudioSettings(
+            SpatialAudio.setAudioSettings(
                 newSettings.depthAudioFrequency.toFloat(),
                 newSettings.depthAudioClickIncidence,
             )
@@ -229,7 +291,8 @@ class EyeAIRuntime internal constructor(
                             oldSettings.enableNpu != newSettings.enableNpu
                         )
                 ) {
-                    yoloModel.create(context, npuQnnDelegateDirectory, newSettings.enableNpu)
+                    yoloModel.create(context, npuQnnDelegateDirectory, newSettings.enableNpu,
+                        frameAnalyzer::onObjectTrackerReplaced)
                 }
                 if (newSettings.enableOCR && !oldSettings.enableOCR) ocrModel.create()
                 if (
@@ -246,15 +309,6 @@ class EyeAIRuntime internal constructor(
                     (serviceOwner.get() as? EyeAIRuntimeService)?.refreshForegroundTypes()
                 }
                 if (newSettings.enableSpeechRecognition && isActive) initSpeechService()
-                if (oldSettings.inputSource != newSettings.inputSource && isActive) {
-                    // Source changes can also change the FGS type and the
-                    // wake-lock requirement. End this operation cleanly and
-                    // let the visible UI start a new service with the new
-                    // source configuration. Models remain runtime-owned and
-                    // are not reloaded by this transition.
-                    EyeAIRuntimeService.stop(context)
-                    return@launch
-                }
             } catch (error: Throwable) {
                 Log.e(EyeAIApp.APP_LOG_TAG, "Settings-triggered runtime update failed", error)
             }
@@ -262,7 +316,7 @@ class EyeAIRuntime internal constructor(
     }
 
     /** Starts the active local source under the foreground service lifecycle. */
-    fun start(owner: LifecycleOwner) {
+    fun start(owner: LifecycleOwner): Unit = synchronized(operationLock) {
         synchronized(stateLock) {
             check(!runtimeClosed) { "EyeAI runtime is closed" }
         }
@@ -271,7 +325,16 @@ class EyeAIRuntime internal constructor(
         try {
             initializeModels()
             textToSpeechInstance
+            frameAnalyzer.configureObjectDetection(
+                settings.enableObjectDetection, settings.maxObjectDetectionFrameRate?.toDouble(),
+            )
             frameAnalyzer.start()
+            phoneMotion.update(
+                true,
+                settings.enableObjectDetection,
+                settings.maxObjectDetectionFrameRate != null,
+                settings.showProfilingInfo,
+            )
             SpatialAudio.setup(context)
             SpatialAudio.start()
             serviceOwner = WeakReference(owner)
@@ -298,7 +361,8 @@ class EyeAIRuntime internal constructor(
     fun detachPreview(previewView: PreviewView? = null) = cameraManager.detachPreview(previewView)
 
     /** Explicit user stop. Models stay cached; active input resources do not. */
-    fun stopOperation() {
+    fun stopOperation(): Unit = synchronized(operationLock) {
+        phoneMotion.update(false, false, limiterEnabled = false, profilingEnabled = false)
         if (!lifecycleGate.stop()) return
         cleanupStep("spatial-audio resume controller") {
             spatialAudioResumeController.cancel()
@@ -309,7 +373,6 @@ class EyeAIRuntime internal constructor(
         cleanupStep("Vosk listener") { voskModel.stopListening() }
         cleanupStep("TTS") { synchronized(stateLock) { textToSpeechInstanceValue }?.stop() }
         cleanupStep("spatial-audio engine") { SpatialAudio.stop() }
-        cleanupStep("native spatial-audio pause") { pauseSpatialAudio() }
         _state.update {
             it.copy(
                 operationActive = false,
@@ -539,12 +602,22 @@ class EyeAIRuntime internal constructor(
         val source = settings.inputSource
         when (source) {
             context.getString(R.string.input_is_camera) -> {
+                val session = frameAnalyzer.beginSourceSession()
                 cameraManager.start(
                     context = context,
                     owner = owner,
                     preferredImageSize = EyeAIApp.PREFERRED_CAMERA_RESOLUTION,
                     cameraPreviewView = null,
-                    frameAnalyzer = frameAnalyzer,
+                    sourceSession = session,
+                    onStartFailure = { error ->
+                        synchronized(operationLock) {
+                            if (session.isCurrent()) {
+                                stopAfterStartFailure()
+                                _state.update { it.copy(lastError = error.message) }
+                                EyeAIRuntimeService.stop(context)
+                            }
+                        }
+                    },
                 )
             }
             context.getString(R.string.input_is_media) -> {
@@ -577,18 +650,20 @@ class EyeAIRuntime internal constructor(
 
     @RequiresApi(Build.VERSION_CODES.P)
     private fun startMediaSource(uri: Uri) {
+        val session = frameAnalyzer.beginSourceSession()
         mediaPlayerValue = MediaPlayer(
             context = context,
             uri = uri,
             updateTargetImageView = { bitmap ->
-                _state.update { it.copy(mediaPreviewBitmap = bitmap) }
+                if (session.isCurrent()) _state.update { it.copy(mediaPreviewBitmap = bitmap) }
             },
-            onFrame = { bitmap -> frameAnalyzer.submitBitmap(bitmap) },
+            onFrame = { bitmap -> session.submitBitmap(bitmap) },
         )
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
     private fun startEyeAIVisionSource(ip: String) {
+        val session = frameAnalyzer.beginSourceSession()
         val flow = MutableSharedFlow<Bitmap>(replay = 1, extraBufferCapacity = 1)
         bitmapFlowValue = flow
         eyeAIVisionValue = EyeAIVision(
@@ -613,10 +688,10 @@ class EyeAIRuntime internal constructor(
             context = context,
             uri = null,
             updateTargetImageView = { bitmap ->
-                _state.update { it.copy(mediaPreviewBitmap = bitmap) }
+                if (session.isCurrent()) _state.update { it.copy(mediaPreviewBitmap = bitmap) }
             },
             bitmapFlow = flow,
-            onFrame = { bitmap -> frameAnalyzer.submitBitmap(bitmap) },
+            onFrame = { bitmap -> session.submitBitmap(bitmap) },
         )
     }
 
@@ -637,9 +712,6 @@ class EyeAIRuntime internal constructor(
             modelName = model.name,
         )
     }
-
-    internal fun runObjectInference(frame: Bitmap): Array<UniffiDetectedObject>? =
-        yoloModel.runInference(frame)
 
     internal suspend fun runOcrInference(frame: Bitmap) = ocrModel.analyzeFrame(frame)
 
@@ -674,14 +746,16 @@ class EyeAIRuntime internal constructor(
     ) == PackageManager.PERMISSION_GRANTED
 
     private fun pauseSpatialAudio() {
-        uniffi.NativeLib.setObjectAudioPaused(true)
-        uniffi.NativeLib.setDepthAudioPaused(true)
+        SpatialAudio.restore(SpatialAudio.currentSessionId(), objectPaused = true, depthPaused = true)
     }
 
     private fun restoreSpatialAudioFromSettings(trigger: String) {
+        restoreSpatialAudioForSession(trigger, SpatialAudio.currentSessionId())
+    }
+
+    private fun restoreSpatialAudioForSession(trigger: String, session: ULong?) {
         val current = settings
-        uniffi.NativeLib.setObjectAudioPaused(!current.objectAudioPlayback)
-        uniffi.NativeLib.setDepthAudioPaused(!current.depthAudioPlayback)
+        SpatialAudio.restore(session, !current.objectAudioPlayback, !current.depthAudioPlayback)
         Log.i(
             EyeAIApp.APP_LOG_TAG,
             "[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=RESTORED " +
@@ -703,7 +777,7 @@ class EyeAIRuntime internal constructor(
     }
 
     /** Releases all runtime resources; only the Application calls this at shutdown. */
-    fun close() {
+    fun close(): Unit = synchronized(operationLock) {
         synchronized(stateLock) {
             if (runtimeClosed) return
         }

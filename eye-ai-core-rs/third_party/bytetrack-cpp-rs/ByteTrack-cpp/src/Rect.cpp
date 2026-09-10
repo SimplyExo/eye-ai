@@ -111,9 +111,7 @@ byte_track::Xyah<T> byte_track::Rect<T>::getXyah() const
 template<typename T>
 float byte_track::Rect<T>::calcIoU(const Rect<T>& other) const
 {
-    // EyeAI sends continuous, normalized tlwh coordinates to ByteTrack. The
-    // upstream pixel-index convention of adding one to widths/heights would
-    // make distinct [0, 1] boxes overlap and is not valid here.
+    // EyeAI uses continuous normalized coordinates.
     const double first_x = static_cast<double>(tlwh[0]);
     const double first_y = static_cast<double>(tlwh[1]);
     const double first_width = static_cast<double>(tlwh[2]);

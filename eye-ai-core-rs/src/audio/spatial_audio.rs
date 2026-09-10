@@ -7,7 +7,7 @@ use std::{
 	collections::{HashMap, VecDeque},
 	sync::{
 		Arc, RwLock,
-		atomic::{AtomicBool, Ordering},
+		atomic::{AtomicBool, AtomicU64, Ordering},
 	},
 	time::Duration,
 };
@@ -29,6 +29,78 @@ pub enum SpatialAudioError {
 	AltoError(#[from] alto::AltoError),
 	#[error("JSON error: {0}")]
 	JsonError(#[from] json::Error),
+	#[error("Audio thread error: {0}")]
+	ThreadError(#[from] std::io::Error),
+}
+
+#[derive(Clone)]
+struct PlaybackLifetime {
+	running: Arc<AtomicBool>,
+	session_active: Arc<AtomicBool>,
+}
+
+impl PlaybackLifetime {
+	fn is_running(&self) -> bool {
+		self.running.load(Ordering::Acquire) && self.session_active.load(Ordering::Acquire)
+	}
+}
+
+struct QueuedObjectAudio {
+	epoch: u64,
+	source: ObjectAudioSourceData,
+}
+
+struct ObjectAudioQueue {
+	pending: VecDeque<QueuedObjectAudio>,
+	playback_epoch: Arc<AtomicU64>,
+}
+
+impl ObjectAudioQueue {
+	fn new(playback_epoch: Arc<AtomicU64>) -> Self {
+		Self {
+			pending: VecDeque::new(),
+			playback_epoch,
+		}
+	}
+
+	fn update(&mut self, sources: VecDeque<ObjectAudioSourceData>) {
+		if sources.is_empty() {
+			self.pending.clear();
+			return;
+		}
+		let epoch = self.playback_epoch.load(Ordering::Acquire);
+		self.pending.retain(|old| {
+			old.epoch == epoch
+				&& sources
+					.iter()
+					.any(|new| old.source.object_id == new.object_id)
+		});
+		for source in sources {
+			if let Some(old) = self
+				.pending
+				.iter_mut()
+				.find(|old| old.source.object_id == source.object_id)
+			{
+				old.epoch = epoch;
+				old.source = source;
+			} else {
+				while self.pending.len() >= 6 {
+					self.pending.pop_front();
+				}
+				self.pending.push_back(QueuedObjectAudio { epoch, source });
+			}
+		}
+	}
+
+	fn pop(&mut self) -> Option<(u64, ObjectAudioSourceData)> {
+		let current_epoch = self.playback_epoch.load(Ordering::Acquire);
+		while let Some(queued) = self.pending.pop_front() {
+			if queued.epoch == current_epoch {
+				return Some((queued.epoch, queued.source));
+			}
+		}
+		None
+	}
 }
 
 pub struct SpatialAudio {
@@ -36,19 +108,34 @@ pub struct SpatialAudio {
 	_device: OutputDevice,
 	_context: Arc<Context>,
 	depth_audio_sources_data: Arc<RwLock<Vec<DepthAudioSourceData>>>,
-	_depth_audio_thread: std::thread::JoinHandle<()>,
-	depth_audio_running: Arc<AtomicBool>,
-	object_audio_sources_data: Arc<RwLock<VecDeque<ObjectAudioSourceData>>>,
-	_object_audio_thread: std::thread::JoinHandle<()>,
-	object_audio_running: Arc<AtomicBool>,
+	depth_audio_thread: Option<std::thread::JoinHandle<()>>,
+	object_audio_sources_data: Arc<RwLock<ObjectAudioQueue>>,
+	object_audio_thread: Option<std::thread::JoinHandle<()>>,
+	lifetime: PlaybackLifetime,
 	pub settings: Arc<RwLock<SpatialAudioSettings>>,
 	content: Arc<SpatialAudioContent>,
 	profiling_frame: Arc<ProfilingFrame>,
 }
 impl Drop for SpatialAudio {
 	fn drop(&mut self) {
-		self.depth_audio_running.store(false, Ordering::Relaxed);
-		self.object_audio_running.store(false, Ordering::Relaxed);
+		self.lifetime.running.store(false, Ordering::Release);
+		for thread in [&self.depth_audio_thread, &self.object_audio_thread]
+			.into_iter()
+			.flatten()
+		{
+			thread.thread().unpark();
+		}
+		for thread in [
+			self.depth_audio_thread.take(),
+			self.object_audio_thread.take(),
+		]
+		.into_iter()
+		.flatten()
+		{
+			if thread.join().is_err() {
+				error!("Audio playback thread panicked during its lifetime");
+			}
+		}
 	}
 }
 impl SpatialAudio {
@@ -57,6 +144,23 @@ impl SpatialAudio {
 		settings: Arc<RwLock<SpatialAudioSettings>>,
 		content: Arc<SpatialAudioContent>,
 		profiling_frame: Arc<ProfilingFrame>,
+	) -> Result<Self, SpatialAudioError> {
+		Self::new_in_session(
+			settings,
+			content,
+			profiling_frame.clone(),
+			Arc::new(AtomicBool::new(true)),
+			Arc::new(AtomicU64::new(0)),
+		)
+	}
+
+	#[profile_function("profiling_frame")]
+	pub fn new_in_session(
+		settings: Arc<RwLock<SpatialAudioSettings>>,
+		content: Arc<SpatialAudioContent>,
+		profiling_frame: Arc<ProfilingFrame>,
+		session_active: Arc<AtomicBool>,
+		object_playback_epoch: Arc<AtomicU64>,
 	) -> Result<Self, SpatialAudioError> {
 		debug!(
 			settings = ?settings,
@@ -71,11 +175,12 @@ impl SpatialAudio {
 
 		let content_clone = content.clone();
 
-		let depth_audio_running = Arc::new(AtomicBool::new(true));
-		let depth_audio_running_clone = depth_audio_running.clone();
-
-		let object_audio_running = Arc::new(AtomicBool::new(true));
-		let object_audio_running_clone = depth_audio_running.clone();
+		let lifetime = PlaybackLifetime {
+			running: Arc::new(AtomicBool::new(true)),
+			session_active,
+		};
+		let depth_lifetime = lifetime.clone();
+		let object_lifetime = lifetime.clone();
 
 		let alto = Alto::load_default()?;
 		let device = alto.open(None)?;
@@ -95,61 +200,77 @@ impl SpatialAudio {
 		let depth_audio_sources_data = Arc::new(RwLock::new(Vec::<DepthAudioSourceData>::new()));
 		let depth_audio_sources_data_clone = depth_audio_sources_data.clone();
 
-		let object_audio_sources_data =
-			Arc::new(RwLock::new(VecDeque::<ObjectAudioSourceData>::new()));
+		let object_audio_sources_data = Arc::new(RwLock::new(ObjectAudioQueue::new(
+			object_playback_epoch.clone(),
+		)));
 		let object_audio_sources_data_clone = object_audio_sources_data.clone();
 
-		Ok(Self {
+		let mut audio = Self {
 			_alto: alto,
 			_device: device,
 			_context: context,
 			depth_audio_sources_data,
-			_depth_audio_thread: std::thread::Builder::new()
+			depth_audio_thread: None,
+			object_audio_thread: None,
+			object_audio_sources_data,
+			lifetime,
+			settings,
+			content,
+			profiling_frame: profiling_frame_clone1,
+		};
+		audio.depth_audio_thread = Some(
+			std::thread::Builder::new()
 				.name("Depth Audio".to_string())
 				.spawn(move || {
 					depth_audio_thread(
-						depth_audio_running_clone,
+						depth_lifetime,
 						context_clone1,
 						depth_audio_sources_data_clone,
 						settings_clone1,
 						&profiling_frame_clone2,
 					)
-				})
-				.expect("failed to spawn depth audio thread"),
-			depth_audio_running,
-			object_audio_sources_data,
-			_object_audio_thread: std::thread::Builder::new()
+				})?,
+		);
+		audio.object_audio_thread = Some(
+			std::thread::Builder::new()
 				.name("Object Audio".to_string())
 				.spawn(move || {
 					object_audio_thread(
-						object_audio_running_clone,
+						object_lifetime,
 						settings_clone2,
 						&content_clone.coco_labels_audio_file,
 						context_clone2,
 						object_audio_sources_data_clone,
 					)
-				})
-				.expect("failed to spawn object audio thread"),
-			object_audio_running,
-			settings,
-			content,
-			profiling_frame: profiling_frame_clone1,
-		})
+				})?,
+		);
+		Ok(audio)
 	}
 
-	/// returns whether it needs to be recreated, as the output device changed
+	pub fn invalidate_object_audio_playback(&self) {
+		self.object_audio_sources_data
+			.read()
+			.unwrap()
+			.playback_epoch
+			.fetch_add(1, Ordering::AcqRel);
+		if let Some(thread) = &self.object_audio_thread {
+			thread.thread().unpark();
+		}
+	}
+
 	pub fn update(
 		&mut self,
 		depth_estimation_data: &[f32; 256 * 256],
 		object_detection_data: &[TrackedObject],
 	) -> bool {
+		if !self.lifetime.is_running() {
+			return false;
+		}
 		let mut should_restart = false;
 
 		#[allow(unused)]
 		let profiling_scope = self.profiling_frame.scope("update");
 
-		// this extension is implemented on android, such that we can restart SpatialAudio when the output device changes
-		// on desktop (linux at least), this is not needed and the extension is not implemented, as output switching happens automatically
 		if self._device.is_extension_present(Alc::Disconnect) {
 			match self._device.connected() {
 				Ok(connected) => {
@@ -177,31 +298,22 @@ impl SpatialAudio {
 				&self.profiling_frame,
 			);
 		}
-		if !object_audio_paused {
+		if object_detection_data.is_empty() {
+			self.object_audio_sources_data
+				.write()
+				.unwrap()
+				.update(VecDeque::new());
+		} else if !object_audio_paused {
 			let new_audio_sources_data = process_object_detection_data(
 				depth_estimation_data,
 				object_detection_data,
 				&self.content.object_label_data,
 				&self.profiling_frame,
 			);
-			let mut object_audio_sources_data = self.object_audio_sources_data.write().unwrap();
-			for new_source_data in new_audio_sources_data {
-				let mut found = false;
-				for source_data in object_audio_sources_data.iter_mut() {
-					if source_data.object_id == new_source_data.object_id {
-						found = true;
-						*source_data = new_source_data.clone();
-						break;
-					}
-				}
-				if !found {
-					// max of 6 sources at once
-					while object_audio_sources_data.len() >= 6 {
-						object_audio_sources_data.pop_front();
-					}
-					object_audio_sources_data.push_back(new_source_data);
-				}
-			}
+			self.object_audio_sources_data
+				.write()
+				.unwrap()
+				.update(new_audio_sources_data);
 		}
 
 		should_restart
@@ -209,12 +321,15 @@ impl SpatialAudio {
 }
 
 fn depth_audio_thread(
-	running: Arc<AtomicBool>,
+	running: PlaybackLifetime,
 	context: Arc<Context>,
 	depth_audio_sources_data: Arc<RwLock<Vec<DepthAudioSourceData>>>,
 	settings: Arc<RwLock<SpatialAudioSettings>>,
 	profiling_frame: &ProfilingFrame,
 ) {
+	if !running.is_running() {
+		return;
+	}
 	debug!(
 		sample_rate = SpatialAudioSettings::SAMPLE_RATE,
 		buffer_duration = settings.read().unwrap().buffer_duration,
@@ -262,13 +377,15 @@ fn depth_audio_thread(
 				source.queue_buffer(buffer).unwrap();
 			}
 			source.set_position(source_data.position).unwrap();
-			source.play();
+			if running.is_running() {
+				source.play();
+			}
 		}
 	}
 
-	while running.load(Ordering::Relaxed) {
+	while running.is_running() {
 		if settings.read().unwrap().depth_audio_paused {
-			std::thread::sleep(Duration::from_millis(500));
+			std::thread::park_timeout(Duration::from_millis(20));
 			continue;
 		}
 
@@ -298,25 +415,28 @@ fn depth_audio_thread(
 					.set_reference_distance(SpatialAudioSettings::REFERENCE_DISTANCE)
 					.unwrap();
 
-				if source.state() == SourceState::Stopped {
+				if running.is_running() && source.state() == SourceState::Stopped {
 					source.play();
 				}
 			}
 		}
 
-		std::thread::sleep(Duration::from_millis(2));
+		std::thread::park_timeout(Duration::from_millis(2));
 
 		secondary_frame_mark!("Depth Audio Frame");
 	}
 }
 
 fn object_audio_thread(
-	running: Arc<AtomicBool>,
+	running: PlaybackLifetime,
 	settings: Arc<RwLock<SpatialAudioSettings>>,
 	coco_audio_file: &AudioFileData,
 	context: Arc<Context>,
-	object_audio_sources_data: Arc<RwLock<VecDeque<ObjectAudioSourceData>>>,
+	object_audio_sources_data: Arc<RwLock<ObjectAudioQueue>>,
 ) {
+	if !running.is_running() {
+		return;
+	}
 	let coco_audio_samples: &[i16] = &coco_audio_file.samples;
 
 	debug!(
@@ -329,13 +449,13 @@ fn object_audio_thread(
 
 	let mut sound_buffer: Vec<Mono<i16>> = Vec::new();
 
-	while running.load(Ordering::Relaxed) {
+	while running.is_running() {
 		if settings.read().unwrap().object_audio_paused {
-			std::thread::sleep(Duration::from_millis(500));
+			std::thread::park_timeout(Duration::from_millis(20));
 			continue;
 		}
-		let Some(source_data) = object_audio_sources_data.write().unwrap().pop_front() else {
-			std::thread::sleep(Duration::from_millis(250));
+		let Some((epoch, source_data)) = object_audio_sources_data.write().unwrap().pop() else {
+			std::thread::park_timeout(Duration::from_millis(20));
 			continue;
 		};
 		let sample_rate_ms = coco_audio_file.sample_rate as usize / 1000;
@@ -355,12 +475,32 @@ fn object_audio_thread(
 				.new_buffer(&sound_buffer, coco_audio_file.sample_rate as i32)
 				.unwrap(),
 		);
+		if !running.is_running()
+			|| object_audio_sources_data
+				.read()
+				.unwrap()
+				.playback_epoch
+				.load(Ordering::Acquire)
+				!= epoch
+		{
+			continue;
+		}
 		source.set_buffer(buffer).unwrap();
 		source.set_position(source_data.position).unwrap();
 		source.play();
 
 		while source.state() == SourceState::Playing {
-			std::thread::sleep(Duration::from_millis(100));
+			if !running.is_running()
+				|| object_audio_sources_data
+					.read()
+					.unwrap()
+					.playback_epoch
+					.load(Ordering::Acquire)
+					!= epoch
+			{
+				break;
+			}
+			std::thread::park_timeout(Duration::from_millis(20));
 		}
 
 		source.stop();
@@ -414,6 +554,22 @@ fn process_depth_estimation_data(
 	audio_source_data
 }
 
+fn normalized_depth_coordinate(value: f32, resolution: i32) -> Option<i32> {
+	if !value.is_finite() || !(0.0..=1.0).contains(&value) {
+		return None;
+	}
+
+	let coordinate = (value * (resolution as f32 - 1.0)) as i32;
+	(0..resolution).contains(&coordinate).then_some(coordinate)
+}
+
+fn depth_lookup_coordinate(center_x: f32, center_y: f32) -> Option<IVec2> {
+	Some(IVec2 {
+		x: normalized_depth_coordinate(center_x, SpatialAudioSettings::PICTURE_RESOLUTION.x)?,
+		y: normalized_depth_coordinate(center_y, SpatialAudioSettings::PICTURE_RESOLUTION.y)?,
+	})
+}
+
 #[profile_function("profiling_frame")]
 fn process_object_detection_data(
 	depth_estimation_data: &[f32; 256 * 256],
@@ -436,11 +592,9 @@ fn process_object_detection_data(
 			continue;
 		};
 
-		let coord = IVec2 {
-			x: (object.bbox.center_x * (SpatialAudioSettings::PICTURE_RESOLUTION.x as f32 - 1.0))
-				as i32,
-			y: (object.bbox.center_y * (SpatialAudioSettings::PICTURE_RESOLUTION.y as f32 - 1.0))
-				as i32,
+		let Some(coord) = depth_lookup_coordinate(object.bbox.center_x, object.bbox.center_y)
+		else {
+			continue;
 		};
 
 		trace!(
@@ -448,8 +602,12 @@ fn process_object_detection_data(
 			object_name, object_label_data.sample_begin, object_label_data.sample_end
 		);
 
-		let distance = depth_estimation_data
-			[(coord.x + (coord.y * SpatialAudioSettings::PICTURE_RESOLUTION.x)) as usize];
+		let depth_index = (coord.y as usize)
+			.saturating_mul(SpatialAudioSettings::PICTURE_RESOLUTION.x as usize)
+			.saturating_add(coord.x as usize);
+		let Some(distance) = depth_estimation_data.get(depth_index).copied() else {
+			continue;
+		};
 		let mut calculate_sound_origin = CalculateSoundOrigin::new();
 		let sound_origin = calculate_sound_origin.calculate_sound_origin(coord, distance);
 
@@ -465,3 +623,7 @@ fn process_object_detection_data(
 
 	audio_source_data
 }
+
+#[cfg(test)]
+#[path = "spatial_audio/tests/mod.rs"]
+mod tests;

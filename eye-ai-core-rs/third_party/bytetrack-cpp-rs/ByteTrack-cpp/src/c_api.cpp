@@ -35,6 +35,21 @@ byte_track_Object to_c_style_Object(const Object &object) {
                            .prob = object.prob};
 }
 
+void write_c_tracks(const std::vector<BYTETracker::STrackPtr> &tracks,
+                    byte_track_STrack **out_tracks, int *out_count) {
+  if (tracks.empty()) {
+    *out_tracks = nullptr;
+    *out_count = 0;
+    return;
+  }
+  auto *result = new byte_track_STrack[tracks.size()];
+  for (size_t i = 0; i < tracks.size(); ++i) {
+    result[i] = from_c_style_STrack(tracks[i]);
+  }
+  *out_tracks = result;
+  *out_count = static_cast<int>(tracks.size());
+}
+
 extern "C" {
 #if defined(BYTE_TRACK_ENABLE_TEST_API)
 float byte_track_Rect_float_calc_iou_for_testing(byte_track_Rect_float first,
@@ -73,13 +88,7 @@ void byte_track_BYTETracker_update(void *tracker,
   std::vector<BYTETracker::STrackPtr> stracks =
       byte_tracker->update(objects_vec, elapsed_nanoseconds);
 
-  byte_track_STrack *stracks_array = new byte_track_STrack[stracks.size()];
-  for (size_t i = 0; i < stracks.size(); ++i) {
-    const auto &s = stracks[i];
-    stracks_array[i] = from_c_style_STrack(s);
-  }
-  *out_stracks = stracks_array;
-  *out_num_stracks = stracks.size();
+  write_c_tracks(stracks, out_stracks, out_num_stracks);
 }
 
 void byte_track_STrack_array_destroy(byte_track_STrack *stracks_array) {

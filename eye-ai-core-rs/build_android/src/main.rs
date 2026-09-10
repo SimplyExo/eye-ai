@@ -81,7 +81,7 @@ fn main() {
 			let dst_path =
 				eye_ai_app_libraries_dir.join(src_path.file_name().expect("expected file name"));
 
-			std::fs::copy(src_path, dst_path)
+			copy_replacing_read_only(src_path, dst_path)
 				.expect("failed to copy third party library from eye-ai-core-rs to EyeAIApp");
 		}
 	}
@@ -92,7 +92,7 @@ fn main() {
 		let src = litert_cache_root.join(lib);
 		if src.exists() {
 			let dst = eye_ai_app_libraries_dir.join(lib);
-			std::fs::copy(&src, &dst).unwrap_or_else(|e| {
+			copy_replacing_read_only(&src, &dst).unwrap_or_else(|e| {
 				eprintln!("  ERROR: failed to copy {}: {}", lib, e);
 				exit(1);
 			});
@@ -103,6 +103,27 @@ fn main() {
 
 	println!("\nGenerating kotlin bindings for eye-ai-core-rs-native-lib...");
 	generate_kotlin_bindings();
+}
+
+fn copy_replacing_read_only(
+	source: impl AsRef<Path>,
+	destination: impl AsRef<Path>,
+) -> std::io::Result<u64> {
+	let destination = destination.as_ref();
+	if let Ok(metadata) = fs::metadata(destination) {
+		let mut permissions = metadata.permissions();
+		if permissions.readonly() {
+			#[cfg(unix)]
+			{
+				use std::os::unix::fs::PermissionsExt;
+				permissions.set_mode(permissions.mode() | 0o200);
+			}
+			#[cfg(not(unix))]
+			permissions.set_readonly(false);
+			fs::set_permissions(destination, permissions)?;
+		}
+	}
+	fs::copy(source, destination)
 }
 
 fn generate_kotlin_bindings() {

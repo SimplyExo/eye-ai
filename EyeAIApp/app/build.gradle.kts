@@ -107,7 +107,6 @@ sourceSets.getByName("androidTest").assets.directories.add("src/test/resources")
 }
 
 dependencies {
-	implementation(libs.androidx.benchmark.common)
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.material3)

@@ -64,10 +64,7 @@ std::vector<byte_track::BYTETracker::STrackPtr> byte_track::BYTETracker::update(
         saturatingAdd(current_time_nanoseconds_, elapsed_nanoseconds);
     frame_id_++;
 
-    // Expire both active and already-lost tracks before association. This is
-    // essential after a stream/inference pause: an observation older than the
-    // real-time lifetime must not be matched merely because no update calls
-    // occurred during the pause.
+    // Expire old tracks before association.
     std::vector<STrackPtr> current_removed_stracks;
     const auto remove_expired =
         [this, &current_removed_stracks](std::vector<STrackPtr>& tracks)
