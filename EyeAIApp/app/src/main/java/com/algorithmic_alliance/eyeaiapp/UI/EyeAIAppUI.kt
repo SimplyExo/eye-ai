@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp.UI
 import android.Manifest
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import androidx.activity.compose.LocalActivity
@@ -20,11 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
@@ -79,6 +82,34 @@ fun EyeAIAppUI(
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
     }
+
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+
+    val isOnPermissionOrOnboarding = currentBackStackEntry?.destination?.let { dest ->
+        dest.hasRoute<PermissionRoute>() ||
+                dest.hasRoute<WelcomeRoute>() ||
+                dest.hasRoute<TutorialRoute>()
+    } ?: true
+
+    LaunchedEffect(currentBackStackEntry) {
+        if (!isOnPermissionOrOnboarding) {
+            val hasCamera = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+
+            val hasAudio = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!hasCamera) {
+                onEvent(UIEvent.OnUpdateAppMissingCameraPermission(true))
+            }
+            if (!hasAudio && viewModel.isSpeechRecognitionEnabled()) {
+                onEvent(UIEvent.OnUpdateAppMissingVoskPermission(true))
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = if (!tutorialCompleted) WelcomeRoute else PermissionRoute,
@@ -88,7 +119,7 @@ fun EyeAIAppUI(
             WelcomePage(
                 modifier = Modifier.fillMaxSize(),
                 onGetStarted = {
-                    navController.navigate(PermissionRoute){
+                    navController.navigate(PermissionRoute) {
                         popUpTo<WelcomeRoute> {
                             inclusive = true
                         }
@@ -114,8 +145,7 @@ fun EyeAIAppUI(
                     (context as? Activity)?.finish()
                 }, onPermissionsGranted = {
                     onEvent(UIEvent.OnUpdatePermissionTutorialCompleted(true))
-                    Log.d(LOG_TAG, "1")
-                    navController.navigate(ConnectionRoute){
+                    navController.navigate(ConnectionRoute) {
                         popUpTo<PermissionRoute> {
                             inclusive = true
                         }
@@ -133,15 +163,19 @@ fun EyeAIAppUI(
                 } else if (!sharedPreferences.getBoolean(debugPageActivatedKey, false)) {
                     navController.navigate(
                         HomeRoute
-                    ) { popUpTo<ConnectionRoute> {
-                        inclusive = true
-                    } }
+                    ) {
+                        popUpTo<ConnectionRoute> {
+                            inclusive = true
+                        }
+                    }
                 } else {
                     navController.navigate(
                         DebugRoute
-                    ) { popUpTo<ConnectionRoute> {
-                        inclusive = true
-                    }}
+                    ) {
+                        popUpTo<ConnectionRoute> {
+                            inclusive = true
+                        }
+                    }
                 }
 
             }, onExitSelection = {
@@ -193,11 +227,11 @@ fun EyeAIAppUI(
             )
         }
     }
-    UIDialogs(viewModel = viewModel, onEvent = onEvent, onExitApp = {
-        navController.navigate(
-            WelcomeRoute
-        ) { popUpTo(WelcomeRoute) { inclusive = true } }
-    }, onOpenSettings = { navController.navigate(SettingsRoute) })
+    UIDialogs(
+        viewModel = viewModel, onEvent = onEvent, onExitApp = {
+            (context as? Activity)?.finish()
+        },
+        onOpenSettings = { navController.navigate(SettingsRoute) })
 }
 
 @Composable

@@ -127,9 +127,6 @@ fun SettingsPage(
     onEvent: (UIEvent) -> Unit,
     onOpenConnectionPage: () -> Unit
 ) {
-
-    val uiState by viewModel.settingsPageUIState.collectAsStateWithLifecycle()
-
     val settingsData = UIDataSource.APP_SETTINGS
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val debugPageActivatedKey = stringResource(R.string.debug_page_activated)
@@ -185,7 +182,6 @@ fun SettingsPage(
                     Column(
                         modifier = Modifier.padding(innerPadding),
                     ) {
-                        key(uiState.reloadSettingsPageKey) {
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
                                 contentPadding = WindowInsets.navigationBars
@@ -262,7 +258,7 @@ fun SettingsPage(
                                 }
                             }
                         }
-                    }
+
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
@@ -329,6 +325,7 @@ fun SettingsCategoryCard(
                         modifier = Modifier,
                         settingData = settingData,
                         onEvent = onEvent,
+                        viewModel = viewModel
                     )
 
                     "select" -> SelectSetting(
@@ -339,7 +336,7 @@ fun SettingsCategoryCard(
                     )
 
                     "slider" -> SliderSetting(
-                        modifier = Modifier, settingData = settingData, onEvent = onEvent
+                        modifier = Modifier, settingData = settingData, onEvent = onEvent, viewModel =viewModel
                     )
 
                     "textInput" -> TextInputSetting(
@@ -505,12 +502,14 @@ fun CheckBoxSetting(
     modifier: Modifier = Modifier,
     settingData: Map<String, Any>,
     onEvent: (UIEvent) -> Unit,
+    viewModel: MainViewModel,
 ) {
+    val uiState by viewModel.settingsPageUIState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
     val settingKey = stringResource(settingData["string"] as Int)
 
-    var checked by rememberSaveable {
+    var checked by rememberSaveable(uiState.reloadSettingsPageKey) {
         mutableStateOf(
             sharedPreferences.getBoolean(
                 settingKey, settingData["default"] as Boolean
@@ -578,7 +577,7 @@ fun SelectSetting(
     val settingKey = stringResource(settingData["string"] as Int)
 
     var dropDownEnabled by rememberSaveable { mutableStateOf(false) }
-    var currentlySelected by rememberSaveable {
+    var currentlySelected by rememberSaveable(uiState.reloadSettingsPageKey) {
         mutableStateOf(
             (sharedPreferences.getString(
                 settingKey, resolveString(context, settingData["default"] as Any)
@@ -659,8 +658,9 @@ fun SelectSetting(
 
 @Composable
 fun SliderSetting(
-    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit
+    modifier: Modifier = Modifier, settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit, viewModel: MainViewModel
 ) {
+    val uiState by viewModel.settingsPageUIState.collectAsStateWithLifecycle()
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
 
     val isDepthFrameRate = settingData["string"] as Int == R.string.max_depth_frame_rate_setting
@@ -685,7 +685,7 @@ fun SliderSetting(
     val min = (settingsOptions.getValue("min") as Number).toFloat()
     val max = (settingsOptions.getValue("max") as Number).toFloat()
 
-    var currentValue by rememberSaveable {
+    var currentValue by rememberSaveable(uiState.reloadSettingsPageKey) {
         mutableIntStateOf(
             sharedPreferences.getInt(
                 settingKey, settingData["default"] as Int

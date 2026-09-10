@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
@@ -29,9 +30,11 @@ import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
  * It owns only transient UI state and never starts/stops resources from an
  * Activity lifecycle callback.
  */
-class MainViewModel(application: Application) : AndroidViewModel(application) {
+class MainViewModel(application: Application, private val savedStateHandle: SavedStateHandle) : AndroidViewModel(application) {
     private val app = application as EyeAIApp
     private val runtime = app.runtime
+
+    fun isSpeechRecognitionEnabled(): Boolean = eyeAIApp().settings.enableSpeechRecognition
 
     private val _uiState = MutableStateFlow(UIState())
     val uiState: StateFlow<UIState> = _uiState.asStateFlow()
@@ -68,12 +71,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val performanceStatusCardUIState: StateFlow<PerformanceStatusCardUIState> = _uiState
         .sample(10.seconds)
         .map {
-        PerformanceStatusCardUIState(
-            performanceText = it.performanceText,
-        )
-    }
+            PerformanceStatusCardUIState(
+                performanceText = it.performanceText,
+            )
+        }
         .distinctUntilChanged()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PerformanceStatusCardUIState())
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            PerformanceStatusCardUIState()
+        )
 
     val voskStatusCardUIState: StateFlow<VoskStatusCardUIState> = _uiState.map {
         VoskStatusCardUIState(
@@ -95,6 +102,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val selectSettingUIState: StateFlow<SelectSettingUIState> = _uiState.map {
         SelectSettingUIState(
             visionPermissionsNotGranted = it.visionPermissionsNotGranted,
+            reloadSettingsPageKey = it.reloadSettingsPageKey
         )
     }
         .distinctUntilChanged()
@@ -125,7 +133,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
         .distinctUntilChanged()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DebugInputBitmapPreviewUIState())
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            DebugInputBitmapPreviewUIState()
+        )
 
     val objectDetectionOverlayUIState: StateFlow<ObjectDetectionOverlayUIState> = _uiState.map {
         ObjectDetectionOverlayUIState(
@@ -134,7 +146,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
         .distinctUntilChanged()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ObjectDetectionOverlayUIState())
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            ObjectDetectionOverlayUIState()
+        )
 
     val depthOverlayUIState: StateFlow<DepthOverlayUIState> = _uiState.map {
         DepthOverlayUIState(
@@ -185,8 +201,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             UIEvent.CloseVoskService -> runtime.closeSpeechService()
             UIEvent.OnReloadDebugPage -> reloadDebugPage()
             UIEvent.UpdateSettings -> app.updateSettings()
-            is UIEvent.OnUpdatePermissionTutorialCompleted ->
+            is UIEvent.OnUpdatePermissionTutorialCompleted -> {
+                Log.d(LOG_TAG, "[MainViewModel.onEvent.OnUpdatePermissionTutorialCompleted] new value: ${event.value}")
                 _uiState.update { it.copy(permissionTutorialCompleted = event.value) }
+            }
 
             is UIEvent.OnUpdateConnectionTutorialCompleted ->
                 _uiState.update { it.copy(connectionTutorialCompleted = event.value) }
@@ -225,19 +243,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (!_uiState.value.actionStartedFromSettings && !_uiState.value.settingsOpened) {
             reloadDebugPage()
         }
-        if (
-            !hasPermission(Manifest.permission.CAMERA) &&
-            _uiState.value.permissionTutorialCompleted
-        ) {
-            _uiState.update { it.copy(appMissingCameraPermission = true) }
-        }
-        if (
-            app.settings.enableSpeechRecognition &&
-            !hasPermission(Manifest.permission.RECORD_AUDIO) &&
-            _uiState.value.permissionTutorialCompleted
-        ) {
-            _uiState.update { it.copy(appMissingVoskPermission = true) }
-        }
+        // permission checks after onResume are now handled bei EyeAIUI.kt
         runtime.updateVoskStatusText()
     }
 
