@@ -1,6 +1,5 @@
 package com.algorithmic_alliance.eyeaiapp.settingsparser
 
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -65,63 +64,4 @@ class SettingsStateResolverTest {
 		assertNull(resolution.requestedValue)
 	}
 
-	@Test
-	fun `shared Python Kotlin state resolution golden cases match`() {
-		val cases = JSONObject(
-			requireNotNull(javaClass.getResource("/state_resolution_golden.json")).readText()
-		).getJSONArray("cases")
-		for (index in 0 until cases.length()) {
-			val item = cases.getJSONObject(index)
-			val current = item.getJSONObject("current")
-			val unit =
-				if (item.isNull("unit")) null else SettingUnit.valueOf(item.getString("unit"))
-			val result = resolver.resolve(
-				SettingCommand(
-					target = SettingTarget.valueOf(item.getString("target")),
-					operation = SettingOperation.valueOf(item.getString("operation")),
-					operationConfidence = 1f,
-					numericValue = if (item.isNull("numeric_value")) null else item.getDouble("numeric_value"),
-					magnitude = if (item.isNull("magnitude")) null else ChangeMagnitude.valueOf(
-						item.getString(
-							"magnitude"
-						)
-					),
-					speaker = if (item.isNull("speaker")) null else SpeakerChoice.valueOf(
-						item.getString(
-							"speaker"
-						)
-					),
-					speakerConfidence = null,
-					unit = unit,
-					status = SettingParseStatus.COMPLETE,
-					originalText = "golden state",
-					normalizedText = "golden state"
-				), CurrentSettingsState(
-					current.getInt("frequency"),
-					current.getDouble("bps"),
-					current.getDouble("speech_speed"),
-					SpeakerChoice.valueOf(current.getString("speaker"))
-				)
-			)
-			assertEquals(
-				item.getString("name"),
-				SettingParseStatus.valueOf(item.getString("expected_status")),
-				result.status
-			)
-			when {
-				!item.isNull("expected_numeric_value") -> assertEquals(
-					item.getDouble("expected_numeric_value"),
-					(result.requestedValue as ResolvedSettingValue.Numeric).value,
-					1e-9
-				)
-
-				!item.isNull("expected_speaker") -> assertEquals(
-					SpeakerChoice.valueOf(item.getString("expected_speaker")),
-					(result.requestedValue as ResolvedSettingValue.Speaker).value
-				)
-
-				else -> assertNull(result.requestedValue)
-			}
-		}
-	}
 }

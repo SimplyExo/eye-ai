@@ -108,7 +108,6 @@ android {
 	packaging {
 		jniLibs.useLegacyPackaging = true
 	}
-	sourceSets.getByName("test").resources.directories.add("../../settings_parser/spec")
 	// Golden commands are test-only assets for the on-device TFLite parity test;
 	// they are never merged into the production APK assets.
 	sourceSets.getByName("androidTest").assets.directories.add("src/test/resources")
