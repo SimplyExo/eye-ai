@@ -1,0 +1,10 @@
+[Unit]
+Description=Mediamtx service for providing video stream. Used by EyeAIVision_Main
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/mediamtx/mediamtx /etc/mediamtx.yml
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
