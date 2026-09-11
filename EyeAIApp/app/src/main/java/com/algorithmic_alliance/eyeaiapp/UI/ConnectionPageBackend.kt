@@ -157,7 +157,7 @@ fun rememberWifiScanState(
 			) == PackageManager.PERMISSION_GRANTED
 		) {
 			val filtered =
-				scanWifiNetworks(context, wifiManager).filter { it.SSID.contains("EyeAI-Vision") }
+				scanWifiNetworks(context, wifiManager).filter { it.SSID.contains("EyeAIVision") }
 					.map { it.SSID }
 			networks = filtered          // UI-Liste aktualisieren
 			setScannState(false)
