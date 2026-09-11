@@ -400,7 +400,7 @@ impl From<UniffiDetectedObject> for TrackedObject {
 #[profile_function("OBJECT_PROFILING_FRAME")]
 pub fn runYoloOperation(mut input: UniffiFloatBufferWrapper) -> Vec<UniffiDetectedObject> {
 	wait_for_yolo_model(|yolo_model| {
-		match yolo_model.run(&mut FloatTensorBuffer::new(
+		match yolo_model.run(&FloatTensorBuffer::new(
 			input.as_slice_mut(),
 			FloatTensorFormat::ImageRgb255,
 		)) {

@@ -29,6 +29,8 @@ pub struct CreateYoloModelInfo {
 pub struct YoloModel<'a> {
 	runtime: TfLiteRuntime,
 	labels: Vec<String>,
+	width: usize,
+	height: usize,
 	num_elements: usize,
 	num_channel: usize,
 	profiling_frame: &'a ProfilingFrame,
@@ -142,14 +144,19 @@ impl<'a> YoloModel<'a> {
 			npu_config,
 		})?;
 
-		let output_shape = runtime.get_output_shape();
+		let input_shape = runtime.get_input_shape();
+		let width = input_shape[2] as usize;
+		let height = input_shape[3] as usize;
 
+		let output_shape = runtime.get_output_shape();
 		let num_channel = output_shape[1] as usize;
 		let num_elements = output_shape[2] as usize;
 
 		Ok(Self {
 			runtime,
 			labels: create_info.labels,
+			width,
+			height,
 			num_channel,
 			num_elements,
 			profiling_frame,
@@ -160,13 +167,14 @@ impl<'a> YoloModel<'a> {
 	#[profile_function("self.profiling_frame")]
 	pub fn run(
 		&mut self,
-		input_tensor: &mut FloatTensorBuffer,
+		input_tensor: &FloatTensorBuffer,
 	) -> Result<Vec<DetectedObject>, TfLiteError> {
 		check_float_tensor_format!(input_tensor, FloatTensorFormat::ImageRgb255);
 
-		yolo_image_operator(input_tensor, self.profiling_frame);
+		let mut yolo_input_tensor =
+			yolo_image_operator(input_tensor, self.width, self.height, self.profiling_frame);
 
-		self.run_no_preprocessing(input_tensor)
+		self.run_no_preprocessing(&mut yolo_input_tensor)
 	}
 
 	// expects FloatTensorFormat::YoloImageRgb
@@ -205,13 +213,33 @@ impl<'a> YoloModel<'a> {
 
 /// converts a FloatTensorFormat::ImageRgb255 image to FloatTensorFormat::YoloImageRgb
 #[profile_function("profiling_frame")]
-fn yolo_image_operator<'a>(image: &mut FloatTensorBuffer<'a>, profiling_frame: &ProfilingFrame) {
-	check_float_tensor_format!(image, FloatTensorFormat::ImageRgb255);
+fn yolo_image_operator<'a>(
+	input: &'a FloatTensorBuffer<'a>,
+	width: usize,
+	height: usize,
+	profiling_frame: &ProfilingFrame,
+) -> FloatTensorBuffer<'static> {
+	check_float_tensor_format!(input, FloatTensorFormat::ImageRgb255);
 
-	for value in image.data_mut() {
-		*value /= 255.0;
+	assert_eq!(input.data().len(), 3 * width * height);
+
+	let mut output = FloatTensorBuffer::new(
+		vec![0.0; input.data().len()],
+		FloatTensorFormat::YoloImageRgb,
+	);
+
+	let output_data = output.data_mut();
+
+	let plane = width * height;
+
+	// 0.0..255.0 -> 0.0..1.0 + HWC -> CHW
+	for (i, pixel) in input.data().as_chunks::<3>().0.iter().enumerate() {
+		output_data[i] = pixel[0] / 255.0;
+		output_data[plane + i] = pixel[1] / 255.0;
+		output_data[2 * plane + i] = pixel[2] / 255.0;
 	}
-	image.convert_format(FloatTensorFormat::YoloImageRgb);
+
+	output
 }
 
 #[profile_function("profiling_frame")]
