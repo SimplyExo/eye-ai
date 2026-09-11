@@ -111,18 +111,18 @@ android {
 	sourceSets.getByName("test").resources.directories.add("../../settings_parser/spec")
 	// Golden commands are test-only assets for the on-device TFLite parity test;
 	// they are never merged into the production APK assets.
-sourceSets.getByName("androidTest").assets.directories.add("src/test/resources")
+	sourceSets.getByName("androidTest").assets.directories.add("src/test/resources")
 }
 
 dependencies {
 	implementation(libs.androidx.benchmark.common)
-    implementation(libs.androidx.compose.animation)
-    implementation(libs.androidx.compose.animation.core)
-    implementation(libs.androidx.compose.foundation.layout)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.remote.creation.core)
-    implementation(libs.androidx.compose.ui.text.google.fonts)
-    implementation(libs.androidx.core.ktx)
+	implementation(libs.androidx.compose.animation)
+	implementation(libs.androidx.compose.animation.core)
+	implementation(libs.androidx.compose.foundation.layout)
+	implementation(libs.androidx.compose.material3)
+	implementation(libs.androidx.compose.remote.creation.core)
+	implementation(libs.androidx.compose.ui.text.google.fonts)
+	implementation(libs.androidx.core.ktx)
 	implementation(libs.androidx.lifecycle.runtime.ktx)
 	implementation(libs.androidx.lifecycle.service)
 	implementation(libs.androidx.activity.compose)
@@ -141,9 +141,9 @@ dependencies {
 	implementation(libs.androidx.camera.lifecycle)
 	implementation(libs.androidx.camera.extensions)
 	implementation(libs.material)
-    implementation(libs.play.services.location)
+	implementation(libs.play.services.location)
 
-    // Vosk
+	// Vosk
 	implementation(libs.vosk)
 	implementation(libs.androidx.preference)
 	implementation(libs.androidx.appcompat)
@@ -170,6 +170,10 @@ dependencies {
 
 	debugImplementation(libs.androidx.ui.tooling)
 	debugImplementation(libs.androidx.ui.test.manifest)
+
+	// connectivity
+	implementation(libs.webrtc)
+	implementation(libs.okhttp)
 }
 
 
@@ -195,7 +199,7 @@ fun getGitCommitHash(): String {
 // eye-ai-core-rs-native-lib
 abstract class VerifyEyeAICoreRSBuildTask : DefaultTask() {
 	@get:OutputFile
-    val requiredFile = project.layout.projectDirectory.file("src/main/jniLibs/arm64-v8a/libeye_ai_core_rs_native_lib.so")
+	val requiredFile = project.layout.projectDirectory.file("src/main/jniLibs/arm64-v8a/libeye_ai_core_rs_native_lib.so")
 
 	init {
 		group = "verification"
@@ -210,9 +214,9 @@ abstract class VerifyEyeAICoreRSBuildTask : DefaultTask() {
 		} else {
 			throw GradleException(
 				"\nERROR: eye-ai-core-rs-native-lib rust library has not been build yet!\n" +
-					"Please build eye-ai-core-rs-native-lib before building EyeAIApp.\n" +
-					"First follow the build instructions in `eye-ai-core-rs/README.md`.\n" +
-					"After you ran `cargo build-android`, you are good to go!"
+						"Please build eye-ai-core-rs-native-lib before building EyeAIApp.\n" +
+						"First follow the build instructions in `eye-ai-core-rs/README.md`.\n" +
+						"After you ran `cargo build-android`, you are good to go!"
 			)
 		}
 	}
@@ -240,13 +244,13 @@ abstract class VerifySettingsParserAssetsTask : DefaultTask() {
 		val directory = assetDirectory.get().asFile
 		val expected = linkedMapOf(
 			"word_operation_seed_20260812.tflite" to
-				"0b992d94767c87629d4e1044d097638bcc2a85a9c4050ea3719e7c55009f0519",
+					"0b992d94767c87629d4e1044d097638bcc2a85a9c4050ea3719e7c55009f0519",
 			"character_speaker_seed_20260814.tflite" to
-				"fd61e69b450378cf91991c3900dd966fd412492ff9e5be10db82e231989b4a79",
+					"fd61e69b450378cf91991c3900dd966fd412492ff9e5be10db82e231989b4a79",
 			"word_tokenizer.json" to
-				"6f87b77a9609b82c7bec09c4450d98b892a84549edd1086e8d03419c9da64405",
+					"6f87b77a9609b82c7bec09c4450d98b892a84549edd1086e8d03419c9da64405",
 			"character_tokenizer.json" to
-				"6b7a7b71f686a07eb14e45c37bb99653d1855e5a26e2e8c41a5cdef5285067d0"
+					"6b7a7b71f686a07eb14e45c37bb99653d1855e5a26e2e8c41a5cdef5285067d0"
 		)
 		val contractName = "settings_parser_contract.json"
 		val actualNames = directory.listFiles()?.map { it.name }?.sorted()
