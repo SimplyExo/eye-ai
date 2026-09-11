@@ -201,14 +201,9 @@ private fun ChooseConnectionPage(
 	val focusRequester = remember { FocusRequester() }
 	val context = LocalContext.current
 	val view = LocalView.current
-	var hasWindowFocus by remember { mutableStateOf(view.hasWindowFocus()) }
 
-	DisposableEffect(view) {
-		val listener = ViewTreeObserver.OnWindowFocusChangeListener { hasFocus ->
-			hasWindowFocus = hasFocus
-		}
-		view.viewTreeObserver.addOnWindowFocusChangeListener(listener)
-		onDispose { view.viewTreeObserver.removeOnWindowFocusChangeListener(listener) }
+	LaunchedEffect(devicesData) {
+		focusRequester.requestFocus()
 	}
 
 	val isDark = isSystemInDarkTheme()

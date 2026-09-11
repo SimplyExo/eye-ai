@@ -132,8 +132,8 @@ object UIDataSource {
 				"string" to R.string.enable_npu_delegate_setting,
 				"default" to true
 			), mapOf(
-				"title" to "Batterieoptimierung",
-				"description" to "Optional: EyeAI in den Android-Systemeinstellungen von der Akkuoptimierung ausnehmen. Das kann den Dauerbetrieb stabilisieren, erhöht aber den Akkuverbrauch.",
+				"title" to R.string.setting_battery_optimization_title,
+				"description" to R.string.setting_battery_optimization_description,
 				"settingsType" to "click",
 				"action" to ACTION_OPEN_BATTERY_OPTIMIZATION
 			)

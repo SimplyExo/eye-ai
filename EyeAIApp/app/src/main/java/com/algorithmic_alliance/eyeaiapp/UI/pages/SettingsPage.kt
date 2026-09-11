@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
+import android.provider.Settings
+import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -101,6 +103,7 @@ import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import kotlin.math.roundToInt
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -450,9 +453,9 @@ fun ClickSetting(
             if (action == UIDataSource.ACTION_OPEN_BATTERY_OPTIMIZATION) {
                 Text(
                     if (batteryOptimizationExempt) {
-                        "Status: von der Batterieoptimierung ausgenommen"
+                        stringResource(R.string.status_exempt_from_battery_optimization_text)
                     } else {
-                        "Status: Batterieoptimierung aktiv"
+                        stringResource(R.string.status_not_exempt_from_battery_optimization_text)
                     },
                     style = MaterialTheme.typography.bodySmall,
                 )

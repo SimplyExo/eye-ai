@@ -137,6 +137,8 @@ fun EyeAIAppUI(
             ) {
                 onEvent(UIEvent.OnUpdateAppMissingVisionPermission(true))
             }
+
+
         }
     }
 

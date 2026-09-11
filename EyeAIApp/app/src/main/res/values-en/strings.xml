@@ -101,6 +101,9 @@
     <!-- General -->
     <string name="setting_use_npu_title">Use NPU (experimental)</string>
     <string name="setting_use_npu_description">Only enable this on devices with a supported Qualcomm NPU. On other devices, performance may degrade.</string>
+    <string name="setting_battery_optimization_title">Battery optimization</string>
+    <string name="setting_battery_optimization_description">Optional: Exclude EyeAI from battery optimization in the Android system settings. This can improve continuous operation stability but may increase battery consumption.</string>
+
 
     <!-- Depth Estimation -->
     <string name="setting_depth_estimation_model_title">Depth estimation model</string>
@@ -209,7 +212,8 @@
     <string name="missing_media_source_alert_dialog_title">Missing Media Source</string>
     <string name="missing_media_source_alert_dialog_text">The input source \'Media\' is selected in the settings. However, no media file has been selected. Would you like to open the settings to select a file or choose a different input source?</string>
     <string name="button_open_settings_text">Open Settings</string>
-
+    <string name="status_exempt_from_battery_optimization_text">Status: exempt from battery optimization</string>
+    <string name="status_not_exempt_from_battery_optimization_text">Status: battery optimization active</string>
 
 
 </resources>

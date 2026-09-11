@@ -144,6 +144,8 @@
 	<!-- General -->
 	<string name="setting_use_npu_title">NPU verwenden (experimentell)</string>
 	<string name="setting_use_npu_description">Nur auf Geräten mit unterstützter Qualcomm-NPU aktivieren. Auf anderen Geräten kann sich die Leistung verschlechtern.</string>
+	<string name="setting_battery_optimization_title">Batterieoptimierung</string>
+	<string name="setting_battery_optimization_description">Optional: EyeAI in den Android-Systemeinstellungen von der Akkuoptimierung ausnehmen. Das kann den Dauerbetrieb stabilisieren, erhöht aber den Akkuverbrauch.</string>
 
 	<!-- Depth Estimation -->
 	<string name="setting_depth_estimation_model_title">Modell für Entfernungsschätzung</string>
@@ -251,7 +253,8 @@
 	<string name="missing_media_source_alert_dialog_title">Fehlende Media-Quelle</string>
 	<string name="missing_media_source_alert_dialog_text">In den Einstellungen ist als Eingabequelle \'Media\' ausgewählt. Es wurde jedoch keine Media Datei ausgewählt. Wollen Sie die Einstellungen öffnen, um eine Datei oder eine andere Eingabequelle auszuwählen?</string>
 	<string name="button_open_settings_text">Einstellungen öffnen</string>
+	<string name="status_exempt_from_battery_optimization_text">Status: von der Batterieoptimierung ausgenommen</string>
+	<string name="status_not_exempt_from_battery_optimization_text">Status: Batterieoptimierung aktiv</string>
 
-	<!-- Strings for semantics -->
 
 </resources>
