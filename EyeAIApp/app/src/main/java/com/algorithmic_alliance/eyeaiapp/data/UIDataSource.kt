@@ -228,7 +228,7 @@ object UIDataSource {
 				"title" to R.string.setting_framerate_limit_title,
 				"description" to R.string.setting_object_framerate_limit_description,
 				"settingsType" to "slider",
-				"settingsOption" to mapOf("min" to 1, "max" to 120),
+				"settingsOption" to mapOf("min" to 5, "max" to 120),
 				"string" to R.string.max_object_detection_frame_rate_setting,
 				"default" to Settings.DEFAULT_FRAME_RATE_LIMIT
 			)
