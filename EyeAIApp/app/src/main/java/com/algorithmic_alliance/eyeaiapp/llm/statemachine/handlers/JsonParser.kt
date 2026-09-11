@@ -58,7 +58,7 @@ class JsonParser {
 		}
 	}
 
-	/** Carries local flow metadata forward without losing the original command. */
+	//Carries local flow metadata forward without losing the original command, this is important for further processing
 	fun carrySettingsContext(jsonResponse: String, currentJson: String?): String {
 		if (parseSettingsFlow(currentJson) != SettingsFlow.DIRECT) return jsonResponse
 
@@ -159,7 +159,7 @@ class JsonParser {
 		return "Soll ich die angeforderte Änderung durchführen?"
 	}
 
-	/** Supplies the action segment used by the frozen confirmation-model input. */
+	// Supplies the action segment used by the frozen confirmation-model input.
 	fun createPendingActionDescription(jsonString: String): String {
 		try {
 			val changedSettings = JSONObject(jsonString).optJSONArray("changed_settings")
@@ -192,40 +192,27 @@ class JsonParser {
 		return "die angeforderte Änderung durchführen"
 	}
 
-	fun isApproved(jsonString: String): Boolean {
-		return parseApproval(jsonString) == true
-	}
 
 	fun parseApproval(jsonString: String): Boolean? {
 		return try {
 			val json = JSONObject(jsonString)
 			if (!json.has("approval")) return null
-			val approval = json.opt("approval")
-			when {
-				approval is Boolean -> approval
-				approval is Number -> when (approval.toInt()) {
-					1 -> true
-					0 -> false
-					else -> null
-				}
+            when (val approval = json.opt("approval")) {
+                is Boolean -> approval
+                is Number -> when (approval.toInt()) {
+                    1 -> true
+                    0 -> false
+                    else -> null
+                }
 
-				else -> null
-			}
+                else -> null
+            }
 		} catch (e: JSONException) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseApproval", e)
 			null
 		}
 	}
 
-	fun parseExtractedObject(jsonString: String): String? {
-		return try {
-			val jsonObject = JSONObject(jsonString)
-			jsonObject.optString("extracted_object", null).takeIf { !it.isNullOrBlank() }
-		} catch (e: JSONException) {
-			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseExtractedObject", e)
-			null
-		}
-	}
 
 	fun isLeaveRequest(jsonString: String): Boolean {
 		return try {

@@ -7,7 +7,7 @@ enum class ContextSwitchConfirmationResult {
 	APPROVED, REJECTED, UNKNOWN, FAILED
 }
 
-/** Evaluates only the explicit context-switch confirmation with the local model. */
+// Evaluates only the explicit context-switch confirmation with the local model.
 class ContextSwitchConfirmation(
 	private val confirmationModelProvider: () -> ConfirmationModel,
 	private val trace: (String) -> Unit = {}
@@ -19,7 +19,7 @@ class ContextSwitchConfirmation(
 		val question = PendingExternalIntentPresentation.confirmationQuestion(intent)
 		val pendingAction = PendingExternalIntentPresentation.pendingAction(intent)
 		trace(
-			"[DecisionTrace][ConfirmationModel][EVALUATE] " + "role=SETTINGS_CONTEXT_SWITCH_CONFIRMATION " + "evaluator=LOCAL_CONFIRMATION_MODEL apiCalled=false pendingIntent=$intent " + "question='$question' pendingAction='$pendingAction' input='$input'"
+            "[DecisionTrace][ConfirmationModel][EVALUATE] role=SETTINGS_CONTEXT_SWITCH_CONFIRMATION evaluator=LOCAL_CONFIRMATION_MODEL apiCalled=false pendingIntent=$intent question='$question' pendingAction='$pendingAction' input='$input'"
 		)
 
 		val result = try {
