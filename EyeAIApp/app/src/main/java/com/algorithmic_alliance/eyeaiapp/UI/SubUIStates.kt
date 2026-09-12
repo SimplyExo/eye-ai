@@ -49,6 +49,7 @@ data class DebugPageUIState(
 	val speechRecognitionFinalResultText: String = "",
 	val speechRecognitionPartialResultText: String = "",
 	val speechResponseText: String = "",
+	val segmentationOverlayEnabled: Boolean = true,
 )
 
 @Immutable
@@ -75,7 +76,8 @@ data class DepthOverlayUIState(
 
 @Immutable
 data class SegmentationOverlayUIState(
-	val debugSegmentationBitmap: Bitmap? = null
+	val debugSegmentationBitmap: Bitmap? = null,
+	val segmentationOverlayEnabled: Boolean = true
 )
 
 @Immutable

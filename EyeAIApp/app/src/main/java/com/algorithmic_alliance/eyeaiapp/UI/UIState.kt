@@ -29,4 +29,5 @@ data class UIState(
 	val debugSegmentationBitmap: Bitmap? = null,
 	val cameraResolution: Size = Size(720, 1280),
 	val ocrResults: Array<TextBoundingBox> = emptyArray(),
+	val segmentationOverlayEnabled: Boolean = true
 )

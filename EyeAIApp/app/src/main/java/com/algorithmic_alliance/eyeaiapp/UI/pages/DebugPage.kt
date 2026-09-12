@@ -7,9 +7,11 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -17,9 +19,12 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,12 +45,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -183,7 +190,7 @@ fun DebugPage(
 										stringResource(R.string.show_debug_input_bitmap_setting),
 										false
 									)
-								) CameraPreview(onEvent = onEvent)
+								) CameraPreview(onEvent = onEvent, viewModel = viewModel)
 								if (sharedPreferences.getString(
 										stringResource(R.string.input_source_setting),
 										stringResource(R.string.input_is_camera)
@@ -223,7 +230,8 @@ fun DebugPage(
 										.matchParentSize()
 										.padding(Spacing.sm),
 									viewModel = viewModel
-								)                                /*
+								)
+								/*
 								OCROverlay(
 									modifier = Modifier
 										.matchParentSize()
@@ -240,7 +248,7 @@ fun DebugPage(
 										modifier = Modifier
 											.padding(bottom = Spacing.md)
 											.align(Alignment.BottomCenter)
-											.fillMaxWidth(0.75f)
+											.fillMaxWidth(0.65f)
 											.heightIn(min = Spacing.xxl, max = Spacing.xxxxl),
 										shape = PremiumShapes.medium,
 										colors = CardDefaults.cardColors(
@@ -273,6 +281,45 @@ fun DebugPage(
 										}
 									}
 
+								}
+								if (sharedPreferences.getBoolean(
+										stringResource(R.string.enable_segmentation_setting),
+										true
+									)
+								) {
+									Card(
+										modifier = Modifier
+											.padding(
+												end = Spacing.md,
+												top = Spacing.md,
+												bottom = Spacing.md
+											)
+											.align(Alignment.BottomEnd)
+											.fillMaxWidth(0.115f)
+											.aspectRatio(1f / 1f),
+										shape = PremiumShapes.small,
+										colors = CardDefaults.cardColors(
+											containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+												alpha = 0.75f
+											)
+										)
+									) {
+										Box(
+											modifier = Modifier.fillMaxSize().clickable(onClick = {
+												onEvent(UIEvent.OnUpdateSegmentationOverlayEnabled(!uiState.segmentationOverlayEnabled))
+											}),
+											contentAlignment = Alignment.Center
+										) {
+											Icon(
+												modifier = Modifier
+													.height(Spacing.xl)
+													.width(Spacing.xl),
+												painter = if(uiState.segmentationOverlayEnabled) painterResource(R.drawable.hide_image_24px) else painterResource(R.drawable.image_24px),
+												contentDescription = "Hide Segmentation Overlay",
+												tint = Color.Black
+											)
+										}
+									}
 								}
 							}
 						}
@@ -362,30 +409,26 @@ fun DebugInputPreview(
 	onEvent: (UIEvent) -> Unit,
 ) {
 	val uiState by viewModel.debugInputBitmapPreviewUIState.collectAsStateWithLifecycle()
+	val debugBitmap = uiState.debugInputPreviewBitmap
+
 	LaunchedEffect(Unit) {
-		// No PreviewView is attached in this mode; the foreground runtime keeps processing.
 		onEvent(UIEvent.UIinitCamera(previewView = null))
 	}
-	Box(
-		modifier = modifier
-			.fillMaxSize()
-			.padding(Spacing.sm)
-			.clip(PremiumShapes.small)
-			.background(Color.Black),
-		contentAlignment = Alignment.Center,
 
-		) {
-		uiState.debugInputPreviewBitmap?.let {
-			Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-				Image(
-					bitmap = it.asImageBitmap(),
-					contentDescription = "Depth preview",
-					modifier = Modifier.clip(PremiumShapes.small),
-					contentScale = ContentScale.Fit
+	if (debugBitmap != null) {
+		val aspectRatio = debugBitmap.width.toFloat() / debugBitmap.height.toFloat()
 
-				)
-			}
-
+		PreviewWithSquareOverlayContainer(
+			modifier = modifier,
+			contentAspectRatio = aspectRatio,
+			viewModel = viewModel
+		) { innerModifier ->
+			Image(
+				bitmap = debugBitmap.asImageBitmap(),
+				contentDescription = "Debug preview",
+				modifier = innerModifier,
+				contentScale = ContentScale.Fit
+			)
 		}
 	}
 }
@@ -397,25 +440,43 @@ fun MediaPreview(
 	onEvent: (UIEvent) -> Unit,
 ) {
 	val uiState by viewModel.mediaPreviewUIState.collectAsStateWithLifecycle()
+	val mediaBitmap = uiState.mediaPreviewBitmap
+
 	LaunchedEffect(Unit) {
-		// Media processing is owned by the runtime, independently of this composable.
 		onEvent(UIEvent.UIinitCamera(previewView = null))
 	}
 
-	Box(
-		modifier = modifier
-			.fillMaxSize()
-			.padding(Spacing.sm)
-			.clip(PremiumShapes.small)
-			.background(Color.Black),
-		contentAlignment = Alignment.Center,
-	) {
-		uiState.mediaPreviewBitmap?.let {
+	if (mediaBitmap != null) {
+		val aspectRatio = mediaBitmap.width.toFloat() / mediaBitmap.height.toFloat()
+
+		PreviewWithSquareOverlayContainer(
+			modifier = modifier,
+			contentAspectRatio = aspectRatio,
+			viewModel = viewModel
+		) { innerModifier ->
+			Image(
+				bitmap = mediaBitmap.asImageBitmap(),
+				contentDescription = "Media preview",
+				modifier = innerModifier,
+				contentScale = ContentScale.Fit
+			)
+		}
+	}
+}
+
+@Composable
+fun SegmentationInputPreview(
+	modifier: Modifier = Modifier,
+	viewModel: MainViewModel,
+) {
+	val uiState by viewModel.segmentationOverlayUIState.collectAsStateWithLifecycle()
+	if(uiState.segmentationOverlayEnabled){
+		uiState.debugSegmentationBitmap?.let {
 			Image(
 				bitmap = it.asImageBitmap(),
-				contentDescription = "Media preview",
-				modifier = Modifier.clip(PremiumShapes.small),
-				contentScale = ContentScale.Fit
+				contentDescription = "Segmentation preview",
+				modifier = modifier.alpha(0.7f),
+				contentScale = ContentScale.FillBounds
 			)
 		}
 	}
@@ -454,7 +515,7 @@ fun DepthPreview(
 							Text(
 								text = uiState.performanceText,
 								style = MaterialTheme.typography.bodySmall,
-								fontSize = 8.sp,
+								fontSize = 7.sp,
 								fontFamily = FontFamily.Monospace,
 								lineHeight = 10.sp,
 								letterSpacing = (-0.2).sp
@@ -468,22 +529,76 @@ fun DepthPreview(
 }
 
 @Composable
-fun CameraPreview(onEvent: (UIEvent) -> Unit) {
-	AndroidView(
-		modifier = Modifier
+fun CameraPreview(
+	modifier: Modifier = Modifier,
+	viewModel: MainViewModel,
+	onEvent: (UIEvent) -> Unit
+) {
+	val odState by viewModel.objectDetectionOverlayUIState.collectAsStateWithLifecycle()
+	val resolution = odState.cameraResolution
+
+	val aspectRatio = if (resolution.width > 0 && resolution.height > 0) {
+		resolution.width.toFloat() / resolution.height.toFloat()
+	} else {
+		9f / 16f
+	}
+
+	PreviewWithSquareOverlayContainer(
+		modifier = modifier,
+		contentAspectRatio = aspectRatio,
+		viewModel = viewModel
+	) { innerModifier ->
+		AndroidView(
+			modifier = innerModifier,
+			factory = { context ->
+				PreviewView(context).apply {
+					scaleType = PreviewView.ScaleType.FIT_CENTER
+				}.also { previewView ->
+					onEvent(UIEvent.UIinitCamera(previewView))
+				}
+			},
+			onRelease = { previewView ->
+				onEvent(UIEvent.UIDetachCameraPreview(previewView))
+			},
+		)
+	}
+}
+
+@Composable
+fun PreviewWithSquareOverlayContainer(
+	modifier: Modifier = Modifier,
+	contentAspectRatio: Float,
+	viewModel: MainViewModel,
+	content: @Composable (Modifier) -> Unit
+) {
+	BoxWithConstraints(
+		modifier = modifier
+			.fillMaxSize()
 			.padding(Spacing.sm)
-			.clip(PremiumShapes.small),
-		factory = { context ->
-			PreviewView(context).apply {
-				scaleType = PreviewView.ScaleType.FIT_CENTER
-			}.also { previewView ->
-				// The PreviewView is an optional surface only; camera processing stays headless.
-				onEvent(UIEvent.UIinitCamera(previewView))
-			}
-		},
-		onRelease = { previewView ->
-			onEvent(UIEvent.UIDetachCameraPreview(previewView))
-		},
-	)
+			.clip(PremiumShapes.small)
+			.background(Color.Black),
+		contentAlignment = Alignment.Center,
+	) {
+		val boxWidth = constraints.maxWidth.toFloat().takeIf { it > 0 } ?: 1f
+		val boxHeight = constraints.maxHeight.toFloat().takeIf { it > 0 } ?: 1f
+		val boxAspectRatio = boxWidth / boxHeight
+
+		val (renderedWidth, renderedHeight) = if (contentAspectRatio > boxAspectRatio) {
+			boxWidth to (boxWidth / contentAspectRatio)
+		} else {
+			(boxHeight * contentAspectRatio) to boxHeight
+		}
+
+		val overlaySidePx = minOf(renderedWidth, renderedHeight)
+		val density = LocalDensity.current
+		val overlaySideDp = with(density) { overlaySidePx.toDp() }
+
+		content(Modifier.matchParentSize())
+
+		SegmentationInputPreview(
+			viewModel = viewModel,
+			modifier = Modifier.size(overlaySideDp)
+		)
+	}
 }
 

@@ -42,6 +42,8 @@ sealed interface UIEvent {
 
 	data class OnUpdateSettingsOpened(val value: Boolean) : UIEvent
 
+	data class OnUpdateSegmentationOverlayEnabled(val value: Boolean): UIEvent
+
 	data class UIinitCamera(
 		val previewView: PreviewView?
 	) : UIEvent

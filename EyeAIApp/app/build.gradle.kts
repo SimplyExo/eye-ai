@@ -122,6 +122,7 @@ dependencies {
 	implementation(libs.androidx.compose.remote.creation.core)
 	implementation(libs.androidx.compose.ui.text.google.fonts)
 	implementation(libs.androidx.core.ktx)
+	implementation(libs.androidx.foundation.layout)
 	implementation(libs.androidx.lifecycle.runtime.ktx)
 	implementation(libs.androidx.lifecycle.service)
 	implementation(libs.androidx.activity.compose)

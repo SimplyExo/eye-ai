@@ -16,6 +16,7 @@ data class EyeAIRuntimeState(
 	val speechRecognitionPartialResultText: String = "",
 	val speechResponseText: String = "",
 	val depthPreviewBitmap: Bitmap? = null,
+	val segmentationPreviewBitmap: Bitmap? = null,
 	val debugInputPreviewBitmap: Bitmap? = null,
 	val debugSegmentationBitmap: Bitmap? = null,
 	val mediaPreviewBitmap: Bitmap? = null,
@@ -28,6 +29,7 @@ data class EyeAIRuntimeState(
 
 internal fun EyeAIRuntimeState.withAnalysis(update: FrameAnalysisUpdate): EyeAIRuntimeState = copy(
 	depthPreviewBitmap = update.depthPreviewBitmap ?: depthPreviewBitmap,
+	segmentationPreviewBitmap = update.debugSegmentationBitmap ?: segmentationPreviewBitmap,
 	debugInputPreviewBitmap = update.debugInputBitmap ?: debugInputPreviewBitmap,
 	debugSegmentationBitmap = update.debugSegmentationBitmap ?: debugSegmentationBitmap,
 	performanceText = update.performanceText ?: performanceText,

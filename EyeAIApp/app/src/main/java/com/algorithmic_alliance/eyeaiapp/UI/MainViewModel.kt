@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.checkerframework.checker.guieffect.qual.UI
 import kotlin.time.Duration.Companion.seconds
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
@@ -101,7 +102,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 			ttsSpeaking = it.ttsSpeaking,
 			speechRecognitionFinalResultText = it.speechRecognitionFinalResultText,
 			speechRecognitionPartialResultText = it.speechRecognitionPartialResultText,
-			speechResponseText = it.speechResponseText
+			speechResponseText = it.speechResponseText,
+			segmentationOverlayEnabled = it.segmentationOverlayEnabled
 		)
 	}.distinctUntilChanged()
 		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DebugPageUIState())
@@ -130,7 +132,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 	val segmentationOverlayUIState: StateFlow<SegmentationOverlayUIState> = _uiState.map {
 		SegmentationOverlayUIState(
-			debugSegmentationBitmap = it.debugSegmentationBitmap
+			debugSegmentationBitmap = it.debugSegmentationBitmap, segmentationOverlayEnabled = it.segmentationOverlayEnabled
+
 		)
 	}.distinctUntilChanged().stateIn(
 		viewModelScope, SharingStarted.WhileSubscribed(5000), SegmentationOverlayUIState()
@@ -228,6 +231,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 				)
 			}
 
+			is UIEvent.OnUpdateSegmentationOverlayEnabled -> {
+				_uiState.update { it.copy(segmentationOverlayEnabled = event.value) }
+			}
+
 			is UIEvent.OnUpdateTTSSpeaking -> _uiState.update { it.copy(ttsSpeaking = event.value) }
 
 			is UIEvent.OnUpdateAppMissingSelectedMediaSource -> _uiState.update {
@@ -288,6 +295,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 				settingsOpened = false,
 				detectedObjects = emptyArray(),
 				ocrResults = emptyArray(),
+				reloadDebugPageKey = it.reloadDebugPageKey + 1
 			)
 		}
 		// Do not start a service from a composable's disposal: disposal also
