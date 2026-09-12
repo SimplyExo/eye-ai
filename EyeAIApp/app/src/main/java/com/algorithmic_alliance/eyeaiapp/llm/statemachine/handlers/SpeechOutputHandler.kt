@@ -6,18 +6,18 @@ import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 
 /** Sends local interaction responses through the existing UI and TTS path. */
 class SpeechOutputHandler(
-    private val textToSpeechInstance: TextToSpeechInstance,
-    private val updateResponseText: (String) -> Unit
+	private val textToSpeechInstance: TextToSpeechInstance,
+	private val updateResponseText: (String) -> Unit
 ) {
-    private val mainHandler = Handler(Looper.getMainLooper())
+	private val mainHandler = Handler(Looper.getMainLooper())
 
-    fun speakAndHandleUi(text: String) {
-        val toSpeak = text.trim()
-        if (toSpeak.isEmpty()) {
-            return
-        }
+	fun speakAndHandleUi(text: String) {
+		val toSpeak = text.trim()
+		if (toSpeak.isEmpty()) {
+			return
+		}
 
-        mainHandler.post { updateResponseText(toSpeak) }
-        textToSpeechInstance.speak(toSpeak)
-    }
+		mainHandler.post { updateResponseText(toSpeak) }
+		textToSpeechInstance.speak(toSpeak)
+	}
 }

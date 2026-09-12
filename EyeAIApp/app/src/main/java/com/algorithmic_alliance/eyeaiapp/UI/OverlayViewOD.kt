@@ -16,147 +16,151 @@ import uniffi.NativeLib.UniffiDetectedObject
 
 class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
-    private var results = arrayOf<UniffiDetectedObject>()
-    private var cameraResolution = Size(720, 1280)
-    private var boxPaint = Paint()
-    private var textBackgroundPaint = Paint()
-    private var textPaint = Paint()
-    private var language = context?.getString(R.string.language_is_german)
+	private var results = arrayOf<UniffiDetectedObject>()
+	private var cameraResolution = Size(720, 1280)
+	private var boxPaint = Paint()
+	private var textBackgroundPaint = Paint()
+	private var textPaint = Paint()
+	private var language = context?.getString(R.string.language_is_german)
 
-    private var bounds = Rect()
+	private var bounds = Rect()
 
-    private lateinit var clsNameGermanMap: Map<String, String>
+	private lateinit var clsNameGermanMap: Map<String, String>
 
-    fun initClsNameTranslations(context: Context) {
-        try {
-            val json = context.assets
-                .open("coco_name_translation.json")
-                .bufferedReader()
-                .use { it.readText() }
+	fun initClsNameTranslations(context: Context) {
+		try {
+			val json = context.assets
+				.open("coco_name_translation.json")
+				.bufferedReader()
+				.use { it.readText() }
 
-            val jsonObject = JSONObject(json)
+			val jsonObject = JSONObject(json)
 
-            clsNameGermanMap = jsonObject.keys().asSequence().associateWith { key ->
-                jsonObject.getString(key)
-            }
-        }catch (_: Exception){
-            clsNameGermanMap = emptyMap()
-        }
-    }
+			clsNameGermanMap = jsonObject.keys().asSequence().associateWith { key ->
+				jsonObject.getString(key)
+			}
+		} catch (_: Exception) {
+			clsNameGermanMap = emptyMap()
+		}
+	}
 
-    init {
-        initPaints()
-        initClsNameTranslations(context as Context)
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-        val language = sharedPreferences.getString(context.getString(R.string.object_playback_language), context.getString(R.string.language_is_german))
-        setLanguage(language as String)
-    }
+	init {
+		initPaints()
+		initClsNameTranslations(context as Context)
+		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+		val language = sharedPreferences.getString(
+			context.getString(R.string.object_playback_language),
+			context.getString(R.string.language_is_german)
+		)
+		setLanguage(language as String)
+	}
 
-    fun clear() {
-        textPaint.reset()
-        textBackgroundPaint.reset()
-        boxPaint.reset()
-        invalidate()
-        initPaints()
-    }
+	fun clear() {
+		textPaint.reset()
+		textBackgroundPaint.reset()
+		boxPaint.reset()
+		invalidate()
+		initPaints()
+	}
 
-    fun reset() {
-        results = emptyArray()
-        invalidate()
-    }
+	fun reset() {
+		results = emptyArray()
+		invalidate()
+	}
 
-    private fun initPaints() {
-        textBackgroundPaint.color = Color.BLACK
-        textBackgroundPaint.style = Paint.Style.FILL
-        textBackgroundPaint.textSize = 50f
+	private fun initPaints() {
+		textBackgroundPaint.color = Color.BLACK
+		textBackgroundPaint.style = Paint.Style.FILL
+		textBackgroundPaint.textSize = 50f
 
-        textPaint.color = Color.WHITE
-        textPaint.style = Paint.Style.FILL
-        textPaint.textSize = 50f
+		textPaint.color = Color.WHITE
+		textPaint.style = Paint.Style.FILL
+		textPaint.textSize = 50f
 
-        boxPaint.color = ContextCompat.getColor(context!!, R.color.purple_500)
-        boxPaint.strokeWidth = 8F
-        boxPaint.style = Paint.Style.STROKE
-    }
+		boxPaint.color = ContextCompat.getColor(context!!, R.color.purple_500)
+		boxPaint.strokeWidth = 8F
+		boxPaint.style = Paint.Style.STROKE
+	}
 
-    override fun draw(canvas: Canvas) {
-        super.draw(canvas)
-        val viewAspectRatio = width.toFloat() / height.toFloat()
-        val cameraAspectRatio = cameraResolution.width.toFloat() / cameraResolution.height.toFloat()
+	override fun draw(canvas: Canvas) {
+		super.draw(canvas)
+		val viewAspectRatio = width.toFloat() / height.toFloat()
+		val cameraAspectRatio = cameraResolution.width.toFloat() / cameraResolution.height.toFloat()
 
-        val cameraPreviewImageSize = if (viewAspectRatio > cameraAspectRatio) {
-            Size(
-                (height.toFloat() * cameraAspectRatio).toInt(), height
-            )
-        } else {
-            Size(
-                width, (width.toFloat() / cameraAspectRatio).toInt()
-            )
-        }
+		val cameraPreviewImageSize = if (viewAspectRatio > cameraAspectRatio) {
+			Size(
+				(height.toFloat() * cameraAspectRatio).toInt(), height
+			)
+		} else {
+			Size(
+				width, (width.toFloat() / cameraAspectRatio).toInt()
+			)
+		}
 
-        val xOffset = if (cameraPreviewImageSize.width < width) {
-            (width - cameraPreviewImageSize.width) / 2
-        } else {
-            0
-        }
-        val yOffset = if (cameraPreviewImageSize.height < height) {
-            (height - cameraPreviewImageSize.height) / 2
-        } else {
-            0
-        }
+		val xOffset = if (cameraPreviewImageSize.width < width) {
+			(width - cameraPreviewImageSize.width) / 2
+		} else {
+			0
+		}
+		val yOffset = if (cameraPreviewImageSize.height < height) {
+			(height - cameraPreviewImageSize.height) / 2
+		} else {
+			0
+		}
 
-        results.forEach {
-            val left = it.x1 * cameraPreviewImageSize.width + xOffset
-            val top = it.y1 * cameraPreviewImageSize.height + yOffset
-            val right = it.x2 * cameraPreviewImageSize.width + xOffset
-            val bottom = it.y2 * cameraPreviewImageSize.height + yOffset
+		results.forEach {
+			val left = it.x1 * cameraPreviewImageSize.width + xOffset
+			val top = it.y1 * cameraPreviewImageSize.height + yOffset
+			val right = it.x2 * cameraPreviewImageSize.width + xOffset
+			val bottom = it.y2 * cameraPreviewImageSize.height + yOffset
 
-            canvas.drawRect(left, top, right, bottom, boxPaint)
-            val drawableText = if(language == context.getString(R.string.language_is_german) && clsNameGermanMap != emptyMap<String, String>())
-                "${resolveClsNameGerman(it.clsName)} - ${it.trackingId}"
-            else{
-                "${it.clsName} - ${it.trackingId}"
-            }
+			canvas.drawRect(left, top, right, bottom, boxPaint)
+			val drawableText =
+				if (language == context.getString(R.string.language_is_german) && clsNameGermanMap != emptyMap<String, String>())
+					"${resolveClsNameGerman(it.clsName)} - ${it.trackingId}"
+				else {
+					"${it.clsName} - ${it.trackingId}"
+				}
 
-            textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
-            val textWidth = bounds.width()
-            val textHeight = bounds.height()
-            canvas.drawRect(
-                left,
-                top,
-                left + textWidth + BOUNDING_RECT_TEXT_PADDING,
-                top + textHeight + BOUNDING_RECT_TEXT_PADDING,
-                textBackgroundPaint
-            )
-            canvas.drawText(drawableText, left, top + bounds.height(), textPaint)
-        }
-    }
+			textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
+			val textWidth = bounds.width()
+			val textHeight = bounds.height()
+			canvas.drawRect(
+				left,
+				top,
+				left + textWidth + BOUNDING_RECT_TEXT_PADDING,
+				top + textHeight + BOUNDING_RECT_TEXT_PADDING,
+				textBackgroundPaint
+			)
+			canvas.drawText(drawableText, left, top + bounds.height(), textPaint)
+		}
+	}
 
-    fun setResults(boundingBoxes: Array<UniffiDetectedObject>) {
-        val changed = !results.contentEquals(boundingBoxes)
-        results = boundingBoxes
-        if (changed) invalidate()
-    }
+	fun setResults(boundingBoxes: Array<UniffiDetectedObject>) {
+		val changed = !results.contentEquals(boundingBoxes)
+		results = boundingBoxes
+		if (changed) invalidate()
+	}
 
-    fun setCameraResolution(newCameraResolution: Size) {
-        val changed = cameraResolution != newCameraResolution
-        cameraResolution = newCameraResolution
+	fun setCameraResolution(newCameraResolution: Size) {
+		val changed = cameraResolution != newCameraResolution
+		cameraResolution = newCameraResolution
 
-        if (changed) invalidate()
-    }
+		if (changed) invalidate()
+	}
 
-    fun setLanguage(newLanguage: String) {
-        val changed = newLanguage != language
-        language = newLanguage
+	fun setLanguage(newLanguage: String) {
+		val changed = newLanguage != language
+		language = newLanguage
 
-        if (changed) invalidate()
-    }
+		if (changed) invalidate()
+	}
 
-    private fun resolveClsNameGerman(englishClsName: String): String{
-        return clsNameGermanMap[englishClsName] ?: englishClsName
-    }
+	private fun resolveClsNameGerman(englishClsName: String): String {
+		return clsNameGermanMap[englishClsName] ?: englishClsName
+	}
 
-    companion object {
-        private const val BOUNDING_RECT_TEXT_PADDING = 8
-    }
+	companion object {
+		private const val BOUNDING_RECT_TEXT_PADDING = 8
+	}
 }

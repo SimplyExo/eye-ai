@@ -57,7 +57,7 @@ class YoloModel(var info: YoloModelInfo) {
 
 	@Synchronized
 	fun runInference(frame: Bitmap): Array<UniffiDetectedObject>? {
-		if (!initialized) {			/*Log.e(
+		if (!initialized) {            /*Log.e(
 				"YOLO",
 				"Tried to run YOLO inference on uninitialized yolo model, call create first!"
 			)*/

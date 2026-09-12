@@ -197,16 +197,16 @@ class JsonParser {
 		return try {
 			val json = JSONObject(jsonString)
 			if (!json.has("approval")) return null
-            when (val approval = json.opt("approval")) {
-                is Boolean -> approval
-                is Number -> when (approval.toInt()) {
-                    1 -> true
-                    0 -> false
-                    else -> null
-                }
+			when (val approval = json.opt("approval")) {
+				is Boolean -> approval
+				is Number -> when (approval.toInt()) {
+					1 -> true
+					0 -> false
+					else -> null
+				}
 
-                else -> null
-            }
+				else -> null
+			}
 		} catch (e: JSONException) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "JSON-Parsing failed in parseApproval", e)
 			null

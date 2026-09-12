@@ -154,7 +154,7 @@ class StateMachine(
 		lastIntentResult = null
 		val activeModel = nlpModel
 
-        Log.d(
+		Log.d(
 			EyeAIApp.APP_LOG_TAG,
 			"[DecisionTrace][NLP V2][CLASSIFY] model=${activeModel.info.id} input='$input'"
 		)
@@ -191,7 +191,7 @@ class StateMachine(
 	private fun logNlpRoute(intent: Intent, nextEvaluator: String, role: String) {
 		Log.d(
 			EyeAIApp.APP_LOG_TAG,
-            "[DecisionTrace][StateMachine][ROUTE] classifier=NLP_V2 accepted=true intent=$intent nextEvaluator=$nextEvaluator role=$role"
+			"[DecisionTrace][StateMachine][ROUTE] classifier=NLP_V2 accepted=true intent=$intent nextEvaluator=$nextEvaluator role=$role"
 		)
 	}
 
@@ -419,7 +419,7 @@ class StateMachine(
 		}
 		Log.d(
 			EyeAIApp.APP_LOG_TAG,
-            "[DecisionTrace][StateMachine][SETTINGS_ROUTE] classifier=NLP_V2 intent=$intent action=LOCAL_SETTINGS_SELECTION nextState=SETTINGS_CHOICE"
+			"[DecisionTrace][StateMachine][SETTINGS_ROUTE] classifier=NLP_V2 intent=$intent action=LOCAL_SETTINGS_SELECTION nextState=SETTINGS_CHOICE"
 		)
 		speechOutputHandler.speakAndHandleUi(settingIntent.missingOperationQuestion())
 		lastDialogContext = jsonParser.createSettingsContext(settingIntent)

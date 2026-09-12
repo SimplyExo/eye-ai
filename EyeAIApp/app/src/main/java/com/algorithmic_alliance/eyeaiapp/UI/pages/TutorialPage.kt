@@ -118,8 +118,8 @@ fun TutorialPage(
 
 						TutorialStage.NLPTutorial -> Tutorial(
 							onBack = {
-							currentTutorialStage = TutorialStage.ObjectTutorial
-						},
+								currentTutorialStage = TutorialStage.ObjectTutorial
+							},
 							onGoOn = {
 								val sharedPreferences =
 									PreferenceManager.getDefaultSharedPreferences(context)
