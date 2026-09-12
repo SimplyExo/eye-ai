@@ -165,9 +165,7 @@ class StateMachine(
 					prefix = "[", postfix = "]"
 				) { index ->
 					"${Intent.CLASS_ORDER[index].name}=" + String.format(
-						Locale.US,
-						"%.4f",
-						result.probabilities[index]
+						Locale.US, "%.4f", result.probabilities[index]
 					)
 				}
 				Log.d(

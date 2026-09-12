@@ -63,8 +63,7 @@ fun checkPermissionsStatus(
 	for (map in neededPermissions) {
 		val permission = map["permissions"]
 		val hasPermission = ContextCompat.checkSelfPermission(
-			context,
-			permission as String
+			context, permission as String
 		) == PackageManager.PERMISSION_GRANTED
 		if (!hasPermission) {
 			Log.d(LOG_TAG, "[PermissionPage] App does not have permission for $permission")

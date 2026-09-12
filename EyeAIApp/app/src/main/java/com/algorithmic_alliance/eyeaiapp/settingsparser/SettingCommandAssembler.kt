@@ -44,8 +44,7 @@ class SettingCommandAssembler {
 		}
 		val relevantSpeaker = if (target == SettingTarget.SPEAKER) speaker else null
 		val relevantMagnitude = if (operation.operation in setOf(
-				SettingOperation.INCREASE,
-				SettingOperation.DECREASE
+				SettingOperation.INCREASE, SettingOperation.DECREASE
 			) && numericValue == null && magnitude.status == MagnitudeParseStatus.CLEAR
 		) magnitude.value else null
 		val status = initialStatus(

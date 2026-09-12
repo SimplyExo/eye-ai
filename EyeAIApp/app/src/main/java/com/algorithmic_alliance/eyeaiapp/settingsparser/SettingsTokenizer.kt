@@ -21,8 +21,7 @@ private object SettingsTokenizerTextContract {
 
 	/** Python training rule: NFC and ASCII whitespace canonicalization only. */
 	fun normalize(text: String): String = asciiWhitespace.replace(
-		Normalizer.normalize(text, Normalizer.Form.NFC),
-		" "
+		Normalizer.normalize(text, Normalizer.Form.NFC), " "
 	).trim()
 
 	fun tokenizedWords(text: String): List<String> =
@@ -40,8 +39,7 @@ private object SettingsTokenizerTextContract {
  * before tokenization, and post-truncation/post-padding produces int32[1,32].
  */
 class FrozenSettingsTokenizer(
-	private val vocabulary: Map<String, Int>,
-	val maxLen: Int = SettingsTfliteContract.WORD_MAX_LEN
+	private val vocabulary: Map<String, Int>, val maxLen: Int = SettingsTfliteContract.WORD_MAX_LEN
 ) {
 	init {
 		require(maxLen == SettingsTfliteContract.WORD_MAX_LEN) {

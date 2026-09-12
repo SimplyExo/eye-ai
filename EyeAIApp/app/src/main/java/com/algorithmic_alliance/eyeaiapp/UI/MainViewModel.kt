@@ -92,8 +92,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 			visionPermissionsNotGranted = it.appMissingVisionPermission,
 			reloadSettingsPageKey = it.reloadSettingsPageKey
 		)
-	}
-		.distinctUntilChanged()
+	}.distinctUntilChanged()
 		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SelectSettingUIState())
 	val debugPageUIState: StateFlow<DebugPageUIState> = _uiState.map {
 		DebugPageUIState(
@@ -104,8 +103,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 			speechRecognitionPartialResultText = it.speechRecognitionPartialResultText,
 			speechResponseText = it.speechResponseText
 		)
-	}
-		.distinctUntilChanged()
+	}.distinctUntilChanged()
 		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DebugPageUIState())
 
 	val mediaPreviewUIState: StateFlow<MediaPreviewUIState> = _uiState.map {

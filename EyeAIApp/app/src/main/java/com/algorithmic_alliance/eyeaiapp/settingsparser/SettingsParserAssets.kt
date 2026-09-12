@@ -147,10 +147,9 @@ object SettingsParserAssetContract {
 		val output = contract.getJSONObject("active_output")
 		require(
 			output.getString("name") == activeOutput && output.getString("dtype") == "float32" && output.getJSONArray(
-				"shape"
-			)
-				.let { it.getInt(0) == 1 && it.getInt(1) == outputSize } && output.getJSONArray("classes")
-				.length() == outputSize)
+			"shape"
+		).let { it.getInt(0) == 1 && it.getInt(1) == outputSize } && output.getJSONArray("classes")
+			.length() == outputSize)
 	}
 
 	private fun sha256(bytes: ByteArray): String =

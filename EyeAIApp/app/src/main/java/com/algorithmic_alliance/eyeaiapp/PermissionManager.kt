@@ -48,15 +48,13 @@ class PermissionManager(
 
 	fun isCameraPermissionGranted(): Boolean {
 		return ContextCompat.checkSelfPermission(
-			activity,
-			Manifest.permission.CAMERA
+			activity, Manifest.permission.CAMERA
 		) == PackageManager.PERMISSION_GRANTED
 	}
 
 	fun isMicrophonePermissionGranted(): Boolean {
 		return ContextCompat.checkSelfPermission(
-			activity,
-			Manifest.permission.RECORD_AUDIO
+			activity, Manifest.permission.RECORD_AUDIO
 		) == PackageManager.PERMISSION_GRANTED
 	}
 

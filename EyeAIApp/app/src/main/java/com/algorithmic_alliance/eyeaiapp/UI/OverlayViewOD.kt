@@ -29,9 +29,7 @@ class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, att
 
 	fun initClsNameTranslations(context: Context) {
 		try {
-			val json = context.assets
-				.open("coco_name_translation.json")
-				.bufferedReader()
+			val json = context.assets.open("coco_name_translation.json").bufferedReader()
 				.use { it.readText() }
 
 			val jsonObject = JSONObject(json)
@@ -116,8 +114,9 @@ class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, att
 
 			canvas.drawRect(left, top, right, bottom, boxPaint)
 			val drawableText =
-				if (language == context.getString(R.string.language_is_german) && clsNameGermanMap != emptyMap<String, String>())
-					"${resolveClsNameGerman(it.clsName)} - ${it.trackingId}"
+				if (language == context.getString(R.string.language_is_german) && clsNameGermanMap != emptyMap<String, String>()) "${
+					resolveClsNameGerman(it.clsName)
+				} - ${it.trackingId}"
 				else {
 					"${it.clsName} - ${it.trackingId}"
 				}

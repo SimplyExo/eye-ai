@@ -183,9 +183,7 @@ class SettingsHandler(
 		}
 
 		return when (settingsConfirmation.confirmAndApplyWithResult(
-			input,
-			currentJson,
-			::applySettings
+			input, currentJson, ::applySettings
 		)) {
 			SettingsConfirmationResult.APPLIED -> {
 				logConfirmationTransition(

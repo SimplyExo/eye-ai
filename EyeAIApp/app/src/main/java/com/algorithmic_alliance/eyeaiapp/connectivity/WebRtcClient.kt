@@ -16,8 +16,7 @@ import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
 class WebRtcClient(
-	private val context: Context,
-	private val onFrameReceived: (VideoFrame) -> Unit
+	private val context: Context, private val onFrameReceived: (VideoFrame) -> Unit
 ) {
 	private val TAG = "WebRtcClient"
 	private val httpClient = getUnsafeOkHttpClient()
@@ -27,14 +26,12 @@ class WebRtcClient(
 		try {
 			val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
 				override fun checkClientTrusted(
-					chain: Array<out X509Certificate>?,
-					authType: String?
+					chain: Array<out X509Certificate>?, authType: String?
 				) {
 				}
 
 				override fun checkServerTrusted(
-					chain: Array<out X509Certificate>?,
-					authType: String?
+					chain: Array<out X509Certificate>?, authType: String?
 				) {
 				}
 
@@ -46,8 +43,7 @@ class WebRtcClient(
 
 			return OkHttpClient.Builder()
 				.sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
-				.hostnameVerifier { _, _ -> true }
-				.build()
+				.hostnameVerifier { _, _ -> true }.build()
 		} catch (e: Exception) {
 			throw RuntimeException(e)
 		}
@@ -112,8 +108,7 @@ class WebRtcClient(
 		val rtcConfig = PeerConnection.RTCConfiguration(iceServers)
 
 		peerConnection = peerConnectionFactory?.createPeerConnection(
-			rtcConfig,
-			object : PeerConnection.Observer {
+			rtcConfig, object : PeerConnection.Observer {
 				override fun onIceCandidate(candidate: IceCandidate) {}
 				override fun onTrack(transceiver: RtpTransceiver) {
 					val track = transceiver.receiver.track()
@@ -141,10 +136,7 @@ class WebRtcClient(
 
 	private fun sendWhepOffer(url: String, sdp: String) {
 		val requestBody = sdp.toRequestBody("application/sdp".toMediaType())
-		val request = Request.Builder()
-			.url(url)
-			.post(requestBody)
-			.build()
+		val request = Request.Builder().url(url).post(requestBody).build()
 
 		httpClient.newCall(request).enqueue(object : Callback {
 			override fun onFailure(call: Call, e: IOException) {

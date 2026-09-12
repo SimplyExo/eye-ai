@@ -86,8 +86,7 @@ class SettingUnitParser {
 		// "BPS auf ... Hertz" names the target and carries one explicit wrong
 		// unit. The target mention must not turn this into a fake conflict.
 		if (target == SettingTarget.BPS && foundHertz && foundBps && Regex(
-				"\\bbps\\b",
-				RegexOption.IGNORE_CASE
+				"\\bbps\\b", RegexOption.IGNORE_CASE
 			).containsMatchIn(text)
 		) {
 			foundBps = false

@@ -25,7 +25,6 @@ data class Settings(
 	var objectAudioPlaybackLanguage: String?,
 	var enableNpu: Boolean,
 	var jpegCompression: Int
-
 ) : Cloneable {
 	companion object {
 		const val DEFAULT_FRAME_RATE_LIMIT: Int = 30

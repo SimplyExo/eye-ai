@@ -28,8 +28,7 @@ object UIDataSource {
 	const val UI_LOG_TAG = "EyeAIUI"
 
 	@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-	val NEEDED_PERMISSIONS = listOf<Map<String, Any>>(
-		/* EXPLANATION HOW TO ADD NEW PERMISSION
+	val NEEDED_PERMISSIONS = listOf<Map<String, Any>>(		/* EXPLANATION HOW TO ADD NEW PERMISSION
 		mapOf(
 			"permissionName": Name of the permission (String)
 			"permission": The permission
@@ -53,8 +52,7 @@ object UIDataSource {
 			"confirmPermissionDeclineExplanation" to R.string.camera_confirm_decline_explanation_text,
 			"confirmPermissionDeclineSemantic" to R.string.camera_confirm_permission_decline_semantic,
 			"hardPermission" to true
-		),
-		mapOf(
+		), mapOf(
 			"permissionName" to R.string.microphone_permission_name,
 			"permissions" to Manifest.permission.RECORD_AUDIO,
 			"permissionExplanation" to R.string.microphone_permission_explanation_text,
@@ -65,8 +63,7 @@ object UIDataSource {
 			"confirmPermissionDeclineExplanation" to R.string.microphone_confirm_permission_decline_explanation_text,
 			"confirmPermissionDeclineSemantic" to R.string.microphone_confirm_permission_decline_semantic,
 			"hardPermission" to false
-		),
-		mapOf(
+		), mapOf(
 			"permissionName" to R.string.wifi_permission_name,
 			"permissions" to Manifest.permission.NEARBY_WIFI_DEVICES,
 			"permissionExplanation" to R.string.wifi_permission_explanation_text,
@@ -77,8 +74,7 @@ object UIDataSource {
 			"confirmPermissionDeclineExplanation" to R.string.wifi_confirm_decline_explanation_text,
 			"confirmPermissionDeclineSemantic" to R.string.wifi_confirm_permission_decline_semantic,
 			"hardPermission" to false
-		),
-		mapOf(
+		), mapOf(
 			"permissionName" to R.string.location_permission_name,
 			"permissions" to Manifest.permission.ACCESS_FINE_LOCATION,
 			"permissionExplanation" to R.string.location_permission_explanation_text,

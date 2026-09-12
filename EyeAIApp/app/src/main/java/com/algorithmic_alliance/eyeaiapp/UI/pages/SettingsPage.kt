@@ -309,21 +309,15 @@ fun SettingsCategoryCard(
 
 				when (settingData.getValue("settingsType")) {
 					"checkbox" -> CheckBoxSetting(
-						settingData = settingData,
-						onEvent = onEvent,
-						viewModel = viewModel
+						settingData = settingData, onEvent = onEvent, viewModel = viewModel
 					)
 
 					"select" -> SelectSetting(
-						settingData = settingData,
-						onEvent = onEvent,
-						viewModel = viewModel
+						settingData = settingData, onEvent = onEvent, viewModel = viewModel
 					)
 
 					"slider" -> SliderSetting(
-						settingData = settingData,
-						onEvent = onEvent,
-						viewModel = viewModel
+						settingData = settingData, onEvent = onEvent, viewModel = viewModel
 					)
 
 					"textInput" -> TextInputSetting(
@@ -557,9 +551,7 @@ fun CheckBoxSetting(
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun SelectSetting(
-	settingData: Map<String, Any>,
-	onEvent: (UIEvent) -> Unit,
-	viewModel: MainViewModel
+	settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit, viewModel: MainViewModel
 ) {
 	val uiState by viewModel.selectSettingUIState.collectAsStateWithLifecycle()
 	val context = LocalContext.current
@@ -650,9 +642,7 @@ fun SelectSetting(
 
 @Composable
 fun SliderSetting(
-	settingData: Map<String, Any>,
-	onEvent: (UIEvent) -> Unit,
-	viewModel: MainViewModel
+	settingData: Map<String, Any>, onEvent: (UIEvent) -> Unit, viewModel: MainViewModel
 ) {
 	val uiState by viewModel.settingsPageUIState.collectAsStateWithLifecycle()
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)

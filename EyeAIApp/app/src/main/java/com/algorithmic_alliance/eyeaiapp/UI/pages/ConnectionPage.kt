@@ -161,17 +161,17 @@ fun ConnectionPage(
 	key(currentlyDisplayedDevices) {
 		ChooseConnectionPage(
 			onConnectionSuccessful = { visionDevice ->
-				if (visionDevice == chooseCameraAsInput) {
-					sharedPreferences.edit(commit = true) {
-						putBoolean(shouldRememberAudioDeviceKey, false)
-						putString(selectedAudioDeviceKey, "")
-					}
-					onConnectionSuccessful()
-				} else if (currentlyDisplayedDevices < categories.size - 1) {
-					currentlyDisplayedDevices++
-					startAutoConnect = true
-				} else onConnectionSuccessful()
-			},
+			if (visionDevice == chooseCameraAsInput) {
+				sharedPreferences.edit(commit = true) {
+					putBoolean(shouldRememberAudioDeviceKey, false)
+					putString(selectedAudioDeviceKey, "")
+				}
+				onConnectionSuccessful()
+			} else if (currentlyDisplayedDevices < categories.size - 1) {
+				currentlyDisplayedDevices++
+				startAutoConnect = true
+			} else onConnectionSuccessful()
+		},
 			goBack = {
 				if (currentlyDisplayedDevices != 0) {
 					currentlyDisplayedDevices--
