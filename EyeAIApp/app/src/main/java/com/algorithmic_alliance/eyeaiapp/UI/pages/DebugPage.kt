@@ -589,15 +589,15 @@ fun PreviewWithSquareOverlayContainer(
 			(boxHeight * contentAspectRatio) to boxHeight
 		}
 
-		val overlaySidePx = minOf(renderedWidth, renderedHeight)
 		val density = LocalDensity.current
-		val overlaySideDp = with(density) { overlaySidePx.toDp() }
+		val overlayWidthDp = with(density) { renderedWidth.toDp() }
+		val overlayHeightDp = with(density) { renderedHeight.toDp() }
 
 		content(Modifier.matchParentSize())
 
 		SegmentationInputPreview(
 			viewModel = viewModel,
-			modifier = Modifier.size(overlaySideDp)
+			modifier = Modifier.size(overlayWidthDp, overlayHeightDp)
 		)
 	}
 }
