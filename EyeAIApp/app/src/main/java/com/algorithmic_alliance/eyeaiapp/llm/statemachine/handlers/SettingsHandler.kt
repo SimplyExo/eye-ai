@@ -28,7 +28,7 @@ class SettingsHandler(
 	confirmationModelProvider: () -> ConfirmationModel,
 	private val speakAndHandleUi: suspend (String) -> Unit,
 	private val localSettingsParserProvider: () -> LocalSettingsParser? = { eyeAIApp.localSettingsParser },
-	private val localSettingsCommandExecutor: SettingsCommandExecutor = SettingsCommandExecutor()
+	localSettingsCommandExecutor: SettingsCommandExecutor = SettingsCommandExecutor()
 ) {
 	private val localSettingsDialogFlow = LocalSettingsDialogFlow(
 		jsonParser = jsonParser, commandExecutor = localSettingsCommandExecutor
@@ -54,7 +54,7 @@ class SettingsHandler(
 		val evaluator = if (modelInvoked) "LOCAL_CONFIRMATION_MODEL" else "STATE_MACHINE_CONTROL"
 		Log.i(
 			EyeAIApp.APP_LOG_TAG,
-			"[DecisionTrace][StateMachine][CONFIRMATION_TRANSITION] " + "state=SETTINGS_ACTION role=$role evaluator=$evaluator " + "apiCalled=false modelInvoked=$modelInvoked decision=$decision " + "action=$action nextState=$nextState contextRetained=$contextRetained"
+			"[DecisionTrace][StateMachine][CONFIRMATION_TRANSITION] state=SETTINGS_ACTION role=$role evaluator=$evaluator apiCalled=false modelInvoked=$modelInvoked decision=$decision action=$action nextState=$nextState contextRetained=$contextRetained"
 		)
 	}
 
@@ -183,9 +183,7 @@ class SettingsHandler(
 		}
 
 		return when (settingsConfirmation.confirmAndApplyWithResult(
-			input,
-			currentJson,
-			::applySettings
+			input, currentJson, ::applySettings
 		)) {
 			SettingsConfirmationResult.APPLIED -> {
 				logConfirmationTransition(
@@ -278,7 +276,7 @@ class SettingsHandler(
 						ttsEditor.putFloat("tts_speech_rate", newSpeed)
 						Log.d(
 							EyeAIApp.APP_LOG_TAG,
-							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " + "setting=TTS_SPEED value=$newSpeed"
+							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL setting=TTS_SPEED value=$newSpeed"
 						)
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
@@ -288,7 +286,7 @@ class SettingsHandler(
 						if (!textToSpeechInstance.setVoice(voice)) {
 							Log.w(
 								EyeAIApp.APP_LOG_TAG,
-								"[DecisionTrace][SettingsHandler][APPLY] outcome=NOT_APPLIED " + "setting=VOICE value=$voice"
+								"[DecisionTrace][SettingsHandler][APPLY] outcome=NOT_APPLIED setting=VOICE value=$voice"
 							)
 							return SettingsApplyResult.NOT_APPLIED
 						}
@@ -296,7 +294,7 @@ class SettingsHandler(
 						ttsEditor.putInt("tts_voice", voice)
 						Log.d(
 							EyeAIApp.APP_LOG_TAG,
-							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " + "setting=VOICE value=$voice"
+							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL setting=VOICE value=$voice"
 						)
 						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 					}
@@ -328,7 +326,7 @@ class SettingsHandler(
 						settings.save(eyeAIApp)
 						Log.d(
 							EyeAIApp.APP_LOG_TAG,
-							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " + "setting=BPS value=$clampedBps"
+							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL setting=BPS value=$clampedBps"
 						)
 						speakAndHandleUi("Die BPS wurde erfolgreich auf $clampedBps geändert.")
 					}

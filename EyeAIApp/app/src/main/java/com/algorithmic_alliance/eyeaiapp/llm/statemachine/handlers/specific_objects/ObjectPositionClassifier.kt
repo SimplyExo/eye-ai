@@ -132,23 +132,4 @@ class ObjectPositionClassifier(
 		}
 	}
 
-	// Detailed analysis
-	fun getDetailedSizeAnalysis(obj: ObjectData): Map<String, Any> {
-		val screenArea = screenWidth * screenHeight
-		val objectArea = obj.width * obj.height
-		val screenPercentage = (objectArea / screenArea) * 100
-
-		return mapOf(
-			"screenPercentage" to String.format("%.1f", screenPercentage),
-			"pixelArea" to objectArea.toInt(),
-			"aspectRatio" to String.format("%.2f", obj.width / obj.height),
-			"distanceCategory" to when {
-				obj.distance < 1.0f -> "nah"
-				obj.distance < 5.0f -> "relativ nah"
-				obj.distance < 15.0f -> "mittlere Entfernung"
-				obj.distance < 30.0f -> "relativ fern"
-				else -> "fern"
-			}
-		)
-	}
 }

@@ -27,69 +27,65 @@ object UIDataSource {
 
 	const val UI_LOG_TAG = "EyeAIUI"
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    val NEEDED_PERMISSIONS = listOf<Map<String, Any>>(
-        /* EXPLANATION HOW TO ADD NEW PERMISSION
-        mapOf(
-            "permissionName": Name of the permission (String)
-            "permission": The permission
-            "permissionExplanation": Explain to the user why the app needs that permission (String)
-            "icon": Icon matching that permission (Int)
-            "iconDescription": Describing the Icon for the semantics (String)
-            "permissionDeclineSemantic": semantic for the decline button (String),
-            "permissionAcceptSemantic": semantic for the accept button (String),
-            "confirmPermissionDeclineExplanation": Explain the effects of declining that permission for the conformation dialog (String)
-            "confirmPermissionDeclineSemantic": semantic for confirm declining button (String)
-        ),
-         */
-        mapOf(
-            "permissionName" to R.string.camera_permission_name,
-            "permissions" to Manifest.permission.CAMERA,
-            "permissionExplanation" to R.string.camera_permission_explanation_text,
-            "icon" to R.drawable.photo_camera_24px,
-            "iconDescription" to R.string.camera_icon_description,
-            "permissionDeclineSemantic" to R.string.camera_permission_decline_semantic,
-            "permissionAcceptSemantic" to R.string.camera_permission_accept_semantic,
-            "confirmPermissionDeclineExplanation" to R.string.camera_confirm_decline_explanation_text,
-            "confirmPermissionDeclineSemantic" to R.string.camera_confirm_permission_decline_semantic,
-            "hardPermission" to true
-        ),
-        mapOf(
-            "permissionName" to R.string.microphone_permission_name,
-            "permissions" to Manifest.permission.RECORD_AUDIO,
-            "permissionExplanation" to R.string.microphone_permission_explanation_text,
-            "icon" to R.drawable.mic_24px,
-            "iconDescription" to R.string.microphone_icon_description,
-            "permissionDeclineSemantic" to R.string.microphone_permission_decline_semantic,
-            "permissionAcceptSemantic" to R.string.microphone_permission_accept_semantic,
-            "confirmPermissionDeclineExplanation" to R.string.microphone_confirm_permission_decline_explanation_text,
-            "confirmPermissionDeclineSemantic" to R.string.microphone_confirm_permission_decline_semantic,
-            "hardPermission" to false
-        ),
-        mapOf(
-            "permissionName" to R.string.wifi_permission_name,
-            "permissions" to Manifest.permission.NEARBY_WIFI_DEVICES,
-            "permissionExplanation" to R.string.wifi_permission_explanation_text,
-            "icon" to R.drawable.wifi_24px,
-            "iconDescription" to R.string.wifi_icon_description,
-            "permissionDeclineSemantic" to R.string.wifi_permission_decline_semantic,
-            "permissionAcceptSemantic" to R.string.wifi_permission_accept_semantic,
-            "confirmPermissionDeclineExplanation" to R.string.wifi_confirm_decline_explanation_text,
-            "confirmPermissionDeclineSemantic" to R.string.wifi_confirm_permission_decline_semantic,
-            "hardPermission" to false
-        ),
-        mapOf(
-            "permissionName" to R.string.location_permission_name,
-            "permissions" to Manifest.permission.ACCESS_FINE_LOCATION,
-            "permissionExplanation" to R.string.location_permission_explanation_text,
-            "icon" to R.drawable.location_on_24px,
-            "iconDescription" to R.string.location_icon_description,
-            "permissionDeclineSemantic" to R.string.location_permission_decline_semantic,
-            "permissionAcceptSemantic" to R.string.location_permission_accept_semantic,
-            "confirmPermissionDeclineExplanation" to R.string.location_confirm_decline_explanation_text,
-            "confirmPermissionDeclineSemantic" to R.string.location_confirm_permission_decline_semantic,
-            "hardPermission" to false
-        )
+	@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+	val NEEDED_PERMISSIONS = listOf<Map<String, Any>>(		/* EXPLANATION HOW TO ADD NEW PERMISSION
+		mapOf(
+			"permissionName": Name of the permission (String)
+			"permission": The permission
+			"permissionExplanation": Explain to the user why the app needs that permission (String)
+			"icon": Icon matching that permission (Int)
+			"iconDescription": Describing the Icon for the semantics (String)
+			"permissionDeclineSemantic": semantic for the decline button (String),
+			"permissionAcceptSemantic": semantic for the accept button (String),
+			"confirmPermissionDeclineExplanation": Explain the effects of declining that permission for the conformation dialog (String)
+			"confirmPermissionDeclineSemantic": semantic for confirm declining button (String)
+		),
+		 */
+		mapOf(
+			"permissionName" to R.string.camera_permission_name,
+			"permissions" to Manifest.permission.CAMERA,
+			"permissionExplanation" to R.string.camera_permission_explanation_text,
+			"icon" to R.drawable.photo_camera_24px,
+			"iconDescription" to R.string.camera_icon_description,
+			"permissionDeclineSemantic" to R.string.camera_permission_decline_semantic,
+			"permissionAcceptSemantic" to R.string.camera_permission_accept_semantic,
+			"confirmPermissionDeclineExplanation" to R.string.camera_confirm_decline_explanation_text,
+			"confirmPermissionDeclineSemantic" to R.string.camera_confirm_permission_decline_semantic,
+			"hardPermission" to true
+		), mapOf(
+			"permissionName" to R.string.microphone_permission_name,
+			"permissions" to Manifest.permission.RECORD_AUDIO,
+			"permissionExplanation" to R.string.microphone_permission_explanation_text,
+			"icon" to R.drawable.mic_24px,
+			"iconDescription" to R.string.microphone_icon_description,
+			"permissionDeclineSemantic" to R.string.microphone_permission_decline_semantic,
+			"permissionAcceptSemantic" to R.string.microphone_permission_accept_semantic,
+			"confirmPermissionDeclineExplanation" to R.string.microphone_confirm_permission_decline_explanation_text,
+			"confirmPermissionDeclineSemantic" to R.string.microphone_confirm_permission_decline_semantic,
+			"hardPermission" to false
+		), mapOf(
+			"permissionName" to R.string.wifi_permission_name,
+			"permissions" to Manifest.permission.NEARBY_WIFI_DEVICES,
+			"permissionExplanation" to R.string.wifi_permission_explanation_text,
+			"icon" to R.drawable.wifi_24px,
+			"iconDescription" to R.string.wifi_icon_description,
+			"permissionDeclineSemantic" to R.string.wifi_permission_decline_semantic,
+			"permissionAcceptSemantic" to R.string.wifi_permission_accept_semantic,
+			"confirmPermissionDeclineExplanation" to R.string.wifi_confirm_decline_explanation_text,
+			"confirmPermissionDeclineSemantic" to R.string.wifi_confirm_permission_decline_semantic,
+			"hardPermission" to false
+		), mapOf(
+			"permissionName" to R.string.location_permission_name,
+			"permissions" to Manifest.permission.ACCESS_FINE_LOCATION,
+			"permissionExplanation" to R.string.location_permission_explanation_text,
+			"icon" to R.drawable.location_on_24px,
+			"iconDescription" to R.string.location_icon_description,
+			"permissionDeclineSemantic" to R.string.location_permission_decline_semantic,
+			"permissionAcceptSemantic" to R.string.location_permission_accept_semantic,
+			"confirmPermissionDeclineExplanation" to R.string.location_confirm_decline_explanation_text,
+			"confirmPermissionDeclineSemantic" to R.string.location_confirm_permission_decline_semantic,
+			"hardPermission" to false
+		)
 
 	)
 

@@ -27,11 +27,11 @@ class ObjectDetectionHandler {
 			}
 
 			return objectDetectionBoxes.mapNotNull { box ->
-					val englishLabel = box.clsName
-					if (TranslateEnglishToGerman.isKnownEnglishLabel(englishLabel)) {
-						TranslateEnglishToGerman.translateToGerman(englishLabel)
-					} else null
-				}.distinct()
+				val englishLabel = box.clsName
+				if (TranslateEnglishToGerman.isKnownEnglishLabel(englishLabel)) {
+					TranslateEnglishToGerman.translateToGerman(englishLabel)
+				} else null
+			}.distinct()
 		}
 
 		fun handleGermanObjectQuery(germanQuery: String): ObjectDetectionResult {

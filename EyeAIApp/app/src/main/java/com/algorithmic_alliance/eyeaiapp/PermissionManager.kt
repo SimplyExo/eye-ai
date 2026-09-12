@@ -14,7 +14,7 @@ class PermissionManager(
 	var activity: ComponentActivity,
 	//onCameraPermissionResult: (isGranted: Boolean) -> Unit,
 	//onMicrophonePermissionResult: (isGranted: Boolean) -> Unit
-) {	/*
+) {    /*
 	private val requestPermissionsLauncher =
 		activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
 			if (permissions.containsKey(Manifest.permission.CAMERA)) {
@@ -35,7 +35,7 @@ class PermissionManager(
 			}
 		}
 
-	 */	/*
+	 */    /*
 	fun requestCameraPermission() {
 		requestPermissionsLauncher.launch(arrayOf(Manifest.permission.CAMERA))
 	}
@@ -48,15 +48,13 @@ class PermissionManager(
 
 	fun isCameraPermissionGranted(): Boolean {
 		return ContextCompat.checkSelfPermission(
-			activity,
-			Manifest.permission.CAMERA
+			activity, Manifest.permission.CAMERA
 		) == PackageManager.PERMISSION_GRANTED
 	}
 
 	fun isMicrophonePermissionGranted(): Boolean {
 		return ContextCompat.checkSelfPermission(
-			activity,
-			Manifest.permission.RECORD_AUDIO
+			activity, Manifest.permission.RECORD_AUDIO
 		) == PackageManager.PERMISSION_GRANTED
 	}
 

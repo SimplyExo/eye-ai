@@ -9,7 +9,9 @@ import android.util.AttributeSet
 import android.util.Size
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
+import org.json.JSONObject
 import uniffi.NativeLib.UniffiDetectedObject
 
 class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
@@ -19,11 +21,36 @@ class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, att
 	private var boxPaint = Paint()
 	private var textBackgroundPaint = Paint()
 	private var textPaint = Paint()
+	private var language = context?.getString(R.string.language_is_german)
 
 	private var bounds = Rect()
 
+	private lateinit var clsNameGermanMap: Map<String, String>
+
+	fun initClsNameTranslations(context: Context) {
+		try {
+			val json = context.assets.open("coco_name_translation.json").bufferedReader()
+				.use { it.readText() }
+
+			val jsonObject = JSONObject(json)
+
+			clsNameGermanMap = jsonObject.keys().asSequence().associateWith { key ->
+				jsonObject.getString(key)
+			}
+		} catch (_: Exception) {
+			clsNameGermanMap = emptyMap()
+		}
+	}
+
 	init {
 		initPaints()
+		initClsNameTranslations(context as Context)
+		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+		val language = sharedPreferences.getString(
+			context.getString(R.string.object_playback_language),
+			context.getString(R.string.language_is_german)
+		)
+		setLanguage(language as String)
 	}
 
 	fun clear() {
@@ -55,7 +82,6 @@ class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, att
 
 	override fun draw(canvas: Canvas) {
 		super.draw(canvas)
-
 		val viewAspectRatio = width.toFloat() / height.toFloat()
 		val cameraAspectRatio = cameraResolution.width.toFloat() / cameraResolution.height.toFloat()
 
@@ -87,7 +113,13 @@ class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, att
 			val bottom = it.y2 * cameraPreviewImageSize.height + yOffset
 
 			canvas.drawRect(left, top, right, bottom, boxPaint)
-			val drawableText = "${it.clsName} - ${it.trackingId}"
+			val drawableText =
+				if (language == context.getString(R.string.language_is_german) && clsNameGermanMap != emptyMap<String, String>()) "${
+					resolveClsNameGerman(it.clsName)
+				} - ${it.trackingId}"
+				else {
+					"${it.clsName} - ${it.trackingId}"
+				}
 
 			textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
 			val textWidth = bounds.width()
@@ -114,6 +146,17 @@ class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, att
 		cameraResolution = newCameraResolution
 
 		if (changed) invalidate()
+	}
+
+	fun setLanguage(newLanguage: String) {
+		val changed = newLanguage != language
+		language = newLanguage
+
+		if (changed) invalidate()
+	}
+
+	private fun resolveClsNameGerman(englishClsName: String): String {
+		return clsNameGermanMap[englishClsName] ?: englishClsName
 	}
 
 	companion object {

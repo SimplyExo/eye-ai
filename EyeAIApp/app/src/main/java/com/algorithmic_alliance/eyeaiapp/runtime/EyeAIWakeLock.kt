@@ -11,9 +11,8 @@ import android.os.PowerManager
 internal class EyeAIWakeLock(context: Context) {
 	private val wakeLock =
 		(context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager).newWakeLock(
-				PowerManager.PARTIAL_WAKE_LOCK,
-				"EyeAI::ContinuousInference"
-			).apply { setReferenceCounted(false) }
+			PowerManager.PARTIAL_WAKE_LOCK, "EyeAI::ContinuousInference"
+		).apply { setReferenceCounted(false) }
 
 	@Synchronized
 	@SuppressLint("WakelockTimeout")

@@ -11,7 +11,7 @@ enum class SettingsApplyResult {
 	APPLIED, NOT_APPLIED, FAILED
 }
 
-/** Uses the local confirmation model and invokes [applySettings] at most once. */
+// Uses the local confirmation model and invokes [applySettings] at most once.
 class LocalSettingsConfirmation(
 	private val confirmationModelProvider: () -> ConfirmationModel,
 	private val jsonParser: JsonParser,
@@ -27,7 +27,7 @@ class LocalSettingsConfirmation(
 		val question = jsonParser.createConfirmationQuestion(settingsJson)
 		val pendingAction = jsonParser.createPendingActionDescription(settingsJson)
 		trace(
-			"[DecisionTrace][ConfirmationModel][EVALUATE] " + "role=SETTINGS_CONFIRMATION evaluator=LOCAL_CONFIRMATION_MODEL " + "apiCalled=false question='$question' pendingAction='$pendingAction' input='$input'"
+			"[DecisionTrace][ConfirmationModel][EVALUATE] role=SETTINGS_CONFIRMATION evaluator=LOCAL_CONFIRMATION_MODEL apiCalled=false question='$question' pendingAction='$pendingAction' input='$input'"
 		)
 		return try {
 			val result = confirmationModelProvider().classify(question, input, pendingAction)

@@ -111,9 +111,7 @@ class SettingCommandValidator(
 				)
 
 				command.speaker == null || command.speaker == SpeakerChoice.UNSPECIFIED -> withStatus(
-					command,
-					SettingParseStatus.NEEDS_VALUE,
-					"SPEAKER_REQUIRED"
+					command, SettingParseStatus.NEEDS_VALUE, "SPEAKER_REQUIRED"
 				)
 
 				else -> withStatus(command, SettingParseStatus.COMPLETE)

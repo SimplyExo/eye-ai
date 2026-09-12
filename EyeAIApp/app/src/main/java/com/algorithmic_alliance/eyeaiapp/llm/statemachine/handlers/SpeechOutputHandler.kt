@@ -11,7 +11,7 @@ class SpeechOutputHandler(
 ) {
 	private val mainHandler = Handler(Looper.getMainLooper())
 
-	suspend fun speakAndHandleUi(text: String) {
+	fun speakAndHandleUi(text: String) {
 		val toSpeak = text.trim()
 		if (toSpeak.isEmpty()) {
 			return

@@ -88,9 +88,8 @@ class SettingsActivity : AppCompatActivity() {
 
 			// Falls schon gespeichert -> direkt anzeigen
 			val savedPath = preferenceManager.sharedPreferences?.getString(
-					this.getString(R.string.media_path_setting),
-					null
-				)
+				this.getString(R.string.media_path_setting), null
+			)
 			if (savedPath != null) {
 				mediaPref?.summary = savedPath
 			}

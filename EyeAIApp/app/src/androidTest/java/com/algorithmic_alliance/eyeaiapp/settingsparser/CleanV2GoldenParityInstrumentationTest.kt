@@ -19,10 +19,9 @@ class CleanV2GoldenParityInstrumentationTest {
 	@Test
 	fun productionAndroidPipelineEqualsFixedPythonReferenceCommands() {
 		val instrumentation = InstrumentationRegistry.getInstrumentation()
-		val payload = instrumentation.context.assets
-			.open("settingsparser/clean_v2_golden_commands.json")
-			.bufferedReader()
-			.use { JSONObject(it.readText()) }
+		val payload =
+			instrumentation.context.assets.open("settingsparser/clean_v2_golden_commands.json")
+				.bufferedReader().use { JSONObject(it.readText()) }
 		assertEquals(SettingsTfliteContract.ARCHITECTURE, payload.getString("architecture"))
 		assertEquals(20260812, payload.getInt("word_seed"))
 		assertEquals(20260814, payload.getInt("character_seed"))
@@ -34,27 +33,48 @@ class CleanV2GoldenParityInstrumentationTest {
 				val expected = cases.getJSONObject(index)
 				val id = expected.getString("id")
 				val command = parser.parse(
-					SettingTarget.valueOf(expected.getString("target")),
-					expected.getString("text")
+					SettingTarget.valueOf(expected.getString("target")), expected.getString("text")
 				)
-				assertEquals(id, SettingOperation.valueOf(expected.getString("operation")), command.operation)
+				assertEquals(
+					id, SettingOperation.valueOf(expected.getString("operation")), command.operation
+				)
 				assertDoubleOrNull(id, expected, "numeric_value", command.numericValue)
-				assertEquals(id, nullableEnum(expected, "magnitude", ChangeMagnitude::valueOf), command.magnitude)
-				assertEquals(id, nullableEnum(expected, "speaker", SpeakerChoice::valueOf), command.speaker)
+				assertEquals(
+					id,
+					nullableEnum(expected, "magnitude", ChangeMagnitude::valueOf),
+					command.magnitude
+				)
+				assertEquals(
+					id, nullableEnum(expected, "speaker", SpeakerChoice::valueOf), command.speaker
+				)
 				assertEquals(id, nullableEnum(expected, "unit", SettingUnit::valueOf), command.unit)
-				assertEquals(id, SettingParseStatus.valueOf(expected.getString("status")), command.status)
+				assertEquals(
+					id, SettingParseStatus.valueOf(expected.getString("status")), command.status
+				)
 				assertEquals(id, expected.getString("normalized_text"), command.normalizedText)
-				assertEquals(id, NumberNormalizationStatus.valueOf(expected.getString("number_status")), command.numberNormalizationStatus)
-				assertEquals(id, doubleList(expected.getJSONArray("extracted_numeric_values")), command.extractedNumericValues)
-				assertEquals(id, stringList(expected.getJSONArray("diagnostics")), command.diagnostics)
+				assertEquals(
+					id,
+					NumberNormalizationStatus.valueOf(expected.getString("number_status")),
+					command.numberNormalizationStatus
+				)
+				assertEquals(
+					id,
+					doubleList(expected.getJSONArray("extracted_numeric_values")),
+					command.extractedNumericValues
+				)
+				assertEquals(
+					id, stringList(expected.getJSONArray("diagnostics")), command.diagnostics
+				)
 				assertEquals(id, Text2NumGermanNumberNormalizer.NORMALIZER_ID, command.normalizerId)
-				assertEquals(id, Text2NumGermanNumberNormalizer.NORMALIZER_VERSION, command.normalizerVersion)
+				assertEquals(
+					id, Text2NumGermanNumberNormalizer.NORMALIZER_VERSION, command.normalizerVersion
+				)
 				if (expected.has("raw_number_occurrence_values")) {
 					assertEquals(
 						id,
 						doubleList(expected.getJSONArray("raw_number_occurrence_values")),
-						command.numberOccurrences.filter { it.status == NumberOccurrenceStatus.SUCCESS }.map { it.value!! }
-					)
+						command.numberOccurrences.filter { it.status == NumberOccurrenceStatus.SUCCESS }
+							.map { it.value!! })
 				}
 			}
 		} finally {
@@ -71,12 +91,12 @@ class CleanV2GoldenParityInstrumentationTest {
 	}
 
 	private fun <T> nullableEnum(
-		item: JSONObject,
-		key: String,
-		factory: (String) -> T
+		item: JSONObject, key: String, factory: (String) -> T
 	): T? = if (item.isNull(key)) null else factory(item.getString(key))
 
-	private fun doubleList(values: JSONArray): List<Double> = List(values.length()) { values.getDouble(it) }
+	private fun doubleList(values: JSONArray): List<Double> =
+		List(values.length()) { values.getDouble(it) }
 
-	private fun stringList(values: JSONArray): List<String> = List(values.length()) { values.getString(it) }
+	private fun stringList(values: JSONArray): List<String> =
+		List(values.length()) { values.getString(it) }
 }

@@ -6,9 +6,6 @@ class OCRToText(
 	private val screenWidth: Float = 1.0f, private val screenHeight: Float = 1.0f
 ) {
 
-	data class TextBlockInfo(
-		val text: String, val position: String, val size: String, val linePosition: String
-	)
 
 	fun generateReadableText(textBoxes: List<TextBoundingBox>): String {
 		if (textBoxes.isEmpty()) return ""

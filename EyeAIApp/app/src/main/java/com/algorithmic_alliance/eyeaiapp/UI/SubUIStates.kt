@@ -38,8 +38,7 @@ data class SettingsPageUIState(
 
 @Immutable
 data class SelectSettingUIState(
-    val visionPermissionsNotGranted: Boolean = false,
-    val reloadSettingsPageKey: Int = 0
+	val visionPermissionsNotGranted: Boolean = false, val reloadSettingsPageKey: Int = 0
 )
 
 @Immutable

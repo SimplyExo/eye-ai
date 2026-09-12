@@ -60,6 +60,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
+import androidx.core.net.toUri
 
 /** Output of a depth inference while the model read lock is held. */
 data class DepthInferenceResult(
@@ -123,12 +124,12 @@ class EyeAIRuntime internal constructor(
 				SpatialAudioResumeOutcome.RESTORED -> Unit
 				SpatialAudioResumeOutcome.TTS_SILENCE_TIMEOUT -> Log.w(
 					EyeAIApp.APP_LOG_TAG,
-					"[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=SKIPPED " + "reason=TTS_SILENCE_TIMEOUT",
+					"[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=SKIPPED reason=TTS_SILENCE_TIMEOUT",
 				)
 
 				SpatialAudioResumeOutcome.LISTENING_STATE_CHANGED -> Log.d(
 					EyeAIApp.APP_LOG_TAG,
-					"[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=SKIPPED " + "reason=LISTENING_STATE_CHANGED",
+					"[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=SKIPPED reason=LISTENING_STATE_CHANGED",
 				)
 			}
 		},
@@ -549,7 +550,7 @@ class EyeAIRuntime internal constructor(
 						it.copy(lastError = "Media-Eingabe benötigt Android 9 oder neuer")
 					}
 				} else {
-					startMediaSource(Uri.parse(mediaSource))
+					startMediaSource(mediaSource.toUri())
 				}
 			}
 

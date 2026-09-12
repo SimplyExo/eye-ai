@@ -72,4 +72,26 @@ data class IntentResult(
 			)
 		}
 	}
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+
+		other as IntentResult
+
+		if (confidence != other.confidence) return false
+		if (intent != other.intent) return false
+		if (originalText != other.originalText) return false
+		if (!probabilities.contentEquals(other.probabilities)) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = confidence.hashCode()
+		result = 31 * result + intent.hashCode()
+		result = 31 * result + originalText.hashCode()
+		result = 31 * result + probabilities.contentHashCode()
+		return result
+	}
 }

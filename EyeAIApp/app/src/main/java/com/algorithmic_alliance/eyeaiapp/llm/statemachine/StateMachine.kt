@@ -28,13 +28,14 @@ import com.algorithmic_alliance.eyeaiapp.nlp.OCRToText
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import kotlinx.coroutines.delay
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.EyeAIState as State
 
 class StateMachine(
 	private val eyeAIApp: EyeAIApp,
-	private val textToSpeechInstance: TextToSpeechInstance,
+	textToSpeechInstance: TextToSpeechInstance,
 	private var lastDialogContext: String?,
-	private val setSpeechResponseText: (String) -> Unit,
+	setSpeechResponseText: (String) -> Unit,
 	private val frameAnalyzer: FrameAnalyzer? = null
 ) {
 
@@ -87,8 +88,7 @@ class StateMachine(
 			return handleUnresolvedCommand(classifierLabel = intentResult?.intent)
 		}
 
-		val confidentIntentResult = requireNotNull(intentResult)
-		return when (val settingsRoute = SettingsIntentRouter.route(confidentIntentResult)) {
+		return when (val settingsRoute = SettingsIntentRouter.route(intentResult)) {
 			SettingsIntentRoute.GuidedMenu -> {
 				logNlpRoute(nlpIntent, "LOCAL_STATE_MACHINE", "OPEN_GUIDED_SETTINGS_MENU")
 				openGuidedSettingsMenu()
@@ -135,7 +135,7 @@ class StateMachine(
 		}
 	}
 
-	private suspend fun handleUnresolvedCommand(
+	private fun handleUnresolvedCommand(
 		nextState: State = State.IDLE,
 		retainedContext: String? = null,
 		classifierLabel: Intent? = null
@@ -153,13 +153,6 @@ class StateMachine(
 	private fun classifyIntentWithNLP(input: String): IntentResult? {
 		lastIntentResult = null
 		val activeModel = nlpModel
-		if (activeModel == null) {
-			Log.w(
-				EyeAIApp.APP_LOG_TAG,
-				"[DecisionTrace][NLP V2][CLASSIFY] outcome=UNAVAILABLE input='$input'"
-			)
-			return null
-		}
 
 		Log.d(
 			EyeAIApp.APP_LOG_TAG,
@@ -172,9 +165,7 @@ class StateMachine(
 					prefix = "[", postfix = "]"
 				) { index ->
 					"${Intent.CLASS_ORDER[index].name}=" + String.format(
-						Locale.US,
-						"%.4f",
-						result.probabilities[index]
+						Locale.US, "%.4f", result.probabilities[index]
 					)
 				}
 				Log.d(
@@ -198,14 +189,14 @@ class StateMachine(
 	private fun logNlpRoute(intent: Intent, nextEvaluator: String, role: String) {
 		Log.d(
 			EyeAIApp.APP_LOG_TAG,
-			"[DecisionTrace][StateMachine][ROUTE] classifier=NLP_V2 accepted=true " + "intent=$intent nextEvaluator=$nextEvaluator role=$role"
+			"[DecisionTrace][StateMachine][ROUTE] classifier=NLP_V2 accepted=true intent=$intent nextEvaluator=$nextEvaluator role=$role"
 		)
 	}
 
 	private fun formatPercentage(probability: Float): String =
 		String.format(Locale.US, "%.2f%%", probability * 100f)
 
-	suspend fun handleCancellation(): StateUpdate {
+	fun handleCancellation(): StateUpdate {
 		Log.d(
 			EyeAIApp.APP_LOG_TAG,
 			"[DecisionTrace][StateMachine][CANCEL] evaluator=GENERIC_CANCELLATION " + "outcome=RETURN_TO_IDLE pendingContext=cleared"
@@ -224,7 +215,7 @@ class StateMachine(
 			return StateUpdate(State.IDLE, null)
 		}
 
-		delay(200) // Wait for OCR result to be available
+		delay(200.milliseconds) // Wait for OCR result to be available
 
 		// Get OCR boxes and convert Array to List
 		val ocrBoxes = AIModelData.ocrBoxes.get()
@@ -253,7 +244,7 @@ class StateMachine(
 		return StateUpdate(State.IDLE, null)
 	}
 
-	private suspend fun openGuidedSettingsMenu(): StateUpdate {
+	private fun openGuidedSettingsMenu(): StateUpdate {
 		speechOutputHandler.speakAndHandleUi(LocalInteractionMessages.SETTINGS_MENU)
 		return StateUpdate(State.SETTINGS_MENU, null)
 	}
@@ -281,7 +272,7 @@ class StateMachine(
 		}
 	}
 
-	private suspend fun handleObjectDetectionRequest(userInput: String): StateUpdate {
+	private fun handleObjectDetectionRequest(userInput: String): StateUpdate {
 		val germanObjectQuery = userInput.trim()
 		Log.d(
 			EyeAIApp.APP_LOG_TAG, "German object query from local NLP input: '$germanObjectQuery'"
@@ -370,7 +361,7 @@ class StateMachine(
 	}
 
 
-	suspend fun handleSettingsMenu(final: String): StateUpdate {
+	fun handleSettingsMenu(final: String): StateUpdate {
 		val intentResult = classifyIntentWithNLP(final)
 		if (intentResult == null) {
 			Log.d(
@@ -416,7 +407,7 @@ class StateMachine(
 		}
 	}
 
-	private suspend fun handleLocalSettingsMenuIntent(intent: Intent): StateUpdate {
+	private fun handleLocalSettingsMenuIntent(intent: Intent): StateUpdate {
 		val settingIntent = when (intent) {
 			Intent.CHANGE_SPEECH_SPEED -> SettingIntent.TTS_SPEED
 			Intent.CHANGE_SPEAKER -> SettingIntent.VOICE
@@ -426,14 +417,14 @@ class StateMachine(
 		}
 		Log.d(
 			EyeAIApp.APP_LOG_TAG,
-			"[DecisionTrace][StateMachine][SETTINGS_ROUTE] classifier=NLP_V2 " + "intent=$intent action=LOCAL_SETTINGS_SELECTION nextState=SETTINGS_CHOICE"
+			"[DecisionTrace][StateMachine][SETTINGS_ROUTE] classifier=NLP_V2 intent=$intent action=LOCAL_SETTINGS_SELECTION nextState=SETTINGS_CHOICE"
 		)
 		speechOutputHandler.speakAndHandleUi(settingIntent.missingOperationQuestion())
 		lastDialogContext = jsonParser.createSettingsContext(settingIntent)
 		return StateUpdate(State.SETTINGS_CHOICE, lastDialogContext)
 	}
 
-	private suspend fun requestExternalIntentContextSwitch(
+	private fun requestExternalIntentContextSwitch(
 		intentResult: IntentResult
 	): StateUpdate {
 		val pendingIntent = PendingExternalIntent(intentResult)
@@ -451,7 +442,7 @@ class StateMachine(
 		return StateUpdate(State.SETTINGS_EXTERNAL_CONFIRMATION, pendingContext)
 	}
 
-	private suspend fun remindUserSettingsAreAlreadyOpen(): StateUpdate {
+	private fun remindUserSettingsAreAlreadyOpen(): StateUpdate {
 		lastDialogContext = null
 		Log.d(
 			EyeAIApp.APP_LOG_TAG,
