@@ -17,7 +17,6 @@ data class Settings(
 	var enableOCR: Boolean,
 	val inputSource: String?,
 	val mediaSource: String?,
-	val eyeAIVisionIP: String?,
 	var depthAudioPlayback: Boolean,
 	var objectAudioPlayback: Boolean,
 	var depthAudioFrequency: Int,

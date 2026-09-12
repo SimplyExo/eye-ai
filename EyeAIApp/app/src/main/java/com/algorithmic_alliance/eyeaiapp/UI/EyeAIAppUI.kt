@@ -101,7 +101,6 @@ fun EyeAIAppUI(
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     Log.d(LOG_TAG, "!!! Current Route: ${currentBackStackEntry?.destination?.route} !!!")
-	val currentBackStackEntry by navController.currentBackStackEntryAsState()
 
 	val isOnPermissionOrOnboarding = currentBackStackEntry?.destination?.let { dest ->
 		dest.hasRoute<PermissionRoute>() || dest.hasRoute<WelcomeRoute>() || dest.hasRoute<TutorialRoute>()
