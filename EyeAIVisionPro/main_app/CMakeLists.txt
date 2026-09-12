@@ -10,35 +10,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(TARGET_ARCH "x86" CACHE STRING "Target architecture: x86 or armv6")
-
+set(TARGET_ARCH "armv6" CACHE STRING "Target architecture: x86 or armv6")
 set_property(CACHE TARGET_ARCH PROPERTY STRINGS x86 armv6)
 
-if(TARGET_ARCH STREQUAL "x86")
-
-    message(STATUS "Building for x86")
-
-elseif(TARGET_ARCH STREQUAL "armv6")
-
-    message(STATUS "Building for ARMv6")
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=armv6")
-
-else()
-
-    message(FATAL_ERROR
-        "Unsupported TARGET_ARCH='${TARGET_ARCH}'. "
-        "Use 'x86' or 'armv6'."
-    )
-
-endif()
-
 find_package(Qt6 REQUIRED COMPONENTS Core Network HttpServer Bluetooth)
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
 
 file(GLOB_RECURSE SRC_FILES
     "src/*.cpp"
@@ -46,6 +21,11 @@ file(GLOB_RECURSE SRC_FILES
 )
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
@@ -55,9 +35,26 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Bluetooth
 )
 
-set_target_properties(EyeAIVision_Main PROPERTIES
+# Erzwingt ARMv6-Flags für Compiler und Linker (überschreibt Qt6-Target-Defaults)
+target_compile_options(${PROJECT_NAME} PRIVATE
+    -march=armv6
+    -mfpu=vfp
+    -mfloat-abi=hard
+    -marm
+)
+
+target_link_options(${PROJECT_NAME} PRIVATE
+    -march=armv6
+    -mfpu=vfp
+    -mfloat-abi=hard
+    -marm
+    -no-pie
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
     AUTOMOC ON
     AUTOUIC ON
     AUTORCC ON
-    AUTOMOC_EXECUTABLE "/usr/lib/qt6/libexec/moc"
+    POSITION_INDEPENDENT_CODE OFF
+    AUTOMOC_EXECUTABLE "/usr/lib/qt6/libexec/moc" 
 )

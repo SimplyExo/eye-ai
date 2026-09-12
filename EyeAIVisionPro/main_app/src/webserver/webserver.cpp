@@ -5,6 +5,9 @@
 #include <QHttpServerResponse>
 #include <QJsonDocument>
 #include <connectivity/bluetooth.hpp>
+#include <QTcpServer>
+#include <QHttpServer>
+#include <QHostAddress>
 
 #include <logger/logger.hpp>
 
@@ -67,8 +70,13 @@ void webserver::register_url() {
 }
 
 int webserver::start_server() {
-    port = server.listen(QHostAddress::Any, HTTP_PORT);
+    auto tcpServer = new QTcpServer(this);
+    if (!tcpServer->listen(QHostAddress::Any, HTTP_PORT)) {
+        return -1;
+    }
 
+    server.bind(tcpServer);
+    int port = tcpServer->serverPort();
     return port;
 }
 
