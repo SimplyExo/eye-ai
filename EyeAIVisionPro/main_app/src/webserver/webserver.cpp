@@ -30,7 +30,7 @@ void webserver::register_url() {
         );
     });
 
-    server.route("/api/logs/eyai", [this](const QHttpServerRequest &request) {
+    server.route("/api/logs/eyeai", [this](const QHttpServerRequest &request) {
         emit requestReceived(request);
 
         QJsonObject json;

@@ -39,6 +39,7 @@ class button_sock : public QTcpServer
     private:
         BUTTON_STATE get_button_state();
 
+        void broadcast_click(CLICK_TYPE click);
         void update_click_detection();
         CLICK_TYPE take_detected_click();
 
