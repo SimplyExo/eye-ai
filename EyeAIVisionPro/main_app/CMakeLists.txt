@@ -35,22 +35,6 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Bluetooth
 )
 
-# Erzwingt ARMv6-Flags für Compiler und Linker (überschreibt Qt6-Target-Defaults)
-target_compile_options(${PROJECT_NAME} PRIVATE
-    -march=armv6
-    -mfpu=vfp
-    -mfloat-abi=hard
-    -marm
-)
-
-target_link_options(${PROJECT_NAME} PRIVATE
-    -march=armv6
-    -mfpu=vfp
-    -mfloat-abi=hard
-    -marm
-    -no-pie
-)
-
 set_target_properties(${PROJECT_NAME} PROPERTIES
     AUTOMOC ON
     AUTOUIC ON
