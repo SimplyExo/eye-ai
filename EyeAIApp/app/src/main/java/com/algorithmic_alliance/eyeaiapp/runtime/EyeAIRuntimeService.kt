@@ -22,6 +22,7 @@ class EyeAIRuntimeService : LifecycleService() {
 	private lateinit var wakeLock: EyeAIWakeLock
 
 	override fun onCreate() {
+		Log.d(EyeAIApp.APP_LOG_TAG, "EyeAIRuntimeService onCreate")
 		super.onCreate()
 		runtime = (application as EyeAIApp).runtime
 		wakeLock = EyeAIWakeLock(this)
@@ -29,6 +30,7 @@ class EyeAIRuntimeService : LifecycleService() {
 	}
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+		Log.e(EyeAIApp.APP_LOG_TAG, "!!! EyeAIRuntimeService onStartCommand: action=${intent?.action} !!!")
 		// LifecycleService dispatches ON_START from its implementation of
 		// onStartCommand. CameraX will keep service-bound use cases inactive
 		// if this super call is skipped.
@@ -40,6 +42,9 @@ class EyeAIRuntimeService : LifecycleService() {
 		}
 
 		val serviceTypes = foregroundServiceTypes()
+		val inputSource = (application as EyeAIApp).settings.inputSource
+		Log.e(EyeAIApp.APP_LOG_TAG, "!!! EyeAI foreground service onStartCommand: source=$inputSource, types=$serviceTypes !!!")
+
 		if (serviceTypes == 0) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "EyeAI foreground service has no permitted active input")
 			stopSelfResult(startId)
@@ -49,9 +54,11 @@ class EyeAIRuntimeService : LifecycleService() {
 		try {
 			promoteToForeground(serviceTypes)
 
-			// CPU continuity is needed only while the local continuous source
+			// CPU continuity is needed only while a continuous source
 			// is active. FGS alone does not guarantee this after screen-off.
-			if (usesCameraInput() && hasCameraPermission()) wakeLock.acquire()
+			val active = hasActiveInput()
+			Log.d(EyeAIApp.APP_LOG_TAG, "EyeAI FGS promoted; acquiring wakeLock=$active")
+			if (active) wakeLock.acquire()
 			runtime.start(this)
 		} catch (error: SecurityException) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "EyeAI foreground service permission denied", error)
@@ -150,7 +157,9 @@ class EyeAIRuntimeService : LifecycleService() {
 
 	private fun foregroundServiceTypes(): Int {
 		var types = 0
-		if (usesCameraInput() && hasCameraPermission()) {
+		// We use CAMERA type for EyeAIVision and Media to ensure the process 
+		// gets high priority for continuous image analysis.
+		if ((usesCameraInput() && hasCameraPermission()) || usesEyeAIVisionInput() || usesMediaInput()) {
 			types = types or if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 				android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
 			} else {
@@ -163,11 +172,13 @@ class EyeAIRuntimeService : LifecycleService() {
 		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 			types
 		} else {
-			val hasActiveInput =
-				(usesCameraInput() && hasCameraPermission()) || ((application as EyeAIApp).settings.enableSpeechRecognition && hasRecordAudioPermission())
-			if (hasActiveInput) 1 else 0
+			if (hasActiveInput()) 1 else 0
 		}
 	}
+
+	private fun hasActiveInput(): Boolean = (usesCameraInput() && hasCameraPermission()) || 
+			usesEyeAIVisionInput() || usesMediaInput() ||
+			((application as EyeAIApp).settings.enableSpeechRecognition && hasRecordAudioPermission())
 
 	private fun hasCameraPermission(): Boolean = ContextCompat.checkSelfPermission(
 		this,
@@ -176,6 +187,12 @@ class EyeAIRuntimeService : LifecycleService() {
 
 	private fun usesCameraInput(): Boolean =
 		(application as EyeAIApp).settings.inputSource == getString(R.string.input_is_camera)
+
+	private fun usesEyeAIVisionInput(): Boolean =
+		(application as EyeAIApp).settings.inputSource == getString(R.string.input_is_eyeaivision)
+
+	private fun usesMediaInput(): Boolean =
+		(application as EyeAIApp).settings.inputSource == getString(R.string.input_is_media)
 
 	private fun hasRecordAudioPermission(): Boolean = ContextCompat.checkSelfPermission(
 		this,
@@ -213,6 +230,7 @@ class EyeAIRuntimeService : LifecycleService() {
 
 		/** Call only from a visible Activity/UI event. */
 		fun startFromVisible(context: Context): Boolean {
+			Log.d(EyeAIApp.APP_LOG_TAG, "EyeAIRuntimeService.startFromVisible called")
 			return try {
 				ContextCompat.startForegroundService(
 					context,

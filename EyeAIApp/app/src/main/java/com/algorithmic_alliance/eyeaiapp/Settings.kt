@@ -17,14 +17,12 @@ data class Settings(
 	var enableOCR: Boolean,
 	val inputSource: String?,
 	val mediaSource: String?,
-	val eyeAIVisionIP: String?,
 	var depthAudioPlayback: Boolean,
 	var objectAudioPlayback: Boolean,
 	var depthAudioFrequency: Int,
 	var depthAudioClickIncidence: Int,
 	var objectAudioPlaybackLanguage: String?,
-	var enableNpu: Boolean,
-	var jpegCompression: Int
+	var enableNpu: Boolean
 
 ) : Cloneable {
 	companion object {
@@ -97,20 +95,12 @@ data class Settings(
 				context.getString(R.string.media_path_setting), ""
 			)
 
-			val eyeAIVisionIP = sharedPreferences.getString(
-				context.getString(R.string.eyeaivision_ip_setting), ""
-			)
-
 			val depthAudioPlayback = sharedPreferences.getBoolean(
 				context.getString(R.string.depth_playback_setting), true
 			)
 
 			val objectAudioPlayback = sharedPreferences.getBoolean(
 				context.getString(R.string.object_playback_setting), true
-			)
-
-			val jpegCompression = sharedPreferences.getInt(
-				context.getString(R.string.jpeg_compression), 15
 			)
 
 			val depthAudioClickIncidence =
@@ -141,14 +131,12 @@ data class Settings(
 				enableOCR,
 				inputSource,
 				mediaSource,
-				eyeAIVisionIP,
 				depthAudioPlayback,
 				objectAudioPlayback,
 				depthAudioFrequency,
 				depthAudioClickIncidence,
 				objectAudioPlaybackLanguage,
-				enableNpu,
-				jpegCompression
+				enableNpu
 			)
 		}
 	}
@@ -165,14 +153,12 @@ data class Settings(
 		enableOCR,
 		inputSource,
 		mediaSource,
-		eyeAIVisionIP,
 		depthAudioPlayback,
 		objectAudioPlayback,
 		depthAudioFrequency,
 		depthAudioClickIncidence,
 		objectAudioPlaybackLanguage,
-		enableNpu,
-		jpegCompression
+		enableNpu
 	)
 
 	fun save(context: Context) {
@@ -202,7 +188,6 @@ data class Settings(
 			putBoolean(context.getString(R.string.depth_playback_setting), depthAudioPlayback)
 			putBoolean(context.getString(R.string.object_playback_setting), objectAudioPlayback)
 			putBoolean(context.getString(R.string.enable_npu_delegate_setting), enableNpu)
-			putInt(context.getString(R.string.jpeg_compression), jpegCompression)
 
 			// Frame Rate Limits
 			maxDepthFrameRate?.let {

@@ -248,19 +248,6 @@ object UIDataSource {
 				"settingsType" to "file",
 				"string" to R.string.media_path_setting,
 				"default" to ""
-			), mapOf(
-				"title" to R.string.setting_eyeaivision_ip_title,
-				"description" to R.string.setting_eyeaivision_ip_description,
-				"settingsType" to "textInput",
-				"string" to R.string.eyeaivision_ip_setting,
-				"default" to ""
-			), mapOf(
-				"title" to R.string.setting_jpeg_compression_title,
-				"description" to R.string.setting_jpeg_compression_description,
-				"settingsType" to "slider",
-				"settingsOption" to mapOf("min" to 1, "max" to 64),
-				"string" to R.string.jpeg_compression,
-				"default" to 15
 			)
 		), R.string.settings_category_developer to listOf(
 			mapOf(

@@ -25,6 +25,7 @@ import com.algorithmic_alliance.eyeaiapp.camera.FrameAnalysisUpdate
 import com.algorithmic_alliance.eyeaiapp.camera.FrameAnalyzer
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
+import com.algorithmic_alliance.eyeaiapp.connectivity.WebRtcClient
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.EyeAIState
@@ -75,6 +76,9 @@ data class DepthInferenceResult(
 class EyeAIRuntime internal constructor(
 	private val app: EyeAIApp,
 ) {
+	init {
+		Log.e(EyeAIApp.APP_LOG_TAG, "!!! EyeAIRuntime INITIALIZED !!!")
+	}
 	private val context: Context = app.applicationContext
 	private val lifecycleGate = RuntimeLifecycleGate()
 	private val stateLock = Any()
@@ -246,6 +250,7 @@ class EyeAIRuntime internal constructor(
 	/** Starts the active local source under the foreground service lifecycle. */
 	@RequiresApi(Build.VERSION_CODES.P)
 	fun start(owner: LifecycleOwner) {
+		Log.e(EyeAIApp.APP_LOG_TAG, "!!! EyeAIRuntime.start() called !!!")
 		synchronized(stateLock) {
 			check(!runtimeClosed) { "EyeAI runtime is closed" }
 		}
@@ -520,8 +525,11 @@ class EyeAIRuntime internal constructor(
 	}
 
 	private fun startVideoSource(owner: LifecycleOwner) {
-		when (val source = settings.inputSource) {
+		val source = settings.inputSource
+		Log.e(EyeAIApp.APP_LOG_TAG, "!!! EyeAIRuntime starting video source: $source !!!")
+		when (source) {
 			context.getString(R.string.input_is_camera) -> {
+				Log.e(EyeAIApp.APP_LOG_TAG, "!!! Using Camera source !!!")
 				cameraManager.start(
 					context = context,
 					owner = owner,
@@ -532,6 +540,7 @@ class EyeAIRuntime internal constructor(
 			}
 
 			context.getString(R.string.input_is_media) -> {
+				Log.e(EyeAIApp.APP_LOG_TAG, "!!! Using Media source !!!")
 				val mediaSource = settings.mediaSource
 				if (mediaSource.isNullOrEmpty()) {
 					_state.update { it.copy(lastError = "Keine Media-Quelle ausgewählt") }
@@ -545,19 +554,20 @@ class EyeAIRuntime internal constructor(
 			}
 
 			context.getString(R.string.input_is_eyeaivision) -> {
-				val ip = settings.eyeAIVisionIP
-				if (ip.isNullOrEmpty()) {
-					_state.update { it.copy(lastError = "Keine EyeAI-Vision-Adresse ausgewählt") }
-				} else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+				Log.e(EyeAIApp.APP_LOG_TAG, "!!! Using EyeAI-Vision source !!!")
+				if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
 					_state.update {
 						it.copy(lastError = "EyeAI-Vision-Eingabe benötigt Android 9 oder neuer")
 					}
 				} else {
-					startEyeAIVisionSource(ip)
+					startEyeAIVisionSource()
 				}
 			}
 
-			else -> _state.update { it.copy(lastError = "Unbekannte Eingabequelle: $source") }
+			else -> {
+				Log.e(EyeAIApp.APP_LOG_TAG, "!!! Unknown input source: $source !!!")
+				_state.update { it.copy(lastError = "Unbekannte Eingabequelle: $source") }
+			}
 		}
 	}
 
@@ -574,27 +584,33 @@ class EyeAIRuntime internal constructor(
 	}
 
 	@RequiresApi(Build.VERSION_CODES.P)
-	private fun startEyeAIVisionSource(ip: String) {
+	private fun startEyeAIVisionSource() {
 		val flow = MutableSharedFlow<Bitmap>(replay = 1, extraBufferCapacity = 1)
 		bitmapFlowValue = flow
+
+		// Support for WebRTC (WHEP)
+		val visionIp = "192.168.4.1"
+
 		eyeAIVisionValue = EyeAIVision(
-			ip = ip,
-			compression = settings.jpegCompression,
-			lifecycleScope = runtimeScope,
-			bitmapFlow = flow,
+			app,
+			ip = visionIp,
 			onSingleClick = { startListening("EYEAIVISION_BUTTON") },
 			onDoubleClick = { stopListening("EYEAIVISION_BUTTON") },
 			onConnectingSocket = {},
 			onSocketConnectionEstablished = {},
 			onSocketFailed = { error ->
+				Log.e(EyeAIApp.APP_LOG_TAG, "!!! Socket failed: ${error.message} !!!")
 				_state.update { it.copy(lastError = error.message) }
 			},
-			onMjpegError = { error ->
-				_state.update { it.copy(lastError = error.message) }
-			},
-			onConnectingHTTP = {},
-			onHTTPConnectionEstablished = {},
+			onWebrtcFrame = { bitmap: Bitmap ->
+				frameAnalyzer.recordSourceFrame(System.nanoTime())
+				val success = flow.tryEmit(bitmap)
+				if (!success) {
+					Log.v(EyeAIApp.APP_LOG_TAG, "WebRTC frame dropped (flow full)")
+				}
+			}
 		)
+
 		mediaPlayerValue = MediaPlayer(
 			context = context,
 			uri = null,
@@ -602,7 +618,10 @@ class EyeAIRuntime internal constructor(
 				_state.update { it.copy(mediaPreviewBitmap = bitmap) }
 			},
 			bitmapFlow = flow,
-			onFrame = { bitmap -> frameAnalyzer.submitBitmap(bitmap) },
+			onFrame = { bitmap -> 
+				Log.v(EyeAIApp.APP_LOG_TAG, "!!! MediaPlayer received frame, submitting to analyzer !!!")
+				frameAnalyzer.submitBitmap(bitmap) 
+			},
 		)
 	}
 

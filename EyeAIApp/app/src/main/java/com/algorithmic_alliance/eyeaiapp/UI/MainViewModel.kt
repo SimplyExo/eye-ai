@@ -171,6 +171,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onEvent(event: UIEvent) {
+        Log.i(LOG_TAG, "!!! MainViewModel onEvent: $event !!!")
         when (event) {
             UIEvent.VoskListeningChanged -> {
                 Log.d(LOG_TAG, "[MainViewModel] VoskListeningChanged")
@@ -213,7 +214,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 )
             }
 
-            is UIEvent.UIinitCamera -> initCamera(event.previewView)
+            is UIEvent.UIinitCamera -> {
+                Log.d(LOG_TAG, "[MainViewModel] UIinitCamera received")
+                initCamera(event.previewView)
+            }
             is UIEvent.UIDetachCameraPreview -> runtime.detachPreview(event.previewView)
             is UIEvent.OnUpdateActionStartedFromSettings -> _uiState.update {
                 it.copy(
@@ -290,6 +294,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun initCamera(previewView: androidx.camera.view.PreviewView?) {
+        val currentSource = app.settings.inputSource
+        Log.d(LOG_TAG, "[MainViewModel] initCamera: source=$currentSource")
         _uiState.update {
             it.copy(
                 detectedObjects = emptyArray(),
@@ -311,13 +317,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 R.string.input_is_eyeaivision
             )
         ) {
-            // These existing non-camera sources are still created by the
-            // runtime. If speech is enabled, the same FGS also has its
-            // microphone type; otherwise the current camera mode remains the
-            // only continuous FGS source in this task.
-            if (hasPermission(Manifest.permission.RECORD_AUDIO)) {
-                EyeAIRuntimeService.startFromVisible(app)
-            }
+            // Start the service for EyeAIVision or Media to ensure background continuity.
+            EyeAIRuntimeService.startFromVisible(app)
         }
     }
 

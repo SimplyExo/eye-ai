@@ -8,6 +8,7 @@ import android.util.Log
 import android.util.Size
 import androidx.annotation.RequiresApi
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
+import com.algorithmic_alliance.eyeaiapp.connectivity.WebRtcClient
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
@@ -140,6 +141,7 @@ class EyeAIApp : Application() {
 	}
 
 	override fun onCreate() {
+		Log.e(APP_LOG_TAG, "!!! EYEAI APP ONCREATE !!!")
 		super.onCreate()
 		uniffi.NativeLib.initAndroidLogging()
 		settings = Settings.load(this)

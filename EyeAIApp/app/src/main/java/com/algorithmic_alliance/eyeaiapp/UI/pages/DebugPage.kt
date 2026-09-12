@@ -95,6 +95,16 @@ fun DebugPage(
 		}
 		onEvent(UIEvent.UpdateVoskStatusText)
 		onEvent(UIEvent.UpdateSpeechStatusText)
+		
+		// Ensure runtime starts even for non-local-camera sources
+		val source = sharedPreferences.getString(
+			context.getString(R.string.input_source_setting),
+			context.getString(R.string.input_is_camera)
+		)
+		if (source != context.getString(R.string.input_is_camera)) {
+			Log.d(LOG_TAG, "[DebugPage] Triggering UIinitCamera for non-camera source: $source")
+			onEvent(UIEvent.UIinitCamera(null))
+		}
 	}
 
 	key(uiState.reloadDebugPageKey) {
@@ -184,10 +194,13 @@ fun DebugPage(
 										false
 									)
 								) CameraPreview(onEvent = onEvent)
-								if (sharedPreferences.getString(
+								if ((sharedPreferences.getString(
 										stringResource(R.string.input_source_setting),
 										stringResource(R.string.input_is_camera)
-									) == stringResource(R.string.input_is_media) && !sharedPreferences.getBoolean(
+									) == stringResource(R.string.input_is_media) || sharedPreferences.getString(
+										stringResource(R.string.input_source_setting),
+										stringResource(R.string.input_is_camera)
+									) == stringResource(R.string.input_is_eyeaivision)) && !sharedPreferences.getBoolean(
 										stringResource(R.string.show_debug_input_bitmap_setting),
 										false
 									)
@@ -195,7 +208,11 @@ fun DebugPage(
 									MediaPreview(
 										viewModel = viewModel, onEvent = onEvent
 									)
-									if (sharedPreferences.getString(
+									val inputSource = sharedPreferences.getString(
+										stringResource(R.string.input_source_setting),
+										stringResource(R.string.input_is_camera)
+									)
+									if (inputSource == stringResource(R.string.input_is_media) && sharedPreferences.getString(
 											stringResource(R.string.media_path_setting), ""
 										) == ""
 									) Column(
@@ -415,8 +432,10 @@ fun MediaPreview(
 			Image(
 				bitmap = it.asImageBitmap(),
 				contentDescription = "Media preview",
-				modifier = Modifier.clip(PremiumShapes.small),
-				contentScale = ContentScale.Fit
+				modifier = Modifier
+					.fillMaxSize()
+					.clip(PremiumShapes.small),
+				contentScale = ContentScale.Crop
 			)
 		}
 	}

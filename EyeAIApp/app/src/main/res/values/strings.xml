@@ -10,7 +10,6 @@
 	<string name="input_is_camera">Kamera</string>
 	<string name="input_is_media" translatable="false">Media</string>
 	<string name="media_path_setting" translatable="false">media_path_setting</string>
-	<string name="eyeaivision_ip_setting" translatable="false">eyeaivision_ip_setting</string>
 	<string name="input_is_eyeaivision" translatable="false">EyeAI-Vision</string>
 	<string name="enable_object_detection_setting" translatable="false">enable_object_detection</string>
 	<string name="version_info_settings" translatable="false">version_info</string>
@@ -33,7 +32,6 @@
 	<string name="enable_object_detection_frame_rate_limit_setting" translatable="false">enable_object_detection_frame_rate_limit_setting</string>
 	<string name="max_object_detection_frame_rate_setting" translatable="false">max_object_detection_frame_rate_setting</string>
 	<string name="enable_npu_delegate_setting" translatable="false">Use NPU (experimental)</string>
-	<string name="jpeg_compression" translatable="false">jpeg_compression</string>
 	<string name="debug_page_activated" translatable="false">debug_page_activated</string>
 	<string name="app_tutorial_completed" translatable="false">app_tutorial_completed</string>
 
@@ -186,11 +184,6 @@
 	<string name="setting_input_source_description">Die Quelle der Bilder, die von der KI analysiert werden.</string>
 	<string name="setting_select_media_file_title">Mediendatei auswählen</string>
 	<string name="setting_select_media_file_description">Die Mediendatei, die als Eingabe verwendet wird.</string>
-	<string name="setting_eyeaivision_ip_title">EyeAI-Vision-IP-Adresse</string>
-	<string name="setting_eyeaivision_ip_description">Die IP-Adresse des EyeAI-Vision-Geräts, von dem Bilder empfangen werden.</string>
-	<string name="setting_jpeg_compression_title">JPEG-Komprimierung (nur EyeAI-Vision)</string>
-	<string name="setting_jpeg_compression_description">Die Komprimierungsstufe der von EyeAI-Vision empfangenen Bilder. Eine höhere Komprimierung reduziert die Bandbreite, verringert aber die Bildqualität.</string>
-
 	<!-- Developer Settings -->
 	<string name="setting_show_profiling_information_title">Profiling-Informationen anzeigen</string>
 	<string name="setting_show_profiling_information_description">Zeigt Profiling-Informationen für die aktuell aktiven KI-Modelle an.</string>
