@@ -9,114 +9,154 @@ import android.util.AttributeSet
 import android.util.Size
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
+import org.json.JSONObject
 import uniffi.NativeLib.UniffiDetectedObject
 
 class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
-	private var results = arrayOf<UniffiDetectedObject>()
-	private var cameraResolution = Size(720, 1280)
-	private var boxPaint = Paint()
-	private var textBackgroundPaint = Paint()
-	private var textPaint = Paint()
+    private var results = arrayOf<UniffiDetectedObject>()
+    private var cameraResolution = Size(720, 1280)
+    private var boxPaint = Paint()
+    private var textBackgroundPaint = Paint()
+    private var textPaint = Paint()
+    private var language = context?.getString(R.string.language_is_german)
 
-	private var bounds = Rect()
+    private var bounds = Rect()
 
-	init {
-		initPaints()
-	}
+    private lateinit var clsNameGermanMap: Map<String, String>
 
-	fun clear() {
-		textPaint.reset()
-		textBackgroundPaint.reset()
-		boxPaint.reset()
-		invalidate()
-		initPaints()
-	}
+    fun initClsNameTranslations(context: Context) {
+        try {
+            val json = context.assets
+                .open("coco_name_translation.json")
+                .bufferedReader()
+                .use { it.readText() }
 
-	fun reset() {
-		results = emptyArray()
-		invalidate()
-	}
+            val jsonObject = JSONObject(json)
 
-	private fun initPaints() {
-		textBackgroundPaint.color = Color.BLACK
-		textBackgroundPaint.style = Paint.Style.FILL
-		textBackgroundPaint.textSize = 50f
+            clsNameGermanMap = jsonObject.keys().asSequence().associateWith { key ->
+                jsonObject.getString(key)
+            }
+        }catch (_: Exception){
+            clsNameGermanMap = emptyMap()
+        }
+    }
 
-		textPaint.color = Color.WHITE
-		textPaint.style = Paint.Style.FILL
-		textPaint.textSize = 50f
+    init {
+        initPaints()
+        initClsNameTranslations(context as Context)
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val language = sharedPreferences.getString(context.getString(R.string.object_playback_language), context.getString(R.string.language_is_german))
+        setLanguage(language as String)
+    }
 
-		boxPaint.color = ContextCompat.getColor(context!!, R.color.purple_500)
-		boxPaint.strokeWidth = 8F
-		boxPaint.style = Paint.Style.STROKE
-	}
+    fun clear() {
+        textPaint.reset()
+        textBackgroundPaint.reset()
+        boxPaint.reset()
+        invalidate()
+        initPaints()
+    }
 
-	override fun draw(canvas: Canvas) {
-		super.draw(canvas)
+    fun reset() {
+        results = emptyArray()
+        invalidate()
+    }
 
-		val viewAspectRatio = width.toFloat() / height.toFloat()
-		val cameraAspectRatio = cameraResolution.width.toFloat() / cameraResolution.height.toFloat()
+    private fun initPaints() {
+        textBackgroundPaint.color = Color.BLACK
+        textBackgroundPaint.style = Paint.Style.FILL
+        textBackgroundPaint.textSize = 50f
 
-		val cameraPreviewImageSize = if (viewAspectRatio > cameraAspectRatio) {
-			Size(
-				(height.toFloat() * cameraAspectRatio).toInt(), height
-			)
-		} else {
-			Size(
-				width, (width.toFloat() / cameraAspectRatio).toInt()
-			)
-		}
+        textPaint.color = Color.WHITE
+        textPaint.style = Paint.Style.FILL
+        textPaint.textSize = 50f
 
-		val xOffset = if (cameraPreviewImageSize.width < width) {
-			(width - cameraPreviewImageSize.width) / 2
-		} else {
-			0
-		}
-		val yOffset = if (cameraPreviewImageSize.height < height) {
-			(height - cameraPreviewImageSize.height) / 2
-		} else {
-			0
-		}
+        boxPaint.color = ContextCompat.getColor(context!!, R.color.purple_500)
+        boxPaint.strokeWidth = 8F
+        boxPaint.style = Paint.Style.STROKE
+    }
 
-		results.forEach {
-			val left = it.x1 * cameraPreviewImageSize.width + xOffset
-			val top = it.y1 * cameraPreviewImageSize.height + yOffset
-			val right = it.x2 * cameraPreviewImageSize.width + xOffset
-			val bottom = it.y2 * cameraPreviewImageSize.height + yOffset
+    override fun draw(canvas: Canvas) {
+        super.draw(canvas)
+        val viewAspectRatio = width.toFloat() / height.toFloat()
+        val cameraAspectRatio = cameraResolution.width.toFloat() / cameraResolution.height.toFloat()
 
-			canvas.drawRect(left, top, right, bottom, boxPaint)
-			val drawableText = "${it.clsName} - ${it.trackingId}"
+        val cameraPreviewImageSize = if (viewAspectRatio > cameraAspectRatio) {
+            Size(
+                (height.toFloat() * cameraAspectRatio).toInt(), height
+            )
+        } else {
+            Size(
+                width, (width.toFloat() / cameraAspectRatio).toInt()
+            )
+        }
 
-			textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
-			val textWidth = bounds.width()
-			val textHeight = bounds.height()
-			canvas.drawRect(
-				left,
-				top,
-				left + textWidth + BOUNDING_RECT_TEXT_PADDING,
-				top + textHeight + BOUNDING_RECT_TEXT_PADDING,
-				textBackgroundPaint
-			)
-			canvas.drawText(drawableText, left, top + bounds.height(), textPaint)
-		}
-	}
+        val xOffset = if (cameraPreviewImageSize.width < width) {
+            (width - cameraPreviewImageSize.width) / 2
+        } else {
+            0
+        }
+        val yOffset = if (cameraPreviewImageSize.height < height) {
+            (height - cameraPreviewImageSize.height) / 2
+        } else {
+            0
+        }
 
-	fun setResults(boundingBoxes: Array<UniffiDetectedObject>) {
-		val changed = !results.contentEquals(boundingBoxes)
-		results = boundingBoxes
-		if (changed) invalidate()
-	}
+        results.forEach {
+            val left = it.x1 * cameraPreviewImageSize.width + xOffset
+            val top = it.y1 * cameraPreviewImageSize.height + yOffset
+            val right = it.x2 * cameraPreviewImageSize.width + xOffset
+            val bottom = it.y2 * cameraPreviewImageSize.height + yOffset
 
-	fun setCameraResolution(newCameraResolution: Size) {
-		val changed = cameraResolution != newCameraResolution
-		cameraResolution = newCameraResolution
+            canvas.drawRect(left, top, right, bottom, boxPaint)
+            val drawableText = if(language == context.getString(R.string.language_is_german) && clsNameGermanMap != emptyMap<String, String>())
+                "${resolveClsNameGerman(it.clsName)} - ${it.trackingId}"
+            else{
+                "${it.clsName} - ${it.trackingId}"
+            }
 
-		if (changed) invalidate()
-	}
+            textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
+            val textWidth = bounds.width()
+            val textHeight = bounds.height()
+            canvas.drawRect(
+                left,
+                top,
+                left + textWidth + BOUNDING_RECT_TEXT_PADDING,
+                top + textHeight + BOUNDING_RECT_TEXT_PADDING,
+                textBackgroundPaint
+            )
+            canvas.drawText(drawableText, left, top + bounds.height(), textPaint)
+        }
+    }
 
-	companion object {
-		private const val BOUNDING_RECT_TEXT_PADDING = 8
-	}
+    fun setResults(boundingBoxes: Array<UniffiDetectedObject>) {
+        val changed = !results.contentEquals(boundingBoxes)
+        results = boundingBoxes
+        if (changed) invalidate()
+    }
+
+    fun setCameraResolution(newCameraResolution: Size) {
+        val changed = cameraResolution != newCameraResolution
+        cameraResolution = newCameraResolution
+
+        if (changed) invalidate()
+    }
+
+    fun setLanguage(newLanguage: String) {
+        val changed = newLanguage != language
+        language = newLanguage
+
+        if (changed) invalidate()
+    }
+
+    private fun resolveClsNameGerman(englishClsName: String): String{
+        return clsNameGermanMap[englishClsName] ?: englishClsName
+    }
+
+    companion object {
+        private const val BOUNDING_RECT_TEXT_PADDING = 8
+    }
 }

@@ -313,8 +313,6 @@ fun DebugPage(
 								)
 							}
 						}
-
-
 					}
 				})
 		}
@@ -328,6 +326,7 @@ fun ObjectDetectionOverlay(
 	onOverlayCreated: (OverlayViewOD) -> Unit = {},
 ) {
 	val uiState by viewModel.objectDetectionOverlayUIState.collectAsStateWithLifecycle()
+
 	AndroidView(
 		modifier = modifier,
 		factory = { context -> OverlayViewOD(context, null).also(onOverlayCreated) },

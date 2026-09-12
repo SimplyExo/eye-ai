@@ -12,6 +12,7 @@ import androidx.core.os.LocaleListCompat
 import com.algorithmic_alliance.eyeaiapp.UI.EyeAIAppUI
 import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntimeService
+import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
 import com.example.compose.AppTheme
 
 /**
@@ -31,7 +32,6 @@ class MainActivity : AppCompatActivity() {
 				LocaleListCompat.forLanguageTags("de")
 			)
 		}
-
 		window.isNavigationBarContrastEnforced = false
 		setContent {
 			AppTheme {
