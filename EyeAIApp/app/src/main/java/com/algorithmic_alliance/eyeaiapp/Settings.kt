@@ -14,6 +14,8 @@ data class Settings(
 	var nlpModel: String,
 	var enableObjectDetection: Boolean,
 	var maxObjectDetectionFrameRate: Int?,
+	var enableSegmentation: Boolean,
+	var maxSegmentationFrameRate: Int?,
 	var enableOCR: Boolean,
 	val inputSource: String?,
 	val mediaSource: String?,
@@ -83,6 +85,23 @@ data class Settings(
 				null
 			}
 
+			val enableSegmentation = sharedPreferences.getBoolean(
+				context.getString(R.string.enable_segmentation_setting), true
+			)
+
+			val segmentationFrameRateLimitEnabled = sharedPreferences.getBoolean(
+				context.getString(R.string.enable_segmentation_frame_rate_limit_setting), true
+			)
+
+			val maxSegmentationFrameRate = if (segmentationFrameRateLimitEnabled) {
+				sharedPreferences.getInt(
+					context.getString(R.string.max_segmentation_frame_rate_setting),
+					DEFAULT_FRAME_RATE_LIMIT
+				)
+			} else {
+				null
+			}
+
 			val enableOCR = sharedPreferences.getBoolean(
 				context.getString(R.string.enable_ocr_setting), true
 			)
@@ -137,6 +156,8 @@ data class Settings(
 				nlpModel,
 				enableObjectDetection,
 				maxObjectDetectionFrameRate,
+				enableSegmentation,
+				maxSegmentationFrameRate,
 				enableOCR,
 				inputSource,
 				mediaSource,
@@ -161,6 +182,8 @@ data class Settings(
 		nlpModel,
 		enableObjectDetection,
 		maxObjectDetectionFrameRate,
+		enableSegmentation,
+		maxSegmentationFrameRate,
 		enableOCR,
 		inputSource,
 		mediaSource,
@@ -197,6 +220,9 @@ data class Settings(
 			putBoolean(
 				context.getString(R.string.enable_object_detection_setting), enableObjectDetection
 			)
+			putBoolean(
+				context.getString(R.string.enable_segmentation_setting), enableSegmentation
+			)
 			putBoolean(context.getString(R.string.enable_ocr_setting), enableOCR)
 			putBoolean(context.getString(R.string.depth_playback_setting), depthAudioPlayback)
 			putBoolean(context.getString(R.string.object_playback_setting), objectAudioPlayback)
@@ -221,6 +247,15 @@ data class Settings(
 				context.getString(R.string.enable_object_detection_frame_rate_limit_setting), false
 			)
 
+			maxSegmentationFrameRate?.let {
+				putBoolean(
+					context.getString(R.string.enable_segmentation_frame_rate_limit_setting),
+					true
+				)
+				putInt(context.getString(R.string.max_segmentation_frame_rate_setting), it)
+			} ?: putBoolean(
+				context.getString(R.string.enable_segmentation_frame_rate_limit_setting), false
+			)
 		}
 	}
 }

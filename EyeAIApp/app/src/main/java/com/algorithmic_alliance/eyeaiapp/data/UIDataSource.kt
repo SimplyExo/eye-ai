@@ -209,7 +209,7 @@ object UIDataSource {
 			)
 		), R.string.settings_category_object_detection to listOf(
 			mapOf(
-				"title" to R.string.setting_enabled_title,
+				"title" to R.string.setting_object_detection_enabled_title,
 				"description" to R.string.setting_object_detection_description,
 				"settingsType" to "checkbox",
 				"string" to R.string.enable_object_detection_setting,
@@ -226,6 +226,27 @@ object UIDataSource {
 				"settingsType" to "slider",
 				"settingsOption" to mapOf("min" to 5, "max" to 120),
 				"string" to R.string.max_object_detection_frame_rate_setting,
+				"default" to Settings.DEFAULT_FRAME_RATE_LIMIT
+			)
+		), R.string.settings_category_segmentation to listOf(
+			mapOf(
+				"title" to R.string.setting_segmentation_enabled_title,
+				"description" to R.string.setting_segmentation_description,
+				"settingsType" to "checkbox",
+				"string" to R.string.enable_segmentation_setting,
+				"default" to true
+			), mapOf(
+				"title" to R.string.setting_enable_framerate_limiter_title,
+				"description" to R.string.setting_enable_segmentation_framerate_limiter_description,
+				"settingsType" to "checkbox",
+				"string" to R.string.enable_segmentation_frame_rate_limit_setting,
+				"default" to true
+			), mapOf(
+				"title" to R.string.setting_framerate_limit_title,
+				"description" to R.string.setting_segmentation_framerate_limit_description,
+				"settingsType" to "slider",
+				"settingsOption" to mapOf("min" to 1, "max" to 120),
+				"string" to R.string.max_segmentation_frame_rate_setting,
 				"default" to Settings.DEFAULT_FRAME_RATE_LIMIT
 			)
 		), R.string.settings_category_input_source to listOf(

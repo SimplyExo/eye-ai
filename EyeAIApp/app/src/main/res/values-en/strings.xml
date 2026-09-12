@@ -94,6 +94,7 @@
 	<string name="settings_category_audio_playback">Audio playback</string>
 	<string name="settings_category_device_manager">Device manager</string>
 	<string name="settings_category_object_detection">Object detection</string>
+	<string name="settings_category_segmentation">Segmentation</string>
 	<string name="settings_category_input_source">Input source</string>
 	<string name="settings_category_developer">Developer options</string>
 	<string name="settings_category_build_info">Build information</string>
@@ -134,10 +135,16 @@
 	<string name="setting_change_default_devices_description">"Current default devices: "</string>
 
 	<!-- Object Detection -->
-	<string name="setting_enabled_title">Enable object detection</string>
+	<string name="setting_object_detection_enabled_title">Enable object detection</string>
 	<string name="setting_object_detection_description">If enabled, the AI will detect nearby objects.</string>
 	<string name="setting_enable_object_framerate_limiter_description">Limits the frame rate of object detection to free up resources for other tasks.</string>
 	<string name="setting_object_framerate_limit_description">The maximum number of frames per second processed by the object detection.</string>
+
+	<!-- Segmentation -->
+	<string name="setting_segmentation_enabled_title">Enable segmentation</string>
+	<string name="setting_segmentation_description">If enabled, the AI will filter out unimportant areas like the ground.</string>
+	<string name="setting_enable_segmentation_framerate_limiter_description">Limits the frame rate of segmentation to free up resources for other tasks.</string>
+	<string name="setting_segmentation_framerate_limit_description">The maximum number of frames per second processed by the segmentation.</string>
 
 	<!-- Input Source -->
 	<string name="setting_input_source_title">Input source</string>

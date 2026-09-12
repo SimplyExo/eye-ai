@@ -56,6 +56,11 @@ pub use yolo_model::{
 	BoundingBox, CreateYoloModelInfo, DetectedObject, YoloModel, YoloModelNpuConfig,
 };
 
+mod segmentation_model;
+pub use segmentation_model::{
+	CreateSegmentationModelInfo, SegmentationModel, SegmentationModelNpuConfig,
+};
+
 mod object_tracker;
 pub use object_tracker::{ObjectTracker, TrackedObject};
 

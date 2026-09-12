@@ -130,15 +130,15 @@ impl<'a> YoloModel<'a> {
 			"new()"
 		);
 
-		let npu_config = create_info.npu_config.map(|depth_npu_config| NpuConfig {
-			skel_library_dir: depth_npu_config.skel_library_dir,
+		let npu_config = create_info.npu_config.map(|yolo_npu_config| NpuConfig {
+			skel_library_dir: yolo_npu_config.skel_library_dir,
 			config_type: NpuConfigType::Yolo,
 		});
 
 		let runtime = TfLiteRuntime::new(CreateTfLiteRuntimeInfo {
 			model_data: create_info.model_data,
 			model_input_format: FloatTensorFormat::YoloImageRgb,
-			model_output_format: FloatTensorFormat::YoloOutput,
+			model_output_format: FloatTensorFormat::YoloObjectDetectionOutput,
 			delegate_serialization_dir: create_info.delegate_serialization_dir,
 			model_token: create_info.model_token,
 			npu_config,
@@ -189,7 +189,7 @@ impl<'a> YoloModel<'a> {
 		self.runtime
 			.run_inference(input_tensor, &mut output_tensor)?;
 
-		check_float_tensor_format!(&output_tensor, FloatTensorFormat::YoloOutput);
+		check_float_tensor_format!(&output_tensor, FloatTensorFormat::YoloObjectDetectionOutput);
 
 		Ok(best_objects(
 			output_tensor.data(),

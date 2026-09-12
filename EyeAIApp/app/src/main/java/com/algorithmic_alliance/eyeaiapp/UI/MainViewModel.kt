@@ -128,6 +128,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 		viewModelScope, SharingStarted.WhileSubscribed(5000), ObjectDetectionOverlayUIState()
 	)
 
+	val segmentationOverlayUIState: StateFlow<SegmentationOverlayUIState> = _uiState.map {
+		SegmentationOverlayUIState(
+			debugSegmentationBitmap = it.debugSegmentationBitmap
+		)
+	}.distinctUntilChanged().stateIn(
+		viewModelScope, SharingStarted.WhileSubscribed(5000), SegmentationOverlayUIState()
+	)
+
 	val depthOverlayUIState: StateFlow<DepthOverlayUIState> = _uiState.map {
 		DepthOverlayUIState(
 			depthPreviewBitmap = it.depthPreviewBitmap, performanceText = it.performanceText
@@ -160,6 +168,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 						mediaPreviewBitmap = runtimeState.mediaPreviewBitmap,
 						performanceText = runtimeState.performanceText,
 						detectedObjects = runtimeState.detectedObjects,
+						debugSegmentationBitmap = runtimeState.debugSegmentationBitmap,
 						cameraResolution = runtimeState.cameraResolution,
 						ocrResults = runtimeState.ocrResults,
 					)

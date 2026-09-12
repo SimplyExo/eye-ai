@@ -17,6 +17,7 @@ data class EyeAIRuntimeState(
 	val speechResponseText: String = "",
 	val depthPreviewBitmap: Bitmap? = null,
 	val debugInputPreviewBitmap: Bitmap? = null,
+	val debugSegmentationBitmap: Bitmap? = null,
 	val mediaPreviewBitmap: Bitmap? = null,
 	val performanceText: String = "",
 	val detectedObjects: Array<UniffiDetectedObject> = emptyArray(),
@@ -28,6 +29,7 @@ data class EyeAIRuntimeState(
 internal fun EyeAIRuntimeState.withAnalysis(update: FrameAnalysisUpdate): EyeAIRuntimeState = copy(
 	depthPreviewBitmap = update.depthPreviewBitmap ?: depthPreviewBitmap,
 	debugInputPreviewBitmap = update.debugInputBitmap ?: debugInputPreviewBitmap,
+	debugSegmentationBitmap = update.debugSegmentationBitmap ?: debugSegmentationBitmap,
 	performanceText = update.performanceText ?: performanceText,
 	detectedObjects = update.detectedObjects ?: detectedObjects,
 	cameraResolution = update.frameSize ?: cameraResolution,

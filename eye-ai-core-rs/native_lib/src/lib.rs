@@ -2,9 +2,10 @@
 
 use arc_swap::ArcSwap;
 use eye_ai_core_rs::{
-	BoundingBox, CreateDepthModelInfo, CreateYoloModelInfo, DepthModelNpuConfig, DetectedObject,
-	FloatTensorBuffer, FloatTensorFormat, FormattedProfilingFrame, MetricDepthModel, ObjectTracker,
-	ProfilingFrame, TrackedObject, YoloModel, YoloModelNpuConfig,
+	BoundingBox, CreateDepthModelInfo, CreateSegmentationModelInfo, CreateYoloModelInfo,
+	DepthModelNpuConfig, DetectedObject, FloatTensorBuffer, FloatTensorFormat,
+	FormattedProfilingFrame, MetricDepthModel, ObjectTracker, ProfilingFrame, SegmentationModel,
+	SegmentationModelNpuConfig, TrackedObject, YoloModel, YoloModelNpuConfig,
 	audio::{
 		SpatialAudio, SpatialAudioContent, SpatialAudioSettings, read_audio_file,
 		read_object_label_data,
@@ -28,6 +29,8 @@ static METRIC_DEPTH_MODEL: OnceLock<RwLock<MetricDepthModel>> = OnceLock::new();
 static YOLO_MODEL: OnceLock<RwLock<YoloModel>> = OnceLock::new();
 static OBJECT_TRACKER: OnceLock<RwLock<ObjectTracker>> = OnceLock::new();
 
+static SEGMENTATION_MODEL: OnceLock<RwLock<SegmentationModel>> = OnceLock::new();
+
 static DEPTH_PROFILING_FRAME: LazyLock<ProfilingFrame> =
 	LazyLock::new(|| ProfilingFrame::new("Depth"));
 static LAST_FORMATTED_DEPTH_PROFILING_INFO: LazyLock<ArcSwap<String>> =
@@ -36,6 +39,11 @@ static LAST_FORMATTED_DEPTH_PROFILING_INFO: LazyLock<ArcSwap<String>> =
 static OBJECT_PROFILING_FRAME: LazyLock<ProfilingFrame> =
 	LazyLock::new(|| ProfilingFrame::new("Object"));
 static LAST_FORMATTED_OBJECT_PROFILING_INFO: LazyLock<ArcSwap<String>> =
+	LazyLock::new(|| ArcSwap::new(Arc::new(String::new())));
+
+static SEGMENTATION_PROFILING_FRAME: LazyLock<ProfilingFrame> =
+	LazyLock::new(|| ProfilingFrame::new("Segmentation"));
+static LAST_FORMATTED_SEGMENTATION_PROFILING_INFO: LazyLock<ArcSwap<String>> =
 	LazyLock::new(|| ArcSwap::new(Arc::new(String::new())));
 
 static SPATIAL_AUDIO: LazyLock<RwLock<Option<SpatialAudio>>> = LazyLock::new(|| RwLock::new(None));
@@ -69,6 +77,17 @@ fn wait_for_yolo_model<R>(f: impl FnOnce(&mut YoloModel) -> R) -> R {
 		profile_scope!(OBJECT_PROFILING_FRAME, "wait_for_yolo_model");
 
 		YOLO_MODEL.wait().write().unwrap()
+	};
+
+	f(&mut model)
+}
+
+/// Waits for the RwLock to be free and also waits for the Option to be Some ^= "waits for the model to be loaded"
+fn wait_for_segmentation_model<R>(f: impl FnOnce(&mut SegmentationModel) -> R) -> R {
+	let mut model = {
+		profile_scope!(SEGMENTATION_PROFILING_FRAME, "wait_for_segmentation_model");
+
+		SEGMENTATION_MODEL.wait().write().unwrap()
 	};
 
 	f(&mut model)
@@ -440,6 +459,105 @@ pub fn getYoloOutputShape() -> Vec<i32> {
 }
 
 #[uniffi::export]
+#[profile_function("SEGMENTATION_PROFILING_FRAME")]
+pub fn initSegmentationRuntime(
+	model_name: String,
+	model: Vec<u8>,
+	delegate_serialization_dir: String,
+	model_token: String,
+	classes: Vec<String>,
+	enable_npu: bool,
+	skel_directory: String,
+) {
+	debug!(
+		model_name = ?model_name,
+		enable_npu = ?enable_npu,
+		skel_directory = ?skel_directory,
+		"initSegmentatationRuntime"
+	);
+
+	let segmentation_model = SegmentationModel::new(
+		CreateSegmentationModelInfo {
+			model_name,
+			classes: classes.clone(),
+			model_data: model,
+			model_token,
+			delegate_serialization_dir,
+			npu_config: if enable_npu {
+				Some(SegmentationModelNpuConfig {
+					skel_library_dir: CString::new(skel_directory).unwrap(),
+				})
+			} else {
+				None
+			},
+		},
+		&SEGMENTATION_PROFILING_FRAME,
+	)
+	.expect("failed to create segmentation model");
+
+	debug!("created segmentation model");
+
+	SEGMENTATION_MODEL
+		.set(RwLock::new(segmentation_model))
+		.expect("already set SEGMENTATION_MODEL");
+}
+
+#[uniffi::export]
+#[profile_function("SEGMENTATION_PROFILING_FRAME")]
+pub fn runSegmentationOperation(
+	mut input: UniffiFloatBufferWrapper,
+	mut output: UniffiIntBufferWrapper,
+) {
+	wait_for_segmentation_model(|segmentation_model| {
+		if let Err(e) = segmentation_model.run(
+			&mut FloatTensorBuffer::new(input.as_slice_mut(), FloatTensorFormat::ImageRgb255),
+			output.as_slice_mut(),
+		) {
+			error!(
+				"Failed to run segmentation model: {}, not modifing output",
+				e
+			);
+		}
+	});
+}
+
+#[uniffi::export]
+#[profile_function("SEGMENTATION_PROFILING_FRAME")]
+pub fn getSegmentationInputShape() -> Vec<i32> {
+	wait_for_segmentation_model(|segmentation_model| segmentation_model.get_input_shape().to_vec())
+}
+
+#[uniffi::export]
+#[profile_function("SEGMENTATION_PROFILING_FRAME")]
+pub fn getSegmentationOutputShape() -> Vec<i32> {
+	wait_for_segmentation_model(|segmentation_model| segmentation_model.get_output_shape().to_vec())
+}
+
+#[uniffi::export]
+#[profile_function("DEPTH_PROFILING_FRAME")]
+pub fn segmentationColormap(
+	mut segmentation_buffer: UniffiIntBufferWrapper,
+	mut colormapped_pixels: UniffiIntBufferWrapper,
+) {
+	let segmentation_buffer = segmentation_buffer.as_slice_mut();
+	let colormapped_pixels = colormapped_pixels.as_slice_mut();
+	let num_classes =
+		wait_for_segmentation_model(|segmentaiton_model| segmentaiton_model.get_classes().len());
+
+	if segmentation_buffer.len() == colormapped_pixels.len() {
+		for (i, class_index) in segmentation_buffer.iter().enumerate() {
+			colormapped_pixels[i] = inferno_colormap(*class_index as f32 / num_classes as f32);
+		}
+	} else {
+		error!(
+			"depth_buffer and colormapped_pixels have different sizes: {} and {} (not changing colormapped_pixels!)",
+			segmentation_buffer.len(),
+			colormapped_pixels.len()
+		);
+	}
+}
+
+#[uniffi::export]
 pub fn newDepthFrame() {
 	if let Some(new_formatted_info) = DEPTH_PROFILING_FRAME.finish() {
 		LAST_FORMATTED_DEPTH_PROFILING_INFO.store(Arc::new(new_formatted_info));
@@ -459,6 +577,19 @@ pub fn newObjectFrame() {
 #[uniffi::export]
 pub fn formattedObjectFrame() -> String {
 	LAST_FORMATTED_OBJECT_PROFILING_INFO.load().to_string()
+}
+
+#[uniffi::export]
+pub fn newSegmentationFrame() {
+	if let Some(new_formatted_info) = SEGMENTATION_PROFILING_FRAME.finish() {
+		LAST_FORMATTED_SEGMENTATION_PROFILING_INFO.store(Arc::new(new_formatted_info));
+	}
+}
+#[uniffi::export]
+pub fn formattedSegmentationFrame() -> String {
+	LAST_FORMATTED_SEGMENTATION_PROFILING_INFO
+		.load()
+		.to_string()
 }
 
 #[uniffi::export]

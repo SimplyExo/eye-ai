@@ -74,10 +74,14 @@ data class DepthOverlayUIState(
 )
 
 @Immutable
+data class SegmentationOverlayUIState(
+	val debugSegmentationBitmap: Bitmap? = null
+)
+
+@Immutable
 data class UIDialogsUIState(
 	val appMissingSelectedMediaSource: Boolean = false,
 	val appMissingVoskPermission: Boolean = false,
 	val appMissingCameraPermission: Boolean = false,
 	val appMissingVisionPermission: Boolean = false,
 )
-

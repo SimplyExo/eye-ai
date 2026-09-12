@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import android.util.Size
 import androidx.annotation.RequiresApi
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
@@ -37,6 +38,8 @@ import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
+import com.algorithmic_alliance.eyeaiapp.segmentation.SegmentationModel
+import com.algorithmic_alliance.eyeaiapp.segmentation.SegmentationModelInfo
 import com.algorithmic_alliance.eyeaiapp.settingsparser.LocalSettingsParser
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
@@ -64,6 +67,13 @@ import androidx.core.net.toUri
 /** Output of a depth inference while the model read lock is held. */
 data class DepthInferenceResult(
 	val prediction: NativeLib.NativeFloatBuffer,
+	val inputDim: android.util.Size,
+	val modelName: String,
+)
+
+/** Output of a depth inference while the model read lock is held. */
+data class SegmentationInferenceResult(
+	val prediction: NativeLib.NativeIntBuffer,
 	val inputDim: android.util.Size,
 	val modelName: String,
 )
@@ -134,6 +144,8 @@ class EyeAIRuntime internal constructor(
 	val speechThreadExecutorForStateMachine = speechThreadExecutor
 	val voskUserStart = AtomicBoolean(false)
 	val yoloModel = YoloModel(YoloModelInfo("yolo26n.tflite", "coco.names", 640))
+	val segmentationModel =
+		SegmentationModel(SegmentationModelInfo("yolo26n-sem.tflite", "yolo26n-sem.names", 256))
 	val nlpModel = NLPModel(NLPModelInfo.findById(NLPModelInfo.DEFAULT_MODEL_ID))
 	val ocrModel = GoogleOCR()
 	val voskModel = VoskModel(context, "model-de")
@@ -183,6 +195,9 @@ class EyeAIRuntime internal constructor(
 				if (settings.enableObjectDetection) {
 					yoloModel.create(context, npuQnnDelegateDirectory, settings.enableNpu)
 				}
+				if (settings.enableSegmentation) {
+					segmentationModel.create(context, npuQnnDelegateDirectory, settings.enableNpu)
+				}
 				switchNlpModel(settings.nlpModel)
 				if (settings.enableOCR) ocrModel.create()
 			} catch (error: Throwable) {
@@ -217,6 +232,11 @@ class EyeAIRuntime internal constructor(
 				}
 				if (newSettings.enableObjectDetection && (!oldSettings.enableObjectDetection || oldSettings.enableNpu != newSettings.enableNpu)) {
 					yoloModel.create(context, npuQnnDelegateDirectory, newSettings.enableNpu)
+				}
+				if (newSettings.enableSegmentation && (!oldSettings.enableSegmentation || oldSettings.enableNpu != newSettings.enableNpu)) {
+					segmentationModel.create(
+						context, npuQnnDelegateDirectory, newSettings.enableNpu
+					)
 				}
 				if (newSettings.enableOCR && !oldSettings.enableOCR) ocrModel.create()
 				if (isActive && oldSettings.objectAudioPlaybackLanguage != newSettings.objectAudioPlaybackLanguage) {
@@ -628,6 +648,15 @@ class EyeAIRuntime internal constructor(
 
 	internal fun runObjectInference(frame: Bitmap): Array<UniffiDetectedObject>? =
 		yoloModel.runInference(frame)
+
+	internal fun runSegmentationInference(frame: Bitmap): SegmentationInferenceResult? {
+		val output = segmentationModel.runInference(frame) ?: return null
+		return SegmentationInferenceResult(
+			prediction = output,
+			inputDim = Size(segmentationModel.tensorWidth, segmentationModel.tensorHeight),
+			modelName = segmentationModel.info.tfliteFilename
+		)
+	}
 
 	internal suspend fun runOcrInference(frame: Bitmap) = ocrModel.analyzeFrame(frame)
 

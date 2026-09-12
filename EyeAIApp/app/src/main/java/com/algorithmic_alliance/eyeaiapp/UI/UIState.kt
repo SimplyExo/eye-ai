@@ -26,6 +26,7 @@ data class UIState(
 	val debugInputPreviewBitmap: Bitmap? = null,
 	val performanceText: String = "",
 	val detectedObjects: Array<UniffiDetectedObject> = emptyArray(),
+	val debugSegmentationBitmap: Bitmap? = null,
 	val cameraResolution: Size = Size(720, 1280),
 	val ocrResults: Array<TextBoundingBox> = emptyArray(),
 )

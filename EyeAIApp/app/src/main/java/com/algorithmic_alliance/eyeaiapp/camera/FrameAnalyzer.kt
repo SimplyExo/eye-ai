@@ -37,8 +37,10 @@ import kotlin.time.measureTime
 data class FrameAnalysisUpdate(
 	val depthPreviewBitmap: Bitmap? = null,
 	val debugInputBitmap: Bitmap? = null,
+	val debugSegmentationBitmap: Bitmap? = null,
 	val performanceText: String? = null,
 	val detectedObjects: Array<UniffiDetectedObject>? = null,
+	val segmentationOutput: NativeLib.NativeIntBuffer? = null,
 	val frameSize: Size? = null,
 )
 
@@ -60,12 +62,16 @@ class FrameAnalyzer(
 	private val lifecycleJob = SupervisorJob()
 	private val depthExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 	private val objectExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+	private val segmentationExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 	private val depthScope = CoroutineScope(lifecycleJob + depthExecutor.asCoroutineDispatcher())
 	private val objectScope = CoroutineScope(lifecycleJob + objectExecutor.asCoroutineDispatcher())
+	private val segmentationScope =
+		CoroutineScope(lifecycleJob + segmentationExecutor.asCoroutineDispatcher())
 
 	private val stateLock = Any()
 	private var depthJob: Job? = null
 	private var objectJob: Job? = null
+	private var segmentationJob: Job? = null
 	private var startedValue = false
 	private var shutdownValue = false
 
@@ -82,6 +88,7 @@ class FrameAnalyzer(
 			startedValue = true
 			depthJob = depthScope.launch { runDepthLoop() }
 			objectJob = objectScope.launch { runObjectDetectionLoop() }
+			segmentationJob = segmentationScope.launch { runSegmentationLoop() }
 		}
 	}
 
@@ -93,8 +100,10 @@ class FrameAnalyzer(
 			startedValue = false
 			depthJob?.cancel()
 			objectJob?.cancel()
+			segmentationJob?.cancel()
 			depthJob = null
 			objectJob = null
+			segmentationJob = null
 			frameToRelease = latestFrame.getAndSet(null)
 		}
 		frameToRelease?.release()
@@ -110,8 +119,10 @@ class FrameAnalyzer(
 			startedValue = false
 			depthJob?.cancel()
 			objectJob?.cancel()
+			segmentationJob?.cancel()
 			depthJob = null
 			objectJob = null
+			segmentationJob = null
 			frameToRelease = latestFrame.getAndSet(null)
 		}
 		frameToRelease?.release()
@@ -196,8 +207,13 @@ class FrameAnalyzer(
 						val inputResolution = "${frame.width}x${frame.height}"
 						val modelInput =
 							"${modelInference.inputDim.width}x${modelInference.inputDim.height}"
+
 						"Metric Depth model: ${modelInference.modelName}\n" + "Camera resolution: $inputResolution -> Depth model input: $modelInput\n\n" + "${uniffi.NativeLib.formattedDepthFrame()}\n" + "$formattedSourceFrame\n" + if (runtime.settings.enableObjectDetection) {
 							"${uniffi.NativeLib.formattedObjectFrame()}\n"
+						} else {
+							""
+						} + if (runtime.settings.enableSegmentation) {
+							"${uniffi.NativeLib.formattedSegmentationFrame()}\n"
 						} else {
 							""
 						} + "${uniffi.NativeLib.formattedAudioFrame()}\n" + "${uniffi.NativeLib.formattedDepthAudioThreadFrame()}\n" + uniffi.NativeLib.formattedObjectAudioThreadFrame()
@@ -259,6 +275,45 @@ class FrameAnalyzer(
 				throw cancelled
 			} catch (error: Throwable) {
 				Log.e(EyeAIApp.APP_LOG_TAG, "Object-detection frame processing failed", error)
+			} finally {
+				frame.release()
+			}
+		}
+	}
+
+	private suspend fun runSegmentationLoop() {
+		var observedSequence = 0L
+		while (currentCoroutineContext().isActive) {
+			observedSequence = frameAvailable.first { it > observedSequence }
+			val frame = retainLatestFrame() ?: continue
+			try {
+				if (!runtime.settings.enableSegmentation) continue
+				val inferenceDuration = measureTime {
+					uniffi.NativeLib.newSegmentationFrame()
+					val output = runtime.runSegmentationInference(frame.bitmap) ?: continue
+					AIModelData.segmentationOutput.set(output.prediction)
+					val colorMappedImage = NativeLib.segmentationColormap(
+						output.prediction.asUniffiWrapper(),
+						output.inputDim,
+					)
+					onUpdate(
+						FrameAnalysisUpdate(
+							debugSegmentationBitmap = colorMappedImage,
+							segmentationOutput = output.prediction,
+							frameSize = Size(frame.width, frame.height),
+						)
+					)
+				}
+
+				val maxFrameRate = runtime.settings.maxSegmentationFrameRate
+				val minInferenceDuration = maxFrameRate?.let { (1.0 / it).seconds }
+				if (minInferenceDuration != null && inferenceDuration < minInferenceDuration) {
+					delay(minInferenceDuration - inferenceDuration)
+				}
+			} catch (cancelled: kotlinx.coroutines.CancellationException) {
+				throw cancelled
+			} catch (error: Throwable) {
+				Log.e(EyeAIApp.APP_LOG_TAG, "Segmentation frame processing failed", error)
 			} finally {
 				frame.release()
 			}

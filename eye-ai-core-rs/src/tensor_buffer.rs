@@ -37,7 +37,8 @@ pub enum FloatTensorFormat {
 	RelativeDepth,
 	RawRelativeDepth,
 	MetricDepth,
-	YoloOutput,
+	YoloObjectDetectionOutput,
+	YoloSegmentationOutput,
 }
 impl std::fmt::Display for FloatTensorFormat {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -52,7 +53,8 @@ impl std::fmt::Display for FloatTensorFormat {
 				Self::RawRelativeDepth => "Raw Relative Depth",
 				Self::RelativeDepth => "Relative Depth",
 				Self::MetricDepth => "Metric Depth",
-				Self::YoloOutput => "YOLO Output",
+				Self::YoloObjectDetectionOutput => "YOLO Object Detection Output",
+				Self::YoloSegmentationOutput => "YOLO Segmentation Output",
 			}
 		)
 	}

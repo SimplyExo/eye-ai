@@ -13,6 +13,7 @@
 	<string name="eyeaivision_ip_setting" translatable="false">eyeaivision_ip_setting</string>
 	<string name="input_is_eyeaivision" translatable="false">EyeAI-Vision</string>
 	<string name="enable_object_detection_setting" translatable="false">enable_object_detection</string>
+	<string name="enable_segmentation_setting" translatable="false">enable_segmentation</string>
 	<string name="version_info_settings" translatable="false">version_info</string>
 	<string name="build_time_settings" translatable="false">build_time</string>
 	<string name="git_info_settings" translatable="false">git_info</string>
@@ -31,7 +32,9 @@
 	<string name="enable_depth_frame_rate_limit_setting" translatable="false">enable_depth_frame_rate_limit_setting</string>
 	<string name="max_depth_frame_rate_setting" translatable="false">max_depth_frame_rate_setting</string>
 	<string name="enable_object_detection_frame_rate_limit_setting" translatable="false">enable_object_detection_frame_rate_limit_setting</string>
+	<string name="enable_segmentation_frame_rate_limit_setting" translatable="false">enable_segmentation_frame_rate_limit</string>
 	<string name="max_object_detection_frame_rate_setting" translatable="false">max_object_detection_frame_rate_setting</string>
+	<string name="max_segmentation_frame_rate_setting" translatable="false">max_segmentation_frame_rate</string>
 	<string name="enable_npu_delegate_setting" translatable="false">Use NPU (experimental)</string>
 	<string name="jpeg_compression" translatable="false">jpeg_compression</string>
 	<string name="debug_page_activated" translatable="false">debug_page_activated</string>
@@ -137,6 +140,7 @@
 	<string name="settings_category_audio_playback">Audiowiedergabe</string>
 	<string name="settings_category_device_manager">Geräteverwaltung</string>
 	<string name="settings_category_object_detection">Objekterkennung</string>
+	<string name="settings_category_segmentation">Segmentation</string>
 	<string name="settings_category_input_source">Eingabequelle</string>
 	<string name="settings_category_developer">Entwickleroptionen</string>
 	<string name="settings_category_build_info">Build-Informationen</string>
@@ -176,10 +180,16 @@
 	<string name="setting_change_default_devices_description">"Aktuelle Standardgeräte: "</string>
 
 	<!-- Object Detection -->
-	<string name="setting_enabled_title">Objekterkennung aktivieren</string>
+	<string name="setting_object_detection_enabled_title">Objekterkennung aktivieren</string>
 	<string name="setting_object_detection_description">Wenn aktiviert, erkennt die KI Objekte in der Nähe.</string>
 	<string name="setting_enable_object_framerate_limiter_description">Begrenzt die Bildrate der Objekterkennung, um Ressourcen für andere Aufgaben freizugeben.</string>
 	<string name="setting_object_framerate_limit_description">Die maximale Anzahl an Bildern pro Sekunde, die von der Objekterkennung verarbeitet werden.</string>
+
+	<!-- Segmentation -->
+	<string name="setting_segmentation_enabled_title">Objekterkennung aktivieren</string>
+	<string name="setting_segmentation_description">Wenn aktiviert, erkennt die KI Objekte in der Nähe.</string>
+	<string name="setting_enable_segmentation_framerate_limiter_description">Begrenzt die Bildrate der Objekterkennung, um Ressourcen für andere Aufgaben freizugeben.</string>
+	<string name="setting_segmentation_framerate_limit_description">Die maximale Anzahl an Bildern pro Sekunde, die von der Objekterkennung verarbeitet werden.</string>
 
 	<!-- Input Source -->
 	<string name="setting_input_source_title">Eingabequelle</string>

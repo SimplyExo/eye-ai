@@ -86,6 +86,35 @@ object NativeLib {
 		)
 	}
 
+	/** @param input values should be between 0.0f and 1.0f */
+	fun segmentationColormap(input: UniffiIntBufferWrapper, inputImageSize: Size): Bitmap {
+		if (input.length != inputImageSize.width * inputImageSize.height) {
+			Log.e(
+				EyeAIApp.APP_LOG_TAG,
+				"input depth array length ${input.length} does not match output bitmap size $inputImageSize"
+			)
+			return createBitmap(inputImageSize.width, inputImageSize.height)
+		}
+
+		val colormappedPixels = NativeIntBuffer(input.length)
+
+		uniffi.NativeLib.segmentationColormap(
+			input, colormappedPixels.asUniffiWrapper()
+		)
+		//metricDepthColormap(input, colormappedPixels)
+
+		// TODO: improve Bitmap/Buffer/Array conversions...
+		val colormappedPixelsArray = IntArray(colormappedPixels.intBuffer.remaining())
+		colormappedPixels.intBuffer.get(colormappedPixelsArray)
+
+		return Bitmap.createBitmap(
+			colormappedPixelsArray,
+			inputImageSize.width,
+			inputImageSize.height,
+			Bitmap.Config.ARGB_8888
+		)
+	}
+
 	fun bitmapToRgbHwc255FloatArray(
 		bitmap: Bitmap
 	): NativeFloatBuffer {
