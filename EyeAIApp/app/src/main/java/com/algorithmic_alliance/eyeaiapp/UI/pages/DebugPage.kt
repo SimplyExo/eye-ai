@@ -102,6 +102,16 @@ fun DebugPage(
 		}
 		onEvent(UIEvent.UpdateVoskStatusText)
 		onEvent(UIEvent.UpdateSpeechStatusText)
+
+		// Ensure runtime starts even for non-local-camera sources
+		val source = sharedPreferences.getString(
+			context.getString(R.string.input_source_setting),
+			context.getString(R.string.input_is_camera)
+		)
+		if (source != context.getString(R.string.input_is_camera)) {
+			Log.d(LOG_TAG, "[DebugPage] Triggering UIinitCamera for non-camera source: $source")
+			onEvent(UIEvent.UIinitCamera(null))
+		}
 	}
 
 	key(uiState.reloadDebugPageKey) {
@@ -190,11 +200,14 @@ fun DebugPage(
 										stringResource(R.string.show_debug_input_bitmap_setting),
 										false
 									)
-								) CameraPreview(onEvent = onEvent, viewModel = viewModel)
-								if (sharedPreferences.getString(
+								) CameraPreview(viewModel = viewModel, onEvent = onEvent)
+								if ((sharedPreferences.getString(
 										stringResource(R.string.input_source_setting),
 										stringResource(R.string.input_is_camera)
-									) == stringResource(R.string.input_is_media) && !sharedPreferences.getBoolean(
+									) == stringResource(R.string.input_is_media) || sharedPreferences.getString(
+										stringResource(R.string.input_source_setting),
+										stringResource(R.string.input_is_camera)
+									) == stringResource(R.string.input_is_eyeaivision)) && !sharedPreferences.getBoolean(
 										stringResource(R.string.show_debug_input_bitmap_setting),
 										false
 									)
@@ -202,7 +215,11 @@ fun DebugPage(
 									MediaPreview(
 										viewModel = viewModel, onEvent = onEvent
 									)
-									if (sharedPreferences.getString(
+									val inputSource = sharedPreferences.getString(
+										stringResource(R.string.input_source_setting),
+										stringResource(R.string.input_is_camera)
+									)
+									if (inputSource == stringResource(R.string.input_is_media) && sharedPreferences.getString(
 											stringResource(R.string.media_path_setting), ""
 										) == ""
 									) Column(
@@ -440,24 +457,26 @@ fun MediaPreview(
 	onEvent: (UIEvent) -> Unit,
 ) {
 	val uiState by viewModel.mediaPreviewUIState.collectAsStateWithLifecycle()
-	val mediaBitmap = uiState.mediaPreviewBitmap
-
 	LaunchedEffect(Unit) {
+		// Media processing is owned by the runtime, independently of this composable.
 		onEvent(UIEvent.UIinitCamera(previewView = null))
 	}
 
-	if (mediaBitmap != null) {
-		val aspectRatio = mediaBitmap.width.toFloat() / mediaBitmap.height.toFloat()
-
-		PreviewWithSquareOverlayContainer(
-			modifier = modifier,
-			contentAspectRatio = aspectRatio,
-			viewModel = viewModel
-		) { innerModifier ->
+	Box(
+		modifier = modifier
+			.fillMaxSize()
+			.padding(Spacing.sm)
+			.clip(PremiumShapes.small)
+			.background(Color.Black),
+		contentAlignment = Alignment.Center,
+	) {
+		uiState.mediaPreviewBitmap?.let {
 			Image(
-				bitmap = mediaBitmap.asImageBitmap(),
+				bitmap = it.asImageBitmap(),
 				contentDescription = "Media preview",
-				modifier = innerModifier,
+				modifier = Modifier
+					.fillMaxSize()
+					.clip(PremiumShapes.small),
 				contentScale = ContentScale.Fit
 			)
 		}

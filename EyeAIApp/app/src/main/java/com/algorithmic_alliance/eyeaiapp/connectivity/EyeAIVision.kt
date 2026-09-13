@@ -1,50 +1,41 @@
 package com.algorithmic_alliance.eyeaiapp.connectivity
 
+import android.content.Context
 import android.graphics.Bitmap
-import com.algorithmic_alliance.eyeaiapp.media.MjpegBitmapReader
+import android.util.Log
+import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.net.HttpURLConnection
 import java.net.Socket
-import java.net.URL
 import java.net.UnknownHostException
 import java.util.concurrent.Executors
 
 
 open class EyeAIVision(
+	private val app: Context,
 	private val ip: String,
-	private val compression: Int,
-	private val lifecycleScope: CoroutineScope,
-	private val bitmapFlow: MutableSharedFlow<Bitmap>?,
 	private val onSingleClick: () -> Unit,
 	private val onDoubleClick: () -> Unit,
 	private val onConnectingSocket: () -> Unit,
 	private val onSocketConnectionEstablished: () -> Unit,
 	private val onSocketFailed: (Exception) -> Unit,
-	private val onMjpegError: (Exception) -> Unit,
-	private val onConnectingHTTP: () -> Unit,
-	private val onHTTPConnectionEstablished: () -> Unit
+	private val onWebrtcFrame: (Bitmap) -> Unit
 ) {
 	private lateinit var touchSocket: Socket
-	private var mjpegBitmapReader: MjpegBitmapReader? = null
-
+	private var webRtcClientValue: WebRtcClient? = null
 	private val socketExecutor = Executors.newSingleThreadExecutor()
-	private val compressionExecutor = Executors.newSingleThreadExecutor()
 	private val socketThread: CoroutineScope =
 		CoroutineScope(socketExecutor.asCoroutineDispatcher())
-	private val compressionThread: CoroutineScope =
-		CoroutineScope(compressionExecutor.asCoroutineDispatcher())
+
+	val whepUrl = "https://$ip:8889/cam/whep"
 
 	init {
-		setCompression(compression)
-
 		// Touch Button Client starten
 		socketThread.launch {
 			try {
@@ -69,57 +60,20 @@ open class EyeAIVision(
 			}
 		}
 
-		// Video Steam starten
-		mjpegBitmapReader = MjpegBitmapReader(
-			ip = ip,
-			onFrame = { bitmap ->
-				bitmapFlow?.tryEmit(bitmap)
-			},
-			deliverOnMainThread = false,
-			parentScope = lifecycleScope,
-			onMjpegError = { e ->
-				onMjpegError(e)
-			},
-
-			)
-
-		mjpegBitmapReader?.start()
-	}
-
-	fun setCompression(value: Int) {
-		compressionThread.launch {
-			httpGetRequest("http://$ip/set_comp?comp=$value")
-		}
-	}
-
-	fun httpGetRequest(urlString: String): String? {
-		return try {
-			val url = URL(urlString)
-			val connection = url.openConnection() as HttpURLConnection
-
-			connection.requestMethod = "GET"
-
-			connection.doInput = true
-			connection.doOutput = false
-
-			val responseCode = connection.responseCode
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				connection.inputStream.bufferedReader().use {
-					it.readText()
-				}
-			} else {
-				null
-			}
-		} catch (e: Exception) {
-			e.printStackTrace()
-			null
+		// initialize webrtc
+		Log.e(EyeAIApp.APP_LOG_TAG, "!!! Starting EyeAIVision source: ip=$ip, url=$whepUrl !!!")
+		Log.e(EyeAIApp.APP_LOG_TAG, "!!! Initializing WebRtcClient for WHEP: $whepUrl !!!")
+		webRtcClientValue = WebRtcClient(app) { bitmap ->
+			Log.v(EyeAIApp.APP_LOG_TAG, "EyeAIVision received WebRTC frame, invoking callback")
+			onWebrtcFrame(bitmap)
+		}.also {
+			Log.e(EyeAIApp.APP_LOG_TAG, "!!! Starting WebRtcClient !!!")
+			it.start(whepUrl)
 		}
 	}
 
 	/** Stops the existing external source without touching the common analyzer/models. */
 	fun close() {
-		mjpegBitmapReader?.stop()
-		mjpegBitmapReader = null
 		if (::touchSocket.isInitialized) {
 			try {
 				touchSocket.close()
@@ -127,8 +81,10 @@ open class EyeAIVision(
 			}
 		}
 		socketThread.cancel()
-		compressionThread.cancel()
 		socketExecutor.shutdownNow()
-		compressionExecutor.shutdownNow()
+
+		// stop webrtc
+		webRtcClientValue?.stop()
+		webRtcClientValue = null
 	}
 }

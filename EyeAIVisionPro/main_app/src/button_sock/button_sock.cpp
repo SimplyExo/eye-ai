@@ -15,6 +15,18 @@ bool button_sock::start_server()
         return false;
     }
 
+    // Zentraler Timer für die Button-Abfrage (10 ms Interval)
+    QTimer *pollTimer = new QTimer(this);
+    connect(pollTimer, &QTimer::timeout, this, [this]() {
+        update_click_detection();
+        
+        CLICK_TYPE click = take_detected_click();
+        if (click != NONE) {
+            broadcast_click(click);
+        }
+    });
+    pollTimer->start(10);
+
     return true;
 }
 
@@ -30,48 +42,6 @@ void button_sock::newConnection()
         emit clientConnected(socket->peerAddress(),
                              socket->peerPort());
 
-        socket->write("Hello client\r\n");
-
-        QTimer *timer = new QTimer(socket);
-        timer->setInterval(10);
-
-        connect(timer, &QTimer::timeout,
-                this,
-                [this, socket]() {
-                    if (!socket ||
-                        socket->state() != QAbstractSocket::ConnectedState) {
-                        return;
-                    }
-
-                    update_click_detection();
-
-                    CLICK_TYPE click = take_detected_click();
-
-                    QByteArray data;
-
-                    switch (click) {
-                    case SINGLE:
-                        data.append('a');
-                        break;
-
-                    case DOUBLE:
-                        data.append('b');
-                        break;
-
-                    case TRIPLE:
-                        data.append('c');
-                        break;
-
-                    case NONE:
-                        return;
-                    }
-
-                    socket->write(data);
-                });
-
-        connect(socket, &QTcpSocket::disconnected,
-                timer, &QTimer::stop);
-
         connect(socket, &QTcpSocket::disconnected,
                 this,
                 [this, socket]() {
@@ -81,8 +51,32 @@ void button_sock::newConnection()
 
         connect(socket, &QTcpSocket::disconnected,
                 socket, &QTcpSocket::deleteLater);
+    }
+}
 
-        timer->start();
+void button_sock::broadcast_click(CLICK_TYPE click)
+{
+    QByteArray data;
+
+    switch (click) {
+    case SINGLE:
+        data.append('1');
+        break;
+    case DOUBLE:
+        data.append('2');
+        break;
+    case TRIPLE:
+        data.append('3');
+        break;
+    case NONE:
+        return;
+    }
+
+    const auto sockets = findChildren<QTcpSocket *>();
+    for (QTcpSocket *socket : sockets) {
+        if (socket && socket->state() == QAbstractSocket::ConnectedState) {
+            socket->write(data);
+        }
     }
 }
 
@@ -130,8 +124,7 @@ void button_sock::update_click_detection()
         return;
     }
 
-    const qint64 now = clickTimer.elapsed();
-
+    // Flankenerkennung für Tasterdruck
     if (state == PRESSED && !buttonWasPressed) {
         buttonWasPressed = true;
 
@@ -139,13 +132,21 @@ void button_sock::update_click_detection()
             clickCount = 1;
             clickTimer.restart();
         }
-        else if (clickCount == 1 &&
-                 now <= CLICK_THRESHOLD) {
+        else if (clickCount == 1 && clickTimer.elapsed() <= CLICK_THRESHOLD) {
             clickCount = 2;
+            clickTimer.restart(); // Timer-Reset für das Fenster zum 3. Klick
         }
-        else if (clickCount == 2 &&
-                 now <= CLICK_THRESHOLD) {
+        else if (clickCount == 2 && clickTimer.elapsed() <= CLICK_THRESHOLD) {
             clickCount = 3;
+            // Dreifachklick ist das Maximum – direkt auslösen!
+            detectedClick = TRIPLE;
+            clickCount = 0;
+            return;
+        }
+        else {
+            // Zeit abgelaufen: Als neuen Einzelklick werten
+            clickCount = 1;
+            clickTimer.restart();
         }
     }
 
@@ -153,22 +154,13 @@ void button_sock::update_click_detection()
         buttonWasPressed = false;
     }
 
-    if (clickCount > 0 &&
-        now > CLICK_THRESHOLD) {
-
-        switch (clickCount) {
-        case 1:
+    // Auswertung bei Zeitüberschreitung nach 1 oder 2 Klicks
+    if (clickCount > 0 && clickTimer.elapsed() > CLICK_THRESHOLD) {
+        if (clickCount == 1) {
             detectedClick = SINGLE;
-            break;
-
-        case 2:
+        }
+        else if (clickCount == 2) {
             detectedClick = DOUBLE;
-            break;
-
-        case 3:
-        default:
-            detectedClick = TRIPLE;
-            break;
         }
 
         clickCount = 0;

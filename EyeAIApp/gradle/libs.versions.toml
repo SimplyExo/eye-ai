@@ -35,6 +35,7 @@ playServicesLocation = "21.4.0"
 webrtc = "125.6422.06"
 okhttp = "4.12.0"
 foundationLayoutVersion = "1.12.1"
+uiGraphics = "1.12.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -88,6 +89,7 @@ androidx-compose-animation-core = { group = "androidx.compose.animation", name =
 webrtc = { group = "io.github.webrtc-sdk", name = "android", version.ref = "webrtc" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 androidx-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayoutVersion" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

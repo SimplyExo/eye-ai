@@ -180,13 +180,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 		}
 	}
 
-	fun onEvent(event: UIEvent) {
-		when (event) {
-			UIEvent.VoskListeningChanged -> {
-				Log.d(LOG_TAG, "[MainViewModel] VoskListeningChanged")
-				runtime.toggleListening()
-				runtime.updateVoskStatusText()
-			}
+    fun onEvent(event: UIEvent) {
+        Log.i(LOG_TAG, "!!! MainViewModel onEvent: $event !!!")
+        when (event) {
+            UIEvent.VoskListeningChanged -> {
+                Log.d(LOG_TAG, "[MainViewModel] VoskListeningChanged")
+                runtime.toggleListening()
+                runtime.updateVoskStatusText()
+            }
 
 			UIEvent.UpdateVoskStatusText -> runtime.updateVoskStatusText()
 			UIEvent.OnReloadSettingsPage -> reloadSettingsPage()
@@ -223,13 +224,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 				)
 			}
 
-			is UIEvent.UIinitCamera -> initCamera(event.previewView)
-			is UIEvent.UIDetachCameraPreview -> runtime.detachPreview(event.previewView)
-			is UIEvent.OnUpdateActionStartedFromSettings -> _uiState.update {
-				it.copy(
-					actionStartedFromSettings = event.value
-				)
-			}
+            is UIEvent.UIinitCamera -> {
+                Log.d(LOG_TAG, "[MainViewModel] UIinitCamera received")
+                initCamera(event.previewView)
+            }
+            is UIEvent.UIDetachCameraPreview -> runtime.detachPreview(event.previewView)
+            is UIEvent.OnUpdateActionStartedFromSettings -> _uiState.update {
+                it.copy(
+                    actionStartedFromSettings = event.value
+                )
+            }
 
 			is UIEvent.OnUpdateSegmentationOverlayEnabled -> {
 				_uiState.update { it.copy(segmentationOverlayEnabled = event.value) }
@@ -304,37 +308,34 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 		// starts a source changed in settings) through UIinitCamera.
 	}
 
-	private fun initCamera(previewView: androidx.camera.view.PreviewView?) {
-		_uiState.update {
-			it.copy(
-				detectedObjects = emptyArray(),
-				ocrResults = emptyArray(),
-			)
-		}
-		if (app.settings.inputSource == app.getString(R.string.input_is_camera)) {
-			if (!hasPermission(Manifest.permission.CAMERA)) {
-				_uiState.update { it.copy(appMissingCameraPermission = true) }
-				return
-			}
-			// This call is made by a visible Compose destination. The service
-			// then becomes the CameraX LifecycleOwner and survives screen-off.
-			app.runtime.attachPreview(previewView)
-			startRuntimeIfCameraPermissionGranted()
-		} else if (app.settings.inputSource == app.getString(R.string.input_is_media) && app.settings.mediaSource.isNullOrEmpty()) {
-			_uiState.update { it.copy(appMissingSelectedMediaSource = true) }
-		} else if (app.settings.inputSource == app.getString(R.string.input_is_media) || app.settings.inputSource == app.getString(
-				R.string.input_is_eyeaivision
-			)
-		) {
-			// These existing non-camera sources are still created by the
-			// runtime. If speech is enabled, the same FGS also has its
-			// microphone type; otherwise the current camera mode remains the
-			// only continuous FGS source in this task.
-			if (hasPermission(Manifest.permission.RECORD_AUDIO)) {
-				EyeAIRuntimeService.startFromVisible(app)
-			}
-		}
-	}
+    private fun initCamera(previewView: androidx.camera.view.PreviewView?) {
+        val currentSource = app.settings.inputSource
+        Log.d(LOG_TAG, "[MainViewModel] initCamera: source=$currentSource")
+        _uiState.update {
+            it.copy(
+                detectedObjects = emptyArray(),
+                ocrResults = emptyArray(),
+            )
+        }
+        if (app.settings.inputSource == app.getString(R.string.input_is_camera)) {
+            if (!hasPermission(Manifest.permission.CAMERA)) {
+                _uiState.update { it.copy(appMissingCameraPermission = true) }
+                return
+            }
+            // This call is made by a visible Compose destination. The service
+            // then becomes the CameraX LifecycleOwner and survives screen-off.
+            app.runtime.attachPreview(previewView)
+            startRuntimeIfCameraPermissionGranted()
+        } else if (app.settings.inputSource == app.getString(R.string.input_is_media) && app.settings.mediaSource.isNullOrEmpty()) {
+            _uiState.update { it.copy(appMissingSelectedMediaSource = true) }
+        } else if (app.settings.inputSource == app.getString(R.string.input_is_media) || app.settings.inputSource == app.getString(
+                R.string.input_is_eyeaivision
+            )
+        ) {
+            // Start the service for EyeAIVision or Media to ensure background continuity.
+            EyeAIRuntimeService.startFromVisible(app)
+        }
+    }
 
 	private fun startRuntimeIfCameraPermissionGranted() {
 		if (app.settings.inputSource != app.getString(R.string.input_is_camera)) {

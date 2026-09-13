@@ -3,11 +3,13 @@ package com.algorithmic_alliance.eyeaiapp.media
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.exifinterface.media.ExifInterface
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -79,12 +81,74 @@ class MediaPlayer(
 					val options = BitmapFactory.Options().apply {
 						inPreferredConfig = Bitmap.Config.ARGB_8888
 					}
+					var orientation = 0
 
 					val bmp = BitmapFactory.decodeStream(input, null, options)
-					bmp?.let { onFrame?.invoke(it) }
+					context.contentResolver.openInputStream(u)?.use { input ->
+						val exif = ExifInterface(input)
+						orientation = exif.getAttributeInt(
+							ExifInterface.TAG_ORIENTATION,
+							ExifInterface.ORIENTATION_NORMAL
+						)
+
+						Log.d("EXIF", "Orientation: $orientation")
+					}
+
+					fun Bitmap.applyExifOrientation(orientation: Int): Bitmap {
+						val matrix = Matrix()
+
+						when (orientation) {
+							ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> {
+								matrix.setScale(-1f, 1f)
+							}
+
+							ExifInterface.ORIENTATION_ROTATE_180 -> {
+								matrix.setRotate(180f)
+							}
+
+							ExifInterface.ORIENTATION_FLIP_VERTICAL -> {
+								matrix.setScale(1f, -1f)
+							}
+
+							ExifInterface.ORIENTATION_TRANSPOSE -> {
+								matrix.setRotate(90f)
+								matrix.postScale(-1f, 1f)
+							}
+
+							ExifInterface.ORIENTATION_ROTATE_90 -> {
+								matrix.setRotate(90f)
+							}
+
+							ExifInterface.ORIENTATION_TRANSVERSE -> {
+								matrix.setRotate(-90f)
+								matrix.postScale(-1f, 1f)
+							}
+
+							ExifInterface.ORIENTATION_ROTATE_270 -> {
+								matrix.setRotate(-90f)
+							}
+
+							ExifInterface.ORIENTATION_NORMAL,
+							ExifInterface.ORIENTATION_UNDEFINED -> return this
+						}
+
+						return Bitmap.createBitmap(
+							this,
+							0,
+							0,
+							width,
+							height,
+							matrix,
+							true
+						)
+					}
+
+					val correctedBmp = bmp?.applyExifOrientation(orientation = orientation)
+
+					correctedBmp?.let { onFrame?.invoke(it) }
 					withContext(Dispatchers.Main) {
-						bmp?.let {
-							updateTargetImageView(bmp)
+						correctedBmp?.let {
+							updateTargetImageView(correctedBmp)
 						}
 					}
 				}

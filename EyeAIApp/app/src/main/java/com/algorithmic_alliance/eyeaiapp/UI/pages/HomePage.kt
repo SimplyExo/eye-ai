@@ -311,7 +311,7 @@ fun VisionStatusCard(viewModel: MainViewModel) {
 				if (sharedPreferences.getString(
 						stringResource(R.string.input_source_setting),
 						stringResource(R.string.input_is_camera)
-					) != stringResource(R.string.input_is_camera)
+					) != stringResource(R.string.input_is_eyeaivision)
 				) {
 					Text(
 						stringResource(R.string.vision_card_no_vision_connected_text),
