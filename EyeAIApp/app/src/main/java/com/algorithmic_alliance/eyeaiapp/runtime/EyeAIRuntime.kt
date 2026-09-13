@@ -67,14 +67,15 @@ import androidx.core.net.toUri
 /** Output of a depth inference while the model read lock is held. */
 data class DepthInferenceResult(
 	val prediction: NativeLib.NativeFloatBuffer,
-	val inputDim: android.util.Size,
+	val inputDim: Size,
 	val modelName: String,
 )
 
 /** Output of a depth inference while the model read lock is held. */
 data class SegmentationInferenceResult(
 	val prediction: NativeLib.NativeIntBuffer,
-	val inputDim: android.util.Size,
+	val inputDim: Size,
+	val classColors: List<List<Int>>,
 	val modelName: String,
 )
 
@@ -145,7 +146,7 @@ class EyeAIRuntime internal constructor(
 	val voskUserStart = AtomicBoolean(false)
 	val yoloModel = YoloModel(YoloModelInfo("yolo26n.tflite", "coco.names", 640))
 	val segmentationModel =
-		SegmentationModel(SegmentationModelInfo("yolo26n-sem.tflite", "yolo26n-sem.names", 256))
+		SegmentationModel(SegmentationModelInfo("yolo26n-sem.tflite", "yolo26n-sem.names.json", 256))
 	val nlpModel = NLPModel(NLPModelInfo.findById(NLPModelInfo.DEFAULT_MODEL_ID))
 	val ocrModel = GoogleOCR()
 	val voskModel = VoskModel(context, "model-de")
@@ -654,6 +655,7 @@ class EyeAIRuntime internal constructor(
 		return SegmentationInferenceResult(
 			prediction = output,
 			inputDim = Size(segmentationModel.tensorWidth, segmentationModel.tensorHeight),
+			classColors = segmentationModel.classColors,
 			modelName = segmentationModel.info.tfliteFilename
 		)
 	}

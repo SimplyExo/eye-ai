@@ -4,9 +4,11 @@ import android.content.Context
 import android.graphics.Bitmap
 import androidx.core.graphics.scale
 import com.algorithmic_alliance.eyeaiapp.NativeLib
+import org.json.JSONObject
 
 class SegmentationModel(var info: SegmentationModelInfo) {
-	private lateinit var labels: List<String>
+	private lateinit var classes: List<String>
+	lateinit var classColors: List<List<Int>>
 
 	var tensorWidth = 0
 	var tensorHeight = 0
@@ -22,7 +24,26 @@ class SegmentationModel(var info: SegmentationModelInfo) {
 		}
 
 		val modelBytes = info.getAsBytes(context)
-		labels = info.readLinesFromAsset(context).toList()
+		val json = info.readJsonFromAsset(context)
+		val jsonObject = JSONObject(json)
+
+		val classes = mutableListOf<String>()
+		val classColors = mutableListOf<List<Int>>()
+
+		val keys = jsonObject.keys()
+		while (keys.hasNext()) {
+			val className = keys.next()
+			val rgbArray = jsonObject.getJSONArray(className)
+			require(rgbArray.length() == 3)
+			classes.add(className)
+			classColors.add(
+				List(rgbArray.length()) { index ->
+					rgbArray.getInt(index)
+				}
+			)
+		}
+		this.classes = classes
+		this.classColors = classColors
 
 		val delegateCacheDirectory = NativeLib.createSerializedDelegateCacheDirectory(context)
 		val modelToken = NativeLib.getModelToken(context, info.tfliteFilename)
@@ -32,7 +53,7 @@ class SegmentationModel(var info: SegmentationModelInfo) {
 			modelBytes,
 			delegateCacheDirectory.absolutePath,
 			modelToken,
-			labels,
+			classes,
 			enableNpu,
 			skelDirectory
 		)

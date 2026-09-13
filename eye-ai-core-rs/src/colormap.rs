@@ -257,11 +257,11 @@ const INFERNO_COLORS: [i32; 256] = [
 	color_rgb(252, 255, 164),
 ];
 
-const fn color_argb(a: u8, r: u8, g: u8, b: u8) -> i32 {
+pub const fn color_argb(a: u8, r: u8, g: u8, b: u8) -> i32 {
 	((a as i32) << 24) | ((r as i32) << 16) | ((g as i32) << 8) | b as i32
 }
 
-const fn color_rgb(r: u8, g: u8, b: u8) -> i32 {
+pub const fn color_rgb(r: u8, g: u8, b: u8) -> i32 {
 	color_argb(255, r, g, b)
 }
 

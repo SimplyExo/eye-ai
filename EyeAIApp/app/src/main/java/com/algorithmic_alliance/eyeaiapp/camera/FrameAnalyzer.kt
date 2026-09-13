@@ -295,6 +295,7 @@ class FrameAnalyzer(
 					val colorMappedImage = NativeLib.segmentationColormap(
 						output.prediction.asUniffiWrapper(),
 						output.inputDim,
+						output.classColors
 					)
 					onUpdate(
 						FrameAnalysisUpdate(

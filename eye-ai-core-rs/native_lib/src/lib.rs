@@ -10,7 +10,7 @@ use eye_ai_core_rs::{
 		SpatialAudio, SpatialAudioContent, SpatialAudioSettings, read_audio_file,
 		read_object_label_data,
 	},
-	inferno_colormap, inline_profile_scope, profile_scope,
+	color_rgb, inferno_colormap, inline_profile_scope, profile_scope,
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::{
@@ -538,15 +538,18 @@ pub fn getSegmentationOutputShape() -> Vec<i32> {
 pub fn segmentationColormap(
 	mut segmentation_buffer: UniffiIntBufferWrapper,
 	mut colormapped_pixels: UniffiIntBufferWrapper,
+	segmentation_class_colors: Vec<Vec<i32>>,
 ) {
 	let segmentation_buffer = segmentation_buffer.as_slice_mut();
 	let colormapped_pixels = colormapped_pixels.as_slice_mut();
-	let num_classes =
-		wait_for_segmentation_model(|segmentaiton_model| segmentaiton_model.get_classes().len());
 
 	if segmentation_buffer.len() == colormapped_pixels.len() {
 		for (i, class_index) in segmentation_buffer.iter().enumerate() {
-			colormapped_pixels[i] = inferno_colormap(*class_index as f32 / num_classes as f32);
+			let color = segmentation_class_colors
+				.get(*class_index as usize)
+				.unwrap();
+			assert_eq!(color.len(), 3);
+			colormapped_pixels[i] = color_rgb(color[0] as u8, color[1] as u8, color[2] as u8);
 		}
 	} else {
 		error!(

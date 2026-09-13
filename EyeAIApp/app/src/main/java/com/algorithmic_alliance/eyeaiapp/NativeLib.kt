@@ -87,7 +87,7 @@ object NativeLib {
 	}
 
 	/** @param input values should be between 0.0f and 1.0f */
-	fun segmentationColormap(input: UniffiIntBufferWrapper, inputImageSize: Size): Bitmap {
+	fun segmentationColormap(input: UniffiIntBufferWrapper, inputImageSize: Size, classColors: List<List<Int>>): Bitmap {
 		if (input.length != inputImageSize.width * inputImageSize.height) {
 			Log.e(
 				EyeAIApp.APP_LOG_TAG,
@@ -99,7 +99,7 @@ object NativeLib {
 		val colormappedPixels = NativeIntBuffer(input.length)
 
 		uniffi.NativeLib.segmentationColormap(
-			input, colormappedPixels.asUniffiWrapper()
+			input, colormappedPixels.asUniffiWrapper(), classColors
 		)
 		//metricDepthColormap(input, colormappedPixels)
 
