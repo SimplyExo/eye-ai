@@ -314,7 +314,6 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 	val inputIsVision = stringResource(R.string.input_is_eyeaivision)
 	val inputIsCamera = stringResource(R.string.input_is_camera)
 
-	// 1. Array der benötigten Berechtigungen (Versionsabhängig)
 	val permissionsToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 		arrayOf(
 			Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.NEARBY_WIFI_DEVICES
@@ -337,7 +336,6 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 	DisposableEffect(lifecycleOwner) {
 		val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
 			if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-				// 2. Prüfen, ob ALLE Berechtigungen aus dem Array gewährt wurden
 				val allGranted = permissionsToRequest.all {
 					ContextCompat.checkSelfPermission(
 						context, it
@@ -354,12 +352,9 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 		onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
 	}
 
-	// 3. RequestMultiplePermissions anstatt RequestPermission verwenden
 	val launcher = rememberLauncherForActivityResult(
 		ActivityResultContracts.RequestMultiplePermissions()
 	) { permissionsMap ->
-		// permissionsMap enthält ein Mapping z.B. ["android.permission.ACCESS_FINE_LOCATION" -> true]
-		// Wir prüfen, ob alle angefragten Berechtigungen auf 'true' stehen
 		val allGranted = permissionsMap.values.all { it }
 
 		if (allGranted) {
@@ -392,7 +387,7 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 				)
 			}
 			Text(
-				stringResource(R.string.missing_permission_alert_dialog_title_text), // Passe den String an, falls nötig
+				stringResource(R.string.missing_permission_alert_dialog_title_text),
 				modifier = Modifier.semantics {
 					traversalIndex = -1f
 					heading()
@@ -405,7 +400,6 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 		Button(onClick = {
 			val activity = context as? Activity
 
-			// 4. Prüfen, ob für IRGENDEINE der Berechtigungen noch ein System-Pop-up angezeigt werden darf
 			val shouldShowRationale = activity?.let { act ->
 				permissionsToRequest.any { permission ->
 					ActivityCompat.shouldShowRequestPermissionRationale(act, permission)
@@ -415,13 +409,11 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 			val hasRequestedBefore = sharedPreferences.getBoolean(hasRequestedKey, false)
 
 			if (hasRequestedBefore && !shouldShowRationale) {
-				// Fall A: Android blockiert das Pop-up für alle fehlenden Berechtigungen
 				val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
 					data = Uri.fromParts("package", context.packageName, null)
 				}
 				context.startActivity(intent)
 			} else {
-				// Fall B: System-Pop-up(s) abrufen
 				sharedPreferences.edit { putBoolean(hasRequestedKey, true) }
 				launcher.launch(permissionsToRequest)
 			}

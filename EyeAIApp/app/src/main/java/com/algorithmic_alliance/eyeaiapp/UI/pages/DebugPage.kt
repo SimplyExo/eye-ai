@@ -434,7 +434,7 @@ fun MediaPreview(
 				modifier = Modifier
 					.fillMaxSize()
 					.clip(PremiumShapes.small),
-				contentScale = ContentScale.Crop
+				contentScale = ContentScale.Fit
 			)
 		}
 	}
