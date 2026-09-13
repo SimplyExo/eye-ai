@@ -144,10 +144,6 @@
 	<string name="setting_input_source_description">The source of the images to be analyzed by the AI.</string>
 	<string name="setting_select_media_file_title">Select media file</string>
 	<string name="setting_select_media_file_description">The media file to be used as input.</string>
-	<string name="setting_eyeaivision_ip_title">EyeAI-Vision IP address</string>
-	<string name="setting_eyeaivision_ip_description">The IP address of the EyeAI-Vision device to receive images from.</string>
-	<string name="setting_jpeg_compression_title">JPEG compression (EyeAI-Vision only)</string>
-	<string name="setting_jpeg_compression_description">The compression level of the images received from EyeAI-Vision. Higher compression reduces bandwidth but lowers image quality.</string>
 
 	<!-- Developer Settings -->
 	<string name="setting_show_profiling_information_title">Show profiling information</string>
