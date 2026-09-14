@@ -138,7 +138,7 @@ class SettingsHandler(
 					)
 					speakAndHandleUi("Die Einstellungen werden verlassen.")
 					onJsonUpdate(null)
-					StateUpdate(State.IDLE, null)
+					StateUpdate(State.IDLE, null, VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
 				}
 
 				ConfirmationLabel.REJECT -> {
@@ -165,7 +165,7 @@ class SettingsHandler(
 					speakAndHandleUi(
 						"Ich konnte die Bestätigung nicht eindeutig zuordnen. " + "Bitte antworten Sie mit Ja oder Nein."
 					)
-					StateUpdate(State.SETTINGS_ACTION, currentJson)
+					StateUpdate(State.SETTINGS_ACTION, currentJson, VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
 				}
 
 				null -> {
@@ -177,7 +177,7 @@ class SettingsHandler(
 						true
 					)
 					speakAndHandleUi("Fehler bei der Verarbeitung.")
-					StateUpdate(State.SETTINGS_ACTION, currentJson)
+					StateUpdate(State.SETTINGS_ACTION, currentJson, VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
 				}
 			}
 		}
@@ -208,7 +208,7 @@ class SettingsHandler(
 				onJsonUpdate(null)
 				speakAndHandleUi(GenericCancellation.RESPONSE)
 				StateUpdate(
-					State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS
+					State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART
 				)
 			}
 
