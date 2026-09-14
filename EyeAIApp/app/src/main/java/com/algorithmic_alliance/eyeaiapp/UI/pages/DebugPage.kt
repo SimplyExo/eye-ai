@@ -479,6 +479,21 @@ fun MediaPreview(
 					.clip(PremiumShapes.small),
 				contentScale = ContentScale.Fit
 			)
+
+			val aspectRatio = it.width.toFloat() / it.height.toFloat()
+
+			PreviewWithSquareOverlayContainer(
+				modifier = modifier,
+				contentAspectRatio = aspectRatio,
+				viewModel = viewModel
+			) { innerModifier ->
+				Image(
+					bitmap = it.asImageBitmap(),
+					contentDescription = "Debug preview",
+					modifier = innerModifier,
+					contentScale = ContentScale.Fit
+				)
+			}
 		}
 	}
 }
