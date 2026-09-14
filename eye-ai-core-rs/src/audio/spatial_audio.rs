@@ -453,7 +453,11 @@ fn process_depth_estimation_data(
 				})
 				.unwrap_or(1.0);
 
-			let current_value = importance * depth_estimation_data[pixel_index];
+			if importance == 0.0 {
+				continue;
+			}
+
+			let current_value = depth_estimation_data[pixel_index] / importance;
 			nearest_distance = current_value.min(nearest_distance);
 		}
 
