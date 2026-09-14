@@ -1,6 +1,6 @@
 # EyeAIVision
 
-![alt text](https://github.com/SimplyExo/eye-ai/blob/eyeaivision/EyeAIVision/Images/Bild.png?raw=true)
+![](./Images/Bild.png)
 
 
 EyeAIVision ist die zugehörige Hardware zur EyeAIApp. Das Gerät dient als eine Art mobile Kamera, welche an der Brille der blinden Person befestigt werden kann. Dadurch kann eine Echtzeitaufnahme des Blickfelds des Trägers erfasst werden. Mithilfe eines MJPEG-Videostreams wird das Kamerabild per WiFi ans Smartphone übertragen. Dort wird es von EyeAIApp verarbeitet. 
@@ -14,12 +14,12 @@ Der Akku wird per Lademodul (TP4056) für Li-Ion-Akkus aufgeladen. Der Ladevorga
 
 Um diese Schwachstelle zu umgehen, wurde eine Bypassschaltung (siehe: https://github.com/DoImant/TP4056-Power-Path-PCB) integriert, die mithilfe eines p-Kanal MOSFETs bestimmt, ob der Mikrocontroller von der Batterie oder vom Ladegerät gespeist wird. Liegt am MOSFET eine Spannung von 5V (ausgehend vom Ladegerät) an, so wird der Stromkreis zwischen Batterie und Controller unterbrochen. Auf diese Weise kann der Akku problemlos geladen werden, während der ESP32 direkt über das USB-Ladegerät mit Energie versorgt wird.
 
-![alt text](https://github.com/SimplyExo/eye-ai/blob/eyeaivision/EyeAIVision/Images/Schaltung.png)
+![](./Images/Schaltung.png)
 *Komplettes Schaltbild*
 
 Außerdem besitzt die EyeAIVision eine rot-grüne Leuchtdiode, welche den aktuellen Verbindungsstatus zum Smartphone darstellt. Eingelassen ist diese in eine LED-Fassung aus Metall, was uns ermöglichte, sie als Touch-Button zu nutzen. Dies wurde durch das direkte Verbinden des Metalls mit einem der Touch-Pins des ESP32 umgesetzt. Der Button wird zur Steuerung der Android-Applikation verwendet.
 
 Die gesamte Hardware wird von einem mithilfe von 3D-Druck aus PLA gefertigten Gehäuse zusammengehalten und vor Umwelteinflüssen geschützt. Das Ein- bzw. Ausschalten des Geräts erfolgt über einen Schiebeschalter, der an der Unterseite des Gehäuses verklebt ist. Wird dieser umgelegt, so wird die Verbindung zwischen Lademodul und DC-DC-Converter hergestellt oder getrennt. Um Konnektivitätsprobleme zu vermeiden, befindet sich an der Oberseite des Gehäuses eine externe WiFi-Antenne.
 
-![alt text](https://github.com/SimplyExo/eye-ai/blob/eyeaivision/EyeAIVision/Images/Layout.png)
+![](./Images/Layout.png)
 *Bauteillayout*
