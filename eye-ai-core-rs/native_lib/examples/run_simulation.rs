@@ -52,6 +52,8 @@ fn main() {
 
 	let mut depth_estimation_data = [0.0; 256 * 256];
 	let mut tracked_objects: Vec<UniffiDetectedObject> = Vec::new();
+	// no segmentation class importances are supplied -> everything has 1.0 importance
+	let mut segmentation_data = [0; 256 * 256];
 
 	let start = Instant::now();
 	let mut flip_flop = false;
@@ -112,7 +114,12 @@ fn main() {
 			});
 		}
 
-		sendAIDataForSpatialAudio((&mut depth_estimation_data).into(), tracked_objects.clone());
+		sendAIDataForSpatialAudio(
+			(&mut depth_estimation_data).into(),
+			tracked_objects.clone(),
+			Some((&mut segmentation_data).into()),
+			vec![],
+		);
 
 		{
 			tracing::info_span!("sleep 100ms").in_scope(|| {

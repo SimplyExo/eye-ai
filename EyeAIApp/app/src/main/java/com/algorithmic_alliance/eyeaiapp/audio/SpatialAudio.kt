@@ -35,9 +35,15 @@ object SpatialAudio {
 				while (isActive) {
 					val depthData = eyeAIApp.aiData.depthEstimationData.get()
 					val objectData = eyeAIApp.aiData.detectedObjects.get()
+					val segmentationData = eyeAIApp.aiData.segmentationOutput.get()
+					val segmentationClassImportances =
+						eyeAIApp.aiData.segmentationClassImportances.get()
 					if (depthData != null) {
 						uniffi.NativeLib.sendAiDataForSpatialAudio(
-							depthData.asUniffiWrapper(), objectData?.toList() ?: emptyList()
+							depthData.asUniffiWrapper(),
+							objectData?.toList() ?: emptyList(),
+							segmentationData?.asUniffiWrapper(),
+							segmentationClassImportances ?: emptyList()
 						)
 					}
 					delay(50)
@@ -60,7 +66,8 @@ object SpatialAudio {
 		uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
 		uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
 		uniffi.NativeLib.setAudioSettings(
-			settings.depthAudioFrequency.toFloat(), settings.depthAudioClickIncidence
+			settings.depthAudioFrequency.toFloat(),
+			settings.depthAudioClickIncidence,
 		)
 
 		synchronized(lock) {

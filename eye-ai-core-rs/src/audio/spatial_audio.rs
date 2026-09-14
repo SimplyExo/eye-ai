@@ -150,8 +150,10 @@ impl SpatialAudio {
 	/// returns whether it needs to be recreated, as the output device changed
 	pub fn update(
 		&mut self,
-		depth_estimation_data: &[f32; 256 * 256],
+		depth_estimation_data: &[f32; SpatialAudioSettings::PICTURE_PIXEL_COUNT],
 		object_detection_data: &[TrackedObject],
+		segmentation_data: Option<&[i32; SpatialAudioSettings::PICTURE_PIXEL_COUNT]>,
+		segmentation_class_importances: &[f32],
 	) -> bool {
 		let mut should_restart = false;
 
@@ -182,6 +184,8 @@ impl SpatialAudio {
 		if !depth_audio_paused {
 			*self.depth_audio_sources_data.write().unwrap() = process_depth_estimation_data(
 				depth_estimation_data,
+				segmentation_data,
+				segmentation_class_importances,
 				&settings,
 				&self.profiling_frame,
 			);
@@ -422,7 +426,9 @@ fn object_audio_thread(
 
 #[profile_function("profiling_frame")]
 fn process_depth_estimation_data(
-	depth_estimation_data: &[f32; 256 * 256],
+	depth_estimation_data: &[f32; SpatialAudioSettings::PICTURE_PIXEL_COUNT],
+	segmentation_data: Option<&[i32; SpatialAudioSettings::PICTURE_PIXEL_COUNT]>,
+	segmentation_class_importances: &[f32],
 	settings: &SpatialAudioSettings,
 	profiling_frame: &FormattedProfilingFrame,
 ) -> Vec<DepthAudioSourceData> {
@@ -437,8 +443,17 @@ fn process_depth_estimation_data(
 	while i < SpatialAudioSettings::PICTURE_RESOLUTION.x {
 		let mut nearest_distance = f32::MAX;
 		for j in 0..SpatialAudioSettings::PICTURE_RESOLUTION.y {
-			let current_value = depth_estimation_data
-				[(i + (j * SpatialAudioSettings::PICTURE_RESOLUTION.x)) as usize];
+			let pixel_index = (i + (j * SpatialAudioSettings::PICTURE_RESOLUTION.x)) as usize;
+			let importance = segmentation_data
+				.and_then(|segmentation_data| {
+					let segmentation_class = segmentation_data[pixel_index];
+					segmentation_class_importances
+						.get(segmentation_class as usize)
+						.copied()
+				})
+				.unwrap_or(1.0);
+
+			let current_value = importance * depth_estimation_data[pixel_index];
 			nearest_distance = current_value.min(nearest_distance);
 		}
 

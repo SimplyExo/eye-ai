@@ -64,6 +64,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 import androidx.core.net.toUri
+import com.algorithmic_alliance.eyeaiapp.AIModelData
 
 /** Output of a depth inference while the model read lock is held. */
 data class DepthInferenceResult(
@@ -202,6 +203,7 @@ class EyeAIRuntime internal constructor(
 				}
 				if (settings.enableSegmentation) {
 					segmentationModel.create(context, npuQnnDelegateDirectory, settings.enableNpu)
+					app.aiData.segmentationClassImportances.set(segmentationModel.classImportances)
 				}
 				switchNlpModel(settings.nlpModel)
 				if (settings.enableOCR) ocrModel.create()
@@ -242,6 +244,7 @@ class EyeAIRuntime internal constructor(
 					segmentationModel.create(
 						context, npuQnnDelegateDirectory, newSettings.enableNpu
 					)
+					app.aiData.segmentationClassImportances.set(segmentationModel.classImportances)
 				}
 				if (newSettings.enableOCR && !oldSettings.enableOCR) ocrModel.create()
 				if (isActive && oldSettings.objectAudioPlaybackLanguage != newSettings.objectAudioPlaybackLanguage) {

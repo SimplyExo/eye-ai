@@ -9,4 +9,5 @@ object AIModelData {
 	val ocrBoxes = AtomicReference<Array<TextBoundingBox>?>()
 	val depthEstimationData = AtomicReference<NativeLib.NativeFloatBuffer>()
 	val segmentationOutput = AtomicReference<NativeLib.NativeIntBuffer>()
+	val segmentationClassImportances = AtomicReference<List<Float>>()
 }

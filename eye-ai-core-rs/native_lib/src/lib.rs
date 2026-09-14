@@ -189,9 +189,20 @@ pub struct UniffiIntBufferWrapper {
 	pub length: i32,
 }
 impl UniffiIntBufferWrapper {
+	fn as_slice(&self) -> &[i32] {
+		unsafe { std::slice::from_raw_parts(self.ptr_address as *const i32, self.length as usize) }
+	}
 	fn as_slice_mut(&mut self) -> &mut [i32] {
 		unsafe {
 			std::slice::from_raw_parts_mut(self.ptr_address as *mut i32, self.length as usize)
+		}
+	}
+}
+impl<const N: usize> From<&mut [i32; N]> for UniffiIntBufferWrapper {
+	fn from(value: &mut [i32; N]) -> Self {
+		Self {
+			ptr_address: value.as_mut_ptr() as i64,
+			length: N as i32,
 		}
 	}
 }
@@ -710,20 +721,39 @@ pub fn setObjectAudioPaused(paused: bool) {
 pub fn sendAIDataForSpatialAudio(
 	mut depth_data_buffer: UniffiFloatBufferWrapper,
 	object_data_buffer: Vec<UniffiDetectedObject>,
+	segmentation_data_buffer: Option<UniffiIntBufferWrapper>,
+	segmentation_class_importances: Vec<f32>,
 ) {
 	let depth_data_buffer = depth_data_buffer.as_slice_mut();
-	let depth_estimation_data: &[f32; 256 * 256] = depth_data_buffer
-		.as_ref()
-		.try_into()
-		.expect("depth_data_buffer needs to be 256x256!");
+	let depth_estimation_data: &[f32; SpatialAudioSettings::PICTURE_PIXEL_COUNT] =
+		depth_data_buffer
+			.as_ref()
+			.try_into()
+			.expect("depth_data_buffer needs to be 256x256!");
 
 	let object_detection_data = object_data_buffer
 		.into_iter()
 		.map(|o| o.into())
 		.collect::<Vec<TrackedObject>>();
 
-	let should_restart = try_change_spatial_audio(|spatial_audio| {
-		spatial_audio.update(depth_estimation_data, &object_detection_data)
+	let should_restart = try_change_spatial_audio(|spatial_audio| match segmentation_data_buffer {
+		Some(segmentation_data_buffer) => spatial_audio.update(
+			depth_estimation_data,
+			&object_detection_data,
+			Some(
+				segmentation_data_buffer
+					.as_slice()
+					.try_into()
+					.expect("segmentation_data_buffer needs to be 256x256!"),
+			),
+			&segmentation_class_importances,
+		),
+		None => spatial_audio.update(
+			depth_estimation_data,
+			&object_detection_data,
+			None,
+			&segmentation_class_importances,
+		),
 	});
 	if let Some(should_restart) = should_restart
 		&& should_restart

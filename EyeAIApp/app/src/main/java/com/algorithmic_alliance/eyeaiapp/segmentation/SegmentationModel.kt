@@ -9,6 +9,7 @@ import org.json.JSONObject
 class SegmentationModel(var info: SegmentationModelInfo) {
 	private lateinit var classes: List<String>
 	lateinit var classColors: List<List<Int>>
+	lateinit var classImportances: List<Float>
 
 	var tensorWidth = 0
 	var tensorHeight = 0
@@ -29,21 +30,26 @@ class SegmentationModel(var info: SegmentationModelInfo) {
 
 		val classes = mutableListOf<String>()
 		val classColors = mutableListOf<List<Int>>()
+		val classImportances = mutableListOf<Float>()
 
 		val keys = jsonObject.keys()
 		while (keys.hasNext()) {
 			val className = keys.next()
-			val rgbArray = jsonObject.getJSONArray(className)
+			val classProperties = jsonObject.getJSONObject(className)
+			val rgbArray = classProperties.getJSONArray("color")
 			require(rgbArray.length() == 3)
+			val importance = classProperties.getDouble("importance")
 			classes.add(className)
 			classColors.add(
 				List(rgbArray.length()) { index ->
 					rgbArray.getInt(index)
 				}
 			)
+			classImportances.add(importance.toFloat())
 		}
 		this.classes = classes
 		this.classColors = classColors
+		this.classImportances = classImportances
 
 		val delegateCacheDirectory = NativeLib.createSerializedDelegateCacheDirectory(context)
 		val modelToken = NativeLib.getModelToken(context, info.tfliteFilename)
