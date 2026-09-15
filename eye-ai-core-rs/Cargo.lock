@@ -30,8 +30,7 @@ dependencies = [
 
 [[package]]
 name = "al-sys"
-version = "0.6.0"
-source = "git+https://github.com/Peanutt42/alto?tag=3.1.0#8d8be9fd5fdcebe10ef72e99f286e6535c24f0fc"
+version = "0.6.1"
 dependencies = [
  "cmake",
  "libloading",
@@ -49,8 +48,7 @@ dependencies = [
 
 [[package]]
 name = "alto"
-version = "3.1.0"
-source = "git+https://github.com/Peanutt42/alto?tag=3.1.0#8d8be9fd5fdcebe10ef72e99f286e6535c24f0fc"
+version = "3.1.2"
 dependencies = [
  "al-sys",
  "lazy_static 0.2.11",

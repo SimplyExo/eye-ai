@@ -1,0 +1,20 @@
+[package]
+name = "alto"
+version = "3.1.2"
+edition = "2015"
+description = "Idiomatic interface for OpenAL 1.1 and extensions (including EFX)"
+documentation = "https://docs.rs/alto"
+homepage = "https://www.jpernst.com"
+repository = "https://github.com/jpernst/alto.git"
+license = "MIT/Apache-2.0"
+keywords = ["al", "audio", "openal", "sound"]
+categories = ["api-bindings", "multimedia::audio"]
+
+[dependencies]
+al-sys = { path = "al-sys", version = "0.6.1", default-features = false }
+lazy_static = "0.2.1"
+parking_lot = "0.4.4"
+
+[features]
+default = ["dynamic"]
+dynamic = ["al-sys/dynamic"]

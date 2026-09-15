@@ -1,0 +1,8 @@
+/target
+/al-sys/target
+/.cargo
+Cargo.lock
+
+*.vim
+*.sw[onp]
+*~
