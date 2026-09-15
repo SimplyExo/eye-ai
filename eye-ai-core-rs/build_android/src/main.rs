@@ -81,7 +81,7 @@ fn main() {
 	}
 
 	println!("\nCopying third party libraries from tflite-runtime to EyeAIApp...");
-	let tflite_runtime_third_party_dir = project_root.join("../tflite-runtime/third_party/");
+	let tflite_runtime_third_party_dir = project_root.join("tflite-runtime/third_party/");
 	for dependency in std::fs::read_dir(tflite_runtime_third_party_dir)
 		.expect("failed to iterate over third party libraries for android")
 		.flatten()

@@ -2,7 +2,7 @@ fn main() {
 	println!("cargo::rerun-if-changed=build.rs");
 
 	// build tflite-runtime c++ cmake library
-	let tflite_runtime_dst = cmake::Config::new("../tflite-runtime/")
+	let tflite_runtime_dst = cmake::Config::new("./tflite-runtime/")
 		.define("CMAKE_BUILD_TYPE", "Release")
 		// fixes some older deps of tensorflow-lite
 		.define("CMAKE_POLICY_VERSION_MINIMUM", "3.5")
@@ -19,8 +19,8 @@ fn main() {
 		}
 	}
 
-	println!("cargo:rerun-if-changed=../tflite-runtime/CMakeLists.txt");
-	println!("cargo:rerun-if-changed=../tflite-runtime/include");
-	println!("cargo:rerun-if-changed=../tflite-runtime/src");
-	println!("cargo:rerun-if-changed=../tflite-runtime/third_party");
+	println!("cargo:rerun-if-changed=./tflite-runtime/CMakeLists.txt");
+	println!("cargo:rerun-if-changed=./tflite-runtime/include");
+	println!("cargo:rerun-if-changed=./tflite-runtime/src");
+	println!("cargo:rerun-if-changed=./tflite-runtime/third_party");
 }
