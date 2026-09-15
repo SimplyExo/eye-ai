@@ -126,7 +126,7 @@ fun SettingsPage(
 		onEvent(UIEvent.OnUpdateSettingsOpened(true))
 		onDispose {
 			if (!viewModel.uiState.value.actionStartedFromSettings) {
-				onEvent(UIEvent.OnReturnFromSettings)
+				//onEvent(UIEvent.OnReturnFromSettings)
 				onEvent(UIEvent.OnUpdateSettingsOpened(false))
 			}
 		}
@@ -542,7 +542,6 @@ fun CheckBoxSetting(
 					settingKey, isChecked
 				)
 			}
-			onEvent(UIEvent.UpdateSettings)
 
 		})
 	}

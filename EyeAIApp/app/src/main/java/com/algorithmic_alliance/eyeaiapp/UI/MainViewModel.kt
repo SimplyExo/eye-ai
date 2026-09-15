@@ -3,12 +3,18 @@ package com.algorithmic_alliance.eyeaiapp.UI
 import android.Manifest
 import android.app.Application
 import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.Settings
+import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
+import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntime
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntimeService
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +28,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.checkerframework.checker.guieffect.qual.UI
+import uniffi.NativeLib.UniffiDetectedObject
+import kotlin.collections.emptyList
 import kotlin.time.Duration.Companion.seconds
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
@@ -180,6 +188,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 		}
 	}
 
+    @RequiresApi(Build.VERSION_CODES.P)
     fun onEvent(event: UIEvent) {
         Log.i(LOG_TAG, "!!! MainViewModel onEvent: $event !!!")
         when (event) {
@@ -286,35 +295,50 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 	fun eyeAIApp(): EyeAIApp = app
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	private fun onOpenSettings() {
-		// Opening a UI destination must not interrupt the service-owned
-		// analysis pipeline. Settings updates are applied independently via
-		// EyeAIApp.updateSettings().
+		app.aiData.detectedObjects.set(emptyArray<UniffiDetectedObject>())
+		app.runtime.stopOperation()
+		SpatialAudio.stop()
 		_uiState.update { it.copy(settingsOpened = true) }
+
+		uniffi.NativeLib.setDepthAudioPaused(true)
+		uniffi.NativeLib.setObjectAudioPaused(true)
 	}
 
 	private fun onReturnFromSettings() {
+		app.aiData.detectedObjects.set(emptyArray<UniffiDetectedObject>())
 		_uiState.update {
 			it.copy(
 				settingsOpened = false,
 				detectedObjects = emptyArray(),
 				ocrResults = emptyArray(),
-				reloadDebugPageKey = it.reloadDebugPageKey + 1
+				debugSegmentationBitmap = null
 			)
 		}
+
 		// Do not start a service from a composable's disposal: disposal also
 		// happens while the Activity/task is being destroyed. The returning
 		// Home/Debug destination attaches to the already active runtime (or
 		// starts a source changed in settings) through UIinitCamera.
 	}
 
+	private fun startSpatialAudio(){
+		Log.d(LOG_TAG, "Start spatial audio")
+		SpatialAudio.setup(eyeAIApp())
+		SpatialAudio.start()
+		app.runtime.restoreSpatialAudioFromSettings("SPATIAL_AUDIO_START")
+	}
+
     private fun initCamera(previewView: androidx.camera.view.PreviewView?) {
+	    app.aiData.detectedObjects.set(emptyArray<UniffiDetectedObject>())
         val currentSource = app.settings.inputSource
         Log.d(LOG_TAG, "[MainViewModel] initCamera: source=$currentSource")
         _uiState.update {
             it.copy(
                 detectedObjects = emptyArray(),
                 ocrResults = emptyArray(),
+				debugSegmentationBitmap = null
             )
         }
         if (app.settings.inputSource == app.getString(R.string.input_is_camera)) {

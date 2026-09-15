@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/target/aarch64-linux-android/release/build/al-sys-167285803156c598/out/openal-soft" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/target/aarch64-linux-android/release/build/al-sys-6c8bf345bd80ede5/out/openal-soft" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/target/aarch64-linux-android/release/build/al-sys-e3dcc2c8ce91164b/out/openal-soft" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/target/aarch64-linux-android/release/build/bytetrack-cpp-rs-5e500d982b9a0be1/out/build/_deps/eigen-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/target/aarch64-linux-android/release/build/bytetrack-cpp-rs-5e500d982b9a0be1/out/bytetrack-cpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/target/aarch64-linux-android/release/build/bytetrack-cpp-rs-e670e9028ce237d1/out/build/_deps/eigen-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/target/aarch64-linux-android/release/build/bytetrack-cpp-rs-e670e9028ce237d1/out/bytetrack-cpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/target/aarch64-linux-android/release/build/eye-ai-core-rs-ad265f75c8cc6821/out/build/_deps/tl-expected-src" vcs="Git" />
+  </component>
+</project>

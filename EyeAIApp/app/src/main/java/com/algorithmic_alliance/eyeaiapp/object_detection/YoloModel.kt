@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.object_detection
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.core.graphics.scale
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import uniffi.NativeLib.UniffiDetectedObject

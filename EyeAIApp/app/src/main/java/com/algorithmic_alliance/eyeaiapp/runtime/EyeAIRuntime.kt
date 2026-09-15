@@ -123,7 +123,7 @@ class EyeAIRuntime internal constructor(
 	private var eyeAIVisionValue: EyeAIVision? = null
 	private var bitmapFlowValue: MutableSharedFlow<Bitmap>? = null
 
-	private val spatialAudioResumeController = SpatialAudioResumeController(
+	val spatialAudioResumeController = SpatialAudioResumeController(
 		scope = runtimeScope,
 		pauseSpatialAudio = ::pauseSpatialAudio,
 		restoreSpatialAudio = ::restoreSpatialAudioFromSettings,
@@ -715,7 +715,7 @@ class EyeAIRuntime internal constructor(
 		uniffi.NativeLib.setDepthAudioPaused(true)
 	}
 
-	private fun restoreSpatialAudioFromSettings(trigger: String) {
+	fun restoreSpatialAudioFromSettings(trigger: String) {
 		val current = settings
 		uniffi.NativeLib.setObjectAudioPaused(!current.objectAudioPlayback)
 		uniffi.NativeLib.setDepthAudioPaused(!current.depthAudioPlayback)

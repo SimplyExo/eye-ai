@@ -242,12 +242,14 @@ fun DebugPage(
 								) DebugInputPreview(
 									viewModel = viewModel, onEvent = onEvent
 								)
-								ObjectDetectionOverlay(
-									modifier = Modifier
-										.matchParentSize()
-										.padding(Spacing.sm),
-									viewModel = viewModel
-								)
+								if(sharedPreferences.getBoolean(stringResource(R.string.enable_object_detection_setting), true)){
+									ObjectDetectionOverlay(
+										modifier = Modifier
+											.matchParentSize()
+											.padding(Spacing.sm),
+										viewModel = viewModel
+									)
+								}
 								/*
 								OCROverlay(
 									modifier = Modifier
@@ -322,16 +324,24 @@ fun DebugPage(
 										)
 									) {
 										Box(
-											modifier = Modifier.fillMaxSize().clickable(onClick = {
-												onEvent(UIEvent.OnUpdateSegmentationOverlayEnabled(!uiState.segmentationOverlayEnabled))
-											}),
+											modifier = Modifier
+												.fillMaxSize()
+												.clickable(onClick = {
+													onEvent(
+														UIEvent.OnUpdateSegmentationOverlayEnabled(
+															!uiState.segmentationOverlayEnabled
+														)
+													)
+												}),
 											contentAlignment = Alignment.Center
 										) {
 											Icon(
 												modifier = Modifier
 													.height(Spacing.xl)
 													.width(Spacing.xl),
-												painter = if(uiState.segmentationOverlayEnabled) painterResource(R.drawable.hide_image_24px) else painterResource(R.drawable.image_24px),
+												painter = if (uiState.segmentationOverlayEnabled) painterResource(
+													R.drawable.hide_image_24px
+												) else painterResource(R.drawable.image_24px),
 												contentDescription = "Hide Segmentation Overlay",
 												tint = Color.Black
 											)
@@ -471,15 +481,6 @@ fun MediaPreview(
 		contentAlignment = Alignment.Center,
 	) {
 		uiState.mediaPreviewBitmap?.let {
-			Image(
-				bitmap = it.asImageBitmap(),
-				contentDescription = "Media preview",
-				modifier = Modifier
-					.fillMaxSize()
-					.clip(PremiumShapes.small),
-				contentScale = ContentScale.Fit
-			)
-
 			val aspectRatio = it.width.toFloat() / it.height.toFloat()
 
 			PreviewWithSquareOverlayContainer(
@@ -504,16 +505,16 @@ fun SegmentationInputPreview(
 	viewModel: MainViewModel,
 ) {
 	val uiState by viewModel.segmentationOverlayUIState.collectAsStateWithLifecycle()
-	if(uiState.segmentationOverlayEnabled){
-		uiState.debugSegmentationBitmap?.let {
-			Image(
-				bitmap = it.asImageBitmap(),
-				contentDescription = "Segmentation preview",
-				modifier = modifier.alpha(0.7f),
-				contentScale = ContentScale.FillBounds
-			)
-		}
+
+	uiState.debugSegmentationBitmap?.let {
+		Image(
+			bitmap = it.asImageBitmap(),
+			contentDescription = "Segmentation preview",
+			modifier = modifier.alpha(0.7f),
+			contentScale = ContentScale.FillBounds
+		)
 	}
+
 }
 
 @Composable
@@ -605,6 +606,8 @@ fun PreviewWithSquareOverlayContainer(
 	viewModel: MainViewModel,
 	content: @Composable (Modifier) -> Unit
 ) {
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+	val uiState by viewModel.segmentationOverlayUIState.collectAsStateWithLifecycle()
 	BoxWithConstraints(
 		modifier = modifier
 			.fillMaxSize()
@@ -628,11 +631,12 @@ fun PreviewWithSquareOverlayContainer(
 		val overlayHeightDp = with(density) { renderedHeight.toDp() }
 
 		content(Modifier.matchParentSize())
-
-		SegmentationInputPreview(
-			viewModel = viewModel,
-			modifier = Modifier.size(overlayWidthDp, overlayHeightDp)
-		)
+		if (uiState.segmentationOverlayEnabled && sharedPreferences.getBoolean(stringResource(R.string.enable_segmentation_setting), true)) {
+			SegmentationInputPreview(
+				viewModel = viewModel,
+				modifier = Modifier.size(overlayWidthDp, overlayHeightDp)
+			)
+		}
 	}
 }
 

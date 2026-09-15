@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.audio
 
 import android.content.Context
 import android.util.Log
+import com.algorithmic_alliance.eyeaiapp.AIModelData.segmentationClassImportances
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
 import kotlinx.coroutines.CoroutineScope
@@ -57,7 +58,7 @@ object SpatialAudio {
 		val settings = app.settings
 		synchronized(lock) {
 			eyeAIApp = app
-			if (configuredLanguage != settings.objectAudioPlaybackLanguage) {
+			if (configuredLanguage == null) {
 				loadAudioDataFiles(app, settings.objectAudioPlaybackLanguage)
 				configuredLanguage = settings.objectAudioPlaybackLanguage
 			}
@@ -79,6 +80,7 @@ object SpatialAudio {
 	}
 
 	fun stop() {
+		configuredLanguage = null
 		synchronized(lock) {
 			spatialAudioJob?.cancel()
 			spatialAudioJob = null
