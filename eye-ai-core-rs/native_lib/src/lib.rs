@@ -49,7 +49,8 @@ static LAST_FORMATTED_SEGMENTATION_PROFILING_INFO: LazyLock<ArcSwap<String>> =
 static SPATIAL_AUDIO: LazyLock<RwLock<Option<SpatialAudio>>> = LazyLock::new(|| RwLock::new(None));
 static SPATIAL_AUDIO_SETTINGS: LazyLock<Arc<RwLock<SpatialAudioSettings>>> =
 	LazyLock::new(|| Arc::new(RwLock::new(SpatialAudioSettings::default())));
-static SPATIAL_AUDIO_CONTENT: OnceLock<Arc<SpatialAudioContent>> = OnceLock::new();
+static SPATIAL_AUDIO_CONTENT: LazyLock<RwLock<Option<Arc<SpatialAudioContent>>>> =
+	LazyLock::new(|| RwLock::new(None));
 static AUDIO_PROFILING_FRAME: LazyLock<Arc<FormattedProfilingFrame>> =
 	LazyLock::new(|| Arc::new(FormattedProfilingFrame::new("Audio")));
 static DEPTH_AUDIO_THREAD_PROFILING_FRAME: LazyLock<Arc<FormattedProfilingFrame>> =
@@ -96,8 +97,7 @@ fn wait_for_segmentation_model<R>(f: impl FnOnce(&mut SegmentationModel) -> R) -
 fn try_change_spatial_audio<R>(f: impl FnOnce(&mut SpatialAudio) -> R) -> Option<R> {
 	let waiting_scope = inline_profile_scope!(AUDIO_PROFILING_FRAME, "try_mutate_spatial_audio");
 
-	// first, wait for the spatial audio content to be loaded
-	if let Some(content) = SPATIAL_AUDIO_CONTENT.get() {
+	if let Some(content) = &(*SPATIAL_AUDIO_CONTENT.read().unwrap()) {
 		// then wait for the spatial audio lock (also: create it, if it does not exist yet)
 		let spatial_audio = &mut (*SPATIAL_AUDIO.write().unwrap());
 		let spatial_audio = spatial_audio.get_or_insert_with(|| {
@@ -651,9 +651,7 @@ pub fn setupAudioContent(
 
 	let content = Arc::new(SpatialAudioContent::new(coco_audio_file, coco_labels_data));
 
-	SPATIAL_AUDIO_CONTENT
-		.set(content.clone())
-		.expect("already set SPATIAL_AUDIO_CONTENT");
+	*SPATIAL_AUDIO_CONTENT.write().unwrap() = Some(content.clone());
 }
 
 /// This requires the SPATIAL_AUDIO_CONTENT to be set by calling setupAudioContent before this function
@@ -662,7 +660,7 @@ pub fn setupAudioContent(
 fn createSpatialAudio() {
 	debug!("createSpatialAudio()");
 
-	let Some(spatial_audio_content) = SPATIAL_AUDIO_CONTENT.get() else {
+	let Some(spatial_audio_content) = &(*SPATIAL_AUDIO_CONTENT.read().unwrap()) else {
 		error!(
 			"SPATIAL_AUDIO_CONTENT needs to be setup by calling setupAudioContent before calling createSpatialAudio"
 		);
