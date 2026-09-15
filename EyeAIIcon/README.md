@@ -2,7 +2,7 @@
 
 Designed using Inkscape
 
-> !note
+> [!note]
 > the raw svg created by Inkscape does not display correctly in anything but Inkscape, always export as png or webp
 
 App icon files (for android + potentially iOS) generated using <https://beta.easyappicon.com/> with:

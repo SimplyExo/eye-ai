@@ -549,7 +549,7 @@ fn get_gain_for_distance(distance: f32) -> f32 {
 	)
 }
 
-/// https://gist.github.com/laundmo/cb06630109e5e1100f5a2758dfb67cfd
+/// <https://gist.github.com/laundmo/cb06630109e5e1100f5a2758dfb67cfd>
 mod math_utils {
 	#[inline(always)]
 	pub fn lerp(value: f32, from: f32, to: f32) -> f32 {

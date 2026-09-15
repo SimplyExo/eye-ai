@@ -1,4 +1,4 @@
-\page EyeAIServer_Server Server
+# EyeAIServer_Server Server
 
 ## Nutzung
 
