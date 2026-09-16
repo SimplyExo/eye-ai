@@ -24,8 +24,9 @@ sealed interface UIEvent {
 
 	data object OnReturnFromSettings : UIEvent
 
-
 	data class OnUpdatePermissionTutorialCompleted(val value: Boolean) : UIEvent
+
+	data class OnUpdateAppNotExemptFromBatteryOptimization(val value: Boolean) : UIEvent
 
 	data class OnUpdateConnectionTutorialCompleted(val value: Boolean) : UIEvent
 

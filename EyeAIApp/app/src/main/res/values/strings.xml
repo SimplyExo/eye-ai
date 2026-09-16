@@ -258,6 +258,8 @@
 	<string name="button_open_settings_text">Einstellungen öffnen</string>
 	<string name="status_exempt_from_battery_optimization_text">Status: von der Batterieoptimierung ausgenommen</string>
 	<string name="status_not_exempt_from_battery_optimization_text">Status: Batterieoptimierung aktiv</string>
-
+	<string name="disable_battery_optimization_dialog_title">Batterieoptimierung aktiv</string>
+	<string name="disable_battery_optimization_dialog_text">Die EyeAI-App wurde nicht von der Batterieoptimierung ausgenommen, was die Funktionalität der App einschränkt, wenn sie im Hintergrund läuft. Falls sie die App im Hintergrund laufen lassen wollen, müssen sie die Batterieoptimierung deaktivieren.</string>
+	<string name="disable_battery_optimization_dialog_confirm_text">Deaktivieren</string>
 
 </resources>

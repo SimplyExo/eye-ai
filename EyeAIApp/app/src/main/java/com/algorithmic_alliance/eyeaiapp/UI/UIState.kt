@@ -16,6 +16,7 @@ data class UIState(
 	val appMissingVoskPermission: Boolean = false,
 	val appMissingCameraPermission: Boolean = false,
 	val appMissingVisionPermission: Boolean = false,
+	val appNotExemptFromBatteryOptimization: Boolean = false,
 	val permissionTutorialCompleted: Boolean = false,
 	val connectionTutorialCompleted: Boolean = false,
 	val speechRecognitionFinalResultText: String = "",

@@ -38,6 +38,9 @@ import androidx.compose.ui.semantics.traversalIndex
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
@@ -54,6 +57,7 @@ import com.algorithmic_alliance.eyeaiapp.UI.pages.SettingsPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.TutorialPage
 import com.algorithmic_alliance.eyeaiapp.UI.pages.WelcomePage
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
+import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import kotlinx.serialization.Serializable
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
@@ -99,8 +103,8 @@ fun EyeAIAppUI(
 		activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 	}
 
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    Log.d(LOG_TAG, "!!! Current Route: ${currentBackStackEntry?.destination?.route} !!!")
+	val currentBackStackEntry by navController.currentBackStackEntryAsState()
+	Log.d(LOG_TAG, "!!! Current Route: ${currentBackStackEntry?.destination?.route} !!!")
 
 	val isOnPermissionOrOnboarding = currentBackStackEntry?.destination?.let { dest ->
 		dest.hasRoute<PermissionRoute>() || dest.hasRoute<WelcomeRoute>() || dest.hasRoute<TutorialRoute>()
@@ -172,15 +176,15 @@ fun EyeAIAppUI(
 		composable<PermissionRoute> {
 			PermissionPage(
 				modifier = Modifier.fillMaxSize(), onPermissionsDeclined = {
-				(context as? Activity)?.finish()
-			}, onPermissionsGranted = {
-				onEvent(UIEvent.OnUpdatePermissionTutorialCompleted(true))
-				navController.navigate(ConnectionRoute) {
-					popUpTo<PermissionRoute> {
-						inclusive = true
+					(context as? Activity)?.finish()
+				}, onPermissionsGranted = {
+					onEvent(UIEvent.OnUpdatePermissionTutorialCompleted(true))
+					navController.navigate(ConnectionRoute) {
+						popUpTo<PermissionRoute> {
+							inclusive = true
+						}
 					}
-				}
-			}, onEvent = onEvent
+				}, onEvent = onEvent
 			)
 		}
 		composable<ConnectionRoute> {
@@ -281,14 +285,17 @@ fun UIDialogs(
 	if (uiState.appMissingVisionPermission) {
 		AppMissingVisionPermissionDialog(onEvent = onEvent)
 	}
+	if (uiState.appNotExemptFormBatteryOptimization) {
+		AppNotExemptFromBatteryOptimization(onEvent = onEvent)
+	}
 }
 
 @Composable
 fun AppMissingSelectedMediaSourceDialog(onEvent: (UIEvent) -> Unit, onOpenSettings: () -> Unit) {
 	AlertDialog(
 		onDismissRequest = {
-		onEvent(UIEvent.OnUpdateAppMissingSelectedMediaSource(false))
-	},
+			onEvent(UIEvent.OnUpdateAppMissingSelectedMediaSource(false))
+		},
 		title = { Text(stringResource(R.string.missing_media_source_alert_dialog_title)) },
 		text = { Text(stringResource(R.string.missing_media_source_alert_dialog_text)) },
 		confirmButton = {
@@ -298,6 +305,70 @@ fun AppMissingSelectedMediaSourceDialog(onEvent: (UIEvent) -> Unit, onOpenSettin
 			}) {
 				Text(
 					stringResource(R.string.button_open_settings_text)
+				)
+			}
+		})
+}
+
+@Composable
+fun AppNotExemptFromBatteryOptimization(onEvent: (UIEvent) -> Unit) {
+
+	val lifecycleOwner = LocalLifecycleOwner.current
+	val context = LocalContext.current
+
+	DisposableEffect(lifecycleOwner) {
+
+		val observer = LifecycleEventObserver { _, event ->
+			if (event == Lifecycle.Event.ON_RESUME) {
+				val batteryOptimizationExempt = BatteryOptimization.isExempt(context)
+				if(batteryOptimizationExempt){
+					onEvent(UIEvent.OnUpdateAppNotExemptFromBatteryOptimization(false))
+				}
+			}
+		}
+		lifecycleOwner.lifecycle.addObserver(observer)
+		onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+
+	}
+	AlertDialog(
+		onDismissRequest = {
+			//TODO
+			onEvent(UIEvent.OnUpdateAppNotExemptFromBatteryOptimization(false))
+		},
+		title = {
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				verticalAlignment = Alignment.CenterVertically,
+			) {
+				PremiumIconButton(modifier = Modifier.semantics { traversalIndex = 1f }, onClick = {
+					//TODO
+					onEvent(UIEvent.OnUpdateAppNotExemptFromBatteryOptimization(false))
+				}) {
+					Icon(
+						modifier = Modifier
+							.width(Spacing.xl)
+							.height(Spacing.xl),
+						painter = painterResource(R.drawable.arrow_back_24px),
+						contentDescription = stringResource(R.string.return_icon_description)
+					)
+				}
+				Text(
+					stringResource(R.string.disable_battery_optimization_dialog_title),
+					modifier = Modifier.semantics {
+						traversalIndex = -1f
+						heading()
+					},
+				)
+			}
+		},
+		text = { Text(stringResource(R.string.disable_battery_optimization_dialog_text)) },
+		confirmButton = {
+			Button(onClick = {
+				BatteryOptimization.openSettings(context)
+				onEvent(UIEvent.OnUpdateAppNotExemptFromBatteryOptimization(false))
+			}) {
+				Text(
+					stringResource(R.string.disable_battery_optimization_dialog_confirm_text)
 				)
 			}
 		})
@@ -332,6 +403,7 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 			onEvent(UIEvent.UpdateSettings)
 		}
 	}
+
 
 	DisposableEffect(lifecycleOwner) {
 		val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
@@ -429,6 +501,7 @@ fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -
 	val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	val hasRequestedKey = "has_requested_camera_permission"
+
 
 	DisposableEffect(lifecycleOwner) {
 		val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->

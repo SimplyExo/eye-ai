@@ -7,14 +7,12 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.createBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.Settings
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
-import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntime
+import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntimeService
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,9 +25,7 @@ import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.checkerframework.checker.guieffect.qual.UI
 import uniffi.NativeLib.UniffiDetectedObject
-import kotlin.collections.emptyList
 import kotlin.time.Duration.Companion.seconds
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
@@ -159,7 +155,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 			appMissingSelectedMediaSource = it.appMissingSelectedMediaSource,
 			appMissingVoskPermission = it.appMissingVoskPermission,
 			appMissingCameraPermission = it.appMissingCameraPermission,
-			appMissingVisionPermission = it.appMissingVisionPermission
+			appMissingVisionPermission = it.appMissingVisionPermission,
+			appNotExemptFormBatteryOptimization = it.appNotExemptFromBatteryOptimization
 		)
 	}.distinctUntilChanged()
 		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UIDialogsUIState())
@@ -197,7 +194,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 runtime.toggleListening()
                 runtime.updateVoskStatusText()
             }
-
 			UIEvent.UpdateVoskStatusText -> runtime.updateVoskStatusText()
 			UIEvent.OnReloadSettingsPage -> reloadSettingsPage()
 			UIEvent.InitVoskService -> runtime.initSpeechService()
@@ -226,6 +222,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 					appMissingCameraPermission = event.value
 				)
 			}
+
+	        is UIEvent.OnUpdateAppNotExemptFromBatteryOptimization -> _uiState.update {
+		        it.copy(
+			        appNotExemptFromBatteryOptimization = event.value
+		        )
+	        }
 
 			is UIEvent.OnUpdateAppMissingVoskPermission -> _uiState.update {
 				it.copy(
@@ -269,6 +271,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 		Log.d(LOG_TAG, "[MainViewModel] OnResume: refreshing UI projection")
 		if (!_uiState.value.actionStartedFromSettings && !_uiState.value.settingsOpened) {
 			reloadDebugPage()
+		}
+		if(!BatteryOptimization.isExempt(eyeAIApp())){
+			_uiState.update { it.copy(appNotExemptFromBatteryOptimization = true) }
 		}
 		// permission checks after onResume are now handled bei EyeAIUI.kt
 		runtime.updateVoskStatusText()
@@ -321,13 +326,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 		// happens while the Activity/task is being destroyed. The returning
 		// Home/Debug destination attaches to the already active runtime (or
 		// starts a source changed in settings) through UIinitCamera.
-	}
-
-	private fun startSpatialAudio(){
-		Log.d(LOG_TAG, "Start spatial audio")
-		SpatialAudio.setup(eyeAIApp())
-		SpatialAudio.start()
-		app.runtime.restoreSpatialAudioFromSettings("SPATIAL_AUDIO_START")
 	}
 
     private fun initCamera(previewView: androidx.camera.view.PreviewView?) {
