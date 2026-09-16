@@ -1,34 +1,30 @@
 package com.algorithmic_alliance.eyeaiapp
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Bundle
 import android.util.Log
 import android.util.Size
 import androidx.annotation.RequiresApi
 import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
-import com.algorithmic_alliance.eyeaiapp.connectivity.WebRtcClient
-import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
-import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
-import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntime
 import com.algorithmic_alliance.eyeaiapp.settingsparser.LocalSettingsParser
-import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
-import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import java.io.File
 import java.util.Locale
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Process owner for the one [EyeAIRuntime]. The runtime is deliberately not
- * owned by MainActivity; the foreground service controls only its active
- * operation lifecycle.
+ * Process owner for EyeAIRuntime. The runtime is not owned by MainActivity on purpose.
+ * The foreground service controls only its active operation lifecycle.
  */
 class EyeAIApp : Application() {
+	private val visibleActivityCount = AtomicInteger(0)
+
 	@Volatile
 	lateinit var settings: Settings
 		private set
@@ -36,38 +32,11 @@ class EyeAIApp : Application() {
 	lateinit var runtime: EyeAIRuntime
 		private set
 
-	/** Compatibility accessors for existing model/state-machine code. */
-	val speechThreadExecutor: ExecutorService
-		get() = runtime.speechThreadExecutorForStateMachine
-	var lastDialogContext: String?
-		get() = runtime.lastDialogContext
-		set(value) {
-			// StateMachine compatibility only; ownership remains in runtime.
-			runtime.setLastDialogContextFromCompatibility(value)
-		}
-	val metricDepthModel: MetricDepthModel?
-		get() = runtime.metricDepthModel
-	val voskModel: VoskModel
-		get() = runtime.voskModel
-	val yoloModel: YoloModel
-		get() = runtime.yoloModel
 	val nlpModel: NLPModel
 		get() = runtime.nlpModel
-	val ocrModel: GoogleOCR
-		get() = runtime.ocrModel
-	val textToSpeechInstance: TextToSpeechInstance
-		get() = runtime.textToSpeechInstance
-	val cameraManager
-		get() = runtime.cameraManager
-	val voskUserStart: AtomicBoolean
-		get() = runtime.voskUserStart
 	val aiData = AIModelData
-	val npuQnnDelegateDirectory: String
-		get() = runtime.npuQnnDelegateDirectory
 
-	var lastLlmJsonResponse: String? = null
-
-	/** Loaded lazily and shared across short-lived StateMachine instances. */
+	// Loaded lazily and shared across short-lived StateMachine instances.
 	val confirmationModel: ConfirmationModel by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
 		val started = System.nanoTime()
 		Log.i(
@@ -95,7 +64,7 @@ class EyeAIApp : Application() {
 		}
 	}
 
-	/** The frozen local settings parsers remain lazy and runtime-owned. */
+	// lazy and runtime-owned.
 	private val localSettingsParserLazy = lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
 		val started = System.nanoTime()
 		Log.i(
@@ -143,11 +112,30 @@ class EyeAIApp : Application() {
 	override fun onCreate() {
 		Log.e(APP_LOG_TAG, "!!! EYEAI APP ONCREATE !!!")
 		super.onCreate()
+		registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+			override fun onActivityStarted(activity: Activity) {
+				visibleActivityCount.incrementAndGet()
+			}
+
+			override fun onActivityStopped(activity: Activity) {
+				visibleActivityCount.updateAndGet { count -> (count - 1).coerceAtLeast(0) }
+			}
+
+			override fun onActivityCreated(activity: Activity, state: Bundle?) = Unit
+			override fun onActivityResumed(activity: Activity) = Unit
+			override fun onActivityPaused(activity: Activity) = Unit
+			override fun onActivitySaveInstanceState(activity: Activity, state: Bundle) = Unit
+			override fun onActivityDestroyed(activity: Activity) = Unit
+		})
 		uniffi.NativeLib.initAndroidLogging()
 		settings = Settings.load(this)
 		runtime = EyeAIRuntime(this)
 		runtime.initializeModels()
 	}
+
+	// True while an EyeAI Activity is visible, including the settings screen.
+	// This is used to prevent the user from killing core functionality while using the app
+	internal fun hasVisibleActivity(): Boolean = visibleActivityCount.get() > 0
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onTerminate() {
@@ -161,10 +149,6 @@ class EyeAIApp : Application() {
 		runtime.onSettingsChanged(oldSettings)
 	}
 
-	/** Keeps the legacy App-level setter source-compatible without moving ownership back to UI. */
-	internal fun setLastDialogContextFromRuntime(value: String?) {
-		runtime.setLastDialogContextFromCompatibility(value)
-	}
 }
 
 fun getLastAppUpdateTime(context: Context): Long {

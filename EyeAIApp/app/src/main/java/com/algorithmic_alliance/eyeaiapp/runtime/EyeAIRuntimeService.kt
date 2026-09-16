@@ -17,7 +17,7 @@ import androidx.lifecycle.LifecycleService
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
 
-/** Foreground owner for the continuous EyeAI runtime and local CameraX source. */
+// Foreground owner for the continuous EyeAI runtime and local CameraX source.
 class EyeAIRuntimeService : LifecycleService() {
 	private lateinit var runtime: EyeAIRuntime
 	private lateinit var wakeLock: EyeAIWakeLock
@@ -39,7 +39,11 @@ class EyeAIRuntimeService : LifecycleService() {
 		super.onStartCommand(intent, flags, startId)
 
 		if (intent?.action == ACTION_STOP) {
-			stopRuntimeAndSelf()
+			if ((application as EyeAIApp).hasVisibleActivity()) {
+				Log.i(EyeAIApp.APP_LOG_TAG, "Ignoring notification stop action while EyeAI UI is visible")
+			} else {
+				stopRuntimeAndSelf()
+			}
 			return START_NOT_STICKY
 		}
 
@@ -109,6 +113,7 @@ class EyeAIRuntimeService : LifecycleService() {
 	 * false so Android delivers this callback and the runtime can release its
 	 * native, camera, audio and wake-lock resources before the service ends.
 	 */
+	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onTaskRemoved(rootIntent: Intent?) {
 		Log.i(EyeAIApp.APP_LOG_TAG, "EyeAI task removed; stopping continuous runtime")
 		stopRuntimeAndSelf()
@@ -134,9 +139,9 @@ class EyeAIRuntimeService : LifecycleService() {
 	}
 
 	/**
-	 * The notification action is an explicit user stop. It must not depend on
-	 * a start id because several idempotent UI start requests may have reached
-	 * this same service instance.
+	 * The notification action is an explicit user stop, but only while EyeAI is
+	 * outside the foreground. This prevents the notification from ending an
+	 * active UI session.
 	 */
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun stopRuntimeAndSelf() {
@@ -204,7 +209,6 @@ class EyeAIRuntimeService : LifecycleService() {
 	) == PackageManager.PERMISSION_GRANTED
 
 	private fun createNotificationChannel() {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 		val channel = NotificationChannel(
 			CHANNEL_ID,
 			getString(R.string.runtime_notification_channel_name),
@@ -232,7 +236,7 @@ class EyeAIRuntimeService : LifecycleService() {
 		private const val NOTIFICATION_ID = 4101
 		private const val ACTION_STOP = "com.algorithmic_alliance.eyeaiapp.action.STOP_RUNTIME"
 
-		/** Call only from a visible Activity/UI event. */
+		// Call only from a visible Activity/UI event.
 		fun startFromVisible(context: Context): Boolean {
 			Log.d(EyeAIApp.APP_LOG_TAG, "EyeAIRuntimeService.startFromVisible called")
 			return try {
