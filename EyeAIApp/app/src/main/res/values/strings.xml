@@ -184,10 +184,10 @@
 	<string name="setting_object_framerate_limit_description">Die maximale Anzahl an Bildern pro Sekunde, die von der Objekterkennung verarbeitet werden.</string>
 
 	<!-- Segmentation -->
-	<string name="setting_segmentation_enabled_title">Objekterkennung aktivieren</string>
-	<string name="setting_segmentation_description">Wenn aktiviert, erkennt die KI Objekte in der Nähe.</string>
-	<string name="setting_enable_segmentation_framerate_limiter_description">Begrenzt die Bildrate der Objekterkennung, um Ressourcen für andere Aufgaben freizugeben.</string>
-	<string name="setting_segmentation_framerate_limit_description">Die maximale Anzahl an Bildern pro Sekunde, die von der Objekterkennung verarbeitet werden.</string>
+	<string name="setting_segmentation_enabled_title">Segmentation aktivieren</string>
+	<string name="setting_segmentation_description">Wenn aktiviert, filtert die KI unwichtige Bereiche wie den Boden weg.</string>
+	<string name="setting_enable_segmentation_framerate_limiter_description">Begrenzt die Bildrate der Segmentation, um Ressourcen für andere Aufgaben freizugeben.</string>
+	<string name="setting_segmentation_framerate_limit_description">Die maximale Anzahl an Bildern pro Sekunde, die von der Segmentation verarbeitet werden.</string>
 
 	<!-- Input Source -->
 	<string name="setting_input_source_title">Eingabequelle</string>
