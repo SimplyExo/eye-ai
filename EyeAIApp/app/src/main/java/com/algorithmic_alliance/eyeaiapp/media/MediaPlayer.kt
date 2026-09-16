@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
+import kotlin.time.Duration.Companion.milliseconds
 
 @RequiresApi(Build.VERSION_CODES.P)
 class MediaPlayer(
@@ -68,6 +69,7 @@ class MediaPlayer(
 		}
 	}
 
+	@Suppress("KotlinConstantConditions")
 	private suspend fun handleUriSource() {
 		uri?.let { u ->
 			val type = context.contentResolver.getType(u)
@@ -145,11 +147,15 @@ class MediaPlayer(
 
 					val correctedBmp = bmp?.applyExifOrientation(orientation = orientation)
 
-					correctedBmp?.let { onFrame?.invoke(it) }
-					withContext(Dispatchers.Main) {
-						correctedBmp?.let {
-							updateTargetImageView(correctedBmp)
+					while (true) {
+						correctedBmp?.let { onFrame?.invoke(it) }
+						withContext(Dispatchers.Main) {
+							correctedBmp?.let {
+								updateTargetImageView(correctedBmp)
+							}
 						}
+
+						delay((1000L / 30L).milliseconds)
 					}
 				}
 			} else if (type.startsWith("video/")) {
