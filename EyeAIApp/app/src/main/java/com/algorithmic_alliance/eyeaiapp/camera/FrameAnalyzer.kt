@@ -327,6 +327,7 @@ class FrameAnalyzer(
 	}
 
 	suspend fun runOcrAnalysis(): Boolean = withContext(Dispatchers.IO) {
+		if (!runtime.settings.enableOCR) return@withContext false
 		val frame = retainLatestFrame() ?: return@withContext false
 		try {
 			Log.d(EyeAIApp.APP_LOG_TAG, "Running on-demand OCR analysis")

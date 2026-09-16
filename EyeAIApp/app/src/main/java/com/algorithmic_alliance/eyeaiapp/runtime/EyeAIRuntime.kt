@@ -247,6 +247,7 @@ class EyeAIRuntime internal constructor(
 					app.aiData.segmentationClassImportances.set(segmentationModel.classImportances)
 				}
 				if (newSettings.enableOCR && !oldSettings.enableOCR) ocrModel.create()
+				if (!newSettings.enableOCR && oldSettings.enableOCR) ocrModel.close()
 				if (isActive && oldSettings.objectAudioPlaybackLanguage != newSettings.objectAudioPlaybackLanguage) {
 					SpatialAudio.setup(context)
 				}
@@ -263,6 +264,15 @@ class EyeAIRuntime internal constructor(
 					// let the visible UI start a new service with the new
 					// source configuration. Models remain runtime-owned and
 					// are not reloaded by this transition.
+					EyeAIRuntimeService.stop(context)
+					return@launch
+				}
+				if (oldSettings.mediaSource != newSettings.mediaSource &&
+					newSettings.inputSource == context.getString(R.string.input_is_media) && isActive
+				) {
+					// The media file changed while the media source is active.
+					// Stop so the visible UI restarts the service with the new
+					// media URI instead of continuing to play the old file.
 					EyeAIRuntimeService.stop(context)
 					return@launch
 				}
@@ -761,6 +771,7 @@ class EyeAIRuntime internal constructor(
 			metricDepthModelValue = null
 		}
 		nlpModel.close()
+		ocrModel.close()
 		if (app.localSettingsParserLazyIsInitialized()) app.localSettingsParser.close()
 		runtimeJob.cancel()
 		speechThreadExecutor.shutdownNow()

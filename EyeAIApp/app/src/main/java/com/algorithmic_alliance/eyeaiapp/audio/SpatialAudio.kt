@@ -58,7 +58,7 @@ object SpatialAudio {
 		val settings = app.settings
 		synchronized(lock) {
 			eyeAIApp = app
-			if (configuredLanguage == null) {
+			if (configuredLanguage == null || configuredLanguage != settings.objectAudioPlaybackLanguage) {
 				loadAudioDataFiles(app, settings.objectAudioPlaybackLanguage)
 				configuredLanguage = settings.objectAudioPlaybackLanguage
 			}

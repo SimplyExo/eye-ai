@@ -542,6 +542,7 @@ fun CheckBoxSetting(
 					settingKey, isChecked
 				)
 			}
+			onEvent(UIEvent.UpdateSettings)
 
 		})
 	}

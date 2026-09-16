@@ -19,6 +19,12 @@ class GoogleOCR {
 			TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 	}
 
+	fun close() {
+		ocrModel?.close()
+		ocrModel = null
+		lastResult = ""
+	}
+
 	suspend fun analyzeFrame(frame: Bitmap): List<TextBoundingBox> {
 		if (ocrModel == null) {
 			return emptyList()

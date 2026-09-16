@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.UI.pages
 
 import android.Manifest
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.camera.view.PreviewView
@@ -37,10 +38,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -400,6 +403,27 @@ fun ObjectDetectionOverlay(
 	onOverlayCreated: (OverlayViewOD) -> Unit = {},
 ) {
 	val uiState by viewModel.objectDetectionOverlayUIState.collectAsStateWithLifecycle()
+	val context = LocalContext.current
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+	val languageKey = stringResource(R.string.object_playback_language)
+	val defaultLanguage = context.getString(R.string.language_is_german)
+	var playbackLanguage by remember {
+		mutableStateOf(
+			sharedPreferences.getString(languageKey, defaultLanguage)
+		)
+	}
+
+	DisposableEffect(sharedPreferences, languageKey) {
+		val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, changedKey ->
+			if (changedKey == languageKey) {
+				playbackLanguage = prefs.getString(languageKey, defaultLanguage)
+			}
+		}
+		sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+		onDispose {
+			sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+		}
+	}
 
 	AndroidView(
 		modifier = modifier,
@@ -407,6 +431,7 @@ fun ObjectDetectionOverlay(
 		update = { overlayView ->
 			overlayView.setCameraResolution(uiState.cameraResolution)
 			overlayView.setResults(uiState.detectedObjects)
+			playbackLanguage?.let(overlayView::setLanguage)
 		},
 	)
 }
