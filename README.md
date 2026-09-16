@@ -22,7 +22,9 @@ Dokumentation von eye-ai-core-rs und dessen API: <https://simplyexo.github.io/ey
 ### Sprachbefehle nutzen
 
 Als Nutzer kann man mit natürlicher Sprache, nach einem Buttonclick in der App oder auf der EyeAIVision die Spracheingabe starten.
-Sofort kommuniziert man dann mit dem Vosk-Modell für Spracherkennung. Gibt man nun einen beliebigen Input, so erfolgt eine kurze Klassifizierung des Inputs.
+Sofort kommuniziert man dann mit dem Vosk-Modell für Spracherkennung.
+Die Kommunikation mit unseren Natural-Language-Processing-Modellen ist als interaktiver Dialog gestaltet und kann intuitiv erfolgen. 
+Eine barrierefreien einen Audioguide zur Nutzung der Sprachmodelle findet man sowohl in der App als auch [hier](EyeAIApp/app/src/main/res/raw/nlp_tutorial.wav).
 
 ### Klassifizierungen
 
