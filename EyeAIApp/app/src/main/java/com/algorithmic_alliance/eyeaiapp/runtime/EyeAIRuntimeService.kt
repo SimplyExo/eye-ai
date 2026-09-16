@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
@@ -29,6 +30,7 @@ class EyeAIRuntimeService : LifecycleService() {
 		createNotificationChannel()
 	}
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		Log.e(EyeAIApp.APP_LOG_TAG, "!!! EyeAIRuntimeService onStartCommand: action=${intent?.action} !!!")
 		// LifecycleService dispatches ON_START from its implementation of
@@ -83,7 +85,7 @@ class EyeAIRuntimeService : LifecycleService() {
 	 * Updates the active FGS type mask when a runtime setting changes while
 	 * this same service remains active (for example, microphone on/off).
 	 * Calling startForeground again is the Android-supported promotion/update
-	 * path; it does not create another service instance.
+	 * path, it does not create another service instance.
 	 */
 	internal fun refreshForegroundTypes() {
 		try {
@@ -113,6 +115,7 @@ class EyeAIRuntimeService : LifecycleService() {
 		super.onTaskRemoved(rootIntent)
 	}
 
+	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onDestroy() {
 		try {
 			runtime.stopOperation()
@@ -135,6 +138,7 @@ class EyeAIRuntimeService : LifecycleService() {
 	 * a start id because several idempotent UI start requests may have reached
 	 * this same service instance.
 	 */
+	@RequiresApi(Build.VERSION_CODES.P)
 	private fun stopRuntimeAndSelf() {
 		try {
 			runtime.stopOperation()
@@ -203,23 +207,23 @@ class EyeAIRuntimeService : LifecycleService() {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 		val channel = NotificationChannel(
 			CHANNEL_ID,
-			"EyeAI-Dauerbetrieb",
+			getString(R.string.runtime_notification_channel_name),
 			NotificationManager.IMPORTANCE_LOW,
 		).apply {
-			description = "Kamera, Analyse und Audio laufen auch bei ausgeschaltetem Display."
+			description = getString(R.string.runtime_notification_channel_description)
 		}
 		getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
 	}
 
 	private fun createNotification(): Notification =
 		NotificationCompat.Builder(this, CHANNEL_ID).setSmallIcon(R.drawable.photo_camera_24px)
-			.setContentTitle("EyeAI läuft")
-			.setContentText("Kamera-Analyse und Audio sind im Dauerbetrieb aktiv")
+			.setContentTitle(getString(R.string.runtime_notification_title))
+			.setContentText(getString(R.string.runtime_notification_text))
 			.setCategory(NotificationCompat.CATEGORY_SERVICE)
 			.setPriority(NotificationCompat.PRIORITY_LOW).setOngoing(true).setOnlyAlertOnce(true)
 			.addAction(
 				R.drawable.stop_24px,
-				"EyeAI beenden",
+				getString(R.string.runtime_notification_stop_action),
 				stopPendingIntent(this),
 			).build()
 

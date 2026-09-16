@@ -30,6 +30,20 @@
 	<string name="microphone_confirm_permission_decline_explanation_text">If you deny microphone access, you will not be able to use voice commands.</string>
 	<string name="microphone_confirm_permission_decline_semantic">Deny microphone access anyway. Voice commands will be disabled.</string>
 
+	<string name="notification_permission_name">Notifications</string>
+	<string name="notification_permission_explanation_text">To reliably show EyeAI while it runs in the background and let you stop it from the persistent notification, the app needs notification permission.</string>
+	<string name="notification_icon_description">Information icon. On this page, you can manage notification permission.</string>
+	<string name="notification_permission_decline_semantic">Deny notification permission.</string>
+	<string name="notification_permission_accept_semantic">Allow notification permission.</string>
+	<string name="notification_confirm_decline_explanation_text">If you deny notifications, the persistent background-operation notification cannot be shown in the notification shade.</string>
+	<string name="notification_confirm_permission_decline_semantic">Deny notification permission anyway. The persistent notification will not be shown.</string>
+
+	<string name="runtime_notification_channel_name">EyeAI continuous operation</string>
+	<string name="runtime_notification_channel_description">Camera, analysis, and audio continue while the display is off.</string>
+	<string name="runtime_notification_title">EyeAI is running</string>
+	<string name="runtime_notification_text">Camera analysis and audio are active in continuous operation</string>
+	<string name="runtime_notification_stop_action">Stop EyeAI</string>
+
 	<string name="wifi_permission_name">Nearby Wi-Fi devices</string>
 	<string name="wifi_permission_explanation_text">To connect to an EyeAI-Vision device, the app needs access to nearby Wi-Fi devices.</string>
 	<string name="wifi_icon_description">Wi-Fi icon. On this page, you can manage wifi permissions.</string>

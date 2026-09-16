@@ -3,7 +3,6 @@ package com.algorithmic_alliance.eyeaiapp.data
 import android.Manifest
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.annotation.StringRes
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
@@ -18,8 +17,6 @@ object UIDataSource {
 	const val ACTION_OPEN_BATTERY_OPTIMIZATION = "open_battery_optimization"
 
 
-	const val INFORMATION_NOT_FOUND =
-		"Die Information konnte nicht geladen werden. Wir bitten um Entschuldigung."
 
 	val ICON_NOT_FOUND = R.drawable.error_24px
 
@@ -62,6 +59,17 @@ object UIDataSource {
 			"permissionAcceptSemantic" to R.string.microphone_permission_accept_semantic,
 			"confirmPermissionDeclineExplanation" to R.string.microphone_confirm_permission_decline_explanation_text,
 			"confirmPermissionDeclineSemantic" to R.string.microphone_confirm_permission_decline_semantic,
+			"hardPermission" to false
+		), mapOf(
+			"permissionName" to R.string.notification_permission_name,
+			"permissions" to Manifest.permission.POST_NOTIFICATIONS,
+			"permissionExplanation" to R.string.notification_permission_explanation_text,
+			"icon" to R.drawable.error_24px,
+			"iconDescription" to R.string.notification_icon_description,
+			"permissionDeclineSemantic" to R.string.notification_permission_decline_semantic,
+			"permissionAcceptSemantic" to R.string.notification_permission_accept_semantic,
+			"confirmPermissionDeclineExplanation" to R.string.notification_confirm_decline_explanation_text,
+			"confirmPermissionDeclineSemantic" to R.string.notification_confirm_permission_decline_semantic,
 			"hardPermission" to false
 		), mapOf(
 			"permissionName" to R.string.wifi_permission_name,
@@ -320,8 +328,6 @@ object Spacing {
 }
 
 object AppElevation {
-	val level0 = 0.dp
-	val level1 = 1.dp
 	val level2 = 3.dp
 	val level3 = 6.dp
 	val level4 = 8.dp
@@ -335,7 +341,4 @@ val PremiumShapes = Shapes(
 	large = RoundedCornerShape(24.dp),
 	extraLarge = RoundedCornerShape(32.dp)
 )
-
-/** A user-facing label paired with the stable value consumed by the runtime. */
-data class SelectOption(@StringRes val labelRes: Int, val value: String)
 

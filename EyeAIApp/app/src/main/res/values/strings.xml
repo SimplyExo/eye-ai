@@ -67,6 +67,20 @@
 	<string name="microphone_confirm_permission_decline_explanation_text">Wenn Sie den Mikrofonzugriff ablehnen, können Sie keine Sprachbefehle verwenden.</string>
 	<string name="microphone_confirm_permission_decline_semantic">Mikrofonzugriff trotzdem ablehnen. Sprachbefehle werden deaktiviert.</string>
 
+	<string name="notification_permission_name">Benachrichtigungen</string>
+	<string name="notification_permission_explanation_text">Damit EyeAI im Hintergrund zuverlässig angezeigt und über die Dauerbenachrichtigung beendet werden kann, benötigt die App die Berechtigung für Benachrichtigungen.</string>
+	<string name="notification_icon_description">Informationssymbol. Auf dieser Seite können Sie die Benachrichtigungsberechtigung verwalten.</string>
+	<string name="notification_permission_decline_semantic">Aktivitätsbenachrichtigung ablehnen.</string>
+	<string name="notification_permission_accept_semantic">Aktivitätsbenachrichtigung zulassen.</string>
+	<string name="notification_confirm_decline_explanation_text">Wenn Sie Benachrichtigungen ablehnen, kann die Dauerbenachrichtigung für den Hintergrundbetrieb nicht in der Benachrichtigungsleiste angezeigt werden.</string>
+	<string name="notification_confirm_permission_decline_semantic">Benachrichtigungsberechtigung trotzdem ablehnen. Die Dauerbenachrichtigung wird nicht angezeigt.</string>
+
+	<string name="runtime_notification_channel_name">EyeAI-Dauerbetrieb</string>
+	<string name="runtime_notification_channel_description">Kamera, Analyse und Audio laufen auch bei ausgeschaltetem Display.</string>
+	<string name="runtime_notification_title">EyeAI läuft</string>
+	<string name="runtime_notification_text">Kamera-Analyse und Audio sind im Dauerbetrieb aktiv</string>
+	<string name="runtime_notification_stop_action">EyeAI beenden</string>
+
 	<string name="wifi_permission_name">WLAN-Geräte in der Nähe</string>
 	<string name="wifi_permission_explanation_text">Um eine Verbindung zu einem EyeAI-Vision-Gerät herzustellen, benötigt die App Zugriff auf WLAN-Geräte in der Nähe.</string>
 	<string name="wifi_icon_description">WLAN-Symbol. Auf dieser Seite können Sie die WLAN-Berechtigung verwalten.</string>
