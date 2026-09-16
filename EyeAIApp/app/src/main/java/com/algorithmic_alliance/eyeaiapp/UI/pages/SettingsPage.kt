@@ -126,7 +126,8 @@ fun SettingsPage(
 		onEvent(UIEvent.OnUpdateSettingsOpened(true))
 		onDispose {
 			if (!viewModel.uiState.value.actionStartedFromSettings) {
-				//onEvent(UIEvent.OnReturnFromSettings)
+				onEvent(UIEvent.OnReturnFromSettings)
+				onEvent(UIEvent.UpdateSettings)
 				onEvent(UIEvent.OnUpdateSettingsOpened(false))
 			}
 		}
@@ -542,8 +543,9 @@ fun CheckBoxSetting(
 					settingKey, isChecked
 				)
 			}
-			onEvent(UIEvent.UpdateSettings)
-
+			// audio playback would somehow start again in the settings if UpdateSettings was called right here
+			if(!(settingKey == context.getString(R.string.depth_playback_setting) || settingKey == context.getString(R.string.object_playback_setting)))
+				onEvent(UIEvent.UpdateSettings)
 		})
 	}
 }
