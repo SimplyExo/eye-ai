@@ -15,7 +15,7 @@ use eye_ai_core_rs::{
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::{
 	ffi::CString,
-	sync::{Arc, LazyLock, OnceLock, RwLock},
+	sync::{Arc, LazyLock, RwLock},
 };
 use tracing::{debug, error, trace};
 
@@ -24,12 +24,15 @@ mod android_logging;
 #[cfg(target_os = "android")]
 use android_logging::AndroidLogLayer;
 
-static METRIC_DEPTH_MODEL: OnceLock<RwLock<MetricDepthModel>> = OnceLock::new();
+static METRIC_DEPTH_MODEL: LazyLock<RwLock<Option<MetricDepthModel>>> =
+	LazyLock::new(|| RwLock::new(None));
 
-static YOLO_MODEL: OnceLock<RwLock<YoloModel>> = OnceLock::new();
-static OBJECT_TRACKER: OnceLock<RwLock<ObjectTracker>> = OnceLock::new();
+static YOLO_MODEL: LazyLock<RwLock<Option<YoloModel>>> = LazyLock::new(|| RwLock::new(None));
+static OBJECT_TRACKER: LazyLock<RwLock<Option<ObjectTracker>>> =
+	LazyLock::new(|| RwLock::new(None));
 
-static SEGMENTATION_MODEL: OnceLock<RwLock<SegmentationModel>> = OnceLock::new();
+static SEGMENTATION_MODEL: LazyLock<RwLock<Option<SegmentationModel>>> =
+	LazyLock::new(|| RwLock::new(None));
 
 static DEPTH_PROFILING_FRAME: LazyLock<ProfilingFrame> =
 	LazyLock::new(|| ProfilingFrame::new("Depth"));
@@ -66,10 +69,17 @@ fn wait_for_metric_depth_model<R>(f: impl FnOnce(&mut MetricDepthModel) -> R) ->
 	let mut model = {
 		profile_scope!(DEPTH_PROFILING_FRAME, "wait_for_metric_depth_model");
 
-		METRIC_DEPTH_MODEL.wait().write().unwrap()
+		loop {
+			let model = METRIC_DEPTH_MODEL.write().unwrap();
+			if model.is_some() {
+				break model;
+			}
+			drop(model);
+			std::thread::yield_now();
+		}
 	};
 
-	f(&mut model)
+	f(model.as_mut().unwrap())
 }
 
 /// Waits for the RwLock to be free and also waits for the Option to be Some ^= "waits for the model to be loaded"
@@ -77,10 +87,17 @@ fn wait_for_yolo_model<R>(f: impl FnOnce(&mut YoloModel) -> R) -> R {
 	let mut model = {
 		profile_scope!(OBJECT_PROFILING_FRAME, "wait_for_yolo_model");
 
-		YOLO_MODEL.wait().write().unwrap()
+		loop {
+			let model = YOLO_MODEL.write().unwrap();
+			if model.is_some() {
+				break model;
+			}
+			drop(model);
+			std::thread::yield_now();
+		}
 	};
 
-	f(&mut model)
+	f(model.as_mut().unwrap())
 }
 
 /// Waits for the RwLock to be free and also waits for the Option to be Some ^= "waits for the model to be loaded"
@@ -88,10 +105,17 @@ fn wait_for_segmentation_model<R>(f: impl FnOnce(&mut SegmentationModel) -> R) -
 	let mut model = {
 		profile_scope!(SEGMENTATION_PROFILING_FRAME, "wait_for_segmentation_model");
 
-		SEGMENTATION_MODEL.wait().write().unwrap()
+		loop {
+			let model = SEGMENTATION_MODEL.write().unwrap();
+			if model.is_some() {
+				break model;
+			}
+			drop(model);
+			std::thread::yield_now();
+		}
 	};
 
-	f(&mut model)
+	f(model.as_mut().unwrap())
 }
 
 fn try_change_spatial_audio<R>(f: impl FnOnce(&mut SpatialAudio) -> R) -> Option<R> {
@@ -266,9 +290,7 @@ pub fn initMetricDepthModel(
 
 	debug!("finished creating metric depth model");
 
-	METRIC_DEPTH_MODEL
-		.set(RwLock::new(metric_depth_model))
-		.expect("already set METRIC_DEPTH_MODEL");
+	*METRIC_DEPTH_MODEL.write().unwrap() = Some(metric_depth_model);
 }
 
 #[uniffi::export]
@@ -367,14 +389,10 @@ pub fn initYoloRuntime(
 
 	debug!("created yolo model");
 
-	YOLO_MODEL
-		.set(RwLock::new(yolo_model))
-		.expect("already set YOLO_MODEL");
+	*YOLO_MODEL.write().unwrap() = Some(yolo_model);
 
 	let object_tracker = ObjectTracker::new(labels, &OBJECT_PROFILING_FRAME);
-	OBJECT_TRACKER
-		.set(RwLock::new(object_tracker))
-		.expect("already set OBJECT_TRACKER");
+	*OBJECT_TRACKER.write().unwrap() = Some(object_tracker);
 }
 
 #[derive(uniffi::Record, Clone, Debug)]
@@ -436,10 +454,10 @@ pub fn runYoloOperation(mut input: UniffiFloatBufferWrapper) -> Vec<UniffiDetect
 		)) {
 			Ok(detected_objects) => {
 				let tracked_objects = OBJECT_TRACKER
-					.get()
-					.expect("OBJECT_TRACKER should have been created when yolo model was created")
 					.write()
 					.unwrap()
+					.as_mut()
+					.expect("OBJECT_TRACKER should have been created when yolo model was created")
 					.update(detected_objects);
 				tracked_objects
 					.into_iter()
@@ -508,9 +526,7 @@ pub fn initSegmentationRuntime(
 
 	debug!("created segmentation model");
 
-	SEGMENTATION_MODEL
-		.set(RwLock::new(segmentation_model))
-		.expect("already set SEGMENTATION_MODEL");
+	*SEGMENTATION_MODEL.write().unwrap() = Some(segmentation_model);
 }
 
 #[uniffi::export]
