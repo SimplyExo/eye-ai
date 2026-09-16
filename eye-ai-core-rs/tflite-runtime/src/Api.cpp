@@ -4,7 +4,7 @@
 
 inline static const char* allocate_error_msg(const std::string& error_msg) {
 	// NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-	char* const copied_error_msg = new char[error_msg.size()];
+	char* const copied_error_msg = new char[error_msg.size() + 1];
 	std::strcpy(copied_error_msg, error_msg.c_str());
 	return copied_error_msg;
 }
