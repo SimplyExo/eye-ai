@@ -13,6 +13,7 @@ import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntime
+import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntimeService
 import com.algorithmic_alliance.eyeaiapp.settingsparser.LocalSettingsParser
 import java.io.File
 import java.util.Locale
@@ -115,10 +116,15 @@ class EyeAIApp : Application() {
 		registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
 			override fun onActivityStarted(activity: Activity) {
 				visibleActivityCount.incrementAndGet()
+				EyeAIRuntimeService.onUiVisibilityChanged(this@EyeAIApp, isVisible = true)
 			}
 
 			override fun onActivityStopped(activity: Activity) {
 				visibleActivityCount.updateAndGet { count -> (count - 1).coerceAtLeast(0) }
+				EyeAIRuntimeService.onUiVisibilityChanged(
+					this@EyeAIApp,
+					isVisible = hasVisibleActivity(),
+				)
 			}
 
 			override fun onActivityCreated(activity: Activity, state: Bundle?) = Unit

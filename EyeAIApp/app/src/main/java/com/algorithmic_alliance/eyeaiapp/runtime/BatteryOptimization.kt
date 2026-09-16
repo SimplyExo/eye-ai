@@ -9,7 +9,7 @@ import android.provider.Settings
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 
-/** User-controlled access to Android's battery-optimization settings. */
+// User-controlled access to Android's battery-optimization settings.
 object BatteryOptimization {
 	fun isExempt(context: Context): Boolean {
 		val powerManager = context.getSystemService(PowerManager::class.java)

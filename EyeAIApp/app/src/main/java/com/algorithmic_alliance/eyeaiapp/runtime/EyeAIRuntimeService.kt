@@ -25,6 +25,7 @@ class EyeAIRuntimeService : LifecycleService() {
 	override fun onCreate() {
 		Log.d(EyeAIApp.APP_LOG_TAG, "EyeAIRuntimeService onCreate")
 		super.onCreate()
+		isServiceCreated = true
 		runtime = (application as EyeAIApp).runtime
 		wakeLock = EyeAIWakeLock(this)
 		createNotificationChannel()
@@ -39,11 +40,7 @@ class EyeAIRuntimeService : LifecycleService() {
 		super.onStartCommand(intent, flags, startId)
 
 		if (intent?.action == ACTION_STOP) {
-			if ((application as EyeAIApp).hasVisibleActivity()) {
-				Log.i(EyeAIApp.APP_LOG_TAG, "Ignoring notification stop action while EyeAI UI is visible")
-			} else {
-				stopRuntimeAndSelf()
-			}
+			stopRuntimeAndSelf()
 			return START_NOT_STICKY
 		}
 
@@ -122,6 +119,7 @@ class EyeAIRuntimeService : LifecycleService() {
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun onDestroy() {
+		isServiceCreated = false
 		try {
 			runtime.stopOperation()
 		} catch (error: Throwable) {
@@ -139,9 +137,7 @@ class EyeAIRuntimeService : LifecycleService() {
 	}
 
 	/**
-	 * The notification action is an explicit user stop, but only while EyeAI is
-	 * outside the foreground. This prevents the notification from ending an
-	 * active UI session.
+	 * The notification action is an explicit user stop.
 	 */
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun stopRuntimeAndSelf() {
@@ -219,22 +215,27 @@ class EyeAIRuntimeService : LifecycleService() {
 		getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
 	}
 
-	private fun createNotification(): Notification =
-		NotificationCompat.Builder(this, CHANNEL_ID).setSmallIcon(R.drawable.photo_camera_24px)
-			.setContentTitle(getString(R.string.runtime_notification_title))
-			.setContentText(getString(R.string.runtime_notification_text))
-			.setCategory(NotificationCompat.CATEGORY_SERVICE)
-			.setPriority(NotificationCompat.PRIORITY_LOW).setOngoing(true).setOnlyAlertOnce(true)
-			.addAction(
-				R.drawable.stop_24px,
-				getString(R.string.runtime_notification_stop_action),
-				stopPendingIntent(this),
-			).build()
+	private fun createNotification(): Notification = buildNotification(
+		this,
+		showStopAction = !(application as EyeAIApp).hasVisibleActivity(),
+	)
 
 	companion object {
 		private const val CHANNEL_ID = "eyeai_runtime"
 		private const val NOTIFICATION_ID = 4101
 		private const val ACTION_STOP = "com.algorithmic_alliance.eyeaiapp.action.STOP_RUNTIME"
+
+		@Volatile
+		private var isServiceCreated = false
+
+		//used to check whether user has visible activity in order to send/unsend notification which allows killing the app
+		internal fun onUiVisibilityChanged(context: Context, isVisible: Boolean) {
+			if (!isServiceCreated) return
+			context.getSystemService(NotificationManager::class.java).notify(
+				NOTIFICATION_ID,
+				buildNotification(context, showStopAction = !isVisible),
+			)
+		}
 
 		// Call only from a visible Activity/UI event.
 		fun startFromVisible(context: Context): Boolean {
@@ -256,6 +257,25 @@ class EyeAIRuntimeService : LifecycleService() {
 
 		fun stop(context: Context) {
 			context.stopService(Intent(context, EyeAIRuntimeService::class.java))
+		}
+
+		private fun buildNotification(context: Context, showStopAction: Boolean): Notification {
+			val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+				.setSmallIcon(R.drawable.photo_camera_24px)
+				.setContentTitle(context.getString(R.string.runtime_notification_title))
+				.setContentText(context.getString(R.string.runtime_notification_text))
+				.setCategory(NotificationCompat.CATEGORY_SERVICE)
+				.setPriority(NotificationCompat.PRIORITY_LOW)
+				.setOngoing(true)
+				.setOnlyAlertOnce(true)
+			if (showStopAction) {
+				builder.addAction(
+					R.drawable.stop_24px,
+					context.getString(R.string.runtime_notification_stop_action),
+					stopPendingIntent(context),
+				)
+			}
+			return builder.build()
 		}
 
 		private fun stopPendingIntent(context: Context): PendingIntent = PendingIntent.getService(
