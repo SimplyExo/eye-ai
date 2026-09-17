@@ -204,7 +204,7 @@ class StateMachine(
 		)
 		lastDialogContext = null
 		speechOutputHandler.speakAndHandleUi(GenericCancellation.RESPONSE)
-		return StateUpdate(State.IDLE, null)
+		return StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
 	}
 
 	private suspend fun handleTextRecognitionDirectly(): StateUpdate {
@@ -213,7 +213,7 @@ class StateMachine(
 		if (!ocrSuccess) {
 			Log.d(EyeAIApp.APP_LOG_TAG, "OCR analysis failed")
 			speechOutputHandler.speakAndHandleUi("Entschuldigung, die Texterkennung konnte nicht durchgeführt werden.")
-			return StateUpdate(State.IDLE, null)
+			return StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
 		}
 
 		delay(200.milliseconds) // Wait for OCR result to be available
@@ -242,7 +242,7 @@ class StateMachine(
 		Log.d(EyeAIApp.APP_LOG_TAG, "OCRToText generated: $readableText")
 		speechOutputHandler.speakAndHandleUi(readableText)
 
-		return StateUpdate(State.IDLE, null)
+		return StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
 	}
 
 	private fun openGuidedSettingsMenu(): StateUpdate {
@@ -296,7 +296,7 @@ class StateMachine(
 				"Welches Objekt soll ich vermessen? Ich sehe: ${visibleObjects.take(5).joinToString(", ")}."
 			}
 			speechOutputHandler.speakAndHandleUi(response)
-			return StateUpdate(State.IDLE, null)
+			return StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
 		}
 
 		return handleObjectDetectionRequest(objectQuery, distanceOnly = true)
@@ -321,7 +321,7 @@ class StateMachine(
 			} else {
 				speechOutputHandler.speakAndHandleUi("Entschuldigung, ich konnte gerade keine Objekte erkennen.")
 			}
-			return StateUpdate(State.IDLE, null)
+			return StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
 		}
 
 		Log.d(
@@ -503,6 +503,7 @@ class StateMachine(
 
 			else -> error("Intent ${result.intent} is not external to settings")
 		}
+
 	}
 
 	suspend fun handleSettingsChoice(final: String): StateUpdate {
