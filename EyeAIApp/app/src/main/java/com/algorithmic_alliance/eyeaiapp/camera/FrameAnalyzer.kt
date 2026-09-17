@@ -44,6 +44,15 @@ data class FrameAnalysisUpdate(
 	val frameSize: Size? = null,
 )
 
+// Lightweight source/output heartbeat used by the runtime safety monitor.
+data class FrameAnalyzerHealth(
+	val sourceFrameCount: Long,
+	val submittedFrameCount: Long,
+	val lastAcceptedFrameAtNanos: Long,
+	val lastDepthOutputAtNanos: Long,
+	val lastObjectOutputAtNanos: Long,
+)
+
 /**
  * Common frame analyzer used by every future video input source.
  *
@@ -59,6 +68,11 @@ class FrameAnalyzer(
 	private val latestFrame = AtomicReference<AnalysisFrame?>(null)
 	private val frameSequence = AtomicLong(0L)
 	private val frameAvailable = MutableStateFlow(0L)
+	private val sourceFrameCount = AtomicLong(0L)
+	private val submittedFrameCount = AtomicLong(0L)
+	private val lastAcceptedFrameAtNanos = AtomicLong(0L)
+	private val lastDepthOutputAtNanos = AtomicLong(0L)
+	private val lastObjectOutputAtNanos = AtomicLong(0L)
 	private val lifecycleJob = SupervisorJob()
 	private val depthExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 	private val objectExecutor: ExecutorService = Executors.newSingleThreadExecutor()
@@ -85,7 +99,9 @@ class FrameAnalyzer(
 	fun start() {
 		synchronized(stateLock) {
 			if (startedValue || shutdownValue) return
+			clearModelOutputs()
 			startedValue = true
+			lastAcceptedFrameAtNanos.set(0L)
 			depthJob = depthScope.launch { runDepthLoop() }
 			objectJob = objectScope.launch { runObjectDetectionLoop() }
 			segmentationJob = segmentationScope.launch { runSegmentationLoop() }
@@ -107,7 +123,8 @@ class FrameAnalyzer(
 			frameToRelease = latestFrame.getAndSet(null)
 		}
 		frameToRelease?.release()
-		AIModelData.detectedObjects.set(emptyArray())
+		lastAcceptedFrameAtNanos.set(0L)
+		clearModelOutputs()
 	}
 
 	/** Permanently closes the analyzer. The runtime calls this only at process shutdown. */
@@ -129,7 +146,7 @@ class FrameAnalyzer(
 		lifecycleJob.cancel()
 		depthExecutor.shutdownNow()
 		objectExecutor.shutdownNow()
-		AIModelData.detectedObjects.set(emptyArray())
+		clearModelOutputs()
 	}
 
 	/**
@@ -143,6 +160,8 @@ class FrameAnalyzer(
 				return false
 			}
 			val sequence = frameSequence.incrementAndGet()
+			submittedFrameCount.incrementAndGet()
+			lastAcceptedFrameAtNanos.set(System.nanoTime())
 			latestFrame.getAndSet(frame)?.release()
 			frameAvailable.value = sequence
 			return true
@@ -159,11 +178,12 @@ class FrameAnalyzer(
 			bitmap = bitmap,
 			timestampNanos = timestampNanos,
 			rotationDegrees = rotationDegrees,
-		)
+		).also { recordSourceFrame(timestampNanos) }
 	)
 
 	/** Records source timing without making the analyzer depend on a source API. */
 	fun recordSourceFrame(timestampNanos: Long) {
+		sourceFrameCount.incrementAndGet()
 		val now = System.nanoTime()
 		val previous = lastCameraFrameTimestamp
 		if (previous > 0L) {
@@ -192,6 +212,7 @@ class FrameAnalyzer(
 				val inferenceDuration = measureTime {
 					uniffi.NativeLib.newDepthFrame()
 					AIModelData.depthEstimationData.set(modelInference.prediction)
+					lastDepthOutputAtNanos.set(System.nanoTime())
 					val colorMappedImage = NativeLib.metricDepthColormap(
 						modelInference.prediction.asUniffiWrapper(),
 						modelInference.inputDim,
@@ -240,6 +261,7 @@ class FrameAnalyzer(
 			} catch (cancelled: kotlinx.coroutines.CancellationException) {
 				throw cancelled
 			} catch (error: Throwable) {
+				AIModelData.depthEstimationData.set(null)
 				Log.e(EyeAIApp.APP_LOG_TAG, "Depth frame processing failed", error)
 			} finally {
 				frame.release()
@@ -258,6 +280,7 @@ class FrameAnalyzer(
 					uniffi.NativeLib.newObjectFrame()
 					val objects = runtime.runObjectInference(frame.bitmap)
 					AIModelData.detectedObjects.set(objects ?: emptyArray())
+					lastObjectOutputAtNanos.set(System.nanoTime())
 					onUpdate(
 						FrameAnalysisUpdate(
 							detectedObjects = objects,
@@ -274,6 +297,7 @@ class FrameAnalyzer(
 			} catch (cancelled: kotlinx.coroutines.CancellationException) {
 				throw cancelled
 			} catch (error: Throwable) {
+				AIModelData.detectedObjects.set(emptyArray())
 				Log.e(EyeAIApp.APP_LOG_TAG, "Object-detection frame processing failed", error)
 			} finally {
 				frame.release()
@@ -314,6 +338,7 @@ class FrameAnalyzer(
 			} catch (cancelled: kotlinx.coroutines.CancellationException) {
 				throw cancelled
 			} catch (error: Throwable) {
+				AIModelData.segmentationOutput.set(null)
 				Log.e(EyeAIApp.APP_LOG_TAG, "Segmentation frame processing failed", error)
 			} finally {
 				frame.release()
@@ -324,6 +349,23 @@ class FrameAnalyzer(
 	private fun retainLatestFrame(): AnalysisFrame? {
 		val frame = latestFrame.get() ?: return null
 		return frame.takeIf { it.tryRetain() }
+	}
+
+	fun healthSnapshot(): FrameAnalyzerHealth = FrameAnalyzerHealth(
+		sourceFrameCount = sourceFrameCount.get(),
+		submittedFrameCount = submittedFrameCount.get(),
+		lastAcceptedFrameAtNanos = lastAcceptedFrameAtNanos.get(),
+		lastDepthOutputAtNanos = lastDepthOutputAtNanos.get(),
+		lastObjectOutputAtNanos = lastObjectOutputAtNanos.get(),
+	)
+
+	// Removes data that would otherwise be reused after an input stall.
+	fun clearModelOutputs() {
+		AIModelData.detectedObjects.set(emptyArray())
+		AIModelData.depthEstimationData.set(null)
+		AIModelData.segmentationOutput.set(null)
+		lastDepthOutputAtNanos.set(0L)
+		lastObjectOutputAtNanos.set(0L)
 	}
 
 	suspend fun runOcrAnalysis(): Boolean = withContext(Dispatchers.IO) {

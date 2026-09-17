@@ -48,6 +48,11 @@ class MainActivity : AppCompatActivity() {
 		viewModel.onResume()
 	}
 
+	override fun onStop() {
+		(application as? EyeAIApp)?.runtime?.detachPreview()
+		super.onStop()
+	}
+
 	override fun onDestroy() {
 		// Only the optional surface is detached. The service-owned analysis,
 		// audio and models intentionally outlive Activity recreation.

@@ -45,7 +45,10 @@ open class EyeAIVision(
 				onSocketConnectionEstablished()
 
 				while (isActive) {
-					val char = reader.read().toChar()
+					val value = reader.read()
+
+					if (value == -1) break
+					val char = value.toChar()
 
 					if (char == '1') {
 						onSingleClick()

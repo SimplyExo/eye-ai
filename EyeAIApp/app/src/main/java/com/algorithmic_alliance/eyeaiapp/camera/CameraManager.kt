@@ -6,6 +6,7 @@ import android.util.Range
 import android.util.Size
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
+import androidx.camera.core.UseCase
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
@@ -36,6 +37,7 @@ class CameraManager(
 	private var previewProvider = WeakReference<Preview.SurfaceProvider>(null)
 	private var previewView = WeakReference<PreviewView>(null)
 	private var lifecycleOwner = WeakReference<LifecycleOwner>(null)
+	private var cameraSelector: androidx.camera.core.CameraSelector? = null
 	private var bindingGeneration = 0L
 	private var bindInFlight = false
 	private var shutdown = false
@@ -78,7 +80,15 @@ class CameraManager(
 					}
 					if (!stillRequested) return@addListener
 
-					val preview = Preview.Builder().setTargetFrameRate(Range(60, 120)).build()
+					// Do not keep a surface-less Preview bound while the Activity is
+					// backgrounded. On some devices (S25 and Fairphone tested) that stops the complete CameraX
+					// graph, including ImageAnalysis. Headless operation binds only
+					// ImageAnalysis and adds Preview when a PreviewView attaches.
+					val preview = synchronized(lock) {
+						previewProvider.get()?.let {
+							Preview.Builder().setTargetFrameRate(Range(60, 120)).build()
+						}
+					}
 					val analysis = ImageAnalysis.Builder()
 						.setImageQueueDepth(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 						.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -89,13 +99,13 @@ class CameraManager(
 
 					// CameraManager is the sole local CameraX owner. Unbind
 					// only at a new binding boundary, never on UI recreation.
+					val selector = mostWideCameraSelector(provider)
 					provider.unbindAll()
-					provider.bindToLifecycle(
-						owner,
-						mostWideCameraSelector(provider),
-						analysis,
-						preview,
-					)
+					val useCases = buildList<UseCase> {
+						add(analysis)
+						preview?.let(::add)
+					}
+					provider.bindToLifecycle(owner, selector, *useCases.toTypedArray())
 
 					val accepted = synchronized(lock) {
 						if (generation != bindingGeneration || shutdown) {
@@ -104,6 +114,7 @@ class CameraManager(
 							cameraProvider = provider
 							imageAnalysis = analysis
 							previewUseCase = preview
+							cameraSelector = selector
 							true
 						}
 					}
@@ -112,8 +123,7 @@ class CameraManager(
 						return@addListener
 					}
 
-					val surfaceProvider = previewProvider.get()
-					preview.surfaceProvider = surfaceProvider
+					preview?.surfaceProvider = previewProvider.get()
 					onStateChanged(true, null)
 				} catch (error: Throwable) {
 					Log.e(EyeAIApp.APP_LOG_TAG, "CameraX binding failed", error)
@@ -138,12 +148,42 @@ class CameraManager(
 		}
 		val executor = synchronized(lock) { mainExecutor }
 		executor?.execute {
-			val useCase = synchronized(lock) {
-				previewUseCase.takeIf {
-					previewView.get() === cameraPreviewView && previewProvider.get() === provider
-				}
+			val stillAttached = synchronized(lock) {
+				previewView.get() === cameraPreviewView && previewProvider.get() === provider
 			}
-			useCase?.surfaceProvider = provider
+			if (!stillAttached) return@execute
+
+			val providerInstance: ProcessCameraProvider?
+			val owner: LifecycleOwner?
+			val selector: androidx.camera.core.CameraSelector?
+			val existingPreview: Preview?
+			synchronized(lock) {
+				providerInstance = cameraProvider
+				owner = lifecycleOwner.get()
+				selector = cameraSelector
+				existingPreview = previewUseCase
+			}
+
+			if (existingPreview != null) {
+				existingPreview.surfaceProvider = provider
+				return@execute
+			}
+			if (providerInstance == null || owner == null || selector == null) return@execute
+
+			try {
+				val previewUseCase = Preview.Builder()
+					.setTargetFrameRate(Range(60, 120))
+					.build()
+				providerInstance.bindToLifecycle(owner, selector, previewUseCase)
+				previewUseCase.surfaceProvider = provider
+				synchronized(lock) {
+					if (previewView.get() === cameraPreviewView && previewProvider.get() === provider) {
+						this@CameraManager.previewUseCase = previewUseCase
+					}
+				}
+			} catch (error: Throwable) {
+				Log.w(EyeAIApp.APP_LOG_TAG, "CameraX preview binding failed", error)
+			}
 		}
 	}
 
@@ -159,10 +199,23 @@ class CameraManager(
 		}
 		val executor = synchronized(lock) { mainExecutor }
 		executor?.execute {
-			val useCase = synchronized(lock) {
-				previewUseCase.takeIf { previewView.get() == null }
+			val providerInstance: ProcessCameraProvider?
+			val useCase: Preview?
+			synchronized(lock) {
+				if (previewView.get() != null) return@execute
+				providerInstance = cameraProvider
+				useCase = previewUseCase
+				previewUseCase = null
 			}
-			useCase?.surfaceProvider = null
+			if (providerInstance != null && useCase != null) {
+				try {
+					// Unbind Preview itself instead of leaving a surface-less Preview
+					// in the graph. ImageAnalysis remains bound headlessly.
+					providerInstance.unbind(useCase)
+				} catch (error: Throwable) {
+					Log.w(EyeAIApp.APP_LOG_TAG, "CameraX preview unbind failed", error)
+				}
+			}
 		}
 	}
 
@@ -179,6 +232,7 @@ class CameraManager(
 			previewView.clear()
 			previewProvider.clear()
 			lifecycleOwner.clear()
+			cameraSelector = null
 		}
 		val executor = synchronized(lock) { mainExecutor }
 		executor?.execute {

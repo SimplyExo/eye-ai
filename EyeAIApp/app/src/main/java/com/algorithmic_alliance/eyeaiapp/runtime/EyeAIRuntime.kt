@@ -49,11 +49,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uniffi.NativeLib.UniffiDetectedObject
@@ -65,6 +67,7 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 import androidx.core.net.toUri
 import com.algorithmic_alliance.eyeaiapp.AIModelData
+import kotlin.time.Duration.Companion.milliseconds
 
 /** Output of a depth inference while the model read lock is held. */
 data class DepthInferenceResult(
@@ -122,6 +125,8 @@ class EyeAIRuntime internal constructor(
 	private var mediaPlayerValue: MediaPlayer? = null
 	private var eyeAIVisionValue: EyeAIVision? = null
 	private var bitmapFlowValue: MutableSharedFlow<Bitmap>? = null
+	private var analysisHealthJob: kotlinx.coroutines.Job? = null
+	private var lastCameraRestartAtNanos = 0L
 
 	val spatialAudioResumeController = SpatialAudioResumeController(
 		scope = runtimeScope,
@@ -299,6 +304,7 @@ class EyeAIRuntime internal constructor(
 			SpatialAudio.start()
 			serviceOwner = WeakReference(owner)
 			startVideoSource(owner)
+			startAnalysisHealthMonitor()
 			if (settings.enableSpeechRecognition && hasRecordAudioPermission()) {
 				initSpeechService()
 			}
@@ -326,6 +332,10 @@ class EyeAIRuntime internal constructor(
 		if (!lifecycleGate.stop()) return
 		cleanupStep("spatial-audio resume controller") {
 			spatialAudioResumeController.cancel()
+		}
+		cleanupStep("analysis health monitor") {
+			analysisHealthJob?.cancel()
+			analysisHealthJob = null
 		}
 		cleanupStep("frame analyzer") { frameAnalyzer.stop() }
 		cleanupStep("video source") { stopVideoSource() }
@@ -606,6 +616,75 @@ class EyeAIRuntime internal constructor(
 		}
 	}
 
+	//Detects when the frame source stops delivering new frames
+	//If no valid frame arrives for too long, old detection results are cleared
+	//so SpatialAudio and object detection do not continue using stale data.
+	//For CameraX, the camera is restarted once automatically.
+	//External sources are only reported and cleared here, reconnecting them is
+	//handled elsewhere.
+
+	private fun startAnalysisHealthMonitor() {
+		analysisHealthJob?.cancel()
+		lastCameraRestartAtNanos = 0L
+		val monitorStartedAtNanos = System.nanoTime()
+		analysisHealthJob = runtimeScope.launch {
+			var stallReported = false
+			while (isActive && lifecycleGate.isActive) {
+				delay(2_000L.milliseconds)
+				val now = System.nanoTime()
+				val health = frameAnalyzer.healthSnapshot()
+				val ageNanos = if (health.lastAcceptedFrameAtNanos == 0L) {
+					now - monitorStartedAtNanos
+				} else {
+					now - health.lastAcceptedFrameAtNanos
+				}
+				val stillStarting = health.lastAcceptedFrameAtNanos == 0L &&
+					(now - monitorStartedAtNanos) < INPUT_START_GRACE_NANOS
+				if (stillStarting) continue
+
+				if (ageNanos > INPUT_STALE_TIMEOUT_NANOS) {
+					if (!stallReported) {
+						stallReported = true
+						frameAnalyzer.clearModelOutputs()
+						pauseSpatialAudio()
+						Log.e(
+							EyeAIApp.APP_LOG_TAG,
+							"Analysis input stalled for ${ageNanos / 1_000_000} ms; clearing model outputs",
+						)
+						_state.update {
+							it.copy(lastError = "Kein neues Kamerabild; Analyse wird neu gestartet")
+						}
+					}
+
+					if (settings.inputSource == context.getString(R.string.input_is_camera) &&
+						now - lastCameraRestartAtNanos > CAMERA_RESTART_COOLDOWN_NANOS
+					) {
+						lastCameraRestartAtNanos = now
+						val owner = serviceOwner.get()
+						if (owner != null) {
+							Log.w(EyeAIApp.APP_LOG_TAG, "Restarting stalled CameraX analysis source")
+							cameraManager.stop()
+							cameraManager.start(
+								context = context,
+								owner = owner,
+								preferredImageSize = EyeAIApp.PREFERRED_CAMERA_RESOLUTION,
+								cameraPreviewView = null,
+								frameAnalyzer = frameAnalyzer,
+							)
+						}
+					}
+				} else if (stallReported) {
+					stallReported = false
+					Log.i(EyeAIApp.APP_LOG_TAG, "Analysis input recovered; restoring configured spatial audio")
+					_state.update { it.copy(lastError = null) }
+					if (!voskUserStart.get() && !textToSpeechInstance.isSpeaking()) {
+						restoreSpatialAudioFromSettings("ANALYSIS_RECOVERED")
+					}
+				}
+			}
+		}
+	}
+
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun startMediaSource(uri: Uri) {
 		mediaPlayerValue = MediaPlayer(
@@ -638,7 +717,6 @@ class EyeAIRuntime internal constructor(
 				_state.update { it.copy(lastError = error.message) }
 			},
 			onWebrtcFrame = { bitmap: Bitmap ->
-				frameAnalyzer.recordSourceFrame(System.nanoTime())
 				val success = flow.tryEmit(bitmap)
 				if (!success) {
 					Log.v(EyeAIApp.APP_LOG_TAG, "WebRTC frame dropped (flow full)")
@@ -746,6 +824,12 @@ class EyeAIRuntime internal constructor(
 		} catch (error: Throwable) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "EyeAI cleanup failed for $name", error)
 		}
+	}
+
+	private companion object {
+		const val INPUT_START_GRACE_NANOS = 15_000_000_000L
+		const val INPUT_STALE_TIMEOUT_NANOS = 5_000_000_000L
+		const val CAMERA_RESTART_COOLDOWN_NANOS = 10_000_000_000L
 	}
 
 	/** Releases all runtime resources; only the Application calls this at shutdown. */
