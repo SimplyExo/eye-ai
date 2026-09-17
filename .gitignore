@@ -1,4 +1,6 @@
 /.idea
+/.vscode
+.direnv
 .zed
 /.venv-settings-clean-v2
 /.venv

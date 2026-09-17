@@ -1,5 +1,5 @@
 {
-  description = "eye-ai-core-rs";
+  description = "dev shell to build eye-ai-core-rs and EyeAIApp";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -34,7 +34,7 @@
       in
       {
         devShells.default = pkgs.mkShell.override { stdenv = pkgs.gccStdenv; } {
-          name = "eye-ai-core-rs";
+          name = "eye-ai";
 
           nativeBuildInputs = with pkgs; [
             rustToolchain

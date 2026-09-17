@@ -28,7 +28,24 @@ Eine barrierefreien einen Audioguide zur Nutzung der Sprachmodelle findet man so
 
 **Die Verarbeitung aller Sprachbefehle läuft vollkommen lokal und privat.**
 
+## Wie from-source compilen?
 
+1. `nix` installieren (siehe <https://nixos.org/download/>, nix der Packagemanager, nicht NixOS das distro, auch wenn NixOS cool ist).
+
+2.	```bash
+	nix develop
+
+	cd eye-ai-core
+	cargo build-android
+
+	cd ../EyeAIApp/
+	./gradlew assembleProduction
+	```
+Die APK ist dann in `./app/build/outputs/apk/production/app-production.apk`.
+
+Falls man direkt installieren will kann man auch anstatt von `./gradlew assembleProduction` einfach `./gradlew installProduction` ausführen.
+
+(`nix develop` ist nicht nötig wenn sie `direnv` installiert haben)
 
 
 ## Index aller README's:
