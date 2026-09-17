@@ -89,9 +89,9 @@
 	<string name="vision_card_battery_text">Battery</string>
 	<string name="depth_estimation_card_title">Depth estimation</string>
 	<string name="vosk_card_title">Speech recognition</string>
-	<string name="vosk_card_responding">EyeAI responding…</string>
+	<string name="vosk_card_responding">EyeAI responding...</string>
 	<string name="vosk_card_missing_permission">Microphone permission required</string>
-	<string name="vosk_card_listening">EyeAI listening…</string>
+	<string name="vosk_card_listening">EyeAI listening...</string>
 	<string name="vosk_card_disabled">Speech recognition disabled</string>
 	<string name="vosk_card_ready">EyeAI ready – tap the button to start</string>
 	<string name="status_card_performance_poor">Poor</string>
@@ -184,7 +184,7 @@
 
 	<string name="audio_device">Audio device</string>
 	<string name="vision">EyeAI-Vision</string>
-	<string name="enter_text_in_text_field_text">Enter text…</string>
+	<string name="enter_text_in_text_field_text">Enter text...</string>
 	<string name="finished_editing_text">Done</string>
 	<string name="button_semantic">Button</string>
 	<string name="choose_vision_name_semantic">On this page, you can connect to your EyeAI Vision.</string>
