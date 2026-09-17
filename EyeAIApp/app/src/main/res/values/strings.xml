@@ -152,7 +152,7 @@
 	<string name="settings_category_audio_playback">Audiowiedergabe</string>
 	<string name="settings_category_device_manager">Geräteverwaltung</string>
 	<string name="settings_category_object_detection">Objekterkennung</string>
-	<string name="settings_category_segmentation">Segmentation</string>
+	<string name="settings_category_segmentation">Segmentierung</string>
 	<string name="settings_category_input_source">Eingabequelle</string>
 	<string name="settings_category_developer">Entwickleroptionen</string>
 	<string name="settings_category_build_info">Build-Informationen</string>
@@ -198,10 +198,10 @@
 	<string name="setting_object_framerate_limit_description">Die maximale Anzahl an Bildern pro Sekunde, die von der Objekterkennung verarbeitet werden.</string>
 
 	<!-- Segmentation -->
-	<string name="setting_segmentation_enabled_title">Segmentation aktivieren</string>
+	<string name="setting_segmentation_enabled_title">Segmentierung aktivieren</string>
 	<string name="setting_segmentation_description">Wenn aktiviert, filtert die KI unwichtige Bereiche wie den Boden weg.</string>
-	<string name="setting_enable_segmentation_framerate_limiter_description">Begrenzt die Bildrate der Segmentation, um Ressourcen für andere Aufgaben freizugeben.</string>
-	<string name="setting_segmentation_framerate_limit_description">Die maximale Anzahl an Bildern pro Sekunde, die von der Segmentation verarbeitet werden.</string>
+	<string name="setting_enable_segmentation_framerate_limiter_description">Begrenzt die Bildrate der Segmentierung, um Ressourcen für andere Aufgaben freizugeben.</string>
+	<string name="setting_segmentation_framerate_limit_description">Die maximale Anzahl an Bildern pro Sekunde, die von der Segmentierung verarbeitet werden.</string>
 
 	<!-- Input Source -->
 	<string name="setting_input_source_title">Eingabequelle</string>
