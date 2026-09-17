@@ -561,7 +561,7 @@ pub fn getSegmentationOutputShape() -> Vec<i32> {
 }
 
 #[uniffi::export]
-#[profile_function("DEPTH_PROFILING_FRAME")]
+#[profile_function("SEGMENTATION_PROFILING_FRAME")]
 pub fn segmentationColormap(
 	mut segmentation_buffer: UniffiIntBufferWrapper,
 	mut colormapped_pixels: UniffiIntBufferWrapper,
