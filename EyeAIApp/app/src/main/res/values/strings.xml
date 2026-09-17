@@ -132,9 +132,9 @@
 	<string name="depth_estimation_card_title">Tiefenschätzung</string>
 
 	<string name="vosk_card_title">Spracherkennung</string>
-	<string name="vosk_card_responding">EyeAI antwortet...</string>
+	<string name="vosk_card_responding">EyeAI antwortet…</string>
 	<string name="vosk_card_missing_permission">Mikrofonberechtigung erforderlich</string>
-	<string name="vosk_card_listening">EyeAI hört zu...</string>
+	<string name="vosk_card_listening">EyeAI hört zu…</string>
 	<string name="vosk_card_disabled">Spracherkennung deaktiviert</string>
 	<string name="vosk_card_ready">EyeAI bereit – zum Starten auf die Schaltfläche tippen</string>
 
@@ -227,7 +227,7 @@
 
 	<string name="audio_device">Audiogerät</string>
 	<string name="vision">EyeAI-Vision</string>
-	<string name="enter_text_in_text_field_text">Text eingeben...</string>
+	<string name="enter_text_in_text_field_text">Text eingeben…</string>
 	<string name="finished_editing_text">Fertig</string>
 	<string name="button_semantic">Schaltfläche</string>
 	<string name="choose_vision_name_semantic">Auf dieser Seite können sie sich mit ihrer EyeAI-Vision verbinden.</string>
