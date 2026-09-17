@@ -366,8 +366,8 @@ fn apply_nms(
 fn calculate_iou(object_a: &DetectedObject, object_b: &DetectedObject) -> f32 {
 	let x1 = f32::max(object_a.bbox.x1(), object_b.bbox.x1());
 	let y1 = f32::max(object_a.bbox.y1(), object_b.bbox.y1());
-	let x2 = f32::max(object_a.bbox.x2(), object_b.bbox.x2());
-	let y2 = f32::max(object_a.bbox.y2(), object_b.bbox.y2());
+	let x2 = f32::min(object_a.bbox.x2(), object_b.bbox.x2());
+	let y2 = f32::min(object_a.bbox.y2(), object_b.bbox.y2());
 
 	let intersection_width = f32::max(0.0, x2 - x1);
 	let intersection_height = f32::max(0.0, y2 - y1);
