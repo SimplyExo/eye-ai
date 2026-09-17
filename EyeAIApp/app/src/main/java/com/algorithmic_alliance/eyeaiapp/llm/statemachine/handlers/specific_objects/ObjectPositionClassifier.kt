@@ -41,6 +41,10 @@ class ObjectPositionClassifier(
 		return description
 	}
 
+	//Creates the response used by a distance request
+	fun generateDistanceDescription(obj: ObjectData): String =
+		"Das Objekt ${obj.label} ist etwa ${formatDistance(obj.distance)} von Ihnen entfernt."
+
 	private fun classifyHorizontalPosition(x: Float): String {
 		val centerX = screenWidth / 2
 		val threshold = screenWidth * 0.15f

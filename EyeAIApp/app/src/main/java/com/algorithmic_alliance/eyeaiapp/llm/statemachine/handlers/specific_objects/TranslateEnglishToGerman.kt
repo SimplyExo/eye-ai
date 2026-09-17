@@ -97,5 +97,8 @@ class TranslateEnglishToGerman {
 		}
 
 		fun isKnownEnglishLabel(englishLabel: String): Boolean = englishLabel in englishToGermanMap
+
+		// Returns the German labels understood by the object detector
+		fun getKnownGermanLabels(): Set<String> = englishToGermanMap.values.toSet()
 	}
 }

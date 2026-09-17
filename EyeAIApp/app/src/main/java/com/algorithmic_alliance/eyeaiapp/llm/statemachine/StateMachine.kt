@@ -21,6 +21,7 @@ import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.SpeechOutputH
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.missingOperationQuestion
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects.ObjectDetectionHandler
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects.ObjectPositionClassifier
+import com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects.DistanceQueryExtractor
 import com.algorithmic_alliance.eyeaiapp.nlp.Intent
 import com.algorithmic_alliance.eyeaiapp.nlp.IntentResult
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModel
@@ -113,8 +114,8 @@ class StateMachine(
 				}
 
 				Intent.MEASURE_DISTANCE -> {
-					logNlpRoute(nlpIntent, "LOCAL_UNRESOLVED", "UNSUPPORTED_DISTANCE_REQUEST")
-					handleUnresolvedCommand(classifierLabel = Intent.MEASURE_DISTANCE)
+					logNlpRoute(nlpIntent, "LOCAL_OBJECT_DETECTION", "DISTANCE_MEASUREMENT")
+					handleMeasureDistanceRequest(final)
 				}
 
 				Intent.REDIRECT_TO_LLM -> {
@@ -273,6 +274,35 @@ class StateMachine(
 	}
 
 	private fun handleObjectDetectionRequest(userInput: String): StateUpdate {
+		return handleObjectDetectionRequest(userInput, distanceOnly = false)
+	}
+
+	private fun handleMeasureDistanceRequest(userInput: String): StateUpdate {
+		val objectQuery = DistanceQueryExtractor.extract(userInput)
+		Log.d(
+			EyeAIApp.APP_LOG_TAG,
+			"[DecisionTrace][DistanceMeasurement] input='$userInput' objectQuery='${objectQuery ?: ""}'"
+		)
+
+		if (objectQuery == null) {
+			val visibleObjects = ObjectDetectionHandler.getGermanObjectLabels()
+			if (visibleObjects.size == 1) {
+				return handleObjectDetectionRequest(visibleObjects.single(), distanceOnly = true)
+			}
+
+			val response = if (visibleObjects.isEmpty()) {
+				"Entschuldigung, ich konnte gerade keine Objekte erkennen."
+			} else {
+				"Welches Objekt soll ich vermessen? Ich sehe: ${visibleObjects.take(5).joinToString(", ")}."
+			}
+			speechOutputHandler.speakAndHandleUi(response)
+			return StateUpdate(State.IDLE, null)
+		}
+
+		return handleObjectDetectionRequest(objectQuery, distanceOnly = true)
+	}
+
+	private fun handleObjectDetectionRequest(userInput: String, distanceOnly: Boolean): StateUpdate {
 		val germanObjectQuery = userInput.trim()
 		Log.d(
 			EyeAIApp.APP_LOG_TAG, "German object query from local NLP input: '$germanObjectQuery'"
@@ -313,7 +343,11 @@ class StateMachine(
 					distance = obj.distance
 				)
 
-				val description = objectPositionClassifier.generatePositionDescription(objectData)
+				val description = if (distanceOnly) {
+					objectPositionClassifier.generateDistanceDescription(objectData)
+				} else {
+					objectPositionClassifier.generatePositionDescription(objectData)
+				}
 				Log.d(EyeAIApp.APP_LOG_TAG, "Generated position description: $description")
 				speechOutputHandler.speakAndHandleUi(description)
 			}
@@ -465,7 +499,7 @@ class StateMachine(
 		return when (result.intent) {
 			Intent.TEXT_RECOGNITION -> handleTextRecognitionDirectly()
 			Intent.OBJECT_DETECTION -> handleObjectDetectionRequest(result.originalText)
-			Intent.MEASURE_DISTANCE -> handleUnresolvedCommand(classifierLabel = Intent.MEASURE_DISTANCE)
+			Intent.MEASURE_DISTANCE -> handleMeasureDistanceRequest(result.originalText)
 
 			else -> error("Intent ${result.intent} is not external to settings")
 		}
