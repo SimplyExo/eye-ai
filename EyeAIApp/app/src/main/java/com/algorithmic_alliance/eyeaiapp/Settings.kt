@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
+import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsMode
 
 data class Settings(
 	var depthModel: String,
@@ -24,7 +25,8 @@ data class Settings(
 	var depthAudioFrequency: Int,
 	var depthAudioClickIncidence: Int,
 	var objectAudioPlaybackLanguage: String?,
-	var enableNpu: Boolean
+	var enableNpu: Boolean,
+	var rel2AbsMode: Rel2AbsMode,
 
 ) : Cloneable {
 	companion object {
@@ -138,6 +140,13 @@ data class Settings(
 				context.getString(R.string.enable_npu_delegate_setting), true
 			)
 
+			val rel2AbsMode = Rel2AbsMode.fromPreference(
+				sharedPreferences.getString(
+					context.getString(R.string.rel2abs_mode_setting),
+					Rel2AbsMode.Z1.preferenceValue,
+				),
+			)
+
 			return Settings(
 				depthModel,
 				maxDepthFrameRate,
@@ -157,7 +166,8 @@ data class Settings(
 				depthAudioFrequency,
 				depthAudioClickIncidence,
 				objectAudioPlaybackLanguage,
-				enableNpu
+				enableNpu,
+				rel2AbsMode,
 			)
 		}
 	}
@@ -181,7 +191,8 @@ data class Settings(
 		depthAudioFrequency,
 		depthAudioClickIncidence,
 		objectAudioPlaybackLanguage,
-		enableNpu
+		enableNpu,
+		rel2AbsMode,
 	)
 
 	fun save(context: Context) {
@@ -214,6 +225,7 @@ data class Settings(
 			putBoolean(context.getString(R.string.depth_playback_setting), depthAudioPlayback)
 			putBoolean(context.getString(R.string.object_playback_setting), objectAudioPlayback)
 			putBoolean(context.getString(R.string.enable_npu_delegate_setting), enableNpu)
+			putString(context.getString(R.string.rel2abs_mode_setting), rel2AbsMode.preferenceValue)
 
 			// Frame Rate Limits
 			maxDepthFrameRate?.let {

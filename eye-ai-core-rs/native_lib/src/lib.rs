@@ -315,6 +315,40 @@ pub fn runMetricDepthModelInference(
 	});
 }
 
+/// Runs the existing MiDaS model once and returns both the historic metric
+/// polynomial output and the raw, unnormalised relative depth.  The additional
+/// raw output is consumed by frozen REL2ABS only; legacy callers retain the
+/// exact `runMetricDepthModelInference` behavior above.
+#[uniffi::export]
+#[profile_function("DEPTH_PROFILING_FRAME")]
+pub fn runMetricDepthModelInferenceWithRaw(
+	mut input: UniffiFloatBufferWrapper,
+	mut legacy_metric_output: UniffiFloatBufferWrapper,
+	mut raw_relative_output: UniffiFloatBufferWrapper,
+) {
+	wait_for_metric_depth_model(|metric_depth_model| {
+		match metric_depth_model.run_with_raw(
+			&mut FloatTensorBuffer::new(input.as_slice_mut(), FloatTensorFormat::MiDaSImageRgb),
+			&mut FloatTensorBuffer::new(
+				legacy_metric_output.as_slice_mut(),
+				FloatTensorFormat::MetricDepth,
+			),
+			&mut FloatTensorBuffer::new(
+				raw_relative_output.as_slice_mut(),
+				FloatTensorFormat::RawRelativeDepth,
+			),
+		) {
+			Ok(()) => {}
+			Err(e) => {
+				error!(
+					"Failed to run dual metric/raw depth inference: {}, outputs will not be changed",
+					e
+				);
+			}
+		}
+	});
+}
+
 #[uniffi::export]
 #[profile_function("DEPTH_PROFILING_FRAME")]
 pub fn getMetricDepthModelInputShape() -> Vec<i32> {

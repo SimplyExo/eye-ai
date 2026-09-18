@@ -54,6 +54,45 @@ impl<'a> MetricDepthModel<'a> {
 		Ok(())
 	}
 
+	/// Runs MiDaS exactly once and exposes both representations required by the
+	/// application: the historical polynomial output and the untouched raw
+	/// relative-depth map used by frozen REL2ABS Z1/S2.
+	///
+	/// `legacy_metric_output` preserves the old public behavior.  The caller
+	/// must provide same-sized output buffers; model shape validation is owned by
+	/// the native runtime and Kotlin caller.
+	#[profile_function("self.profiling_frame")]
+	pub fn run_with_raw(
+		&mut self,
+		input_tensor: &mut FloatTensorBuffer,
+		legacy_metric_output: &mut FloatTensorBuffer,
+		raw_relative_output: &mut FloatTensorBuffer,
+	) -> Result<(), TfLiteError> {
+		check_float_tensor_format!(input_tensor, FloatTensorFormat::MiDaSImageRgb);
+
+		self.relative_depth_model
+			.run_raw(input_tensor, raw_relative_output)?;
+		check_float_tensor_format!(raw_relative_output, FloatTensorFormat::RawRelativeDepth);
+		assert_eq!(
+			legacy_metric_output.data().len(),
+			raw_relative_output.data().len(),
+			"legacy and raw depth buffers must have the same size"
+		);
+
+		legacy_metric_output
+			.data_mut()
+			.copy_from_slice(raw_relative_output.data());
+		legacy_metric_output.convert_format(FloatTensorFormat::RawRelativeDepth);
+		rel2abs_operator(
+			legacy_metric_output,
+			&Self::REL2ABS_COEFFS,
+			self.profiling_frame,
+		);
+		check_float_tensor_format!(legacy_metric_output, FloatTensorFormat::MetricDepth);
+
+		Ok(())
+	}
+
 	pub fn get_input_shape(&self) -> &[i32] {
 		self.relative_depth_model.get_input_shape()
 	}

@@ -39,6 +39,7 @@ import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
+import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsRunner
 import com.algorithmic_alliance.eyeaiapp.segmentation.SegmentationModel
 import com.algorithmic_alliance.eyeaiapp.segmentation.SegmentationModelInfo
 import com.algorithmic_alliance.eyeaiapp.settingsparser.LocalSettingsParser
@@ -72,6 +73,7 @@ import kotlin.time.Duration.Companion.milliseconds
 /** Output of a depth inference while the model read lock is held. */
 data class DepthInferenceResult(
 	val prediction: NativeLib.NativeFloatBuffer,
+	val rawRelativeDepth: NativeLib.NativeFloatBuffer,
 	val inputDim: Size,
 	val modelName: String,
 )
@@ -113,6 +115,7 @@ class EyeAIRuntime internal constructor(
 	private val modelLoadRequested = AtomicBoolean(false)
 
 	private var metricDepthModelValue: MetricDepthModel? = null
+	private var rel2AbsRunnerValue: Rel2AbsRunner? = null
 	private var textToSpeechInstanceValue: TextToSpeechInstance? = null
 	private var speechCallbacksInstalled = false
 	private var lastFinalResultMillis = 0L
@@ -170,6 +173,14 @@ class EyeAIRuntime internal constructor(
 	val metricDepthModel: MetricDepthModel?
 		get() = modelLock.read { metricDepthModelValue }
 
+	private val rel2AbsRunner: Rel2AbsRunner
+		get() = synchronized(stateLock) {
+			check(!runtimeClosed) { "EyeAI runtime is closed" }
+			rel2AbsRunnerValue ?: Rel2AbsRunner.fromAssets(context).also {
+				rel2AbsRunnerValue = it
+			}
+		}
+
 	val textToSpeechInstance: TextToSpeechInstance
 		get() = synchronized(stateLock) {
 			check(!runtimeClosed) { "EyeAI runtime is closed" }
@@ -221,6 +232,11 @@ class EyeAIRuntime internal constructor(
 	/** Called by the Application after settings have been reloaded. */
 	fun onSettingsChanged(oldSettings: Settings) {
 		val newSettings = settings
+		if (oldSettings.rel2AbsMode != newSettings.rel2AbsMode) {
+			// Never mix a depth buffer produced with one frozen REL2ABS mode with
+			// detections paired after the user selected the other one.
+			app.aiData.rel2AbsFrameCache.clear()
+		}
 		if (oldSettings.depthAudioPlayback != newSettings.depthAudioPlayback) {
 			uniffi.NativeLib.setDepthAudioPaused(!newSettings.depthAudioPlayback)
 		}
@@ -750,11 +766,46 @@ class EyeAIRuntime internal constructor(
 
 	internal fun runDepthInference(frame: Bitmap): DepthInferenceResult? = modelLock.read {
 		val model = metricDepthModelValue ?: return@read null
+		val outputs = model.predictDepth(frame)
 		DepthInferenceResult(
-			prediction = model.predictDepth(frame),
+			prediction = outputs.legacyMetricDepth,
+			rawRelativeDepth = outputs.rawRelativeDepth,
 			inputDim = model.inputDim,
 			modelName = model.name,
 		)
+	}
+
+	/**
+	 * Runs a frozen REL2ABS Z1/S2 head over the raw representation emitted by
+	 * the standard MiDaS-v2.1-small model. This intentionally returns null for
+	 * another depth model: using an unverified raw representation would violate
+	 * the frozen Z1/S2 feature contract.
+	 */
+	internal fun runRel2AbsInference(
+		frame: Bitmap,
+		depthInference: DepthInferenceResult,
+	): Rel2AbsRunner.Output? {
+		if (depthInference.modelName != EyeAIApp.DEFAULT_DEPTH_MODEL_NAME) {
+			Log.w(
+				EyeAIApp.APP_LOG_TAG,
+				"REL2ABS unavailable for unverified depth model ${depthInference.modelName}",
+			)
+			return null
+		}
+		val requestedMode = settings.rel2AbsMode
+		return try {
+			val output = rel2AbsRunner.run(
+				rgbFrame = frame,
+				rawRelativeDepth = depthInference.rawRelativeDepth,
+				rawWidth = depthInference.inputDim.width,
+				rawHeight = depthInference.inputDim.height,
+				mode = requestedMode,
+			)
+			if (settings.rel2AbsMode == requestedMode) output else null
+		} catch (error: Throwable) {
+			Log.e(EyeAIApp.APP_LOG_TAG, "Frozen REL2ABS inference failed", error)
+			null
+		}
 	}
 
 	internal fun runObjectInference(frame: Bitmap): Array<UniffiDetectedObject>? =
@@ -850,6 +901,8 @@ class EyeAIRuntime internal constructor(
 		synchronized(stateLock) {
 			textToSpeechInstanceValue?.shutdown()
 			textToSpeechInstanceValue = null
+			rel2AbsRunnerValue?.close()
+			rel2AbsRunnerValue = null
 		}
 		modelLock.write {
 			metricDepthModelValue = null

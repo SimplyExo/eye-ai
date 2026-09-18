@@ -1,14 +1,11 @@
 package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects
 
-import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.AIModelData
-import com.algorithmic_alliance.eyeaiapp.EyeAIApp
+import com.algorithmic_alliance.eyeaiapp.rel2abs.MetricDistanceResolver
+import uniffi.NativeLib.UniffiDetectedObject
 
 class ObjectDetectionHandler {
 	companion object {
-		private const val DEPTH_WIDTH = 256
-		private const val DEPTH_HEIGHT = 256
-
 		data class DetectedObject(
 			val label: String,
 			val distance: Float,
@@ -18,6 +15,10 @@ class ObjectDetectionHandler {
 			val y: Float
 		)
 
+		private data class RecognizedObject(
+			val label: String,
+			val box: UniffiDetectedObject,
+		)
 
 		fun getGermanObjectLabels(): List<String> {
 			val objectDetectionBoxes = AIModelData.detectedObjects.get()
@@ -35,135 +36,51 @@ class ObjectDetectionHandler {
 		}
 
 		fun handleGermanObjectQuery(germanQuery: String): ObjectDetectionResult {
-			Log.d(EyeAIApp.APP_LOG_TAG, "handleGermanObjectQuery strating")
-			Log.d(EyeAIApp.APP_LOG_TAG, "Input query: '$germanQuery'")
-
 			if (germanQuery.isBlank()) {
-				Log.w(EyeAIApp.APP_LOG_TAG, "Query is blank - returning NoQueryProvided")
 				return ObjectDetectionResult.NoQueryProvided
 			}
 
-			val objectDetectionBoxes = AIModelData.detectedObjects.get()
-			val depthEstimationData = AIModelData.depthEstimationData.get()
-
-			Log.d(
-				EyeAIApp.APP_LOG_TAG, "Object detection boxes: ${objectDetectionBoxes?.size}"
-			)
-			Log.d(
-				EyeAIApp.APP_LOG_TAG,
-				"Depth data size: ${depthEstimationData.floatBuffer.capacity()}"
-			)
-
-			if (objectDetectionBoxes.isNullOrEmpty()) {
-				Log.w(
-					EyeAIApp.APP_LOG_TAG, "No object detection boxes - returning NoObjectsFound"
-				)
-				return ObjectDetectionResult.NoObjectsFound
-			}
-
-			/*if (depthEstimationData.isEmpty()) {
-				Log.w(EyeAIApp.Companion.APP_LOG_TAG, "Depth data is empty - returning DepthDataUnavailable")
-				return ObjectDetectionResult.DepthDataUnavailable
-			}*/
-
-			if (depthEstimationData.floatBuffer.capacity() != DEPTH_WIDTH * DEPTH_HEIGHT) {
-				Log.w(
-					EyeAIApp.APP_LOG_TAG,
-					"Depth data has unexpected size: ${depthEstimationData.floatBuffer.capacity()} (expected: ${DEPTH_WIDTH * DEPTH_HEIGHT})"
-				)
-				return ObjectDetectionResult.DepthDataInvalid
-			}
-
-			Log.d(
-				EyeAIApp.APP_LOG_TAG, "Processing ${objectDetectionBoxes.size} detected objects..."
-			)
-
-			val detectedObjects = objectDetectionBoxes.mapNotNull { box ->
-				val englishLabel = box.clsName
-				Log.d(
-					EyeAIApp.APP_LOG_TAG, "Processing box with English label: '$englishLabel'"
-				)
-
-				if (TranslateEnglishToGerman.isKnownEnglishLabel(englishLabel)) {
-					val germanLabel = TranslateEnglishToGerman.translateToGerman(englishLabel)
-					Log.d(
-						EyeAIApp.APP_LOG_TAG, "Translated '$englishLabel' to '$germanLabel'"
-					)
-
-					val depthX = (box.cx * (DEPTH_WIDTH - 1)).toInt().coerceIn(0, DEPTH_WIDTH - 1)
-					val depthY = (box.cy * (DEPTH_HEIGHT - 1)).toInt().coerceIn(0, DEPTH_HEIGHT - 1)
-					val depthIndex = depthY * DEPTH_WIDTH + depthX
-
-					val distance = if (depthIndex < depthEstimationData.floatBuffer.capacity()) {
-						depthEstimationData.floatBuffer[depthIndex]
-					} else {
-						Log.w(EyeAIApp.APP_LOG_TAG, "Depth-Index out of bounds")
-						-1f
-					}
-
-					Log.d(
-						EyeAIApp.APP_LOG_TAG,
-						"Created DetectedObject: label='$germanLabel', distance=$distance"
-					)
-					DetectedObject(germanLabel, distance, box.h, box.w, box.cx, box.cy)
+			val paired = AIModelData.rel2AbsFrameCache.latestMatched()
+			if (paired == null) {
+				return if (AIModelData.detectedObjects.get().isNullOrEmpty()) {
+					ObjectDetectionResult.NoObjectsFound
 				} else {
-					Log.d(
-						EyeAIApp.APP_LOG_TAG,
-						"English label '$englishLabel' not in knownObjectLabels - skipping"
-					)
-					null
+					// A detection without a metric map from the same source frame is
+					// intentionally not combined with a stale or asynchronous depth map.
+					ObjectDetectionResult.DepthDataUnavailable
 				}
 			}
 
-			Log.d(
-				EyeAIApp.APP_LOG_TAG,
-				"Total detected objects after filtering: ${detectedObjects.size}"
-			)
-			detectedObjects.forEach { obj ->
-				Log.d(EyeAIApp.APP_LOG_TAG, "Detected object: ${obj.label}")
+			if (paired.detectionFrame.detections.isEmpty()) return ObjectDetectionResult.NoObjectsFound
+			val recognized = paired.detectionFrame.detections.mapNotNull { box ->
+				box.clsName.takeIf(TranslateEnglishToGerman::isKnownEnglishLabel)?.let {
+					RecognizedObject(TranslateEnglishToGerman.translateToGerman(it), box)
+				}
 			}
+			if (recognized.isEmpty()) return ObjectDetectionResult.NoKnownObjectsFound
 
-			if (detectedObjects.isEmpty()) {
-				Log.w(
-					EyeAIApp.APP_LOG_TAG, "No known objects found - returning NoKnownObjectsFound"
-				)
-				return ObjectDetectionResult.NoKnownObjectsFound
-			}
-
-			Log.d(
-				EyeAIApp.APP_LOG_TAG,
-				"Searching for German query: '$germanQuery' (lowercase: '${germanQuery.lowercase()}')"
+			val query = germanQuery.lowercase()
+			val found = recognized.find { candidate ->
+				val label = candidate.label.lowercase()
+				label == query || label.contains(query) || query.contains(label)
+			} ?: return ObjectDetectionResult.ObjectNotFound(
+				recognized.map { it.label }.distinct().take(5),
 			)
 
-			val foundObject = detectedObjects.find { obj ->
-				val objLabel = obj.label.lowercase()
-				val queryLower = germanQuery.lowercase()
-
-				val exactMatch = objLabel == queryLower
-				val labelContainsQuery = objLabel.contains(queryLower)
-				val queryContainsLabel = queryLower.contains(objLabel)
-
-				Log.d(
-					EyeAIApp.APP_LOG_TAG,
-					"Comparing '$objLabel' with '$queryLower': exact=$exactMatch, labelContains=$labelContainsQuery, queryContains=$queryContainsLabel"
+			return when (val result = MetricDistanceResolver.resolve(found.box, paired.metricDepth)) {
+				is MetricDistanceResolver.Result.Available -> ObjectDetectionResult.ObjectFound(
+					DetectedObject(
+						label = found.label,
+						distance = result.meters,
+						height = found.box.h,
+						width = found.box.w,
+						x = found.box.cx,
+						y = found.box.cy,
+					),
 				)
 
-				exactMatch || labelContainsQuery || queryContainsLabel
-			}
-
-			return if (foundObject != null) {
-				Log.d(
-					EyeAIApp.APP_LOG_TAG,
-					"FOUND object: ${foundObject.label} at ${foundObject.distance}m - returning ObjectFound"
-				)
-				ObjectDetectionResult.ObjectFound(foundObject)
-			} else {
-				val availableObjects = detectedObjects.map { it.label }.distinct().take(5)
-				Log.d(
-					EyeAIApp.APP_LOG_TAG,
-					"Object '$germanQuery' NOT found. Available objects: $availableObjects - returning ObjectNotFound"
-				)
-				ObjectDetectionResult.ObjectNotFound(availableObjects)
+				MetricDistanceResolver.Result.Unavailable -> ObjectDetectionResult.DepthDataUnavailable
+				MetricDistanceResolver.Result.Invalid -> ObjectDetectionResult.DepthDataInvalid
 			}
 		}
 	}

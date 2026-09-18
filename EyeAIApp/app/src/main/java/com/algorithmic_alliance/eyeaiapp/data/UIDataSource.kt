@@ -10,6 +10,7 @@ import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.Settings
+import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsMode
 
 object UIDataSource {
 
@@ -149,6 +150,13 @@ object UIDataSource {
 				"settingsOptions" to EyeAIApp.DEPTH_MODELS.map { it.name },
 				"string" to R.string.depth_model_setting,
 				"default" to EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
+			), mapOf(
+				"title" to R.string.setting_rel2abs_mode_title,
+				"description" to R.string.setting_rel2abs_mode_description,
+				"settingsType" to "select",
+				"settingsOptions" to Rel2AbsMode.entries.map { it.preferenceValue },
+				"string" to R.string.rel2abs_mode_setting,
+				"default" to Rel2AbsMode.Z1.preferenceValue
 			), mapOf(
 				"title" to R.string.setting_enable_framerate_limiter_title,
 				"description" to R.string.setting_enable_depth_framerate_limiter_description,
