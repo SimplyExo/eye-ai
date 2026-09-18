@@ -98,8 +98,6 @@ EyeAI unterstützt optische Texterkennung über Google OCR Services. Dadurch ist
 ### Speech Regonition
 EyeAI nutzt Vosk zur schnellen Erkennung und lokalen Verarbeitung von gesprochener, natürlicher Sprache.
 
-Dokumentation von eye-ai-core-rs und dessen API: <https://simplyexo.github.io/eye-ai-docs>
-
 ### Performance of EyeAIApp
 
 | **Smartphone**       | **Release date** | **NPU enabled?** | **MiDaS only / inference** | **MiDaS with YOLO / inference**                 |
@@ -123,6 +121,9 @@ Die Kommunikation mit unseren Natural-Language-Processing-Modellen ist als inter
 Eine barrierefreien einen Audioguide zur Nutzung der Sprachmodelle findet man sowohl in der App als auch [hier](EyeAIApp/app/src/main/res/raw/nlp_tutorial.wav).
 
 **Die Verarbeitung aller Sprachbefehle läuft vollkommen lokal und privat.**
+
+**Dokumentation von eye-ai-core-rs und dessen API:
+<https://simplyexo.github.io/eye-ai-docs>**
 
 ## Wie from-source compilen?
 
