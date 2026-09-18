@@ -122,8 +122,8 @@ Eine barrierefreien einen Audioguide zur Nutzung der Sprachmodelle findet man so
 
 **Die Verarbeitung aller Sprachbefehle läuft vollkommen lokal und privat.**
 
-**Dokumentation von eye-ai-core-rs und dessen API:
-<https://simplyexo.github.io/eye-ai-docs>**
+## Dokumentation von eye-ai-core-rs und dessen API
+<https://simplyexo.github.io/eye-ai-docs>
 
 ## Wie from-source compilen?
 
