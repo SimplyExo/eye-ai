@@ -25,6 +25,7 @@ bytetrack-cpp-rs = { git = "https://github.com/Peanutt42/bytetrack-cpp-rs", tag 
 crossbeam = "0.8.4"
 eye-ai-core-rs-profiling_attribute = { path = "profiling_attribute" }
 json = "0.12.4"
+rayon = "1.10"
 symphonia = { version = "0.5.5", features = ["all"] }
 thiserror = "2.0.18"
 tracing = { workspace = true }

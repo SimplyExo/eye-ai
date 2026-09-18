@@ -92,8 +92,7 @@ const fn polynomial_n4(x: f32, coeffs: &[f32; 5]) -> f32 {
 	y = y * x + coeffs[3];
 	y = y * x + coeffs[2];
 	y = y * x + coeffs[1];
-	y = y * x + coeffs[0];
-	y
+	y * x + coeffs[0]
 }
 
 #[allow(unused)]

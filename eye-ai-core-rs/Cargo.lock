@@ -666,6 +666,7 @@ dependencies = [
  "json",
  "ndarray",
  "ndarray-npy",
+ "rayon",
  "symphonia",
  "thiserror 2.0.18",
  "tracing",

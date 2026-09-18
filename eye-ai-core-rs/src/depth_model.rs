@@ -125,26 +125,21 @@ fn min_max_scaling_operator<'a>(
 		return;
 	}
 
-	let min = raw_relative_depth_tensor
-		.data()
+	let data = raw_relative_depth_tensor.data_mut();
+
+	let (min, max) = data
 		.iter()
-		.min_by(|a, b| a.total_cmp(b))
-		.copied()
-		.unwrap();
-	let max = raw_relative_depth_tensor
-		.data()
-		.iter()
-		.max_by(|a, b| a.total_cmp(b))
-		.copied()
-		.unwrap();
+		.fold((f32::INFINITY, f32::NEG_INFINITY), |(min, max), &value| {
+			(min.min(value), max.max(value))
+		});
+
 	let diff = max - min;
 	if diff == 0.0 {
-		for value in raw_relative_depth_tensor.iter_mut() {
-			*value = 0.5;
-		}
+		data.fill(0.5);
 	} else {
-		for value in raw_relative_depth_tensor.iter_mut() {
-			*value = (*value - min) / diff;
+		let inv_diff = 1.0 / diff;
+		for value in data.iter_mut() {
+			*value = (*value - min) * inv_diff;
 		}
 	}
 }

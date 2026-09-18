@@ -23,7 +23,7 @@
           config.android_sdk.accept_license = true;
           overlays = [ rust-overlay.overlays.default ];
         };
-        rustToolchain = pkgs.rust-bin.stable.latest.default.override {
+        rustToolchain = pkgs.rust-bin.nightly.latest.default.override {
           targets = [ "aarch64-linux-android" ];
           extensions = [ "rust-src" ];
         };

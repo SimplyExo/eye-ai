@@ -8,6 +8,7 @@ use crate::{
 	},
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
+use rayon::prelude::*;
 use tracing::debug;
 
 #[derive(Debug)]
@@ -223,6 +224,8 @@ fn yolo_image_operator<'a>(
 
 	assert_eq!(input.data().len(), 3 * width * height);
 
+	let input_pixels = input.data().as_chunks::<3>().0;
+
 	let mut output = FloatTensorBuffer::new(
 		vec![0.0; input.data().len()],
 		FloatTensorFormat::YoloImageRgb,
@@ -232,12 +235,38 @@ fn yolo_image_operator<'a>(
 
 	let plane = width * height;
 
+	const INV_255: f32 = 1.0 / 255.0;
+
+	let (r_plane, rest) = output_data.split_at_mut(plane);
+	let (g_plane, b_plane) = rest.split_at_mut(plane);
+
 	// 0.0..255.0 -> 0.0..1.0 + HWC -> CHW
-	for (i, pixel) in input.data().as_chunks::<3>().0.iter().enumerate() {
-		output_data[i] = pixel[0] / 255.0;
-		output_data[plane + i] = pixel[1] / 255.0;
-		output_data[2 * plane + i] = pixel[2] / 255.0;
-	}
+	// split all three output planes into the same per-worker ranges, then
+	// let each worker write a disjoint set of output pixels in parallel
+	let num_workers = rayon::current_num_threads();
+	let chunk_size = plane.div_ceil(num_workers);
+
+	let plane_chunks: Vec<(&mut [f32], &mut [f32], &mut [f32])> = r_plane
+		.chunks_mut(chunk_size)
+		.zip(g_plane.chunks_mut(chunk_size))
+		.zip(b_plane.chunks_mut(chunk_size))
+		.map(|((r, g), b)| (r, g, b))
+		.collect();
+
+	plane_chunks
+		.into_par_iter()
+		.enumerate()
+		.for_each(|(chunk_index, (r, g, b))| {
+			let start = chunk_index * chunk_size;
+			for (j, ((r_out, g_out), b_out)) in
+				r.iter_mut().zip(g.iter_mut()).zip(b.iter_mut()).enumerate()
+			{
+				let pixel = &input_pixels[start + j];
+				*r_out = pixel[0] * INV_255;
+				*g_out = pixel[1] * INV_255;
+				*b_out = pixel[2] * INV_255;
+			}
+		});
 
 	output
 }
@@ -252,80 +281,57 @@ fn best_objects(
 	iou_threshold: f32,
 	profiling_frame: &ProfilingFrame,
 ) -> Vec<DetectedObject> {
-	let mut objects = Vec::new();
 	let actual_size = num_elements * num_channel;
 
 	if array.len() < actual_size {
 		return Vec::new();
 	}
 
-	for c in 0..num_elements {
-		if let Some(object) = parse_object(
-			array,
-			labels,
-			c,
-			num_elements,
-			num_channel,
-			confidence_threshold,
-		) {
-			objects.push(object);
+	let num_classes = num_channel.saturating_sub(4);
+	let mut objects = Vec::new();
+
+	if num_elements == 0 || num_classes == 0 {
+		return objects;
+	}
+
+	// find the best scoring class for every box, iterating plane over plane
+	// (contiguous reads, SIMD friendly) instead of striding over planes per box
+	let (max_confidences, max_class_indices) = crate::argmax::argmax_over_planes(
+		&array[4 * num_elements..],
+		num_elements,
+		num_classes,
+		-1.0,
+	);
+
+	for (box_index, &confidence) in max_confidences.iter().enumerate() {
+		if confidence < confidence_threshold {
+			continue;
 		}
+
+		let class_index = max_class_indices[box_index] as usize;
+		if class_index >= labels.len() {
+			continue;
+		}
+
+		let bbox = BoundingBox {
+			center_x: array[box_index],
+			center_y: array[num_elements + box_index],
+			width: array[2 * num_elements + box_index],
+			height: array[3 * num_elements + box_index],
+		};
+		if !bbox.is_valid() {
+			continue;
+		}
+
+		objects.push(DetectedObject {
+			class_name: labels[class_index].clone(),
+			class_id: class_index,
+			confidence,
+			bbox,
+		});
 	}
 
 	apply_nms(&objects, iou_threshold, profiling_frame)
-}
-
-fn parse_object(
-	array: &[f32],
-	labels: &[String],
-	box_index: usize,
-	num_elements: usize,
-	num_channel: usize,
-	confidence_threshold: f32,
-) -> Option<DetectedObject> {
-	let mut max_confidence = -1.0;
-	let mut max_index = -1;
-	let mut array_index = box_index + (num_elements * 4);
-
-	for i in 4..num_channel {
-		if array_index >= array.len() {
-			break;
-		}
-
-		let confidence = array[array_index];
-		if confidence > max_confidence {
-			max_confidence = confidence;
-			max_index = (i - 4) as i32;
-		}
-
-		array_index += num_elements;
-	}
-
-	if max_confidence < confidence_threshold {
-		return None;
-	}
-
-	if max_index < 0 || max_index >= labels.len() as i32 {
-		return None;
-	}
-
-	let bbox = BoundingBox {
-		center_x: array[box_index],
-		center_y: array[box_index + num_elements],
-		width: array[box_index + (num_elements * 2)],
-		height: array[box_index + (num_elements * 3)],
-	};
-	if !bbox.is_valid() {
-		return None;
-	}
-
-	let class_name = labels[max_index as usize].clone();
-	Some(DetectedObject {
-		class_name,
-		class_id: max_index as usize,
-		bbox,
-		confidence: max_confidence,
-	})
 }
 
 #[profile_function("profiling_frame")]
@@ -338,26 +344,19 @@ fn apply_nms(
 		return Vec::new();
 	}
 
-	// sorted descending
+	// sort ascending so that pop() yields the highest confidence candidates first
 	let mut sorted_objects = objects.to_vec();
-	sorted_objects.sort_by(|a, b| b.confidence.total_cmp(&a.confidence));
+	sorted_objects.sort_by(|a, b| a.confidence.total_cmp(&b.confidence));
 
-	let mut selected_objects = Vec::new();
+	let mut selected_objects = Vec::with_capacity(sorted_objects.len());
 
-	// TODO: pop elements in reverse instead -> not so much reallocations
-	while let Some(first) = sorted_objects.first().cloned() {
-		selected_objects.push(first.clone());
-		sorted_objects.remove(0);
+	while let Some(first) = sorted_objects.pop() {
+		selected_objects.push(first);
 
-		let mut i = 0;
-		while i < sorted_objects.len() {
-			let iou = calculate_iou(&first, &sorted_objects[i]);
-			if iou >= iou_threshold {
-				sorted_objects.remove(i);
-			} else {
-				i += 1;
-			}
-		}
+		// retain keeps the order (highest confidence stays at the end) and
+		// compacts in a single pass instead of shifting on every removal
+		let picked = selected_objects.last().unwrap();
+		sorted_objects.retain(|candidate| calculate_iou(picked, candidate) < iou_threshold);
 	}
 
 	selected_objects

@@ -1,3 +1,5 @@
+#![feature(portable_simd)]
+
 //! # eye-ai-core-rs
 //!
 //! The core multi-platform library that implements most of EyeAI's features.
@@ -36,6 +38,8 @@ pub mod additional_documentation {
 }
 
 pub mod audio;
+
+mod argmax;
 
 pub mod tflite_runtime;
 

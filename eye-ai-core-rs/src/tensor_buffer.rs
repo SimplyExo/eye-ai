@@ -1,3 +1,5 @@
+use std::simd::f32x8;
+
 #[derive(Debug)]
 pub enum TensorBufferContainer<'a, T> {
 	Vec(Vec<T>),
@@ -131,17 +133,61 @@ macro_rules! check_float_tensor_format {
 pub fn image_rgb_255_to_midas_image<'a>(image_rgb_tensor: &mut FloatTensorBuffer<'a>) {
 	check_float_tensor_format!(image_rgb_tensor, FloatTensorFormat::ImageRgb255);
 
-	let mean = [123.675, 116.28, 103.53];
-	let std = [58.395, 57.12, 57.375];
-
 	assert_eq!(image_rgb_tensor.data().len() % 3, 0);
 
-	let values = image_rgb_tensor.data_mut();
+	rgb_255_to_midas(image_rgb_tensor.data_mut());
 
-	for i in 0..(values.len() / 3) {
-		values[3 * i] = (values[3 * i] - mean[0]) / std[0];
-		values[3 * i + 1] = (values[3 * i + 1] - mean[1]) / std[1];
-		values[3 * i + 2] = (values[3 * i + 2] - mean[2]) / std[2];
-	}
 	image_rgb_tensor.convert_format(FloatTensorFormat::MiDaSImageRgb);
+}
+
+const MIDAS_SIMD_BLOCK: usize = 24;
+
+/// processes one full `MIDAS_SIMD_BLOCK` chunk with SIMD, or any smaller tail
+/// chunk with scalar per-pixel code (dropping up to two stray values, matching
+/// the historical `remainder.as_chunks_mut::<3>().0` handling)
+#[inline]
+fn midas_process_block(
+	block: &mut [f32],
+	mean_vectors: &[f32x8; 3],
+	scale_vectors: &[f32x8; 3],
+	mean: &[f32; 3],
+	inv_std: &[f32; 3],
+) {
+	debug_assert!(block.len() <= MIDAS_SIMD_BLOCK);
+
+	if block.len() == MIDAS_SIMD_BLOCK {
+		for (lane, (mean, scale)) in mean_vectors.iter().zip(scale_vectors.iter()).enumerate() {
+			let range = lane * 8..lane * 8 + 8;
+			let values = f32x8::from_slice(&block[range.clone()]);
+			let scaled = (values - *mean) * *scale;
+			block[range].copy_from_slice(scaled.as_array());
+		}
+	} else {
+		for pixel in block.as_chunks_mut::<3>().0 {
+			pixel[0] = (pixel[0] - mean[0]) * inv_std[0];
+			pixel[1] = (pixel[1] - mean[1]) * inv_std[1];
+			pixel[2] = (pixel[2] - mean[2]) * inv_std[2];
+		}
+	}
+}
+
+pub(crate) fn rgb_255_to_midas(values: &mut [f32]) {
+	let mean: [f32; 3] = [123.675, 116.28, 103.53];
+	let inv_std: [f32; 3] = [58.395, 57.12, 57.375].map(f32::recip);
+
+	let mut mean_vectors = [[0.0f32; 8]; 3];
+	let mut scale_vectors = [[0.0f32; 8]; 3];
+	for index in 0..MIDAS_SIMD_BLOCK {
+		let channel = index % 3;
+		mean_vectors[index / 8][index % 8] = mean[channel];
+		scale_vectors[index / 8][index % 8] = inv_std[channel];
+	}
+	let mean_vectors = mean_vectors.map(f32x8::from_array);
+	let scale_vectors = scale_vectors.map(f32x8::from_array);
+
+	let (blocks, remainder) = values.as_chunks_mut::<MIDAS_SIMD_BLOCK>();
+	for block in blocks {
+		midas_process_block(block, &mean_vectors, &scale_vectors, &mean, &inv_std);
+	}
+	midas_process_block(remainder, &mean_vectors, &scale_vectors, &mean, &inv_std);
 }

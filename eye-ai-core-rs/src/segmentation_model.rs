@@ -1,4 +1,5 @@
 use eye_ai_core_rs_profiling_attribute::profile_function;
+use rayon::prelude::*;
 use tracing::debug;
 
 use crate::{
@@ -132,6 +133,8 @@ fn preprocess<'a>(
 
 	assert_eq!(input.data().len(), 3 * width * height);
 
+	let input_pixels = input.data().as_chunks::<3>().0;
+
 	let mut output = FloatTensorBuffer::new(
 		vec![0.0; input.data().len()],
 		FloatTensorFormat::YoloImageRgb,
@@ -142,11 +145,37 @@ fn preprocess<'a>(
 	let plane = width * height;
 
 	// 0.0..255.0 -> 0.0..1.0 + HWC -> CHW
-	for (i, pixel) in input.data().as_chunks::<3>().0.iter().enumerate() {
-		output_data[i] = pixel[0] / 255.0;
-		output_data[plane + i] = pixel[1] / 255.0;
-		output_data[2 * plane + i] = pixel[2] / 255.0;
-	}
+	let (r_plane, rest) = output_data.split_at_mut(plane);
+	let (g_plane, b_plane) = rest.split_at_mut(plane);
+
+	let inv_255 = 1.0 / 255.0;
+
+	// split all three output planes into the same per-worker ranges, then
+	// let each worker write a disjoint set of output pixels in parallel
+	let num_workers = rayon::current_num_threads();
+	let chunk_size = plane.div_ceil(num_workers);
+
+	let plane_chunks: Vec<(&mut [f32], &mut [f32], &mut [f32])> = r_plane
+		.chunks_mut(chunk_size)
+		.zip(g_plane.chunks_mut(chunk_size))
+		.zip(b_plane.chunks_mut(chunk_size))
+		.map(|((r, g), b)| (r, g, b))
+		.collect();
+
+	plane_chunks
+		.into_par_iter()
+		.enumerate()
+		.for_each(|(chunk_index, (r, g, b))| {
+			let start = chunk_index * chunk_size;
+			for (j, ((r_out, g_out), b_out)) in
+				r.iter_mut().zip(g.iter_mut()).zip(b.iter_mut()).enumerate()
+			{
+				let pixel = &input_pixels[start + j];
+				*r_out = pixel[0] * inv_255;
+				*g_out = pixel[1] * inv_255;
+				*b_out = pixel[2] * inv_255;
+			}
+		});
 
 	output
 }
@@ -166,19 +195,17 @@ fn postprocess(
 	assert_eq!(tensor.data().len(), num_classes * width * height);
 
 	let tensor_data = tensor.data();
+	let plane = width * height;
 
-	for y in 0..height {
-		for x in 0..width {
-			let mut max = f32::MIN;
-			let mut max_class_index: i32 = 0;
-			for c in 0..num_classes {
-				let cnf = tensor_data[c * width * height + y * width + x];
-				if cnf > max {
-					max = cnf;
-					max_class_index = c as i32;
-				}
-			}
-			postprocessed[y * width + x] = max_class_index;
-		}
+	if plane == 0 {
+		return;
 	}
+
+	// iterate class plane by class plane (contiguous reads) and keep a running
+	// max + argmax per pixel, instead of striding over classes per pixel
+	let (_, max_class_indices) =
+		crate::argmax::argmax_over_planes(tensor_data, plane, num_classes, f32::MIN);
+
+	assert!(plane <= postprocessed.len());
+	postprocessed[..plane].copy_from_slice(&max_class_indices);
 }
