@@ -61,7 +61,7 @@ class Rel2AbsRunner private constructor(
 				arrayOf(FloatArray(INTRINSICS_COUNT)),
 				prepareRgb64(rgbFrame),
 			),
-			mutableMapOf(0 to z1Output),
+			mutableMapOf<Int, Any>(0 to z1Output),
 		)
 		val z1Depth = decodeZ1(raw, z1Output[0][0], z1Output[0][1])
 		if (mode == Rel2AbsMode.Z1) return Output(z1Depth, mode)
@@ -123,7 +123,7 @@ class Rel2AbsRunner private constructor(
 					val wx = sourceX - xFloor
 					val top = raw[y0 * inputWidth + x0] * (1f - wx) + raw[y0 * inputWidth + x1] * wx
 					val bottom = raw[y1 * inputWidth + x0] * (1f - wx) + raw[y1 * inputWidth + x1] * wx
-					arrayOf(top * (1f - wy) + bottom * wy)
+					floatArrayOf(top * (1f - wy) + bottom * wy)
 				}
 			}
 		}
@@ -218,13 +218,6 @@ class Rel2AbsRunner private constructor(
 		}
 	}
 
-	private fun mapAsset(context: Context, assetPath: String): MappedByteBuffer =
-		context.assets.openFd(assetPath).use { descriptor ->
-			FileInputStream(descriptor.fileDescriptor).channel.use { channel ->
-				channel.map(FileChannel.MapMode.READ_ONLY, descriptor.startOffset, descriptor.declaredLength)
-			}
-		}
-
 	companion object {
 		const val Z1_ASSET = "rel2abs/rel2abs_z1_float32.tflite"
 		const val S2_ASSET = "rel2abs/rel2abs_s2_seed42_float32.tflite"
@@ -246,6 +239,13 @@ class Rel2AbsRunner private constructor(
 		private const val EPSILON = 1e-6f
 		private const val S2_SCALE_MIN = 0.25f
 		private const val S2_SCALE_MAX = 4.0f
+
+		private fun mapAsset(context: Context, assetPath: String): MappedByteBuffer =
+			context.assets.openFd(assetPath).use { descriptor ->
+				FileInputStream(descriptor.fileDescriptor).channel.use { channel ->
+					channel.map(FileChannel.MapMode.READ_ONLY, descriptor.startOffset, descriptor.declaredLength)
+				}
+			}
 
 		fun fromAssets(context: Context): Rel2AbsRunner = Rel2AbsRunner(
 			context.applicationContext,

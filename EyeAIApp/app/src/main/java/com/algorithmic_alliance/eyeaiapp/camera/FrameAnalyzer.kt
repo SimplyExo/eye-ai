@@ -225,7 +225,7 @@ class FrameAnalyzer(
 								sourceWidth = frame.width,
 								sourceHeight = frame.height,
 								rotationDegrees = frame.rotationDegrees,
-								rel2AbsMode = rel2Abs.mode,
+								rel2absMode = rel2Abs.mode,
 							),
 						)
 					} else {

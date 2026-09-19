@@ -50,7 +50,7 @@ class Rel2AbsFrameCacheTest {
 		sourceWidth = sourceWidth,
 		sourceHeight = 480,
 		rotationDegrees = 0,
-		rel2AbsMode = Rel2AbsMode.Z1,
+		rel2absMode = Rel2AbsMode.Z1,
 	)
 
 	private fun detectionFrame(
