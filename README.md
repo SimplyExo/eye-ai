@@ -1,5 +1,16 @@
 # EyeAI
 
+<div align="center" style="padding: 30px">
+	<img src="./EyeAIIcon/eye-ai-logo-export.webp" width="200px">
+</div>
+
+<div align="center">
+
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-2.0.0-green.svg)]()
+
+</div>
+
 **Unscharfe Umgebung, gestochen scharfes Audio.
 Das ermöglicht EyeAI: Ein intelligentes Begleitsystem für sehbehinderte Menschen, das die Welt in Echtzeit erkennt, versteht und verständlich über Audio vermittelt. Schnell, privat und lokal auf dem Handy.**  
 
@@ -59,7 +70,7 @@ Diese Abhängigkeit wurde aus der aktuellen Architektur vollständig entfernt!
 
 Die Sprachsteuerung basiert stattdessen auf drei kleinen, selbstentwickelten, lokalen Modellen und deterministischer Logik.
 
-### EyeAIVisionPro 
+### EyeAIVisionPro
 Neben der Smartphonekamera ist die gesamte EyeAI-Architektur auch für externe Kameras, wie unsere eigens für EyeAIApp angefertigte EyeAIVisionPro, ausgelegt.
 Videoframes können über einen externen WebRTC-Stream in die bestehende Analyseprozesse integriert werden.
 Kombiniert mit dem Headless Mode liefert dies maximalen Komfort.
@@ -108,8 +119,6 @@ EyeAI nutzt Vosk zur schnellen Erkennung und lokalen Verarbeitung von gesprochen
 | Samsung Galaxy S21   | 2021             | ❌                | 48ms (21 FPS) / 34.4ms     | 94ms (10.5 FPS), 90ms (11 FPS) / 85ms, 77ms     |
 | Fairphone 4 (no NPU) | 2021             | ❌                | 100ms (10 FPS) / 90ms      | 200ms (5 FPS), 200ms (5 FPS) / 185ms, 175ms     |
 
-
-### Für ältere Handys mit NPU ist in den Einstellungen dringend empfohlen die quantized MiDaS Version zu verwenden!
 
 ## Bedienungsanleitung
 
