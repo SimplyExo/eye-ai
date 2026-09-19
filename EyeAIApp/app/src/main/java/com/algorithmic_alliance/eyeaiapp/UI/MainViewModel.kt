@@ -14,6 +14,7 @@ import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntimeService
+import com.squareup.wire.internal.encodeArray_int32
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -156,7 +157,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 			appMissingVoskPermission = it.appMissingVoskPermission,
 			appMissingCameraPermission = it.appMissingCameraPermission,
 			appMissingVisionPermission = it.appMissingVisionPermission,
-			appNotExemptFormBatteryOptimization = it.appNotExemptFromBatteryOptimization
+			appNotExemptFormBatteryOptimization = it.appNotExemptFromBatteryOptimization,
 		)
 	}.distinctUntilChanged()
 		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UIDialogsUIState())
@@ -204,6 +205,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 				it.copy(
 					permissionTutorialCompleted = event.value
 				)
+			}
+
+	        is UIEvent.OnUpdateBatteryOptimizationIgnored -> {
+				_uiState.update { it.copy(batteryOptimizationIgnored = event.value) }
 			}
 
 			is UIEvent.OnUpdateConnectionTutorialCompleted -> _uiState.update {
@@ -272,7 +277,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 		if (!_uiState.value.actionStartedFromSettings && !_uiState.value.settingsOpened) {
 			reloadDebugPage()
 		}
-		if(!BatteryOptimization.isExempt(eyeAIApp())){
+		if(!BatteryOptimization.isExempt(eyeAIApp()) && !_uiState.value.batteryOptimizationIgnored){
 			_uiState.update { it.copy(appNotExemptFromBatteryOptimization = true) }
 		}
 		// permission checks after onResume are now handled bei EyeAIUI.kt
