@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -182,23 +184,41 @@ fun HomePage(
 				LazyVerticalGrid(
 					modifier = Modifier
 						.padding(paddingValues)
-						.fillMaxHeight(),
-					columns = GridCells.Fixed(2)
+						.fillMaxSize(),
+					columns = GridCells.Fixed(2),
 				) {
 					item {
 						VoskStatusCard(viewModel = viewModel)
 					}
+
 					item {
 						DepthStatusCard(viewModel = viewModel)
 					}
+
 					item {
-						ObjectStatusCard(
-							viewModel = viewModel,
-						)
+						ObjectStatusCard(viewModel = viewModel)
 					}
-					item { VisionStatusCard(viewModel = viewModel) }
+
+					item {
+						VisionStatusCard(viewModel = viewModel)
+					}
+
+					item(span = { GridItemSpan(maxLineSpan) }) {
+						Box(
+							modifier = Modifier.fillMaxWidth(),
+							contentAlignment = Alignment.Center
+						) {
+							Box(
+								modifier = Modifier.fillMaxWidth(0.5f),
+								contentAlignment = Alignment.Center
+							) {
+								SegmentationStatusCard(viewModel = viewModel)
+							}
+						}
+					}
 
 				}
+
 
 			})
 	}
@@ -265,6 +285,81 @@ fun ObjectStatusCard(viewModel: MainViewModel) {
 							text = "${stringResource(R.string.status_card_performance_text)}: ${
 								getPerformance(
 									LocalContext.current, getObjectFPS(uiState.performanceText)
+								)
+							}",
+							textAlign = TextAlign.Center,
+							style = MaterialTheme.typography.bodyMedium
+						)
+					}
+
+				}
+			}
+		}
+	}
+}
+
+@SuppressLint("LocalContextGetResourceValueCall")
+@Composable
+fun SegmentationStatusCard(viewModel: MainViewModel) {
+	val context = LocalContext.current
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+	val isDark = isSystemInDarkTheme()
+	Card(
+		modifier = Modifier
+			.padding(Spacing.sm)
+			.aspectRatio(4f / 3f),
+		shape = PremiumShapes.medium,
+		elevation = CardDefaults.cardElevation(AppElevation.level3),
+		border = BorderStroke(if (isDark) 1.dp else 0.dp, color = Color.White.copy(alpha = 0.2f))
+	) {
+		Column(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(Spacing.xs),
+			horizontalAlignment = Alignment.CenterHorizontally
+		) {
+			Text(
+				stringResource(R.string.segmentation_card_title),
+				modifier = Modifier.clearAndSetSemantics {
+					contentDescription =
+						context.getString(R.string.segmentation_card_semantic)
+				},
+				style = MaterialTheme.typography.titleMedium,
+				textAlign = TextAlign.Center
+			)
+			HorizontalDivider()
+			Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+				val uiState by viewModel.performanceStatusCardUIState.collectAsStateWithLifecycle()
+				if (!sharedPreferences.getBoolean(
+						stringResource(R.string.enable_segmentation_setting), true
+					)
+				) {
+					Text(
+						text = stringResource(R.string.segmentation_card_disabled),
+						textAlign = TextAlign.Center,
+						style = MaterialTheme.typography.bodyMedium
+					)
+				} else if (getSegmentationFPS(uiState.performanceText) == -1) {
+					ShimmerBox(
+						modifier = Modifier
+							.fillMaxWidth(0.75f)
+							.height(Spacing.xl),
+						backgroundColor = MaterialTheme.colorScheme.surface,
+						contrastColor = MaterialTheme.colorScheme.onSurface,
+					)
+				} else {
+					Column(horizontalAlignment = Alignment.CenterHorizontally) {
+						Text(
+							text = stringResource(R.string.status_card_active_text),
+							textAlign = TextAlign.Center,
+							style = MaterialTheme.typography.bodyMedium,
+							fontWeight = FontWeight.Bold
+						)
+						Text(
+							text = "${stringResource(R.string.status_card_performance_text)}: ${
+								getPerformance(
+									LocalContext.current,
+									getSegmentationFPS(uiState.performanceText)
 								)
 							}",
 							textAlign = TextAlign.Center,
@@ -480,6 +575,21 @@ private fun getDepthFPS(text: String): Int {
 	}
 	return -1
 }
+
+private fun getSegmentationFPS(text: String): Int {
+	val index = text.indexOf("Segmentation Frame: ")
+	if (index != -1 && index + 22 <= text.length) {
+		var result = text.substring(index + 20, index + 22)
+		if (result.endsWith(".")) result = result.dropLast(1)
+		return try {
+			result.toInt()
+		} catch (e: NumberFormatException) {
+			-1
+		}
+	}
+	return -1
+}
+
 
 private fun getObjectFPS(text: String): Int {
 	val index = text.indexOf("Object Frame: ")

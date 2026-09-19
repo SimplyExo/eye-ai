@@ -195,6 +195,7 @@
 	<string name="connect_to_device_semantic">Connect to selected device</string>
 	<string name="object_detection_card_title_semantic">Object detection status</string>
 	<string name="depth_estimation_card_title_semantic">Depth estimation status</string>
+	<string name="segmentation_card_semantic">Image segmentation status</string>
 	<string name="vision_card_title_semantic">EyeAI Vision status</string>
 	<string name="vosk_card_title_semantic">Speech recognition status</string>
 	<string name="start_vosk_button_description">Button to start and stop speech recognition.</string>
@@ -234,6 +235,7 @@
 	<string name="disable_battery_optimization_dialog_title">Battery optimization enabled</string>
 	<string name="disable_battery_optimization_dialog_text">The EyeAI app has not been excluded from battery optimization, which may limit the app’s functionality when it runs in the background. If you want to allow the app to run in the background, you need to disable battery optimization.</string>
 	<string name="disable_battery_optimization_dialog_confirm_text">Disable</string>
-
+	<string name="segmentation_card_title">Segmentation</string>
+	<string name="segmentation_card_disabled">Image segmentation deactivated</string>
 
 </resources>

@@ -131,6 +131,10 @@
 
 	<string name="depth_estimation_card_title">Tiefenschätzung</string>
 
+	<string name="segmentation_card_title">Segmentierung</string>
+	<string name="segmentation_card_semantic">Status der Bild-Segmentierung.</string>
+	<string name="segmentation_card_disabled">Bild-Segmentierung deaktiviert</string>
+
 	<string name="vosk_card_title">Spracherkennung</string>
 	<string name="vosk_card_responding">EyeAI antwortet…</string>
 	<string name="vosk_card_missing_permission">Mikrofonberechtigung erforderlich</string>
