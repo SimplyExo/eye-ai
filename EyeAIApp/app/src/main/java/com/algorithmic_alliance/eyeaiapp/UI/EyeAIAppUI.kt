@@ -333,6 +333,7 @@ fun AppNotExemptFromBatteryOptimization(onEvent: (UIEvent) -> Unit) {
 	AlertDialog(
 		onDismissRequest = {
 			//TODO
+			onEvent(UIEvent.OnUpdateBatteryOptimizationIgnored(true))
 			onEvent(UIEvent.OnUpdateAppNotExemptFromBatteryOptimization(false))
 		},
 		title = {
@@ -342,6 +343,7 @@ fun AppNotExemptFromBatteryOptimization(onEvent: (UIEvent) -> Unit) {
 			) {
 				PremiumIconButton(modifier = Modifier.semantics { traversalIndex = 1f }, onClick = {
 					//TODO
+					onEvent(UIEvent.OnUpdateBatteryOptimizationIgnored(true))
 					onEvent(UIEvent.OnUpdateAppNotExemptFromBatteryOptimization(false))
 				}) {
 					Icon(

@@ -7,6 +7,7 @@ import uniffi.NativeLib.UniffiDetectedObject
 
 data class UIState(
 	val voskListening: Boolean = false,
+	val batteryOptimizationIgnored: Boolean = false,
 	val ttsSpeaking: Boolean = false,
 	val actionStartedFromSettings: Boolean = false,
 	val settingsOpened: Boolean = false,

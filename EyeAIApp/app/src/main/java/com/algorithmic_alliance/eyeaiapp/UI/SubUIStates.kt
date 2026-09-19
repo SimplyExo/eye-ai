@@ -86,5 +86,5 @@ data class UIDialogsUIState(
 	val appMissingVoskPermission: Boolean = false,
 	val appMissingCameraPermission: Boolean = false,
 	val appMissingVisionPermission: Boolean = false,
-	val appNotExemptFormBatteryOptimization: Boolean = false
+	val appNotExemptFormBatteryOptimization: Boolean = false,
 )
