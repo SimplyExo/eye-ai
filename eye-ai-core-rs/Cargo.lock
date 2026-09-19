@@ -652,7 +652,7 @@ checksum = "af9673d8203fcb076b19dfd17e38b3d4ae9f44959416ea532ce72415a6020365"
 
 [[package]]
 name = "eye-ai-core-rs"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "alto",
  "arc-swap",
@@ -676,7 +676,7 @@ dependencies = [
 
 [[package]]
 name = "eye-ai-core-rs-build-android"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "camino",
  "dirs",
@@ -686,7 +686,7 @@ dependencies = [
 
 [[package]]
 name = "eye-ai-core-rs-native-lib"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "arc-swap",
  "eye-ai-core-rs",
@@ -699,7 +699,7 @@ dependencies = [
 
 [[package]]
 name = "eye-ai-core-rs-profiling_attribute"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "proc-macro2",
  "quote",

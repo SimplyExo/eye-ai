@@ -1,15 +1,11 @@
 [package]
 name = "eye-ai-core-rs"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 documentation = "https://simplyexo.github.io/eye-ai-docs/"
 
 [workspace]
-members = [
-  "build_android",
-  "native_lib",
-  "profiling_attribute"
-]
+members = ["build_android", "native_lib", "profiling_attribute"]
 
 [workspace.dependencies]
 uniffi = { version = "0.29", features = ["cli"] }
@@ -45,14 +41,14 @@ cmake = "0.1"
 
 [features]
 enable_tracy_profiling = [
-  "eye-ai-core-rs-profiling_attribute/enable_tracy",
-  # tracing-tracy default features:
-  "tracing-tracy/broadcast",
-  "tracing-tracy/callstack-inlines",
-  "tracing-tracy/context-switch-tracing",
-  "tracing-tracy/enable",
-  "tracing-tracy/sampling",
-  "tracing-tracy/system-tracing",
-  # additional tracy features:
-  "tracing-tracy/demangle"
+	"eye-ai-core-rs-profiling_attribute/enable_tracy",
+	# tracing-tracy default features:
+	"tracing-tracy/broadcast",
+	"tracing-tracy/callstack-inlines",
+	"tracing-tracy/context-switch-tracing",
+	"tracing-tracy/enable",
+	"tracing-tracy/sampling",
+	"tracing-tracy/system-tracing",
+	# additional tracy features:
+	"tracing-tracy/demangle",
 ]
