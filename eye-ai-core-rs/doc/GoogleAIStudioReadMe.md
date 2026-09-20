@@ -1,5 +1,10 @@
 # Google AI Studio
 
+> [!WARNING]
+> **Veraltet / obsolete.** Die Gemini-API-Integration wurde aus der EyeAI-Architektur **vollständig entfernt** (siehe `README.md`, Abschnitt "Lokale Sprachassistenz").
+> Alle genannten Klassen (`GoogleAIStudioLLM`, `NetworkClient`, `StreamParser`, `StreamProcessor`, `RequestBuilder`, `SpeechManager`) existieren nicht mehr im Code.
+> Dieses Dokument wird nur aus historischen Gründen gepflegt.
+
 Generating responses with Gemini API (gemini-2.5-flash-lite)
 
 ## Structure

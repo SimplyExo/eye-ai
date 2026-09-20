@@ -4,7 +4,7 @@
 > This is the source code from our own fork alto, the rust bindings for openal-soft
 > see <https://github.com/Peanutt42/alto/>
 
-`alto` provides idiomatic Rust bindings for [OpenAL 1.1](http://connect.creativelabs.com/openal/)
+`alto` provides idiomatic Rust bindings for [OpenAL 1.1](https://openal.org/documentation/)
 and extensions (including EFX).
 
 ## WARNING

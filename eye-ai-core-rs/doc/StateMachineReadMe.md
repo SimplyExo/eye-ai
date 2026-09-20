@@ -10,28 +10,25 @@ We are using two different models for classification of the users intent in orde
 As of now, after extensive testing we have decided to avoid using Googles Gemini API as far as possible as using it for free comes with a request and tokenlimit. This can lead to limited requests by the user even when using basic functions such as text recognition or object detection.
 Thus we have decided to avoid requesting Googles services and have instead implemented a small natural language processing modell, which classifies the users requests if they are specific enough.
 This ensures that users can always use basic functions such as text recognition, object detection and changing the settings, even if the user doesn't have a stable internet connection.
-In case our NLP-model isn't able to classify the users intent, Googles Gemini API is used as a fallback option. This allows the users to ask specific questions, that are not dedicated to our own implemented software features and still receiving an answer.
+In case our NLP-model isn't able to classify the users intent, Googles Gemini API was previously used as a fallback option.
+**This Gemini fallback has been completely removed** from the current architecture; all language processing now runs locally.
 
 ### Classes
 
 The statemachine in structured into multiple different handlers such as:
 
 1. JsonParser
-2. LLMStreamingHandler
-3. ObjectDetectionHandler
-4. Statemachine
+2. ObjectDetectionHandler
+3. Statemachine
 
 Other required classes are:
 
-1. RequestedFunction
-2. SettingIntent
-3. StateUpdate
-
-All prompts for the LLM are defined in a single interface called **"LLM"**
+1. SettingIntent
+2. StateUpdate
 
 ### StateMachine.kt
 
-This class is dedicated to the users communication with either the LLM or the NLP, depending on whether Gemini is currently available or the NLP is able to classify the users intent.
+This class is dedicated to the users communication with the local NLP.
 
 Requested functions that can't be handled appropriately are designed to give natural "error" messages such as:
 
@@ -40,7 +37,7 @@ Requested functions that can't be handled appropriately are designed to give nat
 ### StateUpdate.kt
 
 A data class used to pass the State of MainActivity.kt to the handlers.
-The "newJson" String is used as storage for responses by the LLM/NLP.
+The "newJson" String is used as storage for responses by the NLP.
 
 ### SettingsHandler.kt
 
@@ -61,17 +58,12 @@ An enum class storing every option of the requested functions by the user in idl
 
 ### ObjectDetectionHandler.kt
 
-Handles user queries for specific objects. Provides absolute depth data, name of the object and position of it in order to build a prompt for the LLM. 
+Handles user queries for specific objects. Provides absolute depth data, name of the object and position of it in order to build a prompt for the NLP. 
 
 ### LLMStreamingHandler.kt
 
-In order to avoid delays in the delivery of the LLMs answer to the user, we are using Gemini APIs streaming option. Hence we are not waiting for a response to be finished by gemini-2.5-flash-lite, but rather asap stream the generated response.
-
-This class ensures that the streamed text can be spoken out by our TTS-Engine appropriately.
-Sentencebuffering and handling the stream chunks allows the TTS-Engine to speak the streamed text more naturally. 
+**Removed.** This class previously streamed Gemini-API responses; since the Gemini integration was removed from the architecture, this handler no longer exists. 
 
 ### JsonParser
 
 Parses JSON-Responses for object-detection, text-recognition and changing the settings.
-
-**Streams aren't parsed here!**
