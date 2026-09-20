@@ -1,0 +1,175 @@
+{
+  "bootstrap_replicates": 1000,
+  "coco_all": {
+    "det_context_available": 10302,
+    "frames": 500,
+    "name": "COCO_all",
+    "rows": 10721,
+    "seg_object_available": 10721
+  },
+  "context_sources": {
+    "ARKITSCENES": {
+      "bbox_hints": 0,
+      "detections": 1000,
+      "segmentations": 1000
+    },
+    "BONN": {
+      "bbox_hints": 38,
+      "detections": 29,
+      "segmentations": 29
+    },
+    "COCO": {
+      "bbox_hints": 10022,
+      "detections": 1000,
+      "segmentations": 1000
+    },
+    "DIODE": {
+      "bbox_hints": 0,
+      "detections": 20846,
+      "segmentations": 20846
+    },
+    "NYU": {
+      "bbox_hints": 841,
+      "detections": 1143,
+      "segmentations": 1143
+    },
+    "SUNRGBD": {
+      "bbox_hints": 3836,
+      "detections": 8111,
+      "segmentations": 8111
+    },
+    "TUM": {
+      "bbox_hints": 48,
+      "detections": 90,
+      "segmentations": 90
+    },
+    "WAYMO": {
+      "bbox_hints": 29381,
+      "detections": 1000,
+      "segmentations": 1000
+    }
+  },
+  "eyeai_changed": false,
+  "feature_set_count": 65,
+  "feature_sets": [
+    "DEPTH_ONLY",
+    "DEPTH+HEIGHT",
+    "DEPTH+WIDTH",
+    "DEPTH+SHAPE_POSITION",
+    "DEPTH+ANCHOR",
+    "DEPTH+DETECTION",
+    "DEPTH+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH",
+    "DEPTH+HEIGHT+SHAPE_POSITION",
+    "DEPTH+HEIGHT+ANCHOR",
+    "DEPTH+HEIGHT+DETECTION",
+    "DEPTH+HEIGHT+SEGMENTATION",
+    "DEPTH+WIDTH+SHAPE_POSITION",
+    "DEPTH+WIDTH+ANCHOR",
+    "DEPTH+WIDTH+DETECTION",
+    "DEPTH+WIDTH+SEGMENTATION",
+    "DEPTH+SHAPE_POSITION+ANCHOR",
+    "DEPTH+SHAPE_POSITION+DETECTION",
+    "DEPTH+SHAPE_POSITION+SEGMENTATION",
+    "DEPTH+ANCHOR+DETECTION",
+    "DEPTH+ANCHOR+SEGMENTATION",
+    "DEPTH+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION",
+    "DEPTH+HEIGHT+WIDTH+ANCHOR",
+    "DEPTH+HEIGHT+WIDTH+DETECTION",
+    "DEPTH+HEIGHT+WIDTH+SEGMENTATION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+ANCHOR",
+    "DEPTH+HEIGHT+SHAPE_POSITION+DETECTION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+SEGMENTATION",
+    "DEPTH+HEIGHT+ANCHOR+DETECTION",
+    "DEPTH+HEIGHT+ANCHOR+SEGMENTATION",
+    "DEPTH+HEIGHT+DETECTION+SEGMENTATION",
+    "DEPTH+WIDTH+SHAPE_POSITION+ANCHOR",
+    "DEPTH+WIDTH+SHAPE_POSITION+DETECTION",
+    "DEPTH+WIDTH+SHAPE_POSITION+SEGMENTATION",
+    "DEPTH+WIDTH+ANCHOR+DETECTION",
+    "DEPTH+WIDTH+ANCHOR+SEGMENTATION",
+    "DEPTH+WIDTH+DETECTION+SEGMENTATION",
+    "DEPTH+SHAPE_POSITION+ANCHOR+DETECTION",
+    "DEPTH+SHAPE_POSITION+ANCHOR+SEGMENTATION",
+    "DEPTH+SHAPE_POSITION+DETECTION+SEGMENTATION",
+    "DEPTH+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+DETECTION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+ANCHOR+DETECTION",
+    "DEPTH+HEIGHT+WIDTH+ANCHOR+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+ANCHOR+DETECTION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+ANCHOR+SEGMENTATION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION",
+    "DEPTH+WIDTH+SHAPE_POSITION+ANCHOR+SEGMENTATION",
+    "DEPTH+WIDTH+SHAPE_POSITION+DETECTION+SEGMENTATION",
+    "DEPTH+WIDTH+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION",
+    "LEGACY_BASE"
+  ],
+  "format": "rel2abs_v6_object_feature_gate_v2",
+  "hidden_dim": 16,
+  "holdout_rows": 3351,
+  "legacy_reference_models": [
+    "E_NeuralGate_Base_COCO_WAYMO",
+    "E_NeuralGate_Base_V3_COCO",
+    "E_NeuralGate_Base_V3_COCO_WAYMO",
+    "E_NeuralGate_Base_V3_ONLY",
+    "E_NeuralGate_Base_V3_WAYMO",
+    "E_NeuralGate_Context_COCO_WAYMO",
+    "E_NeuralGate_Context_V3_COCO",
+    "E_NeuralGate_Context_V3_COCO_WAYMO",
+    "E_NeuralGate_Context_V3_ONLY",
+    "E_NeuralGate_Context_V3_WAYMO"
+  ],
+  "midas_changed": false,
+  "mixtures": [
+    "V3_ONLY",
+    "V3_COCO",
+    "V3_WAYMO",
+    "COCO_WAYMO",
+    "V3_COCO_WAYMO"
+  ],
+  "model_count": 325,
+  "new_depth_architecture": false,
+  "reference_candidate_count": 33,
+  "seconds": 625.4606982999976,
+  "seed": 20260919,
+  "v3_dev": {
+    "det_context_available": 506,
+    "frames": 416,
+    "name": "V3_dev",
+    "rows": 506,
+    "seg_object_available": 506
+  },
+  "v3_train": {
+    "det_context_available": 2306,
+    "frames": 1904,
+    "name": "V3_train",
+    "rows": 2306,
+    "seg_object_available": 2306
+  },
+  "waymo_all": {
+    "det_context_available": 4600,
+    "frames": 491,
+    "name": "WAYMO_all",
+    "rows": 5991,
+    "seg_object_available": 0
+  },
+  "waymo_segmentation": {
+    "path": "C:\\Users\\Alex\\Documents\\Rel2abs\\rel2abs_v6_research\\reports\\v6_waymo_semantic_context.jsonl",
+    "rows": 500,
+    "status": "REUSED"
+  }
+}

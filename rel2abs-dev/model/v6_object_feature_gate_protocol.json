@@ -1,0 +1,229 @@
+{
+  "depth_features": [
+    "depth_log_visual",
+    "depth_log_f1",
+    "depth_abs_log_disagreement",
+    "depth_signed_log_disagreement"
+  ],
+  "feature_groups": {
+    "ANCHOR": {
+      "description": "F1 height/width decomposition, reliability and uncertainty",
+      "features": [
+        "anchor_log_z_height",
+        "anchor_log_z_width",
+        "anchor_log_z_generic",
+        "anchor_log_z_geometry",
+        "anchor_sigma_log",
+        "anchor_reliability",
+        "anchor_prior_reliability",
+        "anchor_valid"
+      ]
+    },
+    "DETECTION": {
+      "description": "frame object count, object-size and detector-confidence context",
+      "features": [
+        "det_object_count_log1p",
+        "det_supported_count_log1p",
+        "det_mean_bbox_area",
+        "det_max_bbox_area",
+        "det_mean_bbox_width",
+        "det_max_bbox_width",
+        "det_mean_bbox_height",
+        "det_max_bbox_height",
+        "det_mean_confidence",
+        "det_class_diversity",
+        "det_border_fraction",
+        "det_target_confidence",
+        "det_target_class_supported"
+      ]
+    },
+    "HEIGHT": {
+      "description": "normalized bbox height only",
+      "features": [
+        "bbox_log_height"
+      ]
+    },
+    "SEGMENTATION": {
+      "description": "global and bbox-local semantic segmentation summaries",
+      "features": [
+        "seg_available",
+        "seg_present_count",
+        "seg_max_area",
+        "seg_entropy",
+        "seg_road_area",
+        "seg_sidewalk_area",
+        "seg_building_area",
+        "seg_vegetation_area",
+        "seg_sky_area",
+        "seg_people_area",
+        "seg_vehicle_area",
+        "seg_obj_available",
+        "seg_obj_present_count",
+        "seg_obj_max_area",
+        "seg_obj_entropy",
+        "seg_obj_class_supported",
+        "seg_obj_class_area",
+        "seg_obj_road_area",
+        "seg_obj_building_area",
+        "seg_obj_vegetation_area",
+        "seg_obj_sky_area",
+        "seg_obj_people_area",
+        "seg_obj_vehicle_area"
+      ]
+    },
+    "SHAPE_POSITION": {
+      "description": "bbox area/aspect and normalized center/bottom/border",
+      "features": [
+        "bbox_log_area",
+        "bbox_log_aspect",
+        "bbox_center_x",
+        "bbox_center_y",
+        "bbox_bottom_y",
+        "bbox_border"
+      ]
+    },
+    "WIDTH": {
+      "description": "normalized bbox width only",
+      "features": [
+        "bbox_log_width"
+      ]
+    }
+  },
+  "feature_sets": [
+    "DEPTH_ONLY",
+    "DEPTH+HEIGHT",
+    "DEPTH+WIDTH",
+    "DEPTH+SHAPE_POSITION",
+    "DEPTH+ANCHOR",
+    "DEPTH+DETECTION",
+    "DEPTH+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH",
+    "DEPTH+HEIGHT+SHAPE_POSITION",
+    "DEPTH+HEIGHT+ANCHOR",
+    "DEPTH+HEIGHT+DETECTION",
+    "DEPTH+HEIGHT+SEGMENTATION",
+    "DEPTH+WIDTH+SHAPE_POSITION",
+    "DEPTH+WIDTH+ANCHOR",
+    "DEPTH+WIDTH+DETECTION",
+    "DEPTH+WIDTH+SEGMENTATION",
+    "DEPTH+SHAPE_POSITION+ANCHOR",
+    "DEPTH+SHAPE_POSITION+DETECTION",
+    "DEPTH+SHAPE_POSITION+SEGMENTATION",
+    "DEPTH+ANCHOR+DETECTION",
+    "DEPTH+ANCHOR+SEGMENTATION",
+    "DEPTH+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION",
+    "DEPTH+HEIGHT+WIDTH+ANCHOR",
+    "DEPTH+HEIGHT+WIDTH+DETECTION",
+    "DEPTH+HEIGHT+WIDTH+SEGMENTATION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+ANCHOR",
+    "DEPTH+HEIGHT+SHAPE_POSITION+DETECTION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+SEGMENTATION",
+    "DEPTH+HEIGHT+ANCHOR+DETECTION",
+    "DEPTH+HEIGHT+ANCHOR+SEGMENTATION",
+    "DEPTH+HEIGHT+DETECTION+SEGMENTATION",
+    "DEPTH+WIDTH+SHAPE_POSITION+ANCHOR",
+    "DEPTH+WIDTH+SHAPE_POSITION+DETECTION",
+    "DEPTH+WIDTH+SHAPE_POSITION+SEGMENTATION",
+    "DEPTH+WIDTH+ANCHOR+DETECTION",
+    "DEPTH+WIDTH+ANCHOR+SEGMENTATION",
+    "DEPTH+WIDTH+DETECTION+SEGMENTATION",
+    "DEPTH+SHAPE_POSITION+ANCHOR+DETECTION",
+    "DEPTH+SHAPE_POSITION+ANCHOR+SEGMENTATION",
+    "DEPTH+SHAPE_POSITION+DETECTION+SEGMENTATION",
+    "DEPTH+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+DETECTION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+ANCHOR+DETECTION",
+    "DEPTH+HEIGHT+WIDTH+ANCHOR+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+ANCHOR+DETECTION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+ANCHOR+SEGMENTATION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION",
+    "DEPTH+WIDTH+SHAPE_POSITION+ANCHOR+SEGMENTATION",
+    "DEPTH+WIDTH+SHAPE_POSITION+DETECTION+SEGMENTATION",
+    "DEPTH+WIDTH+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION",
+    "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION",
+    "LEGACY_BASE"
+  ],
+  "format": "rel2abs_v6_object_feature_gate_protocol_v2",
+  "labels": {
+    "COCO": "P0 teacher pseudo-reference",
+    "V3": "Gold metric depth",
+    "WAYMO": "Gold-A LiDAR object depth"
+  },
+  "mixture_definitions": {
+    "COCO_WAYMO": [
+      "COCO",
+      "WAYMO"
+    ],
+    "V3_COCO": [
+      "V3",
+      "COCO"
+    ],
+    "V3_COCO_WAYMO": [
+      "V3",
+      "COCO",
+      "WAYMO"
+    ],
+    "V3_ONLY": [
+      "V3"
+    ],
+    "V3_WAYMO": [
+      "V3",
+      "WAYMO"
+    ]
+  },
+  "reference_candidates": [
+    "V0_Z1-frozen",
+    "V1_Baseline-2P",
+    "V2_Spline-8-seed123",
+    "V3_Spline-8-seed42",
+    "V4_Spline-8-seed7",
+    "V5_Spline-8-Median",
+    "V6_Spline-8-LogMean",
+    "F1_SIZE_ANCHOR_OVERRIDE",
+    "A0_Baseline_Visual",
+    "A1_SizeOnly",
+    "A2_Baseline_w25",
+    "A3_Baseline_w50",
+    "A4_Baseline_w75",
+    "B1_Baseline_Precision",
+    "B1_SplineEnsemble_Precision",
+    "B2_Baseline_ClippedReliability",
+    "B2_SplineEnsemble_ClippedReliability",
+    "B3_Baseline_DisagreementFallback",
+    "B3_SplineEnsemble_DisagreementFallback",
+    "C_C_Baseline_RangeGate",
+    "C_C_SplineEnsemble_RangeGate",
+    "D_Baseline_TinyLearned",
+    "D_SplineEnsemble_TinyLearned",
+    "E_NeuralGate_Base_COCO_WAYMO",
+    "E_NeuralGate_Base_V3_COCO",
+    "E_NeuralGate_Base_V3_COCO_WAYMO",
+    "E_NeuralGate_Base_V3_ONLY",
+    "E_NeuralGate_Base_V3_WAYMO",
+    "E_NeuralGate_Context_COCO_WAYMO",
+    "E_NeuralGate_Context_V3_COCO",
+    "E_NeuralGate_Context_V3_COCO_WAYMO",
+    "E_NeuralGate_Context_V3_ONLY",
+    "E_NeuralGate_Context_V3_WAYMO"
+  ],
+  "seed": 20260919,
+  "split_policy": "same V6 frame-disjoint 60/20/20 external splits; V3 train/dev retained",
+  "waymo_segmentation": {
+    "path": "C:\\Users\\Alex\\Documents\\Rel2abs\\rel2abs_v6_research\\reports\\v6_waymo_semantic_context.jsonl",
+    "rows": 500,
+    "status": "REUSED"
+  }
+}

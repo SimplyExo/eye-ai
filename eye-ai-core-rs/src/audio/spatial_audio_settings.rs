@@ -17,8 +17,8 @@ impl SpatialAudioSettings {
 	pub const PICTURE_RESOLUTION: IVec2 = IVec2 { x: 256, y: 256 };
 	pub const PICTURE_PIXEL_COUNT: usize =
 		Self::PICTURE_RESOLUTION.x as usize * Self::PICTURE_RESOLUTION.y as usize;
-	pub const NUMBER_OF_SOURCES: usize = 9;
-	pub const MAX_DISTANCE: f32 = 2.5;
+	pub const NUMBER_OF_SOURCES: usize = 2;
+	pub const MAX_DISTANCE: f32 = 12.0;
 	pub const ROLLOFF_FACTOR: f32 = 1.0;
 	pub const REFERENCE_DISTANCE: f32 = 1.0;
 

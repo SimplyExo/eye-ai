@@ -110,7 +110,7 @@ EyeAI unterstützt optische Texterkennung über Google OCR Services. Dadurch ist
 ### Speech Regonition
 EyeAI nutzt Vosk zur schnellen Erkennung und lokalen Verarbeitung von gesprochener, natürlicher Sprache.
 
-### Performance of EyeAIApp
+## Performance of EyeAIApp
 
 | **Smartphone**       | **Release date** | **NPU enabled?** | **MiDaS only / inference** | **MiDaS with YOLO / inference**                 |
 | -------------------- | ---------------- | ---------------- | -------------------------- | ----------------------------------------------- |
@@ -120,6 +120,10 @@ EyeAI nutzt Vosk zur schnellen Erkennung und lokalen Verarbeitung von gesprochen
 | Samsung Galaxy S21   | 2021             | ❌                | 48ms (21 FPS) / 34.4ms     | 94ms (10.5 FPS), 90ms (11 FPS) / 85ms, 77ms     |
 | Fairphone 4 (no NPU) | 2021             | ❌                | 100ms (10 FPS) / 90ms      | 200ms (5 FPS), 200ms (5 FPS) / 185ms, 175ms     |
 
+
+## Projektaufbau / Architektur
+
+![Architektur](./Architecture.svg)
 
 ## Bedienungsanleitung
 
@@ -167,4 +171,4 @@ Falls man direkt installieren will kann man auch anstatt von `./gradlew assemble
 | [EyeAIApp Speech Recognition](./eye-ai-core-rs/doc/SpeechRecognitionReadMe.md) | [eye-ai-core-rs Additional Documentation](<./eye-ai-core-rs/doc/Additional Documentation.md>)                                      | [EyeAIVisionPro data gathering](./EyeAIVisionPro/data_gathering/README.md)                                           |
 | [EyeAIApp TTS](./eye-ai-core-rs/doc/TTSEngineReadMe.md)                        | [tflite-runtime litert third party](./eye-ai-core-rs/tflite-runtime/third_party/litert-1.2.0/README.md)                            | [EyeAIVision](./EyeAIVision/README.md)                                                                               |
 | [EyeAIIcon](./EyeAIIcon/README.md)                                             | [tflite-runtime qnn-litert-delegate third party](./eye-ai-core-rs/tflite-runtime/third_party/qnn-litert-delegate-2.38.0/README.md) | [EyeAIVision (main)](./EyeAIVision/main/README.md)                                                                   |
-| [NLP-Daten – Übersicht](./nlp-dev/02_Diagnosen/README_NLP_Daten.md) |                                                                                                                                    |                                                                                                                      |
+| [NLP-Daten - Übersicht](./nlp-dev/02_Diagnosen/README_NLP_Daten.md)            | [REL2ABS Entwicklungspaket](./rel2abs-dev/README.md)                                                                               |                                                                                                                      |

@@ -1,0 +1,97 @@
+VERWENDETE DATEN UND ÖFFENTLICHE QUELLEN
+
+- Zweck der Daten
+  - Das aktuelle Modell trainiert keine neue Bildtiefenberechnung und keinen neuen YOLO Detektor.
+  - Es lernt, wann die visuelle Tiefenschätzung und die F1 Schätzung stärker oder schwächer gewichtet werden sollen.
+  - Dafür werden Objektgröße, Position im Bild, erkannte Objektklasse, Erkennungssicherheit, Segmentierungsinformationen und die Kamerahöhe verwendet.
+  - Die Rohdaten liegen nicht in diesem Paket. Die folgenden Links führen zu den öffentlich verfügbaren Originalquellen.
+
+- V3 Basisbestand
+  - V3 ist eine interne Zusammenstellung von Objektaufnahmen und bereits berechneten Merkmalen. Es ist kein eigenständiger öffentlicher Datensatz.
+  - Öffentliche Quellen, die in diesem Datenbestand und den zugehörigen Kontextdaten vertreten sind:
+    - DIODE, dichte Tiefenmessungen für Innen- und Außenaufnahmen: https://diode-dataset.org/
+    - KITTI Vision Benchmark, unter anderem für Tiefenmessung im Außenbereich: https://www.cvlibs.net/datasets/kitti/
+    - NYU Depth V2, Tiefendaten aus Innenräumen: https://cs.nyu.edu/~fergus/datasets/nyu_depth_v2.html
+    - SUN RGB-D, RGB-D Aufnahmen aus Innenräumen: https://rgbd.cs.princeton.edu/
+    - TUM RGB-D, RGB-D Sequenzen für räumliche Wahrnehmung: https://cvg.cit.tum.de/data/datasets/rgbd-dataset
+    - ARKitScenes, Innenraumaufnahmen mit räumlichen Sensordaten: https://github.com/apple/ARKitScenes
+  - Auswahl:
+    - Verwendet wurden nur bereits aufbereitete Objektaufnahmen mit Bild, Objektbereich, Tiefenreferenz und verfügbarem Kontext.
+    - Sehr ähnliche Bilder aus derselben Szene wurden zusammengehalten.
+  - Nutzung:
+    - V3 liefert Trainings- und Entwicklungsdaten für das kleine Auswahlmodul.
+    - Die visuelle Tiefenschätzung bleibt dabei unverändert.
+    - Die Daten helfen dem Modul zu lernen, wann F1 gegenüber der visuellen Schätzung vertrauenswürdig ist.
+
+- Waymo Open Dataset
+  - Öffentliche Quelle: https://waymo.com/open/about/
+  - Enthält Kameraaufnahmen, Objektbegrenzungen, LiDAR Messungen und weitere räumliche Informationen.
+  - Auswahl:
+    - Verwendet wurden Objektaufnahmen mit sichtbarem Objekt, passender Begrenzungsbox und einer LiDAR basierten Tiefenreferenz.
+    - Die Daten wurden nach Entfernungsbereichen ausgewertet, damit Nah- und Fernbereich getrennt betrachtet werden können.
+  - Nutzung:
+    - Waymo wurde mit dem V3 Bestand zur Trainingsmischung V3 plus Waymo verbunden.
+    - Diese Mischung bildet das aktuell exportierte Modell.
+    - Waymo wurde zusätzlich als externe Prüfung verwendet.
+
+- Microsoft COCO
+  - Öffentliche Quelle: https://cocodataset.org/
+  - Enthält Alltagsbilder mit Objektklassen, Begrenzungsboxen und Segmentierungen.
+  - Auswahl:
+    - Verwendet wurden Bilder und Objekte mit passenden Erkennungen und Segmentierungsinformationen.
+    - COCO wurde getrennt betrachtet, weil keine direkte metrische Tiefenmessung für jedes Objekt vorliegt.
+  - Nutzung:
+    - COCO wurde für Vergleichsmischungen und externe Belastungstests verwendet.
+    - Die Tiefenreferenz stammt dort teilweise aus Lehrermodellen. Das ist Pseudo-GT, also eine geschätzte Referenz und keine direkte Messung.
+    - COCO ist nicht Teil der final exportierten V3 plus Waymo Modellmischung.
+
+- YOLO Erkennungen
+  - Öffentliche technische Quelle: https://docs.ultralytics.com/tasks/detect
+  - YOLO liefert für erkannte Objekte unter anderem Klasse, Begrenzungsbox und Sicherheit der Erkennung.
+  - Auswahl:
+    - Für ein Objekt wurden die Boxgröße, die Position, die erkannte Klasse, die Sicherheit und die Anzahl weiterer Objekte im Bild genutzt.
+    - Nur vorhandene Erkennungen wurden verarbeitet. Es wurde im Rel2abs Paket kein neuer YOLO Detektor trainiert.
+  - Nutzung:
+    - Die Erkennungen geben dem Auswahlmodul Hinweise darüber, welches Objekt betrachtet wird und wie verlässlich die Box ist.
+
+- Segmentierung
+  - Öffentliche technische Quelle: https://docs.ultralytics.com/tasks/segment
+  - Segmentierung beschreibt die sichtbare Form eines Objekts und nicht nur seine rechteckige Begrenzungsbox.
+  - Auswahl:
+    - Genutzt wurden globale Informationen über die Bildszene und Zusammenfassungen innerhalb des jeweiligen Objektbereichs.
+    - Diese Informationen helfen bei teilweise verdeckten oder ungewöhnlich geformten Objekten.
+    - Es wurde im Rel2abs Paket kein neues Segmentierungsmodell trainiert.
+
+- Visuelle Tiefenschätzung
+  - Technische Referenz für die verwendete Modellfamilie: https://github.com/isl-org/MiDaS
+  - Die visuelle Tiefenschätzung wird als feste Eingabe weiterverwendet.
+  - Auswahl:
+    - Für jedes Objekt wird die vorhandene visuelle Tiefeninformation aus dem jeweiligen Bildbereich genutzt.
+    - Das aktuelle Rel2abs Training verändert dieses Tiefenmodell nicht.
+
+- F1 Schätzung mit Kameramodell
+  - Technische Referenz zum Lochkamera- und Kamerakalibrierungsmodell: https://docs.opencv.org/doc/doxygen/html/d4/d93/group__calib.html
+  - F1 nutzt die sichtbare Größe eines Objekts in der Begrenzungsbox.
+  - Zusammen mit einer typischen Objektgröße, den Kameraparametern und der Kamerahöhe entsteht eine zweite Tiefenschätzung.
+  - Das Auswahlmodul lernt, wann diese geometrische Schätzung zuverlässig ist und wann die visuelle Schätzung stärker gewichtet werden sollte.
+
+- Kamerahöhe
+  - Berechnete Modellvarianten: 1,60 m, 1,70 m, 1,80 m, 1,90 m und 2,00 m.
+  - Pro Kamerahöhe wird eine eigene Parameterdatei verwendet.
+  - Die Höhe wird als bekannte Kalibrierungsinformation eingegeben. Sie wird nicht aus dem Bild geschätzt.
+  - Die aktuelle EyeAI Standardeinstellung ist 1,70 m.
+
+- Aufteilung der Daten
+  - Trainings-, Entwicklungs- und Testdaten wurden nach Bild oder Frame Gruppe getrennt.
+  - Bilder aus derselben Szene oder Sequenz wurden nicht auf mehrere Seiten der Aufteilung verteilt.
+  - Für externe V6 Vergleiche wurde eine getrennte Aufteilung im Verhältnis 60 zu 20 zu 20 verwendet.
+  - Die V3 Trainings- und Entwicklungsaufteilung wurde beibehalten.
+
+- Umgang mit Referenzwerten
+  - DIODE, KITTI und Waymo liefern dort, wo sie verwendet werden, gemessene oder LiDAR basierte Tiefenreferenzen.
+  - COCO wird wegen der geschätzten Referenzwerte getrennt ausgewertet.
+  - Es wurde kein Oracle verwendet. Oracle würde bedeuten, dass das Modell während der Auswertung bereits die richtige Antwort oder den tatsächlichen Fehler erhält.
+
+- Hinweis zur Weiterverwendung
+  - Vor einer eigenen Nutzung müssen die jeweiligen Lizenzen und Nutzungsbedingungen der Datensätze geprüft werden.
+  - Besonders relevant sind die Bedingungen von Waymo Open Dataset, COCO, KITTI und den jeweiligen Forschungsdatensätzen.
