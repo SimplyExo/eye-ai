@@ -28,9 +28,13 @@
           extensions = [ "rust-src" ];
         };
         androidComposition = pkgs.androidenv.composeAndroidPackages {
+          platformVersions = [ "37" ];
+          buildToolsVersions = [ "36.0.0" ];
           includeNDK = true;
           ndkVersions = [ "29.0.14206865" ];
+          cmakeVersions = [ "3.22.1" ];
         };
+        androidSdk = androidComposition.androidsdk;
       in
       {
         devShells.default = pkgs.mkShell.override { stdenv = pkgs.gccStdenv; } {
@@ -41,7 +45,8 @@
             rust-analyzer
             cargo-ndk
 
-            androidComposition.androidsdk
+            androidSdk
+            openjdk21
 
             pkg-config
             cmake
@@ -53,11 +58,9 @@
             tracy_0_12 # for profling
           ];
 
-          shellHook = ''
-            export ANDROID_SDK_ROOT="${androidComposition.androidsdk}/libexec/android-sdk"
-            export ANDROID_NDK_ROOT="$ANDROID_SDK_ROOT/ndk-bundle"
-            export NDK_HOME="$ANDROID_NDK_ROOT"
-          '';
+          ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
+          ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
+          ANDROID_NDK_ROOT = "${androidSdk}/libexec/android-sdk/ndk-bundle/";
         };
       }
     );

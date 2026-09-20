@@ -123,6 +123,18 @@ fn generate_kotlin_bindings() {
 		false,
 	)
 	.expect("Failed to generate kotlin bindings for android!");
+
+	let generated = out_dir.join("uniffi/NativeLib/NativeLib.kt");
+	let generated_code =
+		std::fs::read_to_string(&generated).expect("failed to read generated NativeLib.kt");
+	std::fs::write(
+		&generated,
+		generated_code.replace(
+			"@file:Suppress(\"NAME_SHADOWING\")",
+			"@file:Suppress(\"ALL\")",
+		),
+	)
+	.expect("failed to write extra disable warnings prefix to generated NativeLib.kt");
 }
 
 fn project_root() -> PathBuf {
