@@ -1,0 +1,18 @@
+{
+  "anchor_quantiles": [
+    0.1,
+    0.9
+  ],
+  "delta_max": 3.1423029628820647,
+  "delta_min": 0.0,
+  "direction": 1,
+  "dropped_nonpositive_anchor_count": 6,
+  "eps": 1e-06,
+  "m_max": 0.202358881069104,
+  "m_min": -3.7245745095284133,
+  "r_high": 839.5,
+  "r_low": 121.375,
+  "semantics": "INVERSE_DEPTH",
+  "training_record_count": 1037,
+  "version": 1
+}

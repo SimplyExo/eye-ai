@@ -22,6 +22,16 @@ class MetricDepthModelInfo(
 	}
 }
 
+/**
+ * The legacy metric-depth output and the unmodified MiDaS relative-depth output from one
+ * native inference pass.  Keeping both is essential: the legacy output remains the current
+ * app behaviour, while REL2ABS consumes the raw MiDaS representation it was trained on.
+ */
+data class DepthModelOutputs(
+	val legacyMetricDepth: NativeLib.NativeFloatBuffer,
+	val rawRelativeDepth: NativeLib.NativeFloatBuffer,
+)
+
 class MetricDepthModel(
 	context: Context,
 	val name: String,
@@ -81,18 +91,20 @@ class MetricDepthModel(
 
 	/**
 	 * @param input is not enforced to match [inputDim], but should be at least a bit larger
-	 * @return relative depth for each pixel between 0.0f and 1.0f
+	 * @return legacy metric depth plus raw MiDaS relative depth from the same backbone pass
 	 */
-	fun predictDepth(input: Bitmap): NativeLib.NativeFloatBuffer {
+	fun predictDepth(input: Bitmap): DepthModelOutputs {
 		val scaled = input.scale(inputDim.width, inputDim.height)
 		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled)
-		val output = NativeLib.NativeFloatBuffer(inputDim.width * inputDim.height)
+		val legacyOutput = NativeLib.NativeFloatBuffer(inputDim.width * inputDim.height)
+		val rawOutput = NativeLib.NativeFloatBuffer(inputDim.width * inputDim.height)
 
-		uniffi.NativeLib.runMetricDepthModelInference(
+		uniffi.NativeLib.runMetricDepthModelInferenceWithRaw(
 			input.asUniffiWrapper(),
-			output.asUniffiWrapper(),
+			legacyOutput.asUniffiWrapper(),
+			rawOutput.asUniffiWrapper(),
 		)
 
-		return output
+		return DepthModelOutputs(legacyOutput, rawOutput)
 	}
 }

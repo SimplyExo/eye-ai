@@ -1,0 +1,217 @@
+{
+  "format": "rel2abs_s2_seed42_android_contract_v1",
+  "source": {
+    "path": "C:\\Users\\Alex\\Documents\\Rel2abs\\rel2abs_v2_research\\runs\\v2_1_scalar_calibration\\final_models\\S2_tiny_mlp_seed42.joblib",
+    "sha256": "080e2bf734083862488259dff915e38588b001da5cdaa146bff9d5bad72b2e4b",
+    "seed": 42,
+    "feature_set": "S2_spatial_midas_summary",
+    "train_target": "log scalar scale"
+  },
+  "input": {
+    "name": "s2_features",
+    "shape": [
+      1,
+      28
+    ],
+    "dtype": "float32",
+    "feature_order": [
+      "d_rel_mean",
+      "d_rel_sample_std_ddof1",
+      "d_rel_min",
+      "d_rel_max",
+      "d_rel_q10_index",
+      "d_rel_median_index",
+      "d_rel_q90_index",
+      "intrinsics_0_zero",
+      "intrinsics_1_zero",
+      "intrinsics_2_zero",
+      "intrinsics_3_zero",
+      "intrinsics_4_zero",
+      "d_rel_small_4x4_row_major_0",
+      "d_rel_small_4x4_row_major_1",
+      "d_rel_small_4x4_row_major_2",
+      "d_rel_small_4x4_row_major_3",
+      "d_rel_small_4x4_row_major_4",
+      "d_rel_small_4x4_row_major_5",
+      "d_rel_small_4x4_row_major_6",
+      "d_rel_small_4x4_row_major_7",
+      "d_rel_small_4x4_row_major_8",
+      "d_rel_small_4x4_row_major_9",
+      "d_rel_small_4x4_row_major_10",
+      "d_rel_small_4x4_row_major_11",
+      "d_rel_small_4x4_row_major_12",
+      "d_rel_small_4x4_row_major_13",
+      "d_rel_small_4x4_row_major_14",
+      "d_rel_small_4x4_row_major_15"
+    ],
+    "standardization": "embedded_train_only_feature_mean_and_scale",
+    "feature_mean_sha256": "c8c4f6cae915d93d3b1758de28e4ca000d80691a0db73b3d4e432451936505af",
+    "feature_scale_sha256": "12cf323153c12428e8e47eff929f92a2cdc8d28e278b15803ec4329aed0a0ca0"
+  },
+  "network": {
+    "architecture": [
+      28,
+      32,
+      16,
+      1
+    ],
+    "activation": "relu,relu,identity",
+    "weights": [
+      {
+        "shape": [
+          28,
+          32
+        ],
+        "sha256": "ad965ef2d82db6655e97b60f946d7f2d5429570d2525131bd22085aecedb195f"
+      },
+      {
+        "shape": [
+          32,
+          16
+        ],
+        "sha256": "c85ce862765b16a17fb1a96b42f989fa481fd404bbb950f5e2ed5710d71e452d"
+      },
+      {
+        "shape": [
+          16,
+          1
+        ],
+        "sha256": "bef5fe1a48cc1221137c0a469b633b6fe5ef79bc40e5c029fa4b6c7a433651ca"
+      }
+    ],
+    "biases": [
+      {
+        "shape": [
+          32
+        ],
+        "sha256": "d7032a45b7088eff996880712c4697e22e7b479a772d94918cd022f330fb45f6"
+      },
+      {
+        "shape": [
+          16
+        ],
+        "sha256": "952df4136490025ded4963904f567edf895bb9cda5f4be0d574c3a038e8bae59"
+      },
+      {
+        "shape": [
+          1
+        ],
+        "sha256": "1049236dc3c4d72acae1fcd3b7d794e7b91f5c7f015ebcdef9ca2d8358e22425"
+      }
+    ]
+  },
+  "output": {
+    "name": "delta_log_scale",
+    "shape": [
+      1,
+      1
+    ],
+    "dtype": "float32",
+    "final_scale": "clip(exp(delta_log_scale), 0.25, 4.0)",
+    "final_depth": "final_scale * depth_z1"
+  },
+  "artifacts": {
+    "onnx": {
+      "path": "C:\\Users\\Alex\\Documents\\Rel2abs\\rel2abs_v2_research\\baselines\\s2_export_completion\\rel2abs_s2_seed42.onnx",
+      "sha256": "8be877cdb2d4f2caebf0064c65962085a1d35d608e2448884a733e541effe071",
+      "bytes": 6624
+    },
+    "tflite_fp32": {
+      "path": "C:\\Users\\Alex\\Documents\\Rel2abs\\rel2abs_v2_research\\baselines\\s2_export_completion\\rel2abs_s2_seed42_float32.tflite",
+      "sha256": "ad8dc0e6c41061a0c618a7d6e179108f1bc9ed7bea6280c2c0dd5328129044f3",
+      "bytes": 8352
+    },
+    "golden_npz": {
+      "path": "C:\\Users\\Alex\\Documents\\Rel2abs\\rel2abs_v2_research\\baselines\\s2_export_completion\\s2_seed42_golden_inputs_outputs.npz",
+      "sha256": "38a8ef0daac48eba9950080d7d279bf08ff25d9ad425669d7109734847657f18"
+    }
+  },
+  "parity": {
+    "criteria_max_abs_lt": 1e-05,
+    "sample_count": 8,
+    "seed": 20260918,
+    "comparisons": {
+      "sklearn_vs_tensorflow_raw": {
+        "shape_reference": [
+          8,
+          1
+        ],
+        "shape_candidate": [
+          8,
+          1
+        ],
+        "finite_reference": true,
+        "finite_candidate": true,
+        "max_abs": 1.6644057332371176e-07,
+        "mean_abs": 7.299867831739304e-08,
+        "max_relative": 6.775643894598018e-07,
+        "mean_relative": 1.6677234889575558e-07
+      },
+      "sklearn_vs_onnx_raw": {
+        "shape_reference": [
+          8,
+          1
+        ],
+        "shape_candidate": [
+          8,
+          1
+        ],
+        "finite_reference": true,
+        "finite_candidate": true,
+        "max_abs": 4.0485915242527426e-07,
+        "mean_abs": 7.595832473422659e-08,
+        "max_relative": 4.1607147576537754e-07,
+        "mean_relative": 1.1148312961715826e-07
+      },
+      "sklearn_vs_tflite_raw": {
+        "shape_reference": [
+          8,
+          1
+        ],
+        "shape_candidate": [
+          8,
+          1
+        ],
+        "finite_reference": true,
+        "finite_candidate": true,
+        "max_abs": 1.1757941720258458e-07,
+        "mean_abs": 5.256825742067095e-08,
+        "max_relative": 6.1940847696204e-07,
+        "mean_relative": 1.415013501632584e-07
+      },
+      "onnx_vs_tflite_raw": {
+        "shape_reference": [
+          8,
+          1
+        ],
+        "shape_candidate": [
+          8,
+          1
+        ],
+        "finite_reference": true,
+        "finite_candidate": true,
+        "max_abs": 4.76837158203125e-07,
+        "mean_abs": 8.568167686462402e-08,
+        "max_relative": 4.709959145814369e-07,
+        "mean_relative": 1.3816279886438166e-07
+      },
+      "sklearn_vs_tflite_scale": {
+        "shape_reference": [
+          8,
+          1
+        ],
+        "shape_candidate": [
+          8,
+          1
+        ],
+        "finite_reference": true,
+        "finite_candidate": true,
+        "max_abs": 9.725035277075023e-08,
+        "mean_abs": 3.38031389546245e-08,
+        "max_relative": 1.17579410315999e-07,
+        "mean_relative": 4.357100598000155e-08
+      }
+    },
+    "status": "PASS"
+  }
+}

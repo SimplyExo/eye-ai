@@ -6,6 +6,10 @@ import android.util.Size
 import com.algorithmic_alliance.eyeaiapp.AIModelData
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
+import com.algorithmic_alliance.eyeaiapp.rel2abs.DetectionFrame
+import com.algorithmic_alliance.eyeaiapp.rel2abs.MetricDepthFrame
+import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsContextFeatures
+import com.algorithmic_alliance.eyeaiapp.rel2abs.SegmentationContextFrame
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -212,6 +216,25 @@ class FrameAnalyzer(
 				val inferenceDuration = measureTime {
 					uniffi.NativeLib.newDepthFrame()
 					AIModelData.depthEstimationData.set(modelInference.prediction)
+					val rel2Abs = runtime.runRel2AbsInference(frame.bitmap, modelInference)
+					if (rel2Abs != null) {
+						AIModelData.rel2AbsFrameCache.publishDepth(
+							MetricDepthFrame(
+								depthMeters = rel2Abs.depthMeters,
+								width = modelInference.inputDim.width,
+								height = modelInference.inputDim.height,
+								sourceTimestampNanos = frame.timestampNanos,
+								sourceWidth = frame.width,
+								sourceHeight = frame.height,
+								rotationDegrees = frame.rotationDegrees,
+								rel2absMode = rel2Abs.mode,
+								cameraIntrinsics = frame.cameraIntrinsics,
+								neuralGateRunner = runtime.rel2AbsNeuralGateRunner,
+							),
+						)
+					} else {
+						AIModelData.rel2AbsFrameCache.clearDepth()
+					}
 					lastDepthOutputAtNanos.set(System.nanoTime())
 					val colorMappedImage = NativeLib.metricDepthColormap(
 						modelInference.prediction.asUniffiWrapper(),
@@ -262,6 +285,7 @@ class FrameAnalyzer(
 				throw cancelled
 			} catch (error: Throwable) {
 				AIModelData.depthEstimationData.set(null)
+				AIModelData.rel2AbsFrameCache.clearDepth()
 				Log.e(EyeAIApp.APP_LOG_TAG, "Depth frame processing failed", error)
 			} finally {
 				frame.release()
@@ -275,11 +299,25 @@ class FrameAnalyzer(
 			observedSequence = frameAvailable.first { it > observedSequence }
 			val frame = retainLatestFrame() ?: continue
 			try {
-				if (!runtime.settings.enableObjectDetection) continue
+				if (!runtime.settings.enableObjectDetection) {
+					AIModelData.rel2AbsFrameCache.clearDetections()
+					continue
+				}
 				val inferenceDuration = measureTime {
 					uniffi.NativeLib.newObjectFrame()
 					val objects = runtime.runObjectInference(frame.bitmap)
-					AIModelData.detectedObjects.set(objects ?: emptyArray())
+					val safeObjects = objects ?: emptyArray()
+					AIModelData.detectedObjects.set(safeObjects)
+					AIModelData.rel2AbsFrameCache.publishDetections(
+						DetectionFrame(
+							detections = safeObjects,
+							sourceTimestampNanos = frame.timestampNanos,
+							sourceWidth = frame.width,
+							sourceHeight = frame.height,
+							rotationDegrees = frame.rotationDegrees,
+							objectContextFeatures = Rel2AbsContextFeatures.objectFeatures(safeObjects),
+						),
+					)
 					lastObjectOutputAtNanos.set(System.nanoTime())
 					onUpdate(
 						FrameAnalysisUpdate(
@@ -298,6 +336,7 @@ class FrameAnalyzer(
 				throw cancelled
 			} catch (error: Throwable) {
 				AIModelData.detectedObjects.set(emptyArray())
+				AIModelData.rel2AbsFrameCache.clearDetections()
 				Log.e(EyeAIApp.APP_LOG_TAG, "Object-detection frame processing failed", error)
 			} finally {
 				frame.release()
@@ -311,11 +350,31 @@ class FrameAnalyzer(
 			observedSequence = frameAvailable.first { it > observedSequence }
 			val frame = retainLatestFrame() ?: continue
 			try {
-				if (!runtime.settings.enableSegmentation) continue
+				if (!runtime.settings.enableSegmentation) {
+					AIModelData.rel2AbsFrameCache.clearSegmentationContexts()
+					continue
+				}
 				val inferenceDuration = measureTime {
 					uniffi.NativeLib.newSegmentationFrame()
 					val output = runtime.runSegmentationInference(frame.bitmap) ?: continue
 					AIModelData.segmentationOutput.set(output.prediction)
+					val segmentationContext = Rel2AbsContextFeatures.segmentationFeatureContext(
+						output.prediction,
+						output.inputDim.width,
+						output.inputDim.height,
+					)
+					AIModelData.rel2AbsFrameCache.publishSegmentationContext(
+						SegmentationContextFrame(
+							segmentationFeatures = Rel2AbsContextFeatures.segmentationFeatures(output.prediction),
+							sourceTimestampNanos = frame.timestampNanos,
+							sourceWidth = frame.width,
+							sourceHeight = frame.height,
+							rotationDegrees = frame.rotationDegrees,
+							globalAreaFractions = segmentationContext.globalAreaFractions,
+							gridAreaFractions = segmentationContext.gridAreaFractions,
+							available = segmentationContext.available,
+						),
+					)
 					val colorMappedImage = NativeLib.segmentationColormap(
 						output.prediction.asUniffiWrapper(),
 						output.inputDim,
@@ -364,6 +423,7 @@ class FrameAnalyzer(
 		AIModelData.detectedObjects.set(emptyArray())
 		AIModelData.depthEstimationData.set(null)
 		AIModelData.segmentationOutput.set(null)
+		AIModelData.rel2AbsFrameCache.clear()
 		lastDepthOutputAtNanos.set(0L)
 		lastObjectOutputAtNanos.set(0L)
 	}

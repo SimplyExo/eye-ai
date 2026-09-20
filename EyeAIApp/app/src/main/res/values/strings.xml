@@ -1,6 +1,8 @@
 <resources>
 	<string name="app_name" translatable="false">Eye AI (Dev)</string>
 	<string name="depth_model_setting" translatable="false">depth_model</string>
+	<string name="rel2abs_mode_setting" translatable="false">rel2abs_mode</string>
+	<string name="camera_height_setting" translatable="false">camera_height_tenths</string>
 	<string name="show_profiling_info_setting" translatable="false">show_profiling_info</string>
 	<string name="show_debug_input_bitmap_setting" translatable="false">show_debug_input_bitmap</string>
 	<string name="enable_speech_recognition_setting" translatable="false">enable_speech_recognition</string>
@@ -170,6 +172,10 @@
 	<!-- Depth Estimation -->
 	<string name="setting_depth_estimation_model_title">Modell für Entfernungsschätzung</string>
 	<string name="setting_depth_estimation_model_description">Das KI-Modell, das zur Schätzung der Entfernung zu Objekten verwendet wird.</string>
+	<string name="setting_rel2abs_mode_title">REL2ABS-Kalibrierung</string>
+	<string name="setting_rel2abs_mode_description">EyeAI verwendet das V6 Object Gate mit vollständigem YOLO-/Segmentierungskontext. Die interne Z1-Berechnung bleibt als technischer visueller Fallback erhalten.</string>
+	<string name="setting_camera_height_title">Kamera-Höhe für REL2ABS</string>
+	<string name="setting_camera_height_description">Wählt das separat trainierte Kamera-Höhenmodell zwischen 1,6 m und 2,0 m in 0,1-m-Schritten. 1,7 m ist die aktuelle stabile und empfohlene Einstellung.</string>
 	<string name="setting_enable_framerate_limiter_title">Bildratenbegrenzung aktivieren</string>
 	<string name="setting_enable_depth_framerate_limiter_description">Begrenzt die Bildrate der Entfernungsschätzung, um Ressourcen für andere Aufgaben freizugeben.</string>
 	<string name="setting_framerate_limit_title">Bildratenlimit</string>

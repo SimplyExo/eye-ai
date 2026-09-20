@@ -156,48 +156,13 @@ data class NLPModelInfo(
 		private const val TOKENIZER_ARTIFACT_VERSION = 1
 		private const val HEX_DIGITS = "0123456789abcdef"
 
-		const val DEFAULT_MODEL_ID = "M0_T1"
+		const val DEFAULT_MODEL_ID = "M1_T2"
 
 		val BASELINE_MODELS = listOf(
 			NLPModelInfo(
-				id = "M0_T1",
-				displayName = "M0 – Clean only – T1 Word – Seed 20260812",
-				tfliteAssetPath = "nlp-v2/models/m0_t1_seed_20260812.tflite",
-				tokenizerAssetDirectory = "nlp-v2/tokenizers/T1"
-			), NLPModelInfo(
-				id = "M0_T2",
-				displayName = "M0 – Clean only – T2 BPE – Seed 20260814",
-				tfliteAssetPath = "nlp-v2/models/m0_t2_seed_20260814.tflite",
-				tokenizerAssetDirectory = "nlp-v2/tokenizers/T2"
-			), NLPModelInfo(
-				id = "M1_T1",
-				displayName = "M1 – Joint Clean + Vosk – T1 Word – Seed 20260814",
-				tfliteAssetPath = "nlp-v2/models/m1_t1_seed_20260814.tflite",
-				tokenizerAssetDirectory = "nlp-v2/tokenizers/T1"
-			), NLPModelInfo(
 				id = "M1_T2",
-				displayName = "M1 – Joint Clean + Vosk – T2 BPE – Seed 20260812",
-				tfliteAssetPath = "nlp-v2/models/m1_t2_seed_20260812.tflite",
-				tokenizerAssetDirectory = "nlp-v2/tokenizers/T2"
-			), NLPModelInfo(
-				id = "M2_T1",
-				displayName = "M2 – Clean → Joint – T1 Word – Seed 20260813",
-				tfliteAssetPath = "nlp-v2/models/m2_t1_seed_20260813.tflite",
-				tokenizerAssetDirectory = "nlp-v2/tokenizers/T1"
-			), NLPModelInfo(
-				id = "M2_T2",
-				displayName = "M2 – Clean → Joint – T2 BPE – Seed 20260814",
-				tfliteAssetPath = "nlp-v2/models/m2_t2_seed_20260814.tflite",
-				tokenizerAssetDirectory = "nlp-v2/tokenizers/T2"
-			), NLPModelInfo(
-				id = "M3_T1",
-				displayName = "M3 – Clean → Vosk only – T1 Word – Seed 20260813",
-				tfliteAssetPath = "nlp-v2/models/m3_t1_seed_20260813.tflite",
-				tokenizerAssetDirectory = "nlp-v2/tokenizers/T1"
-			), NLPModelInfo(
-				id = "M3_T2",
-				displayName = "M3 – Clean → Vosk only – T2 BPE – Seed 20260810",
-				tfliteAssetPath = "nlp-v2/models/m3_t2_seed_20260810.tflite",
+				displayName = "D – Human Clean Extension – M1 Joint Clean + Vosk – T2 BPE – Seed 20260814",
+				tfliteAssetPath = "nlp-v2/models/m1_t2_seed_20260814.tflite",
 				tokenizerAssetDirectory = "nlp-v2/tokenizers/T2"
 			)
 		)

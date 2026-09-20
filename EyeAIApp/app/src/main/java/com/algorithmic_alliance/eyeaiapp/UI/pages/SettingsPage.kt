@@ -100,10 +100,12 @@ import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
+import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsMode
 import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import kotlin.math.roundToInt
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 import androidx.core.net.toUri
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -652,6 +654,7 @@ fun SliderSetting(
 	val isDepthFrameRate = settingData["string"] as Int == R.string.max_depth_frame_rate_setting
 	val isObjectDetectionFrameRate =
 		settingData["string"] as Int == R.string.max_object_detection_frame_rate_setting
+	val isCameraHeight = settingData["string"] as Int == R.string.camera_height_setting
 
 	val depthEnabled by rememberPreferenceBooleanState(
 		stringResource(R.string.enable_depth_frame_rate_limit_setting), true
@@ -682,6 +685,15 @@ fun SliderSetting(
 	val settingDescription =
 		resolveString(LocalContext.current, settingData.getValue("description"))
 	val audioFrequencySettingTitle = stringResource(R.string.setting_audio_frequency_title)
+	val displayedValue = if (isCameraHeight) {
+		if (currentValue == Rel2AbsMode.DEFAULT_CAMERA_HEIGHT_TENTHS) {
+			"1,7 m - stabil/empfohlen"
+		} else {
+			String.format(Locale.GERMANY, "%.1f m", currentValue / 10f)
+		}
+	} else {
+		"$currentValue"
+	}
 	AnimatedVisibility(
 		visible = visible,
 		enter = fadeIn() + expandVertically(),
@@ -706,7 +718,7 @@ fun SliderSetting(
 						modifier = Modifier.weight(1f)
 					)
 					Text(
-						"$currentValue",
+						displayedValue,
 						style = MaterialTheme.typography.labelLarge,
 						fontWeight = FontWeight.SemiBold
 					)
@@ -717,8 +729,14 @@ fun SliderSetting(
 				Slider(
 					value = currentValue.toFloat(), onValueChange = {
 						currentValue =
-							if (settingTitle == audioFrequencySettingTitle) (it / 10.0).roundToInt() * 10
-							else it.roundToInt()
+							when {
+								isCameraHeight -> it.roundToInt().coerceIn(
+									Rel2AbsMode.MIN_CAMERA_HEIGHT_TENTHS,
+									Rel2AbsMode.MAX_CAMERA_HEIGHT_TENTHS,
+								)
+								settingTitle == audioFrequencySettingTitle -> (it / 10.0).roundToInt() * 10
+								else -> it.roundToInt()
+							}
 						Log.d(
 							LOG_TAG,
 							"[SettingsPage.SliderSetting] Changed setting $settingKey to $currentValue"
@@ -727,7 +745,9 @@ fun SliderSetting(
 							putInt(settingKey, currentValue)
 						}
 						onEvent(UIEvent.UpdateSettings)
-					}, valueRange = min..max
+					},
+					valueRange = min..max,
+					steps = if (isCameraHeight) (max - min).roundToInt() - 1 else 0,
 				)
 			}
 
