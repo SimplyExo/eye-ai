@@ -1,0 +1,128 @@
+TEXT_RECOGNITION:
+- lese den text vor
+- was für ein text steht hier
+- lies die buchstaben
+- lies mal
+- sprich mal den text vor den ich sehe
+- was steht in dem buch
+- was steht auf der packung
+- welche buchstaben stehen auf der packung
+- welche texte stehen hier geschrieben
+- was steht hier geschrieben
+
+OBJECT_DETECTION:
+- welche sachen sehe ich
+- zeig mal was ich sehe
+- was sehe ich
+- sehe ich hier ein auto
+- sachen zeigen sofort
+- welche sachen sind vor mir
+- welche objekte sind in meinem blickfeld
+- nenne alle objekte die ich sehe
+- was ist vor mir
+- was steht mir im weg
+- benenne alle sichtbaren objekte
+
+CHANGE_SPEECH_SPEED:
+- mach mir die stimme schneller
+- sprich langsamer
+- sprich mit höherer geschwindigkeit
+- setze die sprechgeschwindigkeit auf 10
+- mach mal langsamer mit der stimme
+- sprich mit einer schnelleren stimme
+- deine stimme ist zu schnell mach sie langsamer
+- setze die gschwindigkeit auf 4
+- reduziere deine geschwindigkeit leicht
+- erhöhe deine sprechgeschwindigkeit stark
+
+CHANGE_SPEAKER:
+- wechsele deine stimme auf weiblich
+- sprich mit weiblicher stimme
+- spreche mit männlicher stimme
+- kannst du weiblich sprechen
+- kannst du deine stimme auf männlich stellen
+- spreche wie ein mann
+- spreche wie eine frau
+- mach deine stimme männlicher
+- deine stimme soll ab jetzt weiblich sein
+- wechsel die stimme auf männlich
+
+REDIRECT_TO_LLM:
+- frage die ki was der sinn des lebens ist
+- wie wird das wetter heute
+- wann wurde stuttgart gegründet
+- was geschah nach dem 2. weltkrieg
+- wer war charles de gaulle
+- was ist in portugal passiert
+- was ist die hauptstadt von japan
+- frage das internet wie ich ins internet komme
+- was ist eyeaivision, frage die ki
+- frage gemini wann google gegründet wurde
+- wie kann ich python anfangen zu programmieren
+- warum ist es so schwer gute prompts für nlp zu erstellen
+- wie weit sind berlin und bagdad entfernt
+- gib mir die distanz vom mond zur erde
+
+ABORT:
+- bruch ab
+- lass es 
+- geh zurück
+- geh aus dem menu raus
+- geh aus dem einstellungsmenu raus
+- raus gehen
+- rausgehen
+- abbrechen
+- beende den vorgang
+- beenden
+- weg hier
+- schließe das menü
+- schließe das einstellungsmenü
+
+OPEN_SETTINGS:
+- öffne die einstellungen
+- gehe ins settings menu
+- gehe in die app konfiguration
+- mach die einstellungen auf
+- einstellungen sofort
+- ich brauche die einstellungen
+- ich brauche die settings
+- mach sofort die konfig auf
+- konfiguriere die app
+- ich will die app einstellungen
+- ich will die einstellungen
+- einstellungen
+- settings
+- konfig
+- config
+
+SET_BPS:
+- stelle die klick geschwindigkeit auf 10
+- mach die klicks schneller
+- mach die klicks langsamer
+- setze die bps auf 4
+- ich will dass die abstandsmessung schneller klickt
+- mache bitte das piepsen der abstandsmessung schneller
+- einparkhilfe bitte langsamer stellen
+- piepse bitte öfter in der sekunde
+- das piepsen höher stellen
+- mache das piepsen bitte etwas schneller
+- mache das piepsen bitte viel langsamer
+
+SET_FREQUENCY:
+- stelle die frequenz auf 500 hz
+- erhöhe die tonfrequenz auf 300 hz
+- reduziere die tonfrequenz auf 200 hz
+- setze die tonfrequenz auf 3000 hz
+- die tonfrequenz auf 3200 hz stellen
+- einstellen der tonhöhe auf 2222 hz
+- reguliere das piepsen auf 700 hz
+- tonhöhe auf 30 aber sofort
+
+MEASURE_DISTANCE:
+- messe die distanz zum auto
+- wie weit bin ich vom auto entfernt
+- abstandsmessung zum handy
+- messe den abstand zum tisch
+- wie weit muss ich bis zum fernseher laufen
+- der fernseher ist wie weit weg
+- wie weit bis zum flugzeug

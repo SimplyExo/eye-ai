@@ -1,0 +1,32 @@
+das reicht mir;ABORT
+entfernt messen;MEASURE_DISTANCE
+abstandsmessung;MEASURE_DISTANCE
+distanz messung;MEASURE_DISTANCE
+was ist dieses gebilde;OBJECT_DETECTION
+je verkennung;OBJECT_DETECTION
+immer wieder anpassen und die einstellungen sollen jetzt geändert werden;OPEN_SETTINGS
+was ist eine induktion bremse;REDIRECT_TO_LLM
+diese mir frau;TEXT_RECOGNITION
+ach man jetzt bin ich wieder auf den knopf gekommen;ABORT
+nein das war ein aus versehen;ABORT
+wie kann ich die etwas einstellen;OPEN_SETTINGS
+der ende bitte die aktuelle aktionen;ABORT
+das soll jetzt aufhören;ABORT
+den bitte eine andere stimmen;CHANGE_SPEAKER
+wechsel auf die männliche stimme;CHANGE_SPEAKER
+dein sprechtempo ist mir zu hektisch mach es etwas ruhiger;CHANGE_SPEECH_SPEED
+liest das mit höherem tempo vor;CHANGE_SPEECH_SPEED
+wie weit ist die tür direkt vor mir entfernt;MEASURE_DISTANCE
+dies den abstand zu den schuhen vom;MEASURE_DISTANCE
+welche gegenstände befinden sich gerade vor mir;OBJECT_DETECTION
+erkenne die dinge in meinem sichtfeld;OBJECT_DETECTION
+das der bitte das konfiguration;OPEN_SETTINGS
+bring mich zu den allgemeinen einstellungen;OPEN_SETTINGS
+wie weit ist es von münchen nach hamburg;REDIRECT_TO_LLM
+was bedeutet frequenz in der physik;REDIRECT_TO_LLM
+lass die hinweis stünde häufiger komme;SET_BPS
+verringere die anzahl der piept sünde pro sekunde;SET_BPS
+macht den signal tonhöhe;SET_FREQUENCY
+stell die tonhöhe der piep kühne tiefer;SET_FREQUENCY
+dies die beschriftung auf der verpackung von;TEXT_RECOGNITION
+was steht auf dem schild direkt vor mir;TEXT_RECOGNITION

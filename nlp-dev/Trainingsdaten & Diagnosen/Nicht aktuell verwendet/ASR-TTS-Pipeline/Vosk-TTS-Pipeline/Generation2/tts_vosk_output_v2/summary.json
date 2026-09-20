@@ -1,0 +1,71 @@
+{
+  "pipeline_version": "generation_2_review_first",
+  "seed": 20260809,
+  "clean_samples_total": 3344,
+  "source_selection": {
+    "organic": {
+      "available": 700,
+      "selected_for_tts": 700,
+      "ratio": 1.0
+    },
+    "clean": {
+      "available": 1685,
+      "selected_for_tts": 1011,
+      "ratio": 0.6
+    },
+    "old": {
+      "available": 959,
+      "selected_for_tts": 240,
+      "ratio": 0.25
+    }
+  },
+  "tts_attempts": 3873,
+  "severity_attempts": {
+    "moderate": 2324,
+    "clean": 1356,
+    "hard": 193
+  },
+  "attempt_status": {
+    "generated": 3871,
+    "empty": 2
+  },
+  "generated_nonempty": 3871,
+  "flagged_for_review": 2515,
+  "generated_by_source": {
+    "organic": 2100,
+    "old": 240,
+    "clean": 1531
+  },
+  "generated_by_severity": {
+    "moderate": 2323,
+    "clean": 1355,
+    "hard": 193
+  },
+  "generated_by_label": {
+    "MEASURE_DISTANCE": 375,
+    "REDIRECT_TO_LLM": 404,
+    "TEXT_RECOGNITION": 397,
+    "SET_BPS": 419,
+    "SET_FREQUENCY": 384,
+    "OPEN_SETTINGS": 382,
+    "CHANGE_SPEAKER": 377,
+    "ABORT": 356,
+    "OBJECT_DETECTION": 397,
+    "CHANGE_SPEECH_SPEED": 380
+  },
+  "tts_backend": {
+    "piper": 3782,
+    "espeak": 91
+  },
+  "piper_voices": [
+    "piper_voices/de_DE-karlsson-low.onnx",
+    "piper_voices/de_DE-kerstin-low.onnx",
+    "piper_voices/de_DE-thorsten-high.onnx",
+    "piper_voices/de_DE-thorsten-medium.onnx"
+  ],
+  "espeak_weight": 0.03,
+  "tts_normalization": true,
+  "real_noise_wavs": 0,
+  "real_rir_wavs": 0,
+  "note": "Keine automatische Trainingsauswahl. Alle nichtleeren Vosk-Transkripte bleiben erhalten; Flags dienen nur dem manuellen Review."
+}

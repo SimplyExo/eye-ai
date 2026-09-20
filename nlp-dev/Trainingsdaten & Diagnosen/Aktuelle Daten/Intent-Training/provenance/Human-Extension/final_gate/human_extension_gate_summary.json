@@ -1,0 +1,41 @@
+{
+  "candidate_count": 207,
+  "included_count": 187,
+  "excluded_count": 20,
+  "candidate_sha256": "3a093db8f5bea068f874c23a333e4315667881183a21d271e1c8590be284de05",
+  "final_sha256": "200a25bcd26fcf7f6b9f6957b6c421d3131309dcded9f5b292b8e26b83ddc985",
+  "final_count": 187,
+  "class_counts": {
+    "ABORT": 39,
+    "CHANGE_SPEAKER": 13,
+    "CHANGE_SPEECH_SPEED": 18,
+    "MEASURE_DISTANCE": 22,
+    "OBJECT_DETECTION": 7,
+    "OPEN_SETTINGS": 12,
+    "REDIRECT_TO_LLM": 36,
+    "SET_BPS": 8,
+    "SET_FREQUENCY": 6,
+    "TEXT_RECOGNITION": 26
+  },
+  "gate_csv": "/home/robert/Dokumente/GitHub/Intent_Datasets/Neu/human_extension_package/EyeAI_Human_Intent_Extension/final_gate/human_extension_final_gate.csv",
+  "final_manifest": "/home/robert/Dokumente/GitHub/Intent_Datasets/Neu/human_extension_package/EyeAI_Human_Intent_Extension/final_gate/human_extension_final_manifest.json",
+  "final_gate_file": "/home/robert/Dokumente/GitHub/Intent_Datasets/Neu/human_extension_package/EyeAI_Human_Intent_Extension/final_gate/human_extension_final.train",
+  "final_active_file": "/home/robert/Dokumente/GitHub/Intent_Datasets/Aktuell_verwendet/training/extensions/human/eyeai_human_extension_final.train",
+  "registry_verified_before_gate": true,
+  "a_comparator": {
+    "metric_files": 40,
+    "dev_path": "/home/robert/Dokumente/GitHub/Intent_Datasets/Aktuell_verwendet/development/locked/v2_multiseed_dev_corrected.val",
+    "dev_sha256": "bdb2122acc9c7d8e42e9a84d593ea4162d9688d599c3f0a7eee66ad99f75663f",
+    "dev_count": 659,
+    "training_counts": {
+      "M0": 2918,
+      "M1": 4865,
+      "M2": 4865,
+      "M3": 1828
+    }
+  },
+  "asr_sources_used": false,
+  "reasons": {
+    "REGISTRY_TEXT_OVERLAP": 20
+  }
+}

@@ -1,0 +1,481 @@
+sample_id,paraphrase_group_id,source,text,target,operation,speaker,speaker_mask,expected_number_values,expected_numeric_value,expected_unit,expected_magnitude,expected_speaker,expected_status
+val_f_set_001,val_f_set_unseen_01,MANUAL_VALIDATION,leg die frequenz auf sechshundertdreiundsiebzig hertz fest,FREQUENCY,SET_ABSOLUTE,,0,[673],673,HZ,,,COMPLETE
+val_f_set_002,val_f_set_unseen_01,MANUAL_VALIDATION,als frequenzwert bitte siebenhundertneunzehn hertz,FREQUENCY,SET_ABSOLUTE,,0,[719],719,HZ,,,COMPLETE
+val_f_set_003,val_f_set_unseen_01,MANUAL_VALIDATION,die neue frequenz hätte ich gern bei vierhundertdreiundsechzig hertz,FREQUENCY,SET_ABSOLUTE,,0,[463],463,HZ,,,COMPLETE
+val_f_set_004,val_f_set_unseen_01,MANUAL_VALIDATION,verwende künftig achthundertelf hertz,FREQUENCY,SET_ABSOLUTE,,0,[811],811,HZ,,,COMPLETE
+val_f_set_005,val_f_set_unseen_01,MANUAL_VALIDATION,bring die frequenz auf fünfhundertsiebenunddreißig hertz,FREQUENCY,SET_ABSOLUTE,,0,[537],537,HZ,,,COMPLETE
+val_f_set_006,val_f_set_style_01,MANUAL_VALIDATION,ich brauche als festen wert sechshundertneun hertz,FREQUENCY,SET_ABSOLUTE,,0,[609],609,HZ,,,COMPLETE
+val_f_set_007,val_f_set_style_01,MANUAL_VALIDATION,die frequenz soll ab jetzt bei siebenhundertsiebenundsechzig liegen,FREQUENCY,SET_ABSOLUTE,,0,[767],767,HZ,,,COMPLETE
+val_f_set_008,val_f_set_style_01,MANUAL_VALIDATION,mach aus dem aktuellen wert vierhundertneunundachtzig hertz,FREQUENCY,SET_ABSOLUTE,,0,[489],489,HZ,,,COMPLETE
+val_f_set_009,val_f_set_style_01,MANUAL_VALIDATION,ich entscheide mich für achthundertdreiundvierzig hertz,FREQUENCY,SET_ABSOLUTE,,0,[843],843,HZ,,,COMPLETE
+val_f_set_010,val_f_set_style_01,MANUAL_VALIDATION,bitte einen zielwert von fünfhundertelf hertz einstellen,FREQUENCY,SET_ABSOLUTE,,0,[511],511,HZ,,,COMPLETE
+val_f_set_011,val_f_set_context_01,MANUAL_VALIDATION,zielwert sechshundertachtundachtzig hertz,FREQUENCY,SET_ABSOLUTE,,0,[688],688,HZ,,,COMPLETE
+val_f_set_012,val_f_set_context_01,MANUAL_VALIDATION,nimm siebenhundertdreiunddreißig dafür,FREQUENCY,SET_ABSOLUTE,,0,[733],733,HZ,,,COMPLETE
+val_f_set_013,val_f_set_context_01,MANUAL_VALIDATION,stell den zielwert auf vierhundertsiebenundvierzig,FREQUENCY,SET_ABSOLUTE,,0,[447],447,HZ,,,COMPLETE
+val_f_set_014,val_f_set_context_01,MANUAL_VALIDATION,fünfhundertneunundsechzig soll es sein,FREQUENCY,SET_ABSOLUTE,,0,[569],569,HZ,,,COMPLETE
+val_f_set_015,val_f_set_context_01,MANUAL_VALIDATION,geh fest auf achthundertneunundzwanzig hertz,FREQUENCY,SET_ABSOLUTE,,0,[829],829,HZ,,,COMPLETE
+val_f_set_016,val_f_set_invalid_value_01,MANUAL_VALIDATION,setz die frequenz auf minus einhundert hertz,FREQUENCY,SET_ABSOLUTE,,0,[-100],-100,HZ,,,INVALID_VALUE
+val_f_set_017,val_f_set_invalid_value_01,MANUAL_VALIDATION,stell die frequenz auf minus fünfzig hertz,FREQUENCY,SET_ABSOLUTE,,0,[-50],-50,HZ,,,INVALID_VALUE
+val_f_set_018,val_f_set_natural_01,MANUAL_VALIDATION,für mich passt ein wert von vierhundertneunundzwanzig hertz,FREQUENCY,SET_ABSOLUTE,,0,[429],429,HZ,,,COMPLETE
+val_f_set_019,val_f_set_missing_01,MANUAL_VALIDATION,leg die frequenz auf einen festen wert,FREQUENCY,SET_ABSOLUTE,,0,[],,HZ,,,NEEDS_VALUE
+val_f_set_020,val_f_set_missing_01,MANUAL_VALIDATION,ich will einen konkreten frequenzwert einstellen,FREQUENCY,SET_ABSOLUTE,,0,[],,HZ,,,NEEDS_VALUE
+val_f_set_021,val_f_set_missing_01,MANUAL_VALIDATION,setz bitte einen zielwert für die frequenz,FREQUENCY,SET_ABSOLUTE,,0,[],,HZ,,,NEEDS_VALUE
+val_f_set_022,val_f_set_invalid_01,MANUAL_VALIDATION,verwende für die frequenz sechshundert bps,FREQUENCY,SET_ABSOLUTE,,0,[600],600,BPS,,,INVALID_UNIT
+val_f_set_023,val_f_set_invalid_01,MANUAL_VALIDATION,verwende siebenhundert impulse pro sekunde als frequenz,FREQUENCY,SET_ABSOLUTE,,0,[700],700,BPS,,,INVALID_UNIT
+val_f_set_024,val_f_set_multi_01,MANUAL_VALIDATION,ändere die frequenz von sechshundert auf siebenhundert hertz,FREQUENCY,SET_ABSOLUTE,,0,"[600,700]",,HZ,,,NEEDS_CLARIFICATION
+val_f_set_025,val_f_set_multi_01,MANUAL_VALIDATION,statt fünfhundert soll die frequenz künftig achthundert hertz sein,FREQUENCY,SET_ABSOLUTE,,0,"[500,800]",,HZ,,,NEEDS_CLARIFICATION
+val_f_inc_001,val_f_inc_default_01,MANUAL_VALIDATION,der hinweiston darf höher klingen,FREQUENCY,INCREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_f_inc_002,val_f_inc_default_01,MANUAL_VALIDATION,anheben,FREQUENCY,INCREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_f_inc_003,val_f_inc_default_01,MANUAL_VALIDATION,der ton soll höher klingen,FREQUENCY,INCREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_f_inc_004,val_f_inc_default_01,MANUAL_VALIDATION,lass die frequenz steigen,FREQUENCY,INCREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_f_inc_005,val_f_inc_default_01,MANUAL_VALIDATION,setz den wert etwas weiter nach oben,FREQUENCY,INCREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_inc_006,val_f_inc_small_01,MANUAL_VALIDATION,nur einen tick höher,FREQUENCY,INCREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_inc_007,val_f_inc_small_01,MANUAL_VALIDATION,heb die frequenz ein kleines bisschen an,FREQUENCY,INCREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_inc_008,val_f_inc_small_01,MANUAL_VALIDATION,mach sie nur geringfügig höher,FREQUENCY,INCREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_inc_009,val_f_inc_small_01,MANUAL_VALIDATION,die frequenz darf ein klein wenig steigen,FREQUENCY,INCREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_inc_010,val_f_inc_small_01,MANUAL_VALIDATION,ein kleines stück nach oben,FREQUENCY,INCREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_inc_011,val_f_inc_large_01,MANUAL_VALIDATION,zieh die tonhöhe kräftig hoch,FREQUENCY,INCREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_inc_012,val_f_inc_large_01,MANUAL_VALIDATION,die frequenz soll kräftig angehoben werden,FREQUENCY,INCREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_inc_013,val_f_inc_large_01,MANUAL_VALIDATION,mach einen großen schritt nach oben,FREQUENCY,INCREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_inc_014,val_f_inc_large_01,MANUAL_VALIDATION,die frequenz soll merklich steigen,FREQUENCY,INCREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_inc_015,val_f_inc_large_01,MANUAL_VALIDATION,heb sie kräftig an,FREQUENCY,INCREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_inc_016,val_f_inc_delta_01,MANUAL_VALIDATION,hebe die frequenz zusätzlich um dreiundvierzig hertz an,FREQUENCY,INCREASE,,0,[43],43,HZ,,,COMPLETE
+val_f_inc_017,val_f_inc_delta_01,MANUAL_VALIDATION,gib siebenundachtzig hertz dazu,FREQUENCY,INCREASE,,0,[87],87,HZ,,,COMPLETE
+val_f_inc_018,val_f_inc_delta_01,MANUAL_VALIDATION,füge der frequenz einhundertdreiundzwanzig hertz hinzu,FREQUENCY,INCREASE,,0,[123],123,HZ,,,COMPLETE
+val_f_inc_019,val_f_inc_delta_01,MANUAL_VALIDATION,heb die frequenz um achtundfünfzig hertz an,FREQUENCY,INCREASE,,0,[58],58,HZ,,,COMPLETE
+val_f_inc_020,val_f_inc_delta_01,MANUAL_VALIDATION,leg zweiundneunzig hertz oben drauf,FREQUENCY,INCREASE,,0,[92],92,HZ,,,COMPLETE
+val_f_inc_021,val_f_inc_natural_01,MANUAL_VALIDATION,der signalton dürfte noch etwas höher sein,FREQUENCY,INCREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_inc_022,val_f_inc_natural_01,MANUAL_VALIDATION,die frequenz könnte ruhig noch steigen,FREQUENCY,INCREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_f_inc_023,val_f_inc_natural_01,MANUAL_VALIDATION,mach deutlich mehr daraus,FREQUENCY,INCREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_inc_024,val_f_inc_natural_01,MANUAL_VALIDATION,ein kleines bisschen mehr wäre gut,FREQUENCY,INCREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_inc_025,val_f_inc_natural_01,MANUAL_VALIDATION,erhöhe die frequenz nicht stark,FREQUENCY,INCREASE,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_dec_001,val_f_dec_default_01,MANUAL_VALIDATION,der hinweiston darf tiefer klingen,FREQUENCY,DECREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_f_dec_002,val_f_dec_default_01,MANUAL_VALIDATION,absenken,FREQUENCY,DECREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_f_dec_003,val_f_dec_default_01,MANUAL_VALIDATION,der ton soll tiefer klingen,FREQUENCY,DECREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_f_dec_004,val_f_dec_default_01,MANUAL_VALIDATION,lass die frequenz sinken,FREQUENCY,DECREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_f_dec_005,val_f_dec_default_01,MANUAL_VALIDATION,setz den wert etwas weiter nach unten,FREQUENCY,DECREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_dec_006,val_f_dec_small_01,MANUAL_VALIDATION,nur einen tick niedriger,FREQUENCY,DECREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_dec_007,val_f_dec_small_01,MANUAL_VALIDATION,senk die frequenz ein kleines bisschen ab,FREQUENCY,DECREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_dec_008,val_f_dec_small_01,MANUAL_VALIDATION,mach sie nur geringfügig niedriger,FREQUENCY,DECREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_dec_009,val_f_dec_small_01,MANUAL_VALIDATION,die frequenz darf ein klein wenig sinken,FREQUENCY,DECREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_dec_010,val_f_dec_small_01,MANUAL_VALIDATION,ein kleines stück nach unten,FREQUENCY,DECREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_dec_011,val_f_dec_large_01,MANUAL_VALIDATION,zieh die tonhöhe kräftig runter,FREQUENCY,DECREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_dec_012,val_f_dec_large_01,MANUAL_VALIDATION,die frequenz soll kräftig abgesenkt werden,FREQUENCY,DECREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_dec_013,val_f_dec_large_01,MANUAL_VALIDATION,mach einen großen schritt nach unten,FREQUENCY,DECREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_dec_014,val_f_dec_large_01,MANUAL_VALIDATION,die frequenz soll merklich sinken,FREQUENCY,DECREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_dec_015,val_f_dec_large_01,MANUAL_VALIDATION,senk sie kräftig ab,FREQUENCY,DECREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_dec_016,val_f_dec_delta_01,MANUAL_VALIDATION,verringere den frequenzwert um siebenundvierzig hertz,FREQUENCY,DECREASE,,0,[47],47,HZ,,,COMPLETE
+val_f_dec_017,val_f_dec_delta_01,MANUAL_VALIDATION,reduziere die frequenz um dreiundachtzig hertz,FREQUENCY,DECREASE,,0,[83],83,HZ,,,COMPLETE
+val_f_dec_018,val_f_dec_delta_01,MANUAL_VALIDATION,nimm einhundertsiebenundzwanzig hertz von der frequenz weg,FREQUENCY,DECREASE,,0,[127],127,HZ,,,COMPLETE
+val_f_dec_019,val_f_dec_delta_01,MANUAL_VALIDATION,senk die frequenz um zweiundsechzig hertz,FREQUENCY,DECREASE,,0,[62],62,HZ,,,COMPLETE
+val_f_dec_020,val_f_dec_delta_01,MANUAL_VALIDATION,nimm achtundneunzig hertz weg,FREQUENCY,DECREASE,,0,[98],98,HZ,,,COMPLETE
+val_f_dec_021,val_f_dec_natural_01,MANUAL_VALIDATION,der signalton dürfte noch etwas tiefer sein,FREQUENCY,DECREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_dec_022,val_f_dec_natural_01,MANUAL_VALIDATION,die frequenz könnte ruhig noch sinken,FREQUENCY,DECREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_f_dec_023,val_f_dec_natural_01,MANUAL_VALIDATION,mach deutlich weniger daraus,FREQUENCY,DECREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_f_dec_024,val_f_dec_natural_01,MANUAL_VALIDATION,ein kleines bisschen weniger wäre gut,FREQUENCY,DECREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_f_dec_025,val_f_dec_natural_01,MANUAL_VALIDATION,senke die frequenz nicht stark,FREQUENCY,DECREASE,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_001,val_f_uns_direct_01,MANUAL_VALIDATION,ich will an der frequenz etwas verändern,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_002,val_f_uns_direct_01,MANUAL_VALIDATION,die frequenzeinstellung muss neu gemacht werden,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_003,val_f_uns_direct_01,MANUAL_VALIDATION,gib mir eine andere frequenzkonfiguration,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_004,val_f_uns_direct_01,MANUAL_VALIDATION,ich möchte den frequenzbereich neu einstellen,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_005,val_f_uns_direct_01,MANUAL_VALIDATION,ich will die frequenzkonfiguration neu aufsetzen,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_006,val_f_uns_context_01,MANUAL_VALIDATION,mach eine neue einstellung daraus,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_007,val_f_uns_context_01,MANUAL_VALIDATION,ich will das neu einstellen,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_008,val_f_uns_context_01,MANUAL_VALIDATION,stell den parameter anders ein,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_009,val_f_uns_context_01,MANUAL_VALIDATION,konfiguriere den wert neu,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_010,val_f_uns_context_01,MANUAL_VALIDATION,daran möchte ich etwas ändern,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_011,val_f_uns_natural_01,MANUAL_VALIDATION,so ist die frequenz noch nicht richtig für mich,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_012,val_f_uns_natural_01,MANUAL_VALIDATION,ich brauche hier eine andere frequenzeinstellung,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_013,val_f_uns_natural_01,MANUAL_VALIDATION,bei der frequenz würde ich gern etwas ändern,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_014,val_f_uns_natural_01,MANUAL_VALIDATION,mit diesem frequenzwert möchte ich nicht weiterarbeiten,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_015,val_f_uns_natural_01,MANUAL_VALIDATION,die frequenz braucht noch eine andere einstellung,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_016,val_f_uns_short_01,MANUAL_VALIDATION,tonparameter ändern,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_017,val_f_uns_short_01,MANUAL_VALIDATION,anderer frequenzwert,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_018,val_f_uns_short_01,MANUAL_VALIDATION,neukonfigurieren,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_019,val_f_uns_short_01,MANUAL_VALIDATION,wert neu wählen,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_020,val_f_uns_short_01,MANUAL_VALIDATION,frequenz überarbeiten,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_021,val_f_uns_polite_01,MANUAL_VALIDATION,könntest du mir die frequenz neu konfigurieren,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_022,val_f_uns_polite_01,MANUAL_VALIDATION,hilf mir bitte die frequenz anders einzustellen,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_023,val_f_uns_polite_01,MANUAL_VALIDATION,würdest du den frequenzwert neu einstellen,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_024,val_f_uns_polite_01,MANUAL_VALIDATION,kannst du diese frequenzeinstellung überarbeiten,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_f_uns_025,val_f_uns_polite_01,MANUAL_VALIDATION,bitte eine neue frequenzeinstellung vornehmen,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_b_set_001,val_b_set_unseen_01,MANUAL_VALIDATION,leg die signalrate auf drei bps fest,BPS,SET_ABSOLUTE,,0,[3],3,BPS,,,COMPLETE
+val_b_set_002,val_b_set_unseen_01,MANUAL_VALIDATION,als bps wert bitte fünf,BPS,SET_ABSOLUTE,,0,[5],5,BPS,,,COMPLETE
+val_b_set_003,val_b_set_unseen_01,MANUAL_VALIDATION,die neue signalrate hätte ich gern bei sieben bps,BPS,SET_ABSOLUTE,,0,[7],7,BPS,,,COMPLETE
+val_b_set_004,val_b_set_unseen_01,MANUAL_VALIDATION,verwende künftig zwei bps,BPS,SET_ABSOLUTE,,0,[2],2,BPS,,,COMPLETE
+val_b_set_005,val_b_set_unseen_01,MANUAL_VALIDATION,vier bps sollen künftig gelten,BPS,SET_ABSOLUTE,,0,[4],4,BPS,,,COMPLETE
+val_b_set_006,val_b_set_style_01,MANUAL_VALIDATION,ich brauche als festen signalratenwert sechs,BPS,SET_ABSOLUTE,,0,[6],6,BPS,,,COMPLETE
+val_b_set_007,val_b_set_style_01,MANUAL_VALIDATION,die bps sollen ab jetzt acht betragen,BPS,SET_ABSOLUTE,,0,[8],8,BPS,,,COMPLETE
+val_b_set_008,val_b_set_style_01,MANUAL_VALIDATION,mach aus dem aktuellen wert drei bps,BPS,SET_ABSOLUTE,,0,[3],3,BPS,,,COMPLETE
+val_b_set_009,val_b_set_style_01,MANUAL_VALIDATION,ich entscheide mich für fünf bps,BPS,SET_ABSOLUTE,,0,[5],5,BPS,,,COMPLETE
+val_b_set_010,val_b_set_style_01,MANUAL_VALIDATION,bitte einen zielwert von sieben bps einstellen,BPS,SET_ABSOLUTE,,0,[7],7,BPS,,,COMPLETE
+val_b_set_011,val_b_set_context_01,MANUAL_VALIDATION,auf zwei b p s,BPS,SET_ABSOLUTE,,0,[2],2,BPS,,,COMPLETE
+val_b_set_012,val_b_set_context_01,MANUAL_VALIDATION,nimm vier impulse pro sekunde dafür,BPS,SET_ABSOLUTE,,0,[4],4,BPS,,,COMPLETE
+val_b_set_013,val_b_set_context_01,MANUAL_VALIDATION,stell den zielwert auf sechs pulse pro sekunde,BPS,SET_ABSOLUTE,,0,[6],6,BPS,,,COMPLETE
+val_b_set_014,val_b_set_context_01,MANUAL_VALIDATION,acht soll es sein,BPS,SET_ABSOLUTE,,0,[8],8,BPS,,,COMPLETE
+val_b_set_015,val_b_set_context_01,MANUAL_VALIDATION,geh fest auf sieben b p s,BPS,SET_ABSOLUTE,,0,[7],7,BPS,,,COMPLETE
+val_b_set_016,val_b_set_invalid_value_01,MANUAL_VALIDATION,setz die bps auf minus zwei,BPS,SET_ABSOLUTE,,0,[-2],-2,BPS,,,INVALID_VALUE
+val_b_set_017,val_b_set_invalid_value_01,MANUAL_VALIDATION,stell die pulsrate auf minus eins bps,BPS,SET_ABSOLUTE,,0,[-1],-1,BPS,,,INVALID_VALUE
+val_b_set_018,val_b_set_natural_01,MANUAL_VALIDATION,für mich passt eine signalrate von sieben,BPS,SET_ABSOLUTE,,0,[7],7,BPS,,,COMPLETE
+val_b_set_019,val_b_set_missing_01,MANUAL_VALIDATION,leg die bps auf einen festen wert,BPS,SET_ABSOLUTE,,0,[],,BPS,,,NEEDS_VALUE
+val_b_set_020,val_b_set_missing_01,MANUAL_VALIDATION,ich will eine konkrete signalrate einstellen,BPS,SET_ABSOLUTE,,0,[],,BPS,,,NEEDS_VALUE
+val_b_set_021,val_b_set_missing_01,MANUAL_VALIDATION,setz bitte einen zielwert für die bps,BPS,SET_ABSOLUTE,,0,[],,BPS,,,NEEDS_VALUE
+val_b_set_022,val_b_set_invalid_01,MANUAL_VALIDATION,stell die bps auf neun hertz,BPS,SET_ABSOLUTE,,0,[9],9,HZ,,,INVALID_UNIT
+val_b_set_023,val_b_set_invalid_01,MANUAL_VALIDATION,verwende elf hertz als signalrate,BPS,SET_ABSOLUTE,,0,[11],11,HZ,,,INVALID_UNIT
+val_b_set_024,val_b_set_multi_01,MANUAL_VALIDATION,ändere die bps von vier auf acht,BPS,SET_ABSOLUTE,,0,"[4,8]",,BPS,,,NEEDS_CLARIFICATION
+val_b_set_025,val_b_set_multi_01,MANUAL_VALIDATION,statt fünf soll die signalrate künftig neun sein,BPS,SET_ABSOLUTE,,0,"[5,9]",,BPS,,,NEEDS_CLARIFICATION
+val_b_inc_001,val_b_inc_default_01,MANUAL_VALIDATION,mach die hinweise häufiger,BPS,INCREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_b_inc_002,val_b_inc_default_01,MANUAL_VALIDATION,steigern,BPS,INCREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_b_inc_003,val_b_inc_default_01,MANUAL_VALIDATION,die klickrate soll steigen,BPS,INCREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_b_inc_004,val_b_inc_default_01,MANUAL_VALIDATION,lass die bps steigen,BPS,INCREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_b_inc_005,val_b_inc_default_01,MANUAL_VALIDATION,lass es ein wenig öfter piepen,BPS,INCREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_inc_006,val_b_inc_small_01,MANUAL_VALIDATION,nur einen tick mehr bps,BPS,INCREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_inc_007,val_b_inc_small_01,MANUAL_VALIDATION,heb die signalrate ein kleines bisschen an,BPS,INCREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_inc_008,val_b_inc_small_01,MANUAL_VALIDATION,mach sie nur geringfügig höher,BPS,INCREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_inc_009,val_b_inc_small_01,MANUAL_VALIDATION,die bps dürfen ein klein wenig steigen,BPS,INCREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_inc_010,val_b_inc_small_01,MANUAL_VALIDATION,ein kleines stück nach oben mit der signalrate,BPS,INCREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_inc_011,val_b_inc_large_01,MANUAL_VALIDATION,die hinweistöne sollen sehr viel öfter kommen,BPS,INCREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_inc_012,val_b_inc_large_01,MANUAL_VALIDATION,ich brauche wesentlich mehr signalrate,BPS,INCREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_inc_013,val_b_inc_large_01,MANUAL_VALIDATION,mach einen großen schritt bei den bps nach oben,BPS,INCREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_inc_014,val_b_inc_large_01,MANUAL_VALIDATION,die signalrate soll merklich steigen,BPS,INCREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_inc_015,val_b_inc_large_01,MANUAL_VALIDATION,heb sie kräftig an,BPS,INCREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_inc_016,val_b_inc_delta_01,MANUAL_VALIDATION,pack null komma sieben bps auf die wiederholrate,BPS,INCREASE,,0,[0.7],0.7,BPS,,,COMPLETE
+val_b_inc_017,val_b_inc_delta_01,MANUAL_VALIDATION,gib eins komma drei bps zur klickrate dazu,BPS,INCREASE,,0,[1.3],1.3,BPS,,,COMPLETE
+val_b_inc_018,val_b_inc_delta_01,MANUAL_VALIDATION,füge null komma vier bps zur wiederholrate hinzu,BPS,INCREASE,,0,[0.4],0.4,BPS,,,COMPLETE
+val_b_inc_019,val_b_inc_delta_01,MANUAL_VALIDATION,heb die pulsrate um eins komma sieben bps an,BPS,INCREASE,,0,[1.7],1.7,BPS,,,COMPLETE
+val_b_inc_020,val_b_inc_delta_01,MANUAL_VALIDATION,leg null komma neun bps oben drauf,BPS,INCREASE,,0,[0.9],0.9,BPS,,,COMPLETE
+val_b_inc_021,val_b_inc_natural_01,MANUAL_VALIDATION,die abstandshinweise dürften etwas öfter kommen,BPS,INCREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_inc_022,val_b_inc_natural_01,MANUAL_VALIDATION,lass das piepen häufiger werden,BPS,INCREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_b_inc_023,val_b_inc_natural_01,MANUAL_VALIDATION,mach deutlich mehr signalrate daraus,BPS,INCREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_inc_024,val_b_inc_natural_01,MANUAL_VALIDATION,ein kleines bisschen mehr bps wäre gut,BPS,INCREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_inc_025,val_b_inc_natural_01,MANUAL_VALIDATION,erhöhe die signalrate nicht stark,BPS,INCREASE,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_dec_001,val_b_dec_default_01,MANUAL_VALIDATION,mach die hinweise seltener,BPS,DECREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_b_dec_002,val_b_dec_default_01,MANUAL_VALIDATION,reduzieren,BPS,DECREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_b_dec_003,val_b_dec_default_01,MANUAL_VALIDATION,die klickrate soll sinken,BPS,DECREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_b_dec_004,val_b_dec_default_01,MANUAL_VALIDATION,lass die bps sinken,BPS,DECREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_b_dec_005,val_b_dec_default_01,MANUAL_VALIDATION,lass es ein wenig seltener piepen,BPS,DECREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_dec_006,val_b_dec_small_01,MANUAL_VALIDATION,nur einen tick weniger bps,BPS,DECREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_dec_007,val_b_dec_small_01,MANUAL_VALIDATION,senk die signalrate ein kleines bisschen ab,BPS,DECREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_dec_008,val_b_dec_small_01,MANUAL_VALIDATION,mach sie nur geringfügig niedriger,BPS,DECREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_dec_009,val_b_dec_small_01,MANUAL_VALIDATION,die bps dürfen ein klein wenig sinken,BPS,DECREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_dec_010,val_b_dec_small_01,MANUAL_VALIDATION,ein kleines stück nach unten mit der signalrate,BPS,DECREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_dec_011,val_b_dec_large_01,MANUAL_VALIDATION,mach die wiederholrate deutlich kleiner,BPS,DECREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_dec_012,val_b_dec_large_01,MANUAL_VALIDATION,ich brauche wesentlich weniger signalrate,BPS,DECREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_dec_013,val_b_dec_large_01,MANUAL_VALIDATION,mach einen großen schritt bei den bps nach unten,BPS,DECREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_dec_014,val_b_dec_large_01,MANUAL_VALIDATION,die signalrate soll merklich sinken,BPS,DECREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_dec_015,val_b_dec_large_01,MANUAL_VALIDATION,senk sie kräftig ab,BPS,DECREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_dec_016,val_b_dec_delta_01,MANUAL_VALIDATION,zieh null komma sieben bps von der wiederholrate ab,BPS,DECREASE,,0,[0.7],0.7,BPS,,,COMPLETE
+val_b_dec_017,val_b_dec_delta_01,MANUAL_VALIDATION,zieh eins komma drei bps von der klickrate ab,BPS,DECREASE,,0,[1.3],1.3,BPS,,,COMPLETE
+val_b_dec_018,val_b_dec_delta_01,MANUAL_VALIDATION,nimm null komma vier bps aus der wiederholrate heraus,BPS,DECREASE,,0,[0.4],0.4,BPS,,,COMPLETE
+val_b_dec_019,val_b_dec_delta_01,MANUAL_VALIDATION,senk die pulsrate um eins komma sieben bps,BPS,DECREASE,,0,[1.7],1.7,BPS,,,COMPLETE
+val_b_dec_020,val_b_dec_delta_01,MANUAL_VALIDATION,nimm null komma neun bps weg,BPS,DECREASE,,0,[0.9],0.9,BPS,,,COMPLETE
+val_b_dec_021,val_b_dec_natural_01,MANUAL_VALIDATION,die abstandshinweise kommen mir noch etwas zu oft,BPS,DECREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_dec_022,val_b_dec_natural_01,MANUAL_VALIDATION,lass das piepen seltener werden,BPS,DECREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_b_dec_023,val_b_dec_natural_01,MANUAL_VALIDATION,mach deutlich weniger signalrate daraus,BPS,DECREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_b_dec_024,val_b_dec_natural_01,MANUAL_VALIDATION,ein kleines bisschen weniger bps wäre gut,BPS,DECREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_b_dec_025,val_b_dec_natural_01,MANUAL_VALIDATION,senke die signalrate nicht stark,BPS,DECREASE,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_001,val_b_uns_direct_01,MANUAL_VALIDATION,ich will an der signalrate etwas verändern,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_002,val_b_uns_direct_01,MANUAL_VALIDATION,die bps einstellung muss neu gemacht werden,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_003,val_b_uns_direct_01,MANUAL_VALIDATION,gib mir eine andere signalratenkonfiguration,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_004,val_b_uns_direct_01,MANUAL_VALIDATION,bei der signalrate brauche ich eine neue konfiguration,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_005,val_b_uns_direct_01,MANUAL_VALIDATION,überarbeite die signalrateneinstellung,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_006,val_b_uns_context_01,MANUAL_VALIDATION,mach eine neue rate daraus,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_007,val_b_uns_context_01,MANUAL_VALIDATION,ich will das bei den bps neu einstellen,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_008,val_b_uns_context_01,MANUAL_VALIDATION,stell den signalparameter anders ein,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_009,val_b_uns_context_01,MANUAL_VALIDATION,konfiguriere die rate neu,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_010,val_b_uns_context_01,MANUAL_VALIDATION,bei der hinweisrate will ich etwas umstellen,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_011,val_b_uns_natural_01,MANUAL_VALIDATION,so ist die signalrate noch nicht richtig für mich,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_012,val_b_uns_natural_01,MANUAL_VALIDATION,mit der aktuellen pulsrate bin ich noch nicht zufrieden,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_013,val_b_uns_natural_01,MANUAL_VALIDATION,bei der signalrate würde ich gern etwas ändern,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_014,val_b_uns_natural_01,MANUAL_VALIDATION,mit diesem bps wert möchte ich nicht weiterarbeiten,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_015,val_b_uns_natural_01,MANUAL_VALIDATION,die signalrate braucht noch eine andere einstellung,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_016,val_b_uns_short_01,MANUAL_VALIDATION,bps neu,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_017,val_b_uns_short_01,MANUAL_VALIDATION,anderer signalwert,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_018,val_b_uns_short_01,MANUAL_VALIDATION,rekonfigurieren,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_019,val_b_uns_short_01,MANUAL_VALIDATION,bps wert neu wählen,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_020,val_b_uns_short_01,MANUAL_VALIDATION,signalrate überarbeiten,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_021,val_b_uns_polite_01,MANUAL_VALIDATION,könntest du mir die signalrate neu konfigurieren,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_022,val_b_uns_polite_01,MANUAL_VALIDATION,hilf mir bitte die bps anders einzustellen,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_023,val_b_uns_polite_01,MANUAL_VALIDATION,würdest du den signalratenwert neu einstellen,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_024,val_b_uns_polite_01,MANUAL_VALIDATION,kannst du diese bps einstellung überarbeiten,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_b_uns_025,val_b_uns_polite_01,MANUAL_VALIDATION,bitte eine neue signalrateneinstellung vornehmen,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_s_set_001,val_s_set_unseen_01,MANUAL_VALIDATION,leg die sprechrate auf null komma acht drei fest,SPEECH_SPEED,SET_ABSOLUTE,,0,[0.83],0.83,SPEECH_RATE,,,COMPLETE
+val_s_set_002,val_s_set_unseen_01,MANUAL_VALIDATION,als sprechgeschwindigkeit bitte eins komma eins sieben,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.17],1.17,SPEECH_RATE,,,COMPLETE
+val_s_set_003,val_s_set_unseen_01,MANUAL_VALIDATION,das neue sprechtempo hätte ich gern bei eins komma zwei sieben,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.27],1.27,SPEECH_RATE,,,COMPLETE
+val_s_set_004,val_s_set_unseen_01,MANUAL_VALIDATION,verwende künftig null komma acht sieben,SPEECH_SPEED,SET_ABSOLUTE,,0,[0.87],0.87,SPEECH_RATE,,,COMPLETE
+val_s_set_005,val_s_set_unseen_01,MANUAL_VALIDATION,als neuen sprechwert eins komma drei drei,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.33],1.33,SPEECH_RATE,,,COMPLETE
+val_s_set_006,val_s_set_style_01,MANUAL_VALIDATION,ich brauche als festen tempowert null komma neun zwei,SPEECH_SPEED,SET_ABSOLUTE,,0,[0.92],0.92,SPEECH_RATE,,,COMPLETE
+val_s_set_007,val_s_set_style_01,MANUAL_VALIDATION,die sprechgeschwindigkeit soll ab jetzt eins komma zwei acht betragen,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.28],1.28,SPEECH_RATE,,,COMPLETE
+val_s_set_008,val_s_set_style_01,MANUAL_VALIDATION,mach aus dem aktuellen wert eins komma eins drei,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.13],1.13,SPEECH_RATE,,,COMPLETE
+val_s_set_009,val_s_set_style_01,MANUAL_VALIDATION,ich entscheide mich für null komma sieben sieben,SPEECH_SPEED,SET_ABSOLUTE,,0,[0.77],0.77,SPEECH_RATE,,,COMPLETE
+val_s_set_010,val_s_set_style_01,MANUAL_VALIDATION,bitte einen zielwert von eins komma vier zwei einstellen,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.42],1.42,SPEECH_RATE,,,COMPLETE
+val_s_set_011,val_s_set_context_01,MANUAL_VALIDATION,zieltempo null komma acht acht,SPEECH_SPEED,SET_ABSOLUTE,,0,[0.88],0.88,SPEECH_RATE,,,COMPLETE
+val_s_set_012,val_s_set_context_01,MANUAL_VALIDATION,verwende dafür den wert eins komma zwei drei,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.23],1.23,SPEECH_RATE,,,COMPLETE
+val_s_set_013,val_s_set_context_01,MANUAL_VALIDATION,stell den zielwert auf eins komma sieben,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.7],1.7,SPEECH_RATE,,,COMPLETE
+val_s_set_014,val_s_set_context_01,MANUAL_VALIDATION,null komma sieben zwei soll es sein,SPEECH_SPEED,SET_ABSOLUTE,,0,[0.72],0.72,SPEECH_RATE,,,COMPLETE
+val_s_set_015,val_s_set_context_01,MANUAL_VALIDATION,geh fest auf eins komma acht,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.8],1.8,SPEECH_RATE,,,COMPLETE
+val_s_set_016,val_s_set_invalid_value_01,MANUAL_VALIDATION,setz die sprechrate auf minus eins,SPEECH_SPEED,SET_ABSOLUTE,,0,[-1],-1,SPEECH_RATE,,,INVALID_VALUE
+val_s_set_017,val_s_set_invalid_value_01,MANUAL_VALIDATION,stell das sprechtempo auf minus zwei,SPEECH_SPEED,SET_ABSOLUTE,,0,[-2],-2,SPEECH_RATE,,,INVALID_VALUE
+val_s_set_018,val_s_set_natural_01,MANUAL_VALIDATION,für mich passt eine sprechgeschwindigkeit von eins komma eins acht,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.18],1.18,SPEECH_RATE,,,COMPLETE
+val_s_set_019,val_s_set_missing_01,MANUAL_VALIDATION,leg die sprechrate auf einen festen wert,SPEECH_SPEED,SET_ABSOLUTE,,0,[],,SPEECH_RATE,,,NEEDS_VALUE
+val_s_set_020,val_s_set_missing_01,MANUAL_VALIDATION,ich will ein konkretes sprechtempo einstellen,SPEECH_SPEED,SET_ABSOLUTE,,0,[],,SPEECH_RATE,,,NEEDS_VALUE
+val_s_set_021,val_s_set_missing_01,MANUAL_VALIDATION,setz bitte einen zielwert für die sprechgeschwindigkeit,SPEECH_SPEED,SET_ABSOLUTE,,0,[],,SPEECH_RATE,,,NEEDS_VALUE
+val_s_set_022,val_s_set_invalid_01,MANUAL_VALIDATION,stell die sprechrate auf eins komma zwei hertz,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.2],1.2,HZ,,,INVALID_UNIT
+val_s_set_023,val_s_set_invalid_01,MANUAL_VALIDATION,verwende null komma neun bps als sprechtempo,SPEECH_SPEED,SET_ABSOLUTE,,0,[0.9],0.9,BPS,,,INVALID_UNIT
+val_s_set_024,val_s_set_multi_01,MANUAL_VALIDATION,ändere die sprechrate von null komma acht auf eins komma zwei,SPEECH_SPEED,SET_ABSOLUTE,,0,"[0.8,1.2]",,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_set_025,val_s_set_multi_01,MANUAL_VALIDATION,statt eins komma null soll das tempo künftig eins komma vier sein,SPEECH_SPEED,SET_ABSOLUTE,,0,"[1.0,1.4]",,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_inc_001,val_s_inc_default_01,MANUAL_VALIDATION,zieh das sprechtempo nach oben,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_s_inc_002,val_s_inc_default_01,MANUAL_VALIDATION,beschleunigen,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_s_inc_003,val_s_inc_default_01,MANUAL_VALIDATION,sprich zwanzig prozent schneller,SPEECH_SPEED,INCREASE,,0,[20],20,,,,INVALID_UNIT
+val_s_inc_004,val_s_inc_default_01,MANUAL_VALIDATION,lass das sprechtempo steigen,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_s_inc_005,val_s_inc_default_01,MANUAL_VALIDATION,setz die sprechgeschwindigkeit etwas weiter nach oben,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_inc_006,val_s_inc_small_01,MANUAL_VALIDATION,nur einen tick flotter,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_inc_007,val_s_inc_small_01,MANUAL_VALIDATION,zieh das sprechtempo ein kleines bisschen an,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_inc_008,val_s_inc_small_01,MANUAL_VALIDATION,mach die stimme nur geringfügig schneller,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_inc_009,val_s_inc_small_01,MANUAL_VALIDATION,die ausgabe darf ein klein wenig schneller werden,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_inc_010,val_s_inc_small_01,MANUAL_VALIDATION,ein kleines stück mehr tempo,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_inc_011,val_s_inc_large_01,MANUAL_VALIDATION,zieh das sprechtempo kräftig an,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_inc_012,val_s_inc_large_01,MANUAL_VALIDATION,ich brauche wesentlich schnelleres sprechen,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_inc_013,val_s_inc_large_01,MANUAL_VALIDATION,mach einen großen temposprung nach oben,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_inc_014,val_s_inc_large_01,MANUAL_VALIDATION,die sprechrate soll merklich steigen,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_inc_015,val_s_inc_large_01,MANUAL_VALIDATION,beschleunige sie kräftig,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_inc_016,val_s_inc_delta_01,MANUAL_VALIDATION,beschleunige die sprechrate um null komma eins drei,SPEECH_SPEED,INCREASE,,0,[0.13],0.13,SPEECH_RATE,,,COMPLETE
+val_s_inc_017,val_s_inc_delta_01,MANUAL_VALIDATION,erhöhe das tempo um null komma eins sieben,SPEECH_SPEED,INCREASE,,0,[0.17],0.17,SPEECH_RATE,,,COMPLETE
+val_s_inc_018,val_s_inc_delta_01,MANUAL_VALIDATION,füge null komma zwei drei zum tempowert hinzu,SPEECH_SPEED,INCREASE,,0,[0.23],0.23,SPEECH_RATE,,,COMPLETE
+val_s_inc_019,val_s_inc_delta_01,MANUAL_VALIDATION,heb die sprechrate um null komma eins eins an,SPEECH_SPEED,INCREASE,,0,[0.11],0.11,SPEECH_RATE,,,COMPLETE
+val_s_inc_020,val_s_inc_delta_01,MANUAL_VALIDATION,leg null komma eins neun oben drauf,SPEECH_SPEED,INCREASE,,0,[0.19],0.19,SPEECH_RATE,,,COMPLETE
+val_s_inc_021,val_s_inc_natural_01,MANUAL_VALIDATION,mir fehlt noch etwas tempo,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_inc_022,val_s_inc_natural_01,MANUAL_VALIDATION,die stimme könnte ruhig noch schneller sprechen,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_s_inc_023,val_s_inc_natural_01,MANUAL_VALIDATION,mach deutlich mehr tempo daraus,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_inc_024,val_s_inc_natural_01,MANUAL_VALIDATION,ein kleines bisschen flotter wäre gut,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_inc_025,val_s_inc_natural_01,MANUAL_VALIDATION,mach die sprechgeschwindigkeit nicht stark schneller,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_dec_001,val_s_dec_default_01,MANUAL_VALIDATION,zieh das sprechtempo nach unten,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_s_dec_002,val_s_dec_default_01,MANUAL_VALIDATION,verlangsamen,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_s_dec_003,val_s_dec_default_01,MANUAL_VALIDATION,sprich zehn prozent langsamer,SPEECH_SPEED,DECREASE,,0,[10],10,,,,INVALID_UNIT
+val_s_dec_004,val_s_dec_default_01,MANUAL_VALIDATION,lass das sprechtempo sinken,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_s_dec_005,val_s_dec_default_01,MANUAL_VALIDATION,setz die sprechgeschwindigkeit etwas weiter nach unten,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_dec_006,val_s_dec_small_01,MANUAL_VALIDATION,nur einen tick gemächlicher,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_dec_007,val_s_dec_small_01,MANUAL_VALIDATION,nimm das sprechtempo ein kleines bisschen zurück,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_dec_008,val_s_dec_small_01,MANUAL_VALIDATION,mach die stimme nur geringfügig langsamer,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_dec_009,val_s_dec_small_01,MANUAL_VALIDATION,die ausgabe darf ein klein wenig langsamer werden,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_dec_010,val_s_dec_small_01,MANUAL_VALIDATION,ein kleines stück weniger tempo,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_dec_011,val_s_dec_large_01,MANUAL_VALIDATION,nimm das sprechtempo kräftig zurück,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_dec_012,val_s_dec_large_01,MANUAL_VALIDATION,ich brauche wesentlich langsameres sprechen,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_dec_013,val_s_dec_large_01,MANUAL_VALIDATION,mach einen großen temposprung nach unten,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_dec_014,val_s_dec_large_01,MANUAL_VALIDATION,die sprechrate soll merklich sinken,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_dec_015,val_s_dec_large_01,MANUAL_VALIDATION,verlangsame sie kräftig,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_dec_016,val_s_dec_delta_01,MANUAL_VALIDATION,verringere die sprechrate um null komma eins drei,SPEECH_SPEED,DECREASE,,0,[0.13],0.13,SPEECH_RATE,,,COMPLETE
+val_s_dec_017,val_s_dec_delta_01,MANUAL_VALIDATION,reduziere das sprechtempo um null komma eins sieben,SPEECH_SPEED,DECREASE,,0,[0.17],0.17,SPEECH_RATE,,,COMPLETE
+val_s_dec_018,val_s_dec_delta_01,MANUAL_VALIDATION,nimm null komma zwei drei vom tempowert weg,SPEECH_SPEED,DECREASE,,0,[0.23],0.23,SPEECH_RATE,,,COMPLETE
+val_s_dec_019,val_s_dec_delta_01,MANUAL_VALIDATION,senk die sprechrate um null komma eins eins,SPEECH_SPEED,DECREASE,,0,[0.11],0.11,SPEECH_RATE,,,COMPLETE
+val_s_dec_020,val_s_dec_delta_01,MANUAL_VALIDATION,nimm null komma eins neun weg,SPEECH_SPEED,DECREASE,,0,[0.19],0.19,SPEECH_RATE,,,COMPLETE
+val_s_dec_021,val_s_dec_natural_01,MANUAL_VALIDATION,das spricht mir noch etwas zu flott,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_dec_022,val_s_dec_natural_01,MANUAL_VALIDATION,die stimme könnte ruhig noch langsamer sprechen,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_s_dec_023,val_s_dec_natural_01,MANUAL_VALIDATION,mach deutlich weniger tempo daraus,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_s_dec_024,val_s_dec_natural_01,MANUAL_VALIDATION,ein kleines bisschen gemächlicher wäre gut,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_s_dec_025,val_s_dec_natural_01,MANUAL_VALIDATION,mach die sprechgeschwindigkeit nicht stark langsamer,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_001,val_s_uns_direct_01,MANUAL_VALIDATION,ich will am sprechtempo etwas verändern,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_002,val_s_uns_direct_01,MANUAL_VALIDATION,die sprechgeschwindigkeit muss neu eingestellt werden,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_003,val_s_uns_direct_01,MANUAL_VALIDATION,gib mir eine andere sprechtempoeinstellung,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_004,val_s_uns_direct_01,MANUAL_VALIDATION,ich möchte den sprechratenwert neu einstellen,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_005,val_s_uns_direct_01,MANUAL_VALIDATION,überarbeite die sprechgeschwindigkeitseinstellung,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_006,val_s_uns_context_01,MANUAL_VALIDATION,mach eine neue tempoeinstellung daraus,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_007,val_s_uns_context_01,MANUAL_VALIDATION,ich will das tempo neu einstellen,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_008,val_s_uns_context_01,MANUAL_VALIDATION,stell den geschwindigkeitsparameter anders ein,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_009,val_s_uns_context_01,MANUAL_VALIDATION,konfiguriere das tempo neu,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_010,val_s_uns_context_01,MANUAL_VALIDATION,daran möchte ich beim sprechtempo etwas ändern,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_011,val_s_uns_natural_01,MANUAL_VALIDATION,so ist die sprechgeschwindigkeit noch nicht richtig für mich,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_012,val_s_uns_natural_01,MANUAL_VALIDATION,ich brauche hier eine andere sprechtempoeinstellung,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_013,val_s_uns_natural_01,MANUAL_VALIDATION,bei der sprechrate würde ich gern etwas ändern,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_014,val_s_uns_natural_01,MANUAL_VALIDATION,mit diesem sprechtempo möchte ich nicht weiterarbeiten,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_015,val_s_uns_natural_01,MANUAL_VALIDATION,die sprechgeschwindigkeit braucht noch eine andere einstellung,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_016,val_s_uns_short_01,MANUAL_VALIDATION,sprechtempo neu,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_017,val_s_uns_short_01,MANUAL_VALIDATION,anderer sprechwert,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_018,val_s_uns_short_01,MANUAL_VALIDATION,neukonfigurieren,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_019,val_s_uns_short_01,MANUAL_VALIDATION,sprechrate neu wählen,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_020,val_s_uns_short_01,MANUAL_VALIDATION,sprechgeschwindigkeit überarbeiten,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_021,val_s_uns_polite_01,MANUAL_VALIDATION,könntest du mir das sprechtempo neu konfigurieren,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_022,val_s_uns_polite_01,MANUAL_VALIDATION,hilf mir bitte die sprechrate anders einzustellen,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_023,val_s_uns_polite_01,MANUAL_VALIDATION,würdest du den geschwindigkeitswert neu einstellen,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_024,val_s_uns_polite_01,MANUAL_VALIDATION,kannst du diese sprechtempoeinstellung überarbeiten,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_s_uns_025,val_s_uns_polite_01,MANUAL_VALIDATION,bitte eine neue sprechgeschwindigkeitseinstellung vornehmen,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_p_m_001,val_p_m_natural_01,MANUAL_VALIDATION,für die ausgabe hätte ich gern die stimme eines mannes,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_002,val_p_m_natural_01,MANUAL_VALIDATION,stell bitte einen mann als vorlesestimme ein,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_003,val_p_m_natural_01,MANUAL_VALIDATION,ich möchte dass künftig ein männlicher sprecher antwortet,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_004,val_p_m_natural_01,MANUAL_VALIDATION,verwende für die sprachwiedergabe eine männliche stimme,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_005,val_p_m_natural_01,MANUAL_VALIDATION,die antworten bitte mit einem männlichen sprecher,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_006,val_p_m_short_01,MANUAL_VALIDATION,mann als stimme,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_007,val_p_m_short_01,MANUAL_VALIDATION,bitte mit männlicher ausgabe,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_008,val_p_m_short_01,MANUAL_VALIDATION,auf einen mann wechseln,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_009,val_p_m_short_01,MANUAL_VALIDATION,männliche vorlesestimme,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_010,val_p_m_short_01,MANUAL_VALIDATION,bitte die männeroption,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_011,val_p_m_indirect_01,MANUAL_VALIDATION,ich höre lieber einen männlichen sprecher,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_012,val_p_m_indirect_01,MANUAL_VALIDATION,die ausgabe von einem mann wäre mir lieber,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_013,val_p_m_indirect_01,MANUAL_VALIDATION,nimm für die antworten bitte einen mann,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_014,val_p_m_indirect_01,MANUAL_VALIDATION,ich entscheide mich diesmal für einen männlichen sprecher,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_015,val_p_m_indirect_01,MANUAL_VALIDATION,die stimme sollte von einem mann kommen,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_016,val_p_m_formal_01,MANUAL_VALIDATION,aktiviere die männliche variante der sprachausgabe,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_017,val_p_m_formal_01,MANUAL_VALIDATION,lege männlich als sprecherprofil fest,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_m_018,val_p_m_formal_01,MANUAL_VALIDATION,wähle das männliche stimmprofil,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_p_f_001,val_p_f_natural_01,MANUAL_VALIDATION,für die ausgabe hätte ich gern die stimme einer frau,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_002,val_p_f_natural_01,MANUAL_VALIDATION,stell bitte eine frau als vorlesestimme ein,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_003,val_p_f_natural_01,MANUAL_VALIDATION,ich möchte dass künftig eine weibliche sprecherin antwortet,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_004,val_p_f_natural_01,MANUAL_VALIDATION,verwende für die sprachwiedergabe eine weibliche stimme,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_005,val_p_f_natural_01,MANUAL_VALIDATION,die antworten bitte mit einer weiblichen sprecherin,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_006,val_p_f_short_01,MANUAL_VALIDATION,frau als stimme,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_007,val_p_f_short_01,MANUAL_VALIDATION,bitte mit weiblicher ausgabe,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_008,val_p_f_short_01,MANUAL_VALIDATION,auf eine frau wechseln,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_009,val_p_f_short_01,MANUAL_VALIDATION,weibliche vorlesestimme,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_010,val_p_f_short_01,MANUAL_VALIDATION,bitte die frauenoption,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_011,val_p_f_indirect_01,MANUAL_VALIDATION,ich höre lieber eine weibliche sprecherin,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_012,val_p_f_indirect_01,MANUAL_VALIDATION,die ausgabe von einer frau wäre mir lieber,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_013,val_p_f_indirect_01,MANUAL_VALIDATION,nimm für die antworten bitte eine frau,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_014,val_p_f_indirect_01,MANUAL_VALIDATION,ich entscheide mich diesmal für eine weibliche sprecherin,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_015,val_p_f_indirect_01,MANUAL_VALIDATION,die stimme sollte von einer frau kommen,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_016,val_p_f_formal_01,MANUAL_VALIDATION,aktiviere die weibliche variante der sprachausgabe,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_017,val_p_f_formal_01,MANUAL_VALIDATION,lege weiblich als sprecherprofil fest,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_f_018,val_p_f_formal_01,MANUAL_VALIDATION,wähle das weibliche stimmprofil,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_p_set_missing_001,val_p_set_missing_01,MANUAL_VALIDATION,ich will eine feste stimme auswählen,SPEAKER,SET_ABSOLUTE,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_VALUE
+val_p_set_missing_002,val_p_set_missing_01,MANUAL_VALIDATION,ich möchte mich auf einen bestimmten sprecher festlegen,SPEAKER,SET_ABSOLUTE,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_VALUE
+val_p_set_missing_003,val_p_set_missing_01,MANUAL_VALIDATION,ich will den sprecher gezielt auswählen,SPEAKER,SET_ABSOLUTE,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_VALUE
+val_p_set_missing_004,val_p_set_missing_01,MANUAL_VALIDATION,leg einen konkreten stimmtyp fest,SPEAKER,SET_ABSOLUTE,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_VALUE
+val_p_tog_001,val_p_tog_natural_01,MANUAL_VALIDATION,probier die andere stimme aus,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_002,val_p_tog_natural_01,MANUAL_VALIDATION,ich möchte hören wie die andere stimme klingt,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_003,val_p_tog_natural_01,MANUAL_VALIDATION,wechsel von der aktuellen stimme weg,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_004,val_p_tog_natural_01,MANUAL_VALIDATION,wechsel weg von diesem sprecher,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_005,val_p_tog_natural_01,MANUAL_VALIDATION,tausch die aktuelle stimme gegen die alternative,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_006,val_p_tog_short_01,MANUAL_VALIDATION,nimm eine andere stimmvariante,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_007,val_p_tog_short_01,MANUAL_VALIDATION,alternative nehmen,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_008,val_p_tog_short_01,MANUAL_VALIDATION,weg von der aktuellen stimme,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_009,val_p_tog_short_01,MANUAL_VALIDATION,sprecher umschalten,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_010,val_p_tog_short_01,MANUAL_VALIDATION,andere sprecherstimme,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_011,val_p_tog_polite_01,MANUAL_VALIDATION,könntest du bitte zur alternativen stimme wechseln,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_012,val_p_tog_polite_01,MANUAL_VALIDATION,würdest du einmal den anderen sprecher ausprobieren,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_013,val_p_tog_polite_01,MANUAL_VALIDATION,bitte schalte von dieser auf die andere stimme,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_014,val_p_tog_polite_01,MANUAL_VALIDATION,kannst du die alternative sprecherstimme nehmen,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_015,val_p_tog_polite_01,MANUAL_VALIDATION,nicht die aktuelle bitte wechseln,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_016,val_p_tog_context_01,MANUAL_VALIDATION,tausch das aus,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_017,val_p_tog_context_01,MANUAL_VALIDATION,wechsel weg von der aktuellen stimme,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_018,val_p_tog_context_01,MANUAL_VALIDATION,nimm die jeweils andere sprecherstimme,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_019,val_p_tog_context_01,MANUAL_VALIDATION,wechsel zur anderen option,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_020,val_p_tog_context_01,MANUAL_VALIDATION,schalt die auswahl um,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_021,val_p_tog_formal_01,MANUAL_VALIDATION,wechsle auf das alternative stimmprofil,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_022,val_p_tog_formal_01,MANUAL_VALIDATION,tausche das aktive sprecherprofil,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_023,val_p_tog_formal_01,MANUAL_VALIDATION,aktiviere statt der derzeitigen die andere stimmausgabe,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_024,val_p_tog_formal_01,MANUAL_VALIDATION,führe einen wechsel zur alternativen sprecherstimme durch,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_025,val_p_tog_formal_01,MANUAL_VALIDATION,ersetze die aktive stimme durch die andere verfügbare option,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_026,val_p_tog_spoken_01,MANUAL_VALIDATION,äh probier mal die andere stimme,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_027,val_p_tog_spoken_01,MANUAL_VALIDATION,also wechsel mal zur anderen stimme,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_028,val_p_tog_spoken_01,MANUAL_VALIDATION,ich will jetzt halt den anderen sprecher,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_029,val_p_tog_spoken_01,MANUAL_VALIDATION,mach bitte einfach die andere stimme,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_tog_030,val_p_tog_spoken_01,MANUAL_VALIDATION,kannst du mal zur anderen rüberwechseln,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_p_uns_001,val_p_uns_direct_01,MANUAL_VALIDATION,ich will die sprechereinstellung überarbeiten,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_002,val_p_uns_direct_01,MANUAL_VALIDATION,die stimmauswahl braucht eine neue konfiguration,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_003,val_p_uns_direct_01,MANUAL_VALIDATION,gib mir andere einstellungen für die stimme,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_004,val_p_uns_direct_01,MANUAL_VALIDATION,ich möchte das sprecherprofil neu einstellen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_005,val_p_uns_direct_01,MANUAL_VALIDATION,überarbeite die konfiguration der ausgabestimme,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_006,val_p_uns_context_01,MANUAL_VALIDATION,mach eine neue stimmeinstellung daraus,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_007,val_p_uns_context_01,MANUAL_VALIDATION,ich will das sprecherprofil neu einstellen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_008,val_p_uns_context_01,MANUAL_VALIDATION,die stimmwahl soll anders werden,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_009,val_p_uns_context_01,MANUAL_VALIDATION,konfiguriere das stimmprofil neu,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_010,val_p_uns_context_01,MANUAL_VALIDATION,bei der ausgabestimme möchte ich etwas anpassen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_011,val_p_uns_natural_01,MANUAL_VALIDATION,so passt mir die stimmeinstellung noch nicht,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_012,val_p_uns_natural_01,MANUAL_VALIDATION,ich brauche hier eine andere sprecherkonfiguration,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_013,val_p_uns_natural_01,MANUAL_VALIDATION,bei der stimmauswahl würde ich gern etwas einstellen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_014,val_p_uns_natural_01,MANUAL_VALIDATION,mit diesem sprecherprofil möchte ich nicht weiterarbeiten,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_015,val_p_uns_natural_01,MANUAL_VALIDATION,die stimme braucht noch eine andere konfiguration,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_016,val_p_uns_short_01,MANUAL_VALIDATION,eine neue stimmkonfiguration,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_017,val_p_uns_short_01,MANUAL_VALIDATION,anderes sprecherprofil,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_018,val_p_uns_short_01,MANUAL_VALIDATION,stimmauswahl neu,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_019,val_p_uns_short_01,MANUAL_VALIDATION,sprecherprofil bearbeiten,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_020,val_p_uns_short_01,MANUAL_VALIDATION,stimmkonfiguration überarbeiten,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_021,val_p_uns_polite_01,MANUAL_VALIDATION,könntest du mir die stimme neu konfigurieren,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_022,val_p_uns_polite_01,MANUAL_VALIDATION,hilf mir bitte die sprecherauswahl anders einzustellen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_023,val_p_uns_polite_01,MANUAL_VALIDATION,würdest du das sprecherprofil neu einstellen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_024,val_p_uns_polite_01,MANUAL_VALIDATION,kannst du diese stimmeinstellung überarbeiten,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_025,val_p_uns_polite_01,MANUAL_VALIDATION,bitte eine neue sprecherkonfiguration vornehmen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_026,val_p_uns_spoken_01,MANUAL_VALIDATION,äh ich will die stimme irgendwie einstellen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_027,val_p_uns_spoken_01,MANUAL_VALIDATION,also an der sprecherwahl möchte ich was machen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_028,val_p_uns_spoken_01,MANUAL_VALIDATION,mach bitte irgendwas an der stimmeinstellung,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_029,val_p_uns_spoken_01,MANUAL_VALIDATION,ich will halt den sprecher neu konfigurieren,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_p_uns_030,val_p_uns_spoken_01,MANUAL_VALIDATION,kannst du mal das stimmprofil einstellen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_short_f_001,val_short_f_abs_01,MANUAL_VALIDATION,auf sechshundertdreißig,FREQUENCY,SET_ABSOLUTE,,0,[630],630,HZ,,,COMPLETE
+val_short_f_002,val_short_f_abs_01,MANUAL_VALIDATION,siebenhundertsiebzig hertz,FREQUENCY,SET_ABSOLUTE,,0,[770],770,HZ,,,COMPLETE
+val_short_f_003,val_short_f_abs_01,MANUAL_VALIDATION,nimm achthundertzwanzig,FREQUENCY,SET_ABSOLUTE,,0,[820],820,HZ,,,COMPLETE
+val_short_f_004,val_short_f_abs_01,MANUAL_VALIDATION,genau fünfhundertneunzig,FREQUENCY,SET_ABSOLUTE,,0,[590],590,HZ,,,COMPLETE
+val_short_f_005,val_short_f_abs_01,MANUAL_VALIDATION,fest einstellen,FREQUENCY,SET_ABSOLUTE,,0,[],,HZ,,,NEEDS_VALUE
+val_short_f_006,val_short_f_inc_01,MANUAL_VALIDATION,hoch,FREQUENCY,INCREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_short_f_007,val_short_f_inc_01,MANUAL_VALIDATION,weiter erhöhen,FREQUENCY,INCREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_short_f_008,val_short_f_inc_01,MANUAL_VALIDATION,ein wenig hoch,FREQUENCY,INCREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_short_f_009,val_short_f_inc_01,MANUAL_VALIDATION,stark erhöhen,FREQUENCY,INCREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_short_f_010,val_short_f_inc_01,MANUAL_VALIDATION,frequenz hoch,FREQUENCY,INCREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_short_f_011,val_short_f_dec_01,MANUAL_VALIDATION,runter,FREQUENCY,DECREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_short_f_012,val_short_f_dec_01,MANUAL_VALIDATION,weiter senken,FREQUENCY,DECREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_short_f_013,val_short_f_dec_01,MANUAL_VALIDATION,ein wenig runter,FREQUENCY,DECREASE,,0,[],,HZ,SMALL,,COMPLETE
+val_short_f_014,val_short_f_dec_01,MANUAL_VALIDATION,stark senken,FREQUENCY,DECREASE,,0,[],,HZ,LARGE,,COMPLETE
+val_short_f_015,val_short_f_dec_01,MANUAL_VALIDATION,frequenz runter,FREQUENCY,DECREASE,,0,[],,HZ,DEFAULT,,COMPLETE
+val_short_f_016,val_short_f_uns_01,MANUAL_VALIDATION,irgendwie ändern,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_short_f_017,val_short_f_uns_01,MANUAL_VALIDATION,frequenz neu anpassen,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_short_f_018,val_short_f_uns_01,MANUAL_VALIDATION,frequenz anders machen,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_short_f_019,val_short_f_uns_01,MANUAL_VALIDATION,neu anpassen,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_short_f_020,val_short_f_uns_01,MANUAL_VALIDATION,einstellung ändern,FREQUENCY,UNSPECIFIED,,0,[],,HZ,,,NEEDS_CLARIFICATION
+val_short_b_001,val_short_b_abs_01,MANUAL_VALIDATION,auf sechs,BPS,SET_ABSOLUTE,,0,[6],6,BPS,,,COMPLETE
+val_short_b_002,val_short_b_abs_01,MANUAL_VALIDATION,auf sechs komma fünf,BPS,SET_ABSOLUTE,,0,[6.5],6.5,BPS,,,COMPLETE
+val_short_b_003,val_short_b_abs_01,MANUAL_VALIDATION,genau drei komma zwei,BPS,SET_ABSOLUTE,,0,[3.2],3.2,BPS,,,COMPLETE
+val_short_b_004,val_short_b_abs_01,MANUAL_VALIDATION,nimm sieben komma fünf,BPS,SET_ABSOLUTE,,0,[7.5],7.5,BPS,,,COMPLETE
+val_short_b_005,val_short_b_abs_01,MANUAL_VALIDATION,fest einstellen,BPS,SET_ABSOLUTE,,0,[],,BPS,,,NEEDS_VALUE
+val_short_b_006,val_short_b_inc_01,MANUAL_VALIDATION,rate rauf,BPS,INCREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_short_b_007,val_short_b_inc_01,MANUAL_VALIDATION,öfter machen,BPS,INCREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_short_b_008,val_short_b_inc_01,MANUAL_VALIDATION,mehr klicks,BPS,INCREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_short_b_009,val_short_b_inc_01,MANUAL_VALIDATION,leicht häufiger,BPS,INCREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_short_b_010,val_short_b_inc_01,MANUAL_VALIDATION,deutlich öfter,BPS,INCREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_short_b_011,val_short_b_dec_01,MANUAL_VALIDATION,rate runter,BPS,DECREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_short_b_012,val_short_b_dec_01,MANUAL_VALIDATION,seltener machen,BPS,DECREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_short_b_013,val_short_b_dec_01,MANUAL_VALIDATION,weniger klicks,BPS,DECREASE,,0,[],,BPS,DEFAULT,,COMPLETE
+val_short_b_014,val_short_b_dec_01,MANUAL_VALIDATION,leicht seltener,BPS,DECREASE,,0,[],,BPS,SMALL,,COMPLETE
+val_short_b_015,val_short_b_dec_01,MANUAL_VALIDATION,viel weniger oft,BPS,DECREASE,,0,[],,BPS,LARGE,,COMPLETE
+val_short_b_016,val_short_b_uns_01,MANUAL_VALIDATION,bps neu anpassen,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_short_b_017,val_short_b_uns_01,MANUAL_VALIDATION,rate anpassen,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_short_b_018,val_short_b_uns_01,MANUAL_VALIDATION,taktung umstellen,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_short_b_019,val_short_b_uns_01,MANUAL_VALIDATION,pulsrate ändern,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_short_b_020,val_short_b_uns_01,MANUAL_VALIDATION,einstellung anpassen,BPS,UNSPECIFIED,,0,[],,BPS,,,NEEDS_CLARIFICATION
+val_short_s_001,val_short_s_abs_01,MANUAL_VALIDATION,auf null komma acht fünf,SPEECH_SPEED,SET_ABSOLUTE,,0,[0.85],0.85,SPEECH_RATE,,,COMPLETE
+val_short_s_002,val_short_s_abs_01,MANUAL_VALIDATION,eins komma eins acht,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.18],1.18,SPEECH_RATE,,,COMPLETE
+val_short_s_003,val_short_s_abs_01,MANUAL_VALIDATION,nimm eins komma drei zwei,SPEECH_SPEED,SET_ABSOLUTE,,0,[1.32],1.32,SPEECH_RATE,,,COMPLETE
+val_short_s_004,val_short_s_abs_01,MANUAL_VALIDATION,genau null komma neun zwei,SPEECH_SPEED,SET_ABSOLUTE,,0,[0.92],0.92,SPEECH_RATE,,,COMPLETE
+val_short_s_005,val_short_s_abs_01,MANUAL_VALIDATION,fest einstellen,SPEECH_SPEED,SET_ABSOLUTE,,0,[],,SPEECH_RATE,,,NEEDS_VALUE
+val_short_s_006,val_short_s_inc_01,MANUAL_VALIDATION,tempo rauf,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_short_s_007,val_short_s_inc_01,MANUAL_VALIDATION,noch schneller,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_short_s_008,val_short_s_inc_01,MANUAL_VALIDATION,etwas zügiger,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_short_s_009,val_short_s_inc_01,MANUAL_VALIDATION,stark beschleunigen,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_short_s_010,val_short_s_inc_01,MANUAL_VALIDATION,schneller bitte,SPEECH_SPEED,INCREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_short_s_011,val_short_s_dec_01,MANUAL_VALIDATION,tempo drosseln,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_short_s_012,val_short_s_dec_01,MANUAL_VALIDATION,noch langsamer,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_short_s_013,val_short_s_dec_01,MANUAL_VALIDATION,etwas gemächlicher,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,SMALL,,COMPLETE
+val_short_s_014,val_short_s_dec_01,MANUAL_VALIDATION,stark verlangsamen,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,LARGE,,COMPLETE
+val_short_s_015,val_short_s_dec_01,MANUAL_VALIDATION,langsamer bitte,SPEECH_SPEED,DECREASE,,0,[],,SPEECH_RATE,DEFAULT,,COMPLETE
+val_short_s_016,val_short_s_uns_01,MANUAL_VALIDATION,tempo umstellen,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_short_s_017,val_short_s_uns_01,MANUAL_VALIDATION,sprechrate ändern,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_short_s_018,val_short_s_uns_01,MANUAL_VALIDATION,geschwindigkeit anpassen,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_short_s_019,val_short_s_uns_01,MANUAL_VALIDATION,anders konfigurieren,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_short_s_020,val_short_s_uns_01,MANUAL_VALIDATION,tempo anders,SPEECH_SPEED,UNSPECIFIED,,0,[],,SPEECH_RATE,,,NEEDS_CLARIFICATION
+val_short_p_001,val_short_p_male_01,MANUAL_VALIDATION,männerstimme wählen,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_short_p_002,val_short_p_male_01,MANUAL_VALIDATION,einen mann wählen,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_short_p_003,val_short_p_male_01,MANUAL_VALIDATION,sprich männlich,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_short_p_004,val_short_p_male_01,MANUAL_VALIDATION,männliche,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_short_p_005,val_short_p_male_01,MANUAL_VALIDATION,männliche nehmen,SPEAKER,SET_ABSOLUTE,MALE,1,[],,,,MALE,COMPLETE
+val_short_p_006,val_short_p_female_01,MANUAL_VALIDATION,frauenstimme wählen,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_short_p_007,val_short_p_female_01,MANUAL_VALIDATION,eine frau wählen,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_short_p_008,val_short_p_female_01,MANUAL_VALIDATION,sprich weiblich,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_short_p_009,val_short_p_female_01,MANUAL_VALIDATION,weibliche,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_short_p_010,val_short_p_female_01,MANUAL_VALIDATION,weibliche nehmen,SPEAKER,SET_ABSOLUTE,FEMALE,1,[],,,,FEMALE,COMPLETE
+val_short_p_011,val_short_p_toggle_01,MANUAL_VALIDATION,umschalten bitte,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_short_p_012,val_short_p_toggle_01,MANUAL_VALIDATION,andere auswählen,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_short_p_013,val_short_p_toggle_01,MANUAL_VALIDATION,alternative wählen,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_short_p_014,val_short_p_toggle_01,MANUAL_VALIDATION,zur alternative,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_short_p_015,val_short_p_toggle_01,MANUAL_VALIDATION,stimme wechseln bitte,SPEAKER,TOGGLE,UNSPECIFIED,1,[],,,,UNSPECIFIED,COMPLETE
+val_short_p_016,val_short_p_uns_01,MANUAL_VALIDATION,stimmprofil anpassen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_short_p_017,val_short_p_uns_01,MANUAL_VALIDATION,sprecher konfigurieren,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_short_p_018,val_short_p_uns_01,MANUAL_VALIDATION,stimmwahl anpassen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_short_p_019,val_short_p_uns_01,MANUAL_VALIDATION,sprecherwahl anpassen,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION
+val_short_p_020,val_short_p_uns_01,MANUAL_VALIDATION,stimmenwahl konfigurieren,SPEAKER,UNSPECIFIED,UNSPECIFIED,1,[],,,,UNSPECIFIED,NEEDS_CLARIFICATION

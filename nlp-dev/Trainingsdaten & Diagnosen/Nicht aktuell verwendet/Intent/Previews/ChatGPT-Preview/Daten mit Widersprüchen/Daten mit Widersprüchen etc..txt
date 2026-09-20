@@ -1,0 +1,700 @@
+Ähm, was steht da eigentlich drauf?;TEXT_RECOGNITION
+Warte, warte, lies mir das da mal vor.;TEXT_RECOGNITION
+Kannst du, äh, die Schrift da erkennen?;TEXT_RECOGNITION
+Was steht da... also auf dem Schild?;TEXT_RECOGNITION
+Lies mal kurz, was da vorne steht.;TEXT_RECOGNITION
+Äh, sag mir mal, was auf dem Zettel steht.;TEXT_RECOGNITION
+Kannst du das lesen, das da rechts?;TEXT_RECOGNITION
+Was steht denn da drauf, ich erkenn's nicht.;TEXT_RECOGNITION
+Moment, lies erst mal die obere Zeile.;TEXT_RECOGNITION
+Da ist Text drauf, äh, was steht da?;TEXT_RECOGNITION
+Kannst du mir das hier kurz vorlesen?;TEXT_RECOGNITION
+Was steht auf der Packung, also vorne drauf?;TEXT_RECOGNITION
+Lies das mal... nee, nur die erste Zeile.;TEXT_RECOGNITION
+Ähm, welche Nummer steht da auf dem Display?;TEXT_RECOGNITION
+Was ist da geschrieben, kannst du das sehen?;TEXT_RECOGNITION
+Sag mal, was steht auf dem Schild da hinten?;TEXT_RECOGNITION
+Kannst du die Aufschrift da entziffern?;TEXT_RECOGNITION
+Ich seh's nicht richtig, was steht da?;TEXT_RECOGNITION
+Äh, lies mal das Kleingedruckte da.;TEXT_RECOGNITION
+Was steht da unten auf dem Zettel?;TEXT_RECOGNITION
+Warte kurz, was steht auf der Tür?;TEXT_RECOGNITION
+Kannst du erkennen, welcher Name da steht?;TEXT_RECOGNITION
+Lies mir mal die Schrift auf dem Etikett vor.;TEXT_RECOGNITION
+Was steht auf dem Ding da, äh, auf dem Aufkleber?;TEXT_RECOGNITION
+Sag mir bitte nur, was da geschrieben steht.;TEXT_RECOGNITION
+Was steht da... da ganz oben?;TEXT_RECOGNITION
+Kannst du mal schauen, was da draufsteht?;TEXT_RECOGNITION
+Äh, lies die Beschriftung von dem Teil.;TEXT_RECOGNITION
+Was steht auf dem Schild links, kannst du das lesen?;TEXT_RECOGNITION
+Lies mir das bitte vor, also den Text da.;TEXT_RECOGNITION
+Was steht auf dem Preisschild?;TEXT_RECOGNITION
+Kannst du den Text da vorne irgendwie erkennen?;TEXT_RECOGNITION
+Ähm, was sagt der Zettel da?;TEXT_RECOGNITION
+Warte, lies das nochmal, was steht da?;TEXT_RECOGNITION
+Was steht direkt über dem Knopf?;TEXT_RECOGNITION
+Kannst du die Zahl da bitte vorlesen?;TEXT_RECOGNITION
+Sag mal kurz, was auf der Verpackung steht.;TEXT_RECOGNITION
+Lies das Schild da, äh, das neben der Tür.;TEXT_RECOGNITION
+Was steht auf dem Bildschirm gerade?;TEXT_RECOGNITION
+Kannst du die Buchstaben da erkennen?;TEXT_RECOGNITION
+Äh, was steht auf dem kleinen Aufkleber?;TEXT_RECOGNITION
+Lies mir mal nur die zweite Zeile vor.;TEXT_RECOGNITION
+Was steht da rechts unten?;TEXT_RECOGNITION
+Kannst du den Text auf dem Papier lesen?;TEXT_RECOGNITION
+Was ist da draufgeschrieben, so ungefähr?;TEXT_RECOGNITION
+Warte, ich meine den Text, was steht da?;TEXT_RECOGNITION
+Nicht das Ding erkennen, lies nur die Schrift.;TEXT_RECOGNITION
+Äh, sag mir, was auf der Flasche draufsteht.;TEXT_RECOGNITION
+Kannst du lesen, was da auf der Tafel steht?;TEXT_RECOGNITION
+Was steht auf dem Brief da?;TEXT_RECOGNITION
+Lies mal die Adresse auf dem Paket.;TEXT_RECOGNITION
+Kannst du die Öffnungszeiten da vorlesen?;TEXT_RECOGNITION
+Ähm, was steht auf dem Monitor?;TEXT_RECOGNITION
+Was steht da auf dem Schild, sag mal.;TEXT_RECOGNITION
+Lies mir kurz den Hinweis da vor.;TEXT_RECOGNITION
+Kannst du erkennen, was auf dem Bon steht?;TEXT_RECOGNITION
+Was steht da eigentlich in der ersten Zeile?;TEXT_RECOGNITION
+Äh, lies das da bitte einmal vor.;TEXT_RECOGNITION
+Kannst du mir sagen, was auf dem Etikett steht?;TEXT_RECOGNITION
+Was steht auf dem Zettel... dem da vorne?;TEXT_RECOGNITION
+Lies mal, was auf der Tür geschrieben ist.;TEXT_RECOGNITION
+Kannst du den Preis da erkennen und vorlesen?;TEXT_RECOGNITION
+Was steht auf dem Display, äh, welche Zahl?;TEXT_RECOGNITION
+Sag mir mal den Text auf dem Schild.;TEXT_RECOGNITION
+Kannst du die Schrift da vorne lesen oder nicht?;TEXT_RECOGNITION
+Warte, nicht suchen, einfach vorlesen.;TEXT_RECOGNITION
+Was steht auf dem Teil in meiner Hand?;TEXT_RECOGNITION
+Ähm, lies mir das da drauf mal vor.;TEXT_RECOGNITION
+Kannst du kurz sagen, was da geschrieben steht?;TEXT_RECOGNITION
+Was steht da? Lies es mir bitte vor.;TEXT_RECOGNITION
+Ähm, was ist das da vor mir?;OBJECT_DETECTION
+Warte, was steht da eigentlich im Weg?;OBJECT_DETECTION
+Kannst du mal gucken, was links von mir ist?;OBJECT_DETECTION
+Was ist das... das da vorne?;OBJECT_DETECTION
+Siehst du da irgendein Hindernis?;OBJECT_DETECTION
+Äh, was liegt da auf dem Boden?;OBJECT_DETECTION
+Kannst du erkennen, was das für ein Ding ist?;OBJECT_DETECTION
+Was hab ich denn da vor mir?;OBJECT_DETECTION
+Sag mal, ist da eine Tür?;OBJECT_DETECTION
+Wo ist nochmal der Ausgang?;OBJECT_DETECTION
+Ähm, findest du irgendwo meinen Rucksack?;OBJECT_DETECTION
+Was steht rechts neben mir?;OBJECT_DETECTION
+Kannst du schauen, ob da vorne was ist?;OBJECT_DETECTION
+Was ist das für ein Gegenstand da?;OBJECT_DETECTION
+Warte, ist das ein Stuhl oder was?;OBJECT_DETECTION
+Siehst du die Treppe da vorne?;OBJECT_DETECTION
+Wo ist denn die Tür, äh, auf welcher Seite?;OBJECT_DETECTION
+Kannst du das Objekt vor mir identifizieren?;OBJECT_DETECTION
+Was befindet sich da links?;OBJECT_DETECTION
+Äh, steht da jemand vor mir?;OBJECT_DETECTION
+Was kommt da vorne, kannst du das erkennen?;OBJECT_DETECTION
+Ist der Weg vor mir frei?;OBJECT_DETECTION
+Was ist das da neben der Tür?;OBJECT_DETECTION
+Kannst du mir sagen, was ich da halte?;OBJECT_DETECTION
+Ähm, was liegt auf dem Tisch?;OBJECT_DETECTION
+Findest du irgendwo einen Mülleimer?;OBJECT_DETECTION
+Ist da vorne vielleicht eine Stufe?;OBJECT_DETECTION
+Was ist das für ein Teil rechts von mir?;OBJECT_DETECTION
+Warte mal, wo ist das Schild?;OBJECT_DETECTION
+Kannst du die Flasche irgendwo sehen?;OBJECT_DETECTION
+Was ist da im Regal?;OBJECT_DETECTION
+Äh, erkennst du, ob das ein Poller ist?;OBJECT_DETECTION
+Wo steht der Stuhl nochmal?;OBJECT_DETECTION
+Was ist direkt vor meinen Füßen?;OBJECT_DETECTION
+Kannst du mal schauen, was da rumsteht?;OBJECT_DETECTION
+Ist links von mir irgendwas?;OBJECT_DETECTION
+Was seh ich da eigentlich gerade?;OBJECT_DETECTION
+Ähm, wo befindet sich die Lampe?;OBJECT_DETECTION
+Findest du die Tür da vorne?;OBJECT_DETECTION
+Was ist das für ein Gerät?;OBJECT_DETECTION
+Warte, ist das da ein Auto?;OBJECT_DETECTION
+Kannst du sagen, was neben mir steht?;OBJECT_DETECTION
+Wo liegt denn mein Rucksack?;OBJECT_DETECTION
+Was ist das für ein Objekt mit dem Aufkleber?;OBJECT_DETECTION
+Äh, such mal die Packung da.;OBJECT_DETECTION
+Ist irgendwo eine Bank zu sehen?;OBJECT_DETECTION
+Kannst du den Ausgang finden?;OBJECT_DETECTION
+Was ist da rechts, direkt neben mir?;OBJECT_DETECTION
+Siehst du irgendwo eine Person?;OBJECT_DETECTION
+Wo ist die Treppe, äh, kannst du die finden?;OBJECT_DETECTION
+Was ist das Ding da in meiner Hand?;OBJECT_DETECTION
+Kannst du erkennen, was auf dem Boden liegt?;OBJECT_DETECTION
+Ähm, ist da ein Hindernis vor mir?;OBJECT_DETECTION
+Was steht da vorne links?;OBJECT_DETECTION
+Findest du das Schild an der Wand?;OBJECT_DETECTION
+Was für ein Gegenstand ist das da?;OBJECT_DETECTION
+Warte, wo ist nochmal der Tisch?;OBJECT_DETECTION
+Kannst du mir sagen, was da im Weg steht?;OBJECT_DETECTION
+Ist das da eine Kiste?;OBJECT_DETECTION
+Was ist neben der Tür für ein Ding?;OBJECT_DETECTION
+Äh, wo finde ich den Mülleimer?;OBJECT_DETECTION
+Siehst du da vorne einen Bordstein?;OBJECT_DETECTION
+Kannst du die Ampel irgendwo finden?;OBJECT_DETECTION
+Was befindet sich direkt hinter dem Stuhl?;OBJECT_DETECTION
+Wo ist das Objekt, das ich gerade gezeigt hab?;OBJECT_DETECTION
+Ähm, was ist das da auf meiner rechten Seite?;OBJECT_DETECTION
+Kannst du mal erkennen, was das für ein Fahrzeug ist?;OBJECT_DETECTION
+Was liegt da vorne, äh, auf dem Boden?;OBJECT_DETECTION
+Ist irgendwo eine Tür in meinem Sichtfeld?;OBJECT_DETECTION
+Sag mir kurz, was das da ist.;OBJECT_DETECTION
+Ähm, sprich mal ein bisschen langsamer.;CHANGE_SPEECH_SPEED
+Warte, warte, du redest zu schnell.;CHANGE_SPEECH_SPEED
+Kannst du etwas schneller sprechen?;CHANGE_SPEECH_SPEED
+Mach mal... nee, mach die Sprache langsamer.;CHANGE_SPEECH_SPEED
+Du redest gerade echt zu schnell.;CHANGE_SPEECH_SPEED
+Äh, bisschen flotter bitte.;CHANGE_SPEECH_SPEED
+Kannst du das Tempo etwas runternehmen?;CHANGE_SPEECH_SPEED
+Sprich mal langsamer, ich komm nicht mit.;CHANGE_SPEECH_SPEED
+Das zieht sich, mach ein bisschen schneller.;CHANGE_SPEECH_SPEED
+Warte, nicht die Stimme, nur langsamer.;CHANGE_SPEECH_SPEED
+Die Stimme passt, aber sprich schneller.;CHANGE_SPEECH_SPEED
+Ähm, mach die nächste Antwort etwas langsamer.;CHANGE_SPEECH_SPEED
+Kannst du ein Stück zügiger reden?;CHANGE_SPEECH_SPEED
+Nicht so hektisch, bitte.;CHANGE_SPEECH_SPEED
+Mach das Vorlesen ein bisschen flotter.;CHANGE_SPEECH_SPEED
+Äh, lies nicht ganz so schnell.;CHANGE_SPEECH_SPEED
+Du kannst ruhig etwas schneller reden.;CHANGE_SPEECH_SPEED
+Das ist mir zu langsam, mach mal schneller.;CHANGE_SPEECH_SPEED
+Warte kurz, halbes Tempo bitte.;CHANGE_SPEECH_SPEED
+Sprich... äh, ein bisschen ruhiger.;CHANGE_SPEECH_SPEED
+Kannst du die Sprachausgabe langsamer machen?;CHANGE_SPEECH_SPEED
+Nicht den Sprecher wechseln, nur das Tempo.;CHANGE_SPEECH_SPEED
+Gleiche Stimme, aber etwas schneller.;CHANGE_SPEECH_SPEED
+Ähm, nimm ein bisschen Tempo raus.;CHANGE_SPEECH_SPEED
+Mach's wieder etwas schneller.;CHANGE_SPEECH_SPEED
+Kannst du noch ein Stück langsamer werden?;CHANGE_SPEECH_SPEED
+Die Männerstimme lassen, nur langsamer sprechen.;CHANGE_SPEECH_SPEED
+Die Frauenstimme passt, aber etwas flotter bitte.;CHANGE_SPEECH_SPEED
+Warte, ich meinte schneller sprechen, nicht andere Stimme.;CHANGE_SPEECH_SPEED
+Äh, deine Antworten bitte zügiger vorlesen.;CHANGE_SPEECH_SPEED
+Mach die Stimme nicht anders, nur langsamer.;CHANGE_SPEECH_SPEED
+Kannst du beim Reden etwas weniger schnell sein?;CHANGE_SPEECH_SPEED
+Das war zu schnell, nochmal langsamer bitte.;CHANGE_SPEECH_SPEED
+Ein kleines bisschen schneller wäre gut.;CHANGE_SPEECH_SPEED
+Ähm, ungefähr ein Viertel langsamer.;CHANGE_SPEECH_SPEED
+Sprich bitte nicht ganz so schnell.;CHANGE_SPEECH_SPEED
+Kannst du das Sprechtempo erhöhen?;CHANGE_SPEECH_SPEED
+Mach das Tempo runter, äh, nur ein bisschen.;CHANGE_SPEECH_SPEED
+Warte, doch etwas schneller als jetzt.;CHANGE_SPEECH_SPEED
+Die Ausgabe könnte echt flotter sein.;CHANGE_SPEECH_SPEED
+Ich komm nicht hinterher, langsamer bitte.;CHANGE_SPEECH_SPEED
+Äh, mach die Vorlesegeschwindigkeit höher.;CHANGE_SPEECH_SPEED
+Nicht in die Einstellungen, einfach langsamer reden.;CHANGE_SPEECH_SPEED
+Du musst nichts öffnen, sprich einfach schneller.;CHANGE_SPEECH_SPEED
+Kannst du direkt langsamer sprechen?;CHANGE_SPEECH_SPEED
+Geh mit dem Tempo ein bisschen hoch.;CHANGE_SPEECH_SPEED
+Mach's gemütlicher, aber nicht zu langsam.;CHANGE_SPEECH_SPEED
+Ähm, schneller... also nur ein bisschen schneller.;CHANGE_SPEECH_SPEED
+Nee, das war zu schnell, wieder etwas runter.;CHANGE_SPEECH_SPEED
+Kannst du wieder normal schnell sprechen?;CHANGE_SPEECH_SPEED
+Sprich halb so schnell wie gerade.;CHANGE_SPEECH_SPEED
+Mach die nächste Antwort doppelt so schnell.;CHANGE_SPEECH_SPEED
+Äh, ein wenig gemächlicher bitte.;CHANGE_SPEECH_SPEED
+Red mal flotter, wenn's geht.;CHANGE_SPEECH_SPEED
+Warte, die Stimme ist okay, nur das Tempo nicht.;CHANGE_SPEECH_SPEED
+Behalte den Sprecher und sprich langsamer.;CHANGE_SPEECH_SPEED
+Nicht die Stimme ändern, ich will nur mehr Tempo.;CHANGE_SPEECH_SPEED
+Das Sprechen ist zu schnell, die Signale sind okay.;CHANGE_SPEECH_SPEED
+Ähm, deine Sprache langsamer, nicht die Pieptöne.;CHANGE_SPEECH_SPEED
+Mach nur die Sprachausgabe schneller.;CHANGE_SPEECH_SPEED
+Kannst du etwas zügiger vorlesen, bitte?;CHANGE_SPEECH_SPEED
+Noch langsamer... ja, so ungefähr.;CHANGE_SPEECH_SPEED
+Noch ein bisschen schneller bitte.;CHANGE_SPEECH_SPEED
+Warte, warte, Tempo runter.;CHANGE_SPEECH_SPEED
+Äh, Tempo hoch, aber nur leicht.;CHANGE_SPEECH_SPEED
+Sprich nicht so schnell, ich versteh dich kaum.;CHANGE_SPEECH_SPEED
+Das dauert mir zu lang, schneller bitte.;CHANGE_SPEECH_SPEED
+Kannst du das nächste Mal langsamer antworten?;CHANGE_SPEECH_SPEED
+Gleiche Stimme lassen und flotter reden.;CHANGE_SPEECH_SPEED
+Mach bitte einfach die Sprache langsamer.;CHANGE_SPEECH_SPEED
+Ähm, nimm mal die andere Stimme.;CHANGE_SPEAKER
+Warte, wechsel doch den Sprecher.;CHANGE_SPEAKER
+Kannst du mit der Frauenstimme reden?;CHANGE_SPEAKER
+Mach mal die Männerstimme an.;CHANGE_SPEAKER
+Die Stimme gefällt mir nicht, nimm die andere.;CHANGE_SPEAKER
+Äh, kannst du anders klingen?;CHANGE_SPEAKER
+Nimm wieder die vorherige Stimme.;CHANGE_SPEAKER
+Kann jemand anderes sprechen?;CHANGE_SPEAKER
+Warte, nicht langsamer, nur andere Stimme.;CHANGE_SPEAKER
+Das Tempo passt, wechsel nur den Sprecher.;CHANGE_SPEAKER
+Sprich genauso schnell, aber mit der anderen Stimme.;CHANGE_SPEAKER
+Ähm, ich hätte lieber die Frauenstimme.;CHANGE_SPEAKER
+Kannst du wieder die Männerstimme nehmen?;CHANGE_SPEAKER
+Die Geschwindigkeit ist okay, die Stimme nicht.;CHANGE_SPEAKER
+Mach nicht schneller, wechsel einfach die Stimme.;CHANGE_SPEAKER
+Äh, nimm Sprecher zwei.;CHANGE_SPEAKER
+Kannst du wieder Sprecher eins nehmen?;CHANGE_SPEAKER
+Ich will jemand anderen hören.;CHANGE_SPEAKER
+Die andere Stimme war besser, nimm die wieder.;CHANGE_SPEAKER
+Warte, wechsel zurück zur vorherigen Stimme.;CHANGE_SPEAKER
+Kann die nächste Antwort von der anderen Stimme kommen?;CHANGE_SPEAKER
+Ähm, mach mal einen anderen Sprecher rein.;CHANGE_SPEAKER
+Diese Stimme bitte nicht mehr.;CHANGE_SPEAKER
+Nimm die weibliche Stimme, bitte.;CHANGE_SPEAKER
+Nimm die männliche, äh, die Männerstimme.;CHANGE_SPEAKER
+Kannst du die Stimme tauschen?;CHANGE_SPEAKER
+Nicht das Tempo ändern, nur den Sprecher.;CHANGE_SPEAKER
+Gleich schnell weiter, aber weibliche Stimme.;CHANGE_SPEAKER
+Äh, gleiches Tempo, aber männlich.;CHANGE_SPEAKER
+Mach keine Einstellungen auf, wechsel direkt.;CHANGE_SPEAKER
+Kein Menü, einfach die andere Stimme.;CHANGE_SPEAKER
+Warte, ich will nur die Stimme ändern.;CHANGE_SPEAKER
+Kannst du direkt zur Frauenstimme wechseln?;CHANGE_SPEAKER
+Die Stimme nervt ein bisschen, nimm die andere.;CHANGE_SPEAKER
+Ähm, zurück zur alten Stimme.;CHANGE_SPEAKER
+Sprich wieder so wie vorher.;CHANGE_SPEAKER
+Kannst du mit dem anderen Sprecher weitermachen?;CHANGE_SPEAKER
+Ich hätte lieber die andere Stimme.;CHANGE_SPEAKER
+Warte, die Geschwindigkeit lassen, Stimme wechseln.;CHANGE_SPEAKER
+Mach aus der aktuellen Stimme die andere.;CHANGE_SPEAKER
+Äh, tausch nur den Sprecher aus.;CHANGE_SPEAKER
+Alles gleich lassen, nur andere Stimme.;CHANGE_SPEAKER
+Kannst du wieder mit der Frauenstimme sprechen?;CHANGE_SPEAKER
+Wechsel mal auf die Männerstimme.;CHANGE_SPEAKER
+Nicht schneller oder langsamer, einfach andere Stimme.;CHANGE_SPEAKER
+Ähm, ich möchte die Stimme wechseln, sonst nichts.;CHANGE_SPEAKER
+Die vorherige Sprecherstimme bitte.;CHANGE_SPEAKER
+Kann die gleiche Antwort von einem Mann gesprochen werden?;CHANGE_SPEAKER
+Kann die gleiche Antwort von einer Frau gesprochen werden?;CHANGE_SPEAKER
+Warte, nimm wieder die Stimme von eben.;CHANGE_SPEAKER
+Mach mal jemand anderen als Sprecher.;CHANGE_SPEAKER
+Äh, die andere Sprachstimme bitte.;CHANGE_SPEAKER
+Die Stimme passt mir nicht so, wechsel mal.;CHANGE_SPEAKER
+Nimm für die nächste Antwort die Frauenstimme.;CHANGE_SPEAKER
+Nimm für die nächste Antwort die Männerstimme.;CHANGE_SPEAKER
+Kannst du den Sprecher kurz wechseln?;CHANGE_SPEAKER
+Warte, nicht am Tempo drehen, nur Stimme.;CHANGE_SPEAKER
+Ich will keine langsamere Ausgabe, nur andere Stimme.;CHANGE_SPEAKER
+Ähm, wechsel direkt zur anderen Stimme.;CHANGE_SPEAKER
+Sprich mit derselben Geschwindigkeit, aber weiblich.;CHANGE_SPEAKER
+Sprich mit derselben Geschwindigkeit, aber männlich.;CHANGE_SPEAKER
+Kannst du wieder zur ersten Stimme zurück?;CHANGE_SPEAKER
+Nimm bitte die zweite Stimme.;CHANGE_SPEAKER
+Die andere klingt besser, mach die wieder an.;CHANGE_SPEAKER
+Warte, warte, andere Stimme bitte.;CHANGE_SPEAKER
+Äh, ich möchte jemand anderen hören.;CHANGE_SPEAKER
+Wechsel den Sprecher, das Tempo ist gut.;CHANGE_SPEAKER
+Kannst du die Stimme wechseln, ohne sonst was zu ändern?;CHANGE_SPEAKER
+Mach bitte nur die Stimme anders.;CHANGE_SPEAKER
+Nimm einfach die andere Stimme.;CHANGE_SPEAKER
+Ähm, erklär mir mal, wie Photosynthese funktioniert.;REDIRECT_TO_LLM
+Warte, was ist eigentlich ein schwarzes Loch?;REDIRECT_TO_LLM
+Kannst du mir kurz Inflation erklären?;REDIRECT_TO_LLM
+Sag mal, wer war Napoleon?;REDIRECT_TO_LLM
+Äh, erzähl mir einen Witz.;REDIRECT_TO_LLM
+Kannst du mir ein Rezept für Pfannkuchen geben?;REDIRECT_TO_LLM
+Hilf mir mal bei einer Matheaufgabe.;REDIRECT_TO_LLM
+Was bedeutet eigentlich DNA?;REDIRECT_TO_LLM
+Ähm, erklär mir den Satz des Pythagoras.;REDIRECT_TO_LLM
+Wie funktioniert so ein Elektromotor?;REDIRECT_TO_LLM
+Sag mal, was ist die Hauptstadt von Kanada?;REDIRECT_TO_LLM
+Kannst du mir ein Synonym für schnell nennen?;REDIRECT_TO_LLM
+Übersetz mir mal Haus ins Englische.;REDIRECT_TO_LLM
+Äh, erzähl kurz was über Einstein.;REDIRECT_TO_LLM
+Wie schnell breitet sich Schall aus?;REDIRECT_TO_LLM
+Welche Frequenzen kann ein Mensch hören?;REDIRECT_TO_LLM
+Warte, was bedeutet Frequenz überhaupt?;REDIRECT_TO_LLM
+Nicht die Frequenz ändern, erklär mir nur, was sie ist.;REDIRECT_TO_LLM
+Was ist eigentlich der Unterschied zwischen Tonhöhe und Lautstärke?;REDIRECT_TO_LLM
+Ähm, wie funktioniert optische Zeichenerkennung?;REDIRECT_TO_LLM
+Kann OCR auch Handschrift lesen?;REDIRECT_TO_LLM
+Warum wird Text manchmal falsch erkannt?;REDIRECT_TO_LLM
+Nicht vorlesen, erklär mir nur, wie OCR funktioniert.;REDIRECT_TO_LLM
+Wie erkennen Computer eigentlich Objekte in Bildern?;REDIRECT_TO_LLM
+Kann Objekterkennung auch kleine Sachen erkennen?;REDIRECT_TO_LLM
+Äh, wie zuverlässig ist Objekterkennung im Dunkeln?;REDIRECT_TO_LLM
+Nicht suchen, ich will wissen, wie Objekterkennung funktioniert.;REDIRECT_TO_LLM
+Wie misst man eigentlich eine Entfernung mit einer Kamera?;REDIRECT_TO_LLM
+Kann eine Kamera wissen, wie weit etwas weg ist?;REDIRECT_TO_LLM
+Warte, nicht messen, erklär mir die Entfernungsmessung.;REDIRECT_TO_LLM
+Was ist genauer, Kamera oder Ultraschall?;REDIRECT_TO_LLM
+Wie funktioniert Entfernungsmessung mit Ultraschall?;REDIRECT_TO_LLM
+Ähm, wie oft sollte so ein Distanzsignal kommen?;REDIRECT_TO_LLM
+Was bedeutet Wiederholrate bei einem Signal?;REDIRECT_TO_LLM
+Nicht die BPS ändern, erklär mir erst, was das bedeutet.;REDIRECT_TO_LLM
+Warum hört man manche Frequenzen schlechter?;REDIRECT_TO_LLM
+Welche Tonhöhe kann man besonders gut hören?;REDIRECT_TO_LLM
+Wie funktioniert eigentlich eine synthetische Stimme?;REDIRECT_TO_LLM
+Äh, warum sprechen manche Menschen schneller als andere?;REDIRECT_TO_LLM
+Was ist der höchste Berg der Welt?;REDIRECT_TO_LLM
+Kannst du mir erklären, was ein Atom ist?;REDIRECT_TO_LLM
+Warte, was ist der Unterschied zwischen Atom und Molekül?;REDIRECT_TO_LLM
+Wie funktioniert GPS eigentlich?;REDIRECT_TO_LLM
+Ähm, wie entsteht ein Vulkan?;REDIRECT_TO_LLM
+Wie funktioniert ein Kühlschrank?;REDIRECT_TO_LLM
+Erklär mir mal, wie eine Solarzelle arbeitet.;REDIRECT_TO_LLM
+Was ist künstliche Intelligenz?;REDIRECT_TO_LLM
+Kannst du kurz erklären, was Kryptowährung ist?;REDIRECT_TO_LLM
+Äh, was ist der Urknall?;REDIRECT_TO_LLM
+Warum träumen Menschen eigentlich?;REDIRECT_TO_LLM
+Wie viele Planeten hat unser Sonnensystem?;REDIRECT_TO_LLM
+Sag mal, wie viele Knochen hat ein Mensch?;REDIRECT_TO_LLM
+Was sind die Phasen des Mondes?;REDIRECT_TO_LLM
+Ähm, was sind die Gesetze der Thermodynamik?;REDIRECT_TO_LLM
+Wie funktioniert das menschliche Auge?;REDIRECT_TO_LLM
+Was ist eigentlich ein pH-Wert?;REDIRECT_TO_LLM
+Kannst du mir erklären, wie Aktien funktionieren?;REDIRECT_TO_LLM
+Warte, wie bindet man eine Krawatte?;REDIRECT_TO_LLM
+Wie repariert man einen platten Fahrradreifen?;REDIRECT_TO_LLM
+Äh, wie lernt man eine Sprache am besten?;REDIRECT_TO_LLM
+Was war der Dreißigjährige Krieg?;REDIRECT_TO_LLM
+Wer war eigentlich Sokrates?;REDIRECT_TO_LLM
+Was ist der Unterschied zwischen Gleichstrom und Wechselstrom?;REDIRECT_TO_LLM
+Kannst du mir kurz was über den Mars erzählen?;REDIRECT_TO_LLM
+Ähm, nenn mir fünf Länder in Afrika.;REDIRECT_TO_LLM
+Wie viele Primzahlen gibt es eigentlich?;REDIRECT_TO_LLM
+Was bedeutet BPS in der Datenübertragung?;REDIRECT_TO_LLM
+Nicht ausführen, nur erklären, okay?;REDIRECT_TO_LLM
+Ich will nichts umstellen, nur wissen, wie das funktioniert.;REDIRECT_TO_LLM
+Kannst du mir das einfach erklären?;REDIRECT_TO_LLM
+Ähm, mach mal die Einstellungen auf.;OPEN_SETTINGS
+Warte, wo sind nochmal die Einstellungen?;OPEN_SETTINGS
+Kannst du das Einstellungsmenü öffnen?;OPEN_SETTINGS
+Zeig mir mal die Optionen.;OPEN_SETTINGS
+Ich will kurz in die Einstellungen.;OPEN_SETTINGS
+Äh, wo kann ich das ändern?;OPEN_SETTINGS
+Mach mal das Menü auf.;OPEN_SETTINGS
+Kannst du mir die Einstellungen zeigen?;OPEN_SETTINGS
+Warte, ich will erst mal ins Menü.;OPEN_SETTINGS
+Wo kann ich die Stimme einstellen?;OPEN_SETTINGS
+Ähm, wo ändere ich das Sprechtempo?;OPEN_SETTINGS
+Zeig mir die Sprachoptionen.;OPEN_SETTINGS
+Wo kann ich den Ton einstellen?;OPEN_SETTINGS
+Kannst du die Optionen für die Hinweise öffnen?;OPEN_SETTINGS
+Ich möchte erst sehen, was eingestellt ist.;OPEN_SETTINGS
+Äh, mach noch nichts, nur Einstellungen öffnen.;OPEN_SETTINGS
+Nicht direkt ändern, zeig mir erst die Optionen.;OPEN_SETTINGS
+Warte, ich will nur das Menü sehen.;OPEN_SETTINGS
+Wo finde ich die ganzen Einstellungen?;OPEN_SETTINGS
+Kannst du mich zu den Einstellungen bringen?;OPEN_SETTINGS
+Ähm, zeig mir mal, was man ändern kann.;OPEN_SETTINGS
+Wo kann man das konfigurieren?;OPEN_SETTINGS
+Mach das Einstellungsmenü auf, bitte.;OPEN_SETTINGS
+Ich möchte kurz die aktuellen Werte sehen.;OPEN_SETTINGS
+Warte, Stimme noch nicht ändern, nur Auswahl zeigen.;OPEN_SETTINGS
+Zeig mir erst, wo man das Tempo ändert.;OPEN_SETTINGS
+Äh, wo finde ich die Frequenzeinstellung?;OPEN_SETTINGS
+Wo kann ich einstellen, wie oft es piept?;OPEN_SETTINGS
+Zeig mir die Optionen für die Distanzhinweise.;OPEN_SETTINGS
+Kannst du die Einstellungen vom Abstandston öffnen?;OPEN_SETTINGS
+Ähm, erst Einstellungen öffnen.;OPEN_SETTINGS
+Mach bitte noch keine Änderung, nur das Menü.;OPEN_SETTINGS
+Wo sehe ich, welche Stimme gerade ausgewählt ist?;OPEN_SETTINGS
+Wo sehe ich das aktuelle Sprechtempo?;OPEN_SETTINGS
+Warte, ich will erst nachschauen.;OPEN_SETTINGS
+Kannst du mir die Konfiguration zeigen?;OPEN_SETTINGS
+Äh, bring mich ins Einstellungsmenü.;OPEN_SETTINGS
+Wo sind die Sprachoptionen nochmal?;OPEN_SETTINGS
+Zeig mir die Einstellungen für die Signaltöne.;OPEN_SETTINGS
+Ich möchte die BPS-Einstellung sehen.;OPEN_SETTINGS
+Ähm, wo kann ich die Tonhöhe konfigurieren?;OPEN_SETTINGS
+Nicht höher machen, nur die Einstellung öffnen.;OPEN_SETTINGS
+Nicht schneller piepen, ich will erst ins Menü.;OPEN_SETTINGS
+Warte, noch nichts umstellen.;OPEN_SETTINGS
+Kannst du die App-Einstellungen aufmachen?;OPEN_SETTINGS
+Zeig mir das Menü mit den ganzen Optionen.;OPEN_SETTINGS
+Äh, ich will sehen, was gerade eingestellt ist.;OPEN_SETTINGS
+Wo kann ich die Ausgabe anpassen?;OPEN_SETTINGS
+Bring mich zu den Optionen für die Stimme.;OPEN_SETTINGS
+Kannst du die Einstellungen kurz aufrufen?;OPEN_SETTINGS
+Warte, öffne erst mal die Einstellungen.;OPEN_SETTINGS
+Wo finde ich das Menü für den Signalton?;OPEN_SETTINGS
+Ähm, zeig mir die Konfiguration für die Hinweise.;OPEN_SETTINGS
+Ich möchte ins Menü, wo man das Tempo ändert.;OPEN_SETTINGS
+Wo kann ich den Sprecher auswählen?;OPEN_SETTINGS
+Zeig mir die aktuellen Einstellungen.;OPEN_SETTINGS
+Äh, mach die Optionen auf.;OPEN_SETTINGS
+Kann ich mir die Werte irgendwo ansehen?;OPEN_SETTINGS
+Wo stellt man die Frequenz ein?;OPEN_SETTINGS
+Warte, nicht verändern, nur anzeigen.;OPEN_SETTINGS
+Kannst du mir das Einstellungsmenü zeigen?;OPEN_SETTINGS
+Ich will kurz was konfigurieren, mach das Menü auf.;OPEN_SETTINGS
+Ähm, wo sind die Optionen für die Sprachausgabe?;OPEN_SETTINGS
+Zeig mir erst die Einstellung dafür.;OPEN_SETTINGS
+Bring mich mal zu den Spracheinstellungen.;OPEN_SETTINGS
+Wo kann ich die Distanzsignale konfigurieren?;OPEN_SETTINGS
+Warte, ich möchte nur nachsehen.;OPEN_SETTINGS
+Mach bitte die Einstellungen auf, sonst nichts.;OPEN_SETTINGS
+Äh, öffne mal das Menü mit den Optionen.;OPEN_SETTINGS
+Zeig mir die Einstellungen.;OPEN_SETTINGS
+Ähm, mach den Ton mal etwas höher.;SET_FREQUENCY
+Warte, der Piepton soll tiefer sein.;SET_FREQUENCY
+Kannst du die Tonhöhe ein bisschen anheben?;SET_FREQUENCY
+Mach den Hinweis, äh, klanglich höher.;SET_FREQUENCY
+Der Ton ist mir zu hoch, mach ihn tiefer.;SET_FREQUENCY
+Äh, stell den Signalton etwas höher.;SET_FREQUENCY
+Nicht schneller piepen, nur höher.;SET_FREQUENCY
+Warte, nicht häufiger, nur einen tieferen Ton.;SET_FREQUENCY
+Die Taktung passt, aber der Ton soll höher.;SET_FREQUENCY
+Mach die Tonhöhe runter, die BPS bleiben gleich.;SET_FREQUENCY
+Ähm, gleicher Rhythmus, aber tieferer Ton.;SET_FREQUENCY
+Kannst du den einzelnen Piepton höher machen?;SET_FREQUENCY
+Die Hinweise sollen gleich oft kommen, nur tiefer klingen.;SET_FREQUENCY
+Nicht mehr Signale, nur einen höheren Ton.;SET_FREQUENCY
+Warte, die Pausen sind okay, mach den Ton tiefer.;SET_FREQUENCY
+Stell die Frequenz mal auf 600 Hertz.;SET_FREQUENCY
+Äh, nimm ungefähr 800 Hertz.;SET_FREQUENCY
+Kannst du den Ton auf 500 Hz setzen?;SET_FREQUENCY
+Lass die BPS so und stell 900 Hertz ein.;SET_FREQUENCY
+Zwei Pieptöne pro Sekunde passen, aber Ton auf 400 Hertz.;SET_FREQUENCY
+Ähm, ändere nur die Tonfrequenz.;SET_FREQUENCY
+Die Pulsrate soll bleiben, mach den Klang höher.;SET_FREQUENCY
+Nicht die Wiederholrate, die Tonhöhe ändern.;SET_FREQUENCY
+Warte, der Ton selbst ist zu tief.;SET_FREQUENCY
+Mach den Abstandston etwas heller.;SET_FREQUENCY
+Äh, ich hätte gern einen tieferen Hinweiston.;SET_FREQUENCY
+Kannst du die Frequenz ein Stück erhöhen?;SET_FREQUENCY
+Setz die Tonhöhe etwas runter.;SET_FREQUENCY
+Der Rhythmus bleibt so, aber der Ton geht hoch.;SET_FREQUENCY
+Ähm, gleich oft piepen, nur tiefer.;SET_FREQUENCY
+Mach das Signal höher, ohne öfter zu piepen.;SET_FREQUENCY
+Nicht dichter hintereinander, nur höher klingen.;SET_FREQUENCY
+Warte, das Piepen ist schnell genug, mach es tiefer.;SET_FREQUENCY
+Kannst du nur den Klang vom Piepen verändern?;SET_FREQUENCY
+Die Anzahl der Töne passt, Tonhöhe runter.;SET_FREQUENCY
+Äh, nimm einen höheren Ton für den Abstand.;SET_FREQUENCY
+Der Hinweis klingt zu tief, mach ihn höher.;SET_FREQUENCY
+Stell den einzelnen Ton etwas tiefer.;SET_FREQUENCY
+Nicht am Takt drehen, nur am Ton.;SET_FREQUENCY
+Warte, Frequenz hoch, BPS unverändert.;SET_FREQUENCY
+Ähm, Frequenz runter, die Folge bleibt gleich.;SET_FREQUENCY
+Kannst du den Hinweiston auf 750 Hz setzen?;SET_FREQUENCY
+Mach die Signalfrequenz etwas höher.;SET_FREQUENCY
+Der Piepton soll klanglich tiefer werden.;SET_FREQUENCY
+Äh, gleiche Signalfolge, höherer Ton.;SET_FREQUENCY
+Lass die Wiederholung so und erhöhe die Tonhöhe.;SET_FREQUENCY
+Nicht öfter, einfach höher piepen.;SET_FREQUENCY
+Warte, der Klang soll runter, nicht das Tempo.;SET_FREQUENCY
+Kannst du die Tonhöhe des Distanzsignals ändern?;SET_FREQUENCY
+Ähm, mach den Piepton heller.;SET_FREQUENCY
+Mach den Piepton dunkler, also tiefer.;SET_FREQUENCY
+Stell die Frequenz bitte etwas niedriger.;SET_FREQUENCY
+Die BPS passen, nur der Hertz-Wert soll hoch.;SET_FREQUENCY
+Warte, ändert nur die Frequenz auf 1000 Hertz.;SET_FREQUENCY
+Kannst du den Ton von 500 auf 700 Hertz setzen?;SET_FREQUENCY
+Äh, Tonhöhe hoch, Wiederholrate lassen.;SET_FREQUENCY
+Tonhöhe runter, sonst nichts ändern.;SET_FREQUENCY
+Der einzelne Hinweis soll höher klingen.;SET_FREQUENCY
+Nicht schneller, ich meine höher vom Ton her.;SET_FREQUENCY
+Warte, tieferer Ton, gleiche Geschwindigkeit.;SET_FREQUENCY
+Ähm, der Abstandston ist zu hoch.;SET_FREQUENCY
+Mach ihn etwas tiefer, den Ton meine ich.;SET_FREQUENCY
+Kannst du die Tonfrequenz erhöhen?;SET_FREQUENCY
+Lass die Pulse gleich und nimm 650 Hertz.;SET_FREQUENCY
+Nicht die Pulse verändern, nur 850 Hz einstellen.;SET_FREQUENCY
+Warte, der Rhythmus ist gut, Ton etwas höher.;SET_FREQUENCY
+Äh, Frequenz ein bisschen runter.;SET_FREQUENCY
+Mach bitte nur die Tonhöhe anders.;SET_FREQUENCY
+Gleiche BPS, aber höherer Signalton.;SET_FREQUENCY
+Stell den Ton etwas tiefer ein.;SET_FREQUENCY
+Ähm, mach das Piepen mal schneller.;SET_BPS
+Warte, die Hinweise kommen zu oft.;SET_BPS
+Kannst du die Töne häufiger kommen lassen?;SET_BPS
+Mach etwas mehr Pause zwischen den Pieptönen.;SET_BPS
+Äh, das soll seltener piepen.;SET_BPS
+Nicht höher, einfach öfter.;SET_BPS
+Warte, nicht tiefer, nur langsamer hintereinander.;SET_BPS
+Der Ton passt, mach die Hinweise häufiger.;SET_BPS
+Lass die Tonhöhe so und piep schneller.;SET_BPS
+Ähm, gleicher Ton, aber größere Abstände.;SET_BPS
+Die Signale kommen zu selten, mach sie öfter.;SET_BPS
+Nicht die Tonlage ändern, nur die Häufigkeit.;SET_BPS
+Mach weniger Pause zwischen den Hinweisen.;SET_BPS
+Warte, gleicher Ton, langsameres Piepen.;SET_BPS
+Kannst du die Folge etwas beschleunigen?;SET_BPS
+Äh, zieh die Töne weiter auseinander.;SET_BPS
+Ich brauche öfter einen Abstandshinweis.;SET_BPS
+Die Hinweisschläge sind mir zu schnell.;SET_BPS
+Mach den Rhythmus etwas langsamer.;SET_BPS
+Ähm, die Signale dichter hintereinander.;SET_BPS
+Kann das weniger oft piepen?;SET_BPS
+Mach die Hinweise schneller wiederkommen.;SET_BPS
+Warte, zwischen zwei Tönen länger Ruhe.;SET_BPS
+Die Distanzschläge kommen zu selten.;SET_BPS
+Ich möchte in derselben Zeit mehr Töne hören.;SET_BPS
+Äh, stell zwei Pieptöne pro Sekunde ein.;SET_BPS
+Kannst du auf drei BPS gehen?;SET_BPS
+Mach ungefähr vier Hinweise pro Sekunde.;SET_BPS
+Die Frequenz bleibt, stell die BPS auf zwei.;SET_BPS
+Warte, 600 Hertz passen, aber drei Pulse pro Sekunde.;SET_BPS
+Ähm, ändere nur die Pulsrate.;SET_BPS
+Nicht den Ton ändern, nur die Wiederholrate.;SET_BPS
+Mach die Pieptöne schneller hintereinander.;SET_BPS
+Lass den Hinweis seltener kommen.;SET_BPS
+Die Pausen sollen kürzer werden.;SET_BPS
+Äh, mehr Abstand zwischen den Tönen.;SET_BPS
+Kannst du die Signalfolge verlangsamen?;SET_BPS
+Mach die Distanzhinweise etwas häufiger.;SET_BPS
+Warte, die Töne kommen zu dicht.;SET_BPS
+Mach die Folge ein bisschen gemütlicher.;SET_BPS
+Ähm, weniger oft piepen bitte.;SET_BPS
+Der einzelne Ton bleibt gleich, nur die Folge schneller.;SET_BPS
+Nicht höher machen, ich will mehr Signale.;SET_BPS
+Kannst du die BPS etwas reduzieren?;SET_BPS
+Erhöhe die BPS, die Tonhöhe bleibt.;SET_BPS
+Warte, Pulsrate hoch, Frequenz unverändert.;SET_BPS
+Äh, Pulsrate runter, gleicher Ton.;SET_BPS
+Mach die Hinweise auf fünf pro Sekunde.;SET_BPS
+Stell die Wiederholrate auf drei pro Sekunde.;SET_BPS
+Kannst du die Taktung etwas erhöhen?;SET_BPS
+Ähm, die Taktung ist zu schnell.;SET_BPS
+Mach die Abstände zwischen den Signalen kleiner.;SET_BPS
+Mach mehr Zeit zwischen die einzelnen Hinweise.;SET_BPS
+Warte, schnelleres Piepen, nicht höheres.;SET_BPS
+Nicht tiefer, ich meine seltener piepen.;SET_BPS
+Der Klang ist okay, nur häufiger bitte.;SET_BPS
+Äh, mach die Tonfolge langsamer.;SET_BPS
+Kannst du öfter einen Hinweis geben?;SET_BPS
+Die Töne sollen weniger oft kommen.;SET_BPS
+Warte, BPS hoch, Hertz lassen.;SET_BPS
+Ähm, BPS runter, Tonhöhe gleich.;SET_BPS
+Stell die Pulse auf vier pro Sekunde.;SET_BPS
+Mach die Klicks ein bisschen schneller.;SET_BPS
+Kannst du das Klicktempo verringern?;SET_BPS
+Die Klicks sollen seltener kommen.;SET_BPS
+Warte, mehr Klicks pro Sekunde.;SET_BPS
+Äh, weniger Klicks pro Sekunde.;SET_BPS
+Lass den gleichen Ton schneller wiederholen.;SET_BPS
+Mach bitte nur die Wiederholrate anders.;SET_BPS
+Gleiche Frequenz, aber langsamere Taktung.;SET_BPS
+Ähm, wie weit ist das da vor mir?;MEASURE_DISTANCE
+Warte, wie nah ist die Tür?;MEASURE_DISTANCE
+Kannst du mal den Abstand zu dem Ding messen?;MEASURE_DISTANCE
+Wie weit weg ist das Auto da?;MEASURE_DISTANCE
+Äh, wie viel Platz hab ich noch bis zur Wand?;MEASURE_DISTANCE
+Wie weit ist das Hindernis vor mir?;MEASURE_DISTANCE
+Kannst du sagen, wie nah der Bordstein ist?;MEASURE_DISTANCE
+Warte, das da links, wie weit weg ist das?;MEASURE_DISTANCE
+Und rechts, äh, wie weit ist das?;MEASURE_DISTANCE
+Wie groß ist der Abstand zur Tür?;MEASURE_DISTANCE
+Ähm, kannst du die Entfernung zum Stuhl bestimmen?;MEASURE_DISTANCE
+Wie viele Meter sind es noch bis dahin?;MEASURE_DISTANCE
+Miss mal kurz den Abstand zur Wand.;MEASURE_DISTANCE
+Wie weit steht die Flasche weg?;MEASURE_DISTANCE
+Äh, wie nah bin ich dem Hindernis?;MEASURE_DISTANCE
+Kannst du die Entfernung zu dem Objekt schätzen?;MEASURE_DISTANCE
+Warte, nicht erkennen, ich will wissen wie weit es weg ist.;MEASURE_DISTANCE
+Was ist der Abstand zu dem Ding da vorne?;MEASURE_DISTANCE
+Wie weit ist die Tür von mir entfernt?;MEASURE_DISTANCE
+Ähm, miss bitte die Distanz zum Auto.;MEASURE_DISTANCE
+Kannst du sagen, wie weit der Tisch weg ist?;MEASURE_DISTANCE
+Wie nah ist das Regal?;MEASURE_DISTANCE
+Warte, Entfernung zu dem Schild bitte.;MEASURE_DISTANCE
+Wie weit ist der Bordstein noch weg?;MEASURE_DISTANCE
+Äh, wie viel Abstand hab ich zur Wand?;MEASURE_DISTANCE
+Kannst du die Distanz bis zur Treppe messen?;MEASURE_DISTANCE
+Wie weit ist das Objekt links von mir?;MEASURE_DISTANCE
+Und das rechts daneben, wie weit ist das?;MEASURE_DISTANCE
+Ähm, wie weit steht der Stuhl von mir weg?;MEASURE_DISTANCE
+Miss mal die Entfernung zur Tür.;MEASURE_DISTANCE
+Wie nah ist die Wand gerade?;MEASURE_DISTANCE
+Warte, wie weit ist das erkannte Objekt?;MEASURE_DISTANCE
+Kannst du den Abstand zu der Person bestimmen?;MEASURE_DISTANCE
+Äh, wie viele Meter bis zum Ausgang?;MEASURE_DISTANCE
+Wie weit ist die Ampel entfernt?;MEASURE_DISTANCE
+Kannst du die Entfernung zur Flasche messen?;MEASURE_DISTANCE
+Nicht suchen, nur den Abstand bestimmen.;MEASURE_DISTANCE
+Warte, ich brauche die Distanz, nicht was das ist.;MEASURE_DISTANCE
+Ähm, wie weit ist das Hindernis ungefähr?;MEASURE_DISTANCE
+Wie nah steht das Auto da vorne?;MEASURE_DISTANCE
+Miss bitte den Abstand zu dem Pfosten.;MEASURE_DISTANCE
+Kannst du sagen, wie viel Platz zwischen mir und der Tür ist?;MEASURE_DISTANCE
+Äh, Entfernung zum Tisch bitte.;MEASURE_DISTANCE
+Wie weit ist das Schild da vorne?;MEASURE_DISTANCE
+Warte, wie nah ist die Treppe?;MEASURE_DISTANCE
+Kannst du den Abstand zur Kante messen?;MEASURE_DISTANCE
+Wie viele Meter ist die Wand weg?;MEASURE_DISTANCE
+Ähm, wie weit noch bis zur Tür?;MEASURE_DISTANCE
+Wie weit ist das Ding neben der Tür entfernt?;MEASURE_DISTANCE
+Kannst du die Entfernung zu dem da links bestimmen?;MEASURE_DISTANCE
+Warte, das Objekt rechts, wie nah ist das?;MEASURE_DISTANCE
+Wie groß ist die Distanz zum Hindernis?;MEASURE_DISTANCE
+Äh, miss mal bis zu dem Stuhl.;MEASURE_DISTANCE
+Kannst du ungefähr sagen, wie weit das weg ist?;MEASURE_DISTANCE
+Wie weit bin ich vom Bordstein entfernt?;MEASURE_DISTANCE
+Warte, Abstand zum Auto bitte.;MEASURE_DISTANCE
+Ähm, wie nah ist das Objekt vor meinen Füßen?;MEASURE_DISTANCE
+Kannst du messen, wie weit die Wand entfernt ist?;MEASURE_DISTANCE
+Wie viel Platz bleibt bis zum Hindernis?;MEASURE_DISTANCE
+Äh, wie weit ist die Flasche ungefähr?;MEASURE_DISTANCE
+Nicht identifizieren, nur Entfernung messen.;MEASURE_DISTANCE
+Warte, ich will nur wissen, wie weit das ist.;MEASURE_DISTANCE
+Kannst du den Abstand bis zum Ausgang schätzen?;MEASURE_DISTANCE
+Wie nah ist das Ding da vorne?;MEASURE_DISTANCE
+Ähm, Entfernung zur Tür, bitte.;MEASURE_DISTANCE
+Wie weit weg steht das Regal?;MEASURE_DISTANCE
+Kannst du die Distanz zum Schild messen?;MEASURE_DISTANCE
+Warte, wie viele Meter sind das ungefähr?;MEASURE_DISTANCE
+Äh, Abstand zu dem Objekt rechts.;MEASURE_DISTANCE
+Wie weit ist das weg?;MEASURE_DISTANCE
+Ähm, stopp.;ABORT
+Warte, warte, lass das.;ABORT
+Nee, doch nicht.;ABORT
+Vergiss es, äh, abbrechen.;ABORT
+Stopp, das war falsch.;ABORT
+Warte, nicht machen.;ABORT
+Äh, lass mal.;ABORT
+Nee nee, hör auf.;ABORT
+Doch nicht, stopp.;ABORT
+Kannst du aufhören?;ABORT
+Ähm, vergiss meine letzte Anweisung.;ABORT
+Lass gut sein.;ABORT
+Warte, ich hab's mir anders überlegt.;ABORT
+Nicht weitermachen.;ABORT
+Stopp die Aktion bitte.;ABORT
+Äh, das will ich doch nicht.;ABORT
+Mach das rückgängig.;ABORT
+Nee, abbrechen.;ABORT
+Warte kurz, lass es sein.;ABORT
+Nicht ausführen.;ABORT
+Ähm, stopp mal eben.;ABORT
+Die Stimme doch nicht ändern.;ABORT
+Lass das Tempo wie es war.;ABORT
+Mach den Ton doch nicht höher.;ABORT
+Die Hinweise doch nicht schneller.;ABORT
+Warte, nicht in die Einstellungen gehen.;ABORT
+Lies das doch nicht vor.;ABORT
+Such das doch nicht.;ABORT
+Miss den Abstand doch nicht.;ABORT
+Äh, nicht zur anderen Stimme wechseln.;ABORT
+Lass die Geschwindigkeit doch so.;ABORT
+Der Ton kann bleiben wie er ist.;ABORT
+Warte, lass die Hinweistöne in Ruhe.;ABORT
+Brauchst die Tür doch nicht mehr suchen.;ABORT
+Die Entfernung brauch ich doch nicht.;ABORT
+Ähm, hör auf vorzulesen.;ABORT
+Stopp die Messung.;ABORT
+Nicht weiter nach dem Objekt suchen.;ABORT
+Warte, geh doch nicht ins Menü.;ABORT
+Nee, das war's.;ABORT
+Äh, mach nichts.;ABORT
+Lass das bitte einfach.;ABORT
+Stopp, nichts übernehmen.;ABORT
+Warte, zurück, ich will das nicht.;ABORT
+Nicht mehr, danke.;ABORT
+Ähm, das brauchen wir nicht.;ABORT
+Kannst du das canceln?;ABORT
+Nee, lass gut sein.;ABORT
+Stopp stopp, nicht machen.;ABORT
+Warte, vergiss das.;ABORT
+Äh, nimm das zurück.;ABORT
+Nicht fortfahren.;ABORT
+Lass die Aktion sein.;ABORT
+Nee, ich will doch nicht.;ABORT
+Warte, beende das.;ABORT
+Ähm, abbrechen bitte.;ABORT
+Hör auf, das reicht.;ABORT
+Nicht jetzt, lass mal.;ABORT
+Stopp sofort.;ABORT
+Warte, war falsch, abbrechen.;ABORT
+Äh, keine Aktion.;ABORT
+Mach bitte nichts weiter.;ABORT
+Nee, zurück.;ABORT
+Lass das Menü wieder.;ABORT
+Warte, raus aus den Einstellungen.;ABORT
+Ähm, stopp die Ausführung.;ABORT
+Vergiss den Befehl.;ABORT
+Nicht übernehmen, bitte.;ABORT
+Warte, alles stoppen.;ABORT
+Äh, Schluss jetzt.;ABORT

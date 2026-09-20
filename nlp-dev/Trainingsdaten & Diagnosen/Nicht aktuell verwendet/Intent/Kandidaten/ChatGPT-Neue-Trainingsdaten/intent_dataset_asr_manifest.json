@@ -1,0 +1,14 @@
+{
+  "existing_train_additions": 24,
+  "existing_validation": 36,
+  "existing_blind_core": 60,
+  "existing_blind_hard": 20,
+  "semantic_gap_train": 50,
+  "semantic_gap_validation": 30,
+  "semantic_gap_blind": 40,
+  "recommended_train_additions_total": 74,
+  "recommended_validation_total": 66,
+  "asr_train_sources": 32,
+  "asr_validation_sources": 66,
+  "asr_blind_sources": 120
+}

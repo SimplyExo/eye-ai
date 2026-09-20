@@ -1,0 +1,9 @@
+Wo befinde ich mich;OBJECT_DETECTION
+Wer bin ich;REDIRECT_TO_LLM
+Wie viel Uhr ist es;REDIRECT_TO_LLM
+Wer ist im Bild;OBJECT_DETECTION
+Ist heute Montag;REDIRECT_TO_LLM
+Wer nervt dich;REDIRECT_TO_LLM
+Ich möchte die geschriebenen Wortlaute hören;TEXT_RECOGNITION
+Wo finde ich das Autohaus;OBJECT_DETECTION
+Was soll ich tun;REDIRECT_TO_LLM

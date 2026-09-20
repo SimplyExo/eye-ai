@@ -1,0 +1,280 @@
+wie funktioniert eigentlich eines teetisch stimme;REDIRECT_TO_LLM
+im der abstands tun ist zu hoch;SET_FREQUENCY
+durch sie bitte an die männliche stimme;CHANGE_SPEAKER
+mich den abstand nicht weiter;ABORT
+die distanz hinweise kommen so selten;SET_BPS
+was ist das beim gebäude;OBJECT_DETECTION
+kannst du die zahlen den gesamtbetrag lesen;TEXT_RECOGNITION
+ich kann die kleine schrift nicht erkennen was dieter;TEXT_RECOGNITION
+den dich mal zu den einstellungen;OPEN_SETTINGS
+die stimme sollte bleiben die geschwindigkeit nicht;CHANGE_SPEECH_SPEED
+kannst du den text auf dem papier leben;TEXT_RECOGNITION
+er stellt den signal schon etwas höher;SET_FREQUENCY
+versprechen ist zu schnell die signale sind ok;CHANGE_SPEECH_SPEED
+die weit ist das fenster entfernt;MEASURE_DISTANCE
+beschleunigen folge der abstand signale;SET_BPS
+sprich mal den text freundlich sie;TEXT_RECOGNITION
+nein staub das will ich nicht;ABORT
+die mehr ein synonym für schnell;REDIRECT_TO_LLM
+dagmar mal kurz was auf der verpackung steht;TEXT_RECOGNITION
+links von der irgendwas;OBJECT_DETECTION
+die bindet man eine krawatte;REDIRECT_TO_LLM
+erklären wir mal wie eine solarzelle arbeitet;REDIRECT_TO_LLM
+nicht tiefer ich meine seltener bieten;SET_BPS
+ist irgendwo ein schild in meinen sicht fehlte;OBJECT_DETECTION
+beste stelle auf männlich;CHANGE_SPEAKER
+die sprachausgabe langsamer machen;CHANGE_SPEECH_SPEED
+die stimmen der mich nimm die andere;CHANGE_SPEAKER
+ist ein höhere tun immer lauter;REDIRECT_TO_LLM
+finde das preisschild und bälle den preis;TEXT_RECOGNITION
+die tick krater soll bitte verringert werden;SET_BPS
+verringert die anzahl der signalen pro sekunde;SET_BPS
+welche vorteile erneuerbare energien;REDIRECT_TO_LLM
+ist das auto;OBJECT_DETECTION
+was ist links von hier;OBJECT_DETECTION
+liebt irgendwo in kabel auf der boden;OBJECT_DETECTION
+neben drei pulse pro sekunde;SET_BPS
+pulsfrequenz drei punkte sechs pulse justieren;SET_BPS
+ich will keine einstellung ändern minuten entstehen wie das funktioniert;REDIRECT_TO_LLM
+du kannst du dir entfernung zu dem projekt schätzen;MEASURE_DISTANCE
+die pläne quantenverschränkung möglichst einfach;REDIRECT_TO_LLM
+mathe mate tempo runter;CHANGE_SPEECH_SPEED
+nehmen statt der männerstimme die frauenstimme;CHANGE_SPEAKER
+naja das wars;ABORT
+wer war eigentlicher gratis;REDIRECT_TO_LLM
+die nahe ist die wand gerade;MEASURE_DISTANCE
+du kannst du ruhig etwas schneller reden;CHANGE_SPEECH_SPEED
+die funktioniert entfernungsmessung mit einer kaviar;REDIRECT_TO_LLM
+wie groß ist die entfernung zwischen mir und dem spur;MEASURE_DISTANCE
+das zieht sich nach schneller;CHANGE_SPEECH_SPEED
+das kommando geht nicht mehr;ABORT
+kannst du das sie die dicke vorlesen;TEXT_RECOGNITION
+was ist das vereinen teil rechts von mehr;OBJECT_DETECTION
+die unterscheidet sich texte korruption von objekt detektion;REDIRECT_TO_LLM
+warum wir text manchmal falsch erkannte;REDIRECT_TO_LLM
+macht den ton tiefer;SET_FREQUENCY
+welche planeten gehören zu unseren sonstigen;REDIRECT_TO_LLM
+du kannst du das tempo der klicks verringern;SET_BPS
+die töne sollen weniger aufkommen;SET_BPS
+du kannst du etwas schnelle sprechen;CHANGE_SPEECH_SPEED
+was steht auf dem displays automaten;TEXT_RECOGNITION
+sagt mir bitte mal was da geschrieben steht;TEXT_RECOGNITION
+das problem ist nicht an tempo sondern die stimme;CHANGE_SPEAKER
+neben für die nächste antwort die frauenstimme;CHANGE_SPEAKER
+bitte lies dir inhaltsangabe vor;TEXT_RECOGNITION
+wie weit weg steht das vegan;MEASURE_DISTANCE
+öffne meter die einstellungen;OPEN_SETTINGS
+da mir die distanz zum echten objekt;MEASURE_DISTANCE
+die signale kunden häufiger an;SET_BPS
+die dem töne kaum zu langsam;SET_BPS
+der tonhöhe erhöhen;SET_FREQUENCY
+mario gibt es jahreszeiten;REDIRECT_TO_LLM
+gleiche frequenz aber das obere taktung;SET_BPS
+miss den abstand zu den stuhl;MEASURE_DISTANCE
+warte das da linz wie weit weg ist das;MEASURE_DISTANCE
+was steht auf diesen etikett;TEXT_RECOGNITION
+welche nicht mehr diese stimme;CHANGE_SPEAKER
+dem hör auf vorzulesen;ABORT
+nicht den speicher wechseln mal das tempo;CHANGE_SPEECH_SPEED
+nicht die tonlagen dann nur die häufigkeit;SET_BPS
+kannst du den abstand zum ausgang schätzen;MEASURE_DISTANCE
+martin nächste antwort doppelt so schnell;CHANGE_SPEECH_SPEED
+nimm die letzte änderungen zu rock;ABORT
+ich gleich schnell aber mit der anderen stimmen;CHANGE_SPEAKER
+die kick sollen seltener kommen;SET_BPS
+abstand zur am bemessen;MEASURE_DISTANCE
+seit mehr als auch der verpackung geschrieben steht;TEXT_RECOGNITION
+was befindet sich da auch man rechten seite;OBJECT_DETECTION
+soll mal auf die männerstimme;CHANGE_SPEAKER
+mach bitte die einstellungen auf kosten;OPEN_SETTINGS
+stoppt das;ABORT
+wie weit sind berlin und bagdad entfernen;REDIRECT_TO_LLM
+das rechts daneben wie weit ist da;MEASURE_DISTANCE
+ist der unterschied zwischen klassifikation und objekts abgenommen;REDIRECT_TO_LLM
+ich brauche das mini mit den optionen;OPEN_SETTINGS
+nimm für den signal tollen siebenhundert herz;SET_FREQUENCY
+el stornieren;ABORT
+also ist davon eine tür;OBJECT_DETECTION
+sag mir quarz was das da ist;OBJECT_DETECTION
+findest du ja im büro ein mülleimer;OBJECT_DETECTION
+kannst du die tonhöhe bisschen eingeben;SET_FREQUENCY
+stopper alles was zu diesen befehl gehört;ABORT
+spricht nicht so schnell ich verstehe ich kaum;CHANGE_SPEECH_SPEED
+sie die einzelnen töne weiter auseinander;SET_BPS
+wo innere ich die optionen;OPEN_SETTINGS
+was ist das dagegen der tür;OBJECT_DETECTION
+ich finde nur die stimme ändern;CHANGE_SPEAKER
+spreche mit männlicher stimmt;CHANGE_SPEAKER
+das alles gleich außer der stimmen;CHANGE_SPEAKER
+setze den akustischen hinweis auf vierhundertfünfzig h z;SET_FREQUENCY
+du kannst du messen wie weit der tisch vor mir steht;MEASURE_DISTANCE
+wo finde ich die einstellungen für die signal frequenz;OPEN_SETTINGS
+nicht wie die einstellungen mach einfach langsamer;CHANGE_SPEECH_SPEED
+das diesen ist schnell genug mache es nur tiefer;SET_FREQUENCY
+die funktion wie einen kühlschrank;REDIRECT_TO_LLM
+zeig mir die personalisierung sektion;OPEN_SETTINGS
+das bei wie weit weg;MEASURE_DISTANCE
+excel mal den sprecher;CHANGE_SPEAKER
+kannst du das konfiguration svens der anzeigen;OPEN_SETTINGS
+macht die wie töne höher aber nicht schneller;SET_FREQUENCY
+die menge stimme lassen nur langsam;CHANGE_SPEECH_SPEED
+wie funktioniert objekte kennung mit k e;REDIRECT_TO_LLM
+kannst du mir das hier kurs vorlesen;TEXT_RECOGNITION
+hatte ich meine den text was steht da;TEXT_RECOGNITION
+wie steht noch nicht ändern nur die auswahl sehen;OPEN_SETTINGS
+da das ganze etwas gemächlicher;CHANGE_SPEECH_SPEED
+nicht den ton ändern mutti wiederhole ratte;SET_BPS
+mach ihm etwas tiefer den ton meine ich;SET_FREQUENCY
+der abstand zwischen zwei in meinen neue kleiner mengen;SET_BPS
+wie funktioniert so ein akustischer distanz weiß;REDIRECT_TO_LLM
+den der den zettel und mag mehr was drauf steht;TEXT_RECOGNITION
+nicht schneller bieten nur höher;SET_FREQUENCY
+das die frequenz doch so wie sie ist;ABORT
+der ende dem laufenden auftrag;ABORT
+könnte schneller vorlegt;CHANGE_SPEECH_SPEED
+welche beschriftung hat die tür vor bier;TEXT_RECOGNITION
+ich möchte ich menü woran das tempo inet;OPEN_SETTINGS
+macht den piepton dunkle also tiefer;SET_FREQUENCY
+l d andere sprach stimme bitte;CHANGE_SPEAKER
+bitte den abstand zu den posten;MEASURE_DISTANCE
+ich will einstellungen bearbeiten;OPEN_SETTINGS
+entfernung mit dem bestimmen;MEASURE_DISTANCE
+mach gewöhnlicher aber nicht zu langsam;CHANGE_SPEECH_SPEED
+das ist mit zu langsam;CHANGE_SPEECH_SPEED
+zeig mir oder kinderwagen steht;OBJECT_DETECTION
+die baue ich ein vogelhaus;REDIRECT_TO_LLM
+kannst du mir ein rezept für handlungen geben;REDIRECT_TO_LLM
+siehst du da waren einen bahnsteig;OBJECT_DETECTION
+del die stimme schnelle ein;CHANGE_SPEECH_SPEED
+mario sprächen manche menschen schneller als andere;REDIRECT_TO_LLM
+nochmal langsam;CHANGE_SPEECH_SPEED
+warte nicht messen berkeley wie die entfernungsmessung;REDIRECT_TO_LLM
+kannst du die frequenz einstecke erhöhen;SET_FREQUENCY
+kannst der erkennen das neben der tür steht;OBJECT_DETECTION
+was bescheid die einheit herz eigentlich;REDIRECT_TO_LLM
+du kannst du mir sagen was ich da halte;OBJECT_DETECTION
+etwas gemächlicher nähte;CHANGE_SPEECH_SPEED
+zeig mir die sprache option;OPEN_SETTINGS
+die funktioniert so ein elektromotor;REDIRECT_TO_LLM
+was steht auf der packungen;TEXT_RECOGNITION
+und des rechts wie weit ist das;MEASURE_DISTANCE
+wie weit ist die treppe norweger;MEASURE_DISTANCE
+ich möchte dieselbe stimme mit höheren sprich tempo;CHANGE_SPEECH_SPEED
+warte kurz lasse sein;ABORT
+geht dem piepton höher stellen;SET_FREQUENCY
+die impulse sollen viermal mehr sekunde kommen;SET_BPS
+bitte verlangsamt deine sprachausgabe;CHANGE_SPEECH_SPEED
+wie weit der rucksack vom meer entfernt;MEASURE_DISTANCE
+ich würd öfter einen hinweis führen;SET_BPS
+nehmen diesmal die frauenstimme;CHANGE_SPEAKER
+wo ist das objekt das ich gerade gezeigt;OBJECT_DETECTION
+da steht auf der packung also von grau;TEXT_RECOGNITION
+wieviele planeten hat unser sorgen system;REDIRECT_TO_LLM
+spricht mit denselben geschwindigkeit aber weiblich;CHANGE_SPEAKER
+wie weit ist zum bordstein;MEASURE_DISTANCE
+du tun frequenz soll sich ändern;SET_FREQUENCY
+ziehst du die packung was steht drauf vor;TEXT_RECOGNITION
+das mir das menü für die option;OPEN_SETTINGS
+das ist auf dem bildschirm geschrieben;TEXT_RECOGNITION
+mönche gegenstände liegen auf dem tisch;OBJECT_DETECTION
+ist irgendwo eine tür meiner sicht sichtfeld;OBJECT_DETECTION
+lass mich dir einstellungen bearbeiten;OPEN_SETTINGS
+doch etwas schneller;CHANGE_SPEECH_SPEED
+wie weit ist ja kinderwagen von mir weg;MEASURE_DISTANCE
+nicht häufiger nur einen tieferen tun;SET_FREQUENCY
+du kannst auch ein weibliche stimme wechseln;CHANGE_SPEAKER
+martin was ich eigentlich ein schwarzes loch;REDIRECT_TO_LLM
+was ist eigentlich einen ph wert;REDIRECT_TO_LLM
+lass die hinweise gleich auf kommen und mach sie tiefer;SET_FREQUENCY
+an die optionen für die hinweise finden;OPEN_SETTINGS
+das die stimme gleich und sprich langsam;CHANGE_SPEECH_SPEED
+hilft mir bei eine mathe aufgaben;REDIRECT_TO_LLM
+bereitet den sprecher und sprich langsamer;CHANGE_SPEECH_SPEED
+stelle ist direkt schneller ohne das menü aufzumachen;CHANGE_SPEECH_SPEED
+kannst du den paula finden und anschließend den abstand zu messen;MEASURE_DISTANCE
+nimm die weiblichen;CHANGE_SPEAKER
+sag mal wie viele knochen ein mensch;REDIRECT_TO_LLM
+kannst du mir sagen was b per es bedeutet ohne etwas umzustellen;REDIRECT_TO_LLM
+die viele meter sind es bis zum auto;MEASURE_DISTANCE
+den stoppt die ausführung;ABORT
+das war nicht mehr ausgeführt werden;ABORT
+mach bitte nur die wiederhol rattern des;SET_BPS
+was steht auf den gegenstand links lebensmittel;TEXT_RECOGNITION
+bitte lies das buch koffer vor;TEXT_RECOGNITION
+du kannst du die zahlen mit dem hinweis achtung vorlesen;TEXT_RECOGNITION
+was ist dass wir ein objekt mit dem aufkleber;OBJECT_DETECTION
+mich interessiert nicht das objekt von den die schrift darauf;TEXT_RECOGNITION
+sei mir optionen;OPEN_SETTINGS
+nicht suchen ich will wissen wie objekt erkennung von sie uni;REDIRECT_TO_LLM
+die eine weibliche stimme;CHANGE_SPEAKER
+ende den vorgang;ABORT
+welcher gegenstand steht neben der rand;OBJECT_DETECTION
+wo befindet sich die nächste sitzgelegenheit deine;OBJECT_DETECTION
+der tun ist mit zu tief;SET_FREQUENCY
+sag mal was steht auf dem schild dahin;TEXT_RECOGNITION
+ich möchte die neben der geschwindigkeit mit der zweiten stimme;CHANGE_SPEAKER
+nicht übernehmen;ABORT
+ignoriere meinen letzten bei vielen;ABORT
+die signale dicht hintereinander;SET_BPS
+kannst du einen lama erkennen;OBJECT_DETECTION
+die isst man eigentlich eine entfernung mit an der kamera;REDIRECT_TO_LLM
+ich bitte nicht ganz so schnell;CHANGE_SPEECH_SPEED
+die ausgabe könnte echt flotter nein;CHANGE_SPEECH_SPEED
+ich weiß nicht was das davon ist;OBJECT_DETECTION
+vergisst meine anweisungen mit den vier baby s;ABORT
+kannst du noch ein stück langsamer ehrlich;CHANGE_SPEECH_SPEED
+lass ma;ABORT
+findest du den kassen wohl auf den tisch;OBJECT_DETECTION
+nimm meine rate von sieben komma fünf b ps;SET_BPS
+kannst du den aushang eine wand erkennen und vorlesen;TEXT_RECOGNITION
+ich mit der selben geschwindigkeit aber männlich;CHANGE_SPEAKER
+still vier komma vier pulse ihr sekunde ein;SET_BPS
+mathe ich mir erstmal ins menü;OPEN_SETTINGS
+die funktioniert internet grundsätzlich;REDIRECT_TO_LLM
+wo ich die tür;OBJECT_DETECTION
+deine stimme noch schneller regen die hinweise bleibt gleich;CHANGE_SPEECH_SPEED
+bitte schneller sprechen vorfällen;CHANGE_SPEECH_SPEED
+vorlesen wird frauenstimme sofort bitte aktivieren;CHANGE_SPEAKER
+kannst du die tiefere stimme machen;SET_FREQUENCY
+der puls rate runter gleicher tun;SET_BPS
+was bringt andere sprecherstimme technisch gesehen;REDIRECT_TO_LLM
+party wechsel zurück zur vorherigen stimme;CHANGE_SPEAKER
+nehmen für die nächste antwort die männerstimme;CHANGE_SPEAKER
+falls du den preis der erkennen und vorlegen;TEXT_RECOGNITION
+den die frequenz bitte etwas niedriger;SET_FREQUENCY
+mach nicht an der frequenz öffnen die einstellungen;OPEN_SETTINGS
+zeigt wie einstellungen;OPEN_SETTINGS
+bitte einige männliche stimme;CHANGE_SPEAKER
+nicht lesen sagt mir nur oder schild ist;OBJECT_DETECTION
+noch langsamer jahr so ungefähr;CHANGE_SPEECH_SPEED
+warum klingt sprache höherem tempo manchmal unverständlich;REDIRECT_TO_LLM
+nicht gegen die einstellungen gehen;ABORT
+ich mir die einstellung optionen gleich;OPEN_SETTINGS
+bitte lest die seite vor;TEXT_RECOGNITION
+das aufhören;ABORT
+mathe die stimme ist ok nur das tempo nicht;CHANGE_SPEECH_SPEED
+wie weit ich die ampel entfernt;MEASURE_DISTANCE
+was steht da eigentlich der ersten zeile;TEXT_RECOGNITION
+die frequenz zollt bleiben stellt die wiederhol rate auf zwei komma fünf p p s;SET_BPS
+wie das war zu schnell wieder etwas runter;CHANGE_SPEECH_SPEED
+da hatte wie weit ist das erkannt objekte;MEASURE_DISTANCE
+ist irgendwo ein beschriftete cartoon;OBJECT_DETECTION
+kannst du wieder frauenstimme reden;CHANGE_SPEAKER
+der nur wie hoch der tun klingt;SET_FREQUENCY
+top sofort;ABORT
+kannst du mir kurz was über den nass erzählen;REDIRECT_TO_LLM
+kannst du die nummer dem ticket erkennen;TEXT_RECOGNITION
+warte gleiche tun langsameres piepen;SET_BPS
+kannst du was abbrechen;ABORT
+mutti puls rate soll sich ändern;SET_BPS
+wie weit ist das hindernis rechts von der entfernt;MEASURE_DISTANCE
+wo kann ich den schwächer auswählen;OPEN_SETTINGS
+drückt mir die anwendung einstellungen;OPEN_SETTINGS
+kannst du die distanz besucher bemessen;MEASURE_DISTANCE
+du kannst du mir erklären wie eine batterie funktioniert;REDIRECT_TO_LLM
+hast du wieder zur ersten stimme zurück;CHANGE_SPEAKER
+rate mach mal die einstellungen auf;OPEN_SETTINGS
+nicht direkt ändern falk mir die einstellung dafür;OPEN_SETTINGS
+der wo kann ich das ändern;OPEN_SETTINGS
+die zu hektisch bitte;CHANGE_SPEECH_SPEED
+er machen nichts;ABORT

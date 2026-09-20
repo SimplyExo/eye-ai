@@ -1,0 +1,65 @@
+altstoffe;ABORT
+männliche stimme;CHANGE_SPEAKER
+weibliche stimme;CHANGE_SPEAKER
+sprich mal langsamer man versteht sich ja gar nicht;CHANGE_SPEECH_SPEED
+nicht zu schnell sprechen;CHANGE_SPEECH_SPEED
+ich war damals schnell;CHANGE_SPEECH_SPEED
+wie weit ist das auto weg;MEASURE_DISTANCE
+wie weit;MEASURE_DISTANCE
+entfernung;MEASURE_DISTANCE
+was ist das alles hier;OBJECT_DETECTION
+was steht hier im weg;OBJECT_DETECTION
+geht;OBJECT_DETECTION
+einstellung ändern;OPEN_SETTINGS
+die ändere ich die einstellungen;OPEN_SETTINGS
+ich hätte gerne ein eis;REDIRECT_TO_LLM
+entschuldigen sie könnten sie mir den weg zeigen;REDIRECT_TO_LLM
+wie komme ich hier über die straße;REDIRECT_TO_LLM
+wie ist das wetter gerade;REDIRECT_TO_LLM
+dann geht die sonne unter;REDIRECT_TO_LLM
+wird es heute regnen;REDIRECT_TO_LLM
+bip schnelle;SET_BPS
+die dieses landes;SET_BPS
+frequenz höher;SET_FREQUENCY
+frequenz;SET_FREQUENCY
+macht das piepsen tiefer;SET_FREQUENCY
+was steht da auf dem man;TEXT_RECOGNITION
+was steht da ich kann das nicht lesen;TEXT_RECOGNITION
+was steht denn da auf dem schild;TEXT_RECOGNITION
+ich habe dich nicht verstanden was steht nochmal auf der speisekarte;TEXT_RECOGNITION
+ändere geschwindigkeit;CHANGE_SPEECH_SPEED
+sprechgeschwindigkeit einstellen;CHANGE_SPEECH_SPEED
+text;TEXT_RECOGNITION
+ich weiß langsam nicht mehr was ich sagen soll;REDIRECT_TO_LLM
+du das war es wir trainingsdaten;REDIRECT_TO_LLM
+ps;SET_BPS
+was die laufende funktion sein;ABORT
+doppelt das was du gerade magst;ABORT
+damit möchte ich jetzt schluss machen;ABORT
+ich hätte gern die andere assistent stimmen;CHANGE_SPEAKER
+schalte auf eine männliche sprecher stimmen;CHANGE_SPEAKER
+nimm stadt dieser bitte die weibliche stimme;CHANGE_SPEAKER
+dein freund sie bis zum;CHANGE_SPEECH_SPEED
+mach deine sprachausgabe etwas langsam;CHANGE_SPEECH_SPEED
+kannst du deutlich zügiger sprechen;CHANGE_SPEECH_SPEED
+wie weit ist das hindernis vor meinen füßen weg;MEASURE_DISTANCE
+miss bitte die entfernung zu dem fahrrad vom mehr;MEASURE_DISTANCE
+wieviel abstand habe ich noch zur wand von mir;MEASURE_DISTANCE
+welche sachen stehen unmittelbar vor mir;OBJECT_DETECTION
+der kennst du dort vorne irgendeinen op;OBJECT_DETECTION
+was befindet sich gerade in meinem blickfeld;OBJECT_DETECTION
+wo finde ich die allgemeinen einstellungen der app;OPEN_SETTINGS
+öffne das menü zum konfigurieren;OPEN_SETTINGS
+ich will dir ab einstellungen aufrufen;OPEN_SETTINGS
+wie weit ist der nun von der herde entfernt;REDIRECT_TO_LLM
+welche frequenz hat der kammerton a;REDIRECT_TO_LLM
+wie schnell spricht ein mensch durchschnittlich;REDIRECT_TO_LLM
+die abstand stöhne sollen öfter hintereinander kommen;SET_BPS
+reduziere die wiederholungen der signal töne und;SET_BPS
+der höhe das tempo der pips folge ohne die tonhöhe zu ändern;SET_BPS
+die pipeline sollen die verklingen;SET_FREQUENCY
+hegt die tonlage der signals an;SET_FREQUENCY
+ändere nur die höhe des hinweis tons;SET_FREQUENCY
+was ist auf dem preisschild geschrieben;TEXT_RECOGNITION
+lies bitte die worte auf der tafel;TEXT_RECOGNITION
+kannst du den aufdruck auf der packung vorlesen;TEXT_RECOGNITION

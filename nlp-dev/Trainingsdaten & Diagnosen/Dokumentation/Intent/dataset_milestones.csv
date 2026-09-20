@@ -1,0 +1,10 @@
+milestone,samples,type
+Clean corpus after global deduplication,3344,training text
+Gen1 auto-selected Vosk (obsolete auto-filter),1281,ASR
+Gen1 strict manual review,1205,ASR
+Gen1 final complement after cross-Gen2 curation,280,ASR
+Gen2 strict manual review,1548,ASR
+Final reviewed Vosk pool: Gen1 complement + Gen2,1828,ASR
+Manual semantic validation,300,validation
+Manual ASR-like validation,300,validation
+Challenge regression set,40,regression

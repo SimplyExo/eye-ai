@@ -1,0 +1,26 @@
+{
+  "raw_rows": 439,
+  "unique_normalized_text_label_pairs": 402,
+  "unique_normalized_texts": 401,
+  "cross_label_conflict_norms": 1,
+  "final_clean_candidates": 207,
+  "manual_ambiguity_exclusions": 41,
+  "class_counts": {
+    "ABORT": 43,
+    "CHANGE_SPEAKER": 17,
+    "CHANGE_SPEECH_SPEED": 19,
+    "MEASURE_DISTANCE": 23,
+    "OBJECT_DETECTION": 8,
+    "OPEN_SETTINGS": 15,
+    "REDIRECT_TO_LLM": 36,
+    "SET_BPS": 8,
+    "SET_FREQUENCY": 8,
+    "TEXT_RECOGNITION": 30
+  },
+  "source_representatives": {
+    "Person_1": "M0_T1.txt",
+    "Person_2": "M0_T1(2).txt",
+    "Person_3": "M0_T1(3).txt"
+  },
+  "final_train_sha256": "3a093db8f5bea068f874c23a333e4315667881183a21d271e1c8590be284de05"
+}

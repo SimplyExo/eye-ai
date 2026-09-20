@@ -1,0 +1,208 @@
+sample_id,text,label,normalized_text,source_persons,source_files,raw_occurrences
+HUMAN_0001,abbruch,ABORT,abbruch,Person_1,M0_T1.txt,1
+HUMAN_0002,Abbruch einleiten,ABORT,abbruch einleiten,Person_3,M0_T1(3).txt,1
+HUMAN_0003,aktuelle aktionen abbrechen,ABORT,aktuelle aktionen abbrechen,Person_3,M0_T1(3).txt,1
+HUMAN_0004,aufhören,ABORT,aufhören,Person_1|Person_3,M0_T1(3).txt|M0_T1.txt,2
+HUMAN_0005,aus,ABORT,aus,Person_1,M0_T1.txt,1
+HUMAN_0006,b ende die einstellungen,ABORT,b ende die einstellungen,Person_3,M0_T1(3).txt,1
+HUMAN_0007,bnd die einstellungen,ABORT,bnd die einstellungen,Person_3,M0_T1(3).txt,1
+HUMAN_0008,bricht die aktionen ab,ABORT,bricht die aktionen ab,Person_3,M0_T1(3).txt,1
+HUMAN_0009,einstellungen verlassen,ABORT,einstellungen verlassen,Person_3,M0_T1(3).txt,1
+HUMAN_0010,ende,ABORT,ende,Person_1,M0_T1.txt,1
+HUMAN_0011,Ende jetzt,ABORT,ende jetzt,Person_3,M0_T1(3).txt,1
+HUMAN_0012,es reicht,ABORT,es reicht,Person_1,M0_T1.txt,1
+HUMAN_0013,Halt die Fresse,ABORT,halt die fresse,Person_3,M0_T1(3).txt,1
+HUMAN_0014,Hau ab und lass mich in Ruhe,ABORT,hau ab und lass mich in ruhe,Person_3,M0_T1(3).txt,1
+HUMAN_0015,he stopp mal,ABORT,he stopp mal,Person_3,M0_T1(3).txt,1
+HUMAN_0016,herr verlasse dieses menü,ABORT,herr verlasse dieses menü,Person_3,M0_T1(3).txt,1
+HUMAN_0017,hinterfrage diese entscheidung nochmal und hör auf damit,ABORT,hinterfrage diese entscheidung nochmal und hör auf damit,Person_3,M0_T1(3).txt,1
+HUMAN_0018,hoch abbruch,ABORT,hoch abbruch,Person_3,M0_T1(3).txt,1
+HUMAN_0019,Hör auf mit dem Mist,ABORT,hör auf mit dem mist,Person_3,M0_T1(3).txt,1
+HUMAN_0020,Ich beschwer mich darüber und du machst einfach weiter kannst du es lassen,ABORT,ich beschwer mich darüber und du machst einfach weiter kannst du es lassen,Person_3,M0_T1(3).txt,1
+HUMAN_0021,ich muss jetzt endlich ich ja das ganze beenden,ABORT,ich muss jetzt endlich ich ja das ganze beenden,Person_3,M0_T1(3).txt,1
+HUMAN_0022,ich raste gleich aus hör auf damit,ABORT,ich raste gleich aus hör auf damit,Person_3,M0_T1(3).txt,1
+HUMAN_0023,ich will gar nichts davon anpassen,ABORT,ich will gar nichts davon anpassen,Person_3,M0_T1(3).txt,1
+HUMAN_0024,Ich will nicht mehr,ABORT,ich will nicht mehr,Person_3,M0_T1(3).txt,1
+HUMAN_0025,ich würde raus aus den einstellungen,ABORT,ich würde raus aus den einstellungen,Person_3,M0_T1(3).txt,1
+HUMAN_0026,ja lasters jetzt sofort,ABORT,ja lasters jetzt sofort,Person_3,M0_T1(3).txt,1
+HUMAN_0027,jetzt raus aus den einstellungen,ABORT,jetzt raus aus den einstellungen,Person_3,M0_T1(3).txt,1
+HUMAN_0028,Kannst du mal damit aufhören,ABORT,kannst du mal damit aufhören,Person_3,M0_T1(3).txt,1
+HUMAN_0029,Kannst du mit dieser Aktion aufhören,ABORT,kannst du mit dieser aktion aufhören,Person_3,M0_T1(3).txt,1
+HUMAN_0030,lass mich jetzt hier raus,ABORT,lass mich jetzt hier raus,Person_3,M0_T1(3).txt,1
+HUMAN_0031,Lass mich mit dem Mist in Frieden,ABORT,lass mich mit dem mist in frieden,Person_3,M0_T1(3).txt,1
+HUMAN_0032,na gut nun doch nicht,ABORT,na gut nun doch nicht,Person_3,M0_T1(3).txt,1
+HUMAN_0033,nein also doch nicht,ABORT,nein also doch nicht,Person_3,M0_T1(3).txt,1
+HUMAN_0034,Nö,ABORT,nö,Person_2,M0_T1(2).txt,1
+HUMAN_0035,oder eher nicht,ABORT,oder eher nicht,Person_3,M0_T1(3).txt,1
+HUMAN_0036,raus aus diesem menü jetzt hier,ABORT,raus aus diesem menü jetzt hier,Person_3,M0_T1(3).txt,1
+HUMAN_0037,schließe dieses menü,ABORT,schließe dieses menü,Person_3,M0_T1(3).txt,1
+HUMAN_0038,Schluss aus,ABORT,schluss aus,Person_3,M0_T1(3).txt,1
+HUMAN_0039,sofort abbrechen das ganze,ABORT,sofort abbrechen das ganze,Person_3,M0_T1(3).txt,1
+HUMAN_0040,staub staub stopp,ABORT,staub staub stopp,Person_3,M0_T1(3).txt,1
+HUMAN_0041,Stopp du Arschgesicht,ABORT,stopp du arschgesicht,Person_3,M0_T1(3).txt,1
+HUMAN_0042,stoppen,ABORT,stoppen,Person_1,M0_T1.txt,1
+HUMAN_0043,Verdammt nochmal hör auf zu sprechen,ABORT,verdammt nochmal hör auf zu sprechen,Person_3,M0_T1(3).txt,1
+HUMAN_0044,anderer sprecher bitte,CHANGE_SPEAKER,anderer sprecher bitte,Person_1,M0_T1.txt,1
+HUMAN_0045,anderer stimme,CHANGE_SPEAKER,anderer stimme,Person_3,M0_T1(3).txt,1
+HUMAN_0046,das weibliche gespür für geschlecht soll bitte vorlesen statt dem männlichen,CHANGE_SPEAKER,das weibliche gespür für geschlecht soll bitte vorlesen statt dem männlichen,Person_3,M0_T1(3).txt,1
+HUMAN_0047,der jetzt lass mich mal nennt man sprechen dass er mir das vorliegt ist also ne quasi in der männliche stimme hätte ich gern,CHANGE_SPEAKER,der jetzt lass mich mal nennt man sprechen dass er mir das vorliegt ist also ne quasi in der männliche stimme hätte ich gern,Person_3,M0_T1(3).txt,1
+HUMAN_0048,ich möchte er eine weibliche stimme haben,CHANGE_SPEAKER,ich möchte er eine weibliche stimme haben,Person_3,M0_T1(3).txt,1
+HUMAN_0049,kann bitte eine frau die sprachausgabe übernehmen,CHANGE_SPEAKER,kann bitte eine frau die sprachausgabe übernehmen,Person_3,M0_T1(3).txt,1
+HUMAN_0050,männlicher sprecher,CHANGE_SPEAKER,männlicher sprecher,Person_1,M0_T1.txt,1
+HUMAN_0051,sicherlich kannst du auch die stimme ändern oder,CHANGE_SPEAKER,sicherlich kannst du auch die stimme ändern oder,Person_3,M0_T1(3).txt,1
+HUMAN_0052,sprecher auf männlich bitte,CHANGE_SPEAKER,sprecher auf männlich bitte,Person_1,M0_T1.txt,1
+HUMAN_0053,sprecher einstellen,CHANGE_SPEAKER,sprecher einstellen,Person_2,M0_T1(2).txt,1
+HUMAN_0054,sprecher wechseln,CHANGE_SPEAKER,sprecher wechseln,Person_1,M0_T1.txt,1
+HUMAN_0055,sprecher ändern,CHANGE_SPEAKER,sprecher ändern,Person_3,M0_T1(3).txt,1
+HUMAN_0056,Sprecherstimme,CHANGE_SPEAKER,sprecherstimme,Person_3,M0_T1(3).txt,1
+HUMAN_0057,stimme bitte weiblich,CHANGE_SPEAKER,stimme bitte weiblich,Person_1,M0_T1.txt,1
+HUMAN_0058,stimme wechseln,CHANGE_SPEAKER,stimme wechseln,Person_3,M0_T1(3).txt,1
+HUMAN_0059,Wähle eine Männerstimme aus,CHANGE_SPEAKER,wähle eine männerstimme aus,Person_3,M0_T1(3).txt,1
+HUMAN_0060,ändere Stimme,CHANGE_SPEAKER,ändere stimme,Person_1,M0_T1.txt,1
+HUMAN_0061,ausgabe geschwindigkeit,CHANGE_SPEECH_SPEED,ausgabe geschwindigkeit,Person_3,M0_T1(3).txt,1
+HUMAN_0062,Ausgabe schneller,CHANGE_SPEECH_SPEED,ausgabe schneller,Person_2,M0_T1(2).txt,1
+HUMAN_0063,bitte schneller reden,CHANGE_SPEECH_SPEED,bitte schneller reden,Person_1,M0_T1.txt,1
+HUMAN_0064,ein bisschen schneller reden bitte,CHANGE_SPEECH_SPEED,ein bisschen schneller reden bitte,Person_1,M0_T1.txt,1
+HUMAN_0065,etwas langsamer sprechen bitte,CHANGE_SPEECH_SPEED,etwas langsamer sprechen bitte,Person_1,M0_T1.txt,1
+HUMAN_0066,Ich verstehe dich nicht bitte nicht so schnell,CHANGE_SPEECH_SPEED,ich verstehe dich nicht bitte nicht so schnell,Person_2,M0_T1(2).txt,1
+HUMAN_0067,Langsamer die stimme aber sofort,CHANGE_SPEECH_SPEED,langsamer die stimme aber sofort,Person_3,M0_T1(3).txt,1
+HUMAN_0068,langsamer reden bitte,CHANGE_SPEECH_SPEED,langsamer reden bitte,Person_1,M0_T1.txt,1
+HUMAN_0069,Rede bitte langsamer,CHANGE_SPEECH_SPEED,rede bitte langsamer,Person_2,M0_T1(2).txt,1
+HUMAN_0070,Schneller die stimme aber sofort,CHANGE_SPEECH_SPEED,schneller die stimme aber sofort,Person_3,M0_T1(3).txt,1
+HUMAN_0071,sprach geschwindigkeit,CHANGE_SPEECH_SPEED,sprach geschwindigkeit,Person_2,M0_T1(2).txt,1
+HUMAN_0072,sprechgeschwindigkeit anpassen,CHANGE_SPEECH_SPEED,sprechgeschwindigkeit anpassen,Person_3,M0_T1(3).txt,1
+HUMAN_0073,sprechgeschwindigkeit ändern,CHANGE_SPEECH_SPEED,sprechgeschwindigkeit ändern,Person_3,M0_T1(3).txt,1
+HUMAN_0074,stimmen geschwindigkeit ändern,CHANGE_SPEECH_SPEED,stimmen geschwindigkeit ändern,Person_3,M0_T1(3).txt,1
+HUMAN_0075,viel schneller reden,CHANGE_SPEECH_SPEED,viel schneller reden,Person_1,M0_T1.txt,1
+HUMAN_0076,wendigkeit der sprachausgabe anpassen,CHANGE_SPEECH_SPEED,wendigkeit der sprachausgabe anpassen,Person_3,M0_T1(3).txt,1
+HUMAN_0077,zu langsam gesprochen,CHANGE_SPEECH_SPEED,zu langsam gesprochen,Person_1,M0_T1.txt,1
+HUMAN_0078,zu schnell,CHANGE_SPEECH_SPEED,zu schnell,Person_1,M0_T1.txt,1
+HUMAN_0079,Ändere die Sprachgeschwindigkeit,CHANGE_SPEECH_SPEED,ändere die sprachgeschwindigkeit,Person_3,M0_T1(3).txt,1
+HUMAN_0080,abstand messen,MEASURE_DISTANCE,abstand messen,Person_3,M0_T1(3).txt,1
+HUMAN_0081,Abstand von,MEASURE_DISTANCE,abstand von,Person_1,M0_T1.txt,1
+HUMAN_0082,Abstand zur Türe,MEASURE_DISTANCE,abstand zur türe,Person_3,M0_T1(3).txt,1
+HUMAN_0083,distanz ausgeben,MEASURE_DISTANCE,distanz ausgeben,Person_3,M0_T1(3).txt,1
+HUMAN_0084,distanz messen,MEASURE_DISTANCE,distanz messen,Person_3,M0_T1(3).txt,1
+HUMAN_0085,distanz zu,MEASURE_DISTANCE,distanz zu,Person_1,M0_T1.txt,1
+HUMAN_0086,Distanz zum Stuhl,MEASURE_DISTANCE,distanz zum stuhl,Person_3,M0_T1(3).txt,1
+HUMAN_0087,Distanzausgabe zu dem genannten Objekt bitte,MEASURE_DISTANCE,distanzausgabe zu dem genannten objekt bitte,Person_3,M0_T1(3).txt,1
+HUMAN_0088,entfernung von auto,MEASURE_DISTANCE,entfernung von auto,Person_1,M0_T1.txt,1
+HUMAN_0089,entferung zu objekt,MEASURE_DISTANCE,entferung zu objekt,Person_1,M0_T1.txt,1
+HUMAN_0090,ich habe dich nicht verstanden wie weit ist das auto nochmal entfernt,MEASURE_DISTANCE,ich habe dich nicht verstanden wie weit ist das auto nochmal entfernt,Person_2,M0_T1(2).txt,1
+HUMAN_0091,kannst du mir dir abstände dazu einmal ausgeben,MEASURE_DISTANCE,kannst du mir dir abstände dazu einmal ausgeben,Person_3,M0_T1(3).txt,1
+HUMAN_0092,messung der distanz,MEASURE_DISTANCE,messung der distanz,Person_1,M0_T1.txt,1
+HUMAN_0093,messung der entfernung,MEASURE_DISTANCE,messung der entfernung,Person_1,M0_T1.txt,1
+HUMAN_0094,Messung von Abstand,MEASURE_DISTANCE,messung von abstand,Person_1,M0_T1.txt,1
+HUMAN_0095,schätzt den abstand ein,MEASURE_DISTANCE,schätzt den abstand ein,Person_3,M0_T1(3).txt,1
+HUMAN_0096,sorry ich mein natürlich die distanz zum nächsten objekt,MEASURE_DISTANCE,sorry ich mein natürlich die distanz zum nächsten objekt,Person_3,M0_T1(3).txt,1
+HUMAN_0097,wie groß ist die entfernung zu,MEASURE_DISTANCE,wie groß ist die entfernung zu,Person_1,M0_T1.txt,1
+HUMAN_0098,wie weit es die parkuhr von mir entfernt,MEASURE_DISTANCE,wie weit es die parkuhr von mir entfernt,Person_3,M0_T1(3).txt,1
+HUMAN_0099,wie weit ist das auto entfernt,MEASURE_DISTANCE,wie weit ist das auto entfernt,Person_2,M0_T1(2).txt,1
+HUMAN_0100,wie weit ist das objekt entfernt,MEASURE_DISTANCE,wie weit ist das objekt entfernt,Person_1,M0_T1.txt,1
+HUMAN_0101,Wie weit ist der Stuhl entfernt?,MEASURE_DISTANCE,wie weit ist der stuhl entfernt,Person_3,M0_T1(3).txt,1
+HUMAN_0102,Wie weit ist die Person entfernt,MEASURE_DISTANCE,wie weit ist die person entfernt,Person_3,M0_T1(3).txt,1
+HUMAN_0103,Ganz schnell antworten bitte was ist da,OBJECT_DETECTION,ganz schnell antworten bitte was ist da,Person_3,M0_T1(3).txt,1
+HUMAN_0104,nenner objekte,OBJECT_DETECTION,nenner objekte,Person_3,M0_T1(3).txt,1
+HUMAN_0105,objekte erkennung,OBJECT_DETECTION,objekte erkennung,Person_3,M0_T1(3).txt,1
+HUMAN_0106,was ist das,OBJECT_DETECTION,was ist das,Person_1,M0_T1.txt,1
+HUMAN_0107,was ist das für ein gegenstand,OBJECT_DETECTION,was ist das für ein gegenstand,Person_1,M0_T1.txt,1
+HUMAN_0108,welches objekt vor mir,OBJECT_DETECTION,welches objekt vor mir,Person_1,M0_T1.txt,1
+HUMAN_0109,Wie ist die Lage vor mir,OBJECT_DETECTION,wie ist die lage vor mir,Person_3,M0_T1(3).txt,1
+HUMAN_0110,wo ist der nächste rucksack,OBJECT_DETECTION,wo ist der nächste rucksack,Person_3,M0_T1(3).txt,1
+HUMAN_0111,app anpassungen vornehmen,OPEN_SETTINGS,app anpassungen vornehmen,Person_3,M0_T1(3).txt,1
+HUMAN_0112,bist du eloquent genug um zu verstehen dass sich jetzt die einstellungen ändern möchte,OPEN_SETTINGS,bist du eloquent genug um zu verstehen dass sich jetzt die einstellungen ändern möchte,Person_3,M0_T1(3).txt,1
+HUMAN_0113,einstellungen anpassen,OPEN_SETTINGS,einstellungen anpassen,Person_3,M0_T1(3).txt,1
+HUMAN_0114,einstellungen aufrufen,OPEN_SETTINGS,einstellungen aufrufen,Person_1,M0_T1.txt,1
+HUMAN_0115,einstellungen öffnen,OPEN_SETTINGS,einstellungen öffnen,Person_3,M0_T1(3).txt,1
+HUMAN_0116,Ich möchte eine Einstellung ändern,OPEN_SETTINGS,ich möchte eine einstellung ändern,Person_1|Person_2,M0_T1(2).txt|M0_T1.txt,2
+HUMAN_0117,ich würde jetzt gerne noch etwas ändern und zwar an der app,OPEN_SETTINGS,ich würde jetzt gerne noch etwas ändern und zwar an der app,Person_3,M0_T1(3).txt,1
+HUMAN_0118,Kann ich die Optionen der App anpassen,OPEN_SETTINGS,kann ich die optionen der app anpassen,Person_3,M0_T1(3).txt,1
+HUMAN_0119,Kann ich die Optionen konfigurieren,OPEN_SETTINGS,kann ich die optionen konfigurieren,Person_3,M0_T1(3).txt,1
+HUMAN_0120,Kann ich eine Änderungen an den Einstellungen vornehmen?,OPEN_SETTINGS,kann ich eine änderungen an den einstellungen vornehmen,Person_3,M0_T1(3).txt,1
+HUMAN_0121,konfiguration einleiten,OPEN_SETTINGS,konfiguration einleiten,Person_3,M0_T1(3).txt,1
+HUMAN_0122,lassen mich die app konfigurieren,OPEN_SETTINGS,lassen mich die app konfigurieren,Person_3,M0_T1(3).txt,1
+HUMAN_0123,möchte etwas an den system anpassungen durchführen,OPEN_SETTINGS,möchte etwas an den system anpassungen durchführen,Person_3,M0_T1(3).txt,1
+HUMAN_0124,Optionen bitte,OPEN_SETTINGS,optionen bitte,Person_1,M0_T1.txt,1
+HUMAN_0125,Änderung an optionen vornehmen,OPEN_SETTINGS,änderung an optionen vornehmen,Person_1,M0_T1.txt,1
+HUMAN_0126,aha du scheinst es also doch verstanden zu haben,REDIRECT_TO_LLM,aha du scheinst es also doch verstanden zu haben,Person_3,M0_T1(3).txt,1
+HUMAN_0127,aha jetzt bemüht ich mal ich will dich nämlich nach allgemeinwissen frage erfragen,REDIRECT_TO_LLM,aha jetzt bemüht ich mal ich will dich nämlich nach allgemeinwissen frage erfragen,Person_3,M0_T1(3).txt,1
+HUMAN_0128,es ist ein test,REDIRECT_TO_LLM,es ist ein test,Person_1|Person_2|Person_3,M0_T1(2).txt|M0_T1(3).txt|M0_T1.txt,3
+HUMAN_0129,Gut gespielt,REDIRECT_TO_LLM,gut gespielt,Person_3,M0_T1(3).txt,2
+HUMAN_0130,hallo,REDIRECT_TO_LLM,hallo,Person_3,M0_T1(3).txt,1
+HUMAN_0131,Hallo wie geht es dir,REDIRECT_TO_LLM,hallo wie geht es dir,Person_3,M0_T1(3).txt,1
+HUMAN_0132,ich mich auch heute ist ein guter tag meinst du nicht auch,REDIRECT_TO_LLM,ich mich auch heute ist ein guter tag meinst du nicht auch,Person_3,M0_T1(3).txt,1
+HUMAN_0133,ich möchte eine frage an die ki stellen,REDIRECT_TO_LLM,ich möchte eine frage an die ki stellen,Person_3,M0_T1(3).txt,1
+HUMAN_0134,ist es so das du mich nicht wirklich verstehst wenn ich die Setze wie aktuell in dieser Art lang formuliere nur um dich zu verwirren,REDIRECT_TO_LLM,ist es so das du mich nicht wirklich verstehst wenn ich die setze wie aktuell in dieser art lang formuliere nur um dich zu verwirren,Person_3,M0_T1(3).txt,1
+HUMAN_0135,kannst du einen deutsch aufsatz für mich schreiben,REDIRECT_TO_LLM,kannst du einen deutsch aufsatz für mich schreiben,Person_3,M0_T1(3).txt,1
+HUMAN_0136,Knecht bist du,REDIRECT_TO_LLM,knecht bist du,Person_3,M0_T1(3).txt,1
+HUMAN_0137,könntest du eine todo liste für mich erstellen,REDIRECT_TO_LLM,könntest du eine todo liste für mich erstellen,Person_3,M0_T1(3).txt,1
+HUMAN_0138,Mal angenommen ich würde eine Ki trainieren denkst du das ist in irgendeiner weise sinnvoll oder eher weniger,REDIRECT_TO_LLM,mal angenommen ich würde eine ki trainieren denkst du das ist in irgendeiner weise sinnvoll oder eher weniger,Person_3,M0_T1(3).txt,1
+HUMAN_0139,mir ist langweilig,REDIRECT_TO_LLM,mir ist langweilig,Person_3,M0_T1(3).txt,1
+HUMAN_0140,schlage mir ein outfit für den heutigen tag vor,REDIRECT_TO_LLM,schlage mir ein outfit für den heutigen tag vor,Person_3,M0_T1(3).txt,1
+HUMAN_0141,Sind gute Trainingsdaten sehr relevant beim Trainieren einer KI,REDIRECT_TO_LLM,sind gute trainingsdaten sehr relevant beim trainieren einer ki,Person_3,M0_T1(3).txt,1
+HUMAN_0142,Wann beginnt die Sonnenfinsternis,REDIRECT_TO_LLM,wann beginnt die sonnenfinsternis,Person_3,M0_T1(3).txt,1
+HUMAN_0143,Wann sind Ferien?,REDIRECT_TO_LLM,wann sind ferien,Person_3,M0_T1(3).txt,1
+HUMAN_0144,Warum ist das so,REDIRECT_TO_LLM,warum ist das so,Person_1,M0_T1.txt,1
+HUMAN_0145,was gibt es heute schönes zu essen,REDIRECT_TO_LLM,was gibt es heute schönes zu essen,Person_2,M0_T1(2).txt,1
+HUMAN_0146,Was passiert wenn ich auf meine Tastatur haue,REDIRECT_TO_LLM,was passiert wenn ich auf meine tastatur haue,Person_3,M0_T1(3).txt,1
+HUMAN_0147,Welche Funktionen hat diese App,REDIRECT_TO_LLM,welche funktionen hat diese app,Person_3,M0_T1(3).txt,1
+HUMAN_0148,Wenn du mir jetzt bloß die Distanz nach Stuttgart nennen würdest wäre ich auch zufrieden,REDIRECT_TO_LLM,wenn du mir jetzt bloß die distanz nach stuttgart nennen würdest wäre ich auch zufrieden,Person_3,M0_T1(3).txt,1
+HUMAN_0149,Wer bist du,REDIRECT_TO_LLM,wer bist du,Person_1|Person_2|Person_3,M0_T1(2).txt|M0_T1(3).txt|M0_T1.txt,3
+HUMAN_0150,wer das liest ist dumm,REDIRECT_TO_LLM,wer das liest ist dumm,Person_2,M0_T1(2).txt,1
+HUMAN_0151,wie geht es dir,REDIRECT_TO_LLM,wie geht es dir,Person_3,M0_T1(3).txt,1
+HUMAN_0152,Wie groß ist der Eifelturm,REDIRECT_TO_LLM,wie groß ist der eifelturm,Person_2,M0_T1(2).txt,1
+HUMAN_0153,Wie hoch ist der Eifelturm,REDIRECT_TO_LLM,wie hoch ist der eifelturm,Person_1|Person_2,M0_T1(2).txt|M0_T1.txt,2
+HUMAN_0154,wie ist dein Tag,REDIRECT_TO_LLM,wie ist dein tag,Person_1|Person_2|Person_3,M0_T1(2).txt|M0_T1(3).txt|M0_T1.txt,3
+HUMAN_0155,Wie kann ich Schach spielen,REDIRECT_TO_LLM,wie kann ich schach spielen,Person_3,M0_T1(3).txt,1
+HUMAN_0156,Wie komme ich aus Russland nach Deutschland,REDIRECT_TO_LLM,wie komme ich aus russland nach deutschland,Person_3,M0_T1(3).txt,1
+HUMAN_0157,Wie lange darf ich in die Sonne schauen bevor ich blind werde,REDIRECT_TO_LLM,wie lange darf ich in die sonne schauen bevor ich blind werde,Person_3,M0_T1(3).txt,1
+HUMAN_0158,Wie lange dauert das,REDIRECT_TO_LLM,wie lange dauert das,Person_3,M0_T1(3).txt,1
+HUMAN_0159,wie lange kann ich mit dir sprechen bevor du mich anlügt,REDIRECT_TO_LLM,wie lange kann ich mit dir sprechen bevor du mich anlügt,Person_3,M0_T1(3).txt,1
+HUMAN_0160,Wie schnell geht mein Akku leer?,REDIRECT_TO_LLM,wie schnell geht mein akku leer,Person_3,M0_T1(3).txt,1
+HUMAN_0161,würdest du das dann verstehen,REDIRECT_TO_LLM,würdest du das dann verstehen,Person_3,M0_T1(3).txt,1
+HUMAN_0162,kannst du die signal töne pro sekunde anpassen,SET_BPS,kannst du die signal töne pro sekunde anpassen,Person_3,M0_T1(3).txt,1
+HUMAN_0163,passe die rate der signale etwas an,SET_BPS,passe die rate der signale etwas an,Person_3,M0_T1(3).txt,1
+HUMAN_0164,Piepsen verlangsamen,SET_BPS,piepsen verlangsamen,Person_1,M0_T1.txt,1
+HUMAN_0165,Piepsen öfter machen,SET_BPS,piepsen öfter machen,Person_1,M0_T1.txt,1
+HUMAN_0166,signal hinweise für schneller,SET_BPS,signal hinweise für schneller,Person_3,M0_T1(3).txt,1
+HUMAN_0167,signal rate ändern,SET_BPS,signal rate ändern,Person_3,M0_T1(3).txt,1
+HUMAN_0168,signal töne geschwindigkeit ändern,SET_BPS,signal töne geschwindigkeit ändern,Person_3,M0_T1(3).txt,1
+HUMAN_0169,Weniger oft piepsen,SET_BPS,weniger oft piepsen,Person_1,M0_T1.txt,1
+HUMAN_0170,Bitte tieferen ton,SET_FREQUENCY,bitte tieferen ton,Person_1,M0_T1.txt,1
+HUMAN_0171,darauf frequenz,SET_FREQUENCY,darauf frequenz,Person_3,M0_T1(3).txt,1
+HUMAN_0172,frequenz einstellen,SET_FREQUENCY,frequenz einstellen,Person_2,M0_T1(2).txt,1
+HUMAN_0173,Frequenz ändern,SET_FREQUENCY,frequenz ändern,Person_1|Person_3,M0_T1(3).txt|M0_T1.txt,2
+HUMAN_0174,Ton ist zu hoch,SET_FREQUENCY,ton ist zu hoch,Person_1,M0_T1.txt,1
+HUMAN_0175,Ton muss höher sein,SET_FREQUENCY,ton muss höher sein,Person_1,M0_T1.txt,1
+HUMAN_0176,ton viel tiefer machen,SET_FREQUENCY,ton viel tiefer machen,Person_1,M0_T1.txt,1
+HUMAN_0177,Wie langsam kann ich die Frequenz einstellen,SET_FREQUENCY,wie langsam kann ich die frequenz einstellen,Person_3,M0_T1(3).txt,1
+HUMAN_0178,alternativ kannst du mir den text direkt legt testen und vorlesen,TEXT_RECOGNITION,alternativ kannst du mir den text direkt legt testen und vorlesen,Person_3,M0_T1(3).txt,1
+HUMAN_0179,ausgeben des textes vor mir,TEXT_RECOGNITION,ausgeben des textes vor mir,Person_3,M0_T1(3).txt,1
+HUMAN_0180,da steht fachgruppe materialwissenschaft oder was liest du da,TEXT_RECOGNITION,da steht fachgruppe materialwissenschaft oder was liest du da,Person_3,M0_T1(3).txt,1
+HUMAN_0181,die da ein text vor mir geschrieben,TEXT_RECOGNITION,die da ein text vor mir geschrieben,Person_3,M0_T1(3).txt,1
+HUMAN_0182,einmal mehr hätte ich das gerne von dir gehört wie du es vorliest,TEXT_RECOGNITION,einmal mehr hätte ich das gerne von dir gehört wie du es vorliest,Person_3,M0_T1(3).txt,1
+HUMAN_0183,er kann man diesen text,TEXT_RECOGNITION,er kann man diesen text,Person_3,M0_T1(3).txt,1
+HUMAN_0184,erkenne den text,TEXT_RECOGNITION,erkenne den text,Person_3,M0_T1(3).txt,1
+HUMAN_0185,ich möchte das jetzt satz für satz hören und zwar genau das was eben form mia gewisser weise steht,TEXT_RECOGNITION,ich möchte das jetzt satz für satz hören und zwar genau das was eben form mia gewisser weise steht,Person_3,M0_T1(3).txt,1
+HUMAN_0186,Jetzt würde ich gerne mal die Texterkennung testen,TEXT_RECOGNITION,jetzt würde ich gerne mal die texterkennung testen,Person_3,M0_T1(3).txt,1
+HUMAN_0187,kannst du den satz vor mir in einzelne wörter zerlegen und mir diese dann einmal laut durch geben,TEXT_RECOGNITION,kannst du den satz vor mir in einzelne wörter zerlegen und mir diese dann einmal laut durch geben,Person_3,M0_T1(3).txt,1
+HUMAN_0188,kannst du den schriftzug form ja identifizieren,TEXT_RECOGNITION,kannst du den schriftzug form ja identifizieren,Person_3,M0_T1(3).txt,1
+HUMAN_0189,kannst du den text jetzt bitte am vorlesen,TEXT_RECOGNITION,kannst du den text jetzt bitte am vorlesen,Person_3,M0_T1(3).txt,1
+HUMAN_0190,lies mehr das vor,TEXT_RECOGNITION,lies mehr das vor,Person_3,M0_T1(3).txt,1
+HUMAN_0191,Lies mir so schnell wie möglich jetzt sofort am besten den Text vor bevor ich wütend werde,TEXT_RECOGNITION,lies mir so schnell wie möglich jetzt sofort am besten den text vor bevor ich wütend werde,Person_3,M0_T1(3).txt,1
+HUMAN_0192,lies vor,TEXT_RECOGNITION,lies vor,Person_1|Person_2,M0_T1(2).txt|M0_T1.txt,3
+HUMAN_0193,ließ vor,TEXT_RECOGNITION,ließ vor,Person_3,M0_T1(3).txt,1
+HUMAN_0194,text auswerten,TEXT_RECOGNITION,text auswerten,Person_3,M0_T1(3).txt,1
+HUMAN_0195,text der kennen,TEXT_RECOGNITION,text der kennen,Person_3,M0_T1(3).txt,1
+HUMAN_0196,text einmal vorlesen bitte,TEXT_RECOGNITION,text einmal vorlesen bitte,Person_3,M0_T1(3).txt,1
+HUMAN_0197,text kennung,TEXT_RECOGNITION,text kennung,Person_3,M0_T1(3).txt,1
+HUMAN_0198,text vorlesen,TEXT_RECOGNITION,text vorlesen,Person_1|Person_2,M0_T1(2).txt|M0_T1.txt,2
+HUMAN_0199,textausgabe,TEXT_RECOGNITION,textausgabe,Person_3,M0_T1(3).txt,1
+HUMAN_0200,textausgabe einleiten,TEXT_RECOGNITION,textausgabe einleiten,Person_3,M0_T1(3).txt,1
+HUMAN_0201,texter vorlesen,TEXT_RECOGNITION,texter vorlesen,Person_3,M0_T1(3).txt,1
+HUMAN_0202,unter mir befindet sich text richtig den einmal bitte ausgeben,TEXT_RECOGNITION,unter mir befindet sich text richtig den einmal bitte ausgeben,Person_3,M0_T1(3).txt,1
+HUMAN_0203,vorlesen,TEXT_RECOGNITION,vorlesen,Person_1|Person_2,M0_T1(2).txt|M0_T1.txt,2
+HUMAN_0204,warte was sorry ich meinte dass du mir den text natürlich einmal diktieren solltest,TEXT_RECOGNITION,warte was sorry ich meinte dass du mir den text natürlich einmal diktieren solltest,Person_3,M0_T1(3).txt,1
+HUMAN_0205,was geschrieben,TEXT_RECOGNITION,was geschrieben,Person_1,M0_T1.txt,1
+HUMAN_0206,was sagt text,TEXT_RECOGNITION,was sagt text,Person_1,M0_T1.txt,1
+HUMAN_0207,was steht da,TEXT_RECOGNITION,was steht da,Person_1|Person_2,M0_T1(2).txt|M0_T1.txt,3

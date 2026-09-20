@@ -1,0 +1,171 @@
+Lies bitte alles, was direkt vor mir geschrieben steht;TEXT_RECOGNITION
+Mach mir den sichtbaren Text hörbar, bitte;TEXT_RECOGNITION
+Kannst du die Zeilen auf dem Schild vortragen;TEXT_RECOGNITION
+Sprich den Text, der auf dem Zettel steht, einmal vor;TEXT_RECOGNITION
+Ich hätte gern den gesamten Wortlaut hier angesagt;TEXT_RECOGNITION
+Lies die Aufschrift auf der Packung vollständig vor;TEXT_RECOGNITION
+Sag mir laut, was auf diesem Display steht;TEXT_RECOGNITION
+Bitte den Text da vorne in Sprache umwandeln;TEXT_RECOGNITION
+Vorlesen, was auf dem Etikett notiert ist;TEXT_RECOGNITION
+Die Buchstabenfolge, die ich anschaue, bitte sprechen;TEXT_RECOGNITION
+Was genau ist auf der Karte zu lesen;TEXT_RECOGNITION
+Den Inhalt der Notiz bitte hörbar machen;TEXT_RECOGNITION
+Sag an, was im Absatz steht;TEXT_RECOGNITION
+Bitte die Beschriftung auf dem Karton laut wiedergeben;TEXT_RECOGNITION
+Lies den Satz auf der Tafel einmal vor;TEXT_RECOGNITION
+Welche Wörter sind auf dem Plakat zu erkennen;TEXT_RECOGNITION
+Ich brauche die Zeile auf dem Bildschirm vorgelesen;TEXT_RECOGNITION
+Könntest du die Überschrift hörbar wiedergeben;TEXT_RECOGNITION
+Sprich bitte die kleine Schrift unter dem Bild;TEXT_RECOGNITION
+Den Textblock da rechts einmal vollständig vortragen;TEXT_RECOGNITION
+Bitte den sichtbaren Absatz als Audio ausgeben;TEXT_RECOGNITION
+Was steht im Kleingedruckten auf der Quittung;TEXT_RECOGNITION
+Die Einträge auf der Liste bitte nacheinander sprechen;TEXT_RECOGNITION
+Lies mir den Inhalt des Hinweisschilds vor;TEXT_RECOGNITION
+Welche Aussage steht auf dem Hinweis;TEXT_RECOGNITION
+Kannst du die Notiz an der Tür laut wiedergeben;TEXT_RECOGNITION
+Bitte lies die Worte auf dem Umschlag vor;TEXT_RECOGNITION
+Sag mir den genauen Wortlaut der Überschrift;TEXT_RECOGNITION
+Die Textzeile auf dem Bon bitte vorlesen;TEXT_RECOGNITION
+Mach den Text auf dem Bildschirm hörbar;TEXT_RECOGNITION
+Den Abschnitt in der Mitte einmal deutlich sprechen;TEXT_RECOGNITION
+Wie lautet die Beschriftung auf der Flasche;TEXT_RECOGNITION
+Bitte lies das Etikett der Packung vollständig;TEXT_RECOGNITION
+Die zwei Sätze oben bitte ankündigen;TEXT_RECOGNITION
+Was ist hier schwarz auf weiß geschrieben;TEXT_RECOGNITION
+Den Text in der Ecke unten links vorlesen;TEXT_RECOGNITION
+Kannst du mir die Passage akustisch wiedergeben;TEXT_RECOGNITION
+Bitte alles, was auf dieser Seite steht, sprechen;TEXT_RECOGNITION
+Welche Zeilen sind auf dem Zettel notiert;TEXT_RECOGNITION
+Den Titel und den Untertitel jetzt vorlesen;TEXT_RECOGNITION
+Sprich die Aufschrift über dem Symbol;TEXT_RECOGNITION
+Ich will hören, was in der Notiz steht;TEXT_RECOGNITION
+Lies mir die Punkte der Liste nacheinander vor;TEXT_RECOGNITION
+Bitte die Textinformation im Bild hörbar machen;TEXT_RECOGNITION
+Sag die Zeile unter der Überschrift;TEXT_RECOGNITION
+Welche Wörter sind auf der Karte gedruckt;TEXT_RECOGNITION
+Den Kasten mit dem Hinweis vollständig vorlesen;TEXT_RECOGNITION
+Lies mir den Text links neben dem Logo vor;TEXT_RECOGNITION
+Der nächste Abschnitt bitte laut;TEXT_RECOGNITION
+Könntest du mir die Wörter auf dem Button sagen;TEXT_RECOGNITION
+Sprich den markierten Text bitte vor;TEXT_RECOGNITION
+Lies den Text neben dem Piktogramm klar und vollständig vor;TEXT_RECOGNITION
+Gib den sichtbaren Wortlaut dieses Abschnitts bitte wieder;TEXT_RECOGNITION
+Kannst du die Inhalte der Tafel der Reihe nach vortragen;TEXT_RECOGNITION
+Bitte mach den kompletten Absatz in der Mitte hörbar;TEXT_RECOGNITION
+Welche Begriffe sind auf diesem Etikett vermerkt;TEXT_RECOGNITION
+Lies die mehrzeilige Notiz am Rand für mich vor;TEXT_RECOGNITION
+Sag laut an, was auf dem Paketaufkleber steht;TEXT_RECOGNITION
+Bitte lies die Beschreibung direkt unter dem Bild;TEXT_RECOGNITION
+Die obere Zeile und die darunter bitte sprechen;TEXT_RECOGNITION
+Ich möchte den kompletten Textblock akustisch ausgegeben haben;TEXT_RECOGNITION
+Welche Gegenstände erkennst du aktuell im Sichtfeld;OBJECT_DETECTION
+Sag mir bitte, welche Objekte gerade vorliegen;OBJECT_DETECTION
+Zähl die sichtbaren Dinge in meiner Blickrichtung auf;OBJECT_DETECTION
+Gib eine Liste aller erkannten Objekte aus;OBJECT_DETECTION
+Welche Elemente versperren möglicherweise den Weg;OBJECT_DETECTION
+Wo befindet sich die Person;OBJECT_DETECTION
+Wo steht das Auto;OBJECT_DETECTION
+Zeig mir, wo das Fahrrad ist;OBJECT_DETECTION
+Ist ein Motorrad im Bild;OBJECT_DETECTION
+Siehst du ein Flugzeug;OBJECT_DETECTION
+Gibt es hier einen Bus;OBJECT_DETECTION
+Erkennst du einen Zug;OBJECT_DETECTION
+Wo ist der Lkw zu sehen;OBJECT_DETECTION
+Entdeckst du ein Boot;OBJECT_DETECTION
+Ist eine Ampel in der Nähe;OBJECT_DETECTION
+Finde bitte den Hydranten;OBJECT_DETECTION
+Wo steht das Stoppschild;OBJECT_DETECTION
+Erkennst du eine Parkuhr;OBJECT_DETECTION
+Ist dort eine Bank;OBJECT_DETECTION
+Gibt es einen Vogel im Bild;OBJECT_DETECTION
+Bitte sprich künftig ein bisschen flotter;CHANGE_SPEECH_SPEED
+Reduziere das Tempo der Sprachausgabe leicht;CHANGE_SPEECH_SPEED
+Setz die Sprachrate auf ein ruhiges Niveau;CHANGE_SPEECH_SPEED
+Erhöhe die Geschwindigkeit der Stimme moderat;CHANGE_SPEECH_SPEED
+Dreh das Sprechtempo eine Stufe herunter;CHANGE_SPEECH_SPEED
+Mach die Artikulation schneller, aber gut verständlich;CHANGE_SPEECH_SPEED
+Nimm bitte etwas Tempo aus der Stimme;CHANGE_SPEECH_SPEED
+Wechsel auf ein zügiges Sprechtempo;CHANGE_SPEECH_SPEED
+Stell die Ausgabe auf gemütlich ein;CHANGE_SPEECH_SPEED
+Geh mit der Sprechgeschwindigkeit leicht nach oben;CHANGE_SPEECH_SPEED
+Wechsel bitte auf eine weibliche Stimme;CHANGE_SPEAKER
+Stell die Sprecherstimme auf männlich um;CHANGE_SPEAKER
+Nimm eine hellere Stimmfarbe;CHANGE_SPEAKER
+Kling etwas dunkler und wärmer;CHANGE_SPEAKER
+Tausche die aktuelle Stimme gegen eine andere aus;CHANGE_SPEAKER
+Bitte Stimme sofort auf weiblich wechseln;CHANGE_SPEAKER
+Zur männlichen Stimme zurückkehren;CHANGE_SPEAKER
+Aktiviere eine neutral klingende Sprecherin;CHANGE_SPEAKER
+Gib der Stimme mehr Bass;CHANGE_SPEAKER
+Reduziere den Bass und klinge heller;CHANGE_SPEAKER
+Wechsel bitte auf eine weibliche Stimme;CHANGE_SPEAKER
+Stell die Sprecherstimme auf männlich um;CHANGE_SPEAKER
+Nimm eine hellere Stimmfarbe;CHANGE_SPEAKER
+Kling etwas dunkler und wärmer;CHANGE_SPEAKER
+Tausche die aktuelle Stimme gegen eine andere aus;CHANGE_SPEAKER
+Bitte Stimme sofort auf weiblich wechseln;CHANGE_SPEAKER
+Zur männlichen Stimme zurückkehren;CHANGE_SPEAKER
+Aktiviere eine neutral klingende Sprecherin;CHANGE_SPEAKER
+Gib der Stimme mehr Bass;CHANGE_SPEAKER
+Reduziere den Bass und klinge heller;CHANGE_SPEAKER
+Wie ist die Wetterlage heute in der Stadt;REDIRECT_TO_LLM
+Erklär mir in einfachen Worten Quantencomputer;REDIRECT_TO_LLM
+Hast du eine Rezeptidee für heute Abend;REDIRECT_TO_LLM
+Wer war Marie Curie und was hat sie entdeckt;REDIRECT_TO_LLM
+Warum ist der Himmel manchmal rosa;REDIRECT_TO_LLM
+Wie funktioniert Blockchain in zwei Sätzen;REDIRECT_TO_LLM
+Kannst du mir einen lustigen Witz erzählen;REDIRECT_TO_LLM
+Welche Programmiersprache eignet sich für Einsteiger;REDIRECT_TO_LLM
+Wie schnell ist das Licht im Vakuum;REDIRECT_TO_LLM
+Wann wurde Berlin gegründet;REDIRECT_TO_LLM
+Öffne bitte die App-Einstellungen;OPEN_SETTINGS
+Zeig mir die Optionen zum Anpassen;OPEN_SETTINGS
+Ich möchte in den Einstellungsbereich wechseln;OPEN_SETTINGS
+Starte das Konfigurationsmenü;OPEN_SETTINGS
+Bring mich zur Seite mit den Parametern;OPEN_SETTINGS
+Mach das Zahnrad-Menü auf;OPEN_SETTINGS
+Lass mich die Settings sehen;OPEN_SETTINGS
+Blende die Konfigurationsansicht ein;OPEN_SETTINGS
+Rufe die Seite für Anpassungen auf;OPEN_SETTINGS
+Bitte öffne den Bereich zum Einstellen;OPEN_SETTINGS
+Stopp, das möchte ich abbrechen;ABORT
+Bitte geh einen Schritt zurück;ABORT
+Den aktuellen Vorgang sofort beenden;ABORT
+Zur vorherigen Ansicht zurückkehren;ABORT
+Nicht fortfahren, bitte stoppen;ABORT
+Schließe das Menü und geh zurück;ABORT
+Reicht, bitte aufhören;ABORT
+Nein, das will ich doch nicht;ABORT
+Abbruch, zurück ins Hauptmenü;ABORT
+Mach das rückgängig und beende;ABORT
+Stell die Klickrate der Distanzhinweise höher ein;SET_BPS
+Reduziere die Schläge pro Sekunde ein wenig;SET_BPS
+Gib den Hinweistönen mehr Wiederholungen;SET_BPS
+Bitte die BPS moderat anheben;SET_BPS
+Mach die Schlagfrequenz spürbar langsamer;SET_BPS
+Klicktempo fein nach unten korrigieren;SET_BPS
+Klicktempo etwas beschleunigen;SET_BPS
+Auf eine dichtere Schlagfolge wechseln;SET_BPS
+Die Wiederholrate leicht verringern;SET_BPS
+BPS-Wert gezielt erhöhen;SET_BPS
+Bitte setz die Tonfrequenz der Distanztöne höher;SET_FREQUENCY
+Mach die Töne weniger schrill, senke die Frequenz;SET_FREQUENCY
+Ich hätte gern eine deutlich höhere Klanghöhe;SET_FREQUENCY
+Reduziere die Frequenz auf eine angenehm tiefe Lage;SET_FREQUENCY
+Pass die Signal-Frequenz fein an;SET_FREQUENCY
+Dreh die Tonlage ein Stück nach oben;SET_FREQUENCY
+Geh mit der Frequenz vorsichtig nach unten;SET_FREQUENCY
+Wähle eine mittlere Frequenzeinstellung;SET_FREQUENCY
+Stell den Ton heller ein;SET_FREQUENCY
+Kling bitte dunkler, Frequenz senken;SET_FREQUENCY
+Miss die Entfernung zum Auto direkt vor mir;MEASURE_DISTANCE
+Wie weit ist die Couch von mir weg;MEASURE_DISTANCE
+Ich brauche die Distanz bis zum Fernseher;MEASURE_DISTANCE
+Sag mir die Entfernung zu dem Stuhl da vorn;MEASURE_DISTANCE
+Bitte den Abstand bis zum Esstisch ermitteln;MEASURE_DISTANCE
+Wie weit ist die Tasse entfernt;MEASURE_DISTANCE
+Messe den Abstand zur Flasche neben dem Laptop;MEASURE_DISTANCE
+Ich will wissen, wie weit die Ampel weg ist;MEASURE_DISTANCE
+Bestimme die Distanz bis zur Katze;MEASURE_DISTANCE
+Wie weit ist der Kühlschrank aktuell;MEASURE_DISTANCE

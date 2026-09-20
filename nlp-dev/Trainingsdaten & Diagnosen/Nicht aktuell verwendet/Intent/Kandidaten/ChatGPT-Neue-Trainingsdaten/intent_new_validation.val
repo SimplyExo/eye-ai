@@ -1,0 +1,36 @@
+halt stopp;ABORT
+Nein;ABORT
+männliche Stimme;CHANGE_SPEAKER
+weibliche Stimme;CHANGE_SPEAKER
+sprich mal langsamer man versteht dich ja gar nicht;CHANGE_SPEECH_SPEED
+nicht so schnell sprechen;CHANGE_SPEECH_SPEED
+sprich mal normal schnell;CHANGE_SPEECH_SPEED
+wie weit ist das auto weg;MEASURE_DISTANCE
+wie weit;MEASURE_DISTANCE
+Entfernung;MEASURE_DISTANCE
+was ist das alles hier;OBJECT_DETECTION
+was steht hier im weg;OBJECT_DETECTION
+objekte;OBJECT_DETECTION
+einstellung ändern;OPEN_SETTINGS
+wie ändere ich die einstellungen;OPEN_SETTINGS
+ich hätte gerne ein eis;REDIRECT_TO_LLM
+entschuldigen sie könnten sie mir den weg zeigen;REDIRECT_TO_LLM
+wie komme ich hier über die straße;REDIRECT_TO_LLM
+wie ist das wetter gerade;REDIRECT_TO_LLM
+wann geht die sonne unter;REDIRECT_TO_LLM
+wird es heute regnen;REDIRECT_TO_LLM
+bps schneller;SET_BPS
+bps langsamer;SET_BPS
+frequenz höher;SET_FREQUENCY
+frequenz;SET_FREQUENCY
+mach das piepsen tiefer;SET_FREQUENCY
+Was steht da auf dem Mano;TEXT_RECOGNITION
+was steht da ich kann das nicht lesen;TEXT_RECOGNITION
+was steht denn da auf dem schild;TEXT_RECOGNITION
+ich habe dich nicht verstanden was steht nochmal auf der speisekarte;TEXT_RECOGNITION
+ändere geschwindigkeit;CHANGE_SPEECH_SPEED
+sprechgeschwindigkeit einstellen;CHANGE_SPEECH_SPEED
+text;TEXT_RECOGNITION
+ich weiß solangsam nicht mehr was ich sagen soll;REDIRECT_TO_LLM
+so das war es mit trainingsdaten;REDIRECT_TO_LLM
+bps;SET_BPS

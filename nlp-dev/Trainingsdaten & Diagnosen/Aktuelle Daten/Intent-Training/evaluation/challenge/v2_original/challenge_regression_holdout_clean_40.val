@@ -1,0 +1,40 @@
+Wo befinde ich mich;OBJECT_DETECTION
+Wer bin ich;REDIRECT_TO_LLM
+Wie viel Uhr ist es;REDIRECT_TO_LLM
+Wer ist im Bild;OBJECT_DETECTION
+Ist heute Montag;REDIRECT_TO_LLM
+Wer nervt dich;REDIRECT_TO_LLM
+Ich möchte die geschriebenen Wortlaute hören;TEXT_RECOGNITION
+Wo finde ich das Autohaus;OBJECT_DETECTION
+Was soll ich tun;REDIRECT_TO_LLM
+Wo bin ich gerade;OBJECT_DETECTION
+In was für einer Umgebung befinde ich mich;OBJECT_DETECTION
+Wer steht auf dem Foto;OBJECT_DETECTION
+Wer ist da vor mir;OBJECT_DETECTION
+Wo finde ich die Apotheke vor mir;OBJECT_DETECTION
+Wo finde ich die Einstellungen für die Stimme;OPEN_SETTINGS
+Wo finde ich den Ausgang;OBJECT_DETECTION
+Wo finde ich das Menü mit den App Einstellungen;OPEN_SETTINGS
+Was befindet sich vor mir;OBJECT_DETECTION
+Kann ich die Einstellungen anpassen;OPEN_SETTINGS
+Wie spät ist es gerade;REDIRECT_TO_LLM
+Welcher Tag ist heute;REDIRECT_TO_LLM
+Ist morgen Freitag;REDIRECT_TO_LLM
+Wie viel kostet das ungefähr;REDIRECT_TO_LLM
+Wie viel Abstand habe ich noch;MEASURE_DISTANCE
+Wie viele Menschen sind im Bild;OBJECT_DETECTION
+Bestimme bitte die Entfernung zwischen mir und der nächsten Wand;MEASURE_DISTANCE
+Welche Person sehe ich;OBJECT_DETECTION
+Welche Stimme höre ich gerade;CHANGE_SPEAKER
+Lies mir den Wortlaut vor;TEXT_RECOGNITION
+Ich will hören was dort geschrieben steht;TEXT_RECOGNITION
+Sag mir was auf dem Schild geschrieben ist;TEXT_RECOGNITION
+Sag mir wo das Schild steht;OBJECT_DETECTION
+Was steht auf dem Bildschirm;TEXT_RECOGNITION
+Wo steht der Bildschirm;OBJECT_DETECTION
+Was würdest du jetzt machen;REDIRECT_TO_LLM
+Was ist deine Meinung dazu;REDIRECT_TO_LLM
+Wie funktioniert das;REDIRECT_TO_LLM
+Wie weit ist es;MEASURE_DISTANCE
+Wo kann ich die Konfigurationen anpassen;OPEN_SETTINGS
+Wo kann ich das Auto sehen;OBJECT_DETECTION

@@ -1,0 +1,9 @@
+Strategy,Tokenizer,Dev_Macro_F1_pct,Challenge_Accuracy_pct
+M0,T1,95.39,89.0
+M0,T2,94.58,81.0
+M1,T1,95.39,87.5
+M1,T2,95.53,83.5
+M2,T1,96.22,88.0
+M2,T2,96.38,82.5
+M3,T1,95.39,87.5
+M3,T2,95.22,75.5

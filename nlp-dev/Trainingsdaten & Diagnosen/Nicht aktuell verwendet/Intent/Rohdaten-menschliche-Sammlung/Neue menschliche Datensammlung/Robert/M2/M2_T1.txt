@@ -1,0 +1,774 @@
+SATZ: wie ist dein Tag
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 94.44% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 5.04%
+
+SATZ: Wer bist du
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 99.80% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.13%
+
+SATZ: es ist ein test
+SOLL: REDIRECT_TO_LLM | IST: OBJECT_DETECTION | Konfidenz: 93.19% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 4.89%
+
+SATZ: immer wieder anpassen und die einstellungen sollen jetzt geändert werden
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 64.23% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 35.43%
+
+SATZ: Wie lange dauert das
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 99.51% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.28%
+
+SATZ: Magst du eher Erdbeeren oder Marmelade
+SOLL: REDIRECT_TO_LLM | IST: OPEN_SETTINGS | Konfidenz: 57.41% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 21.46%
+
+SATZ: Ist die Erde flach
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 82.42% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 8.00%
+
+SATZ: Wo gibt es den nächsten Supermarkt
+SOLL: REDIRECT_TO_LLM | IST: OBJECT_DETECTION | Konfidenz: 84.78% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 13.20%
+
+SATZ: Findest du ein Auto im Bild
+SOLL: OBJECT_DETECTION | IST: OBJECT_DETECTION | Konfidenz: 99.88% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.07%
+
+SATZ: Kannst du mein Zimmer sauber machen?
+SOLL: REDIRECT_TO_LLM | IST: TEXT_RECOGNITION | Konfidenz: 39.53% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 30.01%
+
+SATZ: Wie lange leben Schimpansen
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 99.86% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.09%
+
+SATZ: Kannst du die Frequenz ändern?
+SOLL: SET_FREQUENCY | IST: SET_FREQUENCY | Konfidenz: 98.78% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.52%
+
+SATZ: Was ist der Unterschied zwischen Frequenz und Amplitude?
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 99.17% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.47%
+
+SATZ: Wie schnell geht mein Akku leer?
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 91.67% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 2.59%
+
+SATZ: Wann sind Ferien?
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 95.07% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 3.22%
+
+SATZ: Nein kannst du mir den Text diktieren
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 99.33% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.49%
+
+SATZ: Hör auf mich zuzulabern
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.96% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.02%
+
+SATZ: Hör mir jetzt zu
+SOLL: REDIRECT_TO_LLM | IST: ABORT | Konfidenz: 99.83% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.08%
+
+SATZ: Hör mir jetzt sofort zu und sag mir wo das Auto ist
+SOLL: OBJECT_DETECTION | IST: OBJECT_DETECTION | Konfidenz: 97.30% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.19%
+
+SATZ: Hör auf mich und gib mir jetzt den Text vor mir aus
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 99.76% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.17%
+
+SATZ: Gut gespielt
+SOLL: REDIRECT_TO_LLM | IST: CHANGE_SPEAKER | Konfidenz: 43.03% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 34.96%
+
+SATZ: Gut gespielt
+SOLL: REDIRECT_TO_LLM | IST: CHANGE_SPEAKER | Konfidenz: 43.03% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 34.96%
+
+SATZ: Welche Funktionen hat diese App
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 95.66% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 2.73%
+
+SATZ: Wie kann ich die Einstellungen öffnen?
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 99.34% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.64%
+
+SATZ: Ist es möglich Anpassungen an den Konfigurationen vorzunehmen?
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 58.59% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 18.65%
+
+SATZ: Kann ich eine Änderungen an den Einstellungen vornehmen?
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 99.85% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.07%
+
+SATZ: Kann ich die Optionen konfigurieren
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 100.00% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.00%
+
+SATZ: Kann ich die Parameter dieser App ändern?
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 99.32% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.54%
+
+SATZ: Wie komme ich ins Setup der App
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 76.84% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 22.43%
+
+SATZ: Kannst du die Signaltöne anpassen
+SOLL: SET_FREQUENCY | IST: CHANGE_SPEAKER | Konfidenz: 84.30% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 8.85%
+
+SATZ: Lässt sich das Piepen irgendwie verändern
+SOLL: SET_FREQUENCY | IST: SET_FREQUENCY | Konfidenz: 78.58% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 20.80%
+
+SATZ: Lassen sich die Voreinstellungen personalisieren
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 63.15% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 16.82%
+
+SATZ: Kann ich die Optionen der App anpassen
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 100.00% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.00%
+
+SATZ: Kannst du das Piepen schneller machen
+SOLL: SET_BPS | IST: SET_BPS | Konfidenz: 98.67% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.29%
+
+SATZ: Lässt sich die Geschwindigkeit des Piepens erhöhen
+SOLL: SET_BPS | IST: CHANGE_SPEECH_SPEED | Konfidenz: 89.99% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 6.56%
+
+SATZ: Lässt sich die Geschwindigkeit der Signaltöne erhöhen
+SOLL: SET_BPS | IST: CHANGE_SPEECH_SPEED | Konfidenz: 59.43% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 36.85%
+
+SATZ: Wie langsam kann ich die Frequenz einstellen
+SOLL: SET_FREQUENCY | IST: SET_BPS | Konfidenz: 48.86% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 31.67%
+
+SATZ: Wer ist vor mir
+SOLL: OBJECT_DETECTION | IST: OBJECT_DETECTION | Konfidenz: 95.49% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 2.64%
+
+SATZ: Kannst du etwas sehen
+SOLL: OBJECT_DETECTION | IST: OBJECT_DETECTION | Konfidenz: 67.31% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 25.97%
+
+SATZ: Wie ist die Lage vor mir
+SOLL: OBJECT_DETECTION | IST: OBJECT_DETECTION | Konfidenz: 78.28% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 11.48%
+
+SATZ: Wie kann ich Schach spielen
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 77.14% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 17.41%
+
+SATZ: Wann beginnt die Sonnenfinsternis
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 97.08% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.43%
+
+SATZ: Wie lange darf ich in die Sonne schauen bevor ich blind werde
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 72.68% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 18.54%
+
+SATZ: Wie funktioniert die Texterkennung dieser App?
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 98.49% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.14%
+
+SATZ: Kannst du den Text erkennen
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 99.90% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.06%
+
+SATZ: Lies mir so schnell wie möglich jetzt sofort am besten den Text vor bevor ich wütend werde
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 84.16% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 13.94%
+
+SATZ: Verdammt nochmal ich brauch jetzt den Text vor mir
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 99.65% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.22%
+
+SATZ: Hör auf mit dem Mist
+SOLL: ABORT | IST: ABORT | Konfidenz: 98.61% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.96%
+
+SATZ: Kannst du mal damit aufhören
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.38% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.24%
+
+SATZ: Kannst du mal bitte den Mund halten
+SOLL: ABORT | IST: REDIRECT_TO_LLM | Konfidenz: 33.20% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 17.37%
+
+SATZ: Verdammt nochmal hör auf zu sprechen
+SOLL: ABORT | IST: ABORT | Konfidenz: 91.11% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 7.79%
+
+SATZ: Halt die Fresse
+SOLL: ABORT | IST: ABORT | Konfidenz: 97.17% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.12%
+
+SATZ: Wenn du jetzt nicht sofort damit aufhörst dann knallt es
+SOLL: ABORT | IST: ABORT | Konfidenz: 48.68% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 19.40%
+
+SATZ: Miss jetzt sofort die Distanz zum Elefanten vor mir
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 99.95% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.04%
+
+SATZ: Wenn du mir jetzt bloß die Distanz nach Stuttgart nennen würdest wäre ich auch zufrieden
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 97.76% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 2.23%
+
+SATZ: Wie komme ich aus Russland nach Deutschland
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 92.04% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 6.91%
+
+SATZ: Russland bis Deutschland Distanzmessung
+SOLL: REDIRECT_TO_LLM | IST: MEASURE_DISTANCE | Konfidenz: 91.19% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 8.19%
+
+SATZ: Distanzmessung bis zum Tisch vor mir bitte
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 99.99% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.01%
+
+SATZ: Messen der Distanz aus der Türkei ist erforderlich
+SOLL: REDIRECT_TO_LLM | IST: MEASURE_DISTANCE | Konfidenz: 99.29% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.41%
+
+SATZ: Sind gute Trainingsdaten sehr relevant beim Trainieren einer KI
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 98.63% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.49%
+
+SATZ: Stopp du Arschgesicht
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.98% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.01%
+
+SATZ: Kannst du mit dieser Aktion aufhören
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.77% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.17%
+
+SATZ: Beenden
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.71% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.19%
+
+SATZ: Ja weil du dumm bist und jetzt schluss damit
+SOLL: ABORT | IST: TEXT_RECOGNITION | Konfidenz: 48.04% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 33.80%
+
+SATZ: Schluss aus
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.49% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.20%
+
+SATZ: Ende jetzt
+SOLL: ABORT | IST: ABORT | Konfidenz: 52.80% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 28.61%
+
+SATZ: ändere die sprechergeschwindigkeit
+SOLL: CHANGE_SPEECH_SPEED | IST: CHANGE_SPEAKER | Konfidenz: 68.60% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 10.46%
+
+SATZ: Lass den Sprecher schneller erklingen
+SOLL: CHANGE_SPEECH_SPEED | IST: SET_BPS | Konfidenz: 60.56% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 30.55%
+
+SATZ: Erhöhe die Geschwindigkeit der Vorlesung
+SOLL: CHANGE_SPEECH_SPEED | IST: CHANGE_SPEECH_SPEED | Konfidenz: 83.39% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 12.39%
+
+SATZ: Langsamer sollst du es nicht vorlesen bitte schneller
+SOLL: CHANGE_SPEECH_SPEED | IST: CHANGE_SPEECH_SPEED | Konfidenz: 98.15% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.60%
+
+SATZ: Ach noch langsamer geht auch nicht mehr oder bitte mach das mal etwas zügiger
+SOLL: CHANGE_SPEECH_SPEED | IST: CHANGE_SPEECH_SPEED | Konfidenz: 99.81% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.14%
+
+SATZ: Kannst du die Wiederholungszahl der Distanzhinweistöne frequenter machen
+SOLL: SET_BPS | IST: ABORT | Konfidenz: 34.97% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 33.71%
+
+SATZ: Ich möchte die Höhe der töne anpassen und zwar jetzt sofort verdammt nochmal
+SOLL: SET_FREQUENCY | IST: SET_BPS | Konfidenz: 91.48% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 7.76%
+
+SATZ: Was passiert wenn ich auf meine Tastatur haue
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 98.70% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.43%
+
+SATZ: Hau ab und lass mich in Ruhe
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.61% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.18%
+
+SATZ: wie kannst du nicht begreifen dass ich einfach die tunhöhe ändern will
+SOLL: SET_FREQUENCY | IST: CHANGE_SPEAKER | Konfidenz: 56.26% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 26.87%
+
+SATZ: wieso begreifst du nicht dass es jetzt notwendig ist die höhe der töne anzupassen
+SOLL: SET_FREQUENCY | IST: SET_BPS | Konfidenz: 97.41% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.76%
+
+SATZ: langweile mich nicht und passe jetzt die stimme an
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 97.94% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.70%
+
+SATZ: ich brauche eine männliche aussprache
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 99.96% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.03%
+
+SATZ: aussprache des sprechers ändern
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 39.04% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 35.10%
+
+SATZ: Richtig schlecht was du da machst niemals wieder sowas machen
+SOLL: ABORT | IST: TEXT_RECOGNITION | Konfidenz: 79.04% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 20.12%
+
+SATZ: Ich beschwer mich darüber und du machst einfach weiter kannst du es lassen
+SOLL: ABORT | IST: REDIRECT_TO_LLM | Konfidenz: 48.91% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 24.55%
+
+SATZ: Ich will nicht mehr
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.47% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.42%
+
+SATZ: Jetzt würde ich gerne mal die Texterkennung testen
+SOLL: TEXT_RECOGNITION | IST: MEASURE_DISTANCE | Konfidenz: 43.42% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 28.08%
+
+SATZ: Jetzt würde ich gerne mal die Objecterkennung testen
+SOLL: OBJECT_DETECTION | IST: CHANGE_SPEAKER | Konfidenz: 49.44% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 17.11%
+
+SATZ: Jetzt würde ich gerne mal die anderen Stimmen testen
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 99.01% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.72%
+
+SATZ: Jetzt würde ich gerne mal höheren Ausgabefrequenzen testen
+SOLL: SET_FREQUENCY | IST: SET_FREQUENCY | Konfidenz: 57.45% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 20.60%
+
+SATZ: Ich höre kaum etwas
+SOLL: SET_FREQUENCY | IST: CHANGE_SPEECH_SPEED | Konfidenz: 65.29% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 27.27%
+
+SATZ: Das ist mir viel zu langsam
+SOLL: CHANGE_SPEECH_SPEED | IST: CHANGE_SPEECH_SPEED | Konfidenz: 97.59% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 2.28%
+
+SATZ: An der Stelle hätte ich gerne mal den Text vor mir von dir ausgesprochen
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 98.01% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.82%
+
+SATZ: So jetzt aber mal bitte ist etwas vor mir oder nicht
+SOLL: OBJECT_DETECTION | IST: OBJECT_DETECTION | Konfidenz: 88.01% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 4.11%
+
+SATZ: Ganz schnell antworten bitte was ist da
+SOLL: OBJECT_DETECTION | IST: OBJECT_DETECTION | Konfidenz: 87.44% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 11.96%
+
+SATZ: Jetzt bitte stell dich nicht so an und hör mir kurz zu du sollst nämlich jetzt die Aufgabe der Texterkennung anwenden
+SOLL: TEXT_RECOGNITION | IST: ABORT | Konfidenz: 56.12% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 34.35%
+
+SATZ: Mal angenommen ich würde eine Ki trainieren denkst du das ist in irgendeiner weise sinnvoll oder eher weniger
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 88.95% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 8.74%
+
+SATZ: kannst du mir mal bitte den extrem langen vor mir befindlichen text langsam genug diktieren sodass auch ein nicht so schneller Mensch mitkommen würde
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 60.63% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 34.73%
+
+SATZ: ist es so das du mich nicht wirklich verstehst wenn ich die Setze wie aktuell in dieser Art lang formuliere nur um dich zu verwirren
+SOLL: REDIRECT_TO_LLM | IST: MEASURE_DISTANCE | Konfidenz: 73.23% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 21.85%
+
+SATZ: aha du scheinst es also doch verstanden zu haben
+SOLL: REDIRECT_TO_LLM | IST: ABORT | Konfidenz: 90.95% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 5.28%
+
+SATZ: na gut nun doch nicht
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.98% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.02%
+
+SATZ: selbst wenn ich jetzt gerne die optionen konfigurieren würde würdest du das bestimmt nicht verstehen
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 99.83% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.12%
+
+SATZ: und was wenn ich jetzt eine bestimmte Lautstärke im Moment erhöhen wollen würde würdest du das dann übernehmen
+SOLL: SET_FREQUENCY | IST: REDIRECT_TO_LLM | Konfidenz: 89.27% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 7.47%
+
+SATZ: nein also doch nicht
+SOLL: ABORT | IST: ABORT | Konfidenz: 100.00% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.00%
+
+SATZ: bist du eloquent genug um zu verstehen dass sich jetzt die einstellungen ändern möchte
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 94.33% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 4.52%
+
+SATZ: und verstehst du es auch logisch wenn ich die signal ausgabe erhöhen will also die geschwindigkeit mit der es geschieht
+SOLL: SET_BPS | IST: SET_FREQUENCY | Konfidenz: 79.36% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 9.86%
+
+SATZ: und was wenn ich statt dessen er die lautstärke der signal ausgabe töne doch etwas ab ändern möchte und du es aber nicht sofort nachvollziehen würdest würdest du es dann trotzdem tun
+SOLL: SET_FREQUENCY | IST: TEXT_RECOGNITION | Konfidenz: 59.40% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 22.35%
+
+SATZ: naja dem scheint jetzt nicht unbedingt zu zu sein könntest du das bitte dann lassen
+SOLL: ABORT | IST: CHANGE_SPEECH_SPEED | Konfidenz: 90.34% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 3.87%
+
+SATZ: und was wenn ich dich jetzt willkürlich dazu auffordern würde irgendwelche distanzen in diesem raum zu einem bestimmten objekt zu bestimmen
+SOLL: MEASURE_DISTANCE | IST: REDIRECT_TO_LLM | Konfidenz: 64.64% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 35.07%
+
+SATZ: würdest du das dann verstehen
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 83.89% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 13.01%
+
+SATZ: oder eher nicht
+SOLL: ABORT | IST: ABORT | Konfidenz: 89.12% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 6.94%
+
+SATZ: verwende mal bitte die einstellungen jetzt sofort ohne dass sich dich weiterhin dazu auffordern muss denn mir wäre das so nicht genehm
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 54.84% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 29.48%
+
+SATZ: kannst du die distanz zur buchhandlung straubing bei bestimmen weil ich sollte sie eigentlich vor mir sehen
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 99.72% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.24%
+
+SATZ: wahrhaft da bist du also doch ganz schön intelligent unterwegs jetzt solltest du mal bitte erklären wie weit der bildschirm von mir entfernt ist das wäre ganz nett
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 88.69% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 11.28%
+
+SATZ: jetzt sofort einmal die distanz zum handy auswerten
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 99.97% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.03%
+
+SATZ: aha jetzt bemüht ich mal ich will dich nämlich nach allgemeinwissen frage erfragen
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 83.29% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 12.80%
+
+SATZ: könntest du eine todo liste für mich erstellen
+SOLL: REDIRECT_TO_LLM | IST: OBJECT_DETECTION | Konfidenz: 66.98% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 13.11%
+
+SATZ: kannst du einen deutsch aufsatz für mich schreiben
+SOLL: REDIRECT_TO_LLM | IST: OPEN_SETTINGS | Konfidenz: 38.35% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 29.41%
+
+SATZ: wie weit es die parkuhr von mir entfernt
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 99.09% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.89%
+
+SATZ: wo ist der nächste rucksack
+SOLL: OBJECT_DETECTION | IST: OBJECT_DETECTION | Konfidenz: 99.20% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.75%
+
+SATZ: alternativ kannst du mir den text direkt legt testen und vorlesen
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 99.77% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.16%
+
+SATZ: kannst du mir das einmal wort für wort diktieren bitte
+SOLL: TEXT_RECOGNITION | IST: REDIRECT_TO_LLM | Konfidenz: 37.37% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 16.83%
+
+SATZ: ich möchte das jetzt satz für satz hören und zwar genau das was eben form mia gewisser weise steht
+SOLL: TEXT_RECOGNITION | IST: REDIRECT_TO_LLM | Konfidenz: 90.34% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 8.42%
+
+SATZ: warte was sorry ich meinte dass du mir den text natürlich einmal diktieren solltest
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 63.09% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 35.73%
+
+SATZ: sorry jetz hab ich mich komplett verdaddelt ich meinte natürlich einmal die objekt erkennung
+SOLL: OBJECT_DETECTION | IST: CHANGE_SPEAKER | Konfidenz: 49.18% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 17.90%
+
+SATZ: ach quatsch man ich wollte natürlich dir ära des dann es vorher sehen ich meinen dieses dann quasi distanzen
+SOLL: MEASURE_DISTANCE | IST: REDIRECT_TO_LLM | Konfidenz: 52.04% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 33.61%
+
+SATZ: sorry ich mein natürlich die distanz zum nächsten objekt
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 99.99% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.00%
+
+SATZ: kannst du mir dir abstände dazu einmal ausgeben
+SOLL: MEASURE_DISTANCE | IST: REDIRECT_TO_LLM | Konfidenz: 67.06% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 14.86%
+
+SATZ: jahr oder du erhöhst halt die wiederholungen der töne pro sekunde
+SOLL: SET_BPS | IST: SET_BPS | Konfidenz: 98.78% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.76%
+
+SATZ: alternativ kannst du natürlich auch die lautstärke der distanz hinweis schläger einmal anpassen
+SOLL: SET_FREQUENCY | IST: MEASURE_DISTANCE | Konfidenz: 64.92% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 22.92%
+
+SATZ: Öffne die Einstellungen
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 99.64% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.35%
+
+SATZ: Hallo wie geht es dir
+SOLL: REDIRECT_TO_LLM | IST: SET_FREQUENCY | Konfidenz: 47.92% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 45.41%
+
+SATZ: ich würde raus aus den einstellungen
+SOLL: ABORT | IST: ABORT | Konfidenz: 85.10% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 14.86%
+
+SATZ: lass mich jetzt hier raus
+SOLL: ABORT | IST: ABORT | Konfidenz: 85.52% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 12.32%
+
+SATZ: bnd die einstellungen
+SOLL: ABORT | IST: OPEN_SETTINGS | Konfidenz: 99.90% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.08%
+
+SATZ: b ende die einstellungen
+SOLL: ABORT | IST: OPEN_SETTINGS | Konfidenz: 99.60% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.38%
+
+SATZ: jetzt raus aus den einstellungen
+SOLL: ABORT | IST: ABORT | Konfidenz: 96.17% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 3.47%
+
+SATZ: ich muss jetzt endlich ich ja das ganze beenden
+SOLL: ABORT | IST: ABORT | Konfidenz: 79.41% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 10.07%
+
+SATZ: der lungen verlassen
+SOLL: ABORT | IST: ABORT | Konfidenz: 61.45% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 14.45%
+
+SATZ: einstellungen verlassen
+SOLL: ABORT | IST: OPEN_SETTINGS | Konfidenz: 99.86% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.09%
+
+SATZ: herr verlasse dieses menü
+SOLL: ABORT | IST: OPEN_SETTINGS | Konfidenz: 92.51% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 6.78%
+
+SATZ: raus aus diesem menü jetzt hier
+SOLL: ABORT | IST: ABORT | Konfidenz: 62.00% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 26.03%
+
+SATZ: ich will gar nichts davon anpassen
+SOLL: ABORT | IST: OPEN_SETTINGS | Konfidenz: 96.37% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 2.96%
+
+SATZ: aktuelle aktionen abbrechen
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.86% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.08%
+
+SATZ: hoch abbruch
+SOLL: ABORT | IST: SET_FREQUENCY | Konfidenz: 63.73% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 30.03%
+
+SATZ: sofort abbrechen das ganze
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.96% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.02%
+
+SATZ: signal hinweise für schneller
+SOLL: SET_BPS | IST: SET_BPS | Konfidenz: 60.87% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 24.94%
+
+SATZ: signal rate ändern
+SOLL: SET_BPS | IST: SET_FREQUENCY | Konfidenz: 73.61% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 18.89%
+
+SATZ: passe die rate der signale etwas an
+SOLL: SET_BPS | IST: SET_BPS | Konfidenz: 97.88% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.22%
+
+SATZ: tonhöhe höher anpassen
+SOLL: SET_FREQUENCY | IST: SET_FREQUENCY | Konfidenz: 99.93% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.03%
+
+SATZ: schließe dieses menü
+SOLL: ABORT | IST: OPEN_SETTINGS | Konfidenz: 60.38% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 37.75%
+
+SATZ: diese auswahl jetzt beenden
+SOLL: ABORT | IST: OPEN_SETTINGS | Konfidenz: 96.20% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.70%
+
+SATZ: lassen mich die app konfigurieren
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 99.96% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.02%
+
+SATZ: konfiguration einleiten
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 99.87% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.10%
+
+SATZ: ich würde jetzt gerne noch etwas ändern und zwar an der app
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 97.65% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 2.01%
+
+SATZ: darauf frequenz
+SOLL: SET_FREQUENCY | IST: SET_FREQUENCY | Konfidenz: 88.57% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 6.01%
+
+SATZ: das kannst du getrost lassen
+SOLL: ABORT | IST: SET_BPS | Konfidenz: 39.85% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 30.69%
+
+SATZ: Signalrate
+SOLL: SET_BPS | IST: ABORT | Konfidenz: 99.36% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.36%
+
+SATZ: app anpassungen vornehmen
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 99.16% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.70%
+
+SATZ: geschwindigkeit der signal töne verändern
+SOLL: SET_BPS | IST: SET_FREQUENCY | Konfidenz: 90.13% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 8.45%
+
+SATZ: wie lange kann ich mit dir sprechen bevor du mich anlügt
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 54.94% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 41.17%
+
+SATZ: ich mich auch heute ist ein guter tag meinst du nicht auch
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 95.20% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 4.44%
+
+SATZ: signal tonhöhe anpassen bitte also lauter mehr oder weniger
+SOLL: SET_FREQUENCY | IST: SET_BPS | Konfidenz: 85.13% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 11.27%
+
+SATZ: ich raste gleich aus hör auf damit
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.95% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.02%
+
+SATZ: wenn du jetzt nicht sofort die distanz zum nächsten objekt mist dann raste ich aus
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 99.99% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.01%
+
+SATZ: sicherlich kannst du auch die stimme ändern oder
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 97.03% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 2.69%
+
+SATZ: kannst du eine sanfter stimme für mich auswählen
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 97.80% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.84%
+
+SATZ: sprich bitte mit einer entspannten stimme
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 97.42% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.89%
+
+SATZ: passt die stimmen lage der signal töne an also du sollst die signal töne höher machen bitte also lauter
+SOLL: SET_FREQUENCY | IST: SET_FREQUENCY | Konfidenz: 98.04% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.30%
+
+SATZ: kannst du die signal töne pro sekunde anpassen
+SOLL: SET_BPS | IST: SET_BPS | Konfidenz: 98.71% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.23%
+
+SATZ: da steht fachgruppe materialwissenschaft oder was liest du da
+SOLL: TEXT_RECOGNITION | IST: OBJECT_DETECTION | Konfidenz: 57.36% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 41.85%
+
+SATZ: die da ein text vor mir geschrieben
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 99.98% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.02%
+
+SATZ: kannst du den schriftzug form ja identifizieren
+SOLL: TEXT_RECOGNITION | IST: OBJECT_DETECTION | Konfidenz: 87.25% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 6.30%
+
+SATZ: führer eine schriftzug identifikationen durch
+SOLL: TEXT_RECOGNITION | IST: CHANGE_SPEAKER | Konfidenz: 87.18% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 7.32%
+
+SATZ: ja lasters jetzt sofort
+SOLL: ABORT | IST: CHANGE_SPEAKER | Konfidenz: 25.09% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 14.35%
+
+SATZ: schlage mir ein outfit für den heutigen tag vor
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 56.81% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 21.74%
+
+SATZ: kannst du den satz vor mir in einzelne wörter zerlegen und mir diese dann einmal laut durch geben
+SOLL: TEXT_RECOGNITION | IST: REDIRECT_TO_LLM | Konfidenz: 73.66% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 13.80%
+
+SATZ: hinterfrage diese entscheidung nochmal und hör auf damit
+SOLL: ABORT | IST: SET_BPS | Konfidenz: 49.91% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 28.22%
+
+SATZ: das hast du jetzt aber falsch verstanden
+SOLL: ABORT | IST: REDIRECT_TO_LLM | Konfidenz: 85.85% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 6.41%
+
+SATZ: nähe das hast du jetzt falsch interpretiert tierart
+SOLL: ABORT | IST: REDIRECT_TO_LLM | Konfidenz: 65.64% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 17.96%
+
+SATZ: im lage ändern stimmlage
+SOLL: CHANGE_SPEAKER | IST: OPEN_SETTINGS | Konfidenz: 94.63% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 2.81%
+
+SATZ: stimmen geschwindigkeit ändern
+SOLL: CHANGE_SPEECH_SPEED | IST: ABORT | Konfidenz: 68.45% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 27.58%
+
+SATZ: wendigkeit der sprachausgabe anpassen
+SOLL: CHANGE_SPEECH_SPEED | IST: SET_FREQUENCY | Konfidenz: 50.16% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 30.08%
+
+SATZ: das für eine ab version
+SOLL: REDIRECT_TO_LLM | IST: OPEN_SETTINGS | Konfidenz: 92.87% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 3.63%
+
+SATZ: Hör auf mir auf den Sack zu gehen und lass es jetzt endlich bleiben
+SOLL: ABORT | IST: ABORT | Konfidenz: 96.35% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.70%
+
+SATZ: Lass mich mit dem Mist in Frieden
+SOLL: ABORT | IST: ABORT | Konfidenz: 94.06% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 3.84%
+
+SATZ: ich möchte die männliche stimme in den einstellungen auswählen
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 80.58% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 19.41%
+
+SATZ: ich möchte er eine weibliche stimme haben
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 99.90% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.06%
+
+SATZ: kann bitte einen man die sprachausgabe übernehmen
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEECH_SPEED | Konfidenz: 67.84% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 23.04%
+
+SATZ: kann bitte eine frau die sprachausgabe übernehmen
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 83.38% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 12.77%
+
+SATZ: das weibliche gespür für geschlecht soll bitte vorlesen statt dem männlichen
+SOLL: CHANGE_SPEAKER | IST: REDIRECT_TO_LLM | Konfidenz: 41.81% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 33.34%
+
+SATZ: möchte etwas an den system anpassungen durchführen
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 78.92% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 11.67%
+
+SATZ: der jetzt lass mich mal nennt man sprechen dass er mir das vorliegt ist also ne quasi in der männliche stimme hätte ich gern
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 96.39% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.84%
+
+SATZ: lies mehr das vor
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 97.36% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.91%
+
+SATZ: einmal mehr hätte ich das gerne von dir gehört wie du es vorliest
+SOLL: TEXT_RECOGNITION | IST: SET_BPS | Konfidenz: 62.95% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 14.85%
+
+SATZ: kannst du den text jetzt bitte am vorlesen
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 99.35% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.60%
+
+SATZ: text kennung
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 98.64% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.16%
+
+SATZ: objekte erkennung
+SOLL: OBJECT_DETECTION | IST: OBJECT_DETECTION | Konfidenz: 92.58% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 5.44%
+
+SATZ: stimme wechseln
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 95.89% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 2.99%
+
+SATZ: sprechgeschwindigkeit anpassen
+SOLL: CHANGE_SPEECH_SPEED | IST: ABORT | Konfidenz: 66.39% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 24.69%
+
+SATZ: objekte im raum erkennen
+SOLL: OBJECT_DETECTION | IST: OBJECT_DETECTION | Konfidenz: 99.82% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.16%
+
+SATZ: texter vorlesen
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 93.84% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 3.95%
+
+SATZ: text der kennen
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 97.76% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.73%
+
+SATZ: sprechgeschwindigkeit ändern
+SOLL: CHANGE_SPEECH_SPEED | IST: ABORT | Konfidenz: 66.95% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 17.71%
+
+SATZ: ich möchte eine frage an die ki stellen
+SOLL: REDIRECT_TO_LLM | IST: CHANGE_SPEAKER | Konfidenz: 60.44% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 34.07%
+
+SATZ: einstellungen öffnen
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 99.98% | nächst wahrscheinlichste Kategorie: MEASURE_DISTANCE | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.01%
+
+SATZ: frequenz ändern
+SOLL: SET_FREQUENCY | IST: SET_FREQUENCY | Konfidenz: 90.53% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 5.94%
+
+SATZ: signal töne geschwindigkeit ändern
+SOLL: SET_BPS | IST: SET_FREQUENCY | Konfidenz: 55.15% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 38.26%
+
+SATZ: distanz ausgeben
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 98.62% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.65%
+
+SATZ: distanz messen
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 99.98% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.01%
+
+SATZ: abstand messen
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 99.95% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.04%
+
+SATZ: schätzt den abstand ein
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 93.33% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 5.95%
+
+SATZ: bricht die aktionen ab
+SOLL: ABORT | IST: OPEN_SETTINGS | Konfidenz: 49.81% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 26.53%
+
+SATZ: text auswerten
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 99.14% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.55%
+
+SATZ: er kann man diesen text
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 49.66% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 20.70%
+
+SATZ: öffne die einstellungen
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 99.64% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.35%
+
+SATZ: einstellungen anpassen
+SOLL: OPEN_SETTINGS | IST: OPEN_SETTINGS | Konfidenz: 99.89% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.08%
+
+SATZ: staub staub stopp
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.99% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.01%
+
+SATZ: aufhören
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.60% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.20%
+
+SATZ: nein
+SOLL: ABORT | IST: ABORT | Konfidenz: 98.29% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.64%
+
+SATZ: hallo
+SOLL: REDIRECT_TO_LLM | IST: ABORT | Konfidenz: 58.89% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 20.36%
+
+SATZ: sprecher ändern
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 92.61% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 7.06%
+
+SATZ: signal ton geschwindigkeit ändern
+SOLL: CHANGE_SPEECH_SPEED | IST: SET_FREQUENCY | Konfidenz: 99.30% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.31%
+
+SATZ: signal thron lautstärke ändern
+SOLL: SET_FREQUENCY | IST: SET_FREQUENCY | Konfidenz: 87.32% | nächst wahrscheinlichste Kategorie: CHANGE_SPEAKER | Konfidenz der nächst wahrscheinlichsten Kategorie: 9.48%
+
+SATZ: wie geht es dir
+SOLL: REDIRECT_TO_LLM | IST: SET_FREQUENCY | Konfidenz: 66.15% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 27.70%
+
+SATZ: Signalrate
+SOLL: SET_BPS | IST: ABORT | Konfidenz: 99.36% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.36%
+
+SATZ: Sprecherstimme
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 80.37% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 15.05%
+
+SATZ: Sprecherstimmengeschwindigkeit
+SOLL: CHANGE_SPEECH_SPEED | IST: ABORT | Konfidenz: 58.89% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 20.36%
+
+SATZ: Sprachausgabengeschwindigkeit
+SOLL: CHANGE_SPEECH_SPEED | IST: ABORT | Konfidenz: 58.89% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 20.36%
+
+SATZ: ausgabe geschwindigkeit
+SOLL: CHANGE_SPEECH_SPEED | IST: CHANGE_SPEECH_SPEED | Konfidenz: 94.26% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 4.36%
+
+SATZ: Sprachausgabengeschwindigkeit
+SOLL: TEXT_RECOGNITION | IST: ABORT | Konfidenz: 58.89% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 20.36%
+
+SATZ: ließ vor
+SOLL: TEXT_RECOGNITION | IST: OBJECT_DETECTION | Konfidenz: 45.15% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 34.49%
+
+SATZ: nenner objekte
+SOLL: OBJECT_DETECTION | IST: OBJECT_DETECTION | Konfidenz: 97.66% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.56%
+
+SATZ: anderer stimme
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 99.05% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.81%
+
+SATZ: mir ist langweilig
+SOLL: REDIRECT_TO_LLM | IST: OBJECT_DETECTION | Konfidenz: 75.46% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 14.37%
+
+SATZ: Wähle eine Männerstimme aus
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 99.83% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.15%
+
+SATZ: Wähle mir eine andere Stimme aus
+SOLL: CHANGE_SPEAKER | IST: CHANGE_SPEAKER | Konfidenz: 99.98% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.01%
+
+SATZ: Distanzausgabe zu dem genannten Objekt bitte
+SOLL: MEASURE_DISTANCE | IST: ABORT | Konfidenz: 76.95% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 12.06%
+
+SATZ: Distanz zum Stuhl
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 100.00% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.00%
+
+SATZ: Abstand zur Türe
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 98.24% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.59%
+
+SATZ: Ändere die Sprachgeschwindigkeit
+SOLL: CHANGE_SPEECH_SPEED | IST: CHANGE_SPEECH_SPEED | Konfidenz: 85.61% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 12.72%
+
+SATZ: Abbruch einleiten
+SOLL: ABORT | IST: ABORT | Konfidenz: 35.45% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 21.93%
+
+SATZ: he stopp mal
+SOLL: ABORT | IST: ABORT | Konfidenz: 99.99% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.01%
+
+SATZ: erkenne den text
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 98.83% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.79%
+
+SATZ: text einmal vorlesen bitte
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 99.85% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.10%
+
+SATZ: textausgabe
+SOLL: TEXT_RECOGNITION | IST: ABORT | Konfidenz: 58.89% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 20.36%
+
+SATZ: ausgeben des textes vor mir
+SOLL: TEXT_RECOGNITION | IST: OBJECT_DETECTION | Konfidenz: 96.13% | nächst wahrscheinlichste Kategorie: TEXT_RECOGNITION | Konfidenz der nächst wahrscheinlichsten Kategorie: 3.04%
+
+SATZ: rechts von mir den text diktieren
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 98.51% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.06%
+
+SATZ: unter mir befindet sich text richtig den einmal bitte ausgeben
+SOLL: TEXT_RECOGNITION | IST: TEXT_RECOGNITION | Konfidenz: 90.16% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 6.69%
+
+SATZ: textausgabe einleiten
+SOLL: TEXT_RECOGNITION | IST: ABORT | Konfidenz: 35.45% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 21.93%
+
+SATZ: Regelmäßigkeit der Distanzhinweisschläge anpassen
+SOLL: SET_BPS | IST: CHANGE_SPEAKER | Konfidenz: 45.77% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 30.09%
+
+SATZ: Öfter die Töne pro Sekunde ausgeben bitte
+SOLL: SET_BPS | IST: SET_BPS | Konfidenz: 99.89% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.06%
+
+SATZ: Höhere Tonausgabe
+SOLL: SET_FREQUENCY | IST: SET_FREQUENCY | Konfidenz: 47.33% | nächst wahrscheinlichste Kategorie: ABORT | Konfidenz der nächst wahrscheinlichsten Kategorie: 41.26%
+
+SATZ: Wie weit ist die Person entfernt
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 99.97% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.02%
+
+SATZ: Knecht bist du
+SOLL: REDIRECT_TO_LLM | IST: REDIRECT_TO_LLM | Konfidenz: 96.48% | nächst wahrscheinlichste Kategorie: OBJECT_DETECTION | Konfidenz der nächst wahrscheinlichsten Kategorie: 1.56%
+
+SATZ: Forntew
+SOLL: REDIRECT_TO_LLM | IST: ABORT | Konfidenz: 58.89% | nächst wahrscheinlichste Kategorie: OPEN_SETTINGS | Konfidenz der nächst wahrscheinlichsten Kategorie: 20.36%
+
+SATZ: Mache die verdammte stimme schneller
+SOLL: CHANGE_SPEECH_SPEED | IST: CHANGE_SPEECH_SPEED | Konfidenz: 86.78% | nächst wahrscheinlichste Kategorie: SET_BPS | Konfidenz der nächst wahrscheinlichsten Kategorie: 12.20%
+
+SATZ: Schneller die stimme aber sofort
+SOLL: CHANGE_SPEECH_SPEED | IST: CHANGE_SPEAKER | Konfidenz: 84.62% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 6.87%
+
+SATZ: Langsamer die stimme aber sofort
+SOLL: CHANGE_SPEECH_SPEED | IST: CHANGE_SPEAKER | Konfidenz: 66.87% | nächst wahrscheinlichste Kategorie: CHANGE_SPEECH_SPEED | Konfidenz der nächst wahrscheinlichsten Kategorie: 12.13%
+
+SATZ: mach hinne
+SOLL: REDIRECT_TO_LLM | IST: ABORT | Konfidenz: 74.45% | nächst wahrscheinlichste Kategorie: SET_FREQUENCY | Konfidenz der nächst wahrscheinlichsten Kategorie: 10.26%
+
+SATZ: Wie weit ist der Stuhl entfernt?
+SOLL: MEASURE_DISTANCE | IST: MEASURE_DISTANCE | Konfidenz: 99.97% | nächst wahrscheinlichste Kategorie: REDIRECT_TO_LLM | Konfidenz der nächst wahrscheinlichsten Kategorie: 0.02%
+

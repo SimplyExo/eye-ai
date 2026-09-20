@@ -1,0 +1,120 @@
+hör auf mich zu laban;ABORT
+kannst du mal bitte den mund halten;ABORT
+wenn du jetzt nicht sofort damit aufhörst dann knallt es;ABORT
+ja weil du bist und jetzt schluss damit;ABORT
+richtig schlecht was du da machst niemals wieder sowas machen;ABORT
+hör auf mir auf den sack zu gehen und lass es jetzt endlich bleiben;ABORT
+langweile mich nicht und passe jetzt die stimme an;CHANGE_SPEAKER
+ich brauche eine männliche aussprache;CHANGE_SPEAKER
+jetzt würde ich gerne mal die anderen stimmen testen;CHANGE_SPEAKER
+kannst du eine sanfter stimme für mich auswählen;CHANGE_SPEAKER
+ich möchte die männliche stimme in den einstellungen auswählen;CHANGE_SPEAKER
+wähle mir eine andere stimme aus;CHANGE_SPEAKER
+lass den sprecher schneller erklingen;CHANGE_SPEECH_SPEED
+der höhe die geschwindigkeit der vorliegen;CHANGE_SPEECH_SPEED
+langsamer sollst du es nicht vorlesen bitte schneller;CHANGE_SPEECH_SPEED
+ach noch wand seiner geht auch nicht mehr oder bitte mach das mal etwas zügiger;CHANGE_SPEECH_SPEED
+das ist befiehlt langsam;CHANGE_SPEECH_SPEED
+mache die verdammte stimme schneller;CHANGE_SPEECH_SPEED
+bis jetzt sofort die distanz zum elefanten vor mir;MEASURE_DISTANCE
+distanz messung bis zum tisch vor mir bitte;MEASURE_DISTANCE
+und was finde ich dich jetzt willkürlich dazu auffordern würde irgendwelche distanzen in diesem raum zu einen bestimmten objekt zu bestimmen;MEASURE_DISTANCE
+wahrhafter bist du also doch ganz schön intelligent unterwegs jetzt solltest du mal bitte erklären wie weit der bildschirm vom meer entfernt ist das wäre ganz nett;MEASURE_DISTANCE
+jetzt sofort einmal die distanz zum hin die auswerten;MEASURE_DISTANCE
+wenn die jetzt nicht sofort die distanz zum nächsten objekt mister raste ich aus;MEASURE_DISTANCE
+findest du ein auto im bild;OBJECT_DETECTION
+hügel jetzt sofort zu und sag mir wo das auto ist;OBJECT_DETECTION
+der ist vor bier;OBJECT_DETECTION
+kannst du etwas sehen;OBJECT_DETECTION
+so jetzt aber mal bitte ist etwas von mir oder nicht;OBJECT_DETECTION
+objekte im raum erkennen;OBJECT_DETECTION
+wie kann ich dir einstellungen;OPEN_SETTINGS
+ist es möglich anpassungen an den konfigurationen vorzunehmen;OPEN_SETTINGS
+kann ich die parameter diese app abändern;OPEN_SETTINGS
+wie komme ich ins top der ab;OPEN_SETTINGS
+lassen sich die voreinstellungen personalisieren;OPEN_SETTINGS
+selbst wenn ich es gern die aktion konfigurieren wilde würdest du das bestimmt nicht verstehen;OPEN_SETTINGS
+magst du ihr erdbeeren oder marmelade;REDIRECT_TO_LLM
+ist die erde flach;REDIRECT_TO_LLM
+wo gibt es den nächsten supermarkt;REDIRECT_TO_LLM
+kannst du mein zimmer sauber machen;REDIRECT_TO_LLM
+wie lange leben schimpansen;REDIRECT_TO_LLM
+was ist der unterschied zwischen frequenz und amplitude;REDIRECT_TO_LLM
+kennst du das piepen schneller machen;SET_BPS
+lässt sich die geschwindigkeit des bieten erhöhen;SET_BPS
+lässt sich die geschwindigkeit der signal gewinnerinnen;SET_BPS
+kannst du die wiederholungsfalle distanz hin stunde frequent der machen;SET_BPS
+ja oder du erhöhst halt die wiederholungen der töne pro sekunde;SET_BPS
+öfter die töne pro sekunde ausgeben bitte;SET_BPS
+du kannst du die frequenz ändern;SET_FREQUENCY
+ich möchte die der töne anpassen und zwar jetzt sofort verdammt nochmal;SET_FREQUENCY
+wie kannst du nicht begreifen dass sich einfach die tonhöhe ändern will;SET_FREQUENCY
+wieso begreifst du nicht dass es jetzt notwendig ist die höhe der töne anzupassen;SET_FREQUENCY
+jetzt würde ich gerne mal hören ausgabe frequenzen testen;SET_FREQUENCY
+tonhöhe höher anpassen;SET_FREQUENCY
+nein kannst du mir den text diktieren;TEXT_RECOGNITION
+hör auf mich und gibt mir jetzt den text vor mir aus;TEXT_RECOGNITION
+kannst du den texte erkennen;TEXT_RECOGNITION
+verdammt nochmal ich brauch jetzt den text familie;TEXT_RECOGNITION
+an der stelle hätte ich gerne mal den text vor mir von der ausgesprochen;TEXT_RECOGNITION
+rechts von mir den text diktieren;TEXT_RECOGNITION
+und verstehst du es auch logisch wenn ich die signal ausgabe erhöhen will also die geschwindigkeit mit der es geschieht;SET_BPS
+signale rat;SET_BPS
+regelmäßigkeit der distanz hinweis schläge anpassen;SET_BPS
+geschwindigkeit der signal töne verändern;SET_BPS
+kannst du mir das einmal wort für wort diktieren bett;TEXT_RECOGNITION
+jetzt bitte stell dich nicht so an und hör mir kurz zu du sollst nämlich es die aufgabe der text erkennung anwendung;TEXT_RECOGNITION
+die war eine schätzung identifikationen sorgt;TEXT_RECOGNITION
+kannst du mir mal bitte die extrem langen vor mir befindlichen text langsam genug diktieren sodass auch ein nicht so schneller mensch bekommen würde;TEXT_RECOGNITION
+wer dem scheint jetzt nicht unbedingt zu zu sein könntest du das bitte dann lasse;ABORT
+das kannst du getrost lassen;ABORT
+diese auswahl jetzt beenden;ABORT
+russland bis deutschland distanz messer;REDIRECT_TO_LLM
+messende der distanz aus der türkei ist erforderlich;REDIRECT_TO_LLM
+wie funktioniert die texte kennung diese ab;REDIRECT_TO_LLM
+jetzt würde ich gerne mal die objekt erkennung testen;OBJECT_DETECTION
+so jetzt hab ich mich komplett verdaddelt ich meinte natürlich einmal die objekt erkennung;OBJECT_DETECTION
+ändere die sprecher geschwindigkeit;CHANGE_SPEECH_SPEED
+speicherst dem geschwindigkeit;CHANGE_SPEECH_SPEED
+verbinde ball bitte die einstellungen jetzt sofort ohne dass ich dich weiterhin dazu auffordern musste mir wäre das so nicht genug;OPEN_SETTINGS
+kann bitte einen man die sprachausgabe übernehmen;CHANGE_SPEAKER
+ich brauche diese aktion nicht mehr beende sie;ABORT
+okay das hier kannst du jetzt abbrechen;ABORT
+bitte hör mit genau dieser ausgabe auf;ABORT
+ende den aktuellen vorgang und nach nichts weiter;ABORT
+dieser stimme gefällt mir nicht nehmen die andere;CHANGE_SPEAKER
+kann die assistentin stattdessen mit der männerstimme sprechen;CHANGE_SPEAKER
+wechsle bitte die person die mich akustisch durch die ab für;CHANGE_SPEAKER
+ich möchte eine andere sprecherstimme hören sonst nichts ändern;CHANGE_SPEAKER
+du redest mir geradezu hastig geh mit dem tempo runter;CHANGE_SPEECH_SPEED
+ein vorlesen darfst du ruhig schneller werden;CHANGE_SPEECH_SPEED
+anderen nur das tempo deine sprache und sprich langsam;CHANGE_SPEECH_SPEED
+das sprechtempo soll höher sein die stimme aber gleich bleiben;CHANGE_SPEECH_SPEED
+sag mir wie viel platz noch zwischen wir und der tür vor vps ist;MEASURE_DISTANCE
+wie viele mieter sind es ungefähr bis zu dem auto direkt vor mir;MEASURE_DISTANCE
+ich stimme dir entfernung zu dem gegenstand der mir am nächsten ist;MEASURE_DISTANCE
+wie weit ist die person von mir von meiner position entfernt;MEASURE_DISTANCE
+kannst du mir sagen welche diene gerade meinen weg versperren;OBJECT_DETECTION
+welche objekte befinden sich unmittelbar vor meiner kamera;OBJECT_DETECTION
+ich dort vorne ein mensch oder steht da nur ein gegenstand;OBJECT_DETECTION
+mit einem email hier gegenstände der du direkt vor mir kennt;OBJECT_DETECTION
+ich möchte nicht direkt verändern öffne mir erst einmal die einstellungen;OPEN_SETTINGS
+bringt mich in das menü in den ab konfigurieren;OPEN_SETTINGS
+zeig mir bitte nur die verfügbaren einstellungen;OPEN_SETTINGS
+öffne die konfiguration ich entscheide danach was sich ändere;OPEN_SETTINGS
+die weit ist stuttgart von berlin entfernt;REDIRECT_TO_LLM
+warum klingt eine hohe frequenz heller als einen die;REDIRECT_TO_LLM
+wie schnell liest ein professioneller sprecher;REDIRECT_TO_LLM
+welche objekte untersucht die astronomie;REDIRECT_TO_LLM
+die tonne folge sollte ich da werden aber jeder tun gleich hoch bleiben;SET_BPS
+mach zwischen zwei hinweis stöhnen weniger pause;SET_BPS
+ich möchte pro sekunde mehr distanz signale hören;SET_BPS
+verlangsamen folge der pippin ohne ihre tonlage zu verändern;SET_BPS
+mach jeden einzelnen hinweisen tiefer nicht langsam;SET_FREQUENCY
+die feeds folge passt aber die töne selbst sollen höher klingen;SET_FREQUENCY
+ändere die tonlage signals noch unten;SET_FREQUENCY
+lass die wiederhol rate gleich und er hürden nur die tonhöhe;SET_FREQUENCY
+welche wörter stehen auf dem schild vor meiner kamera;TEXT_RECOGNITION
+dies wie meter lieber stets um auf den gegenstand v e v;TEXT_RECOGNITION
+was ist auf diesem dokument vw geschrieben;TEXT_RECOGNITION
+kinder die schrift auf der verpackung und ließ sie aus;TEXT_RECOGNITION

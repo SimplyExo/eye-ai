@@ -1,0 +1,20 @@
+und verstehst du es auch logisch wenn ich die signal ausgabe erhöhen will also die geschwindigkeit mit der es geschieht;SET_BPS
+Signalrate;SET_BPS
+Regelmäßigkeit der Distanzhinweisschläge anpassen;SET_BPS
+geschwindigkeit der signal töne verändern;SET_BPS
+kannst du mir das einmal wort für wort diktieren bitte;TEXT_RECOGNITION
+Jetzt bitte stell dich nicht so an und hör mir kurz zu du sollst nämlich jetzt die Aufgabe der Texterkennung anwenden;TEXT_RECOGNITION
+führer eine schriftzug identifikationen durch;TEXT_RECOGNITION
+kannst du mir mal bitte den extrem langen vor mir befindlichen text langsam genug diktieren sodass auch ein nicht so schneller Mensch mitkommen würde;TEXT_RECOGNITION
+naja dem scheint jetzt nicht unbedingt zu zu sein könntest du das bitte dann lassen;ABORT
+das kannst du getrost lassen;ABORT
+diese auswahl jetzt beenden;ABORT
+Russland bis Deutschland Distanzmessung;REDIRECT_TO_LLM
+Messen der Distanz aus der Türkei ist erforderlich;REDIRECT_TO_LLM
+Wie funktioniert die Texterkennung dieser App?;REDIRECT_TO_LLM
+Jetzt würde ich gerne mal die Objecterkennung testen;OBJECT_DETECTION
+sorry jetz hab ich mich komplett verdaddelt ich meinte natürlich einmal die objekt erkennung;OBJECT_DETECTION
+ändere die sprechergeschwindigkeit;CHANGE_SPEECH_SPEED
+Sprecherstimmengeschwindigkeit;CHANGE_SPEECH_SPEED
+verwende mal bitte die einstellungen jetzt sofort ohne dass sich dich weiterhin dazu auffordern muss denn mir wäre das so nicht genehm;OPEN_SETTINGS
+kann bitte einen man die sprachausgabe übernehmen;CHANGE_SPEAKER
