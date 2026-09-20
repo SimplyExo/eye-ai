@@ -64,7 +64,7 @@ object PendingExternalIntentCodec {
 object PendingExternalIntentPresentation {
 	fun confirmationQuestion(intent: Intent): String {
 		val action = actionWithoutSettingsExit(intent)
-		return "Sie befinden sich noch in den Einstellungen. " + "Möchten Sie die Einstellungen verlassen und $action?"
+		return "Sie befinden sich noch in den Einstellungen. Möchten Sie die Einstellungen verlassen und $action?"
 	}
 
 	fun pendingAction(intent: Intent): String = when (intent) {

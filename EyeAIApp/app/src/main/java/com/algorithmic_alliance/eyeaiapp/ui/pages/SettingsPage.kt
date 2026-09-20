@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI.pages
+package com.algorithmic_alliance.eyeaiapp.ui.pages
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -6,8 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
-import android.provider.Settings
-import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -91,11 +89,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
-import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
-import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
-import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
-import com.algorithmic_alliance.eyeaiapp.UI.hasPermission
+import com.algorithmic_alliance.eyeaiapp.ui.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumButton
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumIconButton
+import com.algorithmic_alliance.eyeaiapp.ui.UIEvent
+import com.algorithmic_alliance.eyeaiapp.ui.hasPermission
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
@@ -104,7 +102,6 @@ import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsMode
 import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import kotlin.math.roundToInt
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
-import androidx.core.net.toUri
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -72,18 +72,7 @@ class FrozenSettingsTokenizer(
 		const val NORMALIZATION_SPEC_VERSION = "eyeai_word_v1"
 		const val PAD = "[PAD]"
 		const val UNK = "[UNK]"
-		const val CTX_FREQ = "[CTX_FREQ]"
-		const val CTX_BPS = "[CTX_BPS]"
-		const val CTX_SPEED = "[CTX_SPEED]"
-		const val CTX_SPEAKER = "[CTX_SPEAKER]"
-		const val NUM = "<NUM>"
 		val SPECIAL_TOKENS = SettingsTokenizerTextContract.wordSpecialTokens
-
-		fun contextTokenForTarget(target: SettingTarget): String =
-			SettingsTokenizerTextContract.contextToken(target)
-
-		fun normalizeTokenizerText(text: String): String =
-			SettingsTokenizerTextContract.normalize(text)
 
 		fun fromJson(json: String): FrozenSettingsTokenizer {
 			val payload = JSONObject(json)

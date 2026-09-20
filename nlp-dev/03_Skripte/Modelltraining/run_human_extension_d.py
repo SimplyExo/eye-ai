@@ -412,13 +412,13 @@ def prepare_d_protocol() -> dict[str, Any]:
         f"| {name} | `{item['registry_key']}` | {item['loaded_count']} | `{item['sha256']}` |\n"
         for name, item in evaluation.items()
     )
-    protocol_text = f"""# HUMAN_EXTENSION_D_PROTOCOL — EyeAI Intent
+    protocol_text = f"""# HUMAN_EXTENSION_D_PROTOCOL - EyeAI Intent
 
 Dieses Protokoll wurde nach dem vollständigen Human-Gate und vor jedem D-Training erzeugt. A/B/C bleiben unverändert. Die Human-ASR-Quellen werden in D nicht verwendet.
 
 ## Kontrollierter Vergleich
 
-`D = A + Human Clean Extension` — nicht `C + Human`.
+`D = A + Human Clean Extension` - nicht `C + Human`.
 
 | Eigenschaft | A-Comparator | D |
 |---|---|---|
@@ -447,7 +447,7 @@ Dieses Protokoll wurde nach dem vollständigen Human-Gate und vor jedem D-Traini
 
 | Strategie | Clean-Quelle | Vosk-Quelle | erwartete Trainingszeilen |
 |---|---:|---:|---:|
-| M0 | {len(d_clean)} | — | {len(d_clean)} |
+| M0 | {len(d_clean)} | - | {len(d_clean)} |
 | M1 | {len(d_clean)} | {len(base_vosk)} | {mix['target_mixed_samples']} |
 | M2 | {len(d_clean)} | {len(base_vosk)} | {mix['target_mixed_samples']} |
 | M3 | M0-D-Checkpoint | {len(base_vosk)} | {len(base_vosk)} |
@@ -480,7 +480,7 @@ Alle D-Modelle verwenden dieselben 14 Evaluationssets in derselben Reihenfolge w
 
 ## Wissenschaftliche Sperre
 
-Nach diesem Protokoll werden keine Beispiele, Labels, Splits, Hyperparameter oder Auswahlregeln anhand von D-Ergebnissen verändert. Es werden 40 D-Artefakte erzeugt: M0–M3 × T1/T2 × fünf Seeds.
+Nach diesem Protokoll werden keine Beispiele, Labels, Splits, Hyperparameter oder Auswahlregeln anhand von D-Ergebnissen verändert. Es werden 40 D-Artefakte erzeugt: M0-M3 × T1/T2 × fünf Seeds.
 """
     protocol_path = STUDY / "HUMAN_EXTENSION_D_PROTOCOL.md"
     write_locked_text(protocol_path, protocol_text)

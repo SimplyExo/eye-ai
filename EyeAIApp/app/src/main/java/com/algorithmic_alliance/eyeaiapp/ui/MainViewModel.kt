@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.ui
 
 import android.Manifest
 import android.app.Application
@@ -14,7 +14,6 @@ import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntimeService
-import com.squareup.wire.internal.encodeArray_int32
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -137,7 +136,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 	val segmentationOverlayUIState: StateFlow<SegmentationOverlayUIState> = _uiState.map {
 		SegmentationOverlayUIState(
-			debugSegmentationBitmap = it.debugSegmentationBitmap, segmentationOverlayEnabled = it.segmentationOverlayEnabled
+			debugSegmentationBitmap = it.debugSegmentationBitmap,
+			segmentationOverlayEnabled = it.segmentationOverlayEnabled
 
 		)
 	}.distinctUntilChanged().stateIn(
@@ -186,15 +186,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 		}
 	}
 
-    @RequiresApi(Build.VERSION_CODES.P)
-    fun onEvent(event: UIEvent) {
-        Log.i(LOG_TAG, "!!! MainViewModel onEvent: $event !!!")
-        when (event) {
-            UIEvent.VoskListeningChanged -> {
-                Log.d(LOG_TAG, "[MainViewModel] VoskListeningChanged")
-                runtime.toggleListening()
-                runtime.updateVoskStatusText()
-            }
+	@RequiresApi(Build.VERSION_CODES.P)
+	fun onEvent(event: UIEvent) {
+		Log.i(LOG_TAG, "!!! MainViewModel onEvent: $event !!!")
+		when (event) {
+			UIEvent.VoskListeningChanged -> {
+				Log.d(LOG_TAG, "[MainViewModel] VoskListeningChanged")
+				runtime.toggleListening()
+				runtime.updateVoskStatusText()
+			}
+
 			UIEvent.UpdateVoskStatusText -> runtime.updateVoskStatusText()
 			UIEvent.OnReloadSettingsPage -> reloadSettingsPage()
 			UIEvent.InitVoskService -> runtime.initSpeechService()
@@ -207,7 +208,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 				)
 			}
 
-	        is UIEvent.OnUpdateBatteryOptimizationIgnored -> {
+			is UIEvent.OnUpdateBatteryOptimizationIgnored -> {
 				_uiState.update { it.copy(batteryOptimizationIgnored = event.value) }
 			}
 
@@ -228,11 +229,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 				)
 			}
 
-	        is UIEvent.OnUpdateAppNotExemptFromBatteryOptimization -> _uiState.update {
-		        it.copy(
-			        appNotExemptFromBatteryOptimization = event.value
-		        )
-	        }
+			is UIEvent.OnUpdateAppNotExemptFromBatteryOptimization -> _uiState.update {
+				it.copy(
+					appNotExemptFromBatteryOptimization = event.value
+				)
+			}
 
 			is UIEvent.OnUpdateAppMissingVoskPermission -> _uiState.update {
 				it.copy(
@@ -240,16 +241,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 				)
 			}
 
-            is UIEvent.UIinitCamera -> {
-                Log.d(LOG_TAG, "[MainViewModel] UIinitCamera received")
-                initCamera(event.previewView)
-            }
-            is UIEvent.UIDetachCameraPreview -> runtime.detachPreview(event.previewView)
-            is UIEvent.OnUpdateActionStartedFromSettings -> _uiState.update {
-                it.copy(
-                    actionStartedFromSettings = event.value
-                )
-            }
+			is UIEvent.UIinitCamera -> {
+				Log.d(LOG_TAG, "[MainViewModel] UIinitCamera received")
+				initCamera(event.previewView)
+			}
+
+			is UIEvent.UIDetachCameraPreview -> runtime.detachPreview(event.previewView)
+			is UIEvent.OnUpdateActionStartedFromSettings -> _uiState.update {
+				it.copy(
+					actionStartedFromSettings = event.value
+				)
+			}
 
 			is UIEvent.OnUpdateSegmentationOverlayEnabled -> {
 				_uiState.update { it.copy(segmentationOverlayEnabled = event.value) }
@@ -277,31 +279,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 		if (!_uiState.value.actionStartedFromSettings && !_uiState.value.settingsOpened) {
 			reloadDebugPage()
 		}
-		if(!BatteryOptimization.isExempt(eyeAIApp()) && !_uiState.value.batteryOptimizationIgnored){
+		if (!BatteryOptimization.isExempt(eyeAIApp()) && !_uiState.value.batteryOptimizationIgnored) {
 			_uiState.update { it.copy(appNotExemptFromBatteryOptimization = true) }
 		}
 		// permission checks after onResume are now handled bei EyeAIUI.kt
 		runtime.updateVoskStatusText()
 	}
-
-	/** Kept for callers that used the old ViewModel API; no lifecycle shutdown occurs here. */
-	fun onPause() = Unit
-
-	fun setTTSSpeaking(value: Boolean) {
-		_uiState.update { it.copy(ttsSpeaking = value) }
-	}
-
-	fun setVoskListening(value: Boolean) {
-		_uiState.update { it.copy(voskListening = value) }
-	}
-
-	fun updateSpeechResponseText(text: String) {
-		_uiState.update { it.copy(speechResponseText = text) }
-	}
-
-	fun updateSettings() = app.updateSettings()
-
-	fun elapsedMs(startNano: Long): Long = (System.nanoTime() - startNano) / 1_000_000
 
 	fun eyeAIApp(): EyeAIApp = app
 
@@ -333,36 +316,42 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 		// starts a source changed in settings) through UIinitCamera.
 	}
 
-    private fun initCamera(previewView: androidx.camera.view.PreviewView?) {
-	    app.aiData.detectedObjects.set(emptyArray<UniffiDetectedObject>())
-        val currentSource = app.settings.inputSource
-        Log.d(LOG_TAG, "[MainViewModel] initCamera: source=$currentSource")
-        _uiState.update {
-            it.copy(
-                detectedObjects = emptyArray(),
-                ocrResults = emptyArray(),
+	private fun initCamera(previewView: androidx.camera.view.PreviewView?) {
+		app.aiData.detectedObjects.set(emptyArray<UniffiDetectedObject>())
+		val currentSource = app.settings.inputSource
+		Log.d(LOG_TAG, "[MainViewModel] initCamera: source=$currentSource")
+		_uiState.update {
+			it.copy(
+				detectedObjects = emptyArray(),
+				ocrResults = emptyArray(),
 				debugSegmentationBitmap = null
-            )
-        }
-        if (app.settings.inputSource == app.getString(R.string.input_is_camera)) {
-            if (!hasPermission(Manifest.permission.CAMERA)) {
-                _uiState.update { it.copy(appMissingCameraPermission = true) }
-                return
-            }
-            // This call is made by a visible Compose destination. The service
-            // then becomes the CameraX LifecycleOwner and survives screen-off.
-            app.runtime.attachPreview(previewView)
-            startRuntimeIfCameraPermissionGranted()
-        } else if (app.settings.inputSource == app.getString(R.string.input_is_media) && app.settings.mediaSource.isNullOrEmpty()) {
-            _uiState.update { it.copy(appMissingSelectedMediaSource = true) }
-        } else if (app.settings.inputSource == app.getString(R.string.input_is_media) || app.settings.inputSource == app.getString(
-                R.string.input_is_eyeaivision
-            )
-        ) {
-            // Start the service for EyeAIVision or Media to ensure background continuity.
-            EyeAIRuntimeService.startFromVisible(app)
-        }
-    }
+			)
+		}
+		when (app.settings.inputSource) {
+			app.getString(R.string.input_is_camera) -> {
+				if (!hasPermission(Manifest.permission.CAMERA)) {
+					_uiState.update { it.copy(appMissingCameraPermission = true) }
+					return
+				}
+				// This call is made by a visible Compose destination. The service
+				// then becomes the CameraX LifecycleOwner and survives screen-off.
+				app.runtime.attachPreview(previewView)
+				startRuntimeIfCameraPermissionGranted()
+			}
+
+			app.getString(R.string.input_is_media) if app.settings.mediaSource.isNullOrEmpty() -> {
+				_uiState.update { it.copy(appMissingSelectedMediaSource = true) }
+			}
+
+			app.getString(R.string.input_is_media), app.getString(
+				R.string.input_is_eyeaivision
+			)
+				-> {
+				// Start the service for EyeAIVision or Media to ensure background continuity.
+				EyeAIRuntimeService.startFromVisible(app)
+			}
+		}
+	}
 
 	private fun startRuntimeIfCameraPermissionGranted() {
 		if (app.settings.inputSource != app.getString(R.string.input_is_camera)) {

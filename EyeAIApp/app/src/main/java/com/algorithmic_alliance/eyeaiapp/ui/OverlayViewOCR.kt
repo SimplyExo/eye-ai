@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.ui
 
 import android.content.Context
 import android.graphics.Canvas
@@ -22,19 +22,6 @@ class OverlayViewOCR(context: Context?, attrs: AttributeSet?) : View(context, at
 
 	init {
 		initPaints()
-	}
-
-	fun clear() {
-		textPaint.reset()
-		textBackgroundPaint.reset()
-		boxPaint.reset()
-		invalidate()
-		initPaints()
-	}
-
-	fun reset() {
-		results = emptyArray()
-		invalidate()
 	}
 
 	private fun initPaints() {
@@ -111,12 +98,14 @@ class OverlayViewOCR(context: Context?, attrs: AttributeSet?) : View(context, at
 		}
 	}
 
+	@Suppress("unused")
 	fun setCameraResolution(newCameraResolution: Size) {
 		val changed = cameraResolution != newCameraResolution
 		cameraResolution = newCameraResolution
 		if (changed) invalidate()
 	}
 
+	@Suppress("unused")
 	fun setResults(boundingBoxes: Array<TextBoundingBox>) {
 		results = boundingBoxes
 		invalidate()

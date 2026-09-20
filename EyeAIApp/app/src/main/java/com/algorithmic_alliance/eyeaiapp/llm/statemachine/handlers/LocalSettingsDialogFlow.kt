@@ -10,7 +10,7 @@ import com.algorithmic_alliance.eyeaiapp.settingsparser.SettingTarget
 import com.algorithmic_alliance.eyeaiapp.settingsparser.SettingsCommandExecutor
 
 /**
- * Pure settings-choice dialog routing. Every command and every follow-up is
+ * Pure settings-choice dialog routing. Every command and every follow-up are
  * handled by the frozen local parser.
  */
 internal sealed interface LocalSettingsDialogResult {

@@ -75,7 +75,6 @@ data class NumberOccurrence(
 }
 
 data class NumberNormalizationResult(
-	val originalText: String,
 	val normalizedText: String,
 	val values: List<Double> = emptyList(),
 	val occurrences: List<NumberOccurrence> = emptyList(),
@@ -116,6 +115,26 @@ data class OperationPrediction(
 			"Operation probabilities must contain ${SettingOperation.entries.size} classes"
 		}
 	}
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+
+		other as OperationPrediction
+
+		if (confidence != other.confidence) return false
+		if (operation != other.operation) return false
+		if (!probabilities.contentEquals(other.probabilities)) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = confidence.hashCode()
+		result = 31 * result + operation.hashCode()
+		result = 31 * result + probabilities.contentHashCode()
+		return result
+	}
 }
 
 data class SpeakerPrediction(
@@ -130,6 +149,26 @@ data class SpeakerPrediction(
 		require(probabilities.size == SpeakerChoice.entries.size) {
 			"Speaker probabilities must contain ${SpeakerChoice.entries.size} classes"
 		}
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+
+		other as SpeakerPrediction
+
+		if (confidence != other.confidence) return false
+		if (speaker != other.speaker) return false
+		if (!probabilities.contentEquals(other.probabilities)) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = confidence.hashCode()
+		result = 31 * result + speaker.hashCode()
+		result = 31 * result + probabilities.contentHashCode()
+		return result
 	}
 }
 
@@ -161,32 +200,71 @@ data class SettingCommand(
 	val extractedNumericValues: List<Double> = emptyList(),
 	val normalizerId: String = "unknown",
 	val normalizerVersion: String = "unknown"
-)
+) {
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+
+		other as SettingCommand
+
+		if (operationConfidence != other.operationConfidence) return false
+		if (numericValue != other.numericValue) return false
+		if (speakerConfidence != other.speakerConfidence) return false
+		if (target != other.target) return false
+		if (operation != other.operation) return false
+		if (magnitude != other.magnitude) return false
+		if (speaker != other.speaker) return false
+		if (unit != other.unit) return false
+		if (status != other.status) return false
+		if (originalText != other.originalText) return false
+		if (normalizedText != other.normalizedText) return false
+		if (diagnostics != other.diagnostics) return false
+		if (!operationProbabilities.contentEquals(other.operationProbabilities)) return false
+		if (!speakerProbabilities.contentEquals(other.speakerProbabilities)) return false
+		if (numberNormalizationStatus != other.numberNormalizationStatus) return false
+		if (numberOccurrences != other.numberOccurrences) return false
+		if (extractedNumericValues != other.extractedNumericValues) return false
+		if (normalizerId != other.normalizerId) return false
+		if (normalizerVersion != other.normalizerVersion) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = operationConfidence.hashCode()
+		result = 31 * result + (numericValue?.hashCode() ?: 0)
+		result = 31 * result + (speakerConfidence?.hashCode() ?: 0)
+		result = 31 * result + target.hashCode()
+		result = 31 * result + operation.hashCode()
+		result = 31 * result + (magnitude?.hashCode() ?: 0)
+		result = 31 * result + (speaker?.hashCode() ?: 0)
+		result = 31 * result + (unit?.hashCode() ?: 0)
+		result = 31 * result + status.hashCode()
+		result = 31 * result + originalText.hashCode()
+		result = 31 * result + normalizedText.hashCode()
+		result = 31 * result + diagnostics.hashCode()
+		result = 31 * result + operationProbabilities.contentHashCode()
+		result = 31 * result + speakerProbabilities.contentHashCode()
+		result = 31 * result + numberNormalizationStatus.hashCode()
+		result = 31 * result + numberOccurrences.hashCode()
+		result = 31 * result + extractedNumericValues.hashCode()
+		result = 31 * result + normalizerId.hashCode()
+		result = 31 * result + normalizerVersion.hashCode()
+		return result
+	}
+}
 
 /** Immutable production model dimensions and class orders. Asset hashes live in SettingsParserAssetContract. */
 object SettingsTfliteContract {
-	const val MODEL_VERSION = "settings_cnn_v1"
 	const val ARCHITECTURE = "SPECIALIZED_WORD_OPERATION_CHAR_SPEAKER"
 	const val SIGNATURE_KEY = "serving_default"
 	const val WORD_MAX_LEN = 32
 	const val CHARACTER_MAX_LEN = 96
 
-	/** Compatibility alias for the word tokenizer contract. */
-	const val MAX_LEN = WORD_MAX_LEN
 	const val INPUT_NAME = "token_ids"
 	const val INPUT_DTYPE = "int32"
 	const val OPERATION_OUTPUT_NAME = "operation"
-	const val OPERATION_OUTPUT_DTYPE = "float32"
 	const val SPEAKER_OUTPUT_NAME = "speaker"
-	const val SPEAKER_OUTPUT_DTYPE = "float32"
-	const val WORD_NORMALIZATION_SPEC_VERSION = "eyeai_word_v1"
-	const val CHARACTER_NORMALIZATION_SPEC_VERSION = "eyeai_char_v1"
 	const val NORMALIZER_ID = "text2num_rs_de"
 	const val NORMALIZER_VERSION = "3.0.2"
-	val INPUT_SHAPE = intArrayOf(1, WORD_MAX_LEN)
-	val CHARACTER_INPUT_SHAPE = intArrayOf(1, CHARACTER_MAX_LEN)
-	val OPERATION_OUTPUT_SHAPE = intArrayOf(1, SettingOperation.entries.size)
-	val SPEAKER_OUTPUT_SHAPE = intArrayOf(1, SpeakerChoice.entries.size)
-	val OPERATION_CLASSES = SettingOperation.entries.map { it.name }
-	val SPEAKER_CLASSES = SpeakerChoice.entries.map { it.name }
 }

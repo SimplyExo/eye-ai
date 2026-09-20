@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.ui
 
 import android.content.Context
 import android.graphics.Canvas
@@ -51,19 +51,6 @@ class OverlayViewOD(context: Context?, attrs: AttributeSet?) : View(context, att
 			context.getString(R.string.language_is_german)
 		)
 		setLanguage(language as String)
-	}
-
-	fun clear() {
-		textPaint.reset()
-		textBackgroundPaint.reset()
-		boxPaint.reset()
-		invalidate()
-		initPaints()
-	}
-
-	fun reset() {
-		results = emptyArray()
-		invalidate()
 	}
 
 	private fun initPaints() {

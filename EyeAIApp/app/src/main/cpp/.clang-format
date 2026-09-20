@@ -1,3 +1,4 @@
+#file: noinspection YAMLSchemaValidation
 BasedOnStyle: LLVM
 UseTab: Always
 TabWidth: 4

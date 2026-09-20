@@ -32,7 +32,27 @@ object Rel2AbsContextFeatures {
 		val globalAreaFractions: FloatArray,
 		val gridAreaFractions: FloatArray,
 		val available: Boolean,
-	)
+	) {
+		override fun equals(other: Any?): Boolean {
+			if (this === other) return true
+			if (javaClass != other?.javaClass) return false
+
+			other as SegmentationFeatureContext
+
+			if (available != other.available) return false
+			if (!globalAreaFractions.contentEquals(other.globalAreaFractions)) return false
+			if (!gridAreaFractions.contentEquals(other.gridAreaFractions)) return false
+
+			return true
+		}
+
+		override fun hashCode(): Int {
+			var result = available.hashCode()
+			result = 31 * result + globalAreaFractions.contentHashCode()
+			result = 31 * result + gridAreaFractions.contentHashCode()
+			return result
+		}
+	}
 
 	fun objectFeatures(detections: Array<UniffiDetectedObject>): FloatArray {
 		val areas = FloatArray(detections.size)
@@ -59,8 +79,8 @@ object Rel2AbsContextFeatures {
 
 		val count = detections.size.toFloat()
 		return floatArrayOf(
-			kotlin.math.ln(1.0 + count.toDouble()).toFloat(),
-			kotlin.math.ln(1.0 + supportedCount.toDouble()).toFloat(),
+			ln(1.0 + count.toDouble()).toFloat(),
+			ln(1.0 + supportedCount.toDouble()).toFloat(),
 			areas.averageOrZero(),
 			areas.maxOrNull() ?: 0f,
 			heights.averageOrZero(),

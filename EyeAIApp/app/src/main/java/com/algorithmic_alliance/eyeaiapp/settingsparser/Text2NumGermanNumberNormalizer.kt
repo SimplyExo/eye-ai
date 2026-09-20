@@ -111,7 +111,6 @@ class Text2NumGermanNumberNormalizer : GermanNumberNormalizer {
 		val values = ordered.filter { it.status == NumberOccurrenceStatus.SUCCESS }
 			.map { requireNotNull(it.value) }
 		return NumberNormalizationResult(
-			originalText = text,
 			normalizedText = maskedText(text, ordered),
 			values = values,
 			occurrences = ordered,

@@ -125,6 +125,7 @@ class ConfirmationModel private constructor(
 			val wordLength = padded.length
 			for (size in minNgram..maxNgram) {
 				var offset = 0
+				@Suppress("KotlinConstantConditions")
 				yield(padded.substring(offset, minOf(offset + size, wordLength)))
 				while (offset + size < wordLength) {
 					offset++
@@ -283,7 +284,7 @@ class ConfirmationModel private constructor(
 				}
 				val minNgram = data.readInt()
 				val maxNgram = data.readInt()
-				require(minNgram > 0 && maxNgram >= minNgram) { "Invalid n-gram range" }
+				require(minNgram in 1..maxNgram) { "Invalid n-gram range" }
 				val threshold = data.readDouble()
 				require(threshold in 0.0..1.0) { "Invalid confirmation threshold" }
 

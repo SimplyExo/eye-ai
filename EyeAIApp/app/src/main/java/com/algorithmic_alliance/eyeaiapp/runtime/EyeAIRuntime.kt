@@ -16,17 +16,13 @@ import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.Settings
-import com.algorithmic_alliance.eyeaiapp.audio.AudioFrame
-import com.algorithmic_alliance.eyeaiapp.audio.AudioFrameSink
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudioResumeController
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudioResumeOutcome
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.camera.FrameAnalysisUpdate
 import com.algorithmic_alliance.eyeaiapp.camera.FrameAnalyzer
-import com.algorithmic_alliance.eyeaiapp.confirmation.ConfirmationModel
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
-import com.algorithmic_alliance.eyeaiapp.connectivity.WebRtcClient
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.EyeAIState
@@ -43,7 +39,6 @@ import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsRunner
 import com.algorithmic_alliance.eyeaiapp.rel2abs.V6NeuralGateRunner
 import com.algorithmic_alliance.eyeaiapp.segmentation.SegmentationModel
 import com.algorithmic_alliance.eyeaiapp.segmentation.SegmentationModelInfo
-import com.algorithmic_alliance.eyeaiapp.settingsparser.LocalSettingsParser
 import com.algorithmic_alliance.eyeaiapp.speech_recognition.VoskModel
 import com.algorithmic_alliance.eyeaiapp.tts.TextToSpeechInstance
 import com.algorithmic_alliance.eyeaiapp.vibrate
@@ -68,7 +63,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 import androidx.core.net.toUri
-import com.algorithmic_alliance.eyeaiapp.AIModelData
 import kotlin.time.Duration.Companion.milliseconds
 
 /** Output of a depth inference while the model read lock is held. */
@@ -126,7 +120,6 @@ class EyeAIRuntime internal constructor(
 	private var lastDialogContextValue: String? = null
 	private var runtimeClosed = false
 	private var serviceOwner = WeakReference<LifecycleOwner>(null)
-	private var audioFrameSink: AudioFrameSink? = null
 	private var mediaPlayerValue: MediaPlayer? = null
 	private var eyeAIVisionValue: EyeAIVision? = null
 	private var bitmapFlowValue: MutableSharedFlow<Bitmap>? = null
@@ -157,7 +150,6 @@ class EyeAIRuntime internal constructor(
 		},
 	)
 
-	val speechThreadExecutorForStateMachine = speechThreadExecutor
 	val voskUserStart = AtomicBoolean(false)
 	val yoloModel = YoloModel(YoloModelInfo("yolo26n.tflite", "coco.names", 640))
 	val segmentationModel =
@@ -171,9 +163,6 @@ class EyeAIRuntime internal constructor(
 
 	val settings: Settings
 		get() = app.settings
-
-	val metricDepthModel: MetricDepthModel?
-		get() = modelLock.read { metricDepthModelValue }
 
 	private val rel2AbsRunner: Rel2AbsRunner
 		get() = synchronized(stateLock) {
@@ -205,16 +194,6 @@ class EyeAIRuntime internal constructor(
 		private set(value) {
 			synchronized(stateLock) { lastDialogContextValue = value }
 		}
-
-	internal fun setLastDialogContextFromCompatibility(value: String?) {
-		lastDialogContext = value
-	}
-
-	val confirmationModel: ConfirmationModel
-		get() = app.confirmationModel
-
-	val localSettingsParser: LocalSettingsParser
-		get() = app.localSettingsParser
 
 	val isActive: Boolean
 		get() = lifecycleGate.isActive
@@ -378,26 +357,6 @@ class EyeAIRuntime internal constructor(
 				ttsSpeaking = false,
 			)
 		}
-	}
-
-	/** Programmatic TTS API usable from the service or future hardware adapter. */
-	fun speak(text: String, queueMode: Int = TextToSpeechInstance.QUEUE_FLUSH) {
-		if (text.isBlank()) return
-		_state.update { it.copy(ttsSpeaking = true, speechResponseText = text) }
-		textToSpeechInstance.speak(text, queueMode)
-	}
-
-	/**
-	 * Future external audio adapters can attach at this neutral boundary.
-	 * The current local Vosk/SpeechService path remains the active source.
-	 */
-	fun attachAudioFrameSink(sink: AudioFrameSink?) {
-		synchronized(stateLock) { audioFrameSink = sink }
-	}
-
-	fun submitAudioFrame(frame: AudioFrame): Boolean {
-		val sink = synchronized(stateLock) { audioFrameSink }
-		return sink?.submit(frame) == true
 	}
 
 	fun toggleListening() {

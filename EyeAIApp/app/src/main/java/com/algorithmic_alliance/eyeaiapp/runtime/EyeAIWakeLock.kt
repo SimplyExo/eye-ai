@@ -24,7 +24,4 @@ internal class EyeAIWakeLock(context: Context) {
 	fun release() {
 		if (wakeLock.isHeld) wakeLock.release()
 	}
-
-	val isHeld: Boolean
-		@Synchronized get() = wakeLock.isHeld
 }

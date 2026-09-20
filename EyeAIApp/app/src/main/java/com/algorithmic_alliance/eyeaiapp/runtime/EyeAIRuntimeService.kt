@@ -165,13 +165,13 @@ class EyeAIRuntimeService : LifecycleService() {
 		// We use CAMERA type for EyeAIVision and Media to ensure the process 
 		// gets high priority for continuous image analysis.
 		if ((usesCameraInput() && hasCameraPermission()) || usesEyeAIVisionInput() || usesMediaInput()) {
-			types = types or if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			types = types or if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 				android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
 			} else {
 				0
 			}
 		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && (application as EyeAIApp).settings.enableSpeechRecognition && hasRecordAudioPermission()) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && (application as EyeAIApp).settings.enableSpeechRecognition && hasRecordAudioPermission()) {
 			types = types or android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
 		}
 		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

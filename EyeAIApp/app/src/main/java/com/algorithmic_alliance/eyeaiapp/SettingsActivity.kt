@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
@@ -43,8 +44,12 @@ class SettingsActivity : AppCompatActivity() {
 					}
 
 					val path = uri.toString()
-					preferenceManager.sharedPreferences?.edit()
-						?.putString(getString(R.string.media_path_setting), path)?.apply()
+					preferenceManager.sharedPreferences?.edit {
+						putString(
+							getString(R.string.media_path_setting),
+							path
+						)
+					}
 					mediaPref?.summary = path
 				}
 			}
@@ -53,11 +58,14 @@ class SettingsActivity : AppCompatActivity() {
 		override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 			//setPreferencesFromResource(R.xml.settings_preferences, rootKey)
 
+			@Suppress("KotlinConstantConditions", "SimplifyBooleanWithConstants")
 			val showDevelopmentSettings = BuildConfig.BUILD_VARIANT != "Production"
 
+			@Suppress("KotlinConstantConditions")
 			findPreference<PreferenceCategory>(getString(R.string.debugging_settings_category))?.isVisible =
 				showDevelopmentSettings
 
+			@Suppress("KotlinConstantConditions")
 			findPreference<PreferenceCategory>(getString(R.string.build_info_settings_category))?.isVisible =
 				showDevelopmentSettings
 
@@ -120,6 +128,5 @@ class SettingsActivity : AppCompatActivity() {
 			}
 			openDocument.launch(intent)
 		}
-
 	}
 }

@@ -8,7 +8,7 @@ class IntentTokenizerTest {
 	@Test
 	fun normalizationMatchesTrainingPipeline() {
 		assertEquals("öffne bitte", IntentTokenizer.normalize("  ÖFFNE, bitte!  "))
-		assertEquals("nicht abbrechen", IntentTokenizer.normalize("Nicht – abbrechen"))
+		assertEquals("nicht abbrechen", IntentTokenizer.normalize("Nicht - abbrechen"))
 		assertEquals("eins zwei", IntentTokenizer.normalize("eins\u0085zwei"))
 	}
 

@@ -5,7 +5,7 @@ import java.security.MessageDigest
 plugins {
 	alias(libs.plugins.android.application)
 	alias(libs.plugins.kotlin.compose)
-	id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0"
+	id("org.jetbrains.kotlin.plugin.serialization") version "2.4.20"
 }
 
 android {
@@ -25,6 +25,7 @@ android {
 			abiFilters += "arm64-v8a"
 		}
 
+		@Suppress("UnstableApiUsage")
 		externalNativeBuild {
 			cmake {
 				targets("NativeLib")
@@ -117,7 +118,6 @@ dependencies {
 	implementation(libs.androidx.benchmark.common)
 	implementation(libs.androidx.compose.animation)
 	implementation(libs.androidx.compose.animation.core)
-	implementation(libs.androidx.compose.foundation.layout)
 	implementation(libs.androidx.compose.material3)
 	implementation(libs.androidx.compose.remote.creation.core)
 	implementation(libs.androidx.compose.ui.graphics)
@@ -155,7 +155,6 @@ dependencies {
 
 	// runtime only libs for tflite gpu/npu delegates
 	runtimeOnly(libs.litert.gpu)
-	runtimeOnly(libs.qnn.litert.delegate)
 
 	// OCR
 	implementation(libs.text.recognition)
@@ -280,6 +279,7 @@ abstract class VerifySettingsParserAssetsTask : DefaultTask() {
 }
 
 val verifySettingsParserAssets = tasks.register<VerifySettingsParserAssetsTask>("verifySettingsParserAssets") {
+	description = "Verifies the immutable production Settings Parser TFLite/tokenizer assets"
 	assetDirectory.set(layout.projectDirectory.dir("src/main/assets/nlp-v2/settings-parser"))
 }
 tasks.named("preBuild").configure {

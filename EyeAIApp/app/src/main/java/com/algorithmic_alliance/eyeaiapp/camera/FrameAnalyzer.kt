@@ -140,9 +140,6 @@ class FrameAnalyzer(
 	@Volatile
 	private var formattedSourceFrame = ""
 
-	val started: Boolean
-		get() = synchronized(stateLock) { startedValue }
-
 	/** Starts the workers once. It is safe to call again after a source switch. */
 	fun start() {
 		synchronized(stateLock) {
@@ -223,12 +220,9 @@ class FrameAnalyzer(
 	fun submitBitmap(
 		bitmap: Bitmap,
 		timestampNanos: Long = System.nanoTime(),
-		rotationDegrees: Int = 0,
 	): Boolean = submitFrame(
 		AnalysisFrame.fromBitmap(
 			bitmap = bitmap,
-			timestampNanos = timestampNanos,
-			rotationDegrees = rotationDegrees,
 		).also { recordSourceFrame(timestampNanos) }
 	)
 

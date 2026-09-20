@@ -316,7 +316,7 @@ class StateMachine(
 			if (availableGermanObjects.isNotEmpty()) {
 				val objectList = availableGermanObjects.take(5).joinToString(", ")
 				speechOutputHandler.speakAndHandleUi(
-					"Bitte nennen Sie ein spezifisches Objekt, nach dem Sie suchen möchten. " + "Verfügbare Objekte: $objectList"
+					"Bitte nennen Sie ein spezifisches Objekt, nach dem Sie suchen möchten. Verfügbare Objekte: $objectList"
 				)
 			} else {
 				speechOutputHandler.speakAndHandleUi("Entschuldigung, ich konnte gerade keine Objekte erkennen.")

@@ -1507,7 +1507,7 @@ Bestimme die Entfernung zu dem Stuhl rechts von mir.;MEASURE_DISTANCE
 Kannst du den Poller finden und anschließend den Abstand dazu messen?;MEASURE_DISTANCE
 Wie weit befindet sich das Objekt links neben der Tür von mir entfernt?;MEASURE_DISTANCE
 Erkenne die Treppe vor mir und sag mir ihre Entfernung.;MEASURE_DISTANCE
-Ich weiß, dass dort eine Wand ist – wie weit ist sie von mir weg?;MEASURE_DISTANCE
+Ich weiß, dass dort eine Wand ist - wie weit ist sie von mir weg?;MEASURE_DISTANCE
 
 Stopp, öffne die Einstellungen doch nicht.;ABORT
 Vergiss das mit der anderen Stimme.;ABORT

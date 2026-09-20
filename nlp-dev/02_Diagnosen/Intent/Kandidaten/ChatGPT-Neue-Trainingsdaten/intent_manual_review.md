@@ -1,4 +1,4 @@
-# EyeAI Intent – Beispiele, die vor Training NICHT ungeprüft übernommen werden sollten
+# EyeAI Intent - Beispiele, die vor Training NICHT ungeprüft übernommen werden sollten
 
 ## Person 1
 - `wert ändern` → OPEN_SETTINGS: zu unspezifisch.

@@ -27,7 +27,7 @@ class CleanV2GoldenParityInstrumentationTest {
 		assertEquals(20260814, payload.getInt("character_seed"))
 
 		val parser = LocalSettingsParser.fromAssets(instrumentation.targetContext)
-		try {
+		parser.use { parser ->
 			val cases = payload.getJSONArray("cases")
 			for (index in 0 until cases.length()) {
 				val expected = cases.getJSONObject(index)
@@ -77,11 +77,10 @@ class CleanV2GoldenParityInstrumentationTest {
 							.map { it.value!! })
 				}
 			}
-		} finally {
-			parser.close()
 		}
 	}
 
+	@Suppress("SameParameterValue")
 	private fun assertDoubleOrNull(id: String, expected: JSONObject, key: String, actual: Double?) {
 		if (expected.isNull(key)) {
 			assertNull(id, actual)

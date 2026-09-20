@@ -135,6 +135,7 @@ data class NLPModelInfo(
 		}
 	}
 
+	@Suppress("SameParameterValue")
 	private fun readJsonObject(context: Context, filename: String): JSONObject =
 		JSONObject(readAssetText(context, filename))
 
@@ -143,6 +144,7 @@ data class NLPModelInfo(
 		return List(array.length()) { index -> array.getString(index) }
 	}
 
+	@Suppress("SameParameterValue")
 	private fun readJsonArrayObject(context: Context, filename: String): List<JSONObject> {
 		val array = JSONArray(readAssetText(context, filename))
 		return List(array.length()) { index -> array.getJSONObject(index) }
@@ -161,7 +163,7 @@ data class NLPModelInfo(
 		val BASELINE_MODELS = listOf(
 			NLPModelInfo(
 				id = "M1_T2",
-				displayName = "D – Human Clean Extension – M1 Joint Clean + Vosk – T2 BPE – Seed 20260814",
+				displayName = "D - Human Clean Extension - M1 Joint Clean + Vosk - T2 BPE - Seed 20260814",
 				tfliteAssetPath = "nlp-v2/models/m1_t2_seed_20260814.tflite",
 				tokenizerAssetDirectory = "nlp-v2/tokenizers/T2"
 			)

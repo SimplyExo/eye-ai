@@ -8,7 +8,6 @@ enum class Rel2AbsMode(
 	val cameraHeightTenths: Int? = null,
 ) {
 	Z1("Z1"),
-	S2("S2"),
 	OBJECT_GATE_V3_WAYMO_FULL_CONTEXT_HEIGHT_160(
 		"V6 Object Gate V3+Waymo Full Object Context + Camera H1.60",
 		neuralGateId = "E_ObjectGate_DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION_V3_WAYMO_CAMERA_HEIGHT_160",
@@ -60,10 +59,5 @@ enum class Rel2AbsMode(
 
 		fun forCameraHeightTenths(value: Int): Rel2AbsMode =
 			OBJECT_GATE_MODES.firstOrNull { it.cameraHeightTenths == value } ?: DEFAULT
-
-		fun fromPreference(value: String?): Rel2AbsMode {
-			// Migrate every older persisted selection to the sole supported model.
-			return DEFAULT
-		}
 	}
 }

@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.ui
 
 import android.Manifest
 import android.content.BroadcastReceiver
@@ -35,8 +35,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
-
-private const val WIFI_SCAN_TIMEOUT_MS = 15_000L
 
 @RequiresApi(Build.VERSION_CODES.S)
 fun connectToDevice(
@@ -156,12 +154,13 @@ fun rememberWifiScanState(
 				context, Manifest.permission.ACCESS_FINE_LOCATION
 			) == PackageManager.PERMISSION_GRANTED
 		) {
+			@Suppress("DEPRECATION") // the replacement is only for recent android versions...
 			val filtered =
 				scanWifiNetworks(context, wifiManager).filter { it.SSID.contains("EyeAIVision") }
 					.map { it.SSID }
 			networks = filtered          // UI-Liste aktualisieren
 			setScannState(false)
-			return filtered               // direkt an den Aufrufer zurückgeben – keine Race Condition
+			return filtered               // direkt an den Aufrufer zurückgeben - keine Race Condition
 		} else {
 			Log.d(
 				LOG_TAG,
@@ -221,6 +220,7 @@ suspend fun scanWifiNetworks(
 		}
 	}
 
+	@Suppress("DEPRECATION") // to be removed in future release...
 	val started = wifiManager.startScan()
 	if (!started) {
 		Log.d(LOG_TAG, "[ConnectionPageBackend.scanWifiNetworks] Scan throttled, nutze Cache")

@@ -18,7 +18,7 @@ import java.util.concurrent.Executors
 
 
 open class EyeAIVision(
-	private val app: Context,
+	app: Context,
 	private val ip: String,
 	private val onSingleClick: () -> Unit,
 	private val onDoubleClick: () -> Unit,

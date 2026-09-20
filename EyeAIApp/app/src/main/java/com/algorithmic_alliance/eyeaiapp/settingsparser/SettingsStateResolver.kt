@@ -70,7 +70,7 @@ class SettingsStateResolver(
 		if (command.operation == SettingOperation.SET_ABSOLUTE) return requireNotNull(command.numericValue)
 		val currentValue = when (command.target) {
 			SettingTarget.FREQUENCY -> current.frequency.toDouble()
-			SettingTarget.BPS -> current.bps.toDouble()
+			SettingTarget.BPS -> current.bps
 			SettingTarget.SPEECH_SPEED -> current.speechSpeed
 			SettingTarget.SPEAKER -> error("Speaker has no numeric state")
 		}
@@ -80,7 +80,7 @@ class SettingsStateResolver(
 
 	private fun step(target: SettingTarget, magnitude: ChangeMagnitude): Double = when (target) {
 		SettingTarget.FREQUENCY -> config.frequencySteps.getValue(magnitude).toDouble()
-		SettingTarget.BPS -> config.bpsSteps.getValue(magnitude).toDouble()
+		SettingTarget.BPS -> config.bpsSteps.getValue(magnitude)
 		SettingTarget.SPEECH_SPEED -> config.speechSpeedSteps.getValue(magnitude)
 		SettingTarget.SPEAKER -> error("Speaker has no numeric step")
 	}

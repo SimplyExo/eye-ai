@@ -13,12 +13,12 @@ data; flags are diagnostic, not an automatic semantic filter.
 
 ## Output files
 
-- `train/asr_train_transcripts.txt` and `.gold` – row-preserving output
-- `train/asr_train_transcripts.labeled.txt` – nonempty ASR rows for model use
-- `train/qc.csv` – sample-level provenance and status
-- `validation/asr_validation_transcripts.txt` and `.gold` – row-preserving output
-- `validation/asr_validation_transcripts.labeled.txt` – nonempty ASR rows for model use
-- `validation/qc.csv` – sample-level provenance and status
-- `blind/asr_blind_transcripts.txt` and `.gold` – row-preserving output
-- `blind/asr_blind_transcripts.labeled.txt` – nonempty ASR rows for model use
-- `blind/qc.csv` – sample-level provenance and status
+- `train/asr_train_transcripts.txt` and `.gold` - row-preserving output
+- `train/asr_train_transcripts.labeled.txt` - nonempty ASR rows for model use
+- `train/qc.csv` - sample-level provenance and status
+- `validation/asr_validation_transcripts.txt` and `.gold` - row-preserving output
+- `validation/asr_validation_transcripts.labeled.txt` - nonempty ASR rows for model use
+- `validation/qc.csv` - sample-level provenance and status
+- `blind/asr_blind_transcripts.txt` and `.gold` - row-preserving output
+- `blind/asr_blind_transcripts.labeled.txt` - nonempty ASR rows for model use
+- `blind/qc.csv` - sample-level provenance and status

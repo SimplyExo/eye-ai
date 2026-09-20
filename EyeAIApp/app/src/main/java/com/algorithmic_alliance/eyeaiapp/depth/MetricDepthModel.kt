@@ -25,7 +25,7 @@ class MetricDepthModelInfo(
 /**
  * The legacy metric-depth output and the unmodified MiDaS relative-depth output from one
  * native inference pass.  Keeping both is essential: the legacy output remains the current
- * app behaviour, while REL2ABS consumes the raw MiDaS representation it was trained on.
+ * app behavior, while REL2ABS consumes the raw MiDaS representation it was trained on.
  */
 data class DepthModelOutputs(
 	val legacyMetricDepth: NativeLib.NativeFloatBuffer,
@@ -84,7 +84,7 @@ class MetricDepthModel(
 		if (!outputShape.contentEquals(expectedOutputShape)) {
 			Log.e(
 				EyeAIApp.APP_LOG_TAG,
-				"depth model has invalid output shape, expected [1, ${inputDim.height}, ${inputDim.width}, 1] but is [${outputShape}]"
+				"depth model has invalid output shape, expected [1, ${inputDim.height}, ${inputDim.width}, 1] but is [${outputShape.contentToString()}]"
 			)
 		}
 	}

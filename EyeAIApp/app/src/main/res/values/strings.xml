@@ -45,12 +45,10 @@
 	<string name="language_is_german">Deutsch</string>
 	<string name="language_is_english">Englisch</string>
 	<string name="app_logo_description">EyeAI-App-Logo</string>
-	<string name="start_app_button_text">App starten</string>
 	<string name="decline_action">Ablehnen</string>
 	<string name="accept_action">Zulassen</string>
 	<string name="confirm_permission_decline_title">Berechtigung ablehnen?</string>
 	<string name="return_icon_description">Zurück</string>
-	<string name="information_not_found_text">Diese Information konnte leider nicht gefunden werden.</string>
 	<string name="confirm_decline_action">Trotzdem ablehnen</string>
 
 	<string name="camera_permission_name">Kamera</string>
@@ -102,7 +100,6 @@
 	<string name="device_eyeaivision_name">EyeAI-Vision auswählen</string>
 	<string name="device_audio_name">Audiogerät auswählen</string>
 	<string name="choose_eyeaivision_as_audio_text">EyeAI-Vision als Audiogerät verwenden</string>
-	<string name="eyeaivision_as_audio_text">EyeAI-Vision</string>
 	<string name="choose_system_as_audio_text">Systemaudiogerät verwenden</string>
 	<string name="system_as_audio_text">Systemaudiogerät</string>
 	<string name="choose_camera_as_input_text">Telefonkamera verwenden</string>
@@ -142,7 +139,7 @@
 	<string name="vosk_card_missing_permission">Mikrofonberechtigung erforderlich</string>
 	<string name="vosk_card_listening">EyeAI hört zu…</string>
 	<string name="vosk_card_disabled">Spracherkennung deaktiviert</string>
-	<string name="vosk_card_ready">EyeAI bereit – zum Starten auf die Schaltfläche tippen</string>
+	<string name="vosk_card_ready">EyeAI bereit - zum Starten auf die Schaltfläche tippen</string>
 
 	<string name="status_card_performance_poor">Schlecht</string>
 	<string name="status_card_performance_sufficient">Ausreichend</string>
@@ -172,8 +169,6 @@
 	<!-- Depth Estimation -->
 	<string name="setting_depth_estimation_model_title">Modell für Entfernungsschätzung</string>
 	<string name="setting_depth_estimation_model_description">Das KI-Modell, das zur Schätzung der Entfernung zu Objekten verwendet wird.</string>
-	<string name="setting_rel2abs_mode_title">REL2ABS-Kalibrierung</string>
-	<string name="setting_rel2abs_mode_description">EyeAI verwendet das V6 Object Gate mit vollständigem YOLO-/Segmentierungskontext. Die interne Z1-Berechnung bleibt als technischer visueller Fallback erhalten.</string>
 	<string name="setting_camera_height_title">Kamera-Höhe für REL2ABS</string>
 	<string name="setting_camera_height_description">Wählt das separat trainierte Kamera-Höhenmodell zwischen 1,6 m und 2,0 m in 0,1-m-Schritten. 1,7 m ist die aktuelle stabile und empfohlene Einstellung.</string>
 	<string name="setting_enable_framerate_limiter_title">Bildratenbegrenzung aktivieren</string>

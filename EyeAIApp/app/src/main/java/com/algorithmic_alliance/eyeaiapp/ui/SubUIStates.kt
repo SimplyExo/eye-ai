@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.ui
 
 import android.graphics.Bitmap
 import android.util.Size
@@ -66,7 +66,25 @@ data class DebugInputBitmapPreviewUIState(
 data class ObjectDetectionOverlayUIState(
 	val detectedObjects: Array<UniffiDetectedObject> = emptyArray(),
 	val cameraResolution: Size = Size(720, 1280),
-)
+) {
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+
+		other as ObjectDetectionOverlayUIState
+
+		if (!detectedObjects.contentEquals(other.detectedObjects)) return false
+		if (cameraResolution != other.cameraResolution) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = detectedObjects.contentHashCode()
+		result = 31 * result + cameraResolution.hashCode()
+		return result
+	}
+}
 
 @Immutable
 data class DepthOverlayUIState(

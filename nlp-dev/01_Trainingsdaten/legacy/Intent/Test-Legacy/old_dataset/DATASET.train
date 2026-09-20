@@ -213,7 +213,7 @@ Text vorlesen, wenn's beliebt.;TEXT_RECOGNITION
 Erkennung von Schrift im Blickfeld.;TEXT_RECOGNITION
 Hey, was is' da geschrieben?;TEXT_RECOGNITION
 Bitte den Inhalt dekodieren.;TEXT_RECOGNITION
-Text im Sichtfeld – lies vor!;TEXT_RECOGNITION
+Text im Sichtfeld - lies vor!;TEXT_RECOGNITION
 Schnapp dir den Text und spuck's aus.;TEXT_RECOGNITION
 Formell: Lies den sichtbaren Text vor.;TEXT_RECOGNITION
 Text erkennen. Jetzt!;TEXT_RECOGNITION
@@ -225,13 +225,13 @@ Der Text da, lies ihn mir vor, bitte.;TEXT_RECOGNITION
 Textanalyse durchführen, sofort.;TEXT_RECOGNITION
 Was steht auf'm Schild? Sag's mir.;TEXT_RECOGNITION
 Lies vor, was du siehst.;TEXT_RECOGNITION
-Text im Bild – extrahiere!;TEXT_RECOGNITION
+Text im Bild - extrahiere!;TEXT_RECOGNITION
 Hilf mir, das zu lesen, yeah?;TEXT_RECOGNITION
 Bitte um Texterkennung.;TEXT_RECOGNITION
 Schrift entziffern und vorlesen.;TEXT_RECOGNITION
 Was is' der Inhalt?;TEXT_RECOGNITION
 Kannst du den Text identifizieren?;TEXT_RECOGNITION
-Text vorlesen – los!;TEXT_RECOGNITION
+Text vorlesen - los!;TEXT_RECOGNITION
 Analyse starten für sichtbaren Text.;TEXT_RECOGNITION
 Hey, lies das Kleingedruckte vor.;TEXT_RECOGNITION
 Text scannen, bitte.;TEXT_RECOGNITION
@@ -243,7 +243,7 @@ Sag mir den Textinhalt.;TEXT_RECOGNITION
 Bitte den Text analysieren.;TEXT_RECOGNITION
 Yo, was da steht?;TEXT_RECOGNITION
 Können Sie mir den Text vorlesen?;TEXT_RECOGNITION
-Text im Fokus – erkenne!;TEXT_RECOGNITION
+Text im Fokus - erkenne!;TEXT_RECOGNITION
 Was für Buchstaben sind das da?;TEXT_RECOGNITION
 Lies laut vor, bitte.;TEXT_RECOGNITION
 Text extrahieren und wiedergeben.;TEXT_RECOGNITION
@@ -255,7 +255,7 @@ Erkenne geschriebene Zeichen.;TEXT_RECOGNITION
 Textinhalt bitte ausgeben.;TEXT_RECOGNITION
 Yo, lies das mal.;TEXT_RECOGNITION
 Formell: Identifiziere den Text.;TEXT_RECOGNITION
-Text vorlesen – schnell!;TEXT_RECOGNITION
+Text vorlesen - schnell!;TEXT_RECOGNITION
 Was is' da zu lesen?;TEXT_RECOGNITION
 Kannste mir das vorlesen?;TEXT_RECOGNITION
 Analyse des sichtbaren Textes.;TEXT_RECOGNITION
@@ -264,7 +264,7 @@ Lies den Text vor, danke.;TEXT_RECOGNITION
 Text erkennen und sagen.;TEXT_RECOGNITION
 Was steht da alles?;TEXT_RECOGNITION
 Bitte um Vorlesung.;TEXT_RECOGNITION
-Schrift im Bild – lies!;TEXT_RECOGNITION
+Schrift im Bild - lies!;TEXT_RECOGNITION
 Sag's mir, was da steht.;TEXT_RECOGNITION
 Text scannen und vorlesen.;TEXT_RECOGNITION
 Hilf mir beim Verstehen des Texts.;TEXT_RECOGNITION
@@ -275,7 +275,7 @@ Lies die Zeilen vor.;TEXT_RECOGNITION
 Text digitalisieren, bitte.;TEXT_RECOGNITION
 Yo, was steht auf'm Papier?;TEXT_RECOGNITION
 Formell: Lies den Inhalt vor.;TEXT_RECOGNITION
-Text erfassen – jetzt!;TEXT_RECOGNITION
+Text erfassen - jetzt!;TEXT_RECOGNITION
 Was is' der Text?;TEXT_RECOGNITION
 Kannste den Inhalt sagen?;TEXT_RECOGNITION
 Erkennung starten für Text.;TEXT_RECOGNITION
@@ -298,7 +298,7 @@ Lies den Absatz vor.;TEXT_RECOGNITION
 Text wiedergeben bitte.;TEXT_RECOGNITION
 Erkenne und lies laut.;TEXT_RECOGNITION
 Was kann man da ablesen?;TEXT_RECOGNITION
-Text im Blick – vorlesen!;TEXT_RECOGNITION
+Text im Blick - vorlesen!;TEXT_RECOGNITION
 Sag mir, was zu sehen is'.;TEXT_RECOGNITION
 Bitte um Textdekodierung.;TEXT_RECOGNITION
 Yo, lies die Nachricht.;TEXT_RECOGNITION
@@ -513,7 +513,7 @@ Beschreibe den Gegenstand detailliert.;OBJECT_DETECTION
 Erkennung von Objekt im Blickfeld.;OBJECT_DETECTION
 Hey, was is' das da vorne?;OBJECT_DETECTION
 Bitte das Objekt beschreiben.;OBJECT_DETECTION
-Objekt im Sichtfeld – identifiziere!;OBJECT_DETECTION
+Objekt im Sichtfeld - identifiziere!;OBJECT_DETECTION
 Sag mir, was das is'.;OBJECT_DETECTION
 Formell: Identifiziere den sichtbaren Gegenstand.;OBJECT_DETECTION
 Objekt erkennen. Jetzt!;OBJECT_DETECTION
@@ -525,13 +525,13 @@ Der Gegenstand da, was is' das?;OBJECT_DETECTION
 Objektanalyse durchführen, bitte.;OBJECT_DETECTION
 Was steht da rum? Sag's.;OBJECT_DETECTION
 Beschreib, was ich seh'.;OBJECT_DETECTION
-Objekt im Bild – identifiziere!;OBJECT_DETECTION
+Objekt im Bild - identifiziere!;OBJECT_DETECTION
 Hilf mir, das Ding zu erkennen.;OBJECT_DETECTION
 Bitte um Objekterkennung.;OBJECT_DETECTION
 Gegenstand detektieren und beschreiben.;OBJECT_DETECTION
 Was is' das für 'n Teil?;OBJECT_DETECTION
 Kannst du das identifizieren?;OBJECT_DETECTION
-Objekt scannen – los!;OBJECT_DETECTION
+Objekt scannen - los!;OBJECT_DETECTION
 Analyse starten für sichtbares Objekt.;OBJECT_DETECTION
 Hey, was is' das Gerät?;OBJECT_DETECTION
 Objekt-Info geben.;OBJECT_DETECTION
@@ -540,7 +540,7 @@ Was für Item is' das?;OBJECT_DETECTION
 Beschreib den sichtbaren Gegenstand.;OBJECT_DETECTION
 Yo, was seh' ich da?;OBJECT_DETECTION
 Formell: Klassifiziere das Objekt.;OBJECT_DETECTION
-Objekt identifizieren – schnell!;OBJECT_DETECTION
+Objekt identifizieren - schnell!;OBJECT_DETECTION
 Was is' das da drüben?;OBJECT_DETECTION
 Kannste mir sagen, was das is'?;OBJECT_DETECTION
 Detektion aktivieren für Objekt.;OBJECT_DETECTION
@@ -808,7 +808,7 @@ Geh in das Konfigurationsmenü;OPEN_SETTINGS
 Zeig mir die Haupteinstellungen;OPEN_SETTINGS
 Ich will die Einstellungen anpassen;OPEN_SETTINGS
 Wo finde ich die Voreinstellungen?;OPEN_SETTINGS
-Öffne die Schnittstellen-Einstellungen;OPEN_SETTINGS
+Öffne die Schnittste-len-Einstellungen;OPEN_SETTINGS
 Zeig mir die Einstellungsübersicht;OPEN_SETTINGS
 Ich muss auf das Konfigurationsmenü zugreifen;OPEN_SETTINGS
 Geh zu den Profil-Optionen;OPEN_SETTINGS
@@ -825,7 +825,7 @@ Konfigurationsbereich initiieren.;OPEN_SETTINGS
 Zu den Systemeinstellungen navigieren.;OPEN_SETTINGS
 Hey, ins Menü gehen.;OPEN_SETTINGS
 Bitte Einstellungen aufrufen.;OPEN_SETTINGS
-Einstellungsbereich – öffnen!;OPEN_SETTINGS
+Einstellungsbereich - öffnen!;OPEN_SETTINGS
 Mach die Settings auf.;OPEN_SETTINGS
 Formell: Öffne das Einstellungsfenster.;OPEN_SETTINGS
 Settings. Jetzt!;OPEN_SETTINGS
@@ -852,7 +852,7 @@ Was gibt's in den Settings?;OPEN_SETTINGS
 Öffne die Konfig, bitte.;OPEN_SETTINGS
 Yo, ins Einstellungsmenü.;OPEN_SETTINGS
 Formell: Navigiere zu den Präferenzen.;OPEN_SETTINGS
-Menü aufmachen – schnell!;OPEN_SETTINGS
+Menü aufmachen - schnell!;OPEN_SETTINGS
 Wo finde ich die Konfig?;OPEN_SETTINGS
 Kannste mir die Einstellungen zeigen?;OPEN_SETTINGS
 Konfigurationsmodus einschalten.;OPEN_SETTINGS
@@ -894,7 +894,7 @@ Konfigurationsmodus starten.;OPEN_SETTINGS
 Hey, Einstellungen betreten.;OPEN_SETTINGS
 Identifiziere und öffne Menü.;OPEN_SETTINGS
 Zeig die Auswahl der Optionen.;OPEN_SETTINGS
-Einstellungsbereich – los!;OPEN_SETTINGS
+Einstellungsbereich - los!;OPEN_SETTINGS
 Öffne die UI, bitte.;OPEN_SETTINGS
 Präferenzauswahl anzeigen.;OPEN_SETTINGS
 Hilf mir ins Menü.;OPEN_SETTINGS
@@ -1141,7 +1141,7 @@ Sprich flotter, danke.;CHANGE_SPEECH_SPEED
 Verlangsame das Reden.;CHANGE_SPEECH_SPEED
 Hey, mach mal langsamer.;CHANGE_SPEECH_SPEED
 Bitte Tempo steigern.;CHANGE_SPEECH_SPEED
-Sprechgeschwindigkeit – höher!;CHANGE_SPEECH_SPEED
+Sprechgeschwindigkeit - höher!;CHANGE_SPEECH_SPEED
 Gib Gas beim Sprechen.;CHANGE_SPEECH_SPEED
 Formell: Erhöhe die Geschwindigkeit.;CHANGE_SPEECH_SPEED
 Schneller. Jetzt!;CHANGE_SPEECH_SPEED
@@ -1168,7 +1168,7 @@ Zu langsam, hoch damit!;CHANGE_SPEECH_SPEED
 Sprich in normalem Rhythmus.;CHANGE_SPEECH_SPEED
 Yo, langsamer werden.;CHANGE_SPEECH_SPEED
 Formell: Verringere die Sprechrate.;CHANGE_SPEECH_SPEED
-Tempo optimieren – schneller!;CHANGE_SPEECH_SPEED
+Tempo optimieren - schneller!;CHANGE_SPEECH_SPEED
 Zu träge, beschleunigen.;CHANGE_SPEECH_SPEED
 Kannste das Tempo anpassen?;CHANGE_SPEECH_SPEED
 Modifiziere die Geschwindigkeit.;CHANGE_SPEECH_SPEED
@@ -1192,7 +1192,7 @@ Zu schnell, bremsen.;CHANGE_SPEECH_SPEED
 Sprich in moderatem Tempo.;CHANGE_SPEECH_SPEED
 Hey, Tempo pushen.;CHANGE_SPEECH_SPEED
 Formell: Passe die Geschwindigkeit an.;CHANGE_SPEECH_SPEED
-Redegeschwindigkeit verringern – jetzt!;CHANGE_SPEECH_SPEED
+Redegeschwindigkeit verringern - jetzt!;CHANGE_SPEECH_SPEED
 Zu gemächlich, zackiger!;CHANGE_SPEECH_SPEED
 Kannste schneller werden?;CHANGE_SPEECH_SPEED
 Tempo der Stimme ändern.;CHANGE_SPEECH_SPEED
@@ -1217,7 +1217,7 @@ Zu langsam, Gas geben.;CHANGE_SPEECH_SPEED
 Sprich lebhafter.;CHANGE_SPEECH_SPEED
 Yo, Tempo drosseln.;CHANGE_SPEECH_SPEED
 Formell: Erhöhe die Rate.;CHANGE_SPEECH_SPEED
-Sprechgeschwindigkeit boosten – schnell!;CHANGE_SPEECH_SPEED
+Sprechgeschwindigkeit boosten - schnell!;CHANGE_SPEECH_SPEED
 Zu hastig, gemächlicher.;CHANGE_SPEECH_SPEED
 Kannste das Tempo runtersetzen?;CHANGE_SPEECH_SPEED
 Modifiziere die Sprechrate.;CHANGE_SPEECH_SPEED
@@ -1448,7 +1448,7 @@ Wechsle zu weiblich, danke.;CHANGE_SPEAKER
 Ändere den Sprecher.;CHANGE_SPEAKER
 Hey, neue Stimme ausprobieren.;CHANGE_SPEAKER
 Bitte Stimme umstellen.;CHANGE_SPEAKER
-Assistentenstimme – wechsle!;CHANGE_SPEAKER
+Assistentenstimme - wechsle!;CHANGE_SPEAKER
 Mach 'ne andere Voice.;CHANGE_SPEAKER
 Formell: Passe die Stimme an.;CHANGE_SPEAKER
 Voice wechseln. Sofort!;CHANGE_SPEAKER
@@ -2038,7 +2038,7 @@ Verlasse die Einstellungen, danke.;ABORT
 Stoppe den Vorgang.;ABORT
 Hey, hör auf damit.;ABORT
 Bitte Abbruch ausführen.;ABORT
-Einstellungen verlassen – los!;ABORT
+Einstellungen verlassen - los!;ABORT
 Mach Schluss.;ABORT
 Formell: Beende den Dialog.;ABORT
 Stop. Sofort!;ABORT
@@ -2065,7 +2065,7 @@ Das reicht, aus.;ABORT
 Zurück zum Haupt.;ABORT
 Yo, vergiss es.;ABORT
 Formell: Verlasse die Konfiguration.;ABORT
-Abbrechen – schnell!;ABORT
+Abbrechen - schnell!;ABORT
 Nein, doch nicht, stopp.;ABORT
 Kannste rückgängig machen?;ABORT
 Dialog beenden, yeah?;ABORT

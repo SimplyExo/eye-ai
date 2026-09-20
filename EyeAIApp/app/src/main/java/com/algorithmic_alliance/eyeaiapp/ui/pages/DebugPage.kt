@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI.pages
+package com.algorithmic_alliance.eyeaiapp.ui.pages
 
 import android.Manifest
 import android.content.SharedPreferences
@@ -67,10 +67,10 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
-import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
-import com.algorithmic_alliance.eyeaiapp.UI.PremiumFloatingActionButton
-import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
+import com.algorithmic_alliance.eyeaiapp.ui.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.ui.OverlayViewOD
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumFloatingActionButton
+import com.algorithmic_alliance.eyeaiapp.ui.UIEvent
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
@@ -86,7 +86,7 @@ fun DebugPage(
 ) {
 	Log.d(LOG_TAG, "[DebugPage] Loading DebugPage")
 	val uiState by viewModel.debugPageUIState.collectAsStateWithLifecycle()
-	val context = LocalContext.current
+	val context = viewModel.eyeAIApp()
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	val speechRecognitionKey = stringResource(R.string.enable_speech_recognition_setting)
 	var speechRecognitionEnabled by rememberSaveable { mutableStateOf(true) }
@@ -403,10 +403,10 @@ fun ObjectDetectionOverlay(
 	onOverlayCreated: (OverlayViewOD) -> Unit = {},
 ) {
 	val uiState by viewModel.objectDetectionOverlayUIState.collectAsStateWithLifecycle()
-	val context = LocalContext.current
+	val context = viewModel.eyeAIApp()
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	val languageKey = stringResource(R.string.object_playback_language)
-	val defaultLanguage = context.getString(R.string.language_is_german)
+	val defaultLanguage = stringResource(R.string.language_is_german)
 	var playbackLanguage by remember {
 		mutableStateOf(
 			sharedPreferences.getString(languageKey, defaultLanguage)

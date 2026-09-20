@@ -2,7 +2,6 @@ package com.algorithmic_alliance.eyeaiapp.audio
 
 import android.content.Context
 import android.util.Log
-import com.algorithmic_alliance.eyeaiapp.AIModelData.segmentationClassImportances
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +15,7 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.time.Duration.Companion.milliseconds
 
 
 object SpatialAudio {
@@ -47,7 +47,7 @@ object SpatialAudio {
 							segmentationClassImportances ?: emptyList()
 						)
 					}
-					delay(50)
+					delay(50.milliseconds)
 				}
 			}
 		}

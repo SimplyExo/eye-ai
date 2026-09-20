@@ -26,7 +26,6 @@ class CameraXFrameAdapter(
 			frameAnalyzer.submitFrame(
 				AnalysisFrame(
 					bitmap = bitmap,
-					pixelFormat = FramePixelFormat.RGBA_8888,
 					width = bitmap.width,
 					height = bitmap.height,
 					rotationDegrees = rotationDegrees,

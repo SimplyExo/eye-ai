@@ -123,7 +123,7 @@ endif()
 # Dynamic dependencies from THIRD_PARTY_LIBS
 foreach(_lib ${THIRD_PARTY_LIBS})
 	# Skip CMake targets (tl::expected, tensorflowlite_c, absl::log, etc.)
-	# — they are either header-only or static libs that are already linked
+	# - they are either header-only or static libs that are already linked
 	#   into tflite-runtime when building from source.
 	if(IS_ABSOLUTE "${_lib}" AND EXISTS "${_lib}")
 		get_filename_component(_dir "${_lib}" DIRECTORY)

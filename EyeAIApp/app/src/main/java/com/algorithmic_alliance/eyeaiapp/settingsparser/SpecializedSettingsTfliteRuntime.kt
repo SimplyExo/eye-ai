@@ -123,17 +123,6 @@ class SpecializedSettingsTfliteRuntime private constructor(
 			)
 		}
 
-		/** Test helper for a TFLite-capable host using the identical APK asset files. */
-		fun fromDirectory(directory: Path): SpecializedSettingsTfliteRuntime {
-			val verified = SettingsParserAssetContract.verifyDirectory(directory)
-			return create(
-				wordBuffer = mapFile(directory.resolve("word_operation_seed_20260812.tflite")),
-				characterBuffer = mapFile(directory.resolve("character_speaker_seed_20260814.tflite")),
-				wordTokenizer = FrozenSettingsTokenizer.fromJson(verified.wordTokenizerJson),
-				characterTokenizer = FrozenCharacterSettingsTokenizer.fromJson(verified.characterTokenizerJson)
-			)
-		}
-
 		private fun create(
 			wordBuffer: MappedByteBuffer,
 			characterBuffer: MappedByteBuffer,
@@ -170,6 +159,7 @@ class SpecializedSettingsTfliteRuntime private constructor(
 				}
 			}
 
+		@Suppress("unused")
 		private fun mapFile(path: Path): MappedByteBuffer =
 			FileChannel.open(path, StandardOpenOption.READ).use { channel ->
 				channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
