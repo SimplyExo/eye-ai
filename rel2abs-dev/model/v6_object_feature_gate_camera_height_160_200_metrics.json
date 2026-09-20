@@ -1,0 +1,57 @@
+[
+  {
+    "model_id": "E_ObjectGate_DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION_V3_WAYMO_CAMERA_HEIGHT_160",
+    "feature_set": "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION+CAMERA_HEIGHT_CALIBRATION",
+    "input_dim": 57,
+    "train_rows": 4487,
+    "dev_rows": 1333,
+    "train_absrel": 0.17250909544543266,
+    "dev_absrel": 0.18810817575002448,
+    "camera_height_m": 1.6,
+    "parameter_count": 945
+  },
+  {
+    "model_id": "E_ObjectGate_DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION_V3_WAYMO_CAMERA_HEIGHT_170",
+    "feature_set": "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION+CAMERA_HEIGHT_CALIBRATION",
+    "input_dim": 57,
+    "train_rows": 4487,
+    "dev_rows": 1333,
+    "train_absrel": 0.1714829805767691,
+    "dev_absrel": 0.18659801723912425,
+    "camera_height_m": 1.7,
+    "parameter_count": 945
+  },
+  {
+    "model_id": "E_ObjectGate_DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION_V3_WAYMO_CAMERA_HEIGHT_180",
+    "feature_set": "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION+CAMERA_HEIGHT_CALIBRATION",
+    "input_dim": 57,
+    "train_rows": 4487,
+    "dev_rows": 1333,
+    "train_absrel": 0.17082328695394403,
+    "dev_absrel": 0.18938053433301916,
+    "camera_height_m": 1.8,
+    "parameter_count": 945
+  },
+  {
+    "model_id": "E_ObjectGate_DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION_V3_WAYMO_CAMERA_HEIGHT_190",
+    "feature_set": "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION+CAMERA_HEIGHT_CALIBRATION",
+    "input_dim": 57,
+    "train_rows": 4487,
+    "dev_rows": 1333,
+    "train_absrel": 0.17744024170311598,
+    "dev_absrel": 0.19376895289560164,
+    "camera_height_m": 1.9,
+    "parameter_count": 945
+  },
+  {
+    "model_id": "E_ObjectGate_DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION_V3_WAYMO_CAMERA_HEIGHT_200",
+    "feature_set": "DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION+CAMERA_HEIGHT_CALIBRATION",
+    "input_dim": 57,
+    "train_rows": 4487,
+    "dev_rows": 1333,
+    "train_absrel": 0.18165531611250293,
+    "dev_absrel": 0.195252931537445,
+    "camera_height_m": 2.0,
+    "parameter_count": 945
+  }
+]
