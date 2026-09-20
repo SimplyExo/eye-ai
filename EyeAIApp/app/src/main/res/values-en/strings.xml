@@ -123,6 +123,10 @@
 	<!-- Depth Estimation -->
 	<string name="setting_depth_estimation_model_title">Depth estimation model</string>
 	<string name="setting_depth_estimation_model_description">The AI model used to estimate the distance to objects.</string>
+	<string name="setting_rel2abs_mode_title">REL2ABS-Calibration</string>
+	<string name="setting_rel2abs_mode_description">EyeAI uses the V6 object gate with full YOLO-/Segmentationcontext. The internal Z1-Calculations stay as a technical visual fallback.</string>
+	<string name="setting_camera_height_title">Camera height for REL2ABS</string>
+	<string name="setting_camera_height_description">Chooses a separately trained Camera-height Model between 1,6 m and 2,0 m in 0,1-m steps. 1,7 m is the recommended stable setting.</string>
 	<string name="setting_enable_framerate_limiter_title">Enable frame rate limiter</string>
 	<string name="setting_enable_depth_framerate_limiter_description">Limits the frame rate of depth estimation to free up resources for other tasks.</string>
 	<string name="setting_framerate_limit_title">Frame rate limit</string>
