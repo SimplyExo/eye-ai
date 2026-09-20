@@ -1,4 +1,4 @@
-# EyeAIApp EyeAIApp
+# EyeAIApp
 
 Android app running MiDaS and DepthAnything depth estimation models
 
