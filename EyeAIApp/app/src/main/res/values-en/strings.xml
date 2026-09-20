@@ -156,7 +156,7 @@
 	<string name="setting_object_detection_enabled_title">Enable object detection</string>
 	<string name="setting_object_detection_description">If enabled, the AI will detect nearby objects.</string>
 	<string name="setting_enable_object_framerate_limiter_description">Limits the frame rate of object detection to free up resources for other tasks.</string>
-	<string name="setting_object_framerate_limit_description">The maximum number of frames per second processed by the object detection.</string>
+	<string name="setting_object_framerate_limit_description">Hard maximum; adaptive modes use about 35%, 65%, and 100% within this budget.</string>
 
 	<!-- Segmentation -->
 	<string name="setting_segmentation_enabled_title">Enable segmentation</string>

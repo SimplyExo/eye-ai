@@ -1,6 +1,9 @@
 use bytetrack_cpp_rs::BYTETracker;
 use eye_ai_core_rs_profiling_attribute::profile_function;
-use std::{collections::HashMap, time::Instant};
+use std::{
+	collections::HashMap,
+	time::{Duration, Instant},
+};
 
 use crate::{BoundingBox, DetectedObject, ProfilingFrame};
 
@@ -18,12 +21,25 @@ impl TrackedObject {
 	}
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum TrackValidationState {
+	Tentative { confidence_visible_seconds: f32 },
+	Confirmed,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct TrackValidation {
+	state: TrackValidationState,
+	last_seen: Instant,
+	last_seen_update: u64,
+}
+
 pub struct ObjectTracker<'a> {
 	labels: Vec<String>,
 	tracker: BYTETracker,
-	last_update: Instant,
-	/// sums up all the confidence of a tracked object
-	tracked_object_valid_score: HashMap<i32, f32>,
+	last_update: Option<Instant>,
+	update_number: u64,
+	track_validations: HashMap<i32, TrackValidation>,
 	profiling_frame: &'a ProfilingFrame,
 }
 impl<'a> std::fmt::Debug for ObjectTracker<'a> {
@@ -31,71 +47,136 @@ impl<'a> std::fmt::Debug for ObjectTracker<'a> {
 		f.debug_struct("ObjectTracker")
 			.field("labels", &self.labels)
 			.field("last_update", &self.last_update)
-			.field(
-				"tracked_object_valid_score",
-				&self.tracked_object_valid_score,
-			)
+			.field("update_number", &self.update_number)
+			.field("track_validations", &self.track_validations)
 			.field("profiling_frame", &self.profiling_frame)
 			.finish_non_exhaustive()
 	}
 }
 impl<'a> ObjectTracker<'a> {
-	/// For how many seconds a 100% confident prediction needs to be tracked in
-	/// order to be considered valid
-	pub const MIN_WAITING_PREDICTION_TIME_BEFORE_VALID: f32 = 0.5;
+	pub const MIN_WAITING_PREDICTION_TIME_BEFORE_VALID: f32 = 0.45;
+	const MAX_RELIABLE_VALIDATION_INTERVAL: Duration = Duration::from_secs(2);
 
 	pub fn new(labels: Vec<String>, profiling_frame: &'a ProfilingFrame) -> Self {
 		Self {
 			labels,
 			tracker: BYTETracker::default(),
-			last_update: Instant::now(),
-			tracked_object_valid_score: HashMap::new(),
+			last_update: None,
+			update_number: 0,
+			track_validations: HashMap::new(),
 			profiling_frame,
 		}
 	}
 
+	pub fn reset(&mut self) {
+		self.tracker = BYTETracker::default();
+		self.last_update = None;
+		self.update_number = 0;
+		self.track_validations.clear();
+	}
+
+	fn is_track_confirmed(
+		&mut self,
+		tracking_id: i32,
+		confidence: f32,
+		now: Instant,
+		update_duration: Duration,
+	) -> bool {
+		let validation = self
+			.track_validations
+			.entry(tracking_id)
+			.or_insert(TrackValidation {
+				state: TrackValidationState::Tentative {
+					confidence_visible_seconds: 0.0,
+				},
+				last_seen: now,
+				last_seen_update: self.update_number,
+			});
+
+		let was_seen_in_previous_update =
+			validation.last_seen_update == self.update_number.wrapping_sub(1);
+		validation.last_seen = now;
+		validation.last_seen_update = self.update_number;
+
+		let TrackValidationState::Tentative {
+			confidence_visible_seconds,
+		} = &mut validation.state
+		else {
+			return true;
+		};
+
+		if was_seen_in_previous_update && update_duration <= Self::MAX_RELIABLE_VALIDATION_INTERVAL
+		{
+			let bounded_confidence = if confidence.is_finite() {
+				confidence.clamp(0.0, 1.0)
+			} else {
+				0.0
+			};
+			*confidence_visible_seconds += bounded_confidence * update_duration.as_secs_f32();
+		}
+
+		if *confidence_visible_seconds >= Self::MIN_WAITING_PREDICTION_TIME_BEFORE_VALID {
+			validation.state = TrackValidationState::Confirmed;
+			true
+		} else {
+			false
+		}
+	}
+
+	fn cleanup_stale_track_validations(&mut self, now: Instant) {
+		let nominal_maximum_track_lifetime =
+			Duration::from_secs_f64(BYTETracker::DEFAULT_MAX_TRACKING_TIME_SECONDS);
+		self.track_validations.retain(|_, validation| {
+			now.saturating_duration_since(validation.last_seen) <= nominal_maximum_track_lifetime
+		});
+	}
+
 	#[profile_function("self.profiling_frame")]
 	pub fn update(&mut self, detected_objects: Vec<DetectedObject>) -> Vec<TrackedObject> {
-		let now = Instant::now();
-		let update_duration = now - self.last_update;
-		self.last_update = now;
+		self.update_at(detected_objects, Instant::now())
+	}
 
-		let frame_rate = 1.0 / update_duration.as_secs_f32();
-		self.tracker
-			.set_max_time_lost_seconds(BYTETracker::DEFAULT_MAX_TRACKING_TIME_SECONDS, frame_rate);
+	fn update_at(
+		&mut self,
+		detected_objects: Vec<DetectedObject>,
+		now: Instant,
+	) -> Vec<TrackedObject> {
+		let update_duration = self.last_update.map_or(Duration::ZERO, |last_update| {
+			now.saturating_duration_since(last_update)
+		});
+		self.last_update = Some(now);
+		self.update_number = self.update_number.wrapping_add(1);
 
 		let byte_track_objects = detected_objects
 			.into_iter()
 			.map(|detected_object| detected_object.into())
 			.collect::<Vec<bytetrack_cpp_rs::Object>>();
 
-		let byte_track_tracked_objects = self.tracker.update(&byte_track_objects);
+		let byte_track_tracked_objects = self.tracker.update(&byte_track_objects, update_duration);
 
 		let mut tracked_objects = Vec::with_capacity(byte_track_tracked_objects.len());
-		let min_valid_prediction_score: f32 =
-			Self::MIN_WAITING_PREDICTION_TIME_BEFORE_VALID * frame_rate;
 		for byte_track_tracked_object in byte_track_tracked_objects {
-			let label = byte_track_tracked_object.label;
-			if label < 0 {
-				continue;
-			}
-			let Some(label) = self.labels.get(label as usize) else {
+			let Some(label) = self
+				.labels
+				.get(byte_track_tracked_object.label as usize)
+				.cloned()
+			else {
 				continue;
 			};
 			let tracking_id = byte_track_tracked_object.track_id;
 
-			let valid_score: &mut f32 = self
-				.tracked_object_valid_score
-				.entry(tracking_id)
-				.or_insert(0.0);
-			*valid_score += byte_track_tracked_object.score;
-			if *valid_score < min_valid_prediction_score {
+			if !self.is_track_confirmed(
+				tracking_id,
+				byte_track_tracked_object.score,
+				now,
+				update_duration,
+			) {
 				continue;
 			}
 
 			tracked_objects.push(TrackedObject {
 				object: DetectedObject::new(
-					label.clone(),
+					label,
 					byte_track_tracked_object.label as usize,
 					byte_track_tracked_object.score,
 					BoundingBox::from_x_y_w_h(
@@ -108,6 +189,7 @@ impl<'a> ObjectTracker<'a> {
 				tracking_id,
 			});
 		}
+		self.cleanup_stale_track_validations(now);
 		tracked_objects
 	}
 }

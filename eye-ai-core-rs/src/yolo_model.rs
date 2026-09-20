@@ -375,5 +375,9 @@ fn calculate_iou(object_a: &DetectedObject, object_b: &DetectedObject) -> f32 {
 	let a_area = object_a.bbox.width * object_a.bbox.height;
 	let b_area = object_b.bbox.width * object_b.bbox.height;
 
-	intersection_area / (a_area + b_area - intersection_area)
+	let union_area = a_area + b_area - intersection_area;
+	if union_area <= 0.0 {
+		return 0.0;
+	}
+	intersection_area / union_area
 }

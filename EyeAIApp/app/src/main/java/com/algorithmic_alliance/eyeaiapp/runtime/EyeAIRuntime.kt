@@ -165,7 +165,7 @@ class EyeAIRuntime internal constructor(
 	val nlpModel = NLPModel(NLPModelInfo.findById(NLPModelInfo.DEFAULT_MODEL_ID))
 	val ocrModel = GoogleOCR()
 	val voskModel = VoskModel(context, "model-de")
-	val frameAnalyzer = FrameAnalyzer(this, ::onFrameAnalysisUpdate)
+	val frameAnalyzer = FrameAnalyzer(context, this, ::onFrameAnalysisUpdate)
 	val cameraManager = CameraManager(::onCameraStateChanged)
 	val npuQnnDelegateDirectory: String = app.applicationInfo.nativeLibraryDir
 
