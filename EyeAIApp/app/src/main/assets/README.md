@@ -1,4 +1,4 @@
-\page AIModelSources AI Model sources
+# AI Model sources
 
 ## Speech Recognition: Vosk
 
