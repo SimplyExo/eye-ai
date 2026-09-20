@@ -38,7 +38,8 @@ Das Trackingsystem ermöglicht unter anderem:
 Eine zusätzliche Validierungslogik unterscheidet dabei zwischen noch nicht bestätigten und bestätigten Tracks.
 
 ### Tiefenschätzung und Distanzinformationen
-EyeAI integriert eine lokale Tiefenschätzung über MiDaS, um zusätzlich zur zweidimensionalen Position eines Objekts auch Informationen über dessen relative Entfernung zu gewinnen.
+EyeAI integriert eine lokale, relative Tiefenschätzung über MiDaS und zusätzlich eine Schätzung der absoluten Distanz per selbstentwickeltem rel2abs, 
+um zusätzlich zur zweidimensionalen Position eines Objekts auch Informationen über dessen relative Entfernung zu gewinnen.
 Das Modell erweitert klassische Objekterkennung damit um räumliche Informationen und bildet eine wichtige Grundlage für situationsabhängiges Audiofeedback.
 Auch MiDaS läuft auf unterstützten Handys vollständig auf der **NPU**, wodurch extrem geringe Inferenzzeiten und geringster Energieverbrauch bei bestem Output garantiert bleibt.
 
