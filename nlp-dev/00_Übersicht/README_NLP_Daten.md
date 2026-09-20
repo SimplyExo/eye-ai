@@ -19,4 +19,3 @@ Dokumentation/
 └── Intern/              interne Entwicklungsdokumentation
 ```
 
-Die vollständige Datei-Zuordnung steht in `00_Übersicht/DATEI_KLASSIFIKATION.tsv`.
