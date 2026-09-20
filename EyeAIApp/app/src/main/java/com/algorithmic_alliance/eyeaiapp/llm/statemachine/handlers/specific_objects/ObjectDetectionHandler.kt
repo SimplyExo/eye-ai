@@ -67,7 +67,13 @@ class ObjectDetectionHandler {
 				recognized.map { it.label }.distinct().take(5),
 			)
 
-			return when (val result = MetricDistanceResolver.resolve(found.box, paired.metricDepth)) {
+			return when (val result = MetricDistanceResolver.resolve(
+				box = found.box,
+				frame = paired.metricDepth,
+				contextFeatures = paired.contextFeatures,
+				detections = paired.detectionFrame.detections,
+				segmentationContext = paired.segmentationContext,
+			)) {
 				is MetricDistanceResolver.Result.Available -> ObjectDetectionResult.ObjectFound(
 					DetectedObject(
 						label = found.label,

@@ -1,6 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.camera
 
 import android.graphics.Bitmap
+import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsCameraIntrinsics
 import java.util.concurrent.atomic.AtomicInteger
 
 /** Pixel representation handed to the common image-analysis path. */
@@ -24,6 +25,8 @@ class AnalysisFrame(
 	/** Rotation of the source image that the source adapter applied. */
 	val rotationDegrees: Int,
 	val timestampNanos: Long,
+	/** Optional Camera2 calibration scaled to this bitmap. */
+	val cameraIntrinsics: Rel2AbsCameraIntrinsics? = null,
 	private val onReleased: (() -> Unit)? = null,
 ) : AutoCloseable {
 	private val references = AtomicInteger(1)

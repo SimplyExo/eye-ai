@@ -8,6 +8,8 @@ import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.rel2abs.DetectionFrame
 import com.algorithmic_alliance.eyeaiapp.rel2abs.MetricDepthFrame
+import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsContextFeatures
+import com.algorithmic_alliance.eyeaiapp.rel2abs.SegmentationContextFrame
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -226,6 +228,8 @@ class FrameAnalyzer(
 								sourceHeight = frame.height,
 								rotationDegrees = frame.rotationDegrees,
 								rel2absMode = rel2Abs.mode,
+								cameraIntrinsics = frame.cameraIntrinsics,
+								neuralGateRunner = runtime.rel2AbsNeuralGateRunner,
 							),
 						)
 					} else {
@@ -302,14 +306,16 @@ class FrameAnalyzer(
 				val inferenceDuration = measureTime {
 					uniffi.NativeLib.newObjectFrame()
 					val objects = runtime.runObjectInference(frame.bitmap)
-					AIModelData.detectedObjects.set(objects ?: emptyArray())
+					val safeObjects = objects ?: emptyArray()
+					AIModelData.detectedObjects.set(safeObjects)
 					AIModelData.rel2AbsFrameCache.publishDetections(
 						DetectionFrame(
-							detections = objects ?: emptyArray(),
+							detections = safeObjects,
 							sourceTimestampNanos = frame.timestampNanos,
 							sourceWidth = frame.width,
 							sourceHeight = frame.height,
 							rotationDegrees = frame.rotationDegrees,
+							objectContextFeatures = Rel2AbsContextFeatures.objectFeatures(safeObjects),
 						),
 					)
 					lastObjectOutputAtNanos.set(System.nanoTime())
@@ -344,11 +350,31 @@ class FrameAnalyzer(
 			observedSequence = frameAvailable.first { it > observedSequence }
 			val frame = retainLatestFrame() ?: continue
 			try {
-				if (!runtime.settings.enableSegmentation) continue
+				if (!runtime.settings.enableSegmentation) {
+					AIModelData.rel2AbsFrameCache.clearSegmentationContexts()
+					continue
+				}
 				val inferenceDuration = measureTime {
 					uniffi.NativeLib.newSegmentationFrame()
 					val output = runtime.runSegmentationInference(frame.bitmap) ?: continue
 					AIModelData.segmentationOutput.set(output.prediction)
+					val segmentationContext = Rel2AbsContextFeatures.segmentationFeatureContext(
+						output.prediction,
+						output.inputDim.width,
+						output.inputDim.height,
+					)
+					AIModelData.rel2AbsFrameCache.publishSegmentationContext(
+						SegmentationContextFrame(
+							segmentationFeatures = Rel2AbsContextFeatures.segmentationFeatures(output.prediction),
+							sourceTimestampNanos = frame.timestampNanos,
+							sourceWidth = frame.width,
+							sourceHeight = frame.height,
+							rotationDegrees = frame.rotationDegrees,
+							globalAreaFractions = segmentationContext.globalAreaFractions,
+							gridAreaFractions = segmentationContext.gridAreaFractions,
+							available = segmentationContext.available,
+						),
+					)
 					val colorMappedImage = NativeLib.segmentationColormap(
 						output.prediction.asUniffiWrapper(),
 						output.inputDim,

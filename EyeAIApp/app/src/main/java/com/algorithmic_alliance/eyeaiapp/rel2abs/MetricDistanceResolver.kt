@@ -17,7 +17,13 @@ object MetricDistanceResolver {
 		object Invalid : Result()
 	}
 
-	fun resolve(box: UniffiDetectedObject, frame: MetricDepthFrame): Result {
+	fun resolve(
+		box: UniffiDetectedObject,
+		frame: MetricDepthFrame,
+		contextFeatures: FloatArray = FloatArray(Rel2AbsContextFeatures.TOTAL_FEATURE_COUNT),
+		detections: Array<UniffiDetectedObject> = emptyArray(),
+		segmentationContext: SegmentationContextFrame? = null,
+	): Result {
 		if (frame.depthMeters.size != frame.width * frame.height) return Result.Invalid
 		if (!box.x1.isFinite() || !box.y1.isFinite() || !box.x2.isFinite() || !box.y2.isFinite()) {
 			return Result.Invalid
@@ -49,6 +55,16 @@ object MetricDistanceResolver {
 		} else {
 			values[count / 2]
 		}
-		return if (median.isFinite() && median > 0f) Result.Available(median, count) else Result.Invalid
+		if (!median.isFinite() || median <= 0f) return Result.Invalid
+		val neuralEstimate = frame.neuralGateRunner?.resolve(
+			mode = frame.rel2absMode,
+			box = box,
+			visualMeters = median,
+				frame = frame,
+				contextFeatures = contextFeatures,
+				detections = detections,
+				segmentationContext = segmentationContext,
+			)
+		return Result.Available(neuralEstimate ?: median, count)
 	}
 }

@@ -15,9 +15,9 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Frozen Z1 and S2 deployment contracts.  This runner performs no model
- * selection and no temporal state update: it maps exactly one raw MiDaS frame
- * to either Z1 depth or Z1 followed by the selected frozen S2 scalar.
+ * Frozen Z1 and S2 deployment contracts. The V6 neural-gate modes reuse the
+ * same Z1 pixel map as their visual endpoint; their object-level F1 fusion is
+ * applied later by [MetricDistanceResolver].
  */
 class Rel2AbsRunner private constructor(
 	private val context: Context,
@@ -64,7 +64,7 @@ class Rel2AbsRunner private constructor(
 			mutableMapOf<Int, Any>(0 to z1Output),
 		)
 		val z1Depth = decodeZ1(raw, z1Output[0][0], z1Output[0][1])
-		if (mode == Rel2AbsMode.Z1) return Output(z1Depth, mode)
+		if (mode == Rel2AbsMode.Z1 || mode.isNeuralGate) return Output(z1Depth, mode)
 
 		val s2Features = s2Features(statistics, small)
 		val s2Output = Array(1) { FloatArray(1) }

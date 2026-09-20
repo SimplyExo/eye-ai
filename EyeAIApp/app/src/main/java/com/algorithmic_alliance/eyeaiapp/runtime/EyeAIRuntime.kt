@@ -40,6 +40,7 @@ import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModel
 import com.algorithmic_alliance.eyeaiapp.object_detection.YoloModelInfo
 import com.algorithmic_alliance.eyeaiapp.ocr.GoogleOCR
 import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsRunner
+import com.algorithmic_alliance.eyeaiapp.rel2abs.V6NeuralGateRunner
 import com.algorithmic_alliance.eyeaiapp.segmentation.SegmentationModel
 import com.algorithmic_alliance.eyeaiapp.segmentation.SegmentationModelInfo
 import com.algorithmic_alliance.eyeaiapp.settingsparser.LocalSettingsParser
@@ -116,6 +117,7 @@ class EyeAIRuntime internal constructor(
 
 	private var metricDepthModelValue: MetricDepthModel? = null
 	private var rel2AbsRunnerValue: Rel2AbsRunner? = null
+	private var rel2AbsNeuralGateRunnerValue: V6NeuralGateRunner? = null
 	private var textToSpeechInstanceValue: TextToSpeechInstance? = null
 	private var speechCallbacksInstalled = false
 	private var lastFinalResultMillis = 0L
@@ -178,6 +180,14 @@ class EyeAIRuntime internal constructor(
 			check(!runtimeClosed) { "EyeAI runtime is closed" }
 			rel2AbsRunnerValue ?: Rel2AbsRunner.fromAssets(context).also {
 				rel2AbsRunnerValue = it
+			}
+		}
+
+	internal val rel2AbsNeuralGateRunner: V6NeuralGateRunner?
+		get() = synchronized(stateLock) {
+			if (!settings.rel2AbsMode.isNeuralGate || runtimeClosed) return@synchronized null
+			rel2AbsNeuralGateRunnerValue ?: V6NeuralGateRunner.fromAssets(context).also {
+				rel2AbsNeuralGateRunnerValue = it
 			}
 		}
 
@@ -776,10 +786,11 @@ class EyeAIRuntime internal constructor(
 	}
 
 	/**
-	 * Runs a frozen REL2ABS Z1/S2 head over the raw representation emitted by
+	 * Runs a frozen REL2ABS Z1/S2 visual head over the raw representation emitted by
 	 * the standard MiDaS-v2.1-small model. This intentionally returns null for
 	 * another depth model: using an unverified raw representation would violate
-	 * the frozen Z1/S2 feature contract.
+	 * the frozen feature contract. V6 gate modes return this visual map and add
+	 * their object-level F1 fusion in [MetricDistanceResolver].
 	 */
 	internal fun runRel2AbsInference(
 		frame: Bitmap,
@@ -903,6 +914,7 @@ class EyeAIRuntime internal constructor(
 			textToSpeechInstanceValue = null
 			rel2AbsRunnerValue?.close()
 			rel2AbsRunnerValue = null
+			rel2AbsNeuralGateRunnerValue = null
 		}
 		modelLock.write {
 			metricDepthModelValue = null

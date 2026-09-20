@@ -89,17 +89,21 @@ class CameraManager(
 							Preview.Builder().setTargetFrameRate(Range(60, 120)).build()
 						}
 					}
+					val cameraSelection = mostWideCameraSelection(provider)
 					val analysis = ImageAnalysis.Builder()
 						.setImageQueueDepth(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 						.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 						.setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
 						.setResolutionSelector(performanceResolutionSelector(preferredImageSize))
 						.build()
-					analysis.setAnalyzer(cameraExecutor, CameraXFrameAdapter(frameAnalyzer))
+					analysis.setAnalyzer(
+						cameraExecutor,
+						CameraXFrameAdapter(frameAnalyzer, cameraSelection.calibration),
+					)
 
 					// CameraManager is the sole local CameraX owner. Unbind
 					// only at a new binding boundary, never on UI recreation.
-					val selector = mostWideCameraSelector(provider)
+					val selector = cameraSelection.cameraSelector
 					provider.unbindAll()
 					val useCases = buildList<UseCase> {
 						add(analysis)
