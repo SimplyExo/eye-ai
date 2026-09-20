@@ -20,7 +20,3 @@ void controller::on_quit() {
 
     qCInfo(logGeneral).noquote() << "Quitting application...";
 }
-
-void controller::start_socket() {
-
-}

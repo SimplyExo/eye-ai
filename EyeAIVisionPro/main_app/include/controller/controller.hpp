@@ -1,5 +1,6 @@
 #pragma once
 
+#include "status_led/status_led.hpp"
 #include <init_helper/init_helper.hpp>
 #include <button_sock/button_sock.hpp>
 #include <webserver/webserver.hpp>
@@ -31,19 +32,25 @@ class controller : public QObject {
 
             qCInfo(logNetwork).noquote() << QString("Starting button socket on port %1").arg(TCP_PORT);
             connect(&socket_btn, &button_sock::clientConnected,
-                this, [](const QHostAddress addr, const quint16 port) {
+                this, [this](const QHostAddress addr, const quint16 port) {
                         auto ipv4 = QHostAddress(addr.toIPv4Address());
                         qCInfo(logServices).noquote() << QString("New client connected: %1:%2")
                             .arg(ipv4.toString())
                             .arg(port);
+
+                        if (!led_setter.set_led_state(status_led::GREEN))
+                            qCWarning(logGeneral).noquote() << "Couldn't set LED to green!";
                      });
 
             connect(&socket_btn, &button_sock::clientDisconnected,
-                this, [](const QHostAddress addr, const quint16 port) {
+                this, [this](const QHostAddress addr, const quint16 port) {
                         auto ipv4 = QHostAddress(addr.toIPv4Address());
                         qCInfo(logServices).noquote() << QString("Client Disconnected: %1:%2")
                             .arg(ipv4.toString())
                             .arg(port);
+                        
+                            if (!led_setter.set_led_state(status_led::RED))
+                                qCWarning(logGeneral).noquote() << "Couldn't set LED to red!";
                      });
 
             bool sock_result = socket_btn.start_server();
@@ -71,8 +78,8 @@ class controller : public QObject {
     private:
         init_helper mediamtx_init = init_helper("mediamtx");
         button_sock socket_btn = button_sock();
+        status_led led_setter = status_led();
         webserver web = webserver(&mediamtx_init);
 
         cmd_output start_mediamtx();
-        void start_socket();
 };
