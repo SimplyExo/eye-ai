@@ -8,6 +8,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 class SpatialAudioResumeControllerTest {
 	@Test
@@ -71,7 +72,7 @@ class SpatialAudioResumeControllerTest {
 		controller.schedule("SETTINGS_APPLIED")
 		controller.cancel()
 		silence.complete(true)
-		delay(10)
+		delay(10.milliseconds)
 
 		assertFalse(controller.isPending())
 		assertEquals(listOf("pause"), events)

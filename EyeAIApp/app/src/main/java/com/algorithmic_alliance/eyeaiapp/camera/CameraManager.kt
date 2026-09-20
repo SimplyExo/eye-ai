@@ -6,7 +6,6 @@ import android.util.Range
 import android.util.Size
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
-import androidx.camera.core.UseCase
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
@@ -105,7 +104,7 @@ class CameraManager(
 					// only at a new binding boundary, never on UI recreation.
 					val selector = cameraSelection.cameraSelector
 					provider.unbindAll()
-					val useCases = buildList<UseCase> {
+					val useCases = buildList {
 						add(analysis)
 						preview?.let(::add)
 					}

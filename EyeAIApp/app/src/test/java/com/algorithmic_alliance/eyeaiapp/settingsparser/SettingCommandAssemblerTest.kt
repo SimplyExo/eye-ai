@@ -13,7 +13,6 @@ class SettingCommandAssemblerTest {
 
 	private fun numbers(vararg values: Double): NumberNormalizationResult =
 		NumberNormalizationResult(
-			originalText = "test",
 			normalizedText = if (values.isEmpty()) "test" else values.joinToString(" ") { "<NUM>" },
 			values = values.toList(),
 			occurrences = values.map {
@@ -28,6 +27,7 @@ class SettingCommandAssemblerTest {
 			normalizerVersion = "1"
 		)
 
+	@Suppress("SameParameterValue")
 	private fun magnitude(value: ChangeMagnitude?): MagnitudeParseResult =
 		MagnitudeParseResult(value, MagnitudeParseStatus.CLEAR)
 

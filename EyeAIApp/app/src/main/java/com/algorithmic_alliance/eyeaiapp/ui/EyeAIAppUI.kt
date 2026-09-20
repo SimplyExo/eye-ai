@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -49,13 +49,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.UI.pages.ConnectionPage
-import com.algorithmic_alliance.eyeaiapp.UI.pages.DebugPage
-import com.algorithmic_alliance.eyeaiapp.UI.pages.HomePage
-import com.algorithmic_alliance.eyeaiapp.UI.pages.PermissionPage
-import com.algorithmic_alliance.eyeaiapp.UI.pages.SettingsPage
-import com.algorithmic_alliance.eyeaiapp.UI.pages.TutorialPage
-import com.algorithmic_alliance.eyeaiapp.UI.pages.WelcomePage
+import com.algorithmic_alliance.eyeaiapp.ui.pages.ConnectionPage
+import com.algorithmic_alliance.eyeaiapp.ui.pages.DebugPage
+import com.algorithmic_alliance.eyeaiapp.ui.pages.HomePage
+import com.algorithmic_alliance.eyeaiapp.ui.pages.PermissionPage
+import com.algorithmic_alliance.eyeaiapp.ui.pages.SettingsPage
+import com.algorithmic_alliance.eyeaiapp.ui.pages.TutorialPage
+import com.algorithmic_alliance.eyeaiapp.ui.pages.WelcomePage
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import kotlinx.serialization.Serializable
@@ -83,7 +83,7 @@ object DebugRoute
 @Serializable
 object TutorialRoute
 
-@SuppressLint("LocalContextGetResourceValueCall")
+@SuppressLint("LocalContextGetResourceValueCall", "SourceLockedOrientationActivity")
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun EyeAIAppUI(
@@ -380,7 +380,7 @@ fun AppNotExemptFromBatteryOptimization(onEvent: (UIEvent) -> Unit) {
 @Composable
 fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 	val context = LocalContext.current
-	val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+	val lifecycleOwner = LocalLifecycleOwner.current
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	val hasRequestedKey = "has_requested_vision_permission"
 	val appInputSourceKey = stringResource(R.string.input_source_setting)
@@ -408,8 +408,8 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 
 
 	DisposableEffect(lifecycleOwner) {
-		val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-			if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+		val observer = LifecycleEventObserver { _, event ->
+			if (event == Lifecycle.Event.ON_RESUME) {
 				val allGranted = permissionsToRequest.all {
 					ContextCompat.checkSelfPermission(
 						context, it
@@ -500,14 +500,14 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 @Composable
 fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -> Unit) {
 	val context = LocalContext.current
-	val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+	val lifecycleOwner = LocalLifecycleOwner.current
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	val hasRequestedKey = "has_requested_camera_permission"
 
 
 	DisposableEffect(lifecycleOwner) {
-		val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-			if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+		val observer = LifecycleEventObserver { _, event ->
+			if (event == Lifecycle.Event.ON_RESUME) {
 				val isGranted = ContextCompat.checkSelfPermission(
 					context, Manifest.permission.CAMERA
 				) == PackageManager.PERMISSION_GRANTED
@@ -593,7 +593,7 @@ fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -
 @Composable
 fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
 	val context = LocalContext.current
-	val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+	val lifecycleOwner = LocalLifecycleOwner.current
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	val hasRequestedKey = "has_requested_record_audio_permission"
 	val speechRecognitionEnabledKey = stringResource(R.string.enable_speech_recognition_setting)
@@ -608,8 +608,8 @@ fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
 	}
 
 	DisposableEffect(lifecycleOwner) {
-		val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-			if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+		val observer = LifecycleEventObserver { _, event ->
+			if (event == Lifecycle.Event.ON_RESUME) {
 				val isGranted = ContextCompat.checkSelfPermission(
 					context, Manifest.permission.RECORD_AUDIO
 				) == PackageManager.PERMISSION_GRANTED

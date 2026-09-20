@@ -5,9 +5,9 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 class GoogleOCR {
 	private var ocrModel: TextRecognizer? = null
@@ -30,7 +30,7 @@ class GoogleOCR {
 			return emptyList()
 		}
 
-		return suspendCoroutine { continuation ->
+		return suspendCancellableCoroutine { continuation ->
 			val converted = InputImage.fromBitmap(frame, 0)
 			ocrModel?.process(converted)?.addOnSuccessListener { visionText ->
 				val tbb = ArrayList<TextBoundingBox>()

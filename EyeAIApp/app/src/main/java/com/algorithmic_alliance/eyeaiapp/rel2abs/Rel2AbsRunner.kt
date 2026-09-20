@@ -2,7 +2,6 @@ package com.algorithmic_alliance.eyeaiapp.rel2abs
 
 import android.content.Context
 import android.graphics.Bitmap
-import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
@@ -13,6 +12,7 @@ import kotlin.math.exp
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import androidx.core.graphics.scale
 
 /**
  * Frozen Z1 and S2 deployment contracts. The V6 neural-gate modes reuse the
@@ -23,7 +23,25 @@ class Rel2AbsRunner private constructor(
 	private val context: Context,
 	private val z1: Interpreter,
 ) : AutoCloseable {
-	data class Output(val depthMeters: FloatArray, val mode: Rel2AbsMode)
+	data class Output(val depthMeters: FloatArray, val mode: Rel2AbsMode) {
+		override fun equals(other: Any?): Boolean {
+			if (this === other) return true
+			if (javaClass != other?.javaClass) return false
+
+			other as Output
+
+			if (!depthMeters.contentEquals(other.depthMeters)) return false
+			if (mode != other.mode) return false
+
+			return true
+		}
+
+		override fun hashCode(): Int {
+			var result = depthMeters.contentHashCode()
+			result = 31 * result + mode.hashCode()
+			return result
+		}
+	}
 
 	private var s2: Interpreter? = null
 	private var closed = false
@@ -85,7 +103,7 @@ class Rel2AbsRunner private constructor(
 	}
 
 	private fun prepareRgb64(source: Bitmap): Array<Array<Array<FloatArray>>> {
-		val scaled = Bitmap.createScaledBitmap(source, RGB_WIDTH, RGB_HEIGHT, true)
+		val scaled = source.scale(RGB_WIDTH, RGB_HEIGHT)
 		return try {
 			val pixels = IntArray(RGB_WIDTH * RGB_HEIGHT)
 			scaled.getPixels(pixels, 0, RGB_WIDTH, 0, 0, RGB_WIDTH, RGB_HEIGHT)
@@ -232,10 +250,10 @@ class Rel2AbsRunner private constructor(
 		private const val S2_FEATURE_COUNT = 28
 		private const val R_LOW = 121.375f
 		private const val R_HIGH = 839.5f
-		private const val M_MIN = -3.7245745095284133f
-		private const val M_MAX = 0.202358881069104f
+		private const val M_MIN = -3.7245746f
+		private const val M_MAX = 0.20235889f
 		private const val DELTA_MIN = 0f
-		private const val DELTA_MAX = 3.1423029628820647f
+		private const val DELTA_MAX = 3.142303f
 		private const val EPSILON = 1e-6f
 		private const val S2_SCALE_MIN = 0.25f
 		private const val S2_SCALE_MAX = 4.0f

@@ -17,6 +17,8 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 import java.util.UUID
 import kotlin.random.Random
+import androidx.core.content.edit
+import kotlin.time.Duration.Companion.milliseconds
 
 class TextToSpeechInstance(
 	private val context: Context, private val onTTSFinishedSpeaking: (() -> Unit)? = null
@@ -41,7 +43,6 @@ class TextToSpeechInstance(
 	//needed to support streaming
 	companion object {
 		const val QUEUE_FLUSH = TextToSpeech.QUEUE_FLUSH
-		const val QUEUE_ADD = TextToSpeech.QUEUE_ADD
 	}
 
 	override fun onInit(status: Int) {
@@ -79,7 +80,7 @@ class TextToSpeechInstance(
 					EyeAIApp.APP_LOG_TAG,
 					"Saved TTS speaker is not available on this device; keeping the active voice."
 				)
-				sharedPrefs.edit().remove("tts_voice").apply()
+				sharedPrefs.edit { remove("tts_voice") }
 			}
 
 		} catch (e: Exception) {
@@ -122,6 +123,7 @@ class TextToSpeechInstance(
 				}
 			}
 
+			@Deprecated("Deprecated in Java")
 			override fun onError(utteranceId: String?) {
 				Log.e(EyeAIApp.APP_LOG_TAG, "TTS onError utterance=$utteranceId")
 				finishUtterance(utteranceId)
@@ -226,7 +228,7 @@ class TextToSpeechInstance(
 					}
 				}
 			}
-			delay(pollIntervalMs)
+			delay(pollIntervalMs.milliseconds)
 		}
 		Log.w(
 			EyeAIApp.APP_LOG_TAG,

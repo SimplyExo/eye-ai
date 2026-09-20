@@ -986,7 +986,7 @@ def make_plot(metrics: list[dict[str, Any]], leaderboard: list[dict[str, Any]]) 
 def render_report(runtime: Mapping[str, Any], train_dev: list[dict[str, Any]], metrics: list[dict[str, Any]], leaderboard: list[dict[str, Any]], bootstrap: list[dict[str, Any]]) -> str:
     def fmt(value: Any, digits: int = 4) -> str:
         number = safe(value)
-        return f"{number:.{digits}f}" if np.isfinite(number) else "—"
+        return f"{number:.{digits}f}" if np.isfinite(number) else "-"
 
     report = [
         "# V6 Object-Feature Neural Gate Ablation",
@@ -1079,12 +1079,12 @@ def render_report(runtime: Mapping[str, Any], train_dev: list[dict[str, Any]], m
         "|---|---|---|---|---:|---|---:|",
     ]
     for row in sorted(bootstrap, key=lambda item: (str(item["dataset"]), str(item.get("track")), safe(item.get("delta_absrel_vs_baseline"), math.inf)))[:60]:
-        report.append(f"| {row['dataset']} | {row.get('track', '—')} | {row['candidate']} | {row['feature_set']} / {row['mixture']} | {fmt(row.get('delta_absrel_vs_baseline'))} | [{fmt(row.get('ci95_low'))}, {fmt(row.get('ci95_high'))}] | {fmt(row.get('probability_improvement'), 3)} |")
+        report.append(f"| {row['dataset']} | {row.get('track', '-')} | {row['candidate']} | {row['feature_set']} / {row['mixture']} | {fmt(row.get('delta_absrel_vs_baseline'))} | [{fmt(row.get('ci95_low'))}, {fmt(row.get('ci95_high'))}] | {fmt(row.get('probability_improvement'), 3)} |")
     report += [
         "",
         "## Interpretation limits",
         "",
-        "- The 0.5–5 m Waymo support is sparse in the locked holdout and must not be overinterpreted; the row count is always reported.",
+        "- The 0.5-5 m Waymo support is sparse in the locked holdout and must not be overinterpreted; the row count is always reported.",
         "- A gate can only interpolate between the two frozen candidates. It cannot fix an error when both visual and F1 estimates are wrong in the same direction.",
         "- Object-local segmentation is an approximate projection of the existing 4x4 semantic summary, not a per-object mask. It is therefore a deployability-compatible diagnostic, not evidence of pixel-accurate instance segmentation.",
         "- The legacy base gate is retained as a control. The new feature families add parameters only in the gate; MiDaS and the depth heads are untouched.",

@@ -24,7 +24,7 @@ data class BpeMerge(
  * Both padding and truncation happen at the end of the sequence. Token ID 0 is
  * reserved for padding and token ID 1 for unknown input. Its rules are loaded
  * from and validated against the frozen tokenizer artifacts; they must not be
- * changed independently from the training pipeline.
+ * changed independently of the training pipeline.
  */
 class IntentTokenizer(
 	vocabulary: List<String>,

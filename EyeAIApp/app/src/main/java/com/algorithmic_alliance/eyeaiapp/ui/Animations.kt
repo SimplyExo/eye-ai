@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.LinearEasing

@@ -41,15 +41,13 @@ class ObjectDetectionHandler {
 			}
 
 			val paired = AIModelData.rel2AbsFrameCache.latestMatched()
-			if (paired == null) {
-				return if (AIModelData.detectedObjects.get().isNullOrEmpty()) {
+				?: return if (AIModelData.detectedObjects.get().isNullOrEmpty()) {
 					ObjectDetectionResult.NoObjectsFound
 				} else {
 					// A detection without a metric map from the same source frame is
 					// intentionally not combined with a stale or asynchronous depth map.
 					ObjectDetectionResult.DepthDataUnavailable
 				}
-			}
 
 			if (paired.detectionFrame.detections.isEmpty()) return ObjectDetectionResult.NoObjectsFound
 			val recognized = paired.detectionFrame.detections.mapNotNull { box ->

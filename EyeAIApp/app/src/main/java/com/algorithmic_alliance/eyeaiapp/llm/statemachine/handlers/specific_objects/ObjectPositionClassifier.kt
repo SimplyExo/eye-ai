@@ -1,5 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.llm.statemachine.handlers.specific_objects
 
+import java.util.Locale
+
 class ObjectPositionClassifier(
 	private val screenWidth: Float = 640f, private val screenHeight: Float = 640f
 ) {
@@ -77,9 +79,10 @@ class ObjectPositionClassifier(
 	}
 
 	private fun formatDistance(distance: Float): String {
+		val locale = Locale.getDefault()
 		return when {
-			distance < 1.0f -> "${String.format("%.1f", distance)} Meter"
-			distance < 10.0f -> "${String.format("%.1f", distance)} Meter"
+			distance < 1.0f -> "${String.format(locale, "%.1f", distance)} Meter"
+			distance < 10.0f -> "${String.format(locale, "%.1f", distance)} Meter"
 			else -> "${distance.toInt()} Meter"
 		}
 	}

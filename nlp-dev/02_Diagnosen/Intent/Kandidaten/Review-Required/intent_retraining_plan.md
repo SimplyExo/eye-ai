@@ -1,4 +1,4 @@
-# EyeAI Intent – Retraining- und Evaluationsplan
+# EyeAI Intent - Retraining- und Evaluationsplan
 
 ## 1. Dateninventar
 - Alter Bestand: `DATASET.train` (3.627 Beispiele) und `DATASET.val` (1.033 Beispiele).
@@ -65,7 +65,7 @@ Besonders wichtig:
 - Unterbestimmte Phrasen werden nicht künstlich zu einer Settings-Unterklasse gezwungen.
 
 ## 6. Empfohlener Ablauf
-1. Aktuellen Stand einfrieren und M0–M3 auf denselben sauberen Baselines dokumentieren.
+1. Aktuellen Stand einfrieren und M0-M3 auf denselben sauberen Baselines dokumentieren.
 2. `DATASET.train` + `intent_new_additions.train` zum Retraining verwenden.
 3. Modellvarianten ausschließlich mit bestehender Validation + `intent_new_validation.val` vergleichen.
 4. Kandidaten einfrieren.

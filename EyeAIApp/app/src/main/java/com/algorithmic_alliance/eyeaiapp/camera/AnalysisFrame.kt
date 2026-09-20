@@ -4,11 +4,6 @@ import android.graphics.Bitmap
 import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsCameraIntrinsics
 import java.util.concurrent.atomic.AtomicInteger
 
-/** Pixel representation handed to the common image-analysis path. */
-enum class FramePixelFormat {
-	RGBA_8888,
-}
-
 /**
  * A source-neutral frame envelope.
  *
@@ -19,7 +14,6 @@ enum class FramePixelFormat {
  */
 class AnalysisFrame(
 	val bitmap: Bitmap,
-	val pixelFormat: FramePixelFormat,
 	val width: Int,
 	val height: Int,
 	/** Rotation of the source image that the source adapter applied. */
@@ -61,7 +55,6 @@ class AnalysisFrame(
 			onReleased: (() -> Unit)? = null,
 		): AnalysisFrame = AnalysisFrame(
 			bitmap = bitmap,
-			pixelFormat = FramePixelFormat.RGBA_8888,
 			width = bitmap.width,
 			height = bitmap.height,
 			rotationDegrees = rotationDegrees,

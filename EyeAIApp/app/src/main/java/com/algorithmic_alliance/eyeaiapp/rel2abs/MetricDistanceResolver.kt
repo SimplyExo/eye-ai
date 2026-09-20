@@ -12,7 +12,7 @@ object MetricDistanceResolver {
 	const val MIN_VALID_ROI_PIXELS = 16
 
 	sealed class Result {
-		data class Available(val meters: Float, val validPixelCount: Int) : Result()
+		data class Available(val meters: Float) : Result()
 		object Unavailable : Result()
 		object Invalid : Result()
 	}
@@ -65,6 +65,6 @@ object MetricDistanceResolver {
 				detections = detections,
 				segmentationContext = segmentationContext,
 			)
-		return Result.Available(neuralEstimate ?: median, count)
+		return Result.Available(neuralEstimate ?: median)
 	}
 }

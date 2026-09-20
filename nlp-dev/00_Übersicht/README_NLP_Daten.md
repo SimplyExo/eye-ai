@@ -1,4 +1,4 @@
-# NLP-Daten – Übersicht
+# NLP-Daten - Übersicht
 
 ```text
 Aktuelle Daten/

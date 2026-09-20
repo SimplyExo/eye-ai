@@ -1536,12 +1536,12 @@ def decision_label(candidate: str, score: Mapping[str, Any], baseline_score: Map
     range_gold = safe_float(score.get("range_balanced_gold_macro"))
     base_range = safe_float(baseline_score.get("range_balanced_gold_macro"))
     if np.isfinite([gold, base, range_gold, base_range]).all() and gold < base and range_gold <= base_range * 1.02:
-        return "A — ROBUST CROSS-DATASET GAIN"
+        return "A - ROBUST CROSS-DATASET GAIN"
     if np.isfinite([gold, base]).all() and gold < base:
-        return "B — PARTIAL CROSS-DATASET SIGNAL"
+        return "B - PARTIAL CROSS-DATASET SIGNAL"
     if candidate == F1_KEY:
-        return "C — DATASET/RANGE/CLASS SPECIFIC"
-    return "D — NO MATERIAL BENEFIT"
+        return "C - DATASET/RANGE/CLASS SPECIFIC"
+    return "D - NO MATERIAL BENEFIT"
 
 
 def final_decision(
@@ -1582,15 +1582,15 @@ def final_decision(
     best_hybrid_candidate = min((row["candidate"] for row in qualified), key=lambda name: np.nanmean([metric_value(metrics, "WAYMO", "WAYMO-A_OFFICIAL_BBOX", name, "ALL"), metric_value(metrics, "COCO", "COCO-A_OFFICIAL_BBOX", name, "ALL")])) if qualified else None
     labels = {str(row["candidate"]): decision_label(str(row["candidate"]), row, baseline_score) for row in score_rows}
     for row in hybrid_rows:
-        labels[str(row["candidate"])] = "A — ROBUST CROSS-DATASET GAIN" if any(item["candidate"] == row["candidate"] and item["qualifies"] for item in hybrid_gate_rows) else ("B — PARTIAL CROSS-DATASET SIGNAL" if safe_float(row.get("waymo_gold_object_absrel")) < safe_float(baseline_score.get("waymo_gold_object_absrel")) else "C — DATASET/RANGE/CLASS SPECIFIC")
+        labels[str(row["candidate"])] = "A - ROBUST CROSS-DATASET GAIN" if any(item["candidate"] == row["candidate"] and item["qualifies"] for item in hybrid_gate_rows) else ("B - PARTIAL CROSS-DATASET SIGNAL" if safe_float(row.get("waymo_gold_object_absrel")) < safe_float(baseline_score.get("waymo_gold_object_absrel")) else "C - DATASET/RANGE/CLASS SPECIFIC")
     recommendation = "HYBRID_FUSION" if best_hybrid_candidate else "BASELINE-2P"
     payload = {
         "format": "rel2abs_v6_final_model_decision_v1",
         "status": "COMPLETE_STOP_RULE_REACHED",
         "recommendation": recommendation,
-        "pure_visual": {"best_candidate": best_pure.get("candidate", "V1_Baseline-2P"), "category": "PURE VISUAL", "label": labels.get(str(best_pure.get("candidate")), "D — NO MATERIAL BENEFIT")},
-        "size_anchor_only": {"best_candidate": F1_KEY, "category": "SIZE-ANCHOR", "label": labels.get(F1_KEY, "C — DATASET/RANGE/CLASS SPECIFIC")},
-        "hybrid": {"best_candidate": best_hybrid_candidate or "NONE_QUALIFIED", "category": "HYBRID FUSION", "label": labels.get(best_hybrid_candidate, "C — DATASET/RANGE/CLASS SPECIFIC") if best_hybrid_candidate else "BLOCKED"},
+        "pure_visual": {"best_candidate": best_pure.get("candidate", "V1_Baseline-2P"), "category": "PURE VISUAL", "label": labels.get(str(best_pure.get("candidate")), "D - NO MATERIAL BENEFIT")},
+        "size_anchor_only": {"best_candidate": F1_KEY, "category": "SIZE-ANCHOR", "label": labels.get(F1_KEY, "C - DATASET/RANGE/CLASS SPECIFIC")},
+        "hybrid": {"best_candidate": best_hybrid_candidate or "NONE_QUALIFIED", "category": "HYBRID FUSION", "label": labels.get(best_hybrid_candidate, "C - DATASET/RANGE/CLASS SPECIFIC") if best_hybrid_candidate else "BLOCKED"},
         "safe_fallback": {"candidate": "V1_Baseline-2P", "category": "SAFE FALLBACK"},
         "hybrid_gate_rows": hybrid_gate_rows,
         "candidate_labels": labels,
@@ -1598,13 +1598,13 @@ def final_decision(
         "eyeai_integration": "AUTHORIZED_HANDOFF_ONLY" if best_hybrid_candidate else "NOT_JUSTIFIED",
         "android_changed": False,
         "midas_changed": False,
-        "reason": "Final choice requires DIODE and Waymo Gold consistency, 0.5–5m and 5–10m non-regression, Product-YOLO direction, coverage and fallback safety; overall AbsRel alone is insufficient.",
+        "reason": "Final choice requires DIODE and Waymo Gold consistency, 0.5-5m and 5-10m non-regression, Product-YOLO direction, coverage and fallback safety; overall AbsRel alone is insufficient.",
     }
     write_json(REPORTS / "V6_FINAL_MODEL_DECISION.json", payload)
     lines = [
         "# REL2ABS-v6 final model decision",
         "",
-        "Status: COMPLETE — V6 stop rule reached. EyeAIApp remains unchanged.",
+        "Status: COMPLETE - V6 stop rule reached. EyeAIApp remains unchanged.",
         "",
         f"Recommendation: **{recommendation}**.",
         "",
@@ -1617,10 +1617,10 @@ def final_decision(
         "",
         "## Hybrid gate",
         "",
-        "A hybrid is promoted only if every recorded Waymo gate is true: overall non-regression, 0.5–5m non-regression, 5–10m non-regression, Product-YOLO same direction, >=80% valid prediction coverage and <=5% rejection.",
+        "A hybrid is promoted only if every recorded Waymo gate is true: overall non-regression, 0.5-5m non-regression, 5-10m non-regression, Product-YOLO same direction, >=80% valid prediction coverage and <=5% rejection.",
     ]
     for item in hybrid_gate_rows:
-        lines.append(f"- `{item['candidate']}`: **{'PASS' if item['qualifies'] else 'FAIL'}** — " + ", ".join(f"{key}={'PASS' if value else 'FAIL'}" for key, value in item["requirements"].items()))
+        lines.append(f"- `{item['candidate']}`: **{'PASS' if item['qualifies'] else 'FAIL'}** - " + ", ".join(f"{key}={'PASS' if value else 'FAIL'}" for key, value in item["requirements"].items()))
     lines += ["", "Full machine-readable details are in `V6_FINAL_MODEL_DECISION.json`."]
     (REPORTS / "V6_FINAL_MODEL_DECISION.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     if best_hybrid_candidate:
@@ -1639,7 +1639,7 @@ def final_decision(
 
 def fmt(value: Any, digits: int = 4) -> str:
     number = safe_float(value)
-    return "—" if not np.isfinite(number) else f"{number:.{digits}f}"
+    return "-" if not np.isfinite(number) else f"{number:.{digits}f}"
 
 
 def summary_table(metrics: list[dict[str, Any]], dataset: str, track: str, candidates: list[str], scopes: list[str]) -> list[str]:
@@ -1736,7 +1736,7 @@ def write_final_report(
         "### DIODE Gold pixels",
         "",
     ]
-    report += ["| candidate | ALL | 0.5–5m | 0.5–10m | 2–5m | 5–10m | ≥15m |", "|---|---:|---:|---:|---:|---:|---:|"]
+    report += ["| candidate | ALL | 0.5-5m | 0.5-10m | 2-5m | 5-10m | ≥15m |", "|---|---:|---:|---:|---:|---:|---:|"]
     for candidate in VISUAL_KEYS:
         report.append(f"| {candidate} | {fmt(next((r.get('absrel') for r in diode_pixel if r.get('candidate') == candidate and r.get('scope') == 'ALL'), math.nan))} | {fmt(next((r.get('absrel') for r in diode_pixel if r.get('candidate') == candidate and r.get('scope') == 'eyeai_0_5_5m'), math.nan))} | {fmt(next((r.get('absrel') for r in diode_pixel if r.get('candidate') == candidate and r.get('scope') == 'eyeai_0_5_10m'), math.nan))} | {fmt(next((r.get('absrel') for r in diode_pixel if r.get('candidate') == candidate and r.get('scope') == '2_5m'), math.nan))} | {fmt(next((r.get('absrel') for r in diode_pixel if r.get('candidate') == candidate and r.get('scope') == '5_10m'), math.nan))} | {fmt(next((r.get('absrel') for r in diode_pixel if r.get('candidate') == candidate and r.get('scope') == 'ge15m'), math.nan))} |")
     report += ["", "### Waymo Gold-A official boxes", ""]

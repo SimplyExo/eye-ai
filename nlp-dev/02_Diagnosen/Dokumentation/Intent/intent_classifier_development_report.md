@@ -1,4 +1,4 @@
-# EyeAI Intent Classifier – Entwicklungsdokumentation
+# EyeAI Intent Classifier - Entwicklungsdokumentation
 
 ## Anforderungen
 
@@ -44,7 +44,7 @@ Es wurden 4 Strategien × 2 Tokenizer × 5 Seeds = 40 Modelle trainiert.
 
 Bekannte dokumentierte Größen:
 - Clean: 3,344 Samples
-- Finaler Trainingspool für M0–M3: 4,746 Samples
+- Finaler Trainingspool für M0-M3: 4,746 Samples
 - Semantic-300: Development
 - ASR-300: Development
 - Curated-60: Development

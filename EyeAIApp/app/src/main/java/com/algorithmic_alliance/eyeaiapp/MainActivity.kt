@@ -9,11 +9,10 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import com.algorithmic_alliance.eyeaiapp.UI.EyeAIAppUI
-import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.ui.EyeAIAppUI
+import com.algorithmic_alliance.eyeaiapp.ui.MainViewModel
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntimeService
-import com.algorithmic_alliance.eyeaiapp.UI.OverlayViewOD
-import com.example.compose.AppTheme
+import com.algorithmic_alliance.eyeaiapp.ui.theme.AppTheme
 
 /**
  * UI-only entry point. The Activity observes and commands the runtime but does

@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI
+package com.algorithmic_alliance.eyeaiapp.ui
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -60,7 +60,7 @@ fun hasPermission(context: Context, permission: String): Boolean {
 }
 
 fun checkPermissionsStatus(
-	neededPermissions: List<Map<String, Any>>, context: Context, onEvent: (UIEvent) -> Unit
+	neededPermissions: List<Map<String, Any>>, context: Context
 ): List<Map<String, Any>> {
 	val notGrantedPermissions = mutableListOf<Map<String, Any>>()
 

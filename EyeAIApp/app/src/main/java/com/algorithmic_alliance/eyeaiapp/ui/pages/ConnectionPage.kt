@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI.pages
+package com.algorithmic_alliance.eyeaiapp.ui.pages
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -7,7 +7,6 @@ import android.content.IntentSender
 import android.location.LocationManager
 import android.os.Build
 import android.util.Log
-import android.view.ViewTreeObserver
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -38,7 +37,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -53,7 +51,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -67,13 +64,13 @@ import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
-import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
-import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
-import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
-import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
-import com.algorithmic_alliance.eyeaiapp.UI.connectToDevice
-import com.algorithmic_alliance.eyeaiapp.UI.rememberWifiScanState
+import com.algorithmic_alliance.eyeaiapp.ui.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumButton
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumIconButton
+import com.algorithmic_alliance.eyeaiapp.ui.ShimmerBox
+import com.algorithmic_alliance.eyeaiapp.ui.UIEvent
+import com.algorithmic_alliance.eyeaiapp.ui.connectToDevice
+import com.algorithmic_alliance.eyeaiapp.ui.rememberWifiScanState
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
@@ -200,7 +197,6 @@ private fun ChooseConnectionPage(
 ) {
 	val focusRequester = remember { FocusRequester() }
 	val context = LocalContext.current
-	val view = LocalView.current
 
 	LaunchedEffect(devicesData) {
 		focusRequester.requestFocus()

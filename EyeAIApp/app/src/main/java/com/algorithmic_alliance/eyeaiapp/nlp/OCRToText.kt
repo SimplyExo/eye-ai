@@ -246,18 +246,4 @@ class OCRToText(
 
 		return lines
 	}
-
-	// Debugging/Analysis
-	fun getDetailedTextAnalysis(textBoxes: List<TextBoundingBox>): Map<String, String> {
-		val lines = groupIntoLines(textBoxes)
-		val layoutInfo = analyzeTextLayout(lines)
-
-		return mapOf(
-			"textRegion" to (layoutInfo["textRegion"] as String),
-			"lineCount" to "${layoutInfo["lineCount"]}",
-			"totalArea" to String.format("%.2f%%", (layoutInfo["totalTextArea"] as Float) * 100),
-			"verticalSpread" to String.format("%.2f", layoutInfo["verticalSpread"] as Float),
-			"horizontalSpread" to String.format("%.2f", layoutInfo["horizontalSpread"] as Float)
-		)
-	}
 }

@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI.pages
+package com.algorithmic_alliance.eyeaiapp.ui.pages
 
 import android.annotation.SuppressLint
 import android.media.MediaPlayer
@@ -51,8 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
-import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumButton
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumIconButton
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing

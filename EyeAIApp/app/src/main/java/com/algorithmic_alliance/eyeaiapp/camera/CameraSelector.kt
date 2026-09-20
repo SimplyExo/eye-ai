@@ -73,10 +73,6 @@ fun mostWideCameraSelection(cameraProvider: ProcessCameraProvider): CameraSelect
 }
 
 @OptIn(ExperimentalCamera2Interop::class)
-fun mostWideCameraSelector(cameraProvider: ProcessCameraProvider): CameraSelector =
-	mostWideCameraSelection(cameraProvider).cameraSelector
-
-@OptIn(ExperimentalCamera2Interop::class)
 private fun cameraCalibration(cameraInfo: CameraInfo): CameraCalibration? {
 	val camera2Info = Camera2CameraInfo.from(cameraInfo)
 	val activeArray = camera2Info.getCameraCharacteristic(

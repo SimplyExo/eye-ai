@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI.pages
+package com.algorithmic_alliance.eyeaiapp.ui.pages
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -13,13 +13,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -54,14 +52,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.UI.MainViewModel
-import com.algorithmic_alliance.eyeaiapp.UI.PremiumFloatingActionButton
-import com.algorithmic_alliance.eyeaiapp.UI.ShimmerBox
-import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
+import com.algorithmic_alliance.eyeaiapp.ui.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumFloatingActionButton
+import com.algorithmic_alliance.eyeaiapp.ui.ShimmerBox
+import com.algorithmic_alliance.eyeaiapp.ui.UIEvent
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
@@ -76,7 +73,6 @@ fun HomePage(
 	viewModel: MainViewModel,
 ) {
 	val uiState by viewModel.homePageUIState.collectAsStateWithLifecycle()
-	val lifecycleOwner = LocalLifecycleOwner.current
 	val context = LocalContext.current
 	Log.d(LOG_TAG, "[HomePage] Loading HomePage")
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
@@ -200,7 +196,7 @@ fun HomePage(
 					}
 
 					item {
-						VisionStatusCard(viewModel = viewModel)
+						VisionStatusCard()
 					}
 
 					item(span = { GridItemSpan(maxLineSpan) }) {
@@ -375,8 +371,7 @@ fun SegmentationStatusCard(viewModel: MainViewModel) {
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-fun VisionStatusCard(viewModel: MainViewModel) {
-	val uiState by viewModel.performanceStatusCardUIState.collectAsStateWithLifecycle()
+fun VisionStatusCard() {
 	val context = LocalContext.current
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	val isDark = isSystemInDarkTheme()
@@ -441,7 +436,6 @@ fun VisionStatusCard(viewModel: MainViewModel) {
 @Composable
 fun DepthStatusCard(viewModel: MainViewModel) {
 	val context = LocalContext.current
-	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	val isDark = isSystemInDarkTheme()
 	Card(
 		modifier = Modifier
@@ -569,7 +563,7 @@ private fun getDepthFPS(text: String): Int {
 		if (result.endsWith(".")) result = result.dropLast(1)
 		return try {
 			result.toInt()
-		} catch (e: NumberFormatException) {
+		} catch (_: NumberFormatException) {
 			-1
 		}
 	}
@@ -583,7 +577,7 @@ private fun getSegmentationFPS(text: String): Int {
 		if (result.endsWith(".")) result = result.dropLast(1)
 		return try {
 			result.toInt()
-		} catch (e: NumberFormatException) {
+		} catch (_: NumberFormatException) {
 			-1
 		}
 	}
@@ -598,7 +592,7 @@ private fun getObjectFPS(text: String): Int {
 		if (result.endsWith(".")) result = result.dropLast(1)
 		return try {
 			result.toInt()
-		} catch (e: NumberFormatException) {
+		} catch (_: NumberFormatException) {
 			-1
 		}
 	}

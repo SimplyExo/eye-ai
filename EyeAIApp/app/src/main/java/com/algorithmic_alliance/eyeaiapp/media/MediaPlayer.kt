@@ -175,7 +175,7 @@ class MediaPlayer(
 						}
 						index++
 
-						delay(1000L / 30L)
+						delay((1000L / 30L).milliseconds)
 					} catch (_: IllegalArgumentException) {
 
 						index = 0

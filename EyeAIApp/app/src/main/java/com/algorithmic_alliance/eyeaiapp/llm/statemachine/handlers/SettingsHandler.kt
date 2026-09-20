@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
 import com.algorithmic_alliance.eyeaiapp.llm.statemachine.EyeAIState as State
+import androidx.core.content.edit
 
 class SettingsHandler(
 	private val textToSpeechInstance: TextToSpeechInstance,
@@ -165,7 +166,11 @@ class SettingsHandler(
 					speakAndHandleUi(
 						"Ich konnte die Bestätigung nicht eindeutig zuordnen. " + "Bitte antworten Sie mit Ja oder Nein."
 					)
-					StateUpdate(State.SETTINGS_ACTION, currentJson, VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
+					StateUpdate(
+						State.SETTINGS_ACTION,
+						currentJson,
+						VoskRestartPolicy.AUTO_RESTART_AFTER_TTS
+					)
 				}
 
 				null -> {
@@ -177,7 +182,11 @@ class SettingsHandler(
 						true
 					)
 					speakAndHandleUi("Fehler bei der Verarbeitung.")
-					StateUpdate(State.SETTINGS_ACTION, currentJson, VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
+					StateUpdate(
+						State.SETTINGS_ACTION,
+						currentJson,
+						VoskRestartPolicy.AUTO_RESTART_AFTER_TTS
+					)
 				}
 			}
 		}
@@ -263,78 +272,77 @@ class SettingsHandler(
 
 			// SharedPrefs for TTS
 			val ttsPrefs = eyeAIApp.getSharedPreferences("tts_settings", Context.MODE_PRIVATE)
-			val ttsEditor = ttsPrefs.edit()
+			ttsPrefs.edit {
+				for (i in 0 until changedSettings.length()) {
+					val setting = changedSettings.getJSONObject(i)
 
-			for (i in 0 until changedSettings.length()) {
-				val setting = changedSettings.getJSONObject(i)
-
-				when {
-					setting.has("tts_speed") -> {
-						val newSpeed = setting.getDouble("tts_speed").toFloat()
-						textToSpeechInstance.setSpeechRate(newSpeed)
-						// Save TTS settings
-						ttsEditor.putFloat("tts_speech_rate", newSpeed)
-						Log.d(
-							EyeAIApp.APP_LOG_TAG,
-							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL setting=TTS_SPEED value=$newSpeed"
-						)
-						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
-					}
-
-					setting.has("voice") -> {
-						val voice = setting.getInt("voice")
-						if (!textToSpeechInstance.setVoice(voice)) {
-							Log.w(
+					when {
+						setting.has("tts_speed") -> {
+							val newSpeed = setting.getDouble("tts_speed").toFloat()
+							textToSpeechInstance.setSpeechRate(newSpeed)
+							// Save TTS settings
+							putFloat("tts_speech_rate", newSpeed)
+							Log.d(
 								EyeAIApp.APP_LOG_TAG,
-								"[DecisionTrace][SettingsHandler][APPLY] outcome=NOT_APPLIED setting=VOICE value=$voice"
+								"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL setting=TTS_SPEED value=$newSpeed"
 							)
-							return SettingsApplyResult.NOT_APPLIED
+							speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
 						}
-						// Save TTS settings
-						ttsEditor.putInt("tts_voice", voice)
-						Log.d(
-							EyeAIApp.APP_LOG_TAG,
-							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL setting=VOICE value=$voice"
-						)
-						speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
-					}
 
-					setting.has("frequency") -> {
-						val frequency = setting.getInt("frequency")
-						val clampedFreq = frequency.coerceIn(100, 4000)
-						val currentBps = settings.depthAudioClickIncidence
-						uniffi.NativeLib.setAudioSettings(clampedFreq.toFloat(), currentBps)
+						setting.has("voice") -> {
+							val voice = setting.getInt("voice")
+							if (!textToSpeechInstance.setVoice(voice)) {
+								Log.w(
+									EyeAIApp.APP_LOG_TAG,
+									"[DecisionTrace][SettingsHandler][APPLY] outcome=NOT_APPLIED setting=VOICE value=$voice"
+								)
+								return SettingsApplyResult.NOT_APPLIED
+							}
+							// Save TTS settings
+							putInt("tts_voice", voice)
+							Log.d(
+								EyeAIApp.APP_LOG_TAG,
+								"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL setting=VOICE value=$voice"
+							)
+							speakAndHandleUi("Die Einstellung wurde erfolgreich geändert.")
+						}
 
-						// Save settings
-						settings.depthAudioFrequency = clampedFreq
-						settings.save(eyeAIApp)
-						Log.d(
-							EyeAIApp.APP_LOG_TAG,
-							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " + "setting=FREQUENCY value=${clampedFreq}Hz"
-						)
-						speakAndHandleUi("Die Audio-Frequenz wurde erfolgreich auf $clampedFreq Hz geändert.")
-					}
+						setting.has("frequency") -> {
+							val frequency = setting.getInt("frequency")
+							val clampedFreq = frequency.coerceIn(100, 4000)
+							val currentBps = settings.depthAudioClickIncidence
+							uniffi.NativeLib.setAudioSettings(clampedFreq.toFloat(), currentBps)
 
-					setting.has("bps") -> {
-						val bps = setting.getInt("bps")
-						val clampedBps = bps.coerceIn(1, 10)
-						val currentFreq = settings.depthAudioFrequency
-						uniffi.NativeLib.setAudioSettings(currentFreq.toFloat(), clampedBps)
+							// Save settings
+							settings.depthAudioFrequency = clampedFreq
+							settings.save(eyeAIApp)
+							Log.d(
+								EyeAIApp.APP_LOG_TAG,
+								"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL " + "setting=FREQUENCY value=${clampedFreq}Hz"
+							)
+							speakAndHandleUi("Die Audio-Frequenz wurde erfolgreich auf $clampedFreq Hz geändert.")
+						}
 
-						// Save settings
-						settings.depthAudioClickIncidence = clampedBps
-						settings.save(eyeAIApp)
-						Log.d(
-							EyeAIApp.APP_LOG_TAG,
-							"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL setting=BPS value=$clampedBps"
-						)
-						speakAndHandleUi("Die BPS wurde erfolgreich auf $clampedBps geändert.")
+						setting.has("bps") -> {
+							val bps = setting.getInt("bps")
+							val clampedBps = bps.coerceIn(1, 10)
+							val currentFreq = settings.depthAudioFrequency
+							uniffi.NativeLib.setAudioSettings(currentFreq.toFloat(), clampedBps)
+
+							// Save settings
+							settings.depthAudioClickIncidence = clampedBps
+							settings.save(eyeAIApp)
+							Log.d(
+								EyeAIApp.APP_LOG_TAG,
+								"[DecisionTrace][SettingsHandler][APPLY] evaluator=LOCAL setting=BPS value=$clampedBps"
+							)
+							speakAndHandleUi("Die BPS wurde erfolgreich auf $clampedBps geändert.")
+						}
 					}
 				}
-			}
 
-			// save tts settings
-			ttsEditor.apply()
+				// save tts settings
+			}
 			return SettingsApplyResult.APPLIED
 		} catch (e: JSONException) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "Fehler bei der Verarbeitung der JSON-Aktion.", e)

@@ -1,5 +1,6 @@
 #include <android/bitmap.h>
 #include <android/log.h>
+#include <cstdint>
 #include <format>
 #include <jni.h>
 #include <memory>
@@ -24,7 +25,6 @@ static void formatted_log(int priority, const char* format, Args... args) {
 	}
 }
 
-#define LOG_INFO(...) formatted_log(ANDROID_LOG_INFO, __VA_ARGS__)
 #define LOG_ERROR(...) formatted_log(ANDROID_LOG_ERROR, __VA_ARGS__)
 
 constexpr static uint8_t red_channel_from_argb_color(int color) {
@@ -118,7 +118,9 @@ bitmap_to_rgb_hwc_255_float_array(
 
 	size_t i = 0;
 	size_t j = 0;
-	for (; i < static_cast<size_t>(info.width) * (size_t)info.height; i++) {
+	for (;
+		 i < static_cast<size_t>(info.width) * static_cast<size_t>(info.height);
+		 i++) {
 		const int pixel_color = pixel_ptr[i];
 		out_float_array[j++] =
 			static_cast<float>(red_channel_from_argb_color(pixel_color));
@@ -135,7 +137,7 @@ bitmap_to_rgb_hwc_255_float_array(
 // bugprone-easily-swappable-parameters)
 
 // TODO: move to rust?
-extern "C" JNIEXPORT jlong JNICALL
+extern "C" JNIEXPORT JNICALL jlong
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getByteBufferPtr(
 	JNIEnv* env,
 	jobject /*_this*/,
@@ -144,7 +146,7 @@ Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_getByteBufferPtr(
 	return (jlong)env->GetDirectBufferAddress(byteBuffer);
 }
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" JNIEXPORT JNICALL void
 Java_com_algorithmic_1alliance_eyeaiapp_NativeLib_bitmapToRgbHwc255FloatArray(
 	JNIEnv* env,
 	jobject /*thiz*/,

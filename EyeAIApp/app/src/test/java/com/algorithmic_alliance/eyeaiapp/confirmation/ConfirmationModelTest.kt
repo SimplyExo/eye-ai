@@ -112,7 +112,31 @@ class ConfirmationModelTest {
 		val pendingAction: String,
 		val expectedLabel: ConfirmationLabel,
 		val expectedScores: DoubleArray
-	)
+	) {
+		override fun equals(other: Any?): Boolean {
+			if (this === other) return true
+			if (javaClass != other?.javaClass) return false
+
+			other as ParityCase
+
+			if (question != other.question) return false
+			if (answer != other.answer) return false
+			if (pendingAction != other.pendingAction) return false
+			if (expectedLabel != other.expectedLabel) return false
+			if (!expectedScores.contentEquals(other.expectedScores)) return false
+
+			return true
+		}
+
+		override fun hashCode(): Int {
+			var result = question.hashCode()
+			result = 31 * result + answer.hashCode()
+			result = 31 * result + pendingAction.hashCode()
+			result = 31 * result + expectedLabel.hashCode()
+			result = 31 * result + expectedScores.contentHashCode()
+			return result
+		}
+	}
 
 	companion object {
 		private const val QUESTION_FREQUENCY =

@@ -138,7 +138,7 @@ void button_sock::update_click_detection()
         }
         else if (clickCount == 2 && clickTimer.elapsed() <= CLICK_THRESHOLD) {
             clickCount = 3;
-            // Dreifachklick ist das Maximum – direkt auslösen!
+            // Dreifachklick ist das Maximum - direkt auslösen!
             detectedClick = TRIPLE;
             clickCount = 0;
             return;

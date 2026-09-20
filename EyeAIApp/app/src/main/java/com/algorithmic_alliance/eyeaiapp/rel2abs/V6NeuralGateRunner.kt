@@ -48,6 +48,38 @@ class V6NeuralGateRunner private constructor(
 			for (index in hidden.indices) logit += weight2[index] * hidden[index]
 			return sigmoid(logit)
 		}
+
+		override fun equals(other: Any?): Boolean {
+			if (this === other) return true
+			if (javaClass != other?.javaClass) return false
+
+			other as GateModel
+
+			if (bias2 != other.bias2) return false
+			if (withContext != other.withContext) return false
+			if (objectFeatureGate != other.objectFeatureGate) return false
+			if (cameraHeightFeature != other.cameraHeightFeature) return false
+			if (!mean.contentEquals(other.mean)) return false
+			if (!scale.contentEquals(other.scale)) return false
+			if (!weight1.contentDeepEquals(other.weight1)) return false
+			if (!bias1.contentEquals(other.bias1)) return false
+			if (!weight2.contentEquals(other.weight2)) return false
+
+			return true
+		}
+
+		override fun hashCode(): Int {
+			var result = bias2.hashCode()
+			result = 31 * result + withContext.hashCode()
+			result = 31 * result + objectFeatureGate.hashCode()
+			result = 31 * result + cameraHeightFeature.hashCode()
+			result = 31 * result + mean.contentHashCode()
+			result = 31 * result + scale.contentHashCode()
+			result = 31 * result + weight1.contentDeepHashCode()
+			result = 31 * result + bias1.contentHashCode()
+			result = 31 * result + weight2.contentHashCode()
+			return result
+		}
 	}
 
 	private data class PhysicalPrior(

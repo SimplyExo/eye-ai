@@ -1,4 +1,4 @@
-package com.algorithmic_alliance.eyeaiapp.UI.pages
+package com.algorithmic_alliance.eyeaiapp.ui.pages
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -64,11 +64,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.UI.PremiumButton
-import com.algorithmic_alliance.eyeaiapp.UI.PremiumIconButton
-import com.algorithmic_alliance.eyeaiapp.UI.UIEvent
-import com.algorithmic_alliance.eyeaiapp.UI.checkPermissionsStatus
-import com.algorithmic_alliance.eyeaiapp.UI.onPermissionDecline
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumButton
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumIconButton
+import com.algorithmic_alliance.eyeaiapp.ui.UIEvent
+import com.algorithmic_alliance.eyeaiapp.ui.checkPermissionsStatus
+import com.algorithmic_alliance.eyeaiapp.ui.onPermissionDecline
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
@@ -92,7 +92,7 @@ fun PermissionPage(
 
 	val neededPermissions = UIDataSource.NEEDED_PERMISSIONS
 	val notGrantedPermissions =
-		checkPermissionsStatus(neededPermissions, context, onEvent = onEvent)
+		checkPermissionsStatus(neededPermissions, context)
 
 	if (notGrantedPermissions.isEmpty()) {
 		Log.d(LOG_TAG, "[PermissionPage] All permissions already granted. Exiting PermissionPage")
@@ -106,7 +106,6 @@ fun PermissionPage(
 		Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
 			key(currentPermission) {
 				AskForPermission(
-					modifier,
 					notGrantedPermissions[currentPermission],
 					onPermissionAccepted = { if (currentPermission < notGrantedPermissions.size - 1) currentPermission++ else onPermissionsGranted() },
 					onExitPermissionPage = { onPermissionsDeclined() },
@@ -122,7 +121,6 @@ fun PermissionPage(
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun AskForPermission(
-	modifier: Modifier = Modifier,
 	permissionData: Map<String, Any>,
 	onPermissionAccepted: () -> Unit,
 	onExitPermissionPage: () -> Unit,
@@ -328,7 +326,6 @@ fun AskForPermission(
 
 	if (showDeclineDialog) {
 		ConfirmPermissionDecline(
-			modifier = modifier,
 			permissionData = permissionData,
 			onDialogDismissed = { showDeclineDialog = false },
 			onExitPermissionSelection = onExitPermissionPage,
@@ -341,7 +338,6 @@ fun AskForPermission(
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ConfirmPermissionDecline(
-	modifier: Modifier = Modifier,
 	permissionData: Map<String, Any>,
 	onDialogDismissed: () -> Unit,
 	onExitPermissionSelection: () -> Unit,

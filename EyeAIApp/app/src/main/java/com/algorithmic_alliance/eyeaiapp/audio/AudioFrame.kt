@@ -16,12 +16,3 @@ class AudioFrame(
 		require(pcm16.size % 2 == 0) { "PCM-16 audio must contain complete samples" }
 	}
 }
-
-/**
- * Minimal source boundary for a future WebRTC audio adapter.
- * The current local Android microphone continues to be owned by Vosk's
- * SpeechService; no external/network implementation is installed here.
- */
-fun interface AudioFrameSink {
-	fun submit(frame: AudioFrame): Boolean
-}

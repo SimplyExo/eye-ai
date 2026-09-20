@@ -69,7 +69,27 @@ class FrozenTokenizerParityTest {
 
 	private data class ParityCase(
 		val text: String, val t1: IntArray, val t2: IntArray
-	)
+	) {
+		override fun equals(other: Any?): Boolean {
+			if (this === other) return true
+			if (javaClass != other?.javaClass) return false
+
+			other as ParityCase
+
+			if (text != other.text) return false
+			if (!t1.contentEquals(other.t1)) return false
+			if (!t2.contentEquals(other.t2)) return false
+
+			return true
+		}
+
+		override fun hashCode(): Int {
+			var result = text.hashCode()
+			result = 31 * result + t1.contentHashCode()
+			result = 31 * result + t2.contentHashCode()
+			return result
+		}
+	}
 
 	companion object {
 		private val PARITY_CASES = listOf(

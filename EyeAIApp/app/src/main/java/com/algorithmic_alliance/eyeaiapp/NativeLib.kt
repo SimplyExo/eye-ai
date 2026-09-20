@@ -14,6 +14,7 @@ import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import java.nio.IntBuffer
 
 
 /** Kotlin interface with NativeLib c++ code */
@@ -26,10 +27,10 @@ object NativeLib {
 	external fun getByteBufferPtr(buffer: ByteBuffer): Long
 
 	class NativeFloatBuffer(length: Int) {
-		var byteBuffer =
+		var byteBuffer: ByteBuffer =
 			ByteBuffer.allocateDirect(length * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
 
-		var floatBuffer = byteBuffer.asFloatBuffer()
+		var floatBuffer: FloatBuffer = byteBuffer.asFloatBuffer()
 
 		fun asUniffiWrapper(): UniffiFloatBufferWrapper {
 			return UniffiFloatBufferWrapper(
@@ -39,10 +40,10 @@ object NativeLib {
 	}
 
 	class NativeIntBuffer(length: Int) {
-		var byteBuffer =
+		var byteBuffer: ByteBuffer =
 			ByteBuffer.allocateDirect(length * Int.SIZE_BYTES).order(ByteOrder.nativeOrder())
 
-		var intBuffer = byteBuffer.asIntBuffer()
+		var intBuffer: IntBuffer = byteBuffer.asIntBuffer()
 
 		fun asUniffiWrapper(): UniffiIntBufferWrapper {
 			return UniffiIntBufferWrapper(
@@ -72,7 +73,6 @@ object NativeLib {
 		uniffi.NativeLib.metricDepthColormap(
 			input, colormappedPixels.asUniffiWrapper()
 		)
-		//metricDepthColormap(input, colormappedPixels)
 
 		// TODO: improve Bitmap/Buffer/Array conversions...
 		val colormappedPixelsArray = IntArray(colormappedPixels.intBuffer.remaining())
