@@ -14,6 +14,7 @@ import com.algorithmic_alliance.eyeaiapp.NativeLib
  */
 class CameraXFrameAdapter(
 	private val frameAnalyzer: FrameAnalyzer,
+	private val cameraCalibration: CameraCalibration? = null,
 ) : ImageAnalysis.Analyzer {
 	@OptIn(ExperimentalGetImage::class)
 	override fun analyze(image: ImageProxy) {
@@ -30,6 +31,11 @@ class CameraXFrameAdapter(
 					height = bitmap.height,
 					rotationDegrees = rotationDegrees,
 					timestampNanos = image.imageInfo.timestamp,
+					cameraIntrinsics = cameraCalibration?.forFrame(
+						widthPx = bitmap.width,
+						heightPx = bitmap.height,
+						rotationDegrees = rotationDegrees,
+					),
 				)
 			)
 		} catch (error: Throwable) {

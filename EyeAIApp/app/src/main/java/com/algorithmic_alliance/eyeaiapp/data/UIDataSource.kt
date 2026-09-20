@@ -10,6 +10,7 @@ import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.Settings
+import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsMode
 
 object UIDataSource {
 
@@ -149,6 +150,16 @@ object UIDataSource {
 				"settingsOptions" to EyeAIApp.DEPTH_MODELS.map { it.name },
 				"string" to R.string.depth_model_setting,
 				"default" to EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
+			), mapOf(
+				"title" to R.string.setting_camera_height_title,
+				"description" to R.string.setting_camera_height_description,
+				"settingsType" to "slider",
+				"settingsOption" to mapOf(
+					"min" to Rel2AbsMode.MIN_CAMERA_HEIGHT_TENTHS,
+					"max" to Rel2AbsMode.MAX_CAMERA_HEIGHT_TENTHS,
+				),
+				"string" to R.string.camera_height_setting,
+				"default" to Rel2AbsMode.DEFAULT_CAMERA_HEIGHT_TENTHS,
 			), mapOf(
 				"title" to R.string.setting_enable_framerate_limiter_title,
 				"description" to R.string.setting_enable_depth_framerate_limiter_description,
