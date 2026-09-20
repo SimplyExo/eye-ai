@@ -17,7 +17,7 @@ arc-swap = "1.9.2"
 
 [dependencies]
 alto = { path = "./alto/", version = "=3.1.2" }
-bytetrack-cpp-rs = { git = "https://github.com/Peanutt42/bytetrack-cpp-rs", tag = "v0.1.1", version = "=0.1.1" }
+bytetrack-cpp-rs = { path = "bytetrack-cpp-rs", version = "=0.1.1" }
 crossbeam = "0.8.4"
 eye-ai-core-rs-profiling_attribute = { path = "profiling_attribute" }
 json = "0.12.4"

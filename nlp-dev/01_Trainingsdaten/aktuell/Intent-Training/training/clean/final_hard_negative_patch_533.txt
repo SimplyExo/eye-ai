@@ -1,0 +1,533 @@
+Wie spät haben wir es gerade;REDIRECT_TO_LLM
+Welche Uhrzeit ist gerade;REDIRECT_TO_LLM
+Kannst du mir die aktuelle Uhrzeit sagen;REDIRECT_TO_LLM
+Sag mir bitte die Uhrzeit;REDIRECT_TO_LLM
+Ist es schon Mittag;REDIRECT_TO_LLM
+Ist es gerade morgens oder abends;REDIRECT_TO_LLM
+Welches Datum haben wir heute;REDIRECT_TO_LLM
+Welcher Wochentag ist heute;REDIRECT_TO_LLM
+Ist morgen Dienstag;REDIRECT_TO_LLM
+Welcher Tag kommt nach Mittwoch;REDIRECT_TO_LLM
+Wann ist Wochenende;REDIRECT_TO_LLM
+Wie viele Tage hat dieser Monat;REDIRECT_TO_LLM
+Wie viele Stunden hat ein Tag;REDIRECT_TO_LLM
+Wie viele Minuten hat eine Stunde;REDIRECT_TO_LLM
+Wie lange dauert eine Stunde;REDIRECT_TO_LLM
+Wer bin ich eigentlich;REDIRECT_TO_LLM
+Was weißt du über mich;REDIRECT_TO_LLM
+Kannst du mir sagen wer ich bin;REDIRECT_TO_LLM
+Wer bist du eigentlich;REDIRECT_TO_LLM
+Was kannst du alles;REDIRECT_TO_LLM
+Was würdest du mir empfehlen;REDIRECT_TO_LLM
+Hilf mir die möglichen Folgen dieser Wahl abzuwägen;REDIRECT_TO_LLM
+Was wäre jetzt sinnvoll;REDIRECT_TO_LLM
+Was ist hier die beste Entscheidung;REDIRECT_TO_LLM
+Was soll man in so einer Situation machen;REDIRECT_TO_LLM
+Was kann ich jetzt machen;REDIRECT_TO_LLM
+Hast du einen Rat für mich;REDIRECT_TO_LLM
+Kannst du mir einen Tipp geben;REDIRECT_TO_LLM
+Was denkst du darüber;REDIRECT_TO_LLM
+Wie siehst du das;REDIRECT_TO_LLM
+Wer nervt Menschen normalerweise am meisten;REDIRECT_TO_LLM
+Warum nerven manche Geräusche so sehr;REDIRECT_TO_LLM
+Wer spricht in diesem Film die Hauptrolle;REDIRECT_TO_LLM
+Wer hat dieses Lied geschrieben;REDIRECT_TO_LLM
+Wer erfand das Telefon;REDIRECT_TO_LLM
+Wer ist Albert Einstein;REDIRECT_TO_LLM
+Wer ist die Hauptfigur in Hamlet;REDIRECT_TO_LLM
+Wer gewann die Fußball-WM 2014;REDIRECT_TO_LLM
+Wer leitet normalerweise eine Universität;REDIRECT_TO_LLM
+Wer entscheidet über Gesetze;REDIRECT_TO_LLM
+Wie viel kostet ein Liter Milch ungefähr;REDIRECT_TO_LLM
+Wie viel Wasser sollte man am Tag trinken;REDIRECT_TO_LLM
+Wie viel wiegt ein Elefant ungefähr;REDIRECT_TO_LLM
+Wie viel Prozent sind ein Viertel;REDIRECT_TO_LLM
+Wie viel ist zwölf mal acht;REDIRECT_TO_LLM
+Wie viel Energie verbraucht eine Lampe;REDIRECT_TO_LLM
+Wie viel Speicher braucht ein Foto;REDIRECT_TO_LLM
+Wie viel Grad hat ein rechter Winkel;REDIRECT_TO_LLM
+Wie viele Kontinente gibt es auf der Erde insgesamt;REDIRECT_TO_LLM
+Wie viele Monate hat ein Jahr;REDIRECT_TO_LLM
+Ist heute ein Feiertag;REDIRECT_TO_LLM
+Regnet es heute;REDIRECT_TO_LLM
+Wie wird das Wetter morgen;REDIRECT_TO_LLM
+Wann geht heute die Sonne unter;REDIRECT_TO_LLM
+Warum erscheint der Himmel tagsüber blau;REDIRECT_TO_LLM
+Was bedeutet dieses Wort;REDIRECT_TO_LLM
+Was heißt eigentlich Orientierung;REDIRECT_TO_LLM
+Wie funktioniert eine Kamera;REDIRECT_TO_LLM
+Wie funktioniert Gesichtserkennung;REDIRECT_TO_LLM
+Wie erkennt ein Computer Personen im Bild;REDIRECT_TO_LLM
+Kannst du beschreiben wo ich gerade bin;OBJECT_DETECTION
+In welcher Umgebung bin ich gerade;OBJECT_DETECTION
+Was ist um mich herum;OBJECT_DETECTION
+Beschreib mir meine Umgebung;OBJECT_DETECTION
+Was befindet sich gerade um mich herum;OBJECT_DETECTION
+Kannst du meine Umgebung erkennen;OBJECT_DETECTION
+Was sehe ich hier vor mir;OBJECT_DETECTION
+Was befindet sich direkt vor mir;OBJECT_DETECTION
+Was ist gerade links von mir;OBJECT_DETECTION
+Was befindet sich rechts neben mir;OBJECT_DETECTION
+Was ist hinter dem Tisch;OBJECT_DETECTION
+Welche Gegenstände sind hier im Raum;OBJECT_DETECTION
+Was steht alles vor mir;OBJECT_DETECTION
+Welche Objekte kannst du gerade sehen;OBJECT_DETECTION
+Ist hier irgendwo eine Person;OBJECT_DETECTION
+Siehst du jemanden vor mir;OBJECT_DETECTION
+Wer steht vor mir;OBJECT_DETECTION
+Wer ist da vorne;OBJECT_DETECTION
+Ist jemand auf dem Bild zu sehen;OBJECT_DETECTION
+Welche Person ist auf dem Bild zu sehen;OBJECT_DETECTION
+Siehst du eine Person im Kamerabild;OBJECT_DETECTION
+Ist auf der Aufnahme jemand zu sehen;OBJECT_DETECTION
+Wie viele Personen sind vor mir;OBJECT_DETECTION
+Steht jemand neben mir;OBJECT_DETECTION
+Ist jemand rechts von mir;OBJECT_DETECTION
+Prüfe im Kamerabild auf welcher Seite der Fluchtweg ausgeschildert ist;OBJECT_DETECTION
+Wo finde ich die nächste Tür;OBJECT_DETECTION
+Wo finde ich einen Stuhl;OBJECT_DETECTION
+Wo finde ich einen Tisch;OBJECT_DETECTION
+Wo finde ich einen Mülleimer;OBJECT_DETECTION
+Wo finde ich die Treppe;OBJECT_DETECTION
+Wo finde ich den Aufzug;OBJECT_DETECTION
+Wo finde ich die Ampel;OBJECT_DETECTION
+Wo finde ich das Verkehrsschild;OBJECT_DETECTION
+Wo finde ich den Eingang;OBJECT_DETECTION
+Wo finde ich das Gebäude vor mir;OBJECT_DETECTION
+Wo befindet sich das Geschäft;OBJECT_DETECTION
+Wo befindet sich der Laden;OBJECT_DETECTION
+Wo befindet sich das Restaurant;OBJECT_DETECTION
+Wo befindet sich die Bushaltestelle;OBJECT_DETECTION
+Kannst du das Autohaus sehen;OBJECT_DETECTION
+Ist irgendwo ein Autohaus zu sehen;OBJECT_DETECTION
+Wo ist das Autohaus im Bild;OBJECT_DETECTION
+Findest du das Autohaus vor mir;OBJECT_DETECTION
+Kannst du den Laden vor mir finden;OBJECT_DETECTION
+Such die Tür im Kamerabild;OBJECT_DETECTION
+Finde bitte den Ausgang vor mir;OBJECT_DETECTION
+Zeig mir wo die Treppe ist;OBJECT_DETECTION
+Sag mir wo der Stuhl steht;OBJECT_DETECTION
+Auf welcher Seite sehe ich die Tür;OBJECT_DETECTION
+Ist links von mir ein Auto;OBJECT_DETECTION
+Was für ein Fahrzeug steht da;OBJECT_DETECTION
+Was für ein Gebäude sehe ich;OBJECT_DETECTION
+Ist das vor mir ein Laden;OBJECT_DETECTION
+Ist das eine Tür oder ein Fenster;OBJECT_DETECTION
+Was für ein Gegenstand ist das;OBJECT_DETECTION
+Was halte ich gerade in der Hand;OBJECT_DETECTION
+Was liegt direkt vor meinen Füßen;OBJECT_DETECTION
+Erkennst du das Objekt neben der Tür;OBJECT_DETECTION
+Welche Dinge befinden sich auf dem Tisch;OBJECT_DETECTION
+Lies mir die geschriebenen Wörter vor;TEXT_RECOGNITION
+Sag mir den geschriebenen Wortlaut;TEXT_RECOGNITION
+Ich möchte hören was dort geschrieben steht;TEXT_RECOGNITION
+Kannst du mir den Wortlaut vorlesen;TEXT_RECOGNITION
+Lies die geschriebenen Worte bitte vor;TEXT_RECOGNITION
+Was ist dort schriftlich festgehalten;TEXT_RECOGNITION
+Was steht dort in Schrift;TEXT_RECOGNITION
+Welche Wörter sind dort geschrieben;TEXT_RECOGNITION
+Welche Worte stehen auf dem Schild;TEXT_RECOGNITION
+Gib mir den genauen Wortlaut auf dem Schild;TEXT_RECOGNITION
+Sag mir exakt was dort geschrieben ist;TEXT_RECOGNITION
+Ich will den Text hören der dort steht;TEXT_RECOGNITION
+Lies mir die Schrift auf der Tür vor;TEXT_RECOGNITION
+Was ist auf der Tür geschrieben;TEXT_RECOGNITION
+Welche Aufschrift hat die Tür;TEXT_RECOGNITION
+Entziffere bitte die Aufschrift;TEXT_RECOGNITION
+Kannst du die Beschriftung vorlesen;TEXT_RECOGNITION
+Was lautet die Beschriftung;TEXT_RECOGNITION
+Was steht auf dem Etikett;TEXT_RECOGNITION
+Lies den Wortlaut auf dem Etikett;TEXT_RECOGNITION
+Welche Zahl ist dort geschrieben;TEXT_RECOGNITION
+Was steht auf dem Display geschrieben;TEXT_RECOGNITION
+Welche Meldung zeigt der Bildschirm;TEXT_RECOGNITION
+Lies die Meldung auf dem Bildschirm;TEXT_RECOGNITION
+Sag mir den Text auf dem Bildschirm;TEXT_RECOGNITION
+Was steht in der ersten Zeile;TEXT_RECOGNITION
+Lies nur die zweite Zeile vor;TEXT_RECOGNITION
+Welche Wörter kann man dort lesen;TEXT_RECOGNITION
+Ich kann die Schrift nicht lesen sag mir was da steht;TEXT_RECOGNITION
+Ich sehe den Text nicht gut lies ihn mir vor;TEXT_RECOGNITION
+Kannst du die geschriebenen Informationen wiedergeben;TEXT_RECOGNITION
+Gib mir wieder was dort geschrieben steht;TEXT_RECOGNITION
+Was ist auf dem Zettel notiert;TEXT_RECOGNITION
+Lies die Notiz auf dem Papier;TEXT_RECOGNITION
+Welche Zeichen stehen auf dem Aufkleber;TEXT_RECOGNITION
+Wo finde ich die Einstellungen;OPEN_SETTINGS
+Wo finde ich die Sprachoptionen;OPEN_SETTINGS
+Ich möchte zuerst die Liste der verfügbaren Sprecherprofile ansehen;OPEN_SETTINGS
+Wo finde ich die Einstellung für das Sprechtempo;OPEN_SETTINGS
+Wo finde ich die Frequenzeinstellung;OPEN_SETTINGS
+Rufe die Konfigurationsansicht für das Intervall der Hinweistöne auf;OPEN_SETTINGS
+Wo kann ich die Stimme konfigurieren;OPEN_SETTINGS
+Wo kann ich das Tempo konfigurieren;OPEN_SETTINGS
+Wo kann ich die Signaltöne konfigurieren;OPEN_SETTINGS
+Wo kann ich die Distanzhinweise einstellen;OPEN_SETTINGS
+Zeig mir das Menü für die Stimme;OPEN_SETTINGS
+Zeig mir das Menü für die Geschwindigkeit;OPEN_SETTINGS
+Zeig mir die Optionen für den Signalton;OPEN_SETTINGS
+Öffne die Konfiguration der App;OPEN_SETTINGS
+Öffne nur die Einstellungen ändere noch nichts;OPEN_SETTINGS
+Ich will nur sehen was eingestellt ist;OPEN_SETTINGS
+Welche Optionen kann ich ändern;OPEN_SETTINGS
+Wo sind die Optionen der Anwendung;OPEN_SETTINGS
+Führe mich bitte zu den App Einstellungen;OPEN_SETTINGS
+Öffne das Einstellungsmenü;OPEN_SETTINGS
+Wer spricht gerade mit mir;CHANGE_SPEAKER
+Ich möchte eine andere Sprecherstimme hören;CHANGE_SPEAKER
+Nimm eine andere Stimme für die Ausgabe;CHANGE_SPEAKER
+Wer die Antwort spricht soll wechseln;CHANGE_SPEAKER
+Lass jemand anderen sprechen;CHANGE_SPEAKER
+Wechsle bitte den Sprecher;CHANGE_SPEAKER
+Die Stimme gefällt mir nicht nimm eine andere;CHANGE_SPEAKER
+Gleiche Geschwindigkeit aber andere Stimme;CHANGE_SPEAKER
+Nicht den Text ändern nur die Stimme;CHANGE_SPEAKER
+Ich möchte die Ausgabe mit einer anderen Stimme hören;CHANGE_SPEAKER
+Wie viel Abstand ist noch bis zur Wand;MEASURE_DISTANCE
+Wie viel Platz ist bis zur Tür;MEASURE_DISTANCE
+Wie viele Meter sind es bis zum Ausgang;MEASURE_DISTANCE
+Wie weit ist das Auto vor mir entfernt;MEASURE_DISTANCE
+Wie nah steht die Person vor mir;MEASURE_DISTANCE
+Wie groß ist die Entfernung zum Tisch;MEASURE_DISTANCE
+Miss den Abstand zum Hindernis;MEASURE_DISTANCE
+Wie viel Raum ist noch vor mir;MEASURE_DISTANCE
+Wie weit weg ist die Treppe;MEASURE_DISTANCE
+Bestimme die Distanz zur Wand;MEASURE_DISTANCE
+Kannst du mir sagen ob heute Wochenende ist;REDIRECT_TO_LLM
+Welche Person sehe ich gerade vor mir;OBJECT_DETECTION
+Ich möchte hören welche Worte auf dem Zettel stehen;TEXT_RECOGNITION
+Gib den geschriebenen Text genauso wieder wie er dort steht;TEXT_RECOGNITION
+Wo finde ich die allgemeinen App Optionen;OPEN_SETTINGS
+Findest du diese Idee vernünftig;REDIRECT_TO_LLM
+Findest du meinen Vorschlag gut;REDIRECT_TO_LLM
+Findest du das überzeugend;REDIRECT_TO_LLM
+Findest du diese Entscheidung klug;REDIRECT_TO_LLM
+Wie findest du meinen Plan;REDIRECT_TO_LLM
+Was hältst du von meiner Idee;REDIRECT_TO_LLM
+Was hältst du von diesem Vorschlag;REDIRECT_TO_LLM
+Was hältst du persönlich davon;REDIRECT_TO_LLM
+Was denkst du über diese Entscheidung;REDIRECT_TO_LLM
+Was denkst du über meinen Plan;REDIRECT_TO_LLM
+Was meinst du zu diesem Thema;REDIRECT_TO_LLM
+Wie beurteilst du diese Idee;REDIRECT_TO_LLM
+Ist das deiner Meinung nach sinnvoll;REDIRECT_TO_LLM
+Hältst du das für eine gute Idee;REDIRECT_TO_LLM
+Würdest du das empfehlen;REDIRECT_TO_LLM
+Was würdest du an meiner Stelle tun;REDIRECT_TO_LLM
+Welchen Rat würdest du mir geben;REDIRECT_TO_LLM
+Was wäre deiner Ansicht nach besser;REDIRECT_TO_LLM
+Wie würdest du dich entscheiden;REDIRECT_TO_LLM
+Was spricht dafür und was dagegen;REDIRECT_TO_LLM
+Wer bist du als Assistent;REDIRECT_TO_LLM
+Was bist du eigentlich für ein System;REDIRECT_TO_LLM
+Was weißt du über dich selbst;REDIRECT_TO_LLM
+Kannst du dich kurz beschreiben;REDIRECT_TO_LLM
+Was kannst du besonders gut;REDIRECT_TO_LLM
+Wonach kann man sich im Leben sehnen;REDIRECT_TO_LLM
+Was bedeutet Sehnsucht;REDIRECT_TO_LLM
+Warum sehnen sich Menschen nach Nähe;REDIRECT_TO_LLM
+Was war meine vorherige Anweisung;REDIRECT_TO_LLM
+Welche Anweisung habe ich zuletzt gegeben;REDIRECT_TO_LLM
+Kannst du meinen vorigen Auftrag wiederholen;REDIRECT_TO_LLM
+Welchen Auftrag habe ich dir eben genannt;REDIRECT_TO_LLM
+Was habe ich gerade von dir verlangt;REDIRECT_TO_LLM
+Erinnerst du dich an meine letzte Anweisung;REDIRECT_TO_LLM
+Wie teuer ist dieses Produkt ungefähr;REDIRECT_TO_LLM
+Was kostet so etwas normalerweise;REDIRECT_TO_LLM
+Wie viel Geld kostet ein Kinoticket ungefähr;REDIRECT_TO_LLM
+Wie viel Uhr ist es normalerweise in Tokio wenn es hier Mittag ist;REDIRECT_TO_LLM
+Wie viele Leute leben ungefähr in Berlin;REDIRECT_TO_LLM
+Wie viele Menschen wohnen in Frankreich;REDIRECT_TO_LLM
+Wie viele Personen passen in einen Reisebus;REDIRECT_TO_LLM
+Wie weit liegt Hamburg von München entfernt;REDIRECT_TO_LLM
+Wie weit liegen Köln und Bonn auseinander;REDIRECT_TO_LLM
+Wie weit ist die Erde vom Mond entfernt;REDIRECT_TO_LLM
+Welche Entfernung liegt zwischen Paris und London;REDIRECT_TO_LLM
+Wie lange fährt man von Stuttgart nach Berlin;REDIRECT_TO_LLM
+Wie viel Zeit braucht ein Zug bis Frankfurt;REDIRECT_TO_LLM
+Was passiert wenn Wasser gefriert;REDIRECT_TO_LLM
+Was passiert bei einer Sonnenfinsternis;REDIRECT_TO_LLM
+Was passiert wenn man zu wenig schläft;REDIRECT_TO_LLM
+Was ist hier mit diesem Begriff gemeint;REDIRECT_TO_LLM
+Was bedeutet das in diesem Zusammenhang;REDIRECT_TO_LLM
+Was heißt diese Aussage genau;REDIRECT_TO_LLM
+Wo finde ich Hilfe zu diesem Thema;REDIRECT_TO_LLM
+Wo finde ich weitere Informationen darüber;REDIRECT_TO_LLM
+Wo kann ich mehr darüber nachlesen;REDIRECT_TO_LLM
+Wo bekomme ich allgemeine Hilfe;REDIRECT_TO_LLM
+Teste dein Wissen über Physik;REDIRECT_TO_LLM
+Teste dich mit einer schwierigen Frage;REDIRECT_TO_LLM
+Kannst du dich selbst einschätzen;REDIRECT_TO_LLM
+Wer steht rechts neben mir;OBJECT_DETECTION
+Wer steht links von mir;OBJECT_DETECTION
+Wer steht hinter mir im Bild;OBJECT_DETECTION
+Wer steht dort an der Tür;OBJECT_DETECTION
+Wer steht auf meiner rechten Seite;OBJECT_DETECTION
+Welche Person steht vor dem Tisch;OBJECT_DETECTION
+Ist da jemand direkt vor mir;OBJECT_DETECTION
+Befindet sich jemand neben der Tür;OBJECT_DETECTION
+Kannst du sehen wer dort steht;OBJECT_DETECTION
+Welche Person befindet sich links von mir;OBJECT_DETECTION
+Was passiert gerade vor mir;OBJECT_DETECTION
+Was geschieht hier in meiner Umgebung;OBJECT_DETECTION
+Was ist hier um mich herum los;OBJECT_DETECTION
+Kannst du erkennen was hier gerade passiert;OBJECT_DETECTION
+Beschreibe was gerade vor mir geschieht;OBJECT_DETECTION
+Wo stehe ich in diesem Raum;OBJECT_DETECTION
+Kannst du erkennen wo ich mich im Raum befinde;OBJECT_DETECTION
+Welche Umgebung sehe ich gerade;OBJECT_DETECTION
+Was befindet sich rund um mich;OBJECT_DETECTION
+Was ist gerade in meinem Sichtfeld;OBJECT_DETECTION
+Was steht dort herum;OBJECT_DETECTION
+Was steht hinten im Raum;OBJECT_DETECTION
+Was steht rechts neben dem Schrank;OBJECT_DETECTION
+Was steht links von der Tür;OBJECT_DETECTION
+Welcher Gegenstand steht da hinten;OBJECT_DETECTION
+Wo finde ich einen freien Sitzplatz;OBJECT_DETECTION
+Wo finde ich die nächste Bank;OBJECT_DETECTION
+Wo finde ich einen Papierkorb;OBJECT_DETECTION
+Wo finde ich die nächste Ampel im Bild;OBJECT_DETECTION
+Wo finde ich einen Eingang vor mir;OBJECT_DETECTION
+Wo ist meine Position im Raum;OBJECT_DETECTION
+Auf welcher Seite stehe ich neben dem Tisch;OBJECT_DETECTION
+Wo befindet sich die Person vor mir;OBJECT_DETECTION
+Wo befindet sich das Fahrrad im Bild;OBJECT_DETECTION
+Wo ist der nächste sichtbare Ausgang;OBJECT_DETECTION
+Findest du den Rucksack vor mir;OBJECT_DETECTION
+Findest du die Person links im Bild;OBJECT_DETECTION
+Findest du einen freien Stuhl;OBJECT_DETECTION
+Findest du das Schild neben der Tür;OBJECT_DETECTION
+Findest du die Treppe in meinem Sichtfeld;OBJECT_DETECTION
+Kannst du das Hindernis erkennen;OBJECT_DETECTION
+Kannst du die Person dort erkennen;OBJECT_DETECTION
+Kannst du erkennen was neben mir liegt;OBJECT_DETECTION
+Kannst du sehen was dort herumsteht;OBJECT_DETECTION
+Erkennst du was direkt vor meinen Füßen liegt;OBJECT_DETECTION
+Gib mir den vollständigen Wortlaut auf dem Aushang;TEXT_RECOGNITION
+Nenne mir den genauen Wortlaut auf dem Zettel;TEXT_RECOGNITION
+Welcher Wortlaut steht auf dem Display;TEXT_RECOGNITION
+Lies den exakten Wortlaut auf der Verpackung;TEXT_RECOGNITION
+Wie lautet der geschriebene Hinweis;TEXT_RECOGNITION
+Wie lautet der Text auf dem Schild genau;TEXT_RECOGNITION
+Sag mir wortgetreu was dort geschrieben ist;TEXT_RECOGNITION
+Gib das Geschriebene genau wieder;TEXT_RECOGNITION
+Welche geschriebenen Worte erkennst du;TEXT_RECOGNITION
+Was wurde dort schriftlich notiert;TEXT_RECOGNITION
+Was ist auf dem Papier schriftlich festgehalten;TEXT_RECOGNITION
+Lies mir die geschriebenen Angaben vor;TEXT_RECOGNITION
+Sag mir was dort handschriftlich steht;TEXT_RECOGNITION
+Welche Schriftzeichen stehen auf dem Etikett;TEXT_RECOGNITION
+Kannst du den geschriebenen Inhalt wiedergeben;TEXT_RECOGNITION
+Lies die Wörter auf dem Schild wortgetreu;TEXT_RECOGNITION
+Was steht dort geschrieben und nicht wo es hängt;TEXT_RECOGNITION
+Ich brauche den Text nicht die Position des Schildes;TEXT_RECOGNITION
+Sag mir die Aufschrift nicht den Gegenstand;TEXT_RECOGNITION
+Lies was auf dem Gegenstand geschrieben wurde;TEXT_RECOGNITION
+Welche Worte stehen direkt über dem Knopf;TEXT_RECOGNITION
+Was ist auf der Karte notiert;TEXT_RECOGNITION
+Kannst du den Wortlaut der Notiz lesen;TEXT_RECOGNITION
+Nenne mir die schriftliche Information auf dem Display;TEXT_RECOGNITION
+Lies mir genau vor was auf der Tafel geschrieben ist;TEXT_RECOGNITION
+Wo kann ich die Auswahl der Stimmen öffnen;OPEN_SETTINGS
+Wo finde ich das Menü für die Sprachstimme;OPEN_SETTINGS
+Wo kann ich sehen welche Stimme aktiv ist;OPEN_SETTINGS
+Zeig mir die verfügbaren Sprecheroptionen;OPEN_SETTINGS
+Öffne die Auswahl für männliche und weibliche Stimmen;OPEN_SETTINGS
+Wo kann ich das Sprechtempo einstellen;OPEN_SETTINGS
+Zeig mir die Einstellung für die Vorlesegeschwindigkeit;OPEN_SETTINGS
+Wo kann ich die Signalfrequenz konfigurieren;OPEN_SETTINGS
+Öffne die Optionen für die Tonhöhe;OPEN_SETTINGS
+Wo kann ich die Wiederholrate einstellen;OPEN_SETTINGS
+Zeig mir die BPS Optionen;OPEN_SETTINGS
+Wo finde ich die Einstellungen für die Hinweissignale;OPEN_SETTINGS
+Ich möchte nur sehen wo die Stimme eingestellt wird;OPEN_SETTINGS
+Ändere noch nichts zeig mir nur die Stimmauswahl;OPEN_SETTINGS
+Öffne nur das Menü für die Audioeinstellungen;OPEN_SETTINGS
+Sprich ab jetzt mit einer anderen Stimme;CHANGE_SPEAKER
+Sprich bitte mit dem anderen Sprecher;CHANGE_SPEAKER
+Sprich anders aber gleich schnell;CHANGE_SPEAKER
+Kannst du anders sprechen ohne das Tempo zu ändern;CHANGE_SPEAKER
+Kling ab jetzt anders;CHANGE_SPEAKER
+Nimm eine andere Sprechstimme;CHANGE_SPEAKER
+Wechsel direkt zur anderen Sprecherstimme;CHANGE_SPEAKER
+Lass eine andere Stimme antworten;CHANGE_SPEAKER
+Bitte verwende den anderen Sprecher;CHANGE_SPEAKER
+Mach einen Sprecherwechsel;CHANGE_SPEAKER
+Stell auf die Frauenstimme um;CHANGE_SPEAKER
+Stell auf die Männerstimme um;CHANGE_SPEAKER
+Nimm wieder die weibliche Stimme;CHANGE_SPEAKER
+Nimm wieder die männliche Stimme;CHANGE_SPEAKER
+Tausch die aktuelle Stimme gegen die andere;CHANGE_SPEAKER
+Die Stimme soll wechseln das Tempo bleibt;CHANGE_SPEAKER
+Nicht schneller sprechen sondern die Stimme wechseln;CHANGE_SPEAKER
+Nicht langsamer sprechen nimm eine andere Stimme;CHANGE_SPEAKER
+Gleiches Tempo aber anderer Sprecher;CHANGE_SPEAKER
+Die Geschwindigkeit stimmt nur der Sprecher nicht;CHANGE_SPEAKER
+Wer soll die nächste Antwort sprechen;CHANGE_SPEAKER
+Lass den anderen Sprecher übernehmen;CHANGE_SPEAKER
+Kann die andere Stimme weitermachen;CHANGE_SPEAKER
+Benutze für die Ausgabe die andere Stimme;CHANGE_SPEAKER
+Ich möchte jemand anderen sprechen hören;CHANGE_SPEAKER
+Bitte andere Stimme ohne Menü;CHANGE_SPEAKER
+Wechsle die Stimme direkt ohne Einstellungen;CHANGE_SPEAKER
+Stimme wechseln sonst nichts;CHANGE_SPEAKER
+Andere Stimme gleiches Sprechtempo;CHANGE_SPEAKER
+Kling anders aber nicht höher oder tiefer;CHANGE_SPEAKER
+Sprich etwas langsamer;CHANGE_SPEECH_SPEED
+Sprich bitte etwas schneller;CHANGE_SPEECH_SPEED
+Rede ab jetzt langsamer;CHANGE_SPEECH_SPEED
+Rede ein wenig schneller;CHANGE_SPEECH_SPEED
+Mach dein Sprechtempo langsamer;CHANGE_SPEECH_SPEED
+Mach dein Sprechtempo schneller;CHANGE_SPEECH_SPEED
+Lies die nächste Antwort langsamer vor;CHANGE_SPEECH_SPEED
+Lies die nächste Antwort schneller vor;CHANGE_SPEECH_SPEED
+Die Sprache soll langsamer werden;CHANGE_SPEECH_SPEED
+Die Sprache soll schneller werden;CHANGE_SPEECH_SPEED
+Nicht die Stimme wechseln nur langsamer sprechen;CHANGE_SPEECH_SPEED
+Nicht den Sprecher ändern nur schneller reden;CHANGE_SPEECH_SPEED
+Gleiche Stimme aber langsamer reden;CHANGE_SPEECH_SPEED
+Gleicher Sprecher aber schneller sprechen;CHANGE_SPEECH_SPEED
+Mach die Sprachausgabe etwas ruhiger;CHANGE_SPEECH_SPEED
+Mach die Sprachausgabe zügiger;CHANGE_SPEECH_SPEED
+Das Sprechen ist zu schnell;CHANGE_SPEECH_SPEED
+Das Sprechen ist zu langsam;CHANGE_SPEECH_SPEED
+Verlangsame nur deine Antwort;CHANGE_SPEECH_SPEED
+Beschleunige nur deine Sprachausgabe;CHANGE_SPEECH_SPEED
+Bitte halbes Sprechtempo;CHANGE_SPEECH_SPEED
+Bitte doppelte Sprechgeschwindigkeit;CHANGE_SPEECH_SPEED
+Tempo beim Sprechen runter;CHANGE_SPEECH_SPEED
+Tempo beim Sprechen hoch;CHANGE_SPEECH_SPEED
+Die Stimme bleibt gleich nur das Tempo ändern;CHANGE_SPEECH_SPEED
+Piepe bitte langsamer;SET_BPS
+Piepe bitte schneller;SET_BPS
+Piepe ab jetzt seltener;SET_BPS
+Piepe ab jetzt häufiger;SET_BPS
+Piepe weniger oft;SET_BPS
+Piepe öfter;SET_BPS
+Lass die Signale langsamer aufeinander folgen;SET_BPS
+Lass die Signale schneller aufeinander folgen;SET_BPS
+Mach die Signalfolge langsamer;SET_BPS
+Mach die Signalfolge schneller;SET_BPS
+Verringere die Wiederholungsgeschwindigkeit der Signale;SET_BPS
+Erhöhe die Wiederholungsgeschwindigkeit der Signale;SET_BPS
+Mach die Wiederholrate kleiner;SET_BPS
+Mach die Wiederholrate größer;SET_BPS
+Die Signale sollen sich langsamer wiederholen;SET_BPS
+Die Signale sollen sich schneller wiederholen;SET_BPS
+Mehr Pause zwischen den Pieptönen;SET_BPS
+Weniger Pause zwischen den Pieptönen;SET_BPS
+Die Pieptöne sollen weiter auseinander kommen;SET_BPS
+Die Pieptöne sollen dichter hintereinander kommen;SET_BPS
+Nur die Häufigkeit der Signale erhöhen;SET_BPS
+Nur die Häufigkeit der Signale verringern;SET_BPS
+Der Ton bleibt gleich aber piepe öfter;SET_BPS
+Der Ton bleibt gleich aber piepe seltener;SET_BPS
+Nicht höher piepen sondern öfter;SET_BPS
+Nicht tiefer piepen sondern seltener;SET_BPS
+Stell die Signalrate höher;SET_BPS
+Stell die Signalrate niedriger;SET_BPS
+Mach die Taktung der Hinweise schneller;SET_BPS
+Mach die Taktung der Hinweise langsamer;SET_BPS
+Mach die Stimme tiefer;SET_FREQUENCY
+Mach die Stimme höher;SET_FREQUENCY
+Lass die Stimme etwas tiefer klingen;SET_FREQUENCY
+Lass die Stimme etwas höher klingen;SET_FREQUENCY
+Senke die Tonhöhe der Stimme;SET_FREQUENCY
+Erhöhe die Tonhöhe der Stimme;SET_FREQUENCY
+Die Stimme soll tiefer klingen;SET_FREQUENCY
+Die Stimme soll höher klingen;SET_FREQUENCY
+Nicht die Stimme wechseln nur tiefer machen;SET_FREQUENCY
+Nicht den Sprecher wechseln nur höher klingen;SET_FREQUENCY
+Gleiche Sprecherstimme aber tiefere Tonhöhe;SET_FREQUENCY
+Gleiche Sprecherstimme aber höhere Tonhöhe;SET_FREQUENCY
+Mach den Piepton tiefer;SET_FREQUENCY
+Mach den Piepton höher;SET_FREQUENCY
+Piepe mit einem tieferen Ton;SET_FREQUENCY
+Piepe mit einem höheren Ton;SET_FREQUENCY
+Der Signalton soll tiefer werden;SET_FREQUENCY
+Der Signalton soll höher werden;SET_FREQUENCY
+Ändere nur die Tonhöhe des Signals;SET_FREQUENCY
+Die Wiederholrate bleibt nur den Ton höher;SET_FREQUENCY
+Die Wiederholrate bleibt nur den Ton tiefer;SET_FREQUENCY
+Nicht öfter sondern höher piepen;SET_FREQUENCY
+Nicht seltener sondern tiefer piepen;SET_FREQUENCY
+Mach jeden einzelnen Hinweis höher;SET_FREQUENCY
+Mach jeden einzelnen Hinweis tiefer;SET_FREQUENCY
+Stell einen helleren Signalton ein;SET_FREQUENCY
+Stell einen dunkleren Signalton ein;SET_FREQUENCY
+Frequenz hoch aber BPS gleich lassen;SET_FREQUENCY
+Frequenz runter aber BPS gleich lassen;SET_FREQUENCY
+Tonhöhe ändern nicht die Taktung;SET_FREQUENCY
+Vergiss die vorherige Anweisung;ABORT
+Ignoriere meinen vorigen Auftrag;ABORT
+Nimm den letzten Auftrag zurück;ABORT
+Führe die vorige Anweisung nicht aus;ABORT
+Brich den eben genannten Auftrag ab;ABORT
+Lass den letzten Auftrag sein;ABORT
+Verwirf meine vorherige Anweisung;ABORT
+Verwirf die anstehende Aktion bevor sie ausgeführt wird;ABORT
+Stopp den Sprecherwechsel;ABORT
+Stopp die Tempoänderung;ABORT
+Stopp die Frequenzänderung;ABORT
+Stopp die Änderung der Signalrate;ABORT
+Beende das laufende Vorlesen;ABORT
+Brich die Objektsuche ab;ABORT
+Brich die Entfernungsmessung ab;ABORT
+Lass die Einstellungen doch geschlossen;ABORT
+Nein führe das nicht aus;ABORT
+Mach den eben genannten Befehl nicht;ABORT
+Doch nicht ändern;ABORT
+Lass die aktuelle Aktion sein;ABORT
+Wie weit ist die nächste Wand von mir weg;MEASURE_DISTANCE
+Wie viel Abstand bleibt bis zur Tür;MEASURE_DISTANCE
+Wie nah steht der Stuhl vor mir;MEASURE_DISTANCE
+Welche Distanz habe ich zum Hindernis;MEASURE_DISTANCE
+Miss wie weit der Tisch entfernt ist;MEASURE_DISTANCE
+Bestimme meinen Abstand zur nächsten Stufe;MEASURE_DISTANCE
+Wie viele Meter trennen mich von der Wand;MEASURE_DISTANCE
+Wie weit ist die Person direkt vor mir;MEASURE_DISTANCE
+Wie nah ist das Auto neben mir;MEASURE_DISTANCE
+Wie viel Platz bleibt bis zum Bordstein;MEASURE_DISTANCE
+Entfernung zum sichtbaren Ausgang bitte;MEASURE_DISTANCE
+Miss nur den Abstand zum Objekt;MEASURE_DISTANCE
+Wie weit steht das Fahrrad vor mir;MEASURE_DISTANCE
+Wie nah befindet sich die Säule;MEASURE_DISTANCE
+Bestimme die Entfernung zur Tür im Bild;MEASURE_DISTANCE
+Sag mir wie weit das Hindernis weg ist;MEASURE_DISTANCE
+Wie viele Meter bis zum nächsten Stuhl;MEASURE_DISTANCE
+Wie groß ist der Abstand zur Person vor mir;MEASURE_DISTANCE
+Wie weit noch bis zur Treppe;MEASURE_DISTANCE
+Miss die Distanz zum Gegenstand rechts von mir;MEASURE_DISTANCE
+Wie weit ist Rom von Mailand entfernt;REDIRECT_TO_LLM
+Wie weit liegen Dresden und Leipzig auseinander;REDIRECT_TO_LLM
+Wie weit ist New York von Boston entfernt;REDIRECT_TO_LLM
+Wie weit sind Erde und Sonne voneinander entfernt;REDIRECT_TO_LLM
+Wie weit ist der Bodensee von Stuttgart entfernt;REDIRECT_TO_LLM
+Wie weit liegen Spanien und Portugal auseinander;REDIRECT_TO_LLM
+Wie weit ist München von Salzburg entfernt;REDIRECT_TO_LLM
+Wie weit sind Frankfurt und Köln voneinander entfernt;REDIRECT_TO_LLM
+Wie weit ist Tokio von Osaka entfernt;REDIRECT_TO_LLM
+Wie weit liegt der Mars ungefähr von der Erde entfernt;REDIRECT_TO_LLM
+Was hältst du davon wenn ich es so mache;REDIRECT_TO_LLM
+Was denkst du davon diese Variante zu wählen;REDIRECT_TO_LLM
+Wie findest du das und was hältst du davon;REDIRECT_TO_LLM
+Was würdest du davon bevorzugen;REDIRECT_TO_LLM
+Was meinst du davon wäre besser;REDIRECT_TO_LLM
+Welchen Befehl habe ich zuletzt gegeben;REDIRECT_TO_LLM
+Kannst du meinen vorherigen Befehl wiederholen;REDIRECT_TO_LLM
+Welcher Befehl kam eben von mir;REDIRECT_TO_LLM
+Was war der Befehl vor meiner letzten Frage;REDIRECT_TO_LLM
+Erinnerst du dich an meinen vorherigen Befehl;REDIRECT_TO_LLM
+Was passiert gerade in meinem Sichtfeld;OBJECT_DETECTION
+Was passiert dort vorne vor mir;OBJECT_DETECTION
+Erkennst du was rechts von mir gerade passiert;OBJECT_DETECTION
+Kannst du sehen was in meiner Umgebung passiert;OBJECT_DETECTION
+Findest du diese Antwort überzeugend;REDIRECT_TO_LLM
+Findest du meinen Ansatz vernünftig;REDIRECT_TO_LLM
+Findest du das Ergebnis plausibel;REDIRECT_TO_LLM
+Findest du diese Erklärung hilfreich;REDIRECT_TO_LLM
+Warum sehnst du dich nach bestimmten Dingen;REDIRECT_TO_LLM
+Wonach sehnst du dich in schwierigen Zeiten;REDIRECT_TO_LLM
+Verbessere die Wiederholungsgeschwindigkeit der Hinweissignale;SET_BPS
+Ich möchte die Wiederholungsgeschwindigkeit der Signale verbessern;SET_BPS
+Welcher war mein letzter Befehl;REDIRECT_TO_LLM

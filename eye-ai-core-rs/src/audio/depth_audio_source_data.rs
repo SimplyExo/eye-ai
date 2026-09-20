@@ -8,6 +8,7 @@ pub struct DepthAudioSourceData {
 	pub duration: f32,
 	pub sample_rate: usize,
 	pub position: Vec3,
+	pub gain: f32,
 	pub samples: Vec<Mono<i16>>,
 }
 
@@ -17,6 +18,7 @@ impl DepthAudioSourceData {
 		duration: f32,
 		sample_rate: usize,
 		position: Vec3,
+		gain: f32,
 		profiling_frame: &FormattedProfilingFrame,
 	) -> Self {
 		Self {
@@ -24,7 +26,8 @@ impl DepthAudioSourceData {
 			duration,
 			sample_rate,
 			position,
-			samples: create_audio_data(frequency, duration, sample_rate, profiling_frame),
+			gain,
+			samples: create_audio_data(frequency, duration, sample_rate, gain, profiling_frame),
 		}
 	}
 }
@@ -34,13 +37,14 @@ fn create_audio_data(
 	base_frequency: f32,
 	duration: f32,
 	sample_rate: usize,
+	gain: f32,
 	profiling_frame: &FormattedProfilingFrame,
 ) -> Vec<Mono<i16>> {
 	const TWO_PI: f32 = std::f32::consts::PI * 2.0;
 
 	let num_samples = number_of_samples(sample_rate, duration);
-	let amplitude: f32 = 0.8;
-	let decay_rate: f32 = 8.0;
+	let amplitude: f32 = gain * 0.8;
+	let decay_rate: f32 = 3.0;
 
 	let mut samples: Vec<Mono<i16>> = Vec::new();
 	samples.resize(num_samples, Mono { center: 0 });

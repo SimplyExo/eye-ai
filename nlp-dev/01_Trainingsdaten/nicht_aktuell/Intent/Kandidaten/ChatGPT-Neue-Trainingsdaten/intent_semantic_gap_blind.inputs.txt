@@ -1,0 +1,40 @@
+Ich brauche diese Aktion nicht mehr, beende sie
+Okay, das hier kannst du jetzt abbrechen
+Bitte hör mit genau dieser Ausgabe auf
+Beende den aktuellen Vorgang und mach nichts weiter
+Diese Stimme gefällt mir nicht, nimm die andere
+Kann die Assistentin stattdessen mit der Männerstimme sprechen
+Wechsle bitte die Person, die mich akustisch durch die App führt
+Ich möchte eine andere Sprecherstimme hören, sonst nichts ändern
+Du redest mir gerade zu hastig, geh mit dem Tempo runter
+Beim Vorlesen darfst du ruhig schneller werden
+Ändere nur das Tempo deiner Sprache und sprich langsamer
+Das Sprechtempo soll höher sein, die Stimme aber gleich bleiben
+Sag mir wie viel Platz noch zwischen mir und der Tür vor mir ist
+Wie viele Meter sind es ungefähr bis zu dem Auto direkt vor mir
+Bestimme die Entfernung zu dem Gegenstand, der mir am nächsten ist
+Wie weit ist die Person vor mir von meiner Position entfernt
+Kannst du mir sagen welche Dinge gerade meinen Weg versperren
+Welche Objekte befinden sich unmittelbar vor meiner Kamera
+Ist dort vorne ein Mensch oder steht da nur ein Gegenstand
+Beschreibe mir welche Gegenstände du direkt vor mir erkennst
+Ich möchte nichts direkt verändern, öffne mir erst einmal die Einstellungen
+Bring mich in das Menü, in dem ich die App konfigurieren kann
+Zeig mir bitte nur die verfügbaren Einstellungen
+Öffne die Konfiguration, ich entscheide danach was ich ändere
+Wie weit ist Stuttgart von Berlin entfernt
+Warum klingt eine hohe Frequenz heller als eine niedrige
+Wie schnell liest ein professioneller Sprecher
+Welche Objekte untersucht die Astronomie
+Die Tonfolge soll dichter werden, aber jeder Ton gleich hoch bleiben
+Mach zwischen zwei Hinweistönen weniger Pause
+Ich möchte pro Sekunde mehr Distanzsignale hören
+Verlangsame die Folge der Pieptöne ohne ihre Tonlage zu verändern
+Mach jeden einzelnen Hinweiston tiefer, nicht langsamer
+Die Piepsfolge passt, aber die Töne selbst sollen höher klingen
+Ändere die Tonlage des Signals nach unten
+Lass die Wiederholrate gleich und erhöhe nur die Tonhöhe
+Welche Wörter stehen auf dem Schild vor meiner Kamera
+Lies mir bitte die Beschriftung auf dem Gegenstand vor mir vor
+Was ist auf diesem Dokument vor mir geschrieben
+Erkenne die Schrift auf der Verpackung und lies sie aus

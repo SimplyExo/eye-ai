@@ -1,0 +1,187 @@
+Abbruch einleiten;ABORT
+aktuelle aktionen abbrechen;ABORT
+aus;ABORT
+b ende die einstellungen;ABORT
+bnd die einstellungen;ABORT
+bricht die aktionen ab;ABORT
+einstellungen verlassen;ABORT
+Ende jetzt;ABORT
+es reicht;ABORT
+Halt die Fresse;ABORT
+Hau ab und lass mich in Ruhe;ABORT
+he stopp mal;ABORT
+herr verlasse dieses menü;ABORT
+hinterfrage diese entscheidung nochmal und hör auf damit;ABORT
+hoch abbruch;ABORT
+Hör auf mit dem Mist;ABORT
+Ich beschwer mich darüber und du machst einfach weiter kannst du es lassen;ABORT
+ich muss jetzt endlich ich ja das ganze beenden;ABORT
+ich raste gleich aus hör auf damit;ABORT
+ich will gar nichts davon anpassen;ABORT
+Ich will nicht mehr;ABORT
+ich würde raus aus den einstellungen;ABORT
+ja lasters jetzt sofort;ABORT
+jetzt raus aus den einstellungen;ABORT
+Kannst du mal damit aufhören;ABORT
+Kannst du mit dieser Aktion aufhören;ABORT
+lass mich jetzt hier raus;ABORT
+Lass mich mit dem Mist in Frieden;ABORT
+na gut nun doch nicht;ABORT
+nein also doch nicht;ABORT
+oder eher nicht;ABORT
+raus aus diesem menü jetzt hier;ABORT
+schließe dieses menü;ABORT
+Schluss aus;ABORT
+sofort abbrechen das ganze;ABORT
+staub staub stopp;ABORT
+Stopp du Arschgesicht;ABORT
+stoppen;ABORT
+Verdammt nochmal hör auf zu sprechen;ABORT
+anderer sprecher bitte;CHANGE_SPEAKER
+anderer stimme;CHANGE_SPEAKER
+das weibliche gespür für geschlecht soll bitte vorlesen statt dem männlichen;CHANGE_SPEAKER
+der jetzt lass mich mal nennt man sprechen dass er mir das vorliegt ist also ne quasi in der männliche stimme hätte ich gern;CHANGE_SPEAKER
+ich möchte er eine weibliche stimme haben;CHANGE_SPEAKER
+kann bitte eine frau die sprachausgabe übernehmen;CHANGE_SPEAKER
+sicherlich kannst du auch die stimme ändern oder;CHANGE_SPEAKER
+sprecher auf männlich bitte;CHANGE_SPEAKER
+sprecher ändern;CHANGE_SPEAKER
+Sprecherstimme;CHANGE_SPEAKER
+stimme bitte weiblich;CHANGE_SPEAKER
+Wähle eine Männerstimme aus;CHANGE_SPEAKER
+ändere Stimme;CHANGE_SPEAKER
+ausgabe geschwindigkeit;CHANGE_SPEECH_SPEED
+Ausgabe schneller;CHANGE_SPEECH_SPEED
+bitte schneller reden;CHANGE_SPEECH_SPEED
+ein bisschen schneller reden bitte;CHANGE_SPEECH_SPEED
+etwas langsamer sprechen bitte;CHANGE_SPEECH_SPEED
+Ich verstehe dich nicht bitte nicht so schnell;CHANGE_SPEECH_SPEED
+Langsamer die stimme aber sofort;CHANGE_SPEECH_SPEED
+langsamer reden bitte;CHANGE_SPEECH_SPEED
+Rede bitte langsamer;CHANGE_SPEECH_SPEED
+Schneller die stimme aber sofort;CHANGE_SPEECH_SPEED
+sprach geschwindigkeit;CHANGE_SPEECH_SPEED
+sprechgeschwindigkeit anpassen;CHANGE_SPEECH_SPEED
+sprechgeschwindigkeit ändern;CHANGE_SPEECH_SPEED
+stimmen geschwindigkeit ändern;CHANGE_SPEECH_SPEED
+viel schneller reden;CHANGE_SPEECH_SPEED
+wendigkeit der sprachausgabe anpassen;CHANGE_SPEECH_SPEED
+zu langsam gesprochen;CHANGE_SPEECH_SPEED
+Ändere die Sprachgeschwindigkeit;CHANGE_SPEECH_SPEED
+abstand messen;MEASURE_DISTANCE
+Abstand von;MEASURE_DISTANCE
+Abstand zur Türe;MEASURE_DISTANCE
+distanz ausgeben;MEASURE_DISTANCE
+distanz messen;MEASURE_DISTANCE
+distanz zu;MEASURE_DISTANCE
+Distanz zum Stuhl;MEASURE_DISTANCE
+Distanzausgabe zu dem genannten Objekt bitte;MEASURE_DISTANCE
+entfernung von auto;MEASURE_DISTANCE
+entferung zu objekt;MEASURE_DISTANCE
+ich habe dich nicht verstanden wie weit ist das auto nochmal entfernt;MEASURE_DISTANCE
+kannst du mir dir abstände dazu einmal ausgeben;MEASURE_DISTANCE
+messung der distanz;MEASURE_DISTANCE
+messung der entfernung;MEASURE_DISTANCE
+Messung von Abstand;MEASURE_DISTANCE
+schätzt den abstand ein;MEASURE_DISTANCE
+sorry ich mein natürlich die distanz zum nächsten objekt;MEASURE_DISTANCE
+wie groß ist die entfernung zu;MEASURE_DISTANCE
+wie weit es die parkuhr von mir entfernt;MEASURE_DISTANCE
+wie weit ist das objekt entfernt;MEASURE_DISTANCE
+Wie weit ist der Stuhl entfernt?;MEASURE_DISTANCE
+Wie weit ist die Person entfernt;MEASURE_DISTANCE
+Ganz schnell antworten bitte was ist da;OBJECT_DETECTION
+nenner objekte;OBJECT_DETECTION
+objekte erkennung;OBJECT_DETECTION
+was ist das für ein gegenstand;OBJECT_DETECTION
+welches objekt vor mir;OBJECT_DETECTION
+Wie ist die Lage vor mir;OBJECT_DETECTION
+wo ist der nächste rucksack;OBJECT_DETECTION
+app anpassungen vornehmen;OPEN_SETTINGS
+bist du eloquent genug um zu verstehen dass sich jetzt die einstellungen ändern möchte;OPEN_SETTINGS
+einstellungen anpassen;OPEN_SETTINGS
+Ich möchte eine Einstellung ändern;OPEN_SETTINGS
+ich würde jetzt gerne noch etwas ändern und zwar an der app;OPEN_SETTINGS
+Kann ich die Optionen der App anpassen;OPEN_SETTINGS
+Kann ich die Optionen konfigurieren;OPEN_SETTINGS
+Kann ich eine Änderungen an den Einstellungen vornehmen?;OPEN_SETTINGS
+konfiguration einleiten;OPEN_SETTINGS
+lassen mich die app konfigurieren;OPEN_SETTINGS
+möchte etwas an den system anpassungen durchführen;OPEN_SETTINGS
+Änderung an optionen vornehmen;OPEN_SETTINGS
+aha du scheinst es also doch verstanden zu haben;REDIRECT_TO_LLM
+aha jetzt bemüht ich mal ich will dich nämlich nach allgemeinwissen frage erfragen;REDIRECT_TO_LLM
+es ist ein test;REDIRECT_TO_LLM
+Gut gespielt;REDIRECT_TO_LLM
+hallo;REDIRECT_TO_LLM
+Hallo wie geht es dir;REDIRECT_TO_LLM
+ich mich auch heute ist ein guter tag meinst du nicht auch;REDIRECT_TO_LLM
+ich möchte eine frage an die ki stellen;REDIRECT_TO_LLM
+ist es so das du mich nicht wirklich verstehst wenn ich die Setze wie aktuell in dieser Art lang formuliere nur um dich zu verwirren;REDIRECT_TO_LLM
+kannst du einen deutsch aufsatz für mich schreiben;REDIRECT_TO_LLM
+Knecht bist du;REDIRECT_TO_LLM
+könntest du eine todo liste für mich erstellen;REDIRECT_TO_LLM
+Mal angenommen ich würde eine Ki trainieren denkst du das ist in irgendeiner weise sinnvoll oder eher weniger;REDIRECT_TO_LLM
+mir ist langweilig;REDIRECT_TO_LLM
+schlage mir ein outfit für den heutigen tag vor;REDIRECT_TO_LLM
+Sind gute Trainingsdaten sehr relevant beim Trainieren einer KI;REDIRECT_TO_LLM
+Wann beginnt die Sonnenfinsternis;REDIRECT_TO_LLM
+Wann sind Ferien?;REDIRECT_TO_LLM
+Warum ist das so;REDIRECT_TO_LLM
+was gibt es heute schönes zu essen;REDIRECT_TO_LLM
+Was passiert wenn ich auf meine Tastatur haue;REDIRECT_TO_LLM
+Welche Funktionen hat diese App;REDIRECT_TO_LLM
+Wenn du mir jetzt bloß die Distanz nach Stuttgart nennen würdest wäre ich auch zufrieden;REDIRECT_TO_LLM
+Wer bist du;REDIRECT_TO_LLM
+wer das liest ist dumm;REDIRECT_TO_LLM
+wie geht es dir;REDIRECT_TO_LLM
+Wie groß ist der Eifelturm;REDIRECT_TO_LLM
+Wie hoch ist der Eifelturm;REDIRECT_TO_LLM
+wie ist dein Tag;REDIRECT_TO_LLM
+Wie kann ich Schach spielen;REDIRECT_TO_LLM
+Wie komme ich aus Russland nach Deutschland;REDIRECT_TO_LLM
+Wie lange darf ich in die Sonne schauen bevor ich blind werde;REDIRECT_TO_LLM
+Wie lange dauert das;REDIRECT_TO_LLM
+wie lange kann ich mit dir sprechen bevor du mich anlügt;REDIRECT_TO_LLM
+Wie schnell geht mein Akku leer?;REDIRECT_TO_LLM
+würdest du das dann verstehen;REDIRECT_TO_LLM
+kannst du die signal töne pro sekunde anpassen;SET_BPS
+passe die rate der signale etwas an;SET_BPS
+Piepsen verlangsamen;SET_BPS
+Piepsen öfter machen;SET_BPS
+signal hinweise für schneller;SET_BPS
+signal rate ändern;SET_BPS
+signal töne geschwindigkeit ändern;SET_BPS
+Weniger oft piepsen;SET_BPS
+Bitte tieferen ton;SET_FREQUENCY
+darauf frequenz;SET_FREQUENCY
+Ton ist zu hoch;SET_FREQUENCY
+Ton muss höher sein;SET_FREQUENCY
+ton viel tiefer machen;SET_FREQUENCY
+Wie langsam kann ich die Frequenz einstellen;SET_FREQUENCY
+alternativ kannst du mir den text direkt legt testen und vorlesen;TEXT_RECOGNITION
+ausgeben des textes vor mir;TEXT_RECOGNITION
+da steht fachgruppe materialwissenschaft oder was liest du da;TEXT_RECOGNITION
+die da ein text vor mir geschrieben;TEXT_RECOGNITION
+einmal mehr hätte ich das gerne von dir gehört wie du es vorliest;TEXT_RECOGNITION
+er kann man diesen text;TEXT_RECOGNITION
+ich möchte das jetzt satz für satz hören und zwar genau das was eben form mia gewisser weise steht;TEXT_RECOGNITION
+Jetzt würde ich gerne mal die Texterkennung testen;TEXT_RECOGNITION
+kannst du den satz vor mir in einzelne wörter zerlegen und mir diese dann einmal laut durch geben;TEXT_RECOGNITION
+kannst du den schriftzug form ja identifizieren;TEXT_RECOGNITION
+kannst du den text jetzt bitte am vorlesen;TEXT_RECOGNITION
+lies mehr das vor;TEXT_RECOGNITION
+Lies mir so schnell wie möglich jetzt sofort am besten den Text vor bevor ich wütend werde;TEXT_RECOGNITION
+lies vor;TEXT_RECOGNITION
+ließ vor;TEXT_RECOGNITION
+text auswerten;TEXT_RECOGNITION
+text der kennen;TEXT_RECOGNITION
+text einmal vorlesen bitte;TEXT_RECOGNITION
+text kennung;TEXT_RECOGNITION
+textausgabe;TEXT_RECOGNITION
+textausgabe einleiten;TEXT_RECOGNITION
+texter vorlesen;TEXT_RECOGNITION
+unter mir befindet sich text richtig den einmal bitte ausgeben;TEXT_RECOGNITION
+warte was sorry ich meinte dass du mir den text natürlich einmal diktieren solltest;TEXT_RECOGNITION
+was geschrieben;TEXT_RECOGNITION
+was sagt text;TEXT_RECOGNITION

@@ -1,0 +1,24 @@
+das reicht mir;ABORT
+entfernungsmessung;MEASURE_DISTANCE
+Abstandsmessung;MEASURE_DISTANCE
+distanzmessung;MEASURE_DISTANCE
+was ist dieses gebilde;OBJECT_DETECTION
+objekterkennung;OBJECT_DETECTION
+immer wieder anpassen und die einstellungen sollen jetzt geändert werden;OPEN_SETTINGS
+Was ist eine Induktionsbremse;REDIRECT_TO_LLM
+lese mir vor;TEXT_RECOGNITION
+ach man jetzt bin ich wieder auf den Knopf gekommen;ABORT
+nein das war ein ausversehen;ABORT
+wie kann ich hier etwas einstellen;OPEN_SETTINGS
+wie viele trainingsdaten brauchen wir noch;REDIRECT_TO_LLM
+okay garmin video speichern;REDIRECT_TO_LLM
+ich hoffe die antworten werden gescheit abgespeichert ich will die nicht verlieren;REDIRECT_TO_LLM
+sie haben mich nicht verstanden;REDIRECT_TO_LLM
+piep schneller;SET_BPS
+bps um fünf erhöhen;SET_BPS
+pieps mal langsamer;SET_BPS
+bps einstellen;SET_BPS
+ich habe dich nicht verstanden bitte nochmal vorlesen;TEXT_RECOGNITION
+nochmal vorlesen;TEXT_RECOGNITION
+nein einfach nur vorlesen bitte;TEXT_RECOGNITION
+ich habe dich nicht verstanden was ist nochmal vor mir;OBJECT_DETECTION

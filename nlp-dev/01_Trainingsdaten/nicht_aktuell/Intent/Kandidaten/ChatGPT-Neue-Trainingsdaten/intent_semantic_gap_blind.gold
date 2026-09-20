@@ -1,0 +1,40 @@
+Ich brauche diese Aktion nicht mehr, beende sie;ABORT
+Okay, das hier kannst du jetzt abbrechen;ABORT
+Bitte hör mit genau dieser Ausgabe auf;ABORT
+Beende den aktuellen Vorgang und mach nichts weiter;ABORT
+Diese Stimme gefällt mir nicht, nimm die andere;CHANGE_SPEAKER
+Kann die Assistentin stattdessen mit der Männerstimme sprechen;CHANGE_SPEAKER
+Wechsle bitte die Person, die mich akustisch durch die App führt;CHANGE_SPEAKER
+Ich möchte eine andere Sprecherstimme hören, sonst nichts ändern;CHANGE_SPEAKER
+Du redest mir gerade zu hastig, geh mit dem Tempo runter;CHANGE_SPEECH_SPEED
+Beim Vorlesen darfst du ruhig schneller werden;CHANGE_SPEECH_SPEED
+Ändere nur das Tempo deiner Sprache und sprich langsamer;CHANGE_SPEECH_SPEED
+Das Sprechtempo soll höher sein, die Stimme aber gleich bleiben;CHANGE_SPEECH_SPEED
+Sag mir wie viel Platz noch zwischen mir und der Tür vor mir ist;MEASURE_DISTANCE
+Wie viele Meter sind es ungefähr bis zu dem Auto direkt vor mir;MEASURE_DISTANCE
+Bestimme die Entfernung zu dem Gegenstand, der mir am nächsten ist;MEASURE_DISTANCE
+Wie weit ist die Person vor mir von meiner Position entfernt;MEASURE_DISTANCE
+Kannst du mir sagen welche Dinge gerade meinen Weg versperren;OBJECT_DETECTION
+Welche Objekte befinden sich unmittelbar vor meiner Kamera;OBJECT_DETECTION
+Ist dort vorne ein Mensch oder steht da nur ein Gegenstand;OBJECT_DETECTION
+Beschreibe mir welche Gegenstände du direkt vor mir erkennst;OBJECT_DETECTION
+Ich möchte nichts direkt verändern, öffne mir erst einmal die Einstellungen;OPEN_SETTINGS
+Bring mich in das Menü, in dem ich die App konfigurieren kann;OPEN_SETTINGS
+Zeig mir bitte nur die verfügbaren Einstellungen;OPEN_SETTINGS
+Öffne die Konfiguration, ich entscheide danach was ich ändere;OPEN_SETTINGS
+Wie weit ist Stuttgart von Berlin entfernt;REDIRECT_TO_LLM
+Warum klingt eine hohe Frequenz heller als eine niedrige;REDIRECT_TO_LLM
+Wie schnell liest ein professioneller Sprecher;REDIRECT_TO_LLM
+Welche Objekte untersucht die Astronomie;REDIRECT_TO_LLM
+Die Tonfolge soll dichter werden, aber jeder Ton gleich hoch bleiben;SET_BPS
+Mach zwischen zwei Hinweistönen weniger Pause;SET_BPS
+Ich möchte pro Sekunde mehr Distanzsignale hören;SET_BPS
+Verlangsame die Folge der Pieptöne ohne ihre Tonlage zu verändern;SET_BPS
+Mach jeden einzelnen Hinweiston tiefer, nicht langsamer;SET_FREQUENCY
+Die Piepsfolge passt, aber die Töne selbst sollen höher klingen;SET_FREQUENCY
+Ändere die Tonlage des Signals nach unten;SET_FREQUENCY
+Lass die Wiederholrate gleich und erhöhe nur die Tonhöhe;SET_FREQUENCY
+Welche Wörter stehen auf dem Schild vor meiner Kamera;TEXT_RECOGNITION
+Lies mir bitte die Beschriftung auf dem Gegenstand vor mir vor;TEXT_RECOGNITION
+Was ist auf diesem Dokument vor mir geschrieben;TEXT_RECOGNITION
+Erkenne die Schrift auf der Verpackung und lies sie aus;TEXT_RECOGNITION

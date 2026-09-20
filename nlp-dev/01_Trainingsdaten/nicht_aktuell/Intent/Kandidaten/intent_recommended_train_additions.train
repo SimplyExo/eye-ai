@@ -1,0 +1,74 @@
+das reicht mir;ABORT
+entfernungsmessung;MEASURE_DISTANCE
+Abstandsmessung;MEASURE_DISTANCE
+distanzmessung;MEASURE_DISTANCE
+was ist dieses gebilde;OBJECT_DETECTION
+objekterkennung;OBJECT_DETECTION
+immer wieder anpassen und die einstellungen sollen jetzt geändert werden;OPEN_SETTINGS
+Was ist eine Induktionsbremse;REDIRECT_TO_LLM
+lese mir vor;TEXT_RECOGNITION
+ach man jetzt bin ich wieder auf den Knopf gekommen;ABORT
+nein das war ein ausversehen;ABORT
+wie kann ich hier etwas einstellen;OPEN_SETTINGS
+wie viele trainingsdaten brauchen wir noch;REDIRECT_TO_LLM
+okay garmin video speichern;REDIRECT_TO_LLM
+ich hoffe die antworten werden gescheit abgespeichert ich will die nicht verlieren;REDIRECT_TO_LLM
+sie haben mich nicht verstanden;REDIRECT_TO_LLM
+piep schneller;SET_BPS
+bps um fünf erhöhen;SET_BPS
+pieps mal langsamer;SET_BPS
+bps einstellen;SET_BPS
+ich habe dich nicht verstanden bitte nochmal vorlesen;TEXT_RECOGNITION
+nochmal vorlesen;TEXT_RECOGNITION
+nein einfach nur vorlesen bitte;TEXT_RECOGNITION
+ich habe dich nicht verstanden was ist nochmal vor mir;OBJECT_DETECTION
+Beende bitte die aktuelle Aktion;ABORT
+Das soll jetzt aufhören;ABORT
+Brich genau das gerade ab;ABORT
+Mach mit dieser Funktion nicht weiter;ABORT
+Ich möchte diese Ausgabe sofort stoppen;ABORT
+Nimm bitte eine andere Stimme;CHANGE_SPEAKER
+Wechsle auf die männliche Stimme;CHANGE_SPEAKER
+Stell auf die weibliche Stimme um;CHANGE_SPEAKER
+Such mir eine andere Sprecherstimme aus;CHANGE_SPEAKER
+Ändere nur die Stimme des Assistenten;CHANGE_SPEAKER
+Dein Sprechtempo ist mir zu hektisch, mach es etwas ruhiger;CHANGE_SPEECH_SPEED
+Lies das in höherem Tempo vor;CHANGE_SPEECH_SPEED
+Deine Sprache soll langsamer werden;CHANGE_SPEECH_SPEED
+Beschleunige bitte dein Sprechtempo;CHANGE_SPEECH_SPEED
+Das Vorlesen soll deutlich langsamer sein;CHANGE_SPEECH_SPEED
+Wie weit ist die Tür direkt vor mir entfernt;MEASURE_DISTANCE
+Miss den Abstand zu dem Stuhl vor mir;MEASURE_DISTANCE
+Wie groß ist die Entfernung zum nächsten Hindernis vor mir;MEASURE_DISTANCE
+Bestimme den Abstand zu der Person vor mir;MEASURE_DISTANCE
+Wie weit steht der Tisch von mir weg;MEASURE_DISTANCE
+Welche Gegenstände befinden sich gerade vor mir;OBJECT_DETECTION
+Erkenne die Dinge in meinem Sichtfeld;OBJECT_DETECTION
+Was für Objekte siehst du vor mir;OBJECT_DETECTION
+Sag mir welche Gegenstände hier im Raum vor mir sind;OBJECT_DETECTION
+Ist vor mir gerade eine Person oder ein Gegenstand;OBJECT_DETECTION
+Öffne bitte das Konfigurationsmenü;OPEN_SETTINGS
+Bring mich zu den allgemeinen App Einstellungen;OPEN_SETTINGS
+Ich möchte in die Konfiguration der Anwendung;OPEN_SETTINGS
+Zeig mir das Menü für die Einstellungen;OPEN_SETTINGS
+Öffne die Optionen der App;OPEN_SETTINGS
+Wie weit ist es von München nach Hamburg;REDIRECT_TO_LLM
+Was bedeutet Frequenz in der Physik;REDIRECT_TO_LLM
+Wie schnell fährt ein ICE normalerweise;REDIRECT_TO_LLM
+Welche Stimme hat der Sänger in diesem Lied;REDIRECT_TO_LLM
+Was steht im Grundgesetz zur Meinungsfreiheit;REDIRECT_TO_LLM
+Lass die Hinweistöne häufiger kommen;SET_BPS
+Verringere die Anzahl der Pieptöne pro Sekunde;SET_BPS
+Die Signaltöne sollen seltener wiederholt werden;SET_BPS
+Erhöhe die Wiederholrate der Distanzhinweise;SET_BPS
+Mach mehr Pieptöne in derselben Zeit;SET_BPS
+Mach den Signalton höher;SET_FREQUENCY
+Stell die Tonhöhe der Pieptöne tiefer;SET_FREQUENCY
+Die Hinweistöne sollen heller klingen;SET_FREQUENCY
+Verringere die Tonhöhe des Signals;SET_FREQUENCY
+Setz den Piepton auf eine höhere Tonlage;SET_FREQUENCY
+Lies die Beschriftung auf der Verpackung vor mir;TEXT_RECOGNITION
+Was steht auf dem Schild direkt vor mir;TEXT_RECOGNITION
+Erkenne den Text auf diesem Etikett;TEXT_RECOGNITION
+Lies mir die Aufschrift auf der Flasche vor;TEXT_RECOGNITION
+Sag mir was auf diesem Zettel geschrieben steht;TEXT_RECOGNITION

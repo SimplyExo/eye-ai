@@ -1,0 +1,60 @@
+Hör auf mich zuzulabern;ABORT
+Kannst du mal bitte den Mund halten;ABORT
+Wenn du jetzt nicht sofort damit aufhörst dann knallt es;ABORT
+Ja weil du dumm bist und jetzt schluss damit;ABORT
+Richtig schlecht was du da machst niemals wieder sowas machen;ABORT
+Hör auf mir auf den Sack zu gehen und lass es jetzt endlich bleiben;ABORT
+langweile mich nicht und passe jetzt die stimme an;CHANGE_SPEAKER
+ich brauche eine männliche aussprache;CHANGE_SPEAKER
+Jetzt würde ich gerne mal die anderen Stimmen testen;CHANGE_SPEAKER
+kannst du eine sanfter stimme für mich auswählen;CHANGE_SPEAKER
+ich möchte die männliche stimme in den einstellungen auswählen;CHANGE_SPEAKER
+Wähle mir eine andere Stimme aus;CHANGE_SPEAKER
+Lass den Sprecher schneller erklingen;CHANGE_SPEECH_SPEED
+Erhöhe die Geschwindigkeit der Vorlesung;CHANGE_SPEECH_SPEED
+Langsamer sollst du es nicht vorlesen bitte schneller;CHANGE_SPEECH_SPEED
+Ach noch langsamer geht auch nicht mehr oder bitte mach das mal etwas zügiger;CHANGE_SPEECH_SPEED
+Das ist mir viel zu langsam;CHANGE_SPEECH_SPEED
+Mache die verdammte stimme schneller;CHANGE_SPEECH_SPEED
+Miss jetzt sofort die Distanz zum Elefanten vor mir;MEASURE_DISTANCE
+Distanzmessung bis zum Tisch vor mir bitte;MEASURE_DISTANCE
+und was wenn ich dich jetzt willkürlich dazu auffordern würde irgendwelche distanzen in diesem raum zu einem bestimmten objekt zu bestimmen;MEASURE_DISTANCE
+wahrhaft da bist du also doch ganz schön intelligent unterwegs jetzt solltest du mal bitte erklären wie weit der bildschirm von mir entfernt ist das wäre ganz nett;MEASURE_DISTANCE
+jetzt sofort einmal die distanz zum handy auswerten;MEASURE_DISTANCE
+wenn du jetzt nicht sofort die distanz zum nächsten objekt mist dann raste ich aus;MEASURE_DISTANCE
+Findest du ein Auto im Bild;OBJECT_DETECTION
+Hör mir jetzt sofort zu und sag mir wo das Auto ist;OBJECT_DETECTION
+Wer ist vor mir;OBJECT_DETECTION
+Kannst du etwas sehen;OBJECT_DETECTION
+So jetzt aber mal bitte ist etwas vor mir oder nicht;OBJECT_DETECTION
+objekte im raum erkennen;OBJECT_DETECTION
+Wie kann ich die Einstellungen öffnen?;OPEN_SETTINGS
+Ist es möglich Anpassungen an den Konfigurationen vorzunehmen?;OPEN_SETTINGS
+Kann ich die Parameter dieser App ändern?;OPEN_SETTINGS
+Wie komme ich ins Setup der App;OPEN_SETTINGS
+Lassen sich die Voreinstellungen personalisieren;OPEN_SETTINGS
+selbst wenn ich jetzt gerne die optionen konfigurieren würde würdest du das bestimmt nicht verstehen;OPEN_SETTINGS
+Magst du eher Erdbeeren oder Marmelade;REDIRECT_TO_LLM
+Ist die Erde flach;REDIRECT_TO_LLM
+Wo gibt es den nächsten Supermarkt;REDIRECT_TO_LLM
+Kannst du mein Zimmer sauber machen?;REDIRECT_TO_LLM
+Wie lange leben Schimpansen;REDIRECT_TO_LLM
+Was ist der Unterschied zwischen Frequenz und Amplitude?;REDIRECT_TO_LLM
+Kannst du das Piepen schneller machen;SET_BPS
+Lässt sich die Geschwindigkeit des Piepens erhöhen;SET_BPS
+Lässt sich die Geschwindigkeit der Signaltöne erhöhen;SET_BPS
+Kannst du die Wiederholungszahl der Distanzhinweistöne frequenter machen;SET_BPS
+jahr oder du erhöhst halt die wiederholungen der töne pro sekunde;SET_BPS
+Öfter die Töne pro Sekunde ausgeben bitte;SET_BPS
+Kannst du die Frequenz ändern?;SET_FREQUENCY
+Ich möchte die Höhe der töne anpassen und zwar jetzt sofort verdammt nochmal;SET_FREQUENCY
+wie kannst du nicht begreifen dass ich einfach die tunhöhe ändern will;SET_FREQUENCY
+wieso begreifst du nicht dass es jetzt notwendig ist die höhe der töne anzupassen;SET_FREQUENCY
+Jetzt würde ich gerne mal höheren Ausgabefrequenzen testen;SET_FREQUENCY
+tonhöhe höher anpassen;SET_FREQUENCY
+Nein kannst du mir den Text diktieren;TEXT_RECOGNITION
+Hör auf mich und gib mir jetzt den Text vor mir aus;TEXT_RECOGNITION
+Kannst du den Text erkennen;TEXT_RECOGNITION
+Verdammt nochmal ich brauch jetzt den Text vor mir;TEXT_RECOGNITION
+An der Stelle hätte ich gerne mal den Text vor mir von dir ausgesprochen;TEXT_RECOGNITION
+rechts von mir den text diktieren;TEXT_RECOGNITION

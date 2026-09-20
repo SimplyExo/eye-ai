@@ -28,10 +28,15 @@ data class Settings(
 	var enableNpu: Boolean,
 	var rel2AbsMode: Rel2AbsMode,
 	var cameraHeightTenths: Int,
-
 ) : Cloneable {
 	companion object {
 		const val DEFAULT_FRAME_RATE_LIMIT: Int = 30
+
+		const val MIN_OBJECT_DETECTION_FRAME_RATE: Int = 1
+		const val MAX_OBJECT_DETECTION_FRAME_RATE: Int = 120
+
+		fun normalizeObjectDetectionFrameRate(value: Int): Int =
+			value.coerceIn(MIN_OBJECT_DETECTION_FRAME_RATE, MAX_OBJECT_DETECTION_FRAME_RATE)
 
 		fun load(context: Context): Settings {
 			val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -79,9 +84,11 @@ data class Settings(
 			)
 
 			val maxObjectDetectionFrameRate = if (objectDetectionFrameRateLimitEnabled) {
-				sharedPreferences.getInt(
-					context.getString(R.string.max_object_detection_frame_rate_setting),
-					DEFAULT_FRAME_RATE_LIMIT
+				normalizeObjectDetectionFrameRate(
+					sharedPreferences.getInt(
+						context.getString(R.string.max_object_detection_frame_rate_setting),
+						DEFAULT_FRAME_RATE_LIMIT
+					)
 				)
 			} else {
 				null
@@ -252,7 +259,10 @@ data class Settings(
 					context.getString(R.string.enable_object_detection_frame_rate_limit_setting),
 					true
 				)
-				putInt(context.getString(R.string.max_object_detection_frame_rate_setting), it)
+				putInt(
+					context.getString(R.string.max_object_detection_frame_rate_setting),
+					normalizeObjectDetectionFrameRate(it)
+				)
 			} ?: putBoolean(
 				context.getString(R.string.enable_object_detection_frame_rate_limit_setting), false
 			)

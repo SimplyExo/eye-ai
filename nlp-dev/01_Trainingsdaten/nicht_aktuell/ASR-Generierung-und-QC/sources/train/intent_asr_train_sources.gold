@@ -1,0 +1,32 @@
+das reicht mir;ABORT
+entfernungsmessung;MEASURE_DISTANCE
+Abstandsmessung;MEASURE_DISTANCE
+distanzmessung;MEASURE_DISTANCE
+was ist dieses gebilde;OBJECT_DETECTION
+objekterkennung;OBJECT_DETECTION
+immer wieder anpassen und die einstellungen sollen jetzt geändert werden;OPEN_SETTINGS
+Was ist eine Induktionsbremse;REDIRECT_TO_LLM
+lese mir vor;TEXT_RECOGNITION
+ach man jetzt bin ich wieder auf den Knopf gekommen;ABORT
+nein das war ein ausversehen;ABORT
+wie kann ich hier etwas einstellen;OPEN_SETTINGS
+Beende bitte die aktuelle Aktion;ABORT
+Das soll jetzt aufhören;ABORT
+Nimm bitte eine andere Stimme;CHANGE_SPEAKER
+Wechsle auf die männliche Stimme;CHANGE_SPEAKER
+Dein Sprechtempo ist mir zu hektisch, mach es etwas ruhiger;CHANGE_SPEECH_SPEED
+Lies das in höherem Tempo vor;CHANGE_SPEECH_SPEED
+Wie weit ist die Tür direkt vor mir entfernt;MEASURE_DISTANCE
+Miss den Abstand zu dem Stuhl vor mir;MEASURE_DISTANCE
+Welche Gegenstände befinden sich gerade vor mir;OBJECT_DETECTION
+Erkenne die Dinge in meinem Sichtfeld;OBJECT_DETECTION
+Öffne bitte das Konfigurationsmenü;OPEN_SETTINGS
+Bring mich zu den allgemeinen App Einstellungen;OPEN_SETTINGS
+Wie weit ist es von München nach Hamburg;REDIRECT_TO_LLM
+Was bedeutet Frequenz in der Physik;REDIRECT_TO_LLM
+Lass die Hinweistöne häufiger kommen;SET_BPS
+Verringere die Anzahl der Pieptöne pro Sekunde;SET_BPS
+Mach den Signalton höher;SET_FREQUENCY
+Stell die Tonhöhe der Pieptöne tiefer;SET_FREQUENCY
+Lies die Beschriftung auf der Verpackung vor mir;TEXT_RECOGNITION
+Was steht auf dem Schild direkt vor mir;TEXT_RECOGNITION

@@ -258,6 +258,7 @@ fn depth_audio_thread(
 		settings.read().unwrap().buffer_duration,
 		SpatialAudioSettings::SAMPLE_RATE,
 		Vec3::default(),
+		0.0,
 		&profiling_frame,
 	);
 
@@ -308,6 +309,7 @@ fn depth_audio_thread(
 					source.queue_buffer(unqueued_buffer).unwrap();
 				}
 				source.set_position(source_data.position).unwrap();
+				source.set_gain(source_data.gain).unwrap();
 				source
 					.set_max_distance(SpatialAudioSettings::MAX_DISTANCE)
 					.unwrap();
@@ -424,6 +426,32 @@ fn object_audio_thread(
 	}
 }
 
+/// Constants controlling the depth audio saliency analysis.
+///
+/// The depth estimate is downsampled into a coarse grid; each cell is scored by
+/// how much it matters for obstacle avoidance, then the top ranked cells are
+/// turned into audio sources.
+const COARSE_STRIDE: usize = 4;
+/// Radius (in cells) of the ring used as the local background reference when
+/// detecting obstacles that protrude towards the user.
+const ISOLATION_RING_RADIUS: i32 = 2;
+/// Depth difference (in meters) that counts as a fully isolated obstacle.
+const ISOLATION_RANGE: f32 = 1.0;
+/// How strongly protruding obstacles are boosted over a flat surface.
+const ISOLATION_WEIGHT: f32 = 0.6;
+/// Gaussian sigma of the horizontal center bias, as a fraction of half the width.
+const CENTER_SIGMA_FRACTION: f32 = 0.28;
+/// Minimum Chebyshev distance (in cells) between two selected sources, so that
+/// the sounds stay spread out instead of piling up on one object.
+const MIN_SEPARATION: i32 = 4;
+/// Saliency below this is treated as background noise (nothing interesting).
+const MIN_SALIENCY: f32 = 0.02;
+const AUDIBLE_DISTANCE: f32 = 6.0;
+const MIN_GAIN: f32 = 0.25;
+const MAX_GAIN: f32 = 1.0;
+const MIN_FREQ_FACTOR: f32 = 0.8;
+const MAX_FREQ_FACTOR: f32 = 1.2;
+
 #[profile_function("profiling_frame")]
 fn process_depth_estimation_data(
 	depth_estimation_data: &[f32; SpatialAudioSettings::PICTURE_PIXEL_COUNT],
@@ -432,55 +460,217 @@ fn process_depth_estimation_data(
 	settings: &SpatialAudioSettings,
 	profiling_frame: &FormattedProfilingFrame,
 ) -> Vec<DepthAudioSourceData> {
-	let step_size = (SpatialAudioSettings::PICTURE_RESOLUTION.x as f32
-		/ (SpatialAudioSettings::NUMBER_OF_SOURCES as f32 - 1.0)) as usize;
-	let mut audio_source_data = Vec::with_capacity(
-		(SpatialAudioSettings::PICTURE_RESOLUTION.x as f32 / step_size as f32) as usize,
-	);
-	let mut calculate_sound_origin = CalculateSoundOrigin::new();
+	const GRID_W: usize = SpatialAudioSettings::PICTURE_RESOLUTION.x as usize / COARSE_STRIDE;
+	const GRID_H: usize = SpatialAudioSettings::PICTURE_RESOLUTION.y as usize / COARSE_STRIDE;
+	const GRID_CELLS: usize = GRID_W * GRID_H;
+	const MAX_SOURCES: usize = SpatialAudioSettings::NUMBER_OF_SOURCES;
 
-	let mut i: i32 = 0;
-	while i < SpatialAudioSettings::PICTURE_RESOLUTION.x {
-		let mut nearest_distance = f32::MAX;
-		for j in 0..SpatialAudioSettings::PICTURE_RESOLUTION.y {
-			let pixel_index = (i + (j * SpatialAudioSettings::PICTURE_RESOLUTION.x)) as usize;
-			let importance = segmentation_data
-				.and_then(|segmentation_data| {
-					let segmentation_class = segmentation_data[pixel_index];
-					segmentation_class_importances
-						.get(segmentation_class as usize)
-						.copied()
-				})
-				.unwrap_or(1.0);
-
-			if importance == 0.0 {
-				continue;
+	// Downsample the depth map into a coarse grid, keeping the nearest depth and
+	// the mean segmentation importance per cell.
+	let mut cell_min_depth = vec![f32::MAX; GRID_CELLS];
+	let mut cell_importance = vec![0.0f32; GRID_CELLS];
+	for (cell_index, (cell_min_depth, cell_importance)) in cell_min_depth
+		.iter_mut()
+		.zip(cell_importance.iter_mut())
+		.enumerate()
+	{
+		let cell_x = cell_index % GRID_W;
+		let cell_y = cell_index / GRID_W;
+		let mut importance_sum = 0.0f32;
+		for y in 0..COARSE_STRIDE {
+			for x in 0..COARSE_STRIDE {
+				let pixel = (cell_x * COARSE_STRIDE + x)
+					+ ((cell_y * COARSE_STRIDE + y)
+						* SpatialAudioSettings::PICTURE_RESOLUTION.x as usize);
+				let importance = segmentation_data
+					.and_then(|segmentation_data| {
+						segmentation_class_importances
+							.get(segmentation_data[pixel] as usize)
+							.copied()
+					})
+					.unwrap_or(1.0);
+				importance_sum += importance;
+				*cell_min_depth = cell_min_depth.min(depth_estimation_data[pixel]);
 			}
-
-			let current_value = depth_estimation_data[pixel_index] / importance;
-			nearest_distance = current_value.min(nearest_distance);
 		}
+		*cell_importance = importance_sum / (COARSE_STRIDE * COARSE_STRIDE) as f32;
+	}
 
-		let sound_origin = calculate_sound_origin
-			.calculate_sound_origin(IVec2 { x: i + 1, y: 0 }, nearest_distance);
+	// Rank the cells by how relevant they are for obstacle avoidance.
+	let saliency = compute_saliency_map(&cell_min_depth, &cell_importance);
+
+	// Pick the most salient cells, spread far enough apart to remain distinguishable,
+	// and fall back to the nearest cells to guarantee full angular coverage.
+	let mut selected = select_salient_cells(&saliency, &cell_min_depth, MAX_SOURCES);
+
+	// Sort by horizontal position so the sources pan from left to right in a stable
+	// order instead of jumping around between frames.
+	selected.sort_by_key(|&cell| cell % GRID_W);
+
+	let mut calculate_sound_origin = CalculateSoundOrigin::new();
+	let mut audio_source_data = Vec::with_capacity(selected.len());
+	for cell in selected {
+		let depth = cell_min_depth[cell];
+		// Urgency rises towards 1.0 the closer the obstacle is.
+		let proximity = 1.0 - (depth / AUDIBLE_DISTANCE).clamp(0.0, 1.0);
+		let frequency = math_utils::lerp(
+			proximity,
+			settings.frequency * MIN_FREQ_FACTOR,
+			settings.frequency * MAX_FREQ_FACTOR,
+		);
+		let gain = math_utils::lerp(proximity, MIN_GAIN, MAX_GAIN);
+
+		let cell_x = cell % GRID_W;
+		let cell_y = cell / GRID_W;
+		let sound_origin = calculate_sound_origin.calculate_sound_origin(
+			IVec2 {
+				x: (cell_x * COARSE_STRIDE + COARSE_STRIDE / 2) as i32,
+				y: (cell_y * COARSE_STRIDE + COARSE_STRIDE / 2) as i32,
+			},
+			depth,
+		);
 
 		audio_source_data.push(DepthAudioSourceData::new(
-			settings.frequency,
+			frequency,
 			settings.buffer_duration,
 			SpatialAudioSettings::SAMPLE_RATE,
 			sound_origin,
+			gain,
 			profiling_frame,
 		));
-
-		// TODO: Why was that here? see old c++ code!
-		if i == 0 {
-			i -= 1;
-		}
-
-		i += step_size as i32;
 	}
 
 	audio_source_data
+}
+
+/// Scores every coarse grid cell by combining how close it is (proximity), how
+/// much it sits in the walking direction (center bias), how strongly it protrudes
+/// from its surroundings (isolation) and how important its segmentation class is.
+fn compute_saliency_map(cell_min_depth: &[f32], cell_importance: &[f32]) -> Vec<f32> {
+	const GRID_W: usize = SpatialAudioSettings::PICTURE_RESOLUTION.x as usize / COARSE_STRIDE;
+	const GRID_H: usize = SpatialAudioSettings::PICTURE_RESOLUTION.y as usize / COARSE_STRIDE;
+
+	let half_width = GRID_W as f32 / 2.0;
+	let sigma = half_width * CENTER_SIGMA_FRACTION;
+	let mut saliency = vec![0.0f32; GRID_W * GRID_H];
+
+	for y in 0..GRID_H {
+		for x in 0..GRID_W {
+			let cell_index = x + y * GRID_W;
+			let depth = cell_min_depth[cell_index];
+			let proximity = 1.0 - (depth / AUDIBLE_DISTANCE).clamp(0.0, 1.0);
+			let center_bias =
+				(-((x as f32 - half_width + 0.5).powi(2)) / (2.0 * sigma * sigma)).exp();
+			let isolation = isolation_bonus(cell_min_depth, GRID_W, GRID_H, x, y);
+
+			saliency[cell_index] = cell_importance[cell_index]
+				* (proximity * center_bias + ISOLATION_WEIGHT * isolation * proximity);
+		}
+	}
+
+	saliency
+}
+
+/// How much closer this cell is than everything around it. A cell that protrudes
+/// towards the user (an isolated obstacle) scores high; a flat wall/wall section
+/// scores zero, which keeps it at its plain proximity weight.
+fn isolation_bonus(
+	cell_min_depth: &[f32],
+	grid_w: usize,
+	grid_h: usize,
+	x: usize,
+	y: usize,
+) -> f32 {
+	let cell_depth = cell_min_depth[x + y * grid_w];
+	let mut ring_min = f32::MAX;
+	for dy in -ISOLATION_RING_RADIUS..=ISOLATION_RING_RADIUS {
+		for dx in -ISOLATION_RING_RADIUS..=ISOLATION_RING_RADIUS {
+			if dx.abs() != ISOLATION_RING_RADIUS && dy.abs() != ISOLATION_RING_RADIUS {
+				continue;
+			}
+			let nx = x as i32 + dx;
+			let ny = y as i32 + dy;
+			if nx < 0 || ny < 0 || nx >= grid_w as i32 || ny >= grid_h as i32 {
+				continue;
+			}
+			ring_min = ring_min.min(cell_min_depth[nx as usize + ny as usize * grid_w]);
+		}
+	}
+	if ring_min == f32::MAX {
+		return 0.0;
+	}
+	((ring_min - cell_depth) / ISOLATION_RANGE).clamp(0.0, 1.0)
+}
+
+/// Greedily selects the ranked cells while enforcing a minimum separation, so the
+/// audio sources stay spread across the field of view. Only genuinely salient
+/// cells become pings. If the scene is flat and nothing crosses the saliency
+/// threshold, a single ping is emitted at the nearest cell so the user still has
+/// an orientation reference, but no second ping is invented.
+fn select_salient_cells(
+	saliency: &[f32],
+	cell_min_depth: &[f32],
+	max_sources: usize,
+) -> Vec<usize> {
+	const GRID_W: usize = SpatialAudioSettings::PICTURE_RESOLUTION.x as usize / COARSE_STRIDE;
+	const GRID_H: usize = SpatialAudioSettings::PICTURE_RESOLUTION.y as usize / COARSE_STRIDE;
+
+	let mut selected = Vec::with_capacity(max_sources);
+
+	while selected.len() < max_sources {
+		let best = best_cell(saliency, MIN_SALIENCY, GRID_W, GRID_H, &selected);
+		match best {
+			Some(cell) => selected.push(cell),
+			None => break,
+		}
+	}
+
+	if selected.is_empty() {
+		let proximity: Vec<f32> = cell_min_depth
+			.iter()
+			.map(|&depth| 1.0 - (depth / AUDIBLE_DISTANCE).clamp(0.0, 1.0))
+			.collect();
+		if let Some(best) = best_cell(&proximity, 0.0, GRID_W, GRID_H, &selected) {
+			selected.push(best);
+		}
+	}
+
+	selected
+}
+
+/// Returns the highest scoring cell that is not within `MIN_SEPARATION` cells of an
+/// already selected one, or `None` if nothing qualifies.
+fn best_cell(
+	scores: &[f32],
+	min_score: f32,
+	grid_w: usize,
+	grid_h: usize,
+	selected: &[usize],
+) -> Option<usize> {
+	let mut best: Option<(usize, f32)> = None;
+	for y in 0..grid_h {
+		for x in 0..grid_w {
+			let cell_index = x + y * grid_w;
+			let score = scores[cell_index];
+			if score < min_score {
+				continue;
+			}
+			let too_close = selected.iter().any(|&selected_cell| {
+				let (selected_x, selected_y) = (selected_cell % grid_w, selected_cell / grid_w);
+				(selected_x as i32 - x as i32)
+					.abs()
+					.max((selected_y as i32 - y as i32).abs())
+					< MIN_SEPARATION
+			});
+			if too_close {
+				continue;
+			}
+			if best.is_none_or(|(_, best_score)| score > best_score) {
+				best = Some((cell_index, score));
+			}
+		}
+	}
+	best.map(|(cell_index, _)| cell_index)
 }
 
 #[profile_function("profiling_frame")]

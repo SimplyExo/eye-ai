@@ -1,0 +1,66 @@
+halt stopp
+Nein
+männliche Stimme
+weibliche Stimme
+sprich mal langsamer man versteht dich ja gar nicht
+nicht so schnell sprechen
+sprich mal normal schnell
+wie weit ist das auto weg
+wie weit
+Entfernung
+was ist das alles hier
+was steht hier im weg
+objekte
+einstellung ändern
+wie ändere ich die einstellungen
+ich hätte gerne ein eis
+entschuldigen sie könnten sie mir den weg zeigen
+wie komme ich hier über die straße
+wie ist das wetter gerade
+wann geht die sonne unter
+wird es heute regnen
+bps schneller
+bps langsamer
+frequenz höher
+frequenz
+mach das piepsen tiefer
+Was steht da auf dem Mano
+was steht da ich kann das nicht lesen
+was steht denn da auf dem schild
+ich habe dich nicht verstanden was steht nochmal auf der speisekarte
+ändere geschwindigkeit
+sprechgeschwindigkeit einstellen
+text
+ich weiß solangsam nicht mehr was ich sagen soll
+so das war es mit trainingsdaten
+bps
+Lass die laufende Funktion sein
+Stoppe das was du gerade machst
+Damit möchte ich jetzt Schluss machen
+Ich hätte gern die andere Assistenzstimme
+Schalte auf eine männliche Sprecherstimme
+Nimm statt dieser bitte die weibliche Stimme
+Dein Vorlesetempo ist zu hoch
+Mach deine Sprachausgabe etwas langsamer
+Kannst du deutlich zügiger sprechen
+Wie weit ist das Hindernis vor meinen Füßen weg
+Miss bitte die Entfernung zu dem Fahrrad vor mir
+Wie viel Abstand habe ich noch zur Wand vor mir
+Welche Sachen stehen unmittelbar vor mir
+Erkennst du dort vorne irgendein Objekt
+Was befindet sich gerade in meinem Blickfeld
+Wo finde ich die allgemeinen Einstellungen der App
+Öffne das Menü zum Konfigurieren
+Ich will die App Einstellungen aufrufen
+Wie weit ist der Mond von der Erde entfernt
+Welche Frequenz hat der Kammerton A
+Wie schnell spricht ein Mensch durchschnittlich
+Die Abstandstöne sollen öfter hintereinander kommen
+Reduziere die Wiederholungen der Signaltöne pro Sekunde
+Erhöhe das Tempo der Piepsfolge ohne die Tonhöhe zu ändern
+Die Pieptöne sollen tiefer klingen
+Heb die Tonlage des Signals an
+Ändere nur die Höhe des Hinweistons
+Was ist auf dem Preisschild geschrieben
+Lies bitte die Worte auf der Tafel
+Kannst du den Aufdruck auf der Packung vorlesen

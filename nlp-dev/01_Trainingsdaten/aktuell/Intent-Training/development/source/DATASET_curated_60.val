@@ -1,0 +1,60 @@
+Lies bitte den geschriebenen Hinweis auf der Schachtel;TEXT_RECOGNITION
+Welche Worte erkennst du auf dem kleinen Schild;TEXT_RECOGNITION
+Sag mir die genaue Aufschrift auf dem Papier;TEXT_RECOGNITION
+Was ist auf dem Display schriftlich angegeben;TEXT_RECOGNITION
+Lies mir den Text direkt unter dem Symbol vor;TEXT_RECOGNITION
+Gib mir den Wortlaut der Beschriftung an der Tür;TEXT_RECOGNITION
+Wer befindet sich direkt links vor mir;OBJECT_DETECTION
+Was steht als Gegenstand neben dem Schrank;OBJECT_DETECTION
+Kannst du erkennen was in meiner Umgebung passiert;OBJECT_DETECTION
+Wo stehe ich relativ zur sichtbaren Tür;OBJECT_DETECTION
+Findest du die Person neben dem Ausgang;OBJECT_DETECTION
+Welche Dinge befinden sich gerade in meinem Blickfeld;OBJECT_DETECTION
+Mach deine nächste Antwort deutlich langsamer;CHANGE_SPEECH_SPEED
+Rede bitte etwas flotter als gerade;CHANGE_SPEECH_SPEED
+Gleiche Stimme aber reduziere das Sprechtempo;CHANGE_SPEECH_SPEED
+Beschleunige nur die Sprachausgabe;CHANGE_SPEECH_SPEED
+Bitte langsamer reden nicht die Signale ändern;CHANGE_SPEECH_SPEED
+Das Vorlesen soll ein Stück schneller werden;CHANGE_SPEECH_SPEED
+Wechsel direkt auf den anderen Sprecher;CHANGE_SPEAKER
+Nimm für die nächste Antwort die männliche Stimme;CHANGE_SPEAKER
+Bitte andere Sprechstimme bei gleichem Tempo;CHANGE_SPEAKER
+Kling anders ohne höher oder tiefer zu werden;CHANGE_SPEAKER
+Lass diesmal die andere Sprecherin antworten;CHANGE_SPEAKER
+Nur die Stimme wechseln sonst nichts verändern;CHANGE_SPEAKER
+Wie teuer ist eine durchschnittliche Zugfahrt;REDIRECT_TO_LLM
+Wie weit liegen Madrid und Barcelona auseinander;REDIRECT_TO_LLM
+Was hältst du von diesem Argument;REDIRECT_TO_LLM
+Welche Anweisung habe ich dir gerade gegeben;REDIRECT_TO_LLM
+Findest du diese Entscheidung nachvollziehbar;REDIRECT_TO_LLM
+Was geschieht wenn Eis schmilzt;REDIRECT_TO_LLM
+Öffne die Seite mit den verfügbaren Stimmen;OPEN_SETTINGS
+Wo kann ich sehen welches Sprechtempo eingestellt ist;OPEN_SETTINGS
+Zeig mir die Optionen für Frequenz und Signalrate;OPEN_SETTINGS
+Ich möchte nur die Konfiguration anschauen;OPEN_SETTINGS
+Wo finde ich das Menü für die Distanzhinweise;OPEN_SETTINGS
+Öffne die App Einstellungen ohne etwas zu ändern;OPEN_SETTINGS
+Lass den gleichen Ton zweimal öfter ertönen;SET_BPS
+Verringere die Zahl der Signale pro Sekunde;SET_BPS
+Piepe mit derselben Tonhöhe etwas seltener;SET_BPS
+Mach die Abstände zwischen den Hinweisen kleiner;SET_BPS
+Erhöhe nur die Wiederholrate der Pieptöne;SET_BPS
+Die Signale sollen langsamer hintereinander kommen;SET_BPS
+Mach die Stimme klanglich etwas höher;SET_FREQUENCY
+Senke die Tonhöhe der Stimme ohne Sprecherwechsel;SET_FREQUENCY
+Stell den Hinweis auf siebenhundert Hertz;SET_FREQUENCY
+Der Piepton soll tiefer klingen aber gleich oft kommen;SET_FREQUENCY
+Ändere nur die Frequenz des Signals;SET_FREQUENCY
+Nimm einen höheren Ton bei unveränderter Taktung;SET_FREQUENCY
+Wie nah ist die sichtbare Wand vor mir;MEASURE_DISTANCE
+Miss den Abstand bis zu der Person rechts;MEASURE_DISTANCE
+Wie viele Meter bleiben bis zum Ausgang;MEASURE_DISTANCE
+Bestimme die Entfernung zu dem Fahrrad vor mir;MEASURE_DISTANCE
+Wie viel Platz ist zwischen mir und dem Stuhl;MEASURE_DISTANCE
+Sag mir nur die Distanz zum erkannten Objekt;MEASURE_DISTANCE
+Verwirf bitte meinen vorherigen Auftrag;ABORT
+Führe die letzte Änderung doch nicht aus;ABORT
+Brich das aktuelle Vorlesen ab;ABORT
+Stopp die laufende Entfernungsmessung;ABORT
+Ignoriere den eben genannten Befehl;ABORT
+Lass die aktuelle Aktion sofort sein;ABORT

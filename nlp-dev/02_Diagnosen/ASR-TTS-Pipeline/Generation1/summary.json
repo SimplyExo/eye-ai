@@ -1,0 +1,78 @@
+{
+  "seed": 20260809,
+  "clean_samples_total": 3344,
+  "source_selection": {
+    "organic": {
+      "available": 700,
+      "selected_for_tts": 700,
+      "ratio": 1.0
+    },
+    "clean": {
+      "available": 1685,
+      "selected_for_tts": 1011,
+      "ratio": 0.6
+    },
+    "old": {
+      "available": 959,
+      "selected_for_tts": 240,
+      "ratio": 0.25
+    }
+  },
+  "tts_attempts": 3873,
+  "severity_attempts": {
+    "hard": 775,
+    "clean": 1162,
+    "moderate": 1936
+  },
+  "attempt_status_after_global_filter": {
+    "review": 1467,
+    "reject": 1125,
+    "accept": 1281
+  },
+  "selected_vosk_samples": 1281,
+  "target_asr_share": 0.35,
+  "actual_asr_share": 0.27697297297297296,
+  "final_training_samples": 4625,
+  "final_class_distribution": {
+    "TEXT_RECOGNITION": 479,
+    "OBJECT_DETECTION": 492,
+    "CHANGE_SPEECH_SPEED": 441,
+    "CHANGE_SPEAKER": 405,
+    "REDIRECT_TO_LLM": 493,
+    "OPEN_SETTINGS": 494,
+    "SET_FREQUENCY": 443,
+    "SET_BPS": 513,
+    "ABORT": 419,
+    "MEASURE_DISTANCE": 446
+  },
+  "selected_vosk_by_source": {
+    "organic": 717,
+    "clean": 503,
+    "old": 61
+  },
+  "selected_vosk_by_severity": {
+    "moderate": 820,
+    "clean": 400,
+    "hard": 61
+  },
+  "selected_vosk_by_label": {
+    "TEXT_RECOGNITION": 134,
+    "OBJECT_DETECTION": 137,
+    "CHANGE_SPEECH_SPEED": 109,
+    "CHANGE_SPEAKER": 91,
+    "REDIRECT_TO_LLM": 136,
+    "OPEN_SETTINGS": 156,
+    "SET_FREQUENCY": 121,
+    "SET_BPS": 147,
+    "MEASURE_DISTANCE": 134,
+    "ABORT": 116
+  },
+  "piper_voices": [
+    "piper_voices/de_DE-karlsson-low.onnx",
+    "piper_voices/de_DE-kerstin-low.onnx",
+    "piper_voices/de_DE-thorsten-high.onnx",
+    "piper_voices/de_DE-thorsten-medium.onnx"
+  ],
+  "real_noise_wavs": 0,
+  "real_rir_wavs": 0
+}

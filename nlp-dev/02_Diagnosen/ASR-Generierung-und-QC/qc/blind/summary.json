@@ -1,0 +1,58 @@
+{
+  "pipeline_version": "generation_2_review_first",
+  "seed": 20260809,
+  "clean_samples_total": 120,
+  "source_selection": {
+    "dataset": {
+      "path": "/home/robert/Dokumente/GitHub/intent_retraining_results/00_asr_generation/_inputs/intent_asr_blind_sources.labeled.txt",
+      "available": 120,
+      "selected_for_tts": 120,
+      "ratio": 1.0,
+      "attempts_per_sample": 1
+    }
+  },
+  "tts_attempts": 120,
+  "severity_attempts": {
+    "moderate": 72,
+    "clean": 48
+  },
+  "attempt_status": {
+    "generated": 120
+  },
+  "generated_nonempty": 120,
+  "flagged_for_review": 68,
+  "generated_by_source": {
+    "dataset": 120
+  },
+  "generated_by_severity": {
+    "moderate": 72,
+    "clean": 48
+  },
+  "generated_by_label": {
+    "ABORT": 13,
+    "CHANGE_SPEAKER": 11,
+    "CHANGE_SPEECH_SPEED": 12,
+    "MEASURE_DISTANCE": 10,
+    "OBJECT_DETECTION": 12,
+    "OPEN_SETTINGS": 11,
+    "REDIRECT_TO_LLM": 13,
+    "SET_BPS": 14,
+    "SET_FREQUENCY": 10,
+    "TEXT_RECOGNITION": 14
+  },
+  "tts_backend": {
+    "piper": 117,
+    "espeak": 3
+  },
+  "piper_voices": [
+    "/home/robert/Dokumente/Trainingsdaten/Neue Daten von ChatGPT/Aktuelle Trainingsdaten/Skript für Vosk-TTS/Generation2/piper_voices/de_DE-karlsson-low.onnx",
+    "/home/robert/Dokumente/Trainingsdaten/Neue Daten von ChatGPT/Aktuelle Trainingsdaten/Skript für Vosk-TTS/Generation2/piper_voices/de_DE-kerstin-low.onnx",
+    "/home/robert/Dokumente/Trainingsdaten/Neue Daten von ChatGPT/Aktuelle Trainingsdaten/Skript für Vosk-TTS/Generation2/piper_voices/de_DE-thorsten-high.onnx",
+    "/home/robert/Dokumente/Trainingsdaten/Neue Daten von ChatGPT/Aktuelle Trainingsdaten/Skript für Vosk-TTS/Generation2/piper_voices/de_DE-thorsten-medium.onnx"
+  ],
+  "espeak_weight": 0.03,
+  "tts_normalization": true,
+  "real_noise_wavs": 0,
+  "real_rir_wavs": 0,
+  "note": "Keine harten Augmentierungen. Alle nichtleeren Vosk-Transkripte bleiben zunächst erhalten; Flags dienen dem anschließenden menschlichen Review."
+}

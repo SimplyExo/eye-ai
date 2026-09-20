@@ -1,0 +1,4 @@
+severity,mean_WER_pct,label_match_pct
+clean,26.6,91.4
+moderate,40.8,80.0
+hard,90.1,23.5

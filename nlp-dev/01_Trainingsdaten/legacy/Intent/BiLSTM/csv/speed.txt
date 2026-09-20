@@ -1,0 +1,104 @@
+Kannst du das Sprechtempo erhöhen?;CHANGE_SPEECH_SPEED
+Ich möchte, dass du schneller sprichst.;CHANGE_SPEECH_SPEED
+Bitte verlangsame deine Sprachausgabe.;CHANGE_SPEECH_SPEED
+Könntest du etwas gemächlicher reden?;CHANGE_SPEECH_SPEED
+Stell die Sprachgeschwindigkeit höher.;CHANGE_SPEECH_SPEED
+Reduziere bitte die Sprechgeschwindigkeit.;CHANGE_SPEECH_SPEED
+Ich brauche eine schnellere Sprachausgabe.;CHANGE_SPEECH_SPEED
+Kann die Geschwindigkeit der Stimme angepasst werden?;CHANGE_SPEECH_SPEED
+Mach die Ausgabe etwas flotter.;CHANGE_SPEECH_SPEED
+Lass dir mehr Zeit beim Sprechen.;CHANGE_SPEECH_SPEED
+Ich preferiere ein langsameres Tempo.;CHANGE_SPEECH_SPEED
+Beschleunige die Sprachwiedergabe leicht.;CHANGE_SPEECH_SPEED
+Verringere das Sprechtempo ein wenig.;CHANGE_SPEECH_SPEED
+Könntest du zügiger vorlesen?;CHANGE_SPEECH_SPEED
+Bitte sprich in einem ruhigeren Tempo.;CHANGE_SPEECH_SPEED
+Ich will, dass du schneller redest.;CHANGE_SPEECH_SPEED
+Kannst du langsamer sprechen?;CHANGE_SPEECH_SPEED
+Erhöhe die Rate der Sprachausgabe.;CHANGE_SPEECH_SPEED
+Senke die Geschwindigkeit der Stimme.;CHANGE_SPEECH_SPEED
+Ich möchte eine höhere Sprechgeschwindigkeit.;CHANGE_SPEECH_SPEED
+Bitte eine niedrigere Sprachrate.;CHANGE_SPEECH_SPEED
+Könntest du flüssiger sprechen?;CHANGE_SPEECH_SPEED
+Ich brauche eine klarere, langsamere Aussprache.;CHANGE_SPEECH_SPEED
+Mach die Stimme dynamischer im Tempo.;CHANGE_SPEECH_SPEED
+Kann das Tempo der Sprache variiert werden?;CHANGE_SPEECH_SPEED
+Bitte sprich mit mehr Geschwindigkeit.;CHANGE_SPEECH_SPEED
+Ich möchte, dass du gemütlicher sprichst.;CHANGE_SPEECH_SPEED
+Erhöhe das Sprechtempo um eine Stufe.;CHANGE_SPEECH_SPEED
+Verringere die Sprachgeschwindigkeit um eine Stufe.;CHANGE_SPEECH_SPEED
+Könntest du schneller artikulieren?;CHANGE_SPEECH_SPEED
+Bitte langsamere Artikulation.;CHANGE_SPEECH_SPEED
+Ich will eine schnellere Wiedergabe.;CHANGE_SPEECH_SPEED
+Kannst du die Ausgabe verlangsamen?;CHANGE_SPEECH_SPEED
+Stell auf High-Speed-Sprache um.;CHANGE_SPEECH_SPEED
+Wechsle zu Langsam-Sprache.;CHANGE_SPEECH_SPEED
+Ich brauche Turbo-Sprachtempo.;CHANGE_SPEECH_SPEED
+Bitte Schneckentempo für die Sprache.;CHANGE_SPEECH_SPEED
+Könntest du die Wörter schneller aussprechen?;CHANGE_SPEECH_SPEED
+Lass die Wörter länger klingen.;CHANGE_SPEECH_SPEED
+Ich möchte eine beschleunigte Sprachausgabe.;CHANGE_SPEECH_SPEED
+Bitte eine entschleunigte Sprachwiedergabe.;CHANGE_SPEECH_SPEED
+Kann die Sprachrate erhöht werden?;CHANGE_SPEECH_SPEED
+Kann die Sprachrate verringert werden?;CHANGE_SPEECH_SPEED
+Mach die Stimme flotter.;CHANGE_SPEECH_SPEED
+Mach die Stimme bedächtiger.;CHANGE_SPEECH_SPEED
+Ich preferiere rasante Sprache.;CHANGE_SPEECH_SPEED
+Ich mag geruhsame Sprachausgabe.;CHANGE_SPEECH_SPEED
+Könntest du temporeicher sprechen?;CHANGE_SPEECH_SPEED
+Bitte gemächlichere Aussprache.;CHANGE_SPEECH_SPEED
+Stell die Sprachgeschwindigkeit auf Maximum.;CHANGE_SPEECH_SPEED
+Stell die Sprachgeschwindigkeit auf Minimum.;CHANGE_SPEECH_SPEED
+Ich will Superspeed-Sprache.;CHANGE_SPEECH_SPEED
+Ich will Super-Slow-Sprache.;CHANGE_SPEECH_SPEED
+Kannst du die Geschwindigkeit anpassen?;CHANGE_SPEECH_SPEED
+Bitte justiere das Sprechtempo.;CHANGE_SPEECH_SPEED
+Ich möchte eine andere Sprachgeschwindigkeit.;CHANGE_SPEECH_SPEED
+Könntest du schneller vorlesen?;CHANGE_SPEECH_SPEED
+Bitte langsamer vorlesen.;CHANGE_SPEECH_SPEED
+Erhöhe das Vorlesetempo.;CHANGE_SPEECH_SPEED
+Verringere das Vorlesetempo.;CHANGE_SPEECH_SPEED
+Ich brauche Quick-Read-Modus.;CHANGE_SPEECH_SPEED
+Ich brauche Slow-Read-Modus.;CHANGE_SPEECH_SPEED
+Kannst du flott sprechen?;CHANGE_SPEECH_SPEED
+Kannst du bedächtig sprechen?;CHANGE_SPEECH_SPEED
+Stell auf schnelle Aussprache um.;CHANGE_SPEECH_SPEED
+Stell auf langsame Aussprache um.;CHANGE_SPEECH_SPEED
+Ich möchte zügige Sprache.;CHANGE_SPEECH_SPEED
+Ich möchte behäbige Sprache.;CHANGE_SPEECH_SPEED
+Könntest du die Sprachrate optimieren?;CHANGE_SPEECH_SPEED
+Bitte passe die Sprechgeschwindigkeit an.;CHANGE_SPEECH_SPEED
+Ich will, dass du rascher sprichst.;CHANGE_SPEECH_SPEED
+Ich will, dass du gelassener sprichst.;CHANGE_SPEECH_SPEED
+Erhöhe die Syllaben pro Minute.;CHANGE_SPEECH_SPEED
+Reduziere die Syllaben pro Minute.;CHANGE_SPEECH_SPEED
+Kannst du mit höherem Tempo sprechen?;CHANGE_SPEECH_SPEED
+Kannst du mit niedrigerem Tempo sprechen?;CHANGE_SPEECH_SPEED
+Mach die Sprache lebhafter durch Tempo.;CHANGE_SPEECH_SPEED
+Mach die Sprache entspannter durch Tempo.;CHANGE_SPEECH_SPEED
+Ich möchte eine agile Sprachausgabe.;CHANGE_SPEECH_SPEED
+Ich möchte eine bedächtige Sprachausgabe.;CHANGE_SPEECH_SPEED
+Könntest du die Geschwindigkeit modulieren?;CHANGE_SPEECH_SPEED
+Bitte variiere das Sprechtempo.;CHANGE_SPEECH_SPEED
+Stell auf Express-Sprache um.;CHANGE_SPEECH_SPEED
+Stell auf Comfort-Sprache um.;CHANGE_SPEECH_SPEED
+Ich brauche Rapid-Speech.;CHANGE_SPEECH_SPEED
+Ich brauche Deliberate-Speech.;CHANGE_SPEECH_SPEED
+Kannst du schneller kommunizieren?;CHANGE_SPEECH_SPEED
+Kannst du langsamer kommunizieren?;CHANGE_SPEECH_SPEED
+Erhöhe die Artikulationsgeschwindigkeit.;CHANGE_SPEECH_SPEED
+Verringere die Artikulationsgeschwindigkeit.;CHANGE_SPEECH_SPEED
+Ich möchte flotte Kommunikation.;CHANGE_SPEECH_SPEED
+Ich möchte gemütliche Kommunikation.;CHANGE_SPEECH_SPEED
+Könntest du das Redetempo anheben?;CHANGE_SPEECH_SPEED
+Könntest du das Redetempo senken?;CHANGE_SPEECH_SPEED
+Bitte mehr Speed in der Sprache.;CHANGE_SPEECH_SPEED
+Bitte weniger Speed in der Sprache.;CHANGE_SPEECH_SPEED
+Stell die Sprachvelocity höher.;CHANGE_SPEECH_SPEED
+Stell die Sprachvelocity niedriger.;CHANGE_SPEECH_SPEED
+Ich will High-Velocity-Sprache.;CHANGE_SPEECH_SPEED
+Ich will Low-Velocity-Sprache.;CHANGE_SPEECH_SPEED
+Kannst du die Sprachpace erhöhen?;CHANGE_SPEECH_SPEED
+Kannst du die Sprachpace verringern?;CHANGE_SPEECH_SPEED
+Mach die Ausgabe rasanter.;CHANGE_SPEECH_SPEED
+Mach die Ausgabe bedächtiger.;CHANGE_SPEECH_SPEED

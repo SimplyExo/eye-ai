@@ -1,0 +1,102 @@
+Kannst du mir den geschriebenen Inhalt hier laut vorlesen?;TEXT_RECOGNITION
+Ich brauche eine akustische Wiedergabe dieses Textabschnitts.;TEXT_RECOGNITION
+Was ist auf diesem Dokument zu lesen?;TEXT_RECOGNITION
+Lies bitte die gesamte Passage vor meinen Augen vor.;TEXT_RECOGNITION
+Die Buchstabenfolge auf diesem Schild interessiert mich.;TEXT_RECOGNITION
+Gib mir den Inhalt dieser Notiz als Sprachausgabe.;TEXT_RECOGNITION
+Vorlesefunktion für den sichtbaren Text aktivieren.;TEXT_RECOGNITION
+Welche Informationen stehen auf diesem Etikett?;TEXT_RECOGNITION
+Ich möchte hören, was auf dem Display erscheint.;TEXT_RECOGNITION
+Könntest du die Überschrift und Untertitel vorlesen?;TEXT_RECOGNITION
+Sag mir, was in der kleinen Schrift steht.;TEXT_RECOGNITION
+Lies den kompletten Absatz da vorne bitte.;TEXT_RECOGNITION
+Was kann ich auf der Verpackung lesen?;TEXT_RECOGNITION
+Texterkennung starten und Ergebnis vorsprechen.;TEXT_RECOGNITION
+Die Zeilen auf diesem Zettel bitte vortragen.;TEXT_RECOGNITION
+Ich will wissen, was auf dem Poster steht.;TEXT_RECOGNITION
+Lies mir die Beschreibung unter dem Bild vor.;TEXT_RECOGNITION
+Gib mir den Wortlaut dieser Mitteilung wieder.;TEXT_RECOGNITION
+Was ist in der Kopfzeile dieses Formulars?;TEXT_RECOGNITION
+Kannst du die Hinweise auf diesem Schild aussprechen?;TEXT_RECOGNITION
+Lies die fett gedruckten Wörter besonders betont.;TEXT_RECOGNITION
+Ich brauche den Text aus der unteren Hälfte.;TEXT_RECOGNITION
+Was steht in der Spalte rechts?;TEXT_RECOGNITION
+Vorlesen, was im gelben Kasten notiert ist.;TEXT_RECOGNITION
+Sag mir den Inhalt der Quittung laut.;TEXT_RECOGNITION
+Lies die Aufschrift auf dieser Dose bitte.;TEXT_RECOGNITION
+Welche Anweisungen finde ich auf dem Label?;TEXT_RECOGNITION
+Gib mir den Text im Info-Bereich wieder.;TEXT_RECOGNITION
+Lies den Disclaimer am Ende vor.;TEXT_RECOGNITION
+Was kann ich auf dem Wegweiser lesen?;TEXT_RECOGNITION
+Kannst du die Bildunterschrift vorlesen?;TEXT_RECOGNITION
+Lies mir die Kontaktdaten auf dieser Visitenkarte vor.;TEXT_RECOGNITION
+Was steht auf dem Warnhinweis?;TEXT_RECOGNITION
+Gib mir den Text aus dem Pop-up-Fenster.;TEXT_RECOGNITION
+Lies die Liste der Zutaten komplett vor.;TEXT_RECOGNITION
+Was ist auf dem Preisschild vermerkt?;TEXT_RECOGNITION
+Sag mir den Text auf dem Sticker.;TEXT_RECOGNITION
+Lies die Nachricht auf dem Anrufbeantworter.;TEXT_RECOGNITION
+Was steht in der Fußnote?;TEXT_RECOGNITION
+Kannst du den Chat-Verlauf vorlesen?;TEXT_RECOGNITION
+Lies mir die Schlagzeile der Zeitung vor.;TEXT_RECOGNITION
+Was ist auf dem Whiteboard geschrieben?;TEXT_RECOGNITION
+Gib mir den Text aus der Sprechblase.;TEXT_RECOGNITION
+Lies die Bedienungsanleitung auf diesem Schild.;TEXT_RECOGNITION
+Was steht auf dem Kassenbon?;TEXT_RECOGNITION
+Sag mir den Code auf diesem Barcode.;TEXT_RECOGNITION
+Lies die Termine auf dem Kalender vor.;TEXT_RECOGNITION
+Was ist auf dem Namensschild zu lesen?;TEXT_RECOGNITION
+Kannst du den Text auf dem Geldschein vorlesen?;TEXT_RECOGNITION
+Lies mir die Beschriftung auf dieser Tüte vor.;TEXT_RECOGNITION
+Was steht auf der Rückseite der Verpackung?;TEXT_RECOGNITION
+Gib mir den Text aus dem Eingabefeld.;TEXT_RECOGNITION
+Lies die Fehlermeldung auf dem Bildschirm.;TEXT_RECOGNITION
+Was ist auf dem Banner geschrieben?;TEXT_RECOGNITION
+Sag mir den Text auf dem Cover dieses Buches.;TEXT_RECOGNITION
+Lies die Hashtags unter dem Social-Media-Post.;TEXT_RECOGNITION
+Was steht auf dem Schild am Eingang?;TEXT_RECOGNITION
+Kannst du die Legende dieser Karte vorlesen?;TEXT_RECOGNITION
+Lies mir die AGB in Kurzform vor.;TEXT_RECOGNITION
+Was ist auf dem Aufkleber auf der Früchte?;TEXT_RECOGNITION
+Gib mir den Text aus der Statusleiste.;TEXT_RECOGNITION
+Lies die Benachrichtigung auf dem Handy.;TEXT_RECOGNITION
+Was steht auf dem Plakat an der Wand?;TEXT_RECOGNITION
+Sag mir den Text auf dem Schild am Fahrzeug.;TEXT_RECOGNITION
+Lies die Übersetzung unter dem Fremdwort.;TEXT_RECOGNITION
+Was ist auf dem Etikett meines Medikaments?;TEXT_RECOGNITION
+Kannst du den Text auf der Landkarte vorlesen?;TEXT_RECOGNITION
+Lies mir die Öffnungszeiten auf diesem Schild.;TEXT_RECOGNITION
+Was steht auf dem Button dieser Website?;TEXT_RECOGNITION
+Gib mir den Text aus der Tooltip-Box.;TEXT_RECOGNITION
+Lies die Caption unter dem Video.;TEXT_RECOGNITION
+Was ist auf dem Schild am Museum?;TEXT_RECOGNITION
+Sag mir den Text auf dem Rezept.;TEXT_RECOGNITION
+Lies die Ankündigung auf dem Display.;TEXT_RECOGNITION
+Was steht auf dem Poster für die Veranstaltung?;TEXT_RECOGNITION
+Kannst du den Text auf der Speisekarte vorlesen?;TEXT_RECOGNITION
+Lies mir die Beschreibung auf dieser Webseite.;TEXT_RECOGNITION
+Was ist auf dem Schild am Baum?;TEXT_RECOGNITION
+Gib mir den Text aus der Sidebar.;TEXT_RECOGNITION
+Lies die Push-Benachrichtigung vor.;TEXT_RECOGNITION
+Was steht auf dem Warnetikett?;TEXT_RECOGNITION
+Sag mir den Text auf dem Schild am Bahnhof.;TEXT_RECOGNITION
+Lies die Nachricht in dieser App.;TEXT_RECOGNITION
+Was ist auf dem Banner der Website?;TEXT_RECOGNITION
+Kannst du den Text auf der Verpackung des Spielzeugs vorlesen?;TEXT_RECOGNITION
+Lies mir die Instruktionen auf diesem Gerät.;TEXT_RECOGNITION
+Was steht auf dem Schild am Parkplatz?;TEXT_RECOGNITION
+Gib mir den Text aus dem Kontextmenü.;TEXT_RECOGNITION
+Lies die Fehlercodes auf diesem Display.;TEXT_RECOGNITION
+Was ist auf dem Schild am Supermarkt?;TEXT_RECOGNITION
+Sag mir den Text auf dem Poster im Café.;TEXT_RECOGNITION
+Lies die Benutzeroberfläche dieser App vor.;TEXT_RECOGNITION
+Was steht auf dem Schild an der Tür?;TEXT_RECOGNITION
+Kannst du den Text auf der DVD-Hülle vorlesen?;TEXT_RECOGNITION
+Lies mir die Beschriftung auf diesem Schalter.;TEXT_RECOGNITION
+Was ist auf dem Schild am Fahrstuhl?;TEXT_RECOGNITION
+Gib mir den Text aus dem Dropdown-Menü.;TEXT_RECOGNITION
+Lies die Systemmeldung auf dem PC.;TEXT_RECOGNITION
+Was steht auf dem Schild am Kino?;TEXT_RECOGNITION
+Sag mir den Text auf dem Plakat für den Film.;TEXT_RECOGNITION
+Lies die Chat-Nachricht in diesem Spiel.;TEXT_RECOGNITION
+Was ist auf dem Schild am Zoo?;TEXT_RECOGNITION

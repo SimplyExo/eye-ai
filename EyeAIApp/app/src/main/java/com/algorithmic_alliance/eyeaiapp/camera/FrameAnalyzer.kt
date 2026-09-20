@@ -1,5 +1,6 @@
 package com.algorithmic_alliance.eyeaiapp.camera
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import android.util.Size
@@ -10,6 +11,11 @@ import com.algorithmic_alliance.eyeaiapp.rel2abs.DetectionFrame
 import com.algorithmic_alliance.eyeaiapp.rel2abs.MetricDepthFrame
 import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsContextFeatures
 import com.algorithmic_alliance.eyeaiapp.rel2abs.SegmentationContextFrame
+import com.algorithmic_alliance.eyeaiapp.inference.throttling.AdaptiveOdGate
+import com.algorithmic_alliance.eyeaiapp.inference.throttling.AnalysisClock
+import com.algorithmic_alliance.eyeaiapp.inference.throttling.SceneChangeMonitor
+import com.algorithmic_alliance.eyeaiapp.inference.throttling.motion.PhoneMotionLifecycle
+import com.algorithmic_alliance.eyeaiapp.inference.throttling.motion.PhoneMotionMonitor
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +35,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
@@ -46,7 +53,35 @@ data class FrameAnalysisUpdate(
 	val detectedObjects: Array<UniffiDetectedObject>? = null,
 	val segmentationOutput: NativeLib.NativeIntBuffer? = null,
 	val frameSize: Size? = null,
-)
+) {
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+
+		other as FrameAnalysisUpdate
+
+		if (depthPreviewBitmap != other.depthPreviewBitmap) return false
+		if (debugInputBitmap != other.debugInputBitmap) return false
+		if (debugSegmentationBitmap != other.debugSegmentationBitmap) return false
+		if (performanceText != other.performanceText) return false
+		if (!detectedObjects.contentEquals(other.detectedObjects)) return false
+		if (segmentationOutput != other.segmentationOutput) return false
+		if (frameSize != other.frameSize) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = depthPreviewBitmap?.hashCode() ?: 0
+		result = 31 * result + (debugInputBitmap?.hashCode() ?: 0)
+		result = 31 * result + (debugSegmentationBitmap?.hashCode() ?: 0)
+		result = 31 * result + (performanceText?.hashCode() ?: 0)
+		result = 31 * result + (detectedObjects?.contentHashCode() ?: 0)
+		result = 31 * result + (segmentationOutput?.hashCode() ?: 0)
+		result = 31 * result + (frameSize?.hashCode() ?: 0)
+		return result
+	}
+}
 
 // Lightweight source/output heartbeat used by the runtime safety monitor.
 data class FrameAnalyzerHealth(
@@ -66,10 +101,19 @@ data class FrameAnalyzerHealth(
  * creating a second inference or model pipeline.
  */
 class FrameAnalyzer(
+	context: Context,
 	private val runtime: EyeAIRuntime,
 	private val onUpdate: (FrameAnalysisUpdate) -> Unit,
 ) {
 	private val latestFrame = AtomicReference<AnalysisFrame?>(null)
+	private val scene: SceneChangeMonitor = SceneChangeMonitor()
+	val gate: AdaptiveOdGate = AdaptiveOdGate(
+		runtime.settings.maxObjectDetectionFrameRate?.toDouble(),
+		AnalysisClock.nowNanos(),
+	)
+	private val motionLifecycle = PhoneMotionLifecycle(
+		createMonitor = { PhoneMotionMonitor(context) },
+	)
 	private val frameSequence = AtomicLong(0L)
 	private val frameAvailable = MutableStateFlow(0L)
 	private val sourceFrameCount = AtomicLong(0L)
@@ -110,6 +154,7 @@ class FrameAnalyzer(
 			objectJob = objectScope.launch { runObjectDetectionLoop() }
 			segmentationJob = segmentationScope.launch { runSegmentationLoop() }
 		}
+		refreshMotionMonitoring()
 	}
 
 	/** Stops processing and releases the analyzer-owned latest-frame reference. */
@@ -129,6 +174,7 @@ class FrameAnalyzer(
 		frameToRelease?.release()
 		lastAcceptedFrameAtNanos.set(0L)
 		clearModelOutputs()
+		refreshMotionMonitoring()
 	}
 
 	/** Permanently closes the analyzer. The runtime calls this only at process shutdown. */
@@ -151,6 +197,7 @@ class FrameAnalyzer(
 		depthExecutor.shutdownNow()
 		objectExecutor.shutdownNow()
 		clearModelOutputs()
+		refreshMotionMonitoring()
 	}
 
 	/**
@@ -252,7 +299,7 @@ class FrameAnalyzer(
 						val modelInput =
 							"${modelInference.inputDim.width}x${modelInference.inputDim.height}"
 
-						"Metric Depth model: ${modelInference.modelName}\n" + "Camera resolution: $inputResolution -> Depth model input: $modelInput\n\n" + "${uniffi.NativeLib.formattedDepthFrame()}\n" + "$formattedSourceFrame\n" + if (runtime.settings.enableObjectDetection) {
+						"Metric Depth model: ${modelInference.modelName}\n" + "Camera resolution: $inputResolution -> Depth model input: $modelInput\n" + "Inference mode: ${runtime.frameAnalyzer.gate.mode}\n\n" + "${uniffi.NativeLib.formattedDepthFrame()}\n" + "$formattedSourceFrame\n" + if (runtime.settings.enableObjectDetection) {
 							"${uniffi.NativeLib.formattedObjectFrame()}\n"
 						} else {
 							""
@@ -299,8 +346,27 @@ class FrameAnalyzer(
 			observedSequence = frameAvailable.first { it > observedSequence }
 			val frame = retainLatestFrame() ?: continue
 			try {
+				refreshMotionMonitoring()
 				if (!runtime.settings.enableObjectDetection) {
 					AIModelData.rel2AbsFrameCache.clearDetections()
+					continue
+				}
+
+				val now = AnalysisClock.nowNanos()
+				gate.updateObjectDetectionBudget(runtime.settings.maxObjectDetectionFrameRate?.toDouble(), now)
+				scene.sample(frame.bitmap, frame.rotationDegrees, now)?.let { sample ->
+					if (!sample.baselineFrame) gate.onVisualSample(
+						sample.score,
+						sample.sampledAtNanos
+					)
+				}
+				val decision = gate.tryAcquire(
+					phoneMotionScore = motionLifecycle.score(),
+					nowNanos = now,
+				)
+				if (!decision.admitted) {
+					val delayNanos = decision.inferenceIntervalNanos
+					delay((delayNanos.coerceAtLeast(0L) / 1_000_000).milliseconds)
 					continue
 				}
 				val inferenceDuration = measureTime {
@@ -426,6 +492,17 @@ class FrameAnalyzer(
 		AIModelData.rel2AbsFrameCache.clear()
 		lastDepthOutputAtNanos.set(0L)
 		lastObjectOutputAtNanos.set(0L)
+	}
+
+	/** Keeps the phone-motion sensor bound only while the gate can use it. */
+	private fun refreshMotionMonitoring() {
+		val operationActive = synchronized(stateLock) { startedValue && !shutdownValue }
+		motionLifecycle.update(
+			operationActive = operationActive,
+			objectDetectionEnabled = runtime.settings.enableObjectDetection,
+			limiterEnabled = runtime.settings.maxObjectDetectionFrameRate != null,
+			profilingEnabled = runtime.settings.showProfilingInfo,
+		)
 	}
 
 	suspend fun runOcrAnalysis(): Boolean = withContext(Dispatchers.IO) {

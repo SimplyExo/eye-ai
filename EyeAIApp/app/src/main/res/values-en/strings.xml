@@ -123,6 +123,10 @@
 	<!-- Depth Estimation -->
 	<string name="setting_depth_estimation_model_title">Depth estimation model</string>
 	<string name="setting_depth_estimation_model_description">The AI model used to estimate the distance to objects.</string>
+	<string name="setting_rel2abs_mode_title">REL2ABS-Calibration</string>
+	<string name="setting_rel2abs_mode_description">EyeAI uses the V6 object gate with full YOLO-/Segmentationcontext. The internal Z1-Calculations stay as a technical visual fallback.</string>
+	<string name="setting_camera_height_title">Camera height for REL2ABS</string>
+	<string name="setting_camera_height_description">Chooses a separately trained Camera-height Model between 1,6 m and 2,0 m in 0,1-m steps. 1,7 m is the recommended stable setting.</string>
 	<string name="setting_enable_framerate_limiter_title">Enable frame rate limiter</string>
 	<string name="setting_enable_depth_framerate_limiter_description">Limits the frame rate of depth estimation to free up resources for other tasks.</string>
 	<string name="setting_framerate_limit_title">Frame rate limit</string>
@@ -152,7 +156,7 @@
 	<string name="setting_object_detection_enabled_title">Enable object detection</string>
 	<string name="setting_object_detection_description">If enabled, the AI will detect nearby objects.</string>
 	<string name="setting_enable_object_framerate_limiter_description">Limits the frame rate of object detection to free up resources for other tasks.</string>
-	<string name="setting_object_framerate_limit_description">The maximum number of frames per second processed by the object detection.</string>
+	<string name="setting_object_framerate_limit_description">Hard maximum; adaptive modes use about 35%, 65%, and 100% within this budget.</string>
 
 	<!-- Segmentation -->
 	<string name="setting_segmentation_enabled_title">Enable segmentation</string>
