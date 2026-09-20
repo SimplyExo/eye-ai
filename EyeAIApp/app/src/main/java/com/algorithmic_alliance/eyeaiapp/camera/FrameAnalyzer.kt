@@ -35,7 +35,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
@@ -292,8 +292,11 @@ class FrameAnalyzer(
 						val inputResolution = "${frame.width}x${frame.height}"
 						val modelInput =
 							"${modelInference.inputDim.width}x${modelInference.inputDim.height}"
+						val objectInferenceMode =
+							runtime.settings.maxObjectDetectionFrameRate?.let { gate.mode.name }
+								?: "UNTHROTTLED"
 
-						"Metric Depth model: ${modelInference.modelName}\n" + "Camera resolution: $inputResolution -> Depth model input: $modelInput\n" + "Inference mode: ${runtime.frameAnalyzer.gate.mode}\n\n" + "${uniffi.NativeLib.formattedDepthFrame()}\n" + "$formattedSourceFrame\n" + if (runtime.settings.enableObjectDetection) {
+						"Metric Depth model: ${modelInference.modelName}\n" + "Camera resolution: $inputResolution -> Depth model input: $modelInput\n" + "Inference mode: $objectInferenceMode\n\n" + "${uniffi.NativeLib.formattedDepthFrame()}\n" + "$formattedSourceFrame\n" + if (runtime.settings.enableObjectDetection) {
 							"${uniffi.NativeLib.formattedObjectFrame()}\n"
 						} else {
 							""
@@ -336,6 +339,7 @@ class FrameAnalyzer(
 
 	private suspend fun runObjectDetectionLoop() {
 		var observedSequence = 0L
+		var reportedMode = gate.mode
 		while (currentCoroutineContext().isActive) {
 			observedSequence = frameAvailable.first { it > observedSequence }
 			val frame = retainLatestFrame() ?: continue
@@ -346,52 +350,56 @@ class FrameAnalyzer(
 					continue
 				}
 
-				val now = AnalysisClock.nowNanos()
-				gate.updateObjectDetectionBudget(runtime.settings.maxObjectDetectionFrameRate?.toDouble(), now)
-				scene.sample(frame.bitmap, frame.rotationDegrees, now)?.let { sample ->
-					if (!sample.baselineFrame) gate.onVisualSample(
-						sample.score,
-						sample.sampledAtNanos
-					)
-				}
-				val decision = gate.tryAcquire(
-					phoneMotionScore = motionLifecycle.score(),
-					nowNanos = now,
-				)
-				if (!decision.admitted) {
-					val delayNanos = decision.inferenceIntervalNanos
-					delay((delayNanos.coerceAtLeast(0L) / 1_000_000).milliseconds)
-					continue
-				}
-				val inferenceDuration = measureTime {
-					uniffi.NativeLib.newObjectFrame()
-					val objects = runtime.runObjectInference(frame.bitmap)
-					val safeObjects = objects ?: emptyArray()
-					AIModelData.detectedObjects.set(safeObjects)
-					AIModelData.rel2AbsFrameCache.publishDetections(
-						DetectionFrame(
-							detections = safeObjects,
-							sourceTimestampNanos = frame.timestampNanos,
-							sourceWidth = frame.width,
-							sourceHeight = frame.height,
-							rotationDegrees = frame.rotationDegrees,
-							objectContextFeatures = Rel2AbsContextFeatures.objectFeatures(safeObjects),
-						),
-					)
-					lastObjectOutputAtNanos.set(System.nanoTime())
-					onUpdate(
-						FrameAnalysisUpdate(
-							detectedObjects = objects,
-							frameSize = Size(frame.width, frame.height),
-						)
-					)
-				}
-
 				val maxFrameRate = runtime.settings.maxObjectDetectionFrameRate
-				val minInferenceDuration = maxFrameRate?.let { (1.0 / it).seconds }
-				if (minInferenceDuration != null && inferenceDuration < minInferenceDuration) {
-					delay(minInferenceDuration - inferenceDuration)
+				if (maxFrameRate != null) {
+					val now = AnalysisClock.nowNanos()
+					gate.updateObjectDetectionBudget(maxFrameRate.toDouble(), now)
+					val visualScore = scene.sample(frame.bitmap, frame.rotationDegrees, now)?.let { sample ->
+						if (!sample.baselineFrame) gate.onVisualSample(
+							sample.score,
+							sample.sampledAtNanos
+						)
+						sample.score.takeUnless { sample.baselineFrame }
+					}
+					val motionScore = motionLifecycle.score()
+					val decision = gate.tryAcquire(
+						phoneMotionScore = motionScore,
+						nowNanos = now,
+					)
+					if (decision.mode != reportedMode) {
+						Log.i(
+							EyeAIApp.APP_LOG_TAG,
+							"Object detection mode: $reportedMode -> ${decision.mode} " +
+								"(visual=$visualScore, motion=$motionScore)",
+						)
+						reportedMode = decision.mode
+					}
+					if (!decision.admitted) {
+						delay(decision.retryAfterNanos.nanoseconds)
+						continue
+					}
 				}
+				uniffi.NativeLib.newObjectFrame()
+				val objects = runtime.runObjectInference(frame.bitmap)
+				val safeObjects = objects ?: emptyArray()
+				AIModelData.detectedObjects.set(safeObjects)
+				AIModelData.rel2AbsFrameCache.publishDetections(
+					DetectionFrame(
+						detections = safeObjects,
+						sourceTimestampNanos = frame.timestampNanos,
+						sourceWidth = frame.width,
+						sourceHeight = frame.height,
+						rotationDegrees = frame.rotationDegrees,
+						objectContextFeatures = Rel2AbsContextFeatures.objectFeatures(safeObjects),
+					),
+				)
+				lastObjectOutputAtNanos.set(System.nanoTime())
+				onUpdate(
+					FrameAnalysisUpdate(
+						detectedObjects = objects,
+						frameSize = Size(frame.width, frame.height),
+					)
+				)
 			} catch (cancelled: kotlinx.coroutines.CancellationException) {
 				throw cancelled
 			} catch (error: Throwable) {
@@ -495,7 +503,7 @@ class FrameAnalyzer(
 			operationActive = operationActive,
 			objectDetectionEnabled = runtime.settings.enableObjectDetection,
 			limiterEnabled = runtime.settings.maxObjectDetectionFrameRate != null,
-			profilingEnabled = runtime.settings.showProfilingInfo,
+			profilingEnabled = runtime.settings.showProfilingInfo && runtime.settings.maxObjectDetectionFrameRate != null,
 		)
 	}
 

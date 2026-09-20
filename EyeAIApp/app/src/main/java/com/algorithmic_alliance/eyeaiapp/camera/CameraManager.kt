@@ -1,9 +1,14 @@
 package com.algorithmic_alliance.eyeaiapp.camera
 
 import android.content.Context
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CaptureRequest
 import android.util.Log
 import android.util.Range
 import android.util.Size
+import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.camera2.interop.Camera2Interop
+import androidx.camera.core.CameraInfo
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -80,21 +85,46 @@ class CameraManager(
 					if (!stillRequested) return@addListener
 
 					// Do not keep a surface-less Preview bound while the Activity is
-					// backgrounded. On some devices (S25 and Fairphone tested) that stops the complete CameraX
+					// backgrounded. On some devices that stops the complete CameraX
 					// graph, including ImageAnalysis. Headless operation binds only
 					// ImageAnalysis and adds Preview when a PreviewView attaches.
+					val cameraSelection = mostWideCameraSelection(provider)
+					val cameraInfo = provider.getCameraInfo(cameraSelection.cameraSelector)
+					val targetFrameRate = maxSupportedFrameRate(cameraInfo)
 					val preview = synchronized(lock) {
 						previewProvider.get()?.let {
-							Preview.Builder().setTargetFrameRate(Range(60, 120)).build()
+							Preview.Builder().apply {
+								targetFrameRate?.let(::setTargetFrameRate)
+							}.build()
 						}
 					}
-					val cameraSelection = mostWideCameraSelection(provider)
-					val analysis = ImageAnalysis.Builder()
+					val analysisBuilder = ImageAnalysis.Builder()
 						.setImageQueueDepth(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 						.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 						.setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
 						.setResolutionSelector(performanceResolutionSelector(preferredImageSize))
-						.build()
+
+					// CameraX 1.6 exposes targetFrameRate on Preview only. Apply the
+					// selected device's maximum Camera2 AE range directly to ImageAnalysis
+					// as well, including during headless operation. The camera HAL may still
+					// negotiate a lower rate for the selected resolution or stream combination.
+					if (targetFrameRate != null) {
+						Camera2Interop.Extender(analysisBuilder).setCaptureRequestOption(
+							CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE,
+							targetFrameRate,
+						)
+						Log.i(
+							EyeAIApp.APP_LOG_TAG,
+							"Camera target FPS range: $targetFrameRate",
+						)
+					} else {
+						Log.w(
+							EyeAIApp.APP_LOG_TAG,
+							"No Camera2 target FPS range is available; using the camera default",
+						)
+					}
+
+					val analysis = analysisBuilder.build()
 					analysis.setAnalyzer(
 						cameraExecutor,
 						CameraXFrameAdapter(frameAnalyzer, cameraSelection.calibration),
@@ -141,6 +171,16 @@ class CameraManager(
 		)
 	}
 
+	private fun maxSupportedFrameRate(cameraInfo: CameraInfo): Range<Int>? {
+		val availableRanges = Camera2CameraInfo.from(cameraInfo).getCameraCharacteristic(
+			CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES,
+		) ?: return null
+
+		return availableRanges
+			.filter { it.upper > 0 }
+			.maxWithOrNull(compareBy<Range<Int>> { it.upper }.thenBy { it.lower })
+	}
+
 	/** Attaches a UI preview without changing the analysis binding. */
 	fun attachPreview(cameraPreviewView: PreviewView?) {
 		if (cameraPreviewView == null) return
@@ -174,9 +214,10 @@ class CameraManager(
 			if (providerInstance == null || owner == null || selector == null) return@execute
 
 			try {
-				val previewUseCase = Preview.Builder()
-					.setTargetFrameRate(Range(60, 120))
-					.build()
+				val targetFrameRate = maxSupportedFrameRate(providerInstance.getCameraInfo(selector))
+				val previewUseCase = Preview.Builder().apply {
+					targetFrameRate?.let(::setTargetFrameRate)
+				}.build()
 				providerInstance.bindToLifecycle(owner, selector, previewUseCase)
 				previewUseCase.surfaceProvider = provider
 				synchronized(lock) {
