@@ -1,8 +1,5 @@
 package com.algorithmic_alliance.eyeaiapp.inference.throttling
 
-import android.util.Log
-import com.algorithmic_alliance.eyeaiapp.EyeAIApp
-
 enum class InferenceMode {
 	QUIET, ACTIVE, BURST,
 }
@@ -10,6 +7,7 @@ enum class InferenceMode {
 data class OdDecision(
 	val mode: InferenceMode,
 	val inferenceIntervalNanos: Long,
+	val retryAfterNanos: Long,
 	val admitted: Boolean,
 	val lastInferenceAtNanos: Long?,
 	val burstUntilNanos: Long?,
@@ -27,6 +25,7 @@ class AdaptiveOdGate(
 	private var visualSignal: TimedScore? = null
 	private var motionSignal: TimedScore? = null
 	private var motionAbsentSinceNanos = nowNanos
+	@Volatile
 	private var currentMode = InferenceMode.QUIET
 	private var lowActivitySinceNanos: Long? = nowNanos
 	private var burstUntilNanos: Long? = null
@@ -53,12 +52,13 @@ class AdaptiveOdGate(
 
 	fun tryAcquire(phoneMotionScore: Double?, nowNanos: Long): OdDecision {
 		onMotionSample(phoneMotionScore, nowNanos)
-		val admitted = isEligible(nowNanos)
+		val retryAfterNanos = retryAfterNanos(nowNanos)
+		val admitted = retryAfterNanos == 0L
 		if (admitted) {
 			lastInferenceAtNanos = nowNanos
 			immediateInferencePending = false
 		}
-		return decision(admitted)
+		return decision(admitted, retryAfterNanos)
 	}
 
 	fun updateObjectDetectionBudget(maxRateHz: Double?, nowNanos: Long) {
@@ -79,7 +79,6 @@ class AdaptiveOdGate(
 	private fun refreshMode(now: Long) {
 		val visual = freshScore(visualSignal, now)
 		val motion = freshScore(motionSignal, now)
-		Log.i(EyeAIApp.APP_LOG_TAG, "mode was $mode, visual $visual, motion $motion")
 		updateLowActivity(now, visual, motion)
 
 		val strongVisual = visualSignal?.takeIf {
@@ -165,11 +164,16 @@ class AdaptiveOdGate(
 		burstUntilNanos = null
 	}
 
-	private fun isEligible(now: Long): Boolean {
-		val previous = lastInferenceAtNanos ?: return true
+	private fun retryAfterNanos(now: Long): Long {
+		val previous = lastInferenceAtNanos ?: return 0L
 		val elapsed = now - previous
-		if (elapsed < (budget.maximumRateIntervalNanos ?: 0L)) return false
-		return immediateInferencePending || elapsed >= modeInterval()
+		val maximumRateInterval = budget.maximumRateIntervalNanos ?: 0L
+		val requiredInterval = if (immediateInferencePending) {
+			maximumRateInterval
+		} else {
+			maxOf(maximumRateInterval, modeInterval())
+		}
+		return (requiredInterval - elapsed).coerceAtLeast(0L)
 	}
 
 	private fun modeInterval(): Long = when (currentMode) {
@@ -178,9 +182,10 @@ class AdaptiveOdGate(
 		InferenceMode.BURST -> budget.burstIntervalNanos
 	}
 
-	private fun decision(admitted: Boolean) = OdDecision(
+	private fun decision(admitted: Boolean, retryAfterNanos: Long) = OdDecision(
 		mode = currentMode,
 		inferenceIntervalNanos = modeInterval(),
+		retryAfterNanos = retryAfterNanos,
 		admitted = admitted,
 		lastInferenceAtNanos = lastInferenceAtNanos,
 		burstUntilNanos = burstUntilNanos,
