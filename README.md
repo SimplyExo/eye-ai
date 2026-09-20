@@ -146,7 +146,7 @@ Eine barrierefreien einen Audioguide zur Nutzung der Sprachmodelle findet man so
 2.	```bash
 	nix develop
 
-	cd eye-ai-core
+	cd ./eye-ai-core-rs/
 	cargo build-android
 
 	cd ../EyeAIApp/
