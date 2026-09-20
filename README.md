@@ -69,6 +69,20 @@ Die Verarbeitung kombiniert:
 Frühere Versionen von EyeAI verwendeten zusätzlich als Fallbackoption die Gemini-API.
 Diese Abhängigkeit wurde aus der aktuellen Architektur vollständig entfernt!
 
+Die Unterstützen Optionen der Sprachassistenz sind:
+- Objektdistanzausgabe (metrische Distanz) - z.B.: Wie weit ist das Auto entfernt?
+- Spezifische Objektbeschreibung (Richtung, Distanz und Größe) - z.B.: Wo befindet sich die Person?
+- Direkte Frequenzänderung mit gegebenem Wert - z.B.: Setze die Frequenz auf 500Hz
+- Direkte Änderung der BPS für Ausgabetöne - z.B.: Erhöhe die Geschwindigkeit der Distanzhinweisschläge
+- Direkte Änderung der Assistentenstimme und der Sprechgeschwindigkeit
+- Aufrufen des Einstellungsdialogs (sinnvoll für nicht erfahrene Nutzer) - z.B. Öffne die Einstellungen
+- Bestätigungen, Vorgangsabbrüche und weitere Dialogoptionen
+
+Alle direkten Änderungen sind auch in einem Dialog und mit natürlicher Sprache veränderbar.
+Es muss nicht explizit ein Wert angegeben werden.
+Daher sind die angegebenen Beispiele auch nur Fallbeispiele und können nahezu beliebig variiert werden, bevor man an Modellgrenzen stößt.
+Die Sprachassistenten ermöglichen dadurch einen natürlichen Dialog mit der App.
+
 Die Sprachsteuerung basiert stattdessen auf drei kleinen, selbstentwickelten, lokalen Modellen und deterministischer Logik.
 
 ### EyeAIVisionPro
