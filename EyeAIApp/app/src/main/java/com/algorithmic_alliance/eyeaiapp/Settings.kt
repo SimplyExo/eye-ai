@@ -27,6 +27,7 @@ data class Settings(
 	var objectAudioPlaybackLanguage: String?,
 	var enableNpu: Boolean,
 	var rel2AbsMode: Rel2AbsMode,
+	var cameraHeightTenths: Int,
 
 ) : Cloneable {
 	companion object {
@@ -140,12 +141,14 @@ data class Settings(
 				context.getString(R.string.enable_npu_delegate_setting), true
 			)
 
-			val rel2AbsMode = Rel2AbsMode.fromPreference(
-				sharedPreferences.getString(
-					context.getString(R.string.rel2abs_mode_setting),
-					Rel2AbsMode.Z1.preferenceValue,
-				),
+			val cameraHeightTenths = sharedPreferences.getInt(
+				context.getString(R.string.camera_height_setting),
+				Rel2AbsMode.DEFAULT_CAMERA_HEIGHT_TENTHS,
+			).coerceIn(
+				Rel2AbsMode.MIN_CAMERA_HEIGHT_TENTHS,
+				Rel2AbsMode.MAX_CAMERA_HEIGHT_TENTHS,
 			)
+			val rel2AbsMode = Rel2AbsMode.forCameraHeightTenths(cameraHeightTenths)
 
 			return Settings(
 				depthModel,
@@ -168,6 +171,7 @@ data class Settings(
 				objectAudioPlaybackLanguage,
 				enableNpu,
 				rel2AbsMode,
+				cameraHeightTenths,
 			)
 		}
 	}
@@ -193,6 +197,7 @@ data class Settings(
 		objectAudioPlaybackLanguage,
 		enableNpu,
 		rel2AbsMode,
+		cameraHeightTenths,
 	)
 
 	fun save(context: Context) {
@@ -226,6 +231,13 @@ data class Settings(
 			putBoolean(context.getString(R.string.object_playback_setting), objectAudioPlayback)
 			putBoolean(context.getString(R.string.enable_npu_delegate_setting), enableNpu)
 			putString(context.getString(R.string.rel2abs_mode_setting), rel2AbsMode.preferenceValue)
+			putInt(
+				context.getString(R.string.camera_height_setting),
+				cameraHeightTenths.coerceIn(
+					Rel2AbsMode.MIN_CAMERA_HEIGHT_TENTHS,
+					Rel2AbsMode.MAX_CAMERA_HEIGHT_TENTHS,
+				),
+			)
 
 			// Frame Rate Limits
 			maxDepthFrameRate?.let {

@@ -30,27 +30,18 @@ class V6NeuralGateRunner private constructor(
 		val objectFeatureGate: Boolean,
 		val cameraHeightFeature: Boolean,
 	) {
-		fun evaluate(features: FloatArray, heightPriorM: Float?): Float {
+		fun evaluate(features: FloatArray): Float {
 			val expectedBaseDim = mean.size
 			check(features.size == expectedBaseDim) {
 				"V6 gate feature size ${features.size} != $expectedBaseDim"
 			}
-			val standardized = FloatArray(expectedBaseDim + if (heightPriorM != null) 1 else 0)
+			val standardized = FloatArray(expectedBaseDim)
 			for (index in features.indices) {
 				standardized[index] = (features[index] - mean[index]) / scale[index].coerceAtLeast(1e-6f)
 			}
-			if (heightPriorM != null) {
-				// Preserve the legacy H1.70 call contract. The calibrated object
-				// gate carries its trained camera-height feature in `features`.
-				standardized[expectedBaseDim] =
-					(heightPriorM - V6NeuralGateRunner.CAMERA_HEIGHT_REFERENCE_M) /
-						V6NeuralGateRunner.CAMERA_HEIGHT_REFERENCE_M
-			}
-			val heightWeight = heightPriorM?.let { FloatArray(weight1.size) }
 			val hidden = FloatArray(weight1.size) { row ->
 				var value = bias1[row]
 				for (column in 0 until expectedBaseDim) value += weight1[row][column] * standardized[column]
-				if (heightWeight != null) value += heightWeight[row] * standardized[expectedBaseDim]
 				max(value, 0f)
 			}
 			var logit = bias2
@@ -176,7 +167,7 @@ class V6NeuralGateRunner private constructor(
 		} else {
 			base
 		}
-		val gate = model.evaluate(features, mode.cameraHeightPriorM)
+		val gate = model.evaluate(features)
 		return exp((1f - gate) * ln(visualMeters.toDouble()) + gate * ln(sizeMeters.toDouble())).toFloat()
 	}
 
@@ -342,8 +333,7 @@ class V6NeuralGateRunner private constructor(
 	}
 
 	companion object {
-		const val ASSET_PATH = "rel2abs/v6_neural_gate_parameters.json"
-		const val OBJECT_FEATURE_HEIGHT_170_ASSET_PATH = "rel2abs/v6_object_feature_gate_camera_height_170_parameters.json"
+		const val OBJECT_FEATURE_HEIGHT_ASSET_PATH = "rel2abs/v6_object_feature_gate_camera_height_160_200_parameters.json"
 		private const val OBJECT_FEATURE_INPUT_DIM = 56
 		private const val SEGMENTATION_OBJECT_FEATURE_COUNT = 23
 		private const val CAMERA_HEIGHT_REFERENCE_M = 1.70f
@@ -387,18 +377,14 @@ class V6NeuralGateRunner private constructor(
 		)
 
 		fun fromAssets(context: Context): V6NeuralGateRunner {
-			val text = context.assets.open(ASSET_PATH).bufferedReader().use { it.readText() }
-			val root = JSONObject(text)
-			val required = listOf(
-				"E_NeuralGate_Base_COCO_WAYMO",
-				"E_NeuralGate_Context_V3_COCO",
-				"E_NeuralGate_Context_V3_WAYMO",
-			)
-			val models = required.associateWith { id -> parseModel(root.getJSONObject(id)) }.toMutableMap()
-			val calibratedObjectText = context.assets.open(OBJECT_FEATURE_HEIGHT_170_ASSET_PATH).bufferedReader().use { it.readText() }
+			val calibratedObjectText = context.assets.open(OBJECT_FEATURE_HEIGHT_ASSET_PATH).bufferedReader().use { it.readText() }
 			val calibratedObjectRoot = JSONObject(calibratedObjectText)
-			val calibratedObjectModelId = "E_ObjectGate_DEPTH+HEIGHT+WIDTH+SHAPE_POSITION+ANCHOR+DETECTION+SEGMENTATION_V3_WAYMO_CAMERA_HEIGHT_170"
-			models[calibratedObjectModelId] = parseModel(calibratedObjectRoot.getJSONObject(calibratedObjectModelId))
+			val models = mutableMapOf<String, GateModel>()
+			val modelIds = calibratedObjectRoot.keys()
+			while (modelIds.hasNext()) {
+				val modelId = modelIds.next()
+				models[modelId] = parseModel(calibratedObjectRoot.getJSONObject(modelId))
+			}
 			return V6NeuralGateRunner(models)
 		}
 

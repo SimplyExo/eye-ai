@@ -151,12 +151,15 @@ object UIDataSource {
 				"string" to R.string.depth_model_setting,
 				"default" to EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
 			), mapOf(
-				"title" to R.string.setting_rel2abs_mode_title,
-				"description" to R.string.setting_rel2abs_mode_description,
-				"settingsType" to "select",
-				"settingsOptions" to Rel2AbsMode.entries.map { it.preferenceValue },
-				"string" to R.string.rel2abs_mode_setting,
-				"default" to Rel2AbsMode.Z1.preferenceValue
+				"title" to R.string.setting_camera_height_title,
+				"description" to R.string.setting_camera_height_description,
+				"settingsType" to "slider",
+				"settingsOption" to mapOf(
+					"min" to Rel2AbsMode.MIN_CAMERA_HEIGHT_TENTHS,
+					"max" to Rel2AbsMode.MAX_CAMERA_HEIGHT_TENTHS,
+				),
+				"string" to R.string.camera_height_setting,
+				"default" to Rel2AbsMode.DEFAULT_CAMERA_HEIGHT_TENTHS,
 			), mapOf(
 				"title" to R.string.setting_enable_framerate_limiter_title,
 				"description" to R.string.setting_enable_depth_framerate_limiter_description,
