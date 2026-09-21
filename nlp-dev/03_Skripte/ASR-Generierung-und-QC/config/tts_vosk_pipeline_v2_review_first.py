@@ -4,11 +4,6 @@
 TTS -> Audio-Augmentation -> Vosk Pipeline (Generation 2 / Review-first)
 für gelabelte EyeAI-Textdatensätze.
 
-WICHTIGES PRINZIP
------------------
-Dieses Skript erzeugt Vosk-Transkripte und dokumentiert sie. Es entscheidet NICHT,
-welche Transkripte später tatsächlich zum Modelltraining verwendet werden.
-
 Verbesserungen gegenüber Generation 1:
 - kein 35%-ASR-Cap
 - kein accept/review/reject als Trainingsentscheidung
@@ -22,11 +17,6 @@ Verbesserungen gegenüber Generation 1:
 - mit --dataset wird jede Zeile einer einzelnen Datei genau einmal verarbeitet
 - TTS-Normalisierung für Zahlen sowie Hz/BPS, damit TTS natürlicher spricht
 - ursprünglicher Clean-Text bleibt unverändert; tts_text wird separat protokolliert
-
-Quellenauswahl (wie bisher):
-- organische/Widerspruchsdaten: 100%
-- saubere Hauptdaten: 60% (zulässig 50-70%)
-- alte gefilterte Daten: 25% (zulässig 20-30%)
 
 Ausgaben:
 - clean_originals.txt
@@ -362,7 +352,7 @@ def normalize_for_tts(text: str) -> str:
 
     t = re.sub(r"(?<![\w])([0-9]{1,6})[,.]([0-9]{1,3})(?![\w])", speak_decimal, t)
 
-    # Danach einfache Ganzzahlen verbalieren. Das verbessert insbesondere Hz/BPS-Kommandos.
+    # Danach einfache Ganzzahlen. Das verbessert insbesondere Hz/BPS-Kommandos.
     t = re.sub(r"(?<![\w])\d{1,6}(?![\w])", _speak_number_match, t)
 
     # TTS-freundliche Leerzeichen.
@@ -370,7 +360,6 @@ def normalize_for_tts(text: str) -> str:
     return t
 
 
-# ---------- Auswahl / Attempt-Plan ----------
 
 def stratified_sample(samples: list[Sample], ratio: float,
                       rng: random.Random) -> list[Sample]:
@@ -413,7 +402,7 @@ def severity_schedule(n: int, clean_ratio: float, moderate_ratio: float,
     return result
 
 
-# ---------- Audio ----------
+# Audio
 def dtype_to_float(x: np.ndarray) -> np.ndarray:
     if np.issubdtype(x.dtype, np.floating):
         y = x.astype(np.float32)
@@ -569,7 +558,7 @@ def augment_audio(x: np.ndarray, severity: str, sr: int, rng: random.Random,
     raise ValueError(f"Unbekannter Severity-Wert: {severity}")
 
 
-# ---------- TTS ----------
+#  TTS
 class PiperPool:
     def __init__(self, voice_dir: Path):
         self.voice_paths: list[Path] = []
@@ -634,7 +623,7 @@ class EspeakEngine:
         if not self.exe:
             raise RuntimeError("espeak-ng ist nicht installiert.")
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        # Engerer Bereich als Generation 1; keine extremen Stimmen mehr.
+        # Engerer Bereich als Generation 1 keine extremen Stimmen mehr.
         speed = rng.randint(145, 185)
         pitch = rng.randint(42, 58)
         amplitude = rng.randint(90, 115)
@@ -662,7 +651,7 @@ def choose_tts_backend(piper: PiperPool, espeak: EspeakEngine,
     return "piper" if have_piper else "espeak"
 
 
-# ---------- Vosk / Review-Flags ----------
+# Vosk / Review-Flags
 def transcribe_vosk(model, x: np.ndarray, sr: int = 16000) -> str:
     pcm = np.clip(x * 32767, -32768, 32767).astype(np.int16).tobytes()
     rec = KaldiRecognizer(model, sr)
@@ -805,7 +794,7 @@ def main() -> int:
         old_all = read_dataset(args.old, SOURCE_OLD, allowed_labels)
         all_clean = organic_all + clean_all + old_all
 
-        # Globale Deduplizierung der Clean-Splits verifizieren.
+        # Globale Deduplizierung der Clean-Splits prüfen
         seen: dict[tuple[str, str], str] = {}
         duplicates = []
         for s in all_clean:
@@ -922,7 +911,7 @@ def main() -> int:
                 a.voice, a.tts_quality = espeak.synthesize(tts_text, tmp_tts, rng)
 
             x = read_wav_mono(tmp_tts, 16000)
-            # Kleine globale Variation; enger als Generation 1.
+            # Kleine globale Variation, enger als Generation 1.
             x = change_speed(x, rng.uniform(0.96, 1.04))
             x = augment_audio(x, severity, 16000, rng, noise_paths, rir_paths)
 
@@ -991,7 +980,7 @@ def main() -> int:
         "tts_normalization": not args.no_tts_normalization,
         "real_noise_wavs": len(noise_paths),
         "real_rir_wavs": len(rir_paths),
-        "note": "Keine harten Augmentierungen. Alle nichtleeren Vosk-Transkripte bleiben zunächst erhalten; Flags dienen dem anschließenden menschlichen Review.",
+        "note": "Keine harten Augmentierungen. Alle nichtleeren Vosk-Transkripte bleiben zunächst erhalten, Flags dienen dem anschließenden menschlichen Review.",
     }
     (args.output_dir / "summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
