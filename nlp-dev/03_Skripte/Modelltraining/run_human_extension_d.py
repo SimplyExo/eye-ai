@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Train the D model with the approved human clean extension.
-
-The script has five separate steps: gate, promote, prepare, train and
-finalize metadata. Existing A, B and C results stay unchanged. Human ASR
-data is not used for D.
+"""Train the D model with the approved human clean extension. Human ASR data is not used for D.
 """
 
 from __future__ import annotations
