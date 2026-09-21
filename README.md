@@ -155,7 +155,7 @@ Eine barrierefreien einen Audioguide zur Nutzung der Sprachmodelle findet man so
 
 ## Wie from-source compilen?
 
-1. `nix` installieren (siehe <https://nixos.org/download/>, nix der Packagemanager, nicht NixOS das distro, auch wenn NixOS cool ist).
+1. `nix` installieren (siehe <https://nixos.org/download/>, nix der Packagemanager, nicht NixOS das Distro, auch wenn NixOS cool ist).
 
 2.	```bash
 	nix develop
