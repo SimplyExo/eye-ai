@@ -158,6 +158,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 			appMissingCameraPermission = it.appMissingCameraPermission,
 			appMissingVisionPermission = it.appMissingVisionPermission,
 			appNotExemptFormBatteryOptimization = it.appNotExemptFromBatteryOptimization,
+			showEnterUserHeightDialog = it.showEnterUserHeightDialog
 		)
 	}.distinctUntilChanged()
 		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UIDialogsUIState())
@@ -206,6 +207,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 				it.copy(
 					permissionTutorialCompleted = event.value
 				)
+			}
+
+			is UIEvent.OnUpdateShowEnterUserHeightDialog -> _uiState.update {
+				Log.d(LOG_TAG, "[MainViewModel.OnUpdateShowEnterUserHeightDialog] ${event.value}")
+				it.copy(showEnterUserHeightDialog = event.value)
 			}
 
 			is UIEvent.OnUpdateBatteryOptimizationIgnored -> {

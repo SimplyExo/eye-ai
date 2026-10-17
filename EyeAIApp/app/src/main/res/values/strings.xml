@@ -280,5 +280,9 @@
 	<string name="disable_battery_optimization_dialog_title">Batterieoptimierung aktiv</string>
 	<string name="disable_battery_optimization_dialog_text">Die EyeAI-App wurde nicht von der Batterieoptimierung ausgenommen, was die Funktionalität der App einschränkt, wenn sie im Hintergrund läuft. Falls sie die App im Hintergrund laufen lassen wollen, müssen sie die Batterieoptimierung deaktivieren.</string>
 	<string name="disable_battery_optimization_dialog_confirm_text">Deaktivieren</string>
-
+	<string name="get_user_height_dialog_title">Körpergröße eingeben</string>
+	<string name="get_user_height_dialog_text">Um die Entfernungsschätzung möglichst genau zu gestalten, wird unter anderem ihre Körpergröße berücksichtigt.</string>
+	<string name="get_user_height_dialog_confirm_button">Bestätigen</string>
+	<string name="get_user_height_dialog_skip_button">Überspringen</string>
+	<string name="get_user_height_dialog_enter_height_text">Größe eingeben (cm)…</string>
 </resources>

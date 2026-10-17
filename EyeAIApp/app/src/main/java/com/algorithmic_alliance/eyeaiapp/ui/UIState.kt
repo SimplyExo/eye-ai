@@ -13,6 +13,7 @@ data class UIState(
 	val settingsOpened: Boolean = false,
 	val reloadSettingsPageKey: Int = 0,
 	val reloadDebugPageKey: Int = 0,
+	val showEnterUserHeightDialog: Boolean = false,
 	val appMissingSelectedMediaSource: Boolean = false,
 	val appMissingVoskPermission: Boolean = false,
 	val appMissingCameraPermission: Boolean = false,
@@ -38,7 +39,7 @@ data class UIState(
 		if (javaClass != other?.javaClass) return false
 
 		other as UIState
-
+		if(showEnterUserHeightDialog != other.showEnterUserHeightDialog) return false
 		if (voskListening != other.voskListening) return false
 		if (ttsSpeaking != other.ttsSpeaking) return false
 		if (actionStartedFromSettings != other.actionStartedFromSettings) return false

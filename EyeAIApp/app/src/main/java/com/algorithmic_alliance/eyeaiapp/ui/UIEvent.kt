@@ -37,6 +37,8 @@ sealed interface UIEvent {
 
 	data class OnUpdateAppMissingSelectedMediaSource(val value: Boolean) : UIEvent
 
+	data class OnUpdateShowEnterUserHeightDialog(val value: Boolean): UIEvent
+
 	data class OnUpdateTTSSpeaking(val value: Boolean) : UIEvent
 
 	data class OnUpdateAppMissingVisionPermission(val value: Boolean) : UIEvent

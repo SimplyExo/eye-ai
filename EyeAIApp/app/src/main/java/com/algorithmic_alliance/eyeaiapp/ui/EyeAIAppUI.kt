@@ -14,19 +14,27 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -49,6 +58,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
+import com.algorithmic_alliance.eyeaiapp.data.Spacing
+import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import com.algorithmic_alliance.eyeaiapp.ui.pages.ConnectionPage
 import com.algorithmic_alliance.eyeaiapp.ui.pages.DebugPage
 import com.algorithmic_alliance.eyeaiapp.ui.pages.HomePage
@@ -56,9 +67,8 @@ import com.algorithmic_alliance.eyeaiapp.ui.pages.PermissionPage
 import com.algorithmic_alliance.eyeaiapp.ui.pages.SettingsPage
 import com.algorithmic_alliance.eyeaiapp.ui.pages.TutorialPage
 import com.algorithmic_alliance.eyeaiapp.ui.pages.WelcomePage
-import com.algorithmic_alliance.eyeaiapp.data.Spacing
-import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
 import kotlinx.serialization.Serializable
+import kotlin.math.roundToInt
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 
 
@@ -150,6 +160,9 @@ fun EyeAIAppUI(
 		modifier = Modifier.fillMaxSize(),
 	) {
 		composable<WelcomeRoute> {
+			LaunchedEffect(Unit) {
+				onEvent(UIEvent.OnUpdateShowEnterUserHeightDialog(true))
+			}
 			WelcomePage(
 				modifier = Modifier.fillMaxSize(),
 				onGetStarted = {
@@ -275,19 +288,80 @@ fun UIDialogs(
 	val uiState by viewModel.uiDialogsUIState.collectAsStateWithLifecycle()
 	if (uiState.appMissingVoskPermission) {
 		AppMissingVoskPermissionDialog(onEvent = onEvent)
-	}
-	if (uiState.appMissingCameraPermission) {
+	} else if (uiState.appMissingCameraPermission) {
 		AppMissingCameraPermissionDialog(onEvent = onEvent, onExitApp = onExitApp)
+	} else if (uiState.appMissingVisionPermission) {
+		AppMissingVisionPermissionDialog(onEvent = onEvent)
 	}
 	if (uiState.appMissingSelectedMediaSource) {
 		AppMissingSelectedMediaSourceDialog(onEvent = onEvent, onOpenSettings = onOpenSettings)
 	}
-	if (uiState.appMissingVisionPermission) {
-		AppMissingVisionPermissionDialog(onEvent = onEvent)
-	}
-	if (uiState.appNotExemptFormBatteryOptimization) {
+	if (uiState.appNotExemptFormBatteryOptimization && !uiState.showEnterUserHeightDialog) {
 		AppNotExemptFromBatteryOptimization(onEvent = onEvent)
 	}
+	if(uiState.showEnterUserHeightDialog){
+		GetUserHeightDialog(onEvent = onEvent)
+	}
+}
+
+@Composable
+fun GetUserHeightDialog(onEvent: (UIEvent) -> Unit) {
+	var text by rememberSaveable{ mutableStateOf("") }
+	val context = LocalContext.current
+
+	@SuppressLint("LocalContextGetResourceValueCall")
+	fun setUserHeight(height: Int){
+		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+		val dm = (height / 10.0).roundToInt().coerceIn(16, 20)
+		Log.d(LOG_TAG, dm.toString())
+		sharedPreferences.edit(commit = true) {
+			putInt(context.getString(R.string.camera_height_setting), dm)
+		}
+	}
+
+	AlertDialog(
+		onDismissRequest = {
+			onEvent(UIEvent.OnUpdateShowEnterUserHeightDialog(false))
+		},
+		title = { Text(text = stringResource(R.string.get_user_height_dialog_title), style = MaterialTheme.typography.titleLarge) },
+		text = {
+			Column() {
+				Text(stringResource(R.string.get_user_height_dialog_text))
+				OutlinedTextField(value  = text, onValueChange = { text = it },  keyboardOptions = KeyboardOptions(
+					keyboardType = KeyboardType.Number
+				),label = {
+					Text(
+						stringResource(R.string.get_user_height_dialog_enter_height_text),
+						style = MaterialTheme.typography.bodySmall
+					)
+				})
+			}
+		},
+		confirmButton = {
+			Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)){
+				PremiumButton(modifier = Modifier.weight(1f),onClick = {
+					setUserHeight(170)
+					onEvent(UIEvent.OnUpdateShowEnterUserHeightDialog(false))
+				}) {
+					Text(
+						stringResource(R.string.get_user_height_dialog_skip_button)
+					)
+				}
+				PremiumButton(modifier = Modifier.weight(1f),onClick = {
+					if(text.toIntOrNull() == null){
+						Log.d(LOG_TAG, text)
+						text = ""
+						return@PremiumButton
+					}
+					setUserHeight(text.toInt())
+					onEvent(UIEvent.OnUpdateShowEnterUserHeightDialog(false))
+				}) {
+					Text(
+						stringResource(R.string.get_user_height_dialog_confirm_button)
+					)
+				}
+			}
+		})
 }
 
 @Composable
@@ -299,7 +373,7 @@ fun AppMissingSelectedMediaSourceDialog(onEvent: (UIEvent) -> Unit, onOpenSettin
 		title = { Text(stringResource(R.string.missing_media_source_alert_dialog_title)) },
 		text = { Text(stringResource(R.string.missing_media_source_alert_dialog_text)) },
 		confirmButton = {
-			Button(onClick = {
+			PremiumButton(onClick = {
 				onOpenSettings()
 				onEvent(UIEvent.OnUpdateAppMissingSelectedMediaSource(false))
 			}) {
@@ -321,7 +395,7 @@ fun AppNotExemptFromBatteryOptimization(onEvent: (UIEvent) -> Unit) {
 		val observer = LifecycleEventObserver { _, event ->
 			if (event == Lifecycle.Event.ON_RESUME) {
 				val batteryOptimizationExempt = BatteryOptimization.isExempt(context)
-				if(batteryOptimizationExempt){
+				if (batteryOptimizationExempt) {
 					onEvent(UIEvent.OnUpdateAppNotExemptFromBatteryOptimization(false))
 				}
 			}
@@ -365,7 +439,7 @@ fun AppNotExemptFromBatteryOptimization(onEvent: (UIEvent) -> Unit) {
 		},
 		text = { Text(stringResource(R.string.disable_battery_optimization_dialog_text)) },
 		confirmButton = {
-			Button(onClick = {
+			PremiumButton(onClick = {
 				BatteryOptimization.openSettings(context)
 				onEvent(UIEvent.OnUpdateAppNotExemptFromBatteryOptimization(false))
 			}) {
@@ -471,7 +545,7 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 	}, text = {
 		Text(stringResource(R.string.missing_permission_alert_dialog_vision_text))
 	}, confirmButton = {
-		Button(onClick = {
+		PremiumButton(onClick = {
 			val activity = context as? Activity
 
 			val shouldShowRationale = activity?.let { act ->
@@ -565,7 +639,7 @@ fun AppMissingCameraPermissionDialog(onEvent: (UIEvent) -> Unit, onExitApp: () -
 	}, text = {
 		Text(stringResource(R.string.missing_permission_alert_dialog_camera_text))
 	}, confirmButton = {
-		Button(onClick = {
+		PremiumButton(onClick = {
 			val activity = context as? Activity
 			val shouldShowRationale = activity?.let {
 				ActivityCompat.shouldShowRequestPermissionRationale(
@@ -670,7 +744,7 @@ fun AppMissingVoskPermissionDialog(onEvent: (UIEvent) -> Unit) {
 	}, text = {
 		Text(stringResource(R.string.missing_permission_alert_dialog_vosk_text))
 	}, confirmButton = {
-		Button(onClick = {
+		PremiumButton(onClick = {
 			val activity = context as? Activity
 			val shouldShowRationale = activity?.let {
 				ActivityCompat.shouldShowRequestPermissionRationale(

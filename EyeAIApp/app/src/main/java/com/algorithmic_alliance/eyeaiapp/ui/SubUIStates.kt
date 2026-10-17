@@ -105,4 +105,5 @@ data class UIDialogsUIState(
 	val appMissingCameraPermission: Boolean = false,
 	val appMissingVisionPermission: Boolean = false,
 	val appNotExemptFormBatteryOptimization: Boolean = false,
+	val showEnterUserHeightDialog: Boolean = false,
 )
