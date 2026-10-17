@@ -236,5 +236,10 @@
 	<string name="disable_battery_optimization_dialog_confirm_text">Disable</string>
 	<string name="segmentation_card_title">Segmentation</string>
 	<string name="segmentation_card_disabled">Image segmentation deactivated</string>
+	<string name="get_user_height_dialog_title">Enter height</string>
+	<string name="get_user_height_dialog_text">To make the distance estimation as accurate as possible, your height is taken into account, among other factors.</string>
+	<string name="get_user_height_dialog_confirm_button">Confirm</string>
+	<string name="get_user_height_dialog_skip_button">Skip</string>
+	<string name="get_user_height_dialog_enter_height_text">Enter height (cm)…</string>
 
 </resources>
