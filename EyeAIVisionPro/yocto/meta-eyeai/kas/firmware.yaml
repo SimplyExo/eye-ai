@@ -1,0 +1,33 @@
+header:
+  version: 14
+
+machine: raspberrypi0-wifi
+distro: eyeaivision
+target: core-image-minimal
+
+repos:
+  oe-core:
+    url: https://git.openembedded.org/openembedded-core
+    branch: master
+    path: openembedded-core
+    layers:
+      meta:
+
+  meta-raspberrypi:
+    url: https://github.com/agherzan/meta-raspberrypi.git
+    branch: master
+    path: meta-raspberrypi
+    layers:
+      .:
+
+  meta-eyeai:
+    path: .
+
+local_conf_header:
+  raspberrypi: |
+    ENABLE_UART = "1"
+
+  root-password: |
+    INHERIT += "extrausers"
+    EXTRA_USERS_PARAMS = "usermod -p '\$6\$Kw3NzmOSEdbCmNp1\$c9thLAp6d0ck4CwY13T.GB6gB86SyYjQwcgqTX.eEv3X5UMEXPgeX0nnAHpTPc4aeUzxvQEM1TKNtD0fjHd.W/' root;"
+    # standard root password: eyeai
