@@ -6,17 +6,33 @@ distro: eyeaivision
 target: core-image-minimal
 
 repos:
+  bitbake:
+    url: https://git.openembedded.org/bitbake
+    branch: master
+    path: sources/bitbake
+    layers:
+      .: disabled
+
   oe-core:
     url: https://git.openembedded.org/openembedded-core
-    branch: master
-    path: openembedded-core
+    branch: blacksail
+    path: sources/openembedded-core
     layers:
       meta:
+
+  meta-openembedded:
+    url: https://github.com/openembedded/meta-openembedded.git
+    branch: master
+    path: sources/meta-openembedded
+    layers:
+      meta-python:
+      meta-oe:
+      meta-networking:
 
   meta-raspberrypi:
     url: https://github.com/agherzan/meta-raspberrypi.git
     branch: master
-    path: meta-raspberrypi
+    path: sources/meta-raspberrypi
     layers:
       .:
 
@@ -26,8 +42,27 @@ repos:
 local_conf_header:
   raspberrypi: |
     ENABLE_UART = "1"
+    
+    # Notwendige Pakete & Treiber für den Hotspot
+    MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
+        kernel-modules \
+        linux-firmware-bcm43430 \
+        wpa-supplicant \
+        iw \
+        wireless-regdb \
+        hostapd \
+        dnsmasq \
+        iptables \
+        initscripts \
+    "
+
+  image-packages: |
+    IMAGE_INSTALL:append = " wifi-hotspot run-postinsts"
+
+  kernel-autoload: |
+    # wifi driver
+    KERNEL_MODULE_AUTOLOAD += "brcmfmac"
 
   root-password: |
     INHERIT += "extrausers"
     EXTRA_USERS_PARAMS = "usermod -p '\$6\$Kw3NzmOSEdbCmNp1\$c9thLAp6d0ck4CwY13T.GB6gB86SyYjQwcgqTX.eEv3X5UMEXPgeX0nnAHpTPc4aeUzxvQEM1TKNtD0fjHd.W/' root;"
-    # standard root password: eyeai

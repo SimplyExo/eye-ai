@@ -1,5 +1,3 @@
 meta-eyeai/conf/site.conf
-build/
-meta-raspberrypi
-openembedded-core
-bitbake
+meta-eyeai/build/
+meta-eyeai/sources/
