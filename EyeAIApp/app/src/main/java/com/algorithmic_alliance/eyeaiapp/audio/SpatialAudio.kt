@@ -27,7 +27,7 @@ object SpatialAudio {
 	private var configuredLanguage: String? = null
 	private val lock = Any()
 
-	private const val LOST_AFTER_MISSED_FRAMES = 5
+	private const val LOST_AFTER_MISSED_FRAMES = 15
 
 	// Zuletzt gesehene Version jedes getrackten Objekts
 	private val objectsInSight =

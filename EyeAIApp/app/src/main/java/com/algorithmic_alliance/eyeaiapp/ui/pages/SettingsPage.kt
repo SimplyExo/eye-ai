@@ -89,20 +89,20 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
-import com.algorithmic_alliance.eyeaiapp.ui.MainViewModel
-import com.algorithmic_alliance.eyeaiapp.ui.PremiumButton
-import com.algorithmic_alliance.eyeaiapp.ui.PremiumIconButton
-import com.algorithmic_alliance.eyeaiapp.ui.UIEvent
-import com.algorithmic_alliance.eyeaiapp.ui.hasPermission
 import com.algorithmic_alliance.eyeaiapp.data.AppElevation
 import com.algorithmic_alliance.eyeaiapp.data.PremiumShapes
 import com.algorithmic_alliance.eyeaiapp.data.Spacing
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource
 import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsMode
 import com.algorithmic_alliance.eyeaiapp.runtime.BatteryOptimization
+import com.algorithmic_alliance.eyeaiapp.ui.MainViewModel
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumButton
+import com.algorithmic_alliance.eyeaiapp.ui.PremiumIconButton
+import com.algorithmic_alliance.eyeaiapp.ui.UIEvent
+import com.algorithmic_alliance.eyeaiapp.ui.hasPermission
+import java.util.Locale
 import kotlin.math.roundToInt
 import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -543,7 +543,10 @@ fun CheckBoxSetting(
 				)
 			}
 			// audio playback would somehow start again in the settings if UpdateSettings was called right here
-			if(!(settingKey == context.getString(R.string.depth_playback_setting) || settingKey == context.getString(R.string.object_playback_setting)))
+			if (!(settingKey == context.getString(R.string.depth_playback_setting) || settingKey == context.getString(
+					R.string.object_playback_setting
+				))
+			)
 				onEvent(UIEvent.UpdateSettings)
 		})
 	}
@@ -724,13 +727,15 @@ fun SliderSetting(
 					settingDescription, style = MaterialTheme.typography.bodySmall
 				)
 				Slider(
-					value = currentValue.toFloat(), onValueChange = {
+					value = currentValue.toFloat(),
+					onValueChange = {
 						currentValue =
 							when {
 								isCameraHeight -> it.roundToInt().coerceIn(
 									Rel2AbsMode.MIN_CAMERA_HEIGHT_TENTHS,
 									Rel2AbsMode.MAX_CAMERA_HEIGHT_TENTHS,
 								)
+
 								settingTitle == audioFrequencySettingTitle -> (it / 10.0).roundToInt() * 10
 								else -> it.roundToInt()
 							}
@@ -888,6 +893,16 @@ fun FileSetting(
 	val settingKey = stringResource(settingData["string"] as Int)
 	var selectedFileUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
+	val isMediaSourceSetting = settingData["string"] as Int == R.string.media_path_setting
+
+	val inputSource by rememberPreferenceStringState(
+		stringResource(R.string.input_source_setting), stringResource(R.string.input_is_camera)
+	)
+
+	val visible = when {
+		isMediaSourceSetting -> inputSource == stringResource(R.string.input_is_media)
+		else -> true
+	}
 
 	val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
 	val settingDescription =
@@ -916,33 +931,38 @@ fun FileSetting(
 		onEvent(UIEvent.UpdateSettings)
 	}
 
-
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.padding(Spacing.sm),
-		horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-		verticalAlignment = Alignment.CenterVertically
+	AnimatedVisibility(
+		visible = visible,
+		enter = fadeIn() + expandVertically(),
+		exit = fadeOut() + shrinkVertically()
 	) {
-		Column(modifier = Modifier.weight(1f)) {
-			Text(
-				settingTitle,
-				style = MaterialTheme.typography.bodyLarge,
-				fontWeight = FontWeight.Medium
-			)
-			if (settingDescription != "") Text(
-				settingDescription, style = MaterialTheme.typography.bodySmall
-			)
-		}
-		IconButton(onClick = {
-			filePickerLauncher.launch(
-				arrayOf("image/*", "video/*")
-			)
-		}) {
-			Icon(
-				painter = painterResource(R.drawable.upload_file_24px),
-				contentDescription = stringResource(R.string.file_setting_semantic)
-			)
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(Spacing.sm),
+			horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			Column(modifier = Modifier.weight(1f)) {
+				Text(
+					settingTitle,
+					style = MaterialTheme.typography.bodyLarge,
+					fontWeight = FontWeight.Medium
+				)
+				if (settingDescription != "") Text(
+					settingDescription, style = MaterialTheme.typography.bodySmall
+				)
+			}
+			IconButton(onClick = {
+				filePickerLauncher.launch(
+					arrayOf("image/*", "video/*")
+				)
+			}) {
+				Icon(
+					painter = painterResource(R.drawable.upload_file_24px),
+					contentDescription = stringResource(R.string.file_setting_semantic)
+				)
+			}
 		}
 	}
 }
@@ -973,5 +993,34 @@ fun rememberPreferenceBooleanState(
 			sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
 		}
 	}
+	return state
+}
+
+@Composable
+fun rememberPreferenceStringState(
+	key: String,
+	default: String
+): State<String> {
+	val sharedPreferences =
+		PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
+
+	val state = remember {
+		mutableStateOf(sharedPreferences.getString(key, default) ?: default)
+	}
+
+	DisposableEffect(key) {
+		val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, changedKey ->
+			if (changedKey == key) {
+				state.value = prefs.getString(key, default) ?: default
+			}
+		}
+
+		sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+
+		onDispose {
+			sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+		}
+	}
+
 	return state
 }
