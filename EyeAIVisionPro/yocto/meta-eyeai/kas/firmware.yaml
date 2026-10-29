@@ -28,6 +28,7 @@ repos:
       meta-python:
       meta-oe:
       meta-networking:
+      meta-multimedia:
 
   meta-raspberrypi:
     url: https://github.com/agherzan/meta-raspberrypi.git
@@ -42,6 +43,13 @@ repos:
 local_conf_header:
   raspberrypi: |
     ENABLE_UART = "1"
+    ENABLE_I2C = "1"
+
+    VIDEO_CAMERA = "1"
+    RASPBERRYPI_CAMERA_V3 = "1"
+    GPU_MEM = "128"
+
+    MODULE_COMPRESS = "0"
     
     # Notwendige Pakete & Treiber für den Hotspot
     MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
@@ -57,11 +65,20 @@ local_conf_header:
     "
 
   image-packages: |
-    IMAGE_INSTALL:append = " wifi-hotspot run-postinsts"
+    IMAGE_INSTALL:append = " \
+        wifi-hotspot \
+        run-postinsts \
+        kernel-module-imx708 \
+        kernel-module-bcm2835-unicam \
+        kmod \
+        userland \
+        libcamera \
+        v4l-utils \
+    "
 
   kernel-autoload: |
-    # wifi driver
-    KERNEL_MODULE_AUTOLOAD += "brcmfmac"
+    # Treiber automatisch beim Booten laden
+    KERNEL_MODULE_AUTOLOAD += "brcmfmac i2c-dev i2c-bcm2835 imx708"
 
   root-password: |
     INHERIT += "extrausers"
