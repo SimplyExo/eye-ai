@@ -39,6 +39,9 @@
 	<string name="enable_npu_delegate_setting" translatable="false">Use NPU (experimental)</string>
 	<string name="debug_page_activated" translatable="false">debug_page_activated</string>
 	<string name="app_tutorial_completed" translatable="false">app_tutorial_completed</string>
+	<string name="setting_object_playback_mode" translatable="false">setting_object_playback_mode</string>
+	<string name="object_playback_is_object_watch" translatable="false">Objekt-Watch</string>
+	<string name="object_playback_is_standard" translatable="false">Normal</string>
 
 
 	<!--Strings for Text in the UI  -->
@@ -185,6 +188,8 @@
 	<string name="setting_enable_depth_playback_description">Wenn aktiviert, hören Sie Töne, die die Entfernung zu nahen Objekten anzeigen.</string>
 	<string name="setting_enable_object_playback_title">Objektwiedergabe aktivieren</string>
 	<string name="setting_enable_object_playback_description">Wenn aktiviert, werden erkannte Objekte in Ihrer Umgebung angesagt.</string>
+	<string name="setting_object_playback_mode_title">Modus der Objektausgabe</string>
+	<string name="setting_object_playback_mode_description">Ihnen stehen mehrere Modi der Objektausgabe zur Verfügung: Normal gibt ihnen kontinuierlich die erkannten Objekte aus. Object-Watch informiert sie nur über Objekte, die das Sichtfeld betreten oder verlassen.</string>
 	<string name="setting_audio_frequency_title">Tonhöhe</string>
 	<string name="setting_audio_frequency_description">Steuert die Tonhöhe des Tons, der die Entfernung anzeigt.</string>
 	<string name="setting_frequency_title">Wiedergaberate</string>

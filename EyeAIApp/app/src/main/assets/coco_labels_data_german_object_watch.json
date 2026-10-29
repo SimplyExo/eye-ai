@@ -1,0 +1,802 @@
+[
+  {
+    "start": 210,
+    "end": 1440,
+    "text": "new person"
+  },
+  {
+    "start": 1930,
+    "end": 3250,
+    "text": "lost person"
+  },
+  {
+    "start": 3850,
+    "end": 5080,
+    "text": "new bicycle"
+  },
+  {
+    "start": 5470,
+    "end": 6900,
+    "text": "lost bicycle"
+  },
+  {
+    "start": 7250,
+    "end": 8320,
+    "text": "new car"
+  },
+  {
+    "start": 8800,
+    "end": 10390,
+    "text": "lost car"
+  },
+  {
+    "start": 10690,
+    "end": 11990,
+    "text": "new motorcycle"
+  },
+  {
+    "start": 12380,
+    "end": 13990,
+    "text": "lost motorcycle"
+  },
+  {
+    "start": 14320,
+    "end": 15760,
+    "text": "new airplane"
+  },
+  {
+    "start": 16100,
+    "end": 17590,
+    "text": "lost airplane"
+  },
+  {
+    "start": 18130,
+    "end": 19380,
+    "text": "new bus"
+  },
+  {
+    "start": 19720,
+    "end": 21140,
+    "text": "lost bus"
+  },
+  {
+    "start": 21500,
+    "end": 22770,
+    "text": "new train"
+  },
+  {
+    "start": 23080,
+    "end": 24530,
+    "text": "lost train"
+  },
+  {
+    "start": 24930,
+    "end": 26360,
+    "text": "new truck"
+  },
+  {
+    "start": 26670,
+    "end": 28290,
+    "text": "lost truck"
+  },
+  {
+    "start": 28580,
+    "end": 29760,
+    "text": "new boat"
+  },
+  {
+    "start": 30040,
+    "end": 31560,
+    "text": "lost boat"
+  },
+  {
+    "start": 31950,
+    "end": 33090,
+    "text": "new traffic light"
+  },
+  {
+    "start": 33550,
+    "end": 35100,
+    "text": "lost traffic light"
+  },
+  {
+    "start": 35470,
+    "end": 36560,
+    "text": "new fire hydrant"
+  },
+  {
+    "start": 37030,
+    "end": 38670,
+    "text": "lost fire hydrant"
+  },
+  {
+    "start": 38990,
+    "end": 40370,
+    "text": "new stop sign"
+  },
+  {
+    "start": 40730,
+    "end": 42490,
+    "text": "lost stop sign"
+  },
+  {
+    "start": 42780,
+    "end": 44190,
+    "text": "new parking meter"
+  },
+  {
+    "start": 44630,
+    "end": 46370,
+    "text": "lost parking meter"
+  },
+  {
+    "start": 46690,
+    "end": 47850,
+    "text": "new bench"
+  },
+  {
+    "start": 48260,
+    "end": 49690,
+    "text": "lost bench"
+  },
+  {
+    "start": 50070,
+    "end": 51290,
+    "text": "new bird"
+  },
+  {
+    "start": 51660,
+    "end": 53150,
+    "text": "lost bird"
+  },
+  {
+    "start": 53620,
+    "end": 54900,
+    "text": "new cat"
+  },
+  {
+    "start": 55350,
+    "end": 56880,
+    "text": "lost cat"
+  },
+  {
+    "start": 57270,
+    "end": 58630,
+    "text": "new dog"
+  },
+  {
+    "start": 58960,
+    "end": 60520,
+    "text": "lost dog"
+  },
+  {
+    "start": 60790,
+    "end": 62020,
+    "text": "new horse"
+  },
+  {
+    "start": 62360,
+    "end": 63960,
+    "text": "lost horse"
+  },
+  {
+    "start": 64330,
+    "end": 65480,
+    "text": "new sheep"
+  },
+  {
+    "start": 66000,
+    "end": 67440,
+    "text": "lost sheep"
+  },
+  {
+    "start": 67920,
+    "end": 69150,
+    "text": "new cow"
+  },
+  {
+    "start": 69470,
+    "end": 71010,
+    "text": "lost cow"
+  },
+  {
+    "start": 71390,
+    "end": 72630,
+    "text": "new elephant"
+  },
+  {
+    "start": 73000,
+    "end": 74640,
+    "text": "lost elephant"
+  },
+  {
+    "start": 75000,
+    "end": 76230,
+    "text": "new bear"
+  },
+  {
+    "start": 76560,
+    "end": 78020,
+    "text": "lost bear"
+  },
+  {
+    "start": 78280,
+    "end": 79840,
+    "text": "new zebra"
+  },
+  {
+    "start": 80000,
+    "end": 81700,
+    "text": "lost zebra"
+  },
+  {
+    "start": 82020,
+    "end": 83300,
+    "text": "new giraffe"
+  },
+  {
+    "start": 83650,
+    "end": 85220,
+    "text": "lost giraffe"
+  },
+  {
+    "start": 85610,
+    "end": 86930,
+    "text": "new backpack"
+  },
+  {
+    "start": 87280,
+    "end": 88930,
+    "text": "lost backpack"
+  },
+  {
+    "start": 89350,
+    "end": 90710,
+    "text": "new umbrella"
+  },
+  {
+    "start": 91140,
+    "end": 92940,
+    "text": "lost umbrella"
+  },
+  {
+    "start": 93290,
+    "end": 94850,
+    "text": "new handbag"
+  },
+  {
+    "start": 95110,
+    "end": 97170,
+    "text": "lost handbag"
+  },
+  {
+    "start": 97170,
+    "end": 98490,
+    "text": "new tie"
+  },
+  {
+    "start": 98950,
+    "end": 100850,
+    "text": "lost tie"
+  },
+  {
+    "start": 101010,
+    "end": 102130,
+    "text": "new suitcase"
+  },
+  {
+    "start": 102650,
+    "end": 104260,
+    "text": "lost suitcase"
+  },
+  {
+    "start": 104530,
+    "end": 105780,
+    "text": "new frisbee"
+  },
+  {
+    "start": 106210,
+    "end": 107920,
+    "text": "lost frisbee"
+  },
+  {
+    "start": 108280,
+    "end": 109820,
+    "text": "new skis"
+  },
+  {
+    "start": 110060,
+    "end": 111600,
+    "text": "lost skis"
+  },
+  {
+    "start": 111930,
+    "end": 113340,
+    "text": "new snowboard"
+  },
+  {
+    "start": 113880,
+    "end": 115660,
+    "text": "lost snowboard"
+  },
+  {
+    "start": 115980,
+    "end": 117530,
+    "text": "new sports ball"
+  },
+  {
+    "start": 117840,
+    "end": 119650,
+    "text": "lost sports ball"
+  },
+  {
+    "start": 120010,
+    "end": 121390,
+    "text": "new kite"
+  },
+  {
+    "start": 121720,
+    "end": 123320,
+    "text": "lost kite"
+  },
+  {
+    "start": 123700,
+    "end": 125470,
+    "text": "new baseball bat"
+  },
+  {
+    "start": 125740,
+    "end": 127850,
+    "text": "lost baseball bat"
+  },
+  {
+    "start": 128130,
+    "end": 129820,
+    "text": "new baseball glove"
+  },
+  {
+    "start": 130240,
+    "end": 132250,
+    "text": "lost baseball glove"
+  },
+  {
+    "start": 132650,
+    "end": 134240,
+    "text": "new skateboard"
+  },
+  {
+    "start": 134470,
+    "end": 136440,
+    "text": "lost skateboard"
+  },
+  {
+    "start": 136840,
+    "end": 138460,
+    "text": "new surfboard"
+  },
+  {
+    "start": 138460,
+    "end": 140430,
+    "text": "lost surfboard"
+  },
+  {
+    "start": 140840,
+    "end": 142420,
+    "text": "new tennis racket"
+  },
+  {
+    "start": 142710,
+    "end": 144670,
+    "text": "lost tennis racket"
+  },
+  {
+    "start": 145130,
+    "end": 146350,
+    "text": "new bottle"
+  },
+  {
+    "start": 146600,
+    "end": 148510,
+    "text": "lost bottle"
+  },
+  {
+    "start": 148850,
+    "end": 150410,
+    "text": "new wine glass"
+  },
+  {
+    "start": 150720,
+    "end": 152840,
+    "text": "lost wine glass"
+  },
+  {
+    "start": 153170,
+    "end": 154420,
+    "text": "new cup"
+  },
+  {
+    "start": 154740,
+    "end": 156530,
+    "text": "lost cup"
+  },
+  {
+    "start": 156830,
+    "end": 158530,
+    "text": "new fork"
+  },
+  {
+    "start": 158530,
+    "end": 160040,
+    "text": "lost fork"
+  },
+  {
+    "start": 160510,
+    "end": 161910,
+    "text": "new knife"
+  },
+  {
+    "start": 162190,
+    "end": 163950,
+    "text": "lost knife"
+  },
+  {
+    "start": 164250,
+    "end": 165780,
+    "text": "new spoon"
+  },
+  {
+    "start": 165970,
+    "end": 167820,
+    "text": "lost spoon"
+  },
+  {
+    "start": 168000,
+    "end": 169570,
+    "text": "new bowl"
+  },
+  {
+    "start": 169710,
+    "end": 171440,
+    "text": "lost bowl"
+  },
+  {
+    "start": 171680,
+    "end": 173170,
+    "text": "new banana"
+  },
+  {
+    "start": 173380,
+    "end": 175050,
+    "text": "lost banana"
+  },
+  {
+    "start": 175400,
+    "end": 176670,
+    "text": "new apple"
+  },
+  {
+    "start": 176900,
+    "end": 178910,
+    "text": "lost apple"
+  },
+  {
+    "start": 178910,
+    "end": 180700,
+    "text": "new sandwich"
+  },
+  {
+    "start": 180960,
+    "end": 182790,
+    "text": "lost sandwich"
+  },
+  {
+    "start": 183140,
+    "end": 184630,
+    "text": "new orange"
+  },
+  {
+    "start": 184960,
+    "end": 186800,
+    "text": "new orange"
+  },
+  {
+    "start": 187170,
+    "end": 188620,
+    "text": "new broccoli"
+  },
+  {
+    "start": 188980,
+    "end": 190760,
+    "text": "lost broccoli"
+  },
+  {
+    "start": 191210,
+    "end": 192350,
+    "text": "new carrot"
+  },
+  {
+    "start": 192690,
+    "end": 194710,
+    "text": "lost carrot"
+  },
+  {
+    "start": 194910,
+    "end": 196340,
+    "text": "new hot dog"
+  },
+  {
+    "start": 196570,
+    "end": 198620,
+    "text": "lost hot dog"
+  },
+  {
+    "start": 198830,
+    "end": 200150,
+    "text": "new pizza"
+  },
+  {
+    "start": 200440,
+    "end": 202140,
+    "text": "lost pizza"
+  },
+  {
+    "start": 202530,
+    "end": 204000,
+    "text": "new donut"
+  },
+  {
+    "start": 204210,
+    "end": 205890,
+    "text": "lost donut"
+  },
+  {
+    "start": 206350,
+    "end": 207890,
+    "text": "new cake"
+  },
+  {
+    "start": 208050,
+    "end": 209770,
+    "text": "lost cake"
+  },
+  {
+    "start": 210160,
+    "end": 211490,
+    "text": "new chair"
+  },
+  {
+    "start": 211830,
+    "end": 213440,
+    "text": "lost chair"
+  },
+  {
+    "start": 213800,
+    "end": 215170,
+    "text": "new dining table"
+  },
+  {
+    "start": 215460,
+    "end": 217330,
+    "text": "lost dining table"
+  },
+  {
+    "start": 217490,
+    "end": 218440,
+    "text": "new couch"
+  },
+  {
+    "start": 218920,
+    "end": 219870,
+    "text": "lost couch"
+  },
+  {
+    "start": 220720,
+    "end": 222000,
+    "text": "new potted plant"
+  },
+  {
+    "start": 222740,
+    "end": 224120,
+    "text": "lost potted plant"
+  },
+  {
+    "start": 224740,
+    "end": 226120,
+    "text": "new bed"
+  },
+  {
+    "start": 226350,
+    "end": 227320,
+    "text": "lost bed"
+  },
+  {
+    "start": 227930,
+    "end": 229020,
+    "text": "new dining table"
+  },
+  {
+    "start": 229560,
+    "end": 230880,
+    "text": "lost dining table"
+  },
+  {
+    "start": 231500,
+    "end": 232480,
+    "text": "new toilet"
+  },
+  {
+    "start": 233200,
+    "end": 234280,
+    "text": "lost toilet"
+  },
+  {
+    "start": 234980,
+    "end": 236010,
+    "text": "new tv"
+  },
+  {
+    "start": 236640,
+    "end": 237830,
+    "text": "lost tv"
+  },
+  {
+    "start": 238390,
+    "end": 239260,
+    "text": "new laptop"
+  },
+  {
+    "start": 239930,
+    "end": 240960,
+    "text": "lost laptop"
+  },
+  {
+    "start": 241640,
+    "end": 242650,
+    "text": "new mouse"
+  },
+  {
+    "start": 243130,
+    "end": 244210,
+    "text": "lost mouse"
+  },
+  {
+    "start": 244770,
+    "end": 245920,
+    "text": "new remote"
+  },
+  {
+    "start": 246560,
+    "end": 247840,
+    "text": "lost remote"
+  },
+  {
+    "start": 248380,
+    "end": 249450,
+    "text": "new keyboard"
+  },
+  {
+    "start": 250180,
+    "end": 251450,
+    "text": "lost keyboard"
+  },
+  {
+    "start": 252050,
+    "end": 253370,
+    "text": "new cell phone"
+  },
+  {
+    "start": 253990,
+    "end": 255400,
+    "text": "lost cell phone"
+  },
+  {
+    "start": 256160,
+    "end": 257300,
+    "text": "new microwave"
+  },
+  {
+    "start": 257750,
+    "end": 259080,
+    "text": "lost microwave"
+  },
+  {
+    "start": 259550,
+    "end": 260670,
+    "text": "new oven"
+  },
+  {
+    "start": 261160,
+    "end": 262450,
+    "text": "lost oven"
+  },
+  {
+    "start": 263210,
+    "end": 264060,
+    "text": "new toaster"
+  },
+  {
+    "start": 264680,
+    "end": 265950,
+    "text": "lost toaster"
+  },
+  {
+    "start": 266440,
+    "end": 267500,
+    "text": "new sink"
+  },
+  {
+    "start": 267980,
+    "end": 269030,
+    "text": "lost sink"
+  },
+  {
+    "start": 269730,
+    "end": 270790,
+    "text": "new refrigerator"
+  },
+  {
+    "start": 271280,
+    "end": 272650,
+    "text": "lost refrigerator"
+  },
+  {
+    "start": 273190,
+    "end": 274010,
+    "text": "new book"
+  },
+  {
+    "start": 274790,
+    "end": 275690,
+    "text": "lost book"
+  },
+  {
+    "start": 279360,
+    "end": 280430,
+    "text": "new vase"
+  },
+  {
+    "start": 281040,
+    "end": 282060,
+    "text": "lost vase"
+  },
+  {
+    "start": 282700,
+    "end": 283580,
+    "text": "new scissors"
+  },
+  {
+    "start": 284260,
+    "end": 285250,
+    "text": "lost scissors"
+  },
+  {
+    "start": 285850,
+    "end": 286870,
+    "text": "new teddy bear"
+  },
+  {
+    "start": 287540,
+    "end": 288840,
+    "text": "lost teddy bear"
+  },
+  {
+    "start": 289360,
+    "end": 290550,
+    "text": "new hair drier"
+  },
+  {
+    "start": 290980,
+    "end": 292310,
+    "text": "lost hair drier"
+  },
+  {
+    "start": 292910,
+    "end": 294000,
+    "text": "new toothbrush"
+  },
+  {
+    "start": 294590,
+    "end": 295880,
+    "text": "lost toothbrush"
+  }
+]

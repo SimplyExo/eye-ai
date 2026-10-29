@@ -195,7 +195,18 @@ object UIDataSource {
 				"settingsType" to "checkbox",
 				"string" to R.string.object_playback_setting,
 				"default" to true
-			), mapOf(
+			),
+			mapOf(
+				"title" to R.string.setting_object_playback_mode_title,
+				"description" to R.string.setting_object_playback_mode_description,
+				"settingsType" to "select",
+				"settingsOptions" to listOf(
+					R.string.object_playback_is_standard, R.string.object_playback_is_object_watch
+				),
+				"string" to R.string.setting_object_playback_mode,
+				"default" to R.string.object_playback_is_standard
+			),
+			mapOf(
 				"title" to R.string.setting_audio_frequency_title,
 				"description" to R.string.setting_audio_frequency_description,
 				"settingsType" to "slider",

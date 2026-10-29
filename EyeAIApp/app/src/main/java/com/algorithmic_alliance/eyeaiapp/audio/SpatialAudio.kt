@@ -11,6 +11,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import uniffi.NativeLib.UniffiDetectedObject
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.concurrent.ExecutorService
@@ -26,6 +27,16 @@ object SpatialAudio {
 	private var configuredLanguage: String? = null
 	private val lock = Any()
 
+	private const val LOST_AFTER_MISSED_FRAMES = 5
+
+	// Zuletzt gesehene Version jedes getrackten Objekts
+	private val objectsInSight =
+		mutableMapOf<Int, UniffiDetectedObject>()
+
+	// Anzahl aufeinanderfolgender Frames, in denen das Objekt fehlte
+	private val missedFrames =
+		mutableMapOf<Int, Int>()
+
 	fun start() {
 		synchronized(lock) {
 			if (!::scope.isInitialized || spatialAudioJob?.isActive == true) return
@@ -35,14 +46,20 @@ object SpatialAudio {
 
 				while (isActive) {
 					val depthData = eyeAIApp.aiData.depthEstimationData.get()
-					val objectData = eyeAIApp.aiData.detectedObjects.get()
+					val objectData = if(eyeAIApp.settings.objectAudioPlaybackMode == eyeAIApp.getString(R.string.object_playback_is_object_watch)){
+						getObjectsObjectWatchMode(
+							eyeAIApp.aiData.detectedObjects.get() ?: emptyArray()
+						)
+					} else {
+						eyeAIApp.aiData.detectedObjects.get() ?: emptyArray()
+					}
 					val segmentationData = eyeAIApp.aiData.segmentationOutput.get()
 					val segmentationClassImportances =
 						eyeAIApp.aiData.segmentationClassImportances.get()
 					if (depthData != null) {
 						uniffi.NativeLib.sendAiDataForSpatialAudio(
 							depthData.asUniffiWrapper(),
-							objectData?.toList() ?: emptyList(),
+							objectData.toList(),
 							segmentationData?.asUniffiWrapper(),
 							segmentationClassImportances ?: emptyList()
 						)
@@ -53,13 +70,16 @@ object SpatialAudio {
 		}
 	}
 
+
+
+
 	fun setup(context: Context) {
 		val app = context.applicationContext as EyeAIApp
 		val settings = app.settings
 		synchronized(lock) {
 			eyeAIApp = app
 			if (configuredLanguage == null || configuredLanguage != settings.objectAudioPlaybackLanguage) {
-				loadAudioDataFiles(app, settings.objectAudioPlaybackLanguage)
+				loadAudioDataFiles(app, settings.objectAudioPlaybackLanguage, settings.objectAudioPlaybackMode)
 				configuredLanguage = settings.objectAudioPlaybackLanguage
 			}
 		}
@@ -137,7 +157,7 @@ object SpatialAudio {
 		}
 	}
 
-	fun loadAudioDataFiles(context: Context, language: String?) {
+	fun loadAudioDataFiles(context: Context, language: String?, playbackMode: String?) {
 		Log.d("Spatial Audio", "[LoadAudioDataFiles] Loading files...")
 		var fileNameWav: String
 		var fileNameJson: String
@@ -150,8 +170,14 @@ object SpatialAudio {
 
 			eyeAIApp.getString(R.string.language_is_german) -> {
 				Log.d("SpatialAudio", "[SpatialAudio] Selected german language")
-				fileNameWav = "coco_labels_german.wav"
-				fileNameJson = "coco_labels_data_german.json"
+				if(playbackMode == eyeAIApp.getString(R.string.object_playback_is_object_watch)){
+					fileNameWav = "coco_labels_german_object_watch.wav"
+					fileNameJson = "coco_labels_data_german_object_watch.json"
+				} else{
+					fileNameWav = "coco_labels_german.wav"
+					fileNameJson = "coco_labels_data_german.json"
+				}
+
 			}
 
 			else -> {
@@ -174,6 +200,58 @@ object SpatialAudio {
 			)
 		} else {
 			Log.e("SpatialAudio", "[SpatialAudio] Could not load coco data")
+		}
+	}
+
+	fun getObjectsObjectWatchMode(
+		detectedObjects: Array<UniffiDetectedObject>
+	): Array<UniffiDetectedObject> {
+		synchronized(lock) {
+			val currentObjects = detectedObjects.associateBy {
+				it.trackingId
+			}
+
+			val newIds = currentObjects.keys - objectsInSight.keys
+			val missingIds = objectsInSight.keys - currentObjects.keys
+
+			val changedObjects = mutableListOf<UniffiDetectedObject>()
+
+			// Neue Objekte melden.
+			for (trackingId in newIds) {
+				Log.d(
+					"SpatialAudio",
+					"New Object in sight, tracking id: $trackingId"
+				)
+				currentObjects[trackingId]?.let {
+					changedObjects += it.copy(clsName = "new ${it.clsName}")
+				}
+			}
+
+			// Aktuell sichtbare Objekte: Zähler zurücksetzen, letzten Stand merken.
+			for ((trackingId, obj) in currentObjects) {
+				missedFrames.remove(trackingId)
+				objectsInSight[trackingId] = obj
+			}
+
+			// Fehlende Objekte: erst nach N aufeinanderfolgenden Frames als verloren melden.
+			for (trackingId in missingIds) {
+				val missed = (missedFrames[trackingId] ?: 0) + 1
+
+				if (missed >= LOST_AFTER_MISSED_FRAMES) {
+					Log.d(
+						"SpatialAudio",
+						"Lost sight of object, tracking id: $trackingId"
+					)
+					objectsInSight.remove(trackingId)?.let {
+						changedObjects += it.copy(clsName = "lost ${it.clsName}")
+					}
+					missedFrames.remove(trackingId)
+				} else {
+					missedFrames[trackingId] = missed
+				}
+			}
+
+			return changedObjects.toTypedArray()
 		}
 	}
 }
