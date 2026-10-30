@@ -77,8 +77,10 @@ local_conf_header:
     "
 
   kernel-autoload: |
-    # Treiber automatisch beim Booten laden
     KERNEL_MODULE_AUTOLOAD += "brcmfmac i2c-dev i2c-bcm2835 imx708"
+
+  dev-manager: |
+    VIRTUAL-RUNTIME_dev_manager = "eudev"
 
   root-password: |
     INHERIT += "extrausers"
