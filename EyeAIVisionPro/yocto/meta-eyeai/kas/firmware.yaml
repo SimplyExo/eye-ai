@@ -76,6 +76,7 @@ local_conf_header:
         v4l-utils \
         eyeai-i2c-driver \
         eyeai-button-driver \
+        transistor-cutoff \
     "
 
     IMAGE_BOOT_FILES:append = " \
