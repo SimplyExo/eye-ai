@@ -1,0 +1,42 @@
+#!/bin/bash
+
+case "$1" in
+    start)
+        # Background process
+        (
+            echo Shutdown button daemon started!
+            while true; do
+                if [ "$(cat /dev/button)" = "1" ]; then
+                    start=$(date +%s)
+
+                    # Warten, solange der Button gedrückt ist
+                    while [ "$(cat /dev/button)" = "1" ]; do
+                        duration=$(( $(date +%s) - start ))
+
+                        if [ "$duration" -ge 3 ]; then
+                            # TODO: Shutdown-Sound
+
+                            # Herunterfahren
+                            poweroff
+
+                            exit 0
+                        fi
+
+                        sleep 0.1
+                    done
+                fi
+
+                sleep 0.1
+            done
+        ) &
+        ;;
+    stop)
+        # Optional: Den Hintergrundprozess beim Herunterfahren sauber killen
+        killall shutdown-button 2>/dev/null
+        ;;
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac
+exit 0
