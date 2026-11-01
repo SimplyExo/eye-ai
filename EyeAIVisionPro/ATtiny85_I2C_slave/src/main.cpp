@@ -24,6 +24,7 @@ void send_response();
 
 
 void setup() {
+  delay(250);   // avoid bouncing
   TinyWireS.begin(SLAVE_ADDR);
 
   TinyWireS.onReceive(receive);

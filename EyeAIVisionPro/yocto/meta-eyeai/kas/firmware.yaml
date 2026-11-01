@@ -74,10 +74,23 @@ local_conf_header:
         userland \
         libcamera \
         v4l-utils \
+        eyeai-i2c-driver \
+        eyeai-button-driver \
     "
 
+    IMAGE_BOOT_FILES:append = " \
+        overlays/i2c_overlay.dtbo;overlays/i2c_overlay.dtbo \
+        overlays/button_driver_overlay.dtbo;overlays/button_driver_overlay.dtbo \
+    "
+
+    RPI_EXTRA_CONFIG:append = "\ndtoverlay=i2c_overlay\n"
+    RPI_EXTRA_CONFIG:append = "\ndtoverlay=button_driver_overlay\n"
+
+  overlay-dep: |
+    do_image_wic[depends] += "eyeai-overlay:do_deploy"
+
   kernel-autoload: |
-    KERNEL_MODULE_AUTOLOAD += "brcmfmac i2c-dev i2c-bcm2835 imx708"
+    KERNEL_MODULE_AUTOLOAD += "brcmfmac i2c-dev i2c-bcm2835 imx708 eyeai-i2c eyeai-button"
 
   dev-manager: |
     VIRTUAL-RUNTIME_dev_manager = "eudev"
