@@ -5,7 +5,7 @@
 #define SCL_PIN 2
 #define HOLD_TRANSISTOR 1
 #define LED_GREEN_ENABLE 3
-#define BATTERY_VOLTAGE 4
+#define BATTERY_VOLTAGE A2
 
 // I2C
 #define SLAVE_ADDR 0x08

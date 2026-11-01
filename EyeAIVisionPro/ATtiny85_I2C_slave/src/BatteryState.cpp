@@ -3,14 +3,12 @@
 #include "configuration.h"
 #include <BatteryState.hpp>
 
-BatteryState::BatteryState() {
-    init();
-}
+BatteryState::BatteryState() = default;
 
 void BatteryState::init() {
     pinMode(BATTERY_VOLTAGE, INPUT);
 }
 
-uint16_t BatteryState::read_analog() {
-    return analogRead(BATTERY_VOLTAGE);
+uint8_t BatteryState::read_analog() {
+    return (uint8_t)(analogRead(BATTERY_VOLTAGE) >> 2);
 }

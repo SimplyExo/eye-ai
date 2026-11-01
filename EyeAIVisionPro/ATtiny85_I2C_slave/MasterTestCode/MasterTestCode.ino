@@ -8,7 +8,6 @@
 #define DISABLE_TRANSISTOR 3
 #define READ_BATTERY_STATE 4
 
-
 void printMenu();
 bool sendCommand(byte command);
 void red_led();
@@ -16,20 +15,15 @@ void green_led();
 void disable_transistor();
 void read_battery_state();
 
-
 void setup()
 {
   Serial.begin(9600);
-
   Wire.begin();
-
   delay(1000);
-
+  
   Serial.println("I2C Master gestartet");
-
   printMenu();
 }
-
 
 void loop()
 {
@@ -64,19 +58,17 @@ void loop()
   }
 }
 
-
 void printMenu()
 {
   Serial.println();
-  Serial.println("Attiny85 I2C Tester");
-  Serial.println("-------------------");
+  Serial.println("Attiny85 I2C Tester (8-Bit)");
+  Serial.println("---------------------------");
   Serial.println("0: Rote LED einschalten");
   Serial.println("1: Gruene LED einschalten");
-  Serial.println("2: Batteriespannung lesen");
+  Serial.println("2: Batteriespannung lesen (8-bit)");
   Serial.println("3: Transistor ausschalten");
   Serial.println();
 }
-
 
 bool sendCommand(byte command)
 {
@@ -95,7 +87,6 @@ bool sendCommand(byte command)
   return true;
 }
 
-
 void red_led()
 {
   if (sendCommand(SET_LED_RED))
@@ -103,7 +94,6 @@ void red_led()
     Serial.println("Rote LED aktiviert");
   }
 }
-
 
 void green_led()
 {
@@ -113,7 +103,6 @@ void green_led()
   }
 }
 
-
 void disable_transistor()
 {
   if (sendCommand(DISABLE_TRANSISTOR))
@@ -121,7 +110,6 @@ void disable_transistor()
     Serial.println("Transistor deaktiviert");
   }
 }
-
 
 void read_battery_state()
 {
@@ -131,23 +119,17 @@ void read_battery_state()
     return;
   }
 
-
-  // ATtiny Zeit geben, ADC zu lesen
+  // Kurze Wartezeit für den ATtiny
   delay(10);
 
-
-  // Antwort anfordern
-  Wire.requestFrom(SLAVE_ADDR, (uint8_t)2);
-
+  // WICHTIG: Exakt 1 Byte anfordern (8-Bit ADC)
+  Wire.requestFrom(SLAVE_ADDR, (uint8_t)1);
 
   if (Wire.available())
   {
-    uint8_t high = Wire.read();
-    uint8_t low  = Wire.read();
+    uint8_t batteryValue = Wire.read();
 
-    uint16_t batteryValue = ((uint16_t)high << 8) | low;
-
-    Serial.print("Battery ADC: ");
+    Serial.print("Battery ADC (8-bit): ");
     Serial.println(batteryValue);
   }
   else

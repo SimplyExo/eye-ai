@@ -10,8 +10,6 @@ class BatteryState {
     public:
         BatteryState();
 
-        uint16_t read_analog();
-
-    private:
+        uint8_t read_analog();
         void init();
 };
