@@ -45,9 +45,13 @@ local_conf_header:
     ENABLE_UART = "1"
     ENABLE_I2C = "1"
 
+    # Cam support
     VIDEO_CAMERA = "1"
     RASPBERRYPI_CAMERA_V3 = "1"
     GPU_MEM = "128"
+
+    # Audio support
+    MACHINE_FEATURES += "wm8960"
 
     MODULE_COMPRESS = "0"
     
@@ -78,6 +82,8 @@ local_conf_header:
         eyeai-button-driver \
         transistor-cutoff \
         shutdown-button \
+        alsa-utils \
+        alsa-lib \
     "
 
     IMAGE_BOOT_FILES:append = " \
