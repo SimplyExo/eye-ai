@@ -2,6 +2,7 @@ package com.algorithmic_alliance.eyeaiapp.rel2abs
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
@@ -148,21 +149,32 @@ class Rel2AbsRunner private constructor(
 	}
 
 	private fun rawStatistics(raw: FloatArray): FloatArray {
-		val valid = raw.filter { it.isFinite() && it > 0f }.sorted()
-		if (valid.isEmpty()) return FloatArray(STATISTICS_COUNT)
-		val n = valid.size
-		val mean = valid.sum() / n
-		val sampleStd = if (n > 1) {
-			kotlin.math.sqrt(valid.sumOf { value -> (value - mean).toDouble() * (value - mean).toDouble() } / (n - 1)).toFloat()
-		} else 0f
+		// Filtern ohne Boxing
+		val valid = FloatArray(raw.size)
+		var n = 0
+		for (v in raw) if (v.isFinite() && v > 0f) valid[n++] = v
+		if (n == 0) return FloatArray(STATISTICS_COUNT)
+
+		java.util.Arrays.sort(valid, 0, n) // Dual-Pivot-Quicksort auf primitiven floats
+
+		var sum = 0.0
+		for (i in 0 until n) sum += valid[i]
+		val mean = (sum / n).toFloat()
+
+		var sampleStd = 0f
+		if (n > 1) {
+			var sq = 0.0
+			for (i in 0 until n) {
+				val d = (valid[i] - mean).toDouble()
+				sq += d * d
+			}
+			sampleStd = kotlin.math.sqrt(sq / (n - 1)).toFloat()
+		}
+
 		return floatArrayOf(
-			mean,
-			sampleStd,
-			valid.first(),
-			valid.last(),
-			valid[n / 10],
-			valid[n / 2],
-			valid[min(n - 1, 9 * n / 10)],
+			mean, sampleStd,
+			valid[0], valid[n - 1],
+			valid[n / 10], valid[n / 2], valid[min(n - 1, 9 * n / 10)],
 		)
 	}
 
