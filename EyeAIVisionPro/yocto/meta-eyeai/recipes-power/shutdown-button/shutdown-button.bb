@@ -12,7 +12,7 @@ RDEPENDS:${PN} = "bash"
 
 INITSCRIPT_NAME = "shutdown-button"
 
-INITSCRIPT_PARAMS = "defaults 99"
+INITSCRIPT_PARAMS = "defaults 90"
 
 S = "${UNPACKDIR}"
 

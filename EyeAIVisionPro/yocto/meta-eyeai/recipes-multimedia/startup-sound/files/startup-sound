@@ -1,0 +1,32 @@
+#!/bin/bash
+
+case "$1" in
+    start)
+        # Background process
+        (
+            echo Playing startup sound...
+
+            # enable speaker, disable headphones
+            amixer -c 1 sset 'Headphone' 0% > /dev/null 2>&1
+            amixer -c 1 sset 'Speaker' 85% > /dev/null 2>&1
+
+            # route PCM to speaker
+            amixer -c 1 sset 'Left Output Mixer PCM' on > /dev/null 2>&1
+            amixer -c 1 sset 'Right Output Mixer PCM' on > /dev/null 2>&1
+
+            # play sound
+            aplay -Dhw:1 /etc/sound/startup.wav
+
+            # disable speaker, enable headphones (about 14% volume)
+            amixer -c 1 sset 'Speaker' 0% > /dev/null 2>&1
+            amixer -c 1 sset 'Headphone' 60% > /dev/null 2>&1
+        ) &
+        ;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac
+exit 0

@@ -84,6 +84,8 @@ local_conf_header:
         shutdown-button \
         alsa-utils \
         alsa-lib \
+        sound-init \
+        startup-sound \
     "
 
     IMAGE_BOOT_FILES:append = " \
