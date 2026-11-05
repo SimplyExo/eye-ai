@@ -8,6 +8,7 @@ SRC_URI = " \
     file://mediamtx.yml \
     file://auto.crt \
     file://auto.key \
+    file://mediamtx \
 "
 
 SRCREV = "9540cb6c1d9f1e9351fcc4ded3afc249ffff22bc"
@@ -38,6 +39,9 @@ do_install() {
     install -m 0600 ${UNPACKDIR}/auto.crt ${D}${sysconfdir}/mediamtx/auto.crt
     install -m 0600 ${UNPACKDIR}/auto.key ${D}${sysconfdir}/mediamtx/auto.key
 
+    install -d ${D}${sysconfdir}/init.d
+    install -m 0755 ${UNPACKDIR}/mediamtx ${D}${sysconfdir}/init.d/mediamtx
+
     install -d ${D}${bindir}
     install -m 0755 ${S}/mediamtx ${D}${bindir}/mediamtx
 }
@@ -45,4 +49,5 @@ do_install() {
 FILES:${PN} += " \
     ${bindir}/mediamtx \
     ${sysconfdir}/mediamtx \
+    ${sysconfdir}/init.d/mediamtx \
 "
