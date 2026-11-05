@@ -86,6 +86,7 @@ local_conf_header:
         alsa-lib \
         sound-init \
         startup-sound \
+        mediamtx \
     "
 
     IMAGE_BOOT_FILES:append = " \
