@@ -37,6 +37,10 @@ repos:
     layers:
       .:
 
+  meta-qt6:
+    url: "https://code.qt.io/yocto/meta-qt6.git"
+    branch: "dev"
+
   meta-eyeai:
     path: .
 
@@ -87,6 +91,7 @@ local_conf_header:
         sound-init \
         startup-sound \
         mediamtx \
+        main-app \
     "
 
     IMAGE_BOOT_FILES:append = " \

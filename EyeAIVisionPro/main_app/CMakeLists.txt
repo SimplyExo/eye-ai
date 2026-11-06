@@ -40,5 +40,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     AUTOUIC ON
     AUTORCC ON
     POSITION_INDEPENDENT_CODE OFF
-    AUTOMOC_EXECUTABLE "/usr/lib/qt6/libexec/moc" 
+)
+
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
 )
