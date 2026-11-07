@@ -1,9 +1,11 @@
 #pragma once
 
+#include "connectivity/microphone_server.hpp"
 #include "hardware/battery_voltage.hpp"
 #include <hardware/status_led.hpp>
 #include <init_helper/init_helper.hpp>
 #include <button_sock/button_sock.hpp>
+#include <qglobal.h>
 #include <webserver/webserver.hpp>
 #include <QLoggingCategory>
 #include <qdebug.h>
@@ -71,6 +73,30 @@ class controller : public QObject {
                  << QHostAddress(request.remoteAddress().toIPv4Address()).toString();
             });
 
+            connect(&mic_server, &microphone_server::clientConnected, [](QHostAddress addr, qint16 port) {
+                qCInfo(logNetwork).noquote() << "New microphone client: " << 
+                    QHostAddress(addr.toIPv4Address()).toString() << ":" << port;
+            });
+
+            connect(&mic_server, &microphone_server::clientDisconnected, [](QHostAddress addr, qint16 port) {
+                qCInfo(logNetwork).noquote() << "Microphone client disconnected: " << 
+                    QHostAddress(addr.toIPv4Address()).toString() << ":" << port;
+            });
+
+            connect(&mic_server, &microphone_server::onLog, [](QString message) {
+                qCInfo(logNetwork).noquote() << message;
+            });
+
+            connect(&mic_server, &microphone_server::onWarning, [](QString message) {
+                qCWarning(logNetwork).noquote() << message;
+            });
+
+            connect(&mic_server, &microphone_server::onError, [](QString message) {
+                qCCritical(logNetwork).noquote() << message;
+            });
+
+            mic_server.start_server();
+
             qCInfo(logGeneral).noquote() << "Finished initialization!";
         }
 
@@ -79,6 +105,7 @@ class controller : public QObject {
     private:
         init_helper mediamtx_init = init_helper("mediamtx");
         button_sock socket_btn = button_sock();
+        microphone_server mic_server = microphone_server();
         status_led led_setter = status_led();
         battery_voltage batt_volt = battery_voltage();
         webserver web = webserver(&mediamtx_init, &batt_volt);

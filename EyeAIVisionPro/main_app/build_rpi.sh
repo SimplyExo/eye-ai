@@ -16,10 +16,10 @@ sudo systemd-nspawn -D "${SYSROOT_DIR}" \
     --bind="${PROJECT_DIR}:/workspace" \
     --chdir=/workspace bash -c "
         echo '--> Configuring CMake...'
-        cmake -B build_armhf -S . -DCMAKE_BUILD_TYPE=Release
+        BUILD_RPIOS=1 cmake -B build_armhf -S . -DCMAKE_BUILD_TYPE=Release
 
         echo '--> Building application...'
-        cmake --build build_armhf -j\$(nproc)
+        BUILD_RPIOS=1 cmake --build build_armhf -j\$(nproc)
     "
 
 echo "=== Build finished successfully! Output binaries are in ./build_armhf ==="
