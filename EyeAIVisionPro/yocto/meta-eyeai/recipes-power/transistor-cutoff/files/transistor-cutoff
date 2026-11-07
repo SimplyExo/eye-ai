@@ -3,12 +3,12 @@
 case "$1" in
     stop)
         echo Cutting off power supply. Goodbye!
-        delay 0.1
+        sleep 0.1
         echo -n 0 > /dev/transistor
         ;;
     *)
         echo Cutting off power supply. Goodbye!
-        delay 0.1
+        sleep 0.1
         echo -n 0 > /dev/transistor
         ;;
 esac

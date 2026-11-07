@@ -21,5 +21,8 @@ void controller::on_quit() {
     qCInfo(logNetwork).noquote() << "Stopping microphone server";
     mic_server.stop_server();
 
+    qCInfo(logNetwork).noquote() << "Stopping headphone server";
+    head_server.stop_server();
+
     qCInfo(logGeneral).noquote() << "Quitting application...";
 }

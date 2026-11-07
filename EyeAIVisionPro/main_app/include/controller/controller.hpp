@@ -1,5 +1,6 @@
 #pragma once
 
+#include "connectivity/headphone_server.hpp"
 #include "connectivity/microphone_server.hpp"
 #include "hardware/battery_voltage.hpp"
 #include <hardware/status_led.hpp>
@@ -73,6 +74,30 @@ class controller : public QObject {
                  << QHostAddress(request.remoteAddress().toIPv4Address()).toString();
             });
 
+            connect(&head_server, &headphone_server::clientConnected, [](QHostAddress addr, qint16 port) {
+                qCInfo(logNetwork).noquote() << "New headphone client: " << 
+                    QHostAddress(addr.toIPv4Address()).toString() << ":" << port;
+            });
+
+            connect(&head_server, &headphone_server::clientDisconnected, [](QHostAddress addr, qint16 port) {
+                qCInfo(logNetwork).noquote() << "Headphone client disconnected: " << 
+                    QHostAddress(addr.toIPv4Address()).toString() << ":" << port;
+            });
+
+            connect(&head_server, &headphone_server::onLog, [](QString message) {
+                qCInfo(logNetwork).noquote() << message;
+            });
+
+            connect(&head_server, &headphone_server::onWarning, [](QString message) {
+                qCWarning(logNetwork).noquote() << message;
+            });
+
+            connect(&head_server, &headphone_server::onError, [](QString message) {
+                qCCritical(logNetwork).noquote() << message;
+            });
+
+            head_server.start_server();
+
             connect(&mic_server, &microphone_server::clientConnected, [](QHostAddress addr, qint16 port) {
                 qCInfo(logNetwork).noquote() << "New microphone client: " << 
                     QHostAddress(addr.toIPv4Address()).toString() << ":" << port;
@@ -106,6 +131,7 @@ class controller : public QObject {
         init_helper mediamtx_init = init_helper("mediamtx");
         button_sock socket_btn = button_sock();
         microphone_server mic_server = microphone_server();
+        headphone_server head_server = headphone_server();
         status_led led_setter = status_led();
         battery_voltage batt_volt = battery_voltage();
         webserver web = webserver(&mediamtx_init, &batt_volt);
