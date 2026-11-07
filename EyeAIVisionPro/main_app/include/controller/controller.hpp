@@ -1,6 +1,7 @@
 #pragma once
 
-#include "status_led/status_led.hpp"
+#include "hardware/battery_voltage.hpp"
+#include <hardware/status_led.hpp>
 #include <init_helper/init_helper.hpp>
 #include <button_sock/button_sock.hpp>
 #include <webserver/webserver.hpp>
@@ -79,7 +80,8 @@ class controller : public QObject {
         init_helper mediamtx_init = init_helper("mediamtx");
         button_sock socket_btn = button_sock();
         status_led led_setter = status_led();
-        webserver web = webserver(&mediamtx_init);
+        battery_voltage batt_volt = battery_voltage();
+        webserver web = webserver(&mediamtx_init, &batt_volt);
 
         cmd_output start_mediamtx();
 };

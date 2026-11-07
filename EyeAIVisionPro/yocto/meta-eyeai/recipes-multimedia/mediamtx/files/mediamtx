@@ -34,6 +34,7 @@ case "$1" in
         ;;
     status)
         if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE") 2>/dev/null; then
+            cat "$LOGFILE"
             echo "$NAME is running."
         else
             echo "$NAME is stopped."

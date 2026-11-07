@@ -1,3 +1,4 @@
 meta-eyeai/conf/site.conf
 meta-eyeai/build/
 meta-eyeai/sources/
+meta-eyeai/meta-qt6

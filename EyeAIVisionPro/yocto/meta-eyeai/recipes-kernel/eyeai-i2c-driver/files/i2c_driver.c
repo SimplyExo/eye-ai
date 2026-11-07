@@ -267,7 +267,7 @@ static ssize_t on_read_battery(
     }
 
     // ADC-Wert als String in den User-Space schreiben
-    len = snprintf(buffer, sizeof(buffer), "%d\n", ret);
+    len = snprintf(buffer, sizeof(buffer), "%d", ret);
 
     if (size < len)
         return -EINVAL;
