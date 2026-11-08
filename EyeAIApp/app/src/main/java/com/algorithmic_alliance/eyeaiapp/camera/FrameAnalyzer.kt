@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import android.util.Size
+import com.algorithmic_alliance.eyeaiapp.context.ContextSnapshot
+import kotlinx.serialization.json.*
 import com.algorithmic_alliance.eyeaiapp.AIModelData
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
@@ -17,6 +19,9 @@ import com.algorithmic_alliance.eyeaiapp.inference.throttling.SceneChangeMonitor
 import com.algorithmic_alliance.eyeaiapp.inference.throttling.motion.PhoneMotionLifecycle
 import com.algorithmic_alliance.eyeaiapp.inference.throttling.motion.PhoneMotionMonitor
 import com.algorithmic_alliance.eyeaiapp.runtime.EyeAIRuntime
+import com.algorithmic_alliance.eyeaiapp.worldstate.Availability
+import com.algorithmic_alliance.eyeaiapp.worldstate.FrameStamp
+import com.algorithmic_alliance.eyeaiapp.worldstate.WorldStatePipeline
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -105,7 +110,46 @@ class FrameAnalyzer(
 	private val runtime: EyeAIRuntime,
 	private val onUpdate: (FrameAnalysisUpdate) -> Unit,
 ) {
-	private val latestFrame = AtomicReference<AnalysisFrame?>(null)
+	val worldState = WorldStatePipeline()
+    private var worldStateActive = false
+	private class AcceptedFrame(val frame: AnalysisFrame, val stamp: FrameStamp, val capture: ContextSnapshot? = null) {
+		val bitmap get() = frame.bitmap
+		val width get() = frame.width
+		val height get() = frame.height
+		val timestampNanos get() = frame.timestampNanos
+		val rotationDegrees get() = frame.rotationDegrees
+		val cameraIntrinsics get() = frame.cameraIntrinsics
+		fun release() = frame.release()
+	}
+	private val latestFrame = AtomicReference<AcceptedFrame?>(null)
+    private val contextDepth=AtomicReference<AcceptedFrame?>(null)
+    private val contextObjects=AtomicReference<AcceptedFrame?>(null)
+    private val contextSegmentation=AtomicReference<AcceptedFrame?>(null)
+    private val contextNarrator get()=runtime.localSceneDescriptions
+    private fun channelStatus(frame: AcceptedFrame,channel: String,status: String) {
+        if(frame.capture!=null)contextNarrator.capturedStatus(frame.stamp,channel,status)
+        contextNarrator.recorder.event("CHANNEL_STATUS",frame=frame.stamp) { buildJsonObject {put("channel",channel)
+        put("status",status)} }
+    }
+    private fun queuedFrame(queue: AtomicReference<AcceptedFrame?>): AcceptedFrame? = synchronized(stateLock) {
+        queue.getAndSet(null) ?: retainLatestFrame()
+    }
+    private fun pin(frame: AcceptedFrame,capture: ContextSnapshot) {
+        for(queue in listOf(contextDepth,contextObjects,contextSegmentation)) {
+            if(frame.frame.tryRetain())queue.getAndSet(AcceptedFrame(frame.frame,frame.stamp,capture))?.release()
+        }
+        contextNarrator.recorder.event("CAPTURE_CONFIGURATION",frame=frame.stamp) { buildJsonObject {
+            put("episode",capture.episodeId)
+put("depthModel",runtime.settings.depthModel)
+            put("rel2absMode",runtime.settings.rel2AbsMode.name)
+            put("cameraHeightTenths",runtime.settings.cameraHeightTenths)
+            put("objectsEnabled",runtime.settings.enableObjectDetection)
+            put("segmentationEnabled",runtime.settings.enableSegmentation)
+put("fxPx",frame.cameraIntrinsics?.fxPx)
+            put("fyPx",frame.cameraIntrinsics?.fyPx)
+        } }
+    }
+    private fun releaseContextFrames() {listOf(contextDepth,contextObjects,contextSegmentation).forEach {it.getAndSet(null)?.release()}}
 	private val scene: SceneChangeMonitor = SceneChangeMonitor()
 	val gate: AdaptiveOdGate = AdaptiveOdGate(
 		runtime.settings.maxObjectDetectionFrameRate?.toDouble(),
@@ -156,7 +200,7 @@ class FrameAnalyzer(
 
 	/** Stops processing and releases the analyzer-owned latest-frame reference. */
 	fun stop() {
-		val frameToRelease: AnalysisFrame?
+		val frameToRelease: AcceptedFrame?
 		synchronized(stateLock) {
 			if (!startedValue) return
 			startedValue = false
@@ -167,6 +211,7 @@ class FrameAnalyzer(
 			objectJob = null
 			segmentationJob = null
 			frameToRelease = latestFrame.getAndSet(null)
+            releaseContextFrames()
 		}
 		frameToRelease?.release()
 		lastAcceptedFrameAtNanos.set(0L)
@@ -176,7 +221,7 @@ class FrameAnalyzer(
 
 	/** Permanently closes the analyzer. The runtime calls this only at process shutdown. */
 	fun shutdown() {
-		val frameToRelease: AnalysisFrame?
+		val frameToRelease: AcceptedFrame?
 		synchronized(stateLock) {
 			if (shutdownValue) return
 			shutdownValue = true
@@ -188,11 +233,13 @@ class FrameAnalyzer(
 			objectJob = null
 			segmentationJob = null
 			frameToRelease = latestFrame.getAndSet(null)
+            releaseContextFrames()
 		}
 		frameToRelease?.release()
 		lifecycleJob.cancel()
 		depthExecutor.shutdownNow()
 		objectExecutor.shutdownNow()
+		segmentationExecutor.shutdownNow()
 		clearModelOutputs()
 		refreshMotionMonitoring()
 	}
@@ -207,10 +254,21 @@ class FrameAnalyzer(
 				frame.release()
 				return false
 			}
+			val observing = contextNarrator.observing
+			if (worldStateActive != observing) {
+				// A new session rejects in-flight results from before the transition.
+				worldState.analyzer.reset()
+				worldStateActive = observing
+			}
 			val sequence = frameSequence.incrementAndGet()
+			val stamp = worldState.analyzer.acceptFrame(frame.timestampNanos, frame.width, frame.height,
+				frame.rotationDegrees, frame.timeOrigin)
 			submittedFrameCount.incrementAndGet()
 			lastAcceptedFrameAtNanos.set(System.nanoTime())
-			latestFrame.getAndSet(frame)?.release()
+			val accepted=AcceptedFrame(frame,stamp)
+            // Observe before publication so all workers see the same priority frame atomically.
+            runtime.observeContextFrame(frame.bitmap,stamp,motionLifecycle.score())?.let {pin(accepted,it)}
+            latestFrame.getAndSet(accepted)?.release()
 			frameAvailable.value = sequence
 			return true
 		}
@@ -223,6 +281,7 @@ class FrameAnalyzer(
 	): Boolean = submitFrame(
 		AnalysisFrame.fromBitmap(
 			bitmap = bitmap,
+			timestampNanos = timestampNanos,
 		).also { recordSourceFrame(timestampNanos) }
 	)
 
@@ -251,31 +310,62 @@ class FrameAnalyzer(
 		var observedSequence = 0L
 		while (currentCoroutineContext().isActive) {
 			observedSequence = frameAvailable.first { it > observedSequence }
-			val frame = retainLatestFrame() ?: continue
+			val frame = queuedFrame(contextDepth) ?: continue
 			try {
-				val modelInference = runtime.runDepthInference(frame.bitmap) ?: continue
+				contextNarrator.recorder.event("DEPTH_MODEL_START",frame=frame.stamp)
+                val modelInference = runtime.runDepthInference(frame.bitmap)
+                contextNarrator.recorder.event("DEPTH_MODEL_END",frame=frame.stamp)
+				if (modelInference == null) {
+                    channelStatus(frame,"depth","UNSUPPORTED")
+					worldState.analyzer.invalidateDepth(frame.stamp)
+					continue
+				}
 				val inferenceDuration = measureTime {
 					uniffi.NativeLib.newDepthFrame()
 					AIModelData.depthEstimationData.set(modelInference.prediction)
-					val rel2Abs = runtime.runRel2AbsInference(frame.bitmap, modelInference)
-					if (rel2Abs != null) {
-						AIModelData.rel2AbsFrameCache.publishDepth(
-							MetricDepthFrame(
-								depthMeters = rel2Abs.depthMeters,
-								width = modelInference.inputDim.width,
-								height = modelInference.inputDim.height,
-								sourceTimestampNanos = frame.timestampNanos,
-								sourceWidth = frame.width,
-								sourceHeight = frame.height,
-								rotationDegrees = frame.rotationDegrees,
-								rel2absMode = rel2Abs.mode,
-								cameraIntrinsics = frame.cameraIntrinsics,
-								neuralGateRunner = runtime.rel2AbsNeuralGateRunner,
-							),
+					contextNarrator.recorder.event("REL2ABS_MODEL_START",frame=frame.stamp)
+                    val rel2Abs = runtime.runRel2AbsInference(frame.bitmap, modelInference)
+                    contextNarrator.recorder.event("REL2ABS_MODEL_END",frame=frame.stamp)
+					val metricFrame = if (rel2Abs != null) {
+						MetricDepthFrame(
+							depthMeters = rel2Abs.depthMeters,
+							width = modelInference.inputDim.width,
+							height = modelInference.inputDim.height,
+							sourceTimestampNanos = frame.timestampNanos,
+							sourceWidth = frame.width,
+							sourceHeight = frame.height,
+							rotationDegrees = frame.rotationDegrees,
+							rel2absMode = rel2Abs.mode,
+							cameraIntrinsics = frame.cameraIntrinsics,
+							neuralGateRunner = runtime.rel2AbsNeuralGateRunner,
 						)
 					} else {
 						AIModelData.rel2AbsFrameCache.clearDepth()
+						null
 					}
+					metricFrame?.let { AIModelData.rel2AbsFrameCache.publishDepth(it) }
+					if (contextNarrator.observing) worldState.depth(frame.stamp, modelInference.rawRelativeDepth,
+						modelInference.inputDim.width, modelInference.inputDim.height, modelInference.modelName,
+						modelInference.modelName == EyeAIApp.DEFAULT_DEPTH_MODEL_NAME, metricFrame)
+                    contextNarrator.recorder.event("DEPTH_METADATA",frame=frame.stamp) { buildJsonObject {
+                        put("model",modelInference.modelName)
+                        put("rel2absMode",metricFrame?.rel2absMode?.name)
+                        put("relativeRepresentationSupported",modelInference.modelName==EyeAIApp.DEFAULT_DEPTH_MODEL_NAME)
+                        put("completedAtNanos",System.nanoTime())
+                    } }
+                    val recording=contextNarrator.recorder.state.value.active
+                    val raw=if(recording||frame.capture!=null)FloatArray(modelInference.rawRelativeDepth.floatBuffer.capacity()) {modelInference.rawRelativeDepth.floatBuffer.get(it)}else null
+                    if(recording) {
+                        contextNarrator.recorder.floats(frame.stamp,"midas-raw",modelInference.inputDim.width,modelInference.inputDim.height,raw!!)
+                        contextNarrator.recorder.floats(frame.stamp,"legacy-depth",modelInference.inputDim.width,modelInference.inputDim.height,
+                            FloatArray(modelInference.prediction.floatBuffer.capacity()) {modelInference.prediction.floatBuffer.get(it)})
+                        metricFrame?.let {contextNarrator.recorder.floats(frame.stamp,"rel2abs-visual",it.width,it.height,it.depthMeters)}
+                    }
+                    if(frame.capture!=null)contextNarrator.capturedDepth(frame.stamp,raw?.takeIf {modelInference.modelName==EyeAIApp.DEFAULT_DEPTH_MODEL_NAME},
+                        metricFrame?.depthMeters?.copyOf(),modelInference.inputDim.width,modelInference.inputDim.height,
+                        modelInference.modelName.takeIf {it==EyeAIApp.DEFAULT_DEPTH_MODEL_NAME},metricFrame?.let {"REL2ABS_${it.rel2absMode.name}_VISUAL"},metricFrame)
+                    channelStatus(frame,"depth","AVAILABLE")
+					runtime.describeChangedScene(frame.bitmap, frame.stamp)
 					lastDepthOutputAtNanos.set(System.nanoTime())
 					val colorMappedImage = NativeLib.metricDepthColormap(
 						modelInference.prediction.asUniffiWrapper(),
@@ -328,6 +418,8 @@ class FrameAnalyzer(
 			} catch (cancelled: kotlinx.coroutines.CancellationException) {
 				throw cancelled
 			} catch (error: Throwable) {
+				worldState.analyzer.invalidateDepth(frame.stamp, Availability.INVALID)
+                channelStatus(frame,"depth","INVALID")
 				AIModelData.depthEstimationData.set(null)
 				AIModelData.rel2AbsFrameCache.clearDepth()
 				Log.e(EyeAIApp.APP_LOG_TAG, "Depth frame processing failed", error)
@@ -342,10 +434,12 @@ class FrameAnalyzer(
 		var reportedMode = gate.mode
 		while (currentCoroutineContext().isActive) {
 			observedSequence = frameAvailable.first { it > observedSequence }
-			val frame = retainLatestFrame() ?: continue
+			val frame = queuedFrame(contextObjects) ?: continue
 			try {
 				refreshMotionMonitoring()
 				if (!runtime.settings.enableObjectDetection) {
+                    channelStatus(frame,"objects","UNSUPPORTED")
+					worldState.analyzer.invalidateObjects(frame.stamp, Availability.UNSUPPORTED)
 					AIModelData.rel2AbsFrameCache.clearDetections()
 					continue
 				}
@@ -354,6 +448,7 @@ class FrameAnalyzer(
 				if (maxFrameRate != null) {
 					val now = AnalysisClock.nowNanos()
 					gate.updateObjectDetectionBudget(maxFrameRate.toDouble(), now)
+                    if(frame.capture!=null||contextNarrator.state.value.collecting)gate.onVisualSample(1.0,now)
 					val visualScore = scene.sample(frame.bitmap, frame.rotationDegrees, now)?.let { sample ->
 						if (!sample.baselineFrame) gate.onVisualSample(
 							sample.score,
@@ -374,25 +469,47 @@ class FrameAnalyzer(
 						)
 						reportedMode = decision.mode
 					}
-					if (!decision.admitted) {
-						delay(decision.retryAfterNanos.nanoseconds)
-						continue
-					}
+                    if (!decision.admitted) {
+                        delay(decision.retryAfterNanos.nanoseconds)
+                        if(frame.capture==null)continue
+                        if(!gate.tryAcquire(motionLifecycle.score(),AnalysisClock.nowNanos()).admitted) {
+                            channelStatus(frame,"objects","RATE_LIMITED")
+                            continue
+                        }
+                    }
 				}
 				uniffi.NativeLib.newObjectFrame()
-				val objects = runtime.runObjectInference(frame.bitmap)
+				contextNarrator.recorder.event("YOLO_MODEL_START",frame=frame.stamp)
+                val objects = runtime.runObjectInference(frame.bitmap)
+                contextNarrator.recorder.event("YOLO_MODEL_END",frame=frame.stamp)
 				val safeObjects = objects ?: emptyArray()
 				AIModelData.detectedObjects.set(safeObjects)
-				AIModelData.rel2AbsFrameCache.publishDetections(
-					DetectionFrame(
-						detections = safeObjects,
-						sourceTimestampNanos = frame.timestampNanos,
-						sourceWidth = frame.width,
-						sourceHeight = frame.height,
-						rotationDegrees = frame.rotationDegrees,
-						objectContextFeatures = Rel2AbsContextFeatures.objectFeatures(safeObjects),
-					),
+				val detectionFrame = DetectionFrame(
+					detections = safeObjects,
+					sourceTimestampNanos = frame.timestampNanos,
+					sourceWidth = frame.width,
+					sourceHeight = frame.height,
+					rotationDegrees = frame.rotationDegrees,
+					objectContextFeatures = Rel2AbsContextFeatures.objectFeatures(safeObjects),
 				)
+				AIModelData.rel2AbsFrameCache.publishDetections(detectionFrame)
+                if(frame.capture!=null&&objects!=null)contextNarrator.capturedObjects(frame.stamp,detectionFrame)
+                if(objects==null)channelStatus(frame,"objects","INVALID")else channelStatus(frame,"objects","AVAILABLE")
+                contextNarrator.recorder.event("YOLO",frame=frame.stamp) { buildJsonArray {for(o in safeObjects)add(buildJsonObject {
+                    put("track",o.trackingId)
+put("class",o.cls)
+put("name",o.clsName)
+                    put("confidence",if(o.cnf.isFinite())JsonPrimitive(o.cnf)else JsonNull)
+                    put("box",buildJsonArray {for(value in listOf(o.x1,o.y1,o.x2,o.y2))add(if(value.isFinite())JsonPrimitive(value)else JsonNull)})
+                })} }
+				if (objects == null) worldState.analyzer.invalidateObjects(frame.stamp)
+				else if (runtime.settings.enableObjectDetection) {
+                    if (contextNarrator.observing) worldState.objects(frame.stamp, detectionFrame)
+                }
+				else worldState.analyzer.invalidateObjects(frame.stamp, Availability.UNSUPPORTED)
+				if (objects != null && runtime.settings.enableObjectDetection) {
+					runtime.describeChangedScene(frame.bitmap, frame.stamp)
+				}
 				lastObjectOutputAtNanos.set(System.nanoTime())
 				onUpdate(
 					FrameAnalysisUpdate(
@@ -403,6 +520,8 @@ class FrameAnalyzer(
 			} catch (cancelled: kotlinx.coroutines.CancellationException) {
 				throw cancelled
 			} catch (error: Throwable) {
+				worldState.analyzer.invalidateObjects(frame.stamp, Availability.INVALID)
+                channelStatus(frame,"objects","INVALID")
 				AIModelData.detectedObjects.set(emptyArray())
 				AIModelData.rel2AbsFrameCache.clearDetections()
 				Log.e(EyeAIApp.APP_LOG_TAG, "Object-detection frame processing failed", error)
@@ -416,33 +535,49 @@ class FrameAnalyzer(
 		var observedSequence = 0L
 		while (currentCoroutineContext().isActive) {
 			observedSequence = frameAvailable.first { it > observedSequence }
-			val frame = retainLatestFrame() ?: continue
+			val frame = queuedFrame(contextSegmentation) ?: continue
 			try {
 				if (!runtime.settings.enableSegmentation) {
+                    channelStatus(frame,"segmentation","UNSUPPORTED")
+					worldState.analyzer.invalidateSegmentation(frame.stamp, Availability.UNSUPPORTED)
 					AIModelData.rel2AbsFrameCache.clearSegmentationContexts()
 					continue
 				}
 				val inferenceDuration = measureTime {
 					uniffi.NativeLib.newSegmentationFrame()
-					val output = runtime.runSegmentationInference(frame.bitmap) ?: continue
+					contextNarrator.recorder.event("SEGMENTATION_MODEL_START",frame=frame.stamp)
+                    val output = runtime.runSegmentationInference(frame.bitmap)
+                    contextNarrator.recorder.event("SEGMENTATION_MODEL_END",frame=frame.stamp)
+					if (output == null) {
+                        channelStatus(frame,"segmentation","INVALID")
+						worldState.analyzer.invalidateSegmentation(frame.stamp)
+						continue
+					}
 					AIModelData.segmentationOutput.set(output.prediction)
 					val segmentationContext = Rel2AbsContextFeatures.segmentationFeatureContext(
 						output.prediction,
 						output.inputDim.width,
 						output.inputDim.height,
 					)
-					AIModelData.rel2AbsFrameCache.publishSegmentationContext(
-						SegmentationContextFrame(
-							segmentationFeatures = Rel2AbsContextFeatures.segmentationFeatures(output.prediction),
-							sourceTimestampNanos = frame.timestampNanos,
-							sourceWidth = frame.width,
-							sourceHeight = frame.height,
-							rotationDegrees = frame.rotationDegrees,
-							globalAreaFractions = segmentationContext.globalAreaFractions,
-							gridAreaFractions = segmentationContext.gridAreaFractions,
-							available = segmentationContext.available,
-						),
+					val contextFrame = SegmentationContextFrame(
+						segmentationFeatures = Rel2AbsContextFeatures.segmentationFeatures(output.prediction),
+						sourceTimestampNanos = frame.timestampNanos,
+						sourceWidth = frame.width,
+						sourceHeight = frame.height,
+						rotationDegrees = frame.rotationDegrees,
+						globalAreaFractions = segmentationContext.globalAreaFractions,
+						gridAreaFractions = segmentationContext.gridAreaFractions,
+						available = segmentationContext.available,
 					)
+					AIModelData.rel2AbsFrameCache.publishSegmentationContext(contextFrame)
+                    if(frame.capture!=null)contextNarrator.capturedSegmentation(frame.stamp,contextFrame)
+                    if(contextNarrator.recorder.state.value.active)contextNarrator.recorder.ints(frame.stamp,"segmentation-mask",output.inputDim.width,output.inputDim.height,
+                        IntArray(output.prediction.intBuffer.capacity()) {output.prediction.intBuffer.get(it)})
+                    channelStatus(frame,"segmentation",if(contextFrame.available)"AVAILABLE" else "INVALID")
+					if (runtime.settings.enableSegmentation) {
+                        if (contextNarrator.observing) worldState.segmentation(frame.stamp, contextFrame)
+                    }
+					else worldState.analyzer.invalidateSegmentation(frame.stamp, Availability.UNSUPPORTED)
 					val colorMappedImage = NativeLib.segmentationColormap(
 						output.prediction.asUniffiWrapper(),
 						output.inputDim,
@@ -465,6 +600,8 @@ class FrameAnalyzer(
 			} catch (cancelled: kotlinx.coroutines.CancellationException) {
 				throw cancelled
 			} catch (error: Throwable) {
+				worldState.analyzer.invalidateSegmentation(frame.stamp, Availability.INVALID)
+                channelStatus(frame,"segmentation","INVALID")
 				AIModelData.segmentationOutput.set(null)
 				Log.e(EyeAIApp.APP_LOG_TAG, "Segmentation frame processing failed", error)
 			} finally {
@@ -473,9 +610,9 @@ class FrameAnalyzer(
 		}
 	}
 
-	private fun retainLatestFrame(): AnalysisFrame? {
+	private fun retainLatestFrame(): AcceptedFrame? {
 		val frame = latestFrame.get() ?: return null
-		return frame.takeIf { it.tryRetain() }
+		return frame.takeIf { it.frame.tryRetain() }
 	}
 
 	fun healthSnapshot(): FrameAnalyzerHealth = FrameAnalyzerHealth(
@@ -488,6 +625,7 @@ class FrameAnalyzer(
 
 	// Removes data that would otherwise be reused after an input stall.
 	fun clearModelOutputs() {
+		worldState.analyzer.reset()
 		AIModelData.detectedObjects.set(emptyArray())
 		AIModelData.depthEstimationData.set(null)
 		AIModelData.segmentationOutput.set(null)
@@ -496,13 +634,14 @@ class FrameAnalyzer(
 		lastObjectOutputAtNanos.set(0L)
 	}
 
-	/** Keeps the phone-motion sensor bound only while the gate can use it. */
+	// Gate and context observation share one motion sensor lifecycle.
 	private fun refreshMotionMonitoring() {
 		val operationActive = synchronized(stateLock) { startedValue && !shutdownValue }
 		motionLifecycle.update(
 			operationActive = operationActive,
 			objectDetectionEnabled = runtime.settings.enableObjectDetection,
 			limiterEnabled = runtime.settings.maxObjectDetectionFrameRate != null,
+            narratorEnabled = contextNarrator.state.value.enabled || contextNarrator.recorder.state.value.active,
 			profilingEnabled = runtime.settings.showProfilingInfo && runtime.settings.maxObjectDetectionFrameRate != null,
 		)
 	}

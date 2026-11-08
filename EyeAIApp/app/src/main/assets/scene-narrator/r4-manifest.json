@@ -1,0 +1,45 @@
+{
+  "schema": "android-r4-lite-2",
+  "model_file": "r4-model.tflite",
+  "model_precision": "INT8",
+  "projection_id": "r4-app-shared-box-projection-1",
+  "files": {
+    "r4-model.tflite": "da2f5cd2e6d839a4ed6a80c389678a1ce603233c26faa92c0444d24b3d62aea2",
+    "r4-gate.json": "4380e90d1670f620ec64578fc949095687a4db160c70fa0801c1ccd3b181db31",
+    "r4-experimental-policy.json": "b7792a03ac30568462a98b5e81f80f36a91bcef10f10096040a1f4a6a2561a56"
+  },
+  "selected_model_sha256": "da2f5cd2e6d839a4ed6a80c389678a1ce603233c26faa92c0444d24b3d62aea2",
+  "gate_sha256": "4380e90d1670f620ec64578fc949095687a4db160c70fa0801c1ccd3b181db31",
+  "freeze_sha256": "c99adc4e6d0542fc7b11b42450614a87541725d04d9eb188435b43eac75a8f4f",
+  "independent_blind_audit_sha256": "15ccc2f60e7a7596a24684bb33fcee85f41a8f39d57b5cb832c929cb3f32acbd",
+  "released_relations": {
+    "SUPPORTED_BY": false,
+    "CARRIES": false,
+    "HOLDS": false,
+    "WEARS": false
+  },
+  "scope": "confirmed-current-objects-only; depth-unknown; segmentation-unknown; describe-camera-forward",
+  "experimental_policy_file": "r4-experimental-policy.json",
+  "experimental_policy_sha256": "b7792a03ac30568462a98b5e81f80f36a91bcef10f10096040a1f4a6a2561a56",
+  "provisional_relations": {
+    "BESIDE": true,
+    "SUPPORTED_BY": true,
+    "INSIDE": false,
+    "CARRIES": true,
+    "HOLDS": true,
+    "WEARS": true,
+    "OCCLUDES": true
+  },
+  "relation_order": [
+    "BESIDE",
+    "SUPPORTED_BY",
+    "INSIDE",
+    "CARRIES",
+    "HOLDS",
+    "WEARS",
+    "OCCLUDES"
+  ],
+  "app_disabled_relations": [
+    "INSIDE"
+  ]
+}

@@ -558,19 +558,25 @@ fun SelectSetting(
 	val context = LocalContext.current
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LocalContext.current)
 	val settingKey = stringResource(settingData["string"] as Int)
+	val options = settingData.getValue("settingsOptions") as List<Any>
+	val optionLabels = options.map { resolveString(context, it) }
+	val optionValues = (settingData["settingsValues"] as? List<String>) ?: optionLabels
 
 	val settingTitle = resolveString(LocalContext.current, settingData.getValue("title"))
 	val settingDescription =
 		resolveString(LocalContext.current, settingData.getValue("description"))
 	var dropDownEnabled by rememberSaveable { mutableStateOf(false) }
-	var currentlySelected by rememberSaveable {
-		mutableStateOf(
-			(sharedPreferences.getString(
-				settingKey, resolveString(context, settingData["default"] as Any)
-			))
-		)
+	var currentlySelected by rememberSaveable(settingKey) {
+		val defaultValue = resolveString(context, settingData["default"] as Any)
+		val saved = sharedPreferences.getString(settingKey, defaultValue)
+		val selected = if (settingData.containsKey("settingsValues")) {
+			optionValues.firstOrNull { it.equals(saved, ignoreCase = true) } ?: defaultValue
+		} else saved
+		mutableStateOf(selected)
 	}
 
+	val selectedLabel = optionLabels.getOrNull(optionValues.indexOf(currentlySelected.orEmpty()))
+		?: currentlySelected.orEmpty()
 
 	Row(
 		modifier = Modifier
@@ -601,9 +607,9 @@ fun SelectSetting(
 					}, verticalAlignment = Alignment.CenterVertically
 			) {
 				Text(
-					currentlySelected as String, modifier = Modifier.semantics {
+					selectedLabel, modifier = Modifier.semantics {
 						contentDescription =
-							context.getString(R.string.currently_selected_semantic) + currentlySelected
+							context.getString(R.string.currently_selected_semantic) + selectedLabel
 					}, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold
 				)
 				Icon(
@@ -613,7 +619,7 @@ fun SelectSetting(
 			}
 			DropdownMenu(
 				expanded = dropDownEnabled, onDismissRequest = { dropDownEnabled = false }) {
-				for (item in (settingData.getValue("settingsOptions") as List<Any>)) {
+				for ((optionIndex, item) in options.withIndex()) {
 					if (resolveString(
 							LocalContext.current, item
 						) == stringResource(R.string.input_is_eyeaivision) && uiState.visionPermissionsNotGranted
@@ -624,7 +630,7 @@ fun SelectSetting(
 							style = MaterialTheme.typography.bodySmall
 						)
 					}, onClick = {
-						currentlySelected = resolveString(context, item)
+						currentlySelected = optionValues[optionIndex]
 						Log.d(
 							LOG_TAG,
 							"[SettingsPage.SelectSetting] Changed setting $settingKey to $currentlySelected"

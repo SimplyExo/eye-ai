@@ -23,6 +23,7 @@ object MetricDistanceResolver {
 		contextFeatures: FloatArray = FloatArray(Rel2AbsContextFeatures.TOTAL_FEATURE_COUNT),
 		detections: Array<UniffiDetectedObject> = emptyArray(),
 		segmentationContext: SegmentationContextFrame? = null,
+        trace: ((Map<String,Float>)->Unit)? = null,
 	): Result {
 		if (frame.depthMeters.size != frame.width * frame.height) return Result.Invalid
 		if (!box.x1.isFinite() || !box.y1.isFinite() || !box.x2.isFinite() || !box.y2.isFinite()) {
@@ -64,7 +65,9 @@ object MetricDistanceResolver {
 				contextFeatures = contextFeatures,
 				detections = detections,
 				segmentationContext = segmentationContext,
+                trace = trace,
 			)
-		return Result.Available(neuralEstimate ?: median)
+		trace?.invoke(mapOf("visualMedianMeters" to median,"resolvedMeters" to (neuralEstimate ?: median),"gateApplied" to if(neuralEstimate!=null)1f else 0f))
+        return Result.Available(neuralEstimate ?: median)
 	}
 }

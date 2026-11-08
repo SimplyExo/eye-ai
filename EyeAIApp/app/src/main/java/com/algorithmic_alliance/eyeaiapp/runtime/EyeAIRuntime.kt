@@ -22,6 +22,7 @@ import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudioResumeOutcome
 import com.algorithmic_alliance.eyeaiapp.camera.CameraManager
 import com.algorithmic_alliance.eyeaiapp.camera.FrameAnalysisUpdate
 import com.algorithmic_alliance.eyeaiapp.camera.FrameAnalyzer
+import com.algorithmic_alliance.eyeaiapp.worldstate.Availability
 import com.algorithmic_alliance.eyeaiapp.connectivity.EyeAIVision
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModel
 import com.algorithmic_alliance.eyeaiapp.depth.MetricDepthModelInfo
@@ -52,6 +53,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -158,6 +162,100 @@ class EyeAIRuntime internal constructor(
 	val ocrModel = GoogleOCR()
 	val voskModel = VoskModel(context, "model-de")
 	val frameAnalyzer = FrameAnalyzer(context, this, ::onFrameAnalysisUpdate)
+	val worldStateAnalyzer get() = frameAnalyzer.worldState.analyzer
+	val localSceneDescriptions = com.algorithmic_alliance.eyeaiapp.scenenarrator.LocalSceneDescriptions(context)
+	@Volatile private var orientationSpeechId: Long? = null
+    init {
+        runtimeScope.launch {
+            localSceneDescriptions.state.map {it.episodeId}.distinctUntilChanged().collect {
+                if(textToSpeechInstanceValue?.stopIfOwnerPrefix("orientation:")==true) {
+                    localSceneDescriptions.recorder.event("SPEECH_CANCELLED_NEW_CONTEXT")
+                    orientationSpeechId=null
+                    _state.update {state->state.copy(ttsSpeaking=false)}
+                }
+            }
+        }
+		runtimeScope.launch {
+			localSceneDescriptions.state.map { if (it.enabled) it.announcementId else 0L }
+				.distinctUntilChanged().collectLatest { id ->
+					if (id == 0L) return@collectLatest
+					val tts = textToSpeechInstance
+					while (this@EyeAIRuntime.isActive && localSceneDescriptions.isCurrentAnnouncement(id) &&
+						(voskUserStart.get() || tts.isSpeaking() || !tts.isReadyToSpeak() || !localSceneDescriptions.speechStartAllowed())) delay(150L)
+					withContext(Dispatchers.Main.immediate) {
+						if (this@EyeAIRuntime.isActive && localSceneDescriptions.isCurrentAnnouncement(id) &&
+							!voskUserStart.get() && !tts.isSpeaking() && tts.isReadyToSpeak() && localSceneDescriptions.speechStartAllowed()) {
+							orientationSpeechId = id
+							speakSceneText(localSceneDescriptions.state.value.text) {
+								if (orientationSpeechId == id) orientationSpeechId = null
+							}
+						}
+					}
+				}
+		}
+	}
+	fun setLocalSceneDescriptionsEnabled(enabled: Boolean) {
+		localSceneDescriptions.setEnabled(enabled)
+		if (!enabled && orientationSpeechId != null) {
+			textToSpeechInstance.stopIfOwnerPrefix("orientation:")
+			orientationSpeechId = null
+			_state.update { it.copy(ttsSpeaking = false) }
+		}
+	}
+
+	fun setLocalSceneR4ExperimentEnabled(enabled: Boolean) {
+		localSceneDescriptions.setExperimentalR4Enabled(enabled)
+		if (orientationSpeechId != null) {
+			textToSpeechInstance.stopIfOwnerPrefix("orientation:")
+			orientationSpeechId = null
+			_state.update { it.copy(ttsSpeaking = false) }
+		}
+	}
+
+    fun setContextRecording(enabled: Boolean) {
+        val recorder=localSceneDescriptions.recorder
+        if(!enabled) {recorder.stop()
+        return}
+        recorder.start()
+        localSceneDescriptions.recordConfiguration()
+        val depth=EyeAIApp.DEPTH_MODELS.firstOrNull {it.name==settings.depthModel}?.relativeDepthFileName
+        val files=listOfNotNull(depth,yoloModel.info.tfliteFilename,yoloModel.info.namesFilename,segmentationModel.info.tfliteFilename,segmentationModel.info.namesJsonFilename)+
+            listOf("context-policy.json","scene-narrator/r4-model.tflite","scene-narrator/deterministic-manifest.json","scene-narrator/evidence-contract.json","scene-narrator/r4-manifest.json","scene-narrator/r4-gate.json","scene-narrator/r4-experimental-policy.json")+
+            context.assets.list("rel2abs").orEmpty().filter {it.endsWith(".json")||it.endsWith(".tflite")}.map {"rel2abs/$it"}
+        recorder.assetMetadata(files)
+    }
+
+    internal fun observeContextFrame(bitmap: Bitmap,stamp: com.algorithmic_alliance.eyeaiapp.worldstate.FrameStamp,motion: Double?): com.algorithmic_alliance.eyeaiapp.context.ContextSnapshot? =
+        if(isActive) {
+            localSceneDescriptions.setBackendConfiguration("${settings.depthModel}|${settings.rel2AbsMode}|${settings.cameraHeightTenths}|${settings.enableObjectDetection}|${settings.enableSegmentation}")
+            localSceneDescriptions.onCameraFrame(bitmap,stamp,{ worldStateAnalyzer.snapshot() },motion)
+        } else null
+
+	// Called synchronously while a model worker owns this bitmap.
+	internal fun describeChangedScene(bitmap: Bitmap, stamp: com.algorithmic_alliance.eyeaiapp.worldstate.FrameStamp) {
+		if (isActive) localSceneDescriptions.onFrame(bitmap, stamp) { worldStateAnalyzer.snapshot() }
+	}
+
+	fun speakLocalSceneDescription() {
+		val text = localSceneDescriptions.state.value.text
+		if (!isActive || text.isBlank()) return
+		if (voskUserStart.get()) stopListening("LOCAL_SCENE_DESCRIPTION")
+		speakSceneText(text)
+	}
+
+	private fun speakSceneText(text: String, onComplete: (() -> Unit)? = null) {
+		pauseSpatialAudio()
+		_state.update { it.copy(speechResponseText = text, ttsSpeaking = true) }
+		val id=localSceneDescriptions.state.value.announcementId
+        val admitted=textToSpeechInstance.speakOwned(text,"orientation:$id",onStarted={localSceneDescriptions.speechStarted(id)},onComplete={
+            localSceneDescriptions.speechFinished(id)
+            onComplete?.invoke()
+        })
+        if(!admitted) {orientationSpeechId=null
+_state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
+        return}
+		spatialAudioResumeController.schedule("LOCAL_SCENE_DESCRIPTION")
+	}
 	val cameraManager = CameraManager(::onCameraStateChanged)
 	val npuQnnDelegateDirectory: String = app.applicationInfo.nativeLibraryDir
 
@@ -221,6 +319,14 @@ class EyeAIRuntime internal constructor(
 	/** Called by the Application after settings have been reloaded. */
 	fun onSettingsChanged(oldSettings: Settings) {
 		val newSettings = settings
+        if(oldSettings.sceneDescriptionDetail != newSettings.sceneDescriptionDetail) {
+            localSceneDescriptions.setDetail(newSettings.sceneDescriptionDetail)
+            if(orientationSpeechId != null) {
+                textToSpeechInstance.stopIfOwnerPrefix("orientation:")
+                orientationSpeechId=null
+                _state.update {it.copy(ttsSpeaking=false)}
+            }
+        }
 		if (oldSettings.rel2AbsMode != newSettings.rel2AbsMode) {
 			// Never mix a depth buffer produced with one frozen REL2ABS mode with
 			// detections paired after the user selected the other one.
@@ -239,6 +345,8 @@ class EyeAIRuntime internal constructor(
 			)
 		}
 
+		if (!newSettings.enableObjectDetection) worldStateAnalyzer.invalidateObjects(status = Availability.UNSUPPORTED)
+		if (!newSettings.enableSegmentation) worldStateAnalyzer.invalidateSegmentation(status = Availability.UNSUPPORTED)
 		modelScope.launch {
 			try {
 				if (oldSettings.nlpModel != newSettings.nlpModel) {
@@ -304,6 +412,11 @@ class EyeAIRuntime internal constructor(
 		try {
 			initializeModels()
 			textToSpeechInstance
+			// Scene orientation is automatic for the active camera session. R4 is
+			// part of this path by default, the UI switch remains an explicit stop.
+			localSceneDescriptions.setDetail(settings.sceneDescriptionDetail)
+			localSceneDescriptions.setExperimentalR4Enabled(true)
+			localSceneDescriptions.setEnabled(true)
 			frameAnalyzer.start()
 			SpatialAudio.setup(context)
 			SpatialAudio.start()
@@ -335,6 +448,8 @@ class EyeAIRuntime internal constructor(
 	@RequiresApi(Build.VERSION_CODES.P)
 	fun stopOperation() {
 		if (!lifecycleGate.stop()) return
+		localSceneDescriptions.stop()
+        localSceneDescriptions.recorder.stop()
 		cleanupStep("spatial-audio resume controller") {
 			spatialAudioResumeController.cancel()
 		}
@@ -347,6 +462,7 @@ class EyeAIRuntime internal constructor(
 		voskUserStart.set(false)
 		cleanupStep("Vosk listener") { voskModel.stopListening() }
 		cleanupStep("TTS") { synchronized(stateLock) { textToSpeechInstanceValue }?.stop() }
+		orientationSpeechId = null
 		cleanupStep("spatial-audio engine") { SpatialAudio.stop() }
 		cleanupStep("native spatial-audio pause") { pauseSpatialAudio() }
 		_state.update {
@@ -362,6 +478,7 @@ class EyeAIRuntime internal constructor(
 	fun toggleListening() {
 		if (textToSpeechInstance.isSpeaking()) {
 			textToSpeechInstance.stop()
+			orientationSpeechId = null
 			_state.update { it.copy(ttsSpeaking = false, speechResponseText = "") }
 			return
 		}
@@ -866,6 +983,7 @@ class EyeAIRuntime internal constructor(
 		}
 		spatialAudioResumeController.cancel()
 		frameAnalyzer.shutdown()
+		localSceneDescriptions.close()
 		cameraManager.shutdown()
 		voskModel.closeService()
 		synchronized(stateLock) {

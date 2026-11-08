@@ -285,4 +285,11 @@
 	<string name="get_user_height_dialog_confirm_button">Bestätigen</string>
 	<string name="get_user_height_dialog_skip_button">Überspringen</string>
 	<string name="get_user_height_dialog_enter_height_text">Größe eingeben (cm)…</string>
+
+    <string name="scene_description_detail_setting" translatable="false">scene_description_detail</string>
+    <string name="settings_category_scene_description">Umgebungsbeschreibung</string>
+    <string name="setting_scene_description_detail_title">Beschreibungsumfang</string>
+    <string name="setting_scene_description_detail_description">Wählen Sie eine kurze Orientierung in Stichworten oder eine normale Beschreibung in kurzen Sätzen. Gilt für die nächste Beschreibung.</string>
+    <string name="scene_detail_short">Kurz</string>
+    <string name="scene_detail_standard">Normal</string>
 </resources>

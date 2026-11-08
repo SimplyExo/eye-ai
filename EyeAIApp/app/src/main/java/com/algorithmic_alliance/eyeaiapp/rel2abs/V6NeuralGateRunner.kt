@@ -98,6 +98,7 @@ class V6NeuralGateRunner private constructor(
 		contextFeatures: FloatArray,
 		detections: Array<UniffiDetectedObject> = emptyArray(),
 		segmentationContext: SegmentationContextFrame? = null,
+        trace: ((Map<String,Float>)->Unit)? = null,
 	): Float? {
 		val modelId = mode.neuralGateId ?: return null
 		val model = models[modelId] ?: return null
@@ -199,8 +200,21 @@ class V6NeuralGateRunner private constructor(
 		} else {
 			base
 		}
-		val gate = model.evaluate(features)
-		return exp((1f - gate) * ln(visualMeters.toDouble()) + gate * ln(sizeMeters.toDouble())).toFloat()
+        val gate = model.evaluate(features)
+        val result=exp((1f-gate)*ln(visualMeters.toDouble())+gate*ln(sizeMeters.toDouble())).toFloat()
+        trace?.invoke(buildMap {
+            put("visualMeters",visualMeters)
+put("anchorMeters",anchorMeters)
+            put("sizeMeters",sizeMeters)
+            put("zHeight",zHeight)
+put("zWidth",zWidth)
+put("reliability",reliability)
+            put("sigmaLog",sigmaLog)
+            put("gate",gate)
+            put("finalMeters",result)
+            features.forEachIndexed {i,v->put("feature.$i",v)}
+        })
+        return result
 	}
 
 	private fun objectFeatureVector(

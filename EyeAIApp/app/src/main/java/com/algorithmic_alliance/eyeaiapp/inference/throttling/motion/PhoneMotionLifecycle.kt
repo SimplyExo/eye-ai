@@ -10,8 +10,9 @@ class PhoneMotionLifecycle(private val createMonitor: () -> PhoneMotionMonitor) 
 		objectDetectionEnabled: Boolean,
 		limiterEnabled: Boolean,
 		profilingEnabled: Boolean,
+        narratorEnabled: Boolean=false,
 	) {
-		val next = operationActive && objectDetectionEnabled && (limiterEnabled || profilingEnabled)
+		val next = operationActive && (narratorEnabled || objectDetectionEnabled && (limiterEnabled || profilingEnabled))
 		if (requested == next) return
 		requested = next
 		if (next) {

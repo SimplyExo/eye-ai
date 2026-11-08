@@ -30,6 +30,7 @@ class CameraXFrameAdapter(
 					height = bitmap.height,
 					rotationDegrees = rotationDegrees,
 					timestampNanos = image.imageInfo.timestamp,
+					timeOrigin = com.algorithmic_alliance.eyeaiapp.worldstate.TimeOrigin.CAMERA_TIMESTAMP,
 					cameraIntrinsics = cameraCalibration?.forFrame(
 						widthPx = bitmap.width,
 						heightPx = bitmap.height,

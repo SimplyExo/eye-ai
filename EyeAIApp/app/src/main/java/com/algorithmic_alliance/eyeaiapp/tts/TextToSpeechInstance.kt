@@ -25,10 +25,20 @@ class TextToSpeechInstance(
 ) : TextToSpeech.OnInitListener {
 
 	var tts: TextToSpeech? = TextToSpeech(context, this)
-	private var isReady = false
+	@Volatile private var isReady = false
+	fun isReadyToSpeak(): Boolean = isReady && tts != null
 
-	private val pendingCallbacks = mutableMapOf<String, () -> Unit>()
-	private val hasSpecificCallback = mutableSetOf<String>()
+	private val pendingCallbacks = java.util.concurrent.ConcurrentHashMap<String, () -> Unit>()
+    private val startCallbacks = java.util.concurrent.ConcurrentHashMap<String, () -> Unit>()
+    private val ownership=SpeechOwnership()
+    private val activeUtterances=java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    fun stopIfOwnerPrefix(prefix: String): Boolean = synchronized(this) {
+        if(!ownership.canCancel(prefix))return@synchronized false
+        stop()
+        true
+    }
+
+	private val hasSpecificCallback = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
 	// active utterance counter
 	private var activeUtteranceCount = 0
@@ -90,9 +100,11 @@ class TextToSpeechInstance(
 	}
 
 	private fun finishUtterance(utteranceId: String?) {
-		decrementUtteranceCount()
+        if(utteranceId!=null&&activeUtterances.remove(utteranceId))decrementUtteranceCount()
 		utteranceId?.let { id ->
 			pendingCallbacks.remove(id)?.invoke()
+            startCallbacks.remove(id)
+            ownership.finished(id)
 			hasSpecificCallback.remove(id)
 		}
 		if (getActiveUtteranceCount() == 0) {
@@ -108,6 +120,10 @@ class TextToSpeechInstance(
 		tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
 			override fun onStart(utteranceId: String?) {
 				Log.d(EyeAIApp.APP_LOG_TAG, "TTS onStart utterance=$utteranceId")
+                utteranceId?.let { id->
+                    ownership.started(id)
+                    startCallbacks.remove(id)?.let {callback->callbackScope.launch {callback()}}
+                }
 			}
 
 			override fun onDone(utteranceId: String?) {
@@ -157,7 +173,7 @@ class TextToSpeechInstance(
 
 
 	//Simple stop method, supports stop button
-	fun stop() {
+	@Synchronized fun stop() {
 		Log.w(EyeAIApp.APP_LOG_TAG, "TTS stop() called. Clearing queues and callbacks.")
 		if (!isReady) return
 		try {
@@ -166,6 +182,9 @@ class TextToSpeechInstance(
 			Log.e(EyeAIApp.APP_LOG_TAG, "Error stopping TTS", e)
 		}
 		pendingCallbacks.clear()
+        startCallbacks.clear()
+ownership.clear()
+        activeUtterances.clear()
 		hasSpecificCallback.clear()
 		synchronized(this) { activeUtteranceCount = 0 }
 		invokeOnFinishedWhenPlaybackStops()
@@ -174,6 +193,9 @@ class TextToSpeechInstance(
 	//Should only be used if necessary, completely shuts down the TTS-Service
 	fun shutdown() {
 		pendingCallbacks.clear()
+        startCallbacks.clear()
+ownership.clear()
+        activeUtterances.clear()
 		hasSpecificCallback.clear()
 		synchronized(this) { activeUtteranceCount = 0 }
 		try {
@@ -285,7 +307,17 @@ class TextToSpeechInstance(
 	 * - onComplete if provided registers a specific callback and uses a specific utteranceId and params
 	 */
 	@JvmOverloads
-	fun speak(text: String, queueMode: Int = QUEUE_FLUSH, onComplete: (() -> Unit)? = null) {
+	fun speak(text: String, queueMode: Int = QUEUE_FLUSH, onComplete: (() -> Unit)? = null) = enqueue(text,queueMode,null,null,onComplete)
+
+    @Synchronized fun speakOwned(text: String,owner: String,onStarted: (() -> Unit)?=null,onComplete: (() -> Unit)?=null): Boolean {
+        // Atomic admission with all other speak calls. Never flush a dialogue
+        // that raced with the runtime's readiness check.
+        if(!isReadyToSpeak() || isSpeaking())return false
+        enqueue(text,TextToSpeech.QUEUE_ADD,owner,onStarted,onComplete)
+        return true
+    }
+
+    @Synchronized private fun enqueue(text: String,queueMode: Int,owner: String?,onStarted: (() -> Unit)?,onComplete: (() -> Unit)?) {
 		if (!isReady) {
 			if (onComplete != null) {
 				onComplete.invoke()
@@ -295,8 +327,14 @@ class TextToSpeechInstance(
 			return
 		}
 
+        if(queueMode==QUEUE_FLUSH) {startCallbacks.clear()
+activeUtterances.clear()
+        synchronized(this) {activeUtteranceCount=0}}
 		if (onComplete != null) {
 			val utteranceId = UUID.randomUUID().toString()
+            ownership.enqueue(utteranceId,owner ?: "dialog",queueMode==QUEUE_FLUSH)
+            activeUtterances.add(utteranceId)
+            onStarted?.let {startCallbacks[utteranceId]=it}
 			pendingCallbacks[utteranceId] = onComplete
 			hasSpecificCallback.add(utteranceId)
 			incrementUtteranceCount()
@@ -309,9 +347,12 @@ class TextToSpeechInstance(
 				EyeAIApp.APP_LOG_TAG,
 				"speak enqueued utterance=$utteranceId (with specific callback) and queueMode=$queueMode"
 			)
-			tts?.speak(text, queueMode, params, utteranceId)
+			if(tts?.speak(text,queueMode,params,utteranceId)!=TextToSpeech.SUCCESS)finishUtterance(utteranceId)
 		} else {
 			val utteranceId = "utt_${System.currentTimeMillis()}_${Random.nextInt(10000)}"
+            ownership.enqueue(utteranceId,owner ?: "dialog",queueMode==QUEUE_FLUSH)
+            activeUtterances.add(utteranceId)
+            onStarted?.let {startCallbacks[utteranceId]=it}
 			incrementUtteranceCount()
 			val queueModeStr = if (queueMode == QUEUE_FLUSH) "QUEUE_FLUSH" else "QUEUE_ADD"
 			val params = Bundle().apply {
@@ -323,7 +364,7 @@ class TextToSpeechInstance(
 				EyeAIApp.APP_LOG_TAG,
 				"speak enqueued utterance=$utteranceId with queueMode=$queueModeStr"
 			)
-			tts?.speak(text, queueMode, params, utteranceId)
+			if(tts?.speak(text,queueMode,params,utteranceId)!=TextToSpeech.SUCCESS)finishUtterance(utteranceId)
 		}
 	}
 

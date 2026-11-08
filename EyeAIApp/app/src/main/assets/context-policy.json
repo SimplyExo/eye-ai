@@ -1,0 +1,25 @@
+{
+  "schema": "eyeai-context-policy-2",
+  "policyVersion": "context-v2-unvalidated",
+  "validationStatus": "not_calibrated",
+  "config": {
+    "settleNanos": 1200000000,
+    "visualSettleNanos": 2000000000,
+    "minimumIntervalNanos": 2000000000,
+    "semanticThreshold": 0.6,
+    "combinedThreshold": 0.45,
+    "visualThreshold": 0.65,
+    "generation": 2,
+    "objectWeight": 0.45,
+    "imageWeight": 0.25,
+    "depthWeight": 0.15,
+    "segmentationWeight": 0.15,
+    "minimumCoverage": 0.5,
+    "supportThreshold": 0.2,
+    "resetThreshold": 0.25,
+    "maximumImageWeight": 0.35,
+    "collectionNanos": 2000000000,
+    "minimumCollectionNanos": 750000000,
+    "quietNanos": 500000000
+  }
+}

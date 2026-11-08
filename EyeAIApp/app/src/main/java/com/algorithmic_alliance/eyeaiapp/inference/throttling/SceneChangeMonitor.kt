@@ -45,7 +45,7 @@ class SceneChangeMonitor(
 	private var lastInputNanos: Long? = null
 	private var lastSampleNanos: Long? = null
 
-	fun sample(bitmap: Bitmap, rotationDegrees: Int, nowNanos: Long): SceneSample? {
+	fun sample(bitmap: Bitmap, rotationDegrees: Int, nowNanos: Long, updateBaseline: Boolean = true): SceneSample? {
 		require(!bitmap.isRecycled) { "Cannot inspect a recycled Bitmap" }
 		if (!prepare(bitmap.width, bitmap.height, rotationDegrees, nowNanos)) return null
 		var target = 0
@@ -56,8 +56,11 @@ class SceneChangeMonitor(
 				sampleBuffer[target++] = argbToLuma(bitmap[sourceX, sourceY])
 			}
 		}
-		return finish(nowNanos)
+		return finish(nowNanos, updateBaseline)
 	}
+
+	// Accept the last sampled keyframe, so slow changes accumulate until accepted.
+	fun commitBaseline() { scorer.score(sampleBuffer) }
 
 	fun reset() {
 		scorer.reset()
@@ -82,9 +85,9 @@ class SceneChangeMonitor(
 		return lastSampleNanos?.let { now - it >= config.sampleCadenceNanos } ?: true
 	}
 
-	private fun finish(now: Long): SceneSample {
+	private fun finish(now: Long, updateBaseline: Boolean): SceneSample {
 		val baseline = !scorer.hasBaseline
-		val score = scorer.score(sampleBuffer)
+		val score = scorer.score(sampleBuffer, updateBaseline)
 		lastSampleNanos = now
 		return SceneSample(score, now, baseline)
 	}

@@ -142,6 +142,16 @@ object UIDataSource {
 				"settingsType" to "click",
 				"action" to ACTION_OPEN_BATTERY_OPTIMIZATION
 			)
+        ), R.string.settings_category_scene_description to listOf(
+            mapOf(
+                "title" to R.string.setting_scene_description_detail_title,
+                "description" to R.string.setting_scene_description_detail_description,
+                "settingsType" to "select",
+                "settingsOptions" to listOf(R.string.scene_detail_short, R.string.scene_detail_standard),
+                "settingsValues" to listOf("SHORT", "STANDARD"),
+                "string" to R.string.scene_description_detail_setting,
+                "default" to "STANDARD"
+            )
 		), R.string.settings_category_depth_estimation to listOf(
 			mapOf(
 				"title" to R.string.setting_depth_estimation_model_title,

@@ -183,6 +183,10 @@ fun HomePage(
 						.fillMaxSize(),
 					columns = GridCells.Fixed(2),
 				) {
+					item(span = { GridItemSpan(maxLineSpan) }) {
+						LocalSceneDescriptionControls(viewModel)
+					}
+
 					item {
 						VoskStatusCard(viewModel = viewModel)
 					}

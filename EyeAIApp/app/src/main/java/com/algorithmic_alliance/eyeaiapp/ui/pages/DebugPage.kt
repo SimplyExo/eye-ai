@@ -35,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -177,6 +178,9 @@ fun DebugPage(
 							.padding(paddingValues),
 						horizontalAlignment = Alignment.CenterHorizontally,
 					) {
+						LocalSceneDescriptionControls(context.runtime)
+						Row { R4Diagnostics(context.runtime)
+						ContextDiagnostics(context.runtime) }
 						Card(
 							modifier = Modifier
 								.weight(1f)
@@ -473,7 +477,7 @@ fun DebugInputPreview(
 		PreviewWithSquareOverlayContainer(
 			modifier = modifier,
 			contentAspectRatio = aspectRatio,
-			viewModel = viewModel
+			viewModel = viewModel,
 		) { innerModifier ->
 			Image(
 				bitmap = debugBitmap.asImageBitmap(),
@@ -511,7 +515,7 @@ fun MediaPreview(
 			PreviewWithSquareOverlayContainer(
 				modifier = modifier,
 				contentAspectRatio = aspectRatio,
-				viewModel = viewModel
+				viewModel = viewModel,
 			) { innerModifier ->
 				Image(
 					bitmap = it.asImageBitmap(),
@@ -592,7 +596,7 @@ fun DepthPreview(
 fun CameraPreview(
 	modifier: Modifier = Modifier,
 	viewModel: MainViewModel,
-	onEvent: (UIEvent) -> Unit
+	onEvent: (UIEvent) -> Unit,
 ) {
 	val odState by viewModel.objectDetectionOverlayUIState.collectAsStateWithLifecycle()
 	val resolution = odState.cameraResolution
@@ -606,7 +610,7 @@ fun CameraPreview(
 	PreviewWithSquareOverlayContainer(
 		modifier = modifier,
 		contentAspectRatio = aspectRatio,
-		viewModel = viewModel
+		viewModel = viewModel,
 	) { innerModifier ->
 		AndroidView(
 			modifier = innerModifier,

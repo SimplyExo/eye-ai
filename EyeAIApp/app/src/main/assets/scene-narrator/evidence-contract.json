@@ -1,0 +1,77 @@
+{
+  "schema": "shared-evidence-android-1",
+  "snapshot": "canonical TinyWorld v1 serialization; SHA-256 UTF-8 bytes",
+  "object_ids": "canonical indexes in validated TinyWorldInput.objects",
+  "r4_projection_id": "r4-app-shared-box-projection-1",
+  "r4_inputs": {
+    "nodes": [
+      1,
+      32
+    ],
+    "node_features": 57,
+    "pairs": [
+      1,
+      32,
+      32,
+      28
+    ],
+    "relation_order": [
+      "BESIDE",
+      "SUPPORTED_BY",
+      "INSIDE",
+      "CARRIES",
+      "HOLDS",
+      "WEARS",
+      "OCCLUDES"
+    ]
+  },
+  "r4_age_bands_upper_bound_ms": {
+    "LE_100_MS": 100,
+    "LE_500_MS": 500,
+    "LE_1_S": 1000,
+    "LE_10_S": 10000,
+    "OLDER": 10001,
+    "INVALID": "excluded"
+  },
+  "c2_fact_kinds": {
+    "SUPPORTED_BY": 12,
+    "CARRIES": 13,
+    "HOLDS": 14,
+    "WEARS": 15,
+    "BESIDE": 16,
+    "INSIDE": 17,
+    "OCCLUDES": 18
+  },
+  "relation_claims_require": [
+    "same_snapshot",
+    "same_source",
+    "current_confirmed_objects",
+    "released_empirical_gate_or_explicit_provisional_policy",
+    "unambiguous_endpoint_references"
+  ],
+  "provisional_relation_policy": {
+    "schema": "android-r4-provisional-speech-policy-2",
+    "status": "provisional_experimental",
+    "requires_calibrated_score_at_or_above_threshold": true,
+    "depth_or_3d_claims": "forbidden_without_depth_evidence",
+    "allowed_relations": [
+      "BESIDE",
+      "SUPPORTED_BY",
+      "INSIDE",
+      "CARRIES",
+      "HOLDS",
+      "WEARS",
+      "OCCLUDES"
+    ],
+    "thresholds": {
+      "BESIDE": 0.9,
+      "SUPPORTED_BY": 0.52,
+      "INSIDE": 0.9,
+      "CARRIES": 0.9,
+      "HOLDS": 0.74,
+      "WEARS": 0.9,
+      "OCCLUDES": 0.9
+    },
+    "spoken_qualifier": null
+  }
+}

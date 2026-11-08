@@ -21,6 +21,8 @@ class AnalysisFrame(
 	val timestampNanos: Long,
 	/** Optional Camera2 calibration scaled to this bitmap. */
 	val cameraIntrinsics: Rel2AbsCameraIntrinsics? = null,
+	val timeOrigin: com.algorithmic_alliance.eyeaiapp.worldstate.TimeOrigin =
+		com.algorithmic_alliance.eyeaiapp.worldstate.TimeOrigin.LOCAL_RECEIPT,
 	private val onReleased: (() -> Unit)? = null,
 ) : AutoCloseable {
 	private val references = AtomicInteger(1)

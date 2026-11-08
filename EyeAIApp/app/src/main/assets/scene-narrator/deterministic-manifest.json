@@ -1,0 +1,8 @@
+{
+  "schema": "android-deterministic-r4-1",
+  "realization": "spatial-orientation-de-v4-two-styles",
+  "files": {
+    "language.json": "26ab7c322029c2fec14fa39be12067f9750807e44ce7ac0a12d20e810dae1860",
+    "evidence-contract.json": "595c3ab2f89afd254afeae8dd8163ddea368e47138eb4c74fdc65096c6bd2b3b"
+  }
+}

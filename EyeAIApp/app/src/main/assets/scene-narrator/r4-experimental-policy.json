@@ -1,0 +1,828 @@
+{
+  "schema": "android-r4-provisional-speech-policy-2",
+  "projection_id": "r4-app-shared-box-projection-1",
+  "model_sha256": "da2f5cd2e6d839a4ed6a80c389678a1ce603233c26faa92c0444d24b3d62aea2",
+  "source_gate_sha256": "4380e90d1670f620ec64578fc949095687a4db160c70fa0801c1ccd3b181db31",
+  "relations": {
+    "BESIDE": {
+      "status": "provisional-unvalidated",
+      "threshold": 0.9,
+      "score_type": "raw_sigmoid",
+      "probability_fit": null,
+      "class_pair_policy": "current_coco_pairs",
+      "allowed_class_pairs": [],
+      "known_annotation_metrics": null,
+      "selection_basis": "heuristic research preview threshold; no projection-specific precision/coverage claim",
+      "decoder_training": "existing C2 decoder with new constrained typed facts; no fine-tune for this type yet"
+    },
+    "SUPPORTED_BY": {
+      "status": "provisional",
+      "threshold": 0.52,
+      "score_type": "affine_calibrated",
+      "probability_fit": {
+        "scale": 1.052952015339743,
+        "bias": 0.09520610985448925
+      },
+      "class_pair_policy": "training_pairs",
+      "allowed_class_pairs": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          1,
+          7
+        ],
+        [
+          1,
+          8
+        ],
+        [
+          1,
+          9
+        ],
+        [
+          1,
+          14
+        ],
+        [
+          1,
+          18
+        ],
+        [
+          1,
+          21
+        ],
+        [
+          1,
+          29
+        ],
+        [
+          1,
+          31
+        ],
+        [
+          1,
+          32
+        ],
+        [
+          1,
+          37
+        ],
+        [
+          1,
+          38
+        ],
+        [
+          1,
+          57
+        ],
+        [
+          1,
+          58
+        ],
+        [
+          1,
+          60
+        ],
+        [
+          1,
+          61
+        ],
+        [
+          1,
+          62
+        ],
+        [
+          15,
+          9
+        ],
+        [
+          15,
+          61
+        ],
+        [
+          16,
+          14
+        ],
+        [
+          16,
+          26
+        ],
+        [
+          16,
+          57
+        ],
+        [
+          16,
+          60
+        ],
+        [
+          16,
+          61
+        ],
+        [
+          16,
+          62
+        ],
+        [
+          16,
+          63
+        ],
+        [
+          16,
+          69
+        ],
+        [
+          17,
+          9
+        ],
+        [
+          17,
+          14
+        ],
+        [
+          17,
+          38
+        ],
+        [
+          17,
+          57
+        ],
+        [
+          17,
+          60
+        ],
+        [
+          17,
+          61
+        ],
+        [
+          18,
+          57
+        ],
+        [
+          40,
+          61
+        ],
+        [
+          41,
+          61
+        ],
+        [
+          43,
+          61
+        ],
+        [
+          45,
+          61
+        ],
+        [
+          46,
+          61
+        ],
+        [
+          56,
+          61
+        ],
+        [
+          78,
+          61
+        ]
+      ],
+      "known_annotation_metrics": {
+        "threshold_selection_only": true,
+        "detail_age_strata": {
+          "SHORT": {
+            "100": {
+              "statements": 23,
+              "images": 23,
+              "precision": 0.9130434782608695,
+              "bootstrap_lower_95": 0.7824879227053141,
+              "unknown_spoken": 63
+            },
+            "500": {
+              "statements": 23,
+              "images": 23,
+              "precision": 0.9130434782608695,
+              "bootstrap_lower_95": 0.7777777777777778,
+              "unknown_spoken": 63
+            }
+          },
+          "STANDARD": {
+            "100": {
+              "statements": 32,
+              "images": 28,
+              "precision": 0.90625,
+              "bootstrap_lower_95": 0.7857142857142857,
+              "unknown_spoken": 105
+            },
+            "500": {
+              "statements": 32,
+              "images": 28,
+              "precision": 0.90625,
+              "bootstrap_lower_95": 0.782608695652174,
+              "unknown_spoken": 105
+            }
+          },
+          "DETAILED": {
+            "100": {
+              "statements": 32,
+              "images": 28,
+              "precision": 0.90625,
+              "bootstrap_lower_95": 0.78125,
+              "unknown_spoken": 105
+            },
+            "500": {
+              "statements": 32,
+              "images": 28,
+              "precision": 0.90625,
+              "bootstrap_lower_95": 0.7931034482758621,
+              "unknown_spoken": 105
+            }
+          }
+        },
+        "source_scope": "closed public source annotations; not physical truth"
+      },
+      "selection_basis": "known annotated subset only; unresolved unknown labels",
+      "decoder_training": "typed relation fine-tune available"
+    },
+    "INSIDE": {
+      "status": "provisional-unvalidated",
+      "threshold": 0.9,
+      "score_type": "raw_sigmoid",
+      "probability_fit": null,
+      "class_pair_policy": "current_coco_pairs",
+      "allowed_class_pairs": [],
+      "known_annotation_metrics": null,
+      "selection_basis": "heuristic research preview threshold; no projection-specific precision/coverage claim",
+      "decoder_training": "existing C2 decoder with new constrained typed facts; no fine-tune for this type yet"
+    },
+    "CARRIES": {
+      "status": "provisional-unvalidated",
+      "threshold": 0.9,
+      "score_type": "raw_sigmoid",
+      "probability_fit": null,
+      "class_pair_policy": "training_pairs",
+      "allowed_class_pairs": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          17
+        ],
+        [
+          1,
+          18
+        ],
+        [
+          1,
+          19
+        ],
+        [
+          1,
+          25
+        ],
+        [
+          1,
+          26
+        ],
+        [
+          1,
+          27
+        ],
+        [
+          1,
+          29
+        ],
+        [
+          1,
+          30
+        ],
+        [
+          1,
+          31
+        ],
+        [
+          1,
+          32
+        ],
+        [
+          1,
+          33
+        ],
+        [
+          1,
+          34
+        ],
+        [
+          1,
+          35
+        ],
+        [
+          1,
+          37
+        ],
+        [
+          1,
+          38
+        ],
+        [
+          1,
+          39
+        ],
+        [
+          1,
+          40
+        ],
+        [
+          1,
+          42
+        ],
+        [
+          1,
+          47
+        ],
+        [
+          1,
+          49
+        ],
+        [
+          1,
+          52
+        ],
+        [
+          1,
+          53
+        ],
+        [
+          1,
+          54
+        ],
+        [
+          1,
+          55
+        ],
+        [
+          1,
+          56
+        ],
+        [
+          1,
+          57
+        ],
+        [
+          1,
+          58
+        ],
+        [
+          1,
+          59
+        ],
+        [
+          1,
+          67
+        ],
+        [
+          1,
+          68
+        ],
+        [
+          1,
+          74
+        ],
+        [
+          1,
+          78
+        ],
+        [
+          17,
+          30
+        ]
+      ],
+      "known_annotation_metrics": null,
+      "selection_basis": "heuristic research preview threshold; no projection-specific precision/coverage claim",
+      "decoder_training": "typed relation fine-tune available"
+    },
+    "HOLDS": {
+      "status": "provisional",
+      "threshold": 0.74,
+      "score_type": "affine_calibrated",
+      "probability_fit": {
+        "scale": 1.1069521868134253,
+        "bias": -1.174410543141479
+      },
+      "class_pair_policy": "training_pairs",
+      "allowed_class_pairs": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          1,
+          12
+        ],
+        [
+          1,
+          15
+        ],
+        [
+          1,
+          16
+        ],
+        [
+          1,
+          17
+        ],
+        [
+          1,
+          18
+        ],
+        [
+          1,
+          19
+        ],
+        [
+          1,
+          20
+        ],
+        [
+          1,
+          21
+        ],
+        [
+          1,
+          23
+        ],
+        [
+          1,
+          25
+        ],
+        [
+          1,
+          26
+        ],
+        [
+          1,
+          27
+        ],
+        [
+          1,
+          28
+        ],
+        [
+          1,
+          29
+        ],
+        [
+          1,
+          30
+        ],
+        [
+          1,
+          31
+        ],
+        [
+          1,
+          32
+        ],
+        [
+          1,
+          33
+        ],
+        [
+          1,
+          34
+        ],
+        [
+          1,
+          35
+        ],
+        [
+          1,
+          36
+        ],
+        [
+          1,
+          37
+        ],
+        [
+          1,
+          38
+        ],
+        [
+          1,
+          39
+        ],
+        [
+          1,
+          40
+        ],
+        [
+          1,
+          41
+        ],
+        [
+          1,
+          42
+        ],
+        [
+          1,
+          43
+        ],
+        [
+          1,
+          44
+        ],
+        [
+          1,
+          45
+        ],
+        [
+          1,
+          46
+        ],
+        [
+          1,
+          47
+        ],
+        [
+          1,
+          48
+        ],
+        [
+          1,
+          49
+        ],
+        [
+          1,
+          50
+        ],
+        [
+          1,
+          51
+        ],
+        [
+          1,
+          52
+        ],
+        [
+          1,
+          53
+        ],
+        [
+          1,
+          54
+        ],
+        [
+          1,
+          55
+        ],
+        [
+          1,
+          56
+        ],
+        [
+          1,
+          57
+        ],
+        [
+          1,
+          59
+        ],
+        [
+          1,
+          64
+        ],
+        [
+          1,
+          65
+        ],
+        [
+          1,
+          66
+        ],
+        [
+          1,
+          67
+        ],
+        [
+          1,
+          68
+        ],
+        [
+          1,
+          70
+        ],
+        [
+          1,
+          73
+        ],
+        [
+          1,
+          74
+        ],
+        [
+          1,
+          75
+        ],
+        [
+          1,
+          76
+        ],
+        [
+          1,
+          77
+        ],
+        [
+          1,
+          78
+        ],
+        [
+          1,
+          80
+        ],
+        [
+          16,
+          66
+        ],
+        [
+          17,
+          30
+        ],
+        [
+          22,
+          52
+        ],
+        [
+          61,
+          76
+        ]
+      ],
+      "known_annotation_metrics": {
+        "threshold_selection_only": true,
+        "detail_age_strata": {
+          "SHORT": {
+            "100": {
+              "statements": 31,
+              "images": 31,
+              "precision": 0.8709677419354839,
+              "bootstrap_lower_95": 0.7391304347826086,
+              "unknown_spoken": 7
+            },
+            "500": {
+              "statements": 31,
+              "images": 31,
+              "precision": 0.8709677419354839,
+              "bootstrap_lower_95": 0.7391304347826086,
+              "unknown_spoken": 7
+            }
+          },
+          "STANDARD": {
+            "100": {
+              "statements": 31,
+              "images": 31,
+              "precision": 0.8709677419354839,
+              "bootstrap_lower_95": 0.75,
+              "unknown_spoken": 10
+            },
+            "500": {
+              "statements": 31,
+              "images": 31,
+              "precision": 0.8709677419354839,
+              "bootstrap_lower_95": 0.7407407407407407,
+              "unknown_spoken": 10
+            }
+          },
+          "DETAILED": {
+            "100": {
+              "statements": 31,
+              "images": 31,
+              "precision": 0.8709677419354839,
+              "bootstrap_lower_95": 0.7333333333333333,
+              "unknown_spoken": 10
+            },
+            "500": {
+              "statements": 31,
+              "images": 31,
+              "precision": 0.8709677419354839,
+              "bootstrap_lower_95": 0.7333333333333333,
+              "unknown_spoken": 10
+            }
+          }
+        },
+        "source_scope": "closed public source annotations; not physical truth"
+      },
+      "selection_basis": "known annotated subset only; unresolved unknown labels",
+      "decoder_training": "typed relation fine-tune available"
+    },
+    "WEARS": {
+      "status": "provisional-unvalidated",
+      "threshold": 0.9,
+      "score_type": "affine_calibrated",
+      "probability_fit": {
+        "scale": 1.3921655515600178,
+        "bias": -0.05877817347072829
+      },
+      "class_pair_policy": "training_pairs",
+      "allowed_class_pairs": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          25
+        ],
+        [
+          1,
+          26
+        ],
+        [
+          1,
+          27
+        ],
+        [
+          1,
+          28
+        ],
+        [
+          1,
+          29
+        ],
+        [
+          1,
+          31
+        ],
+        [
+          1,
+          32
+        ],
+        [
+          1,
+          36
+        ]
+      ],
+      "known_annotation_metrics": null,
+      "selection_basis": "heuristic research preview threshold; no projection-specific precision/coverage claim",
+      "decoder_training": "typed relation fine-tune available"
+    },
+    "OCCLUDES": {
+      "status": "provisional-unvalidated",
+      "threshold": 0.9,
+      "score_type": "raw_sigmoid",
+      "probability_fit": null,
+      "class_pair_policy": "current_coco_pairs",
+      "allowed_class_pairs": [],
+      "known_annotation_metrics": null,
+      "selection_basis": "heuristic research preview threshold; no projection-specific precision/coverage claim",
+      "decoder_training": "existing C2 decoder with new constrained typed facts; no fine-tune for this type yet"
+    }
+  },
+  "scope": "current confirmed COCO object boxes; all other channels ignored by R4 projection; no surface endpoints",
+  "limitations": [
+    "All seven categories are experimental hypotheses, not physical truth or released empirical gates.",
+    "The additional five categories have no validated operating threshold on this projection.",
+    "BESIDE/INSIDE/OCCLUDES have no relation-specific C2 fine-tune in the packaged checkpoint; constrained sentences remain verified.",
+    "No floor or wall endpoints are fabricated."
+  ],
+  "spoken_qualifier": null
+}

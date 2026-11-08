@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsMode
+import com.algorithmic_alliance.eyeaiapp.scenenarrator.SceneDescriptionDetail
 
 data class Settings(
 	var depthModel: String,
@@ -28,6 +29,7 @@ data class Settings(
 	var enableNpu: Boolean,
 	var rel2AbsMode: Rel2AbsMode,
 	var cameraHeightTenths: Int,
+	var sceneDescriptionDetail: SceneDescriptionDetail = SceneDescriptionDetail.STANDARD,
 ) : Cloneable {
 	companion object {
 		const val DEFAULT_FRAME_RATE_LIMIT: Int = 30
@@ -40,6 +42,13 @@ data class Settings(
 
 		fun load(context: Context): Settings {
 			val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+            val detailKey=context.getString(R.string.scene_description_detail_setting)
+            val storedDetail=sharedPreferences.getString(detailKey,null)
+            val descriptionDetail=SceneDescriptionDetail.fromStoredValue(storedDetail)
+            if(storedDetail!=null&&storedDetail!=descriptionDetail.name) {
+                sharedPreferences.edit {putString(detailKey,descriptionDetail.name)}
+            }
+
 
 			val depthModel = sharedPreferences.getString(
 				context.getString(R.string.depth_model_setting), EyeAIApp.DEFAULT_DEPTH_MODEL_NAME
@@ -179,6 +188,7 @@ data class Settings(
 				enableNpu,
 				rel2AbsMode,
 				cameraHeightTenths,
+				descriptionDetail,
 			)
 		}
 	}
@@ -205,6 +215,7 @@ data class Settings(
 		enableNpu,
 		rel2AbsMode,
 		cameraHeightTenths,
+		sceneDescriptionDetail,
 	)
 
 	fun save(context: Context) {
@@ -217,6 +228,7 @@ data class Settings(
 			putString("object_playback_language", objectAudioPlaybackLanguage)
 
 			//other settings
+			putString(context.getString(R.string.scene_description_detail_setting), sceneDescriptionDetail.name)
 			putString(context.getString(R.string.depth_model_setting), depthModel)
 			putBoolean(context.getString(R.string.show_profiling_info_setting), showProfilingInfo)
 			putBoolean(

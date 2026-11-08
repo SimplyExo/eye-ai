@@ -242,4 +242,10 @@
 	<string name="get_user_height_dialog_skip_button">Skip</string>
 	<string name="get_user_height_dialog_enter_height_text">Enter height (cm)…</string>
 
+
+    <string name="settings_category_scene_description">Scene description</string>
+    <string name="setting_scene_description_detail_title">Description detail</string>
+    <string name="setting_scene_description_detail_description">Choose compact phrases or a normal description in short sentences. Applies to the next description.</string>
+    <string name="scene_detail_short">Short</string>
+    <string name="scene_detail_standard">Normal</string>
 </resources>

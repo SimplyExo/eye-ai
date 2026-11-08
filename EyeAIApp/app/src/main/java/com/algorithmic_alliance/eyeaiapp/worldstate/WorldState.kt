@@ -4,6 +4,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.intOrNull
 import java.util.Collections
 
 internal fun <T> frozen(values: Collection<T>): List<T> = Collections.unmodifiableList(ArrayList(values))
@@ -159,6 +162,7 @@ data class TargetAnalysis(
     val cells: List<Int> = emptyList(),
     val afterBypassPosition: Availability = Availability.UNKNOWN,
     val observedSidewalkCells: List<Int> = emptyList(),
+    val omittedObstacleCount: Int = 0,
 )
 
 @Serializable
@@ -173,10 +177,15 @@ data class WorldModelInput(
 object WorldStateCodec {
     val json = Json { encodeDefaults = true; explicitNulls = true; allowSpecialFloatingPointValues = false }
     fun encode(input: WorldModelInput): String {
-        require(input.schemaVersion == 1 && input.scene.schemaVersion == 1) { "Unsupported WorldState schema" }
+        WorldStateValidation.input(input)
         return json.encodeToString(input)
     }
-    fun decode(value: String): WorldModelInput = json.decodeFromString<WorldModelInput>(value).also {
-        require(it.schemaVersion == 1 && it.scene.schemaVersion == 1) { "Unsupported WorldState schema" }
+    fun decode(value: String): WorldModelInput {
+        val root = json.parseToJsonElement(value).jsonObject
+        require(root["schemaVersion"]?.jsonPrimitive?.intOrNull == 1 &&
+            root["scene"]?.jsonObject?.get("schemaVersion")?.jsonPrimitive?.intOrNull == 1) {
+            "Explicit supported WorldState schema versions required"
+        }
+        return json.decodeFromString<WorldModelInput>(value).also { WorldStateValidation.input(it) }
     }
 }

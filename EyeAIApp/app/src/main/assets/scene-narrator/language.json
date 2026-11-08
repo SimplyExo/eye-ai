@@ -1,0 +1,564 @@
+{
+  "nouns": [
+    {
+      "singular": "Person",
+      "plural": "Personen",
+      "gender": "F",
+      "dative": "Person",
+      "mass": false
+    },
+    {
+      "singular": "Fahrrad",
+      "plural": "Fahrräder",
+      "gender": "N",
+      "dative": "Fahrrad",
+      "mass": false
+    },
+    {
+      "singular": "Auto",
+      "plural": "Autos",
+      "gender": "N",
+      "dative": "Auto",
+      "mass": false
+    },
+    {
+      "singular": "Motorrad",
+      "plural": "Motorräder",
+      "gender": "N",
+      "dative": "Motorrad",
+      "mass": false
+    },
+    {
+      "singular": "Flugzeug",
+      "plural": "Flugzeuge",
+      "gender": "N",
+      "dative": "Flugzeug",
+      "mass": false
+    },
+    {
+      "singular": "Bus",
+      "plural": "Busse",
+      "gender": "M",
+      "dative": "Bus",
+      "mass": false
+    },
+    {
+      "singular": "Zug",
+      "plural": "Züge",
+      "gender": "M",
+      "dative": "Zug",
+      "mass": false
+    },
+    {
+      "singular": "Lastwagen",
+      "plural": "Lastwagen",
+      "gender": "M",
+      "dative": "Lastwagen",
+      "mass": false
+    },
+    {
+      "singular": "Boot",
+      "plural": "Boote",
+      "gender": "N",
+      "dative": "Boot",
+      "mass": false
+    },
+    {
+      "singular": "Ampel",
+      "plural": "Ampeln",
+      "gender": "F",
+      "dative": "Ampel",
+      "mass": false
+    },
+    {
+      "singular": "Hydrant",
+      "plural": "Hydranten",
+      "gender": "M",
+      "dative": "Hydranten",
+      "mass": false
+    },
+    {
+      "singular": "Stoppschild",
+      "plural": "Stoppschilder",
+      "gender": "N",
+      "dative": "Stoppschild",
+      "mass": false
+    },
+    {
+      "singular": "Parkuhr",
+      "plural": "Parkuhren",
+      "gender": "F",
+      "dative": "Parkuhr",
+      "mass": false
+    },
+    {
+      "singular": "Bank",
+      "plural": "Bänke",
+      "gender": "F",
+      "dative": "Bank",
+      "mass": false
+    },
+    {
+      "singular": "Vogel",
+      "plural": "Vögel",
+      "gender": "M",
+      "dative": "Vogel",
+      "mass": false
+    },
+    {
+      "singular": "Katze",
+      "plural": "Katzen",
+      "gender": "F",
+      "dative": "Katze",
+      "mass": false
+    },
+    {
+      "singular": "Hund",
+      "plural": "Hunde",
+      "gender": "M",
+      "dative": "Hund",
+      "mass": false
+    },
+    {
+      "singular": "Pferd",
+      "plural": "Pferde",
+      "gender": "N",
+      "dative": "Pferd",
+      "mass": false
+    },
+    {
+      "singular": "Schaf",
+      "plural": "Schafe",
+      "gender": "N",
+      "dative": "Schaf",
+      "mass": false
+    },
+    {
+      "singular": "Kuh",
+      "plural": "Kühe",
+      "gender": "F",
+      "dative": "Kuh",
+      "mass": false
+    },
+    {
+      "singular": "Elefant",
+      "plural": "Elefanten",
+      "gender": "M",
+      "dative": "Elefanten",
+      "mass": false
+    },
+    {
+      "singular": "Bär",
+      "plural": "Bären",
+      "gender": "M",
+      "dative": "Bären",
+      "mass": false
+    },
+    {
+      "singular": "Zebra",
+      "plural": "Zebras",
+      "gender": "N",
+      "dative": "Zebra",
+      "mass": false
+    },
+    {
+      "singular": "Giraffe",
+      "plural": "Giraffen",
+      "gender": "F",
+      "dative": "Giraffe",
+      "mass": false
+    },
+    {
+      "singular": "Rucksack",
+      "plural": "Rucksäcke",
+      "gender": "M",
+      "dative": "Rucksack",
+      "mass": false
+    },
+    {
+      "singular": "Regenschirm",
+      "plural": "Regenschirme",
+      "gender": "M",
+      "dative": "Regenschirm",
+      "mass": false
+    },
+    {
+      "singular": "Handtasche",
+      "plural": "Handtaschen",
+      "gender": "F",
+      "dative": "Handtasche",
+      "mass": false
+    },
+    {
+      "singular": "Krawatte",
+      "plural": "Krawatten",
+      "gender": "F",
+      "dative": "Krawatte",
+      "mass": false
+    },
+    {
+      "singular": "Koffer",
+      "plural": "Koffer",
+      "gender": "M",
+      "dative": "Koffer",
+      "mass": false
+    },
+    {
+      "singular": "Frisbeescheibe",
+      "plural": "Frisbeescheiben",
+      "gender": "F",
+      "dative": "Frisbeescheibe",
+      "mass": false
+    },
+    {
+      "singular": "Ski",
+      "plural": "Ski",
+      "gender": "M",
+      "dative": "Ski",
+      "mass": false
+    },
+    {
+      "singular": "Snowboard",
+      "plural": "Snowboards",
+      "gender": "N",
+      "dative": "Snowboard",
+      "mass": false
+    },
+    {
+      "singular": "Ball",
+      "plural": "Bälle",
+      "gender": "M",
+      "dative": "Ball",
+      "mass": false
+    },
+    {
+      "singular": "Drachen",
+      "plural": "Drachen",
+      "gender": "M",
+      "dative": "Drachen",
+      "mass": false
+    },
+    {
+      "singular": "Baseballschläger",
+      "plural": "Baseballschläger",
+      "gender": "M",
+      "dative": "Baseballschläger",
+      "mass": false
+    },
+    {
+      "singular": "Baseballhandschuh",
+      "plural": "Baseballhandschuhe",
+      "gender": "M",
+      "dative": "Baseballhandschuh",
+      "mass": false
+    },
+    {
+      "singular": "Skateboard",
+      "plural": "Skateboards",
+      "gender": "N",
+      "dative": "Skateboard",
+      "mass": false
+    },
+    {
+      "singular": "Surfbrett",
+      "plural": "Surfbretter",
+      "gender": "N",
+      "dative": "Surfbrett",
+      "mass": false
+    },
+    {
+      "singular": "Tennisschläger",
+      "plural": "Tennisschläger",
+      "gender": "M",
+      "dative": "Tennisschläger",
+      "mass": false
+    },
+    {
+      "singular": "Flasche",
+      "plural": "Flaschen",
+      "gender": "F",
+      "dative": "Flasche",
+      "mass": false
+    },
+    {
+      "singular": "Weinglas",
+      "plural": "Weingläser",
+      "gender": "N",
+      "dative": "Weinglas",
+      "mass": false
+    },
+    {
+      "singular": "Tasse",
+      "plural": "Tassen",
+      "gender": "F",
+      "dative": "Tasse",
+      "mass": false
+    },
+    {
+      "singular": "Gabel",
+      "plural": "Gabeln",
+      "gender": "F",
+      "dative": "Gabel",
+      "mass": false
+    },
+    {
+      "singular": "Messer",
+      "plural": "Messer",
+      "gender": "N",
+      "dative": "Messer",
+      "mass": false
+    },
+    {
+      "singular": "Löffel",
+      "plural": "Löffel",
+      "gender": "M",
+      "dative": "Löffel",
+      "mass": false
+    },
+    {
+      "singular": "Schüssel",
+      "plural": "Schüsseln",
+      "gender": "F",
+      "dative": "Schüssel",
+      "mass": false
+    },
+    {
+      "singular": "Banane",
+      "plural": "Bananen",
+      "gender": "F",
+      "dative": "Banane",
+      "mass": false
+    },
+    {
+      "singular": "Apfel",
+      "plural": "Äpfel",
+      "gender": "M",
+      "dative": "Apfel",
+      "mass": false
+    },
+    {
+      "singular": "Sandwich",
+      "plural": "Sandwiches",
+      "gender": "N",
+      "dative": "Sandwich",
+      "mass": false
+    },
+    {
+      "singular": "Orange",
+      "plural": "Orangen",
+      "gender": "F",
+      "dative": "Orange",
+      "mass": false
+    },
+    {
+      "singular": "Brokkoli",
+      "plural": "Brokkoli",
+      "gender": "M",
+      "dative": "Brokkoli",
+      "mass": true
+    },
+    {
+      "singular": "Karotte",
+      "plural": "Karotten",
+      "gender": "F",
+      "dative": "Karotte",
+      "mass": false
+    },
+    {
+      "singular": "Hotdog",
+      "plural": "Hotdogs",
+      "gender": "M",
+      "dative": "Hotdog",
+      "mass": false
+    },
+    {
+      "singular": "Pizza",
+      "plural": "Pizzen",
+      "gender": "F",
+      "dative": "Pizza",
+      "mass": false
+    },
+    {
+      "singular": "Donut",
+      "plural": "Donuts",
+      "gender": "M",
+      "dative": "Donut",
+      "mass": false
+    },
+    {
+      "singular": "Kuchen",
+      "plural": "Kuchen",
+      "gender": "M",
+      "dative": "Kuchen",
+      "mass": false
+    },
+    {
+      "singular": "Stuhl",
+      "plural": "Stühle",
+      "gender": "M",
+      "dative": "Stuhl",
+      "mass": false
+    },
+    {
+      "singular": "Sofa",
+      "plural": "Sofas",
+      "gender": "N",
+      "dative": "Sofa",
+      "mass": false
+    },
+    {
+      "singular": "Topfpflanze",
+      "plural": "Topfpflanzen",
+      "gender": "F",
+      "dative": "Topfpflanze",
+      "mass": false
+    },
+    {
+      "singular": "Bett",
+      "plural": "Betten",
+      "gender": "N",
+      "dative": "Bett",
+      "mass": false
+    },
+    {
+      "singular": "Esstisch",
+      "plural": "Esstische",
+      "gender": "M",
+      "dative": "Esstisch",
+      "mass": false
+    },
+    {
+      "singular": "Toilette",
+      "plural": "Toiletten",
+      "gender": "F",
+      "dative": "Toilette",
+      "mass": false
+    },
+    {
+      "singular": "Fernseher",
+      "plural": "Fernseher",
+      "gender": "M",
+      "dative": "Fernseher",
+      "mass": false
+    },
+    {
+      "singular": "Laptop",
+      "plural": "Laptops",
+      "gender": "M",
+      "dative": "Laptop",
+      "mass": false
+    },
+    {
+      "singular": "Computermaus",
+      "plural": "Computermäuse",
+      "gender": "F",
+      "dative": "Computermaus",
+      "mass": false
+    },
+    {
+      "singular": "Fernbedienung",
+      "plural": "Fernbedienungen",
+      "gender": "F",
+      "dative": "Fernbedienung",
+      "mass": false
+    },
+    {
+      "singular": "Tastatur",
+      "plural": "Tastaturen",
+      "gender": "F",
+      "dative": "Tastatur",
+      "mass": false
+    },
+    {
+      "singular": "Mobiltelefon",
+      "plural": "Mobiltelefone",
+      "gender": "N",
+      "dative": "Mobiltelefon",
+      "mass": false
+    },
+    {
+      "singular": "Mikrowelle",
+      "plural": "Mikrowellen",
+      "gender": "F",
+      "dative": "Mikrowelle",
+      "mass": false
+    },
+    {
+      "singular": "Backofen",
+      "plural": "Backöfen",
+      "gender": "M",
+      "dative": "Backofen",
+      "mass": false
+    },
+    {
+      "singular": "Toaster",
+      "plural": "Toaster",
+      "gender": "M",
+      "dative": "Toaster",
+      "mass": false
+    },
+    {
+      "singular": "Waschbecken",
+      "plural": "Waschbecken",
+      "gender": "N",
+      "dative": "Waschbecken",
+      "mass": false
+    },
+    {
+      "singular": "Kühlschrank",
+      "plural": "Kühlschränke",
+      "gender": "M",
+      "dative": "Kühlschrank",
+      "mass": false
+    },
+    {
+      "singular": "Buch",
+      "plural": "Bücher",
+      "gender": "N",
+      "dative": "Buch",
+      "mass": false
+    },
+    {
+      "singular": "Uhr",
+      "plural": "Uhren",
+      "gender": "F",
+      "dative": "Uhr",
+      "mass": false
+    },
+    {
+      "singular": "Vase",
+      "plural": "Vasen",
+      "gender": "F",
+      "dative": "Vase",
+      "mass": false
+    },
+    {
+      "singular": "Schere",
+      "plural": "Scheren",
+      "gender": "F",
+      "dative": "Schere",
+      "mass": false
+    },
+    {
+      "singular": "Teddybär",
+      "plural": "Teddybären",
+      "gender": "M",
+      "dative": "Teddybären",
+      "mass": false
+    },
+    {
+      "singular": "Haartrockner",
+      "plural": "Haartrockner",
+      "gender": "M",
+      "dative": "Haartrockner",
+      "mass": false
+    },
+    {
+      "singular": "Zahnbürste",
+      "plural": "Zahnbürsten",
+      "gender": "F",
+      "dative": "Zahnbürste",
+      "mass": false
+    }
+  ]
+}

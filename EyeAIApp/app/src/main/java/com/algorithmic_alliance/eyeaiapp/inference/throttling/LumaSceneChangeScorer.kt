@@ -31,7 +31,7 @@ class LumaSceneChangeScorer(
 	val hasBaseline: Boolean
 		get() = baselineAvailable
 
-	fun score(currentLuma: ByteArray): Double {
+	fun score(currentLuma: ByteArray, updateBaseline: Boolean = true): Double {
 		require(currentLuma.size == count) {
 			"Expected $count luma samples, got ${currentLuma.size}"
 		}
@@ -53,7 +53,7 @@ class LumaSceneChangeScorer(
 			val delta = unsigned(currentLuma[index]) - unsigned(baseline[index])
 			effectiveDifferenceSum += (abs(delta - globalOffset) - noiseFloorLuma).coerceAtLeast(0.0)
 		}
-		currentLuma.copyInto(baseline)
+		if (updateBaseline) currentLuma.copyInto(baseline)
 		return (effectiveDifferenceSum / count / (LUMA_MAX - noiseFloorLuma)).coerceIn(0.0, 1.0)
 	}
 
