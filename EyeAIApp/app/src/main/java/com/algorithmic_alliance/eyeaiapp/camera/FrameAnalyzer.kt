@@ -312,9 +312,9 @@ class FrameAnalyzer(
 					onUpdate(
 						FrameAnalysisUpdate(
 							depthPreviewBitmap = colorMappedImage,
-							debugInputBitmap = frame.bitmap.takeIf {
-								runtime.settings.showDebugInputBitmap
-							},
+							debugInputBitmap = if (runtime.settings.showDebugInputBitmap) {
+								frame.bitmap.copy(Bitmap.Config.ARGB_8888, false)
+							} else null,
 							performanceText = performanceText,
 						)
 					)
@@ -443,11 +443,9 @@ class FrameAnalyzer(
 							available = segmentationContext.available,
 						),
 					)
-					val colorMappedImage = NativeLib.segmentationColormap(
-						output.prediction.asUniffiWrapper(),
-						output.inputDim,
-						output.classColors
-					)
+					val colorMappedImage = if (runtime.settings.showSegmentationOverlay) {
+						NativeLib.segmentationColormap(output.prediction.asUniffiWrapper(), output.inputDim, output.classColors)
+					} else null
 					onUpdate(
 						FrameAnalysisUpdate(
 							debugSegmentationBitmap = colorMappedImage,

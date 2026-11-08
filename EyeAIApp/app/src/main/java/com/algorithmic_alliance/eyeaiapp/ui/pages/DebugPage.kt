@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
+import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.algorithmic_alliance.eyeaiapp.R
@@ -330,6 +331,10 @@ fun DebugPage(
 											modifier = Modifier
 												.fillMaxSize()
 												.clickable(onClick = {
+													sharedPreferences.edit(commit = true) {
+														putBoolean(context.getString(R.string.segmentation_overlay_enabled), !uiState.segmentationOverlayEnabled)
+													}
+													onEvent(UIEvent.UpdateSettings)
 													onEvent(
 														UIEvent.OnUpdateSegmentationOverlayEnabled(
 															!uiState.segmentationOverlayEnabled

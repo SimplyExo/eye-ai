@@ -29,6 +29,7 @@ data class Settings(
 	var enableNpu: Boolean,
 	var rel2AbsMode: Rel2AbsMode,
 	var cameraHeightTenths: Int,
+	var showSegmentationOverlay: Boolean,
 ) : Cloneable {
 	companion object {
 		const val DEFAULT_FRAME_RATE_LIMIT: Int = 30
@@ -163,6 +164,8 @@ data class Settings(
 			)
 			val rel2AbsMode = Rel2AbsMode.forCameraHeightTenths(cameraHeightTenths)
 
+			val showSegmentationOverlay = sharedPreferences.getBoolean(context.getString(R.string.segmentation_overlay_enabled), true)
+
 			return Settings(
 				depthModel,
 				maxDepthFrameRate,
@@ -186,6 +189,7 @@ data class Settings(
 				enableNpu,
 				rel2AbsMode,
 				cameraHeightTenths,
+				showSegmentationOverlay
 			)
 		}
 	}
@@ -213,6 +217,7 @@ data class Settings(
 		enableNpu,
 		rel2AbsMode,
 		cameraHeightTenths,
+		showSegmentationOverlay
 	)
 
 	fun save(context: Context) {
@@ -254,6 +259,7 @@ data class Settings(
 					Rel2AbsMode.MAX_CAMERA_HEIGHT_TENTHS,
 				),
 			)
+			putBoolean(context.getString(R.string.segmentation_overlay_enabled), showSegmentationOverlay)
 
 			// Frame Rate Limits
 			maxDepthFrameRate?.let {

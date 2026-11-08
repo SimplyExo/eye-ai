@@ -2,9 +2,11 @@ package com.algorithmic_alliance.eyeaiapp.depth
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
 import android.util.Log
 import android.util.Size
-import androidx.core.graphics.scale
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 
@@ -40,6 +42,19 @@ class MetricDepthModel(
 	val enableNpu: Boolean
 ) {
 	val inputDim: Size
+
+	// Wiederverwendete Objekte: werden nur einmal im init angelegt, nicht pro Frame.
+	// Wichtig: Diese Felder müssen VOR dem init-Block stehen.
+	private val inputBuffer: NativeLib.NativeFloatBuffer
+	private val scaledBitmap: Bitmap
+	private val scaledCanvas: Canvas
+	private val outputRing: Array<DepthModelOutputs>
+	private var outputIndex = 0
+	private val srcRect = Rect()
+	private val dstRect = Rect()
+
+	// Entspricht dem bisherigen Bitmap.scale(w, h) (filter = true)
+	private val scalePaint = Paint(Paint.FILTER_BITMAP_FLAG)
 
 	init {
 		val relativeDepthModelData = context.assets.open(relativeDepthFileName).readBytes()
@@ -87,24 +102,50 @@ class MetricDepthModel(
 				"depth model has invalid output shape, expected [1, ${inputDim.height}, ${inputDim.width}, 1] but is [${outputShape.contentToString()}]"
 			)
 		}
+
+		val pixelCount = inputDim.width * inputDim.height
+		inputBuffer = NativeLib.NativeFloatBuffer(pixelCount * 3)
+		scaledBitmap = Bitmap.createBitmap(inputDim.width, inputDim.height, Bitmap.Config.ARGB_8888)
+		scaledCanvas = Canvas(scaledBitmap)
+		dstRect.set(0, 0, inputDim.width, inputDim.height)
+
+		// Die Outputs gehen an andere Threads (UI, Audio, Rel2Abs) und dürfen nicht sofort
+		// überschrieben werden. Deshalb ein Ring aus mehreren Paaren statt nur einem.
+		outputRing = Array(OUTPUT_RING_SIZE) {
+			DepthModelOutputs(
+				legacyMetricDepth = NativeLib.NativeFloatBuffer(pixelCount),
+				rawRelativeDepth = NativeLib.NativeFloatBuffer(pixelCount),
+			)
+		}
 	}
 
 	/**
 	 * @param input is not enforced to match [inputDim], but should be at least a bit larger
-	 * @return legacy metric depth plus raw MiDaS relative depth from the same backbone pass
+	 * @return legacy metric depth plus raw MiDaS relative depth from the same backbone pass.
+	 * Die zurückgegebenen Buffer werden nach [OUTPUT_RING_SIZE] weiteren Aufrufen überschrieben.
 	 */
+	@Synchronized
 	fun predictDepth(input: Bitmap): DepthModelOutputs {
-		val scaled = input.scale(inputDim.width, inputDim.height)
-		val input = NativeLib.bitmapToRgbHwc255FloatArray(scaled)
-		val legacyOutput = NativeLib.NativeFloatBuffer(inputDim.width * inputDim.height)
-		val rawOutput = NativeLib.NativeFloatBuffer(inputDim.width * inputDim.height)
+		// Frame ohne neue Bitmap auf Modellgröße skalieren
+		srcRect.set(0, 0, input.width, input.height)
+		scaledCanvas.drawBitmap(input, srcRect, dstRect, scalePaint)
+
+		// Direkt in den vorhandenen Eingabe-Buffer schreiben
+		NativeLib.bitmapToRgbHwc255FloatArray(scaledBitmap, inputBuffer.floatBuffer)
+
+		outputIndex = (outputIndex + 1) % outputRing.size
+		val outputs = outputRing[outputIndex]
 
 		uniffi.NativeLib.runMetricDepthModelInferenceWithRaw(
-			input.asUniffiWrapper(),
-			legacyOutput.asUniffiWrapper(),
-			rawOutput.asUniffiWrapper(),
+			inputBuffer.asUniffiWrapper(),
+			outputs.legacyMetricDepth.asUniffiWrapper(),
+			outputs.rawRelativeDepth.asUniffiWrapper(),
 		)
 
-		return DepthModelOutputs(legacyOutput, rawOutput)
+		return outputs
+	}
+
+	private companion object {
+		const val OUTPUT_RING_SIZE = 4
 	}
 }

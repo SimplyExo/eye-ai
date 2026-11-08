@@ -2,8 +2,8 @@ package com.algorithmic_alliance.eyeaiapp.object_detection
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
-import androidx.core.graphics.scale
+import android.graphics.Canvas
+import android.graphics.Rect
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import uniffi.NativeLib.UniffiDetectedObject
 
@@ -16,6 +16,16 @@ class YoloModel(var info: YoloModelInfo) {
 	private var numElements = 0
 
 	private var initialized = false
+
+	// Wiederverwendete Objekte: werden nur in create() neu angelegt, nicht pro Frame
+	private var inputBuffer: NativeLib.NativeFloatBuffer? = null
+	private var scaledBitmap: Bitmap? = null
+	private var scaledCanvas: Canvas? = null
+	private val srcRect = Rect()
+	private val dstRect = Rect()
+
+	@Volatile
+	private var currentEnableNpu: Boolean? = null
 
 	@Synchronized
 	fun create(
@@ -49,24 +59,34 @@ class YoloModel(var info: YoloModelInfo) {
 		numChannel = outputShape[1]
 		numElements = outputShape[2]
 
+		allocateBuffers()
+
 		currentEnableNpu = enableNpu
 		initialized = true
 	}
 
-	@Volatile
-	private var currentEnableNpu: Boolean? = null
+	private fun allocateBuffers() {
+		scaledBitmap?.recycle()
+		val bitmap = Bitmap.createBitmap(tensorWidth, tensorHeight, Bitmap.Config.ARGB_8888)
+		scaledBitmap = bitmap
+		scaledCanvas = Canvas(bitmap)
+		inputBuffer = NativeLib.NativeFloatBuffer(tensorWidth * tensorHeight * 3)
+		dstRect.set(0, 0, tensorWidth, tensorHeight)
+	}
 
 	@Synchronized
 	fun runInference(frame: Bitmap): Array<UniffiDetectedObject>? {
-		if (!initialized) {            /*Log.e(
-				"YOLO",
-				"Tried to run YOLO inference on uninitialized yolo model, call create first!"
-			)*/
-			return null
-		}
+		if (!initialized) return null
+		val canvas = scaledCanvas ?: return null
+		val scaled = scaledBitmap ?: return null
+		val input = inputBuffer ?: return null
 
-		val resizedBitmap = frame.scale(tensorWidth, tensorHeight, false)
-		val input = NativeLib.bitmapToRgbHwc255FloatArray(resizedBitmap)
+		// Frame ohne neue Bitmap auf Tensorgröße skalieren (ohne Filter, wie bisher scale(..., false))
+		srcRect.set(0, 0, frame.width, frame.height)
+		canvas.drawBitmap(frame, srcRect, dstRect, null)
+
+		// Direkt in den vorhandenen Buffer schreiben
+		NativeLib.bitmapToRgbHwc255FloatArray(scaled, input.floatBuffer)
 
 		return uniffi.NativeLib.runYoloOperation(input.asUniffiWrapper()).toTypedArray()
 	}

@@ -87,32 +87,54 @@ object NativeLib {
 	}
 
 	/** @param input values should be between 0.0f and 1.0f */
-	fun segmentationColormap(input: UniffiIntBufferWrapper, inputImageSize: Size, classColors: List<List<Int>>): Bitmap {
-		if (input.length != inputImageSize.width * inputImageSize.height) {
+	private var colormapBuffer: NativeIntBuffer? = null
+	private var colormapPixels: IntArray? = null
+	private val colormapBitmaps = arrayOfNulls<Bitmap>(3)
+	private var colormapBitmapIndex = 0
+
+	@Synchronized
+	fun segmentationColormap(
+		input: UniffiIntBufferWrapper,
+		inputImageSize: Size,
+		classColors: List<List<Int>>
+	): Bitmap {
+		val width = inputImageSize.width
+		val height = inputImageSize.height
+		val pixelCount = width * height
+
+		if (input.length != pixelCount) {
 			Log.e(
 				EyeAIApp.APP_LOG_TAG,
 				"input depth array length ${input.length} does not match output bitmap size $inputImageSize"
 			)
-			return createBitmap(inputImageSize.width, inputImageSize.height)
+			return createBitmap(width, height)
 		}
 
-		val colormappedPixels = NativeIntBuffer(input.length)
+		// Arbeitsobjekte nur bei der ersten Nutzung oder bei geänderter Größe anlegen
+		var buffer = colormapBuffer
+		var pixels = colormapPixels
+		if (buffer == null || pixels == null || pixels.size != pixelCount) {
+			buffer = NativeIntBuffer(pixelCount)
+			pixels = IntArray(pixelCount)
+			colormapBuffer = buffer
+			colormapPixels = pixels
+			colormapBitmaps.fill(null)
+		}
 
-		uniffi.NativeLib.segmentationColormap(
-			input, colormappedPixels.asUniffiWrapper(), classColors
-		)
-		//metricDepthColormap(input, colormappedPixels)
+		uniffi.NativeLib.segmentationColormap(input, buffer.asUniffiWrapper(), classColors)
 
-		// TODO: improve Bitmap/Buffer/Array conversions...
-		val colormappedPixelsArray = IntArray(colormappedPixels.intBuffer.remaining())
-		colormappedPixels.intBuffer.get(colormappedPixelsArray)
+		buffer.intBuffer.clear()
+		buffer.intBuffer.get(pixels)
 
-		return Bitmap.createBitmap(
-			colormappedPixelsArray,
-			inputImageSize.width,
-			inputImageSize.height,
-			Bitmap.Config.ARGB_8888
-		)
+		// Ring aus 3 Bitmaps, damit die UI nie die Bitmap sieht, die gerade überschrieben wird
+		colormapBitmapIndex = (colormapBitmapIndex + 1) % colormapBitmaps.size
+		var bitmap = colormapBitmaps[colormapBitmapIndex]
+		if (bitmap == null) {
+			bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
+			colormapBitmaps[colormapBitmapIndex] = bitmap
+		}
+		bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
+		return bitmap
 	}
 
 	fun bitmapToRgbHwc255FloatArray(
