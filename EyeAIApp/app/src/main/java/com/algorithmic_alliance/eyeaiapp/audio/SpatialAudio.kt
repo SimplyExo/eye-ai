@@ -25,6 +25,7 @@ object SpatialAudio {
 	private lateinit var eyeAIApp: EyeAIApp
 	private var spatialAudioJob: Job? = null
 	private var configuredLanguage: String? = null
+	private var configuredMode: String? = null
 	private val lock = Any()
 
 	private const val LOST_AFTER_MISSED_FRAMES = 15
@@ -78,14 +79,19 @@ object SpatialAudio {
 		val settings = app.settings
 		synchronized(lock) {
 			eyeAIApp = app
-			if (configuredLanguage == null || configuredLanguage != settings.objectAudioPlaybackLanguage) {
+			if (configuredLanguage == null || configuredLanguage != settings.objectAudioPlaybackLanguage || configuredMode != settings.objectAudioPlaybackMode) {
 				loadAudioDataFiles(app, settings.objectAudioPlaybackLanguage, settings.objectAudioPlaybackMode)
 				configuredLanguage = settings.objectAudioPlaybackLanguage
+                configuredMode = settings.objectAudioPlaybackMode
+                objectsInSight.clear()
+                missedFrames.clear()
+                // Native audio retains its content Arc until the engine is recreated.
+                if (spatialAudioJob?.isActive == true) uniffi.NativeLib.createSpatialAudio()
 			}
 		}
 
-		uniffi.NativeLib.setDepthAudioPaused(!settings.depthAudioPlayback)
-		uniffi.NativeLib.setObjectAudioPaused(!settings.objectAudioPlayback)
+		uniffi.NativeLib.setDepthAudioPaused(!settings.effectiveDepthAudioPlayback)
+		uniffi.NativeLib.setObjectAudioPaused(!settings.effectiveObjectAudioPlayback)
 		uniffi.NativeLib.setAudioSettings(
 			settings.depthAudioFrequency.toFloat(),
 			settings.depthAudioClickIncidence,
@@ -101,6 +107,7 @@ object SpatialAudio {
 
 	fun stop() {
 		configuredLanguage = null
+        configuredMode = null
 		synchronized(lock) {
 			spatialAudioJob?.cancel()
 			spatialAudioJob = null

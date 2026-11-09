@@ -211,7 +211,8 @@ object UIDataSource {
 				"description" to R.string.setting_object_playback_mode_description,
 				"settingsType" to "select",
 				"settingsOptions" to listOf(
-					R.string.object_playback_is_standard, R.string.object_playback_is_object_watch
+					R.string.object_playback_is_standard, R.string.object_playback_is_object_watch,
+                    R.string.object_playback_is_r4
 				),
 				"string" to R.string.setting_object_playback_mode,
 				"default" to R.string.object_playback_is_standard

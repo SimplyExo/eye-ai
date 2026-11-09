@@ -3,6 +3,7 @@ package com.algorithmic_alliance.eyeaiapp
 import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import com.algorithmic_alliance.eyeaiapp.audio.AudioOutputMode
 import com.algorithmic_alliance.eyeaiapp.nlp.NLPModelInfo
 import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsMode
 import com.algorithmic_alliance.eyeaiapp.scenenarrator.SceneDescriptionDetail
@@ -32,6 +33,15 @@ data class Settings(
 	var cameraHeightTenths: Int,
 	var sceneDescriptionDetail: SceneDescriptionDetail = SceneDescriptionDetail.STANDARD,
 ) : Cloneable {
+    val audioOutputMode: AudioOutputMode
+        get() = AudioOutputMode.fromStoredValue(objectAudioPlaybackMode)
+    val isR4Mode: Boolean
+        get() = audioOutputMode == AudioOutputMode.R4
+    val effectiveDepthAudioPlayback: Boolean
+        get() = audioOutputMode.spatialAudioEnabled(depthAudioPlayback)
+    val effectiveObjectAudioPlayback: Boolean
+        get() = audioOutputMode.spatialAudioEnabled(objectAudioPlayback)
+
 	companion object {
 		const val DEFAULT_FRAME_RATE_LIMIT: Int = 30
 

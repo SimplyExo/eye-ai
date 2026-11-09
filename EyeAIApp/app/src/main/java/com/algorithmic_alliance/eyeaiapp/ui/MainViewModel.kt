@@ -37,6 +37,7 @@ import com.algorithmic_alliance.eyeaiapp.data.UIDataSource.UI_LOG_TAG as LOG_TAG
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 	private val app = application as EyeAIApp
 	private val runtime = app.runtime
+	fun isR4Mode(): Boolean = app.settings.isR4Mode
 	val localSceneDescriptionState get() = runtime.localSceneDescriptions.state
 	fun setLocalSceneDescriptionsEnabled(enabled: Boolean) = runtime.setLocalSceneDescriptionsEnabled(enabled)
 	fun setLocalSceneR4ExperimentEnabled(enabled: Boolean) = runtime.setLocalSceneR4ExperimentEnabled(enabled)

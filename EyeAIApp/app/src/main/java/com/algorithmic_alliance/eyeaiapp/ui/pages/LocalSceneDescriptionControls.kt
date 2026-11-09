@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun LocalSceneDescriptionControls(runtime: EyeAIRuntime) {
     SceneDescriptionControls(runtime.localSceneDescriptions.state,runtime::setLocalSceneDescriptionsEnabled,
-        runtime::speakLocalSceneDescription)
+        runtime::speakLocalSceneDescription, runtime.settings.isR4Mode)
 }
 
 // Detailed diagnostics stay in a modal.
@@ -57,7 +57,7 @@ fun R4Diagnostics(runtime: EyeAIRuntime) {
 @Composable
 fun LocalSceneDescriptionControls(viewModel: MainViewModel) {
     SceneDescriptionControls(viewModel.localSceneDescriptionState,viewModel::setLocalSceneDescriptionsEnabled,
-        viewModel::speakLocalSceneDescription)
+        viewModel::speakLocalSceneDescription, viewModel.isR4Mode())
 }
 
 @Composable
@@ -65,8 +65,15 @@ private fun SceneDescriptionControls(
     source: StateFlow<LocalSceneDescriptions.State>,
     setEnabled: (Boolean) -> Unit,
     speak: () -> Unit,
+    isR4Mode: Boolean,
 ) {
     val state by source.collectAsStateWithLifecycle()
+    if (!isR4Mode) {
+        Text("Szenenbeschreibung (R4) in den Einstellungen auswählen.",
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.bodySmall)
+        return
+    }
     var open by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().padding(horizontal=12.dp,vertical=4.dp)) {
         Row(modifier=Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {

@@ -195,11 +195,11 @@ class EyeAIRuntime internal constructor(
 		}
 	}
 	fun setLocalSceneDescriptionsEnabled(enabled: Boolean) {
-		localSceneDescriptions.setEnabled(enabled)
-		if (!enabled && orientationSpeechId != null) {
-			textToSpeechInstance.stopIfOwnerPrefix("orientation:")
+		localSceneDescriptions.setEnabled(enabled && settings.isR4Mode && isActive)
+		if (!localSceneDescriptions.state.value.enabled) {
+			textToSpeechInstanceValue?.stopIfOwnerPrefix("orientation:")
 			orientationSpeechId = null
-			_state.update { it.copy(ttsSpeaking = false) }
+			_state.update { it.copy(ttsSpeaking = textToSpeechInstanceValue?.isSpeaking() == true) }
 		}
 	}
 
@@ -238,12 +238,13 @@ class EyeAIRuntime internal constructor(
 
 	fun speakLocalSceneDescription() {
 		val text = localSceneDescriptions.state.value.text
-		if (!isActive || text.isBlank()) return
+		if (!isActive || !settings.isR4Mode || text.isBlank()) return
 		if (voskUserStart.get()) stopListening("LOCAL_SCENE_DESCRIPTION")
 		speakSceneText(text)
 	}
 
 	private fun speakSceneText(text: String, onComplete: (() -> Unit)? = null) {
+        if (!isActive || !settings.isR4Mode) return
 		pauseSpatialAudio()
 		_state.update { it.copy(speechResponseText = text, ttsSpeaking = true) }
 		val id=localSceneDescriptions.state.value.announcementId
@@ -319,6 +320,13 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 	/** Called by the Application after settings have been reloaded. */
 	fun onSettingsChanged(oldSettings: Settings) {
 		val newSettings = settings
+        if (oldSettings.audioOutputMode != newSettings.audioOutputMode) {
+            setLocalSceneDescriptionsEnabled(false)
+            if (isActive) {
+                localSceneDescriptions.setExperimentalR4Enabled(true)
+                setLocalSceneDescriptionsEnabled(newSettings.isR4Mode)
+            }
+        }
         if(oldSettings.sceneDescriptionDetail != newSettings.sceneDescriptionDetail) {
             localSceneDescriptions.setDetail(newSettings.sceneDescriptionDetail)
             if(orientationSpeechId != null) {
@@ -332,11 +340,11 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 			// detections paired after the user selected the other one.
 			app.aiData.rel2AbsFrameCache.clear()
 		}
-		if (oldSettings.depthAudioPlayback != newSettings.depthAudioPlayback) {
-			uniffi.NativeLib.setDepthAudioPaused(!newSettings.depthAudioPlayback)
+		if (oldSettings.effectiveDepthAudioPlayback != newSettings.effectiveDepthAudioPlayback) {
+			uniffi.NativeLib.setDepthAudioPaused(!newSettings.effectiveDepthAudioPlayback)
 		}
-		if (oldSettings.objectAudioPlayback != newSettings.objectAudioPlayback) {
-			uniffi.NativeLib.setObjectAudioPaused(!newSettings.objectAudioPlayback)
+		if (oldSettings.effectiveObjectAudioPlayback != newSettings.effectiveObjectAudioPlayback) {
+			uniffi.NativeLib.setObjectAudioPaused(!newSettings.effectiveObjectAudioPlayback)
 		}
 		if (oldSettings.depthAudioFrequency != newSettings.depthAudioFrequency || oldSettings.depthAudioClickIncidence != newSettings.depthAudioClickIncidence) {
 			uniffi.NativeLib.setAudioSettings(
@@ -366,9 +374,11 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 				}
 				if (newSettings.enableOCR && !oldSettings.enableOCR) ocrModel.create()
 				if (!newSettings.enableOCR && oldSettings.enableOCR) ocrModel.close()
-				if (isActive && oldSettings.objectAudioPlaybackLanguage != newSettings.objectAudioPlaybackLanguage) {
+				if (isActive && (oldSettings.objectAudioPlaybackLanguage != newSettings.objectAudioPlaybackLanguage ||
+                    oldSettings.audioOutputMode != newSettings.audioOutputMode)) {
 					SpatialAudio.setup(context)
-				}
+                    if (voskUserStart.get() || textToSpeechInstance.isSpeaking()) pauseSpatialAudio()
+                }
 				if (!newSettings.enableSpeechRecognition) closeSpeechService()
 				if (isActive && oldSettings.enableSpeechRecognition != newSettings.enableSpeechRecognition) {
 					// Drop the microphone use before removing its FGS type;
@@ -412,11 +422,10 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 		try {
 			initializeModels()
 			textToSpeechInstance
-			// Scene orientation is automatic for the active camera session. R4 is
-			// part of this path by default, the UI switch remains an explicit stop.
+			// Only the R4 output mode enables automatic scene orientation.
 			localSceneDescriptions.setDetail(settings.sceneDescriptionDetail)
 			localSceneDescriptions.setExperimentalR4Enabled(true)
-			localSceneDescriptions.setEnabled(true)
+			setLocalSceneDescriptionsEnabled(settings.isR4Mode)
 			frameAnalyzer.start()
 			SpatialAudio.setup(context)
 			SpatialAudio.start()
@@ -943,11 +952,11 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 
 	fun restoreSpatialAudioFromSettings(trigger: String) {
 		val current = settings
-		uniffi.NativeLib.setObjectAudioPaused(!current.objectAudioPlayback)
-		uniffi.NativeLib.setDepthAudioPaused(!current.depthAudioPlayback)
+		uniffi.NativeLib.setObjectAudioPaused(!current.effectiveObjectAudioPlayback)
+		uniffi.NativeLib.setDepthAudioPaused(!current.effectiveDepthAudioPlayback)
 		Log.i(
 			EyeAIApp.APP_LOG_TAG,
-			"[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=RESTORED " + "objectAudioEnabled=${current.objectAudioPlayback} " + "depthAudioEnabled=${current.depthAudioPlayback}",
+			"[DecisionTrace][SpatialAudio][RESUME] trigger=$trigger outcome=RESTORED " + "objectAudioEnabled=${current.effectiveObjectAudioPlayback} " + "depthAudioEnabled=${current.effectiveDepthAudioPlayback}",
 		)
 	}
 
