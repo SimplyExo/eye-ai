@@ -1,0 +1,21 @@
+rtsp: true
+webrtc: true
+webrtcServerKey: /etc/mediamtx/auto.key
+webrtcServerCert: /etc/mediamtx/auto.crt
+
+paths:
+  cam:
+    source: rpiCamera
+    rpiCameraWidth: 640
+    rpiCameraHeight: 480
+    rpiCameraFPS: 25
+    rpiCameraDenoise: cdn_off
+    rpiCameraIDRPeriod: 30
+    rpiCameraBitrate: 1000000
+    rpiCameraExposure: normal
+    rpiCameraBrightness: 0
+    rpiCameraSharpness: 0
+    rpiCameraEV: 0
+    rpiCameraGain: 10
+
+  all_others:

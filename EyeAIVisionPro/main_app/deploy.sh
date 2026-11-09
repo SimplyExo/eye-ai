@@ -25,6 +25,6 @@ ssh "${RASPI_USER}@${RASPI_HOST}" "chmod +x ${TARGET_DIR}/${EXECUTABLE_NAME}"
 
 echo "--> Executing application on Raspberry Pi..."
 # Using -t allocates a pseudo-terminal for interactive output/logging
-ssh -t "${RASPI_USER}@${RASPI_HOST}" "cd ${TARGET_DIR} && ./${EXECUTABLE_NAME}"
+ssh -t "${RASPI_USER}@${RASPI_HOST}" "cd ${TARGET_DIR} && QT_AUDIO_BACKEND=alsa ./${EXECUTABLE_NAME}"
 
 echo "=== Execution completed! ==="

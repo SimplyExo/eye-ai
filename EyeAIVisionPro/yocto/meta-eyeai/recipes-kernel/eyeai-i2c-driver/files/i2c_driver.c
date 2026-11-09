@@ -7,6 +7,7 @@
 #include <linux/cdev.h>
 #include <linux/device.h>
 #include <linux/uaccess.h>
+#include <linux/delay.h>
 
 #define SET_LED_GREEN            0x01
 #define SET_LED_RED              0x02
@@ -17,6 +18,7 @@
 
 #define DEVICE_NAME_LED        "led"
 #define DEVICE_NAME_TRANSISTOR "transistor"
+#define DEVICE_NAME_BATTERY    "battery"
 
 
 // ============================================================
@@ -231,6 +233,52 @@ static ssize_t on_read_transistor(
     return 1;
 }
 
+static ssize_t on_read_battery(
+    struct file *file,
+    char __user *user,
+    size_t size,
+    loff_t *off)
+{
+    struct i2c_instance *data;
+    int ret;
+    char buffer[16];
+    int len;
+
+    data = file->private_data;
+
+    if (!data)
+        return -ENODEV;
+
+    if (*off > 0)
+        return 0;
+
+    ret = i2c_smbus_write_byte(data->client, MEASURE_BATTERY_VOLTAGE);
+    if (ret < 0) {
+        dev_err(&data->client->dev, "Failed to send battery command: %d\n", ret);
+        return ret;
+    }
+
+    usleep_range(2000, 3000);
+
+    ret = i2c_smbus_read_byte(data->client);
+    if (ret < 0) {
+        dev_err(&data->client->dev, "Failed to read battery voltage: %d\n", ret);
+        return ret;
+    }
+
+    // ADC-Wert als String in den User-Space schreiben
+    len = snprintf(buffer, sizeof(buffer), "%d", ret);
+
+    if (size < len)
+        return -EINVAL;
+
+    if (copy_to_user(user, buffer, len)) {
+        return -EFAULT;
+    }
+
+    *off = len;
+    return len;
+}
 
 static ssize_t on_write_transistor(
     struct file *file,
@@ -376,6 +424,12 @@ static const struct file_operations fops_transistor = {
     .open = on_open,
     .read = on_read_transistor,
     .write = on_write_transistor,
+};
+
+static const struct file_operations fops_battery = {
+    .owner = THIS_MODULE,
+    .open = on_open,
+    .read = on_read_battery,
 };
 
 
@@ -709,6 +763,25 @@ static int led_driver_probe(
         return -ENOMEM;
     }
 
+    dev_head = node;
+
+    // --------------------------------------------------------
+    // Create battery device
+    // --------------------------------------------------------
+    node = add_device(
+        dev_head,
+        DEVICE_NAME_BATTERY,
+        data,
+        &fops_battery,
+        false
+    );
+
+    if (!node) {
+        dev_err(&client->dev, "Failed to create battery device\n");
+        clear_list(dev_head);
+        dev_head = NULL;
+        return -ENOMEM;
+    }
     dev_head = node;
 
 

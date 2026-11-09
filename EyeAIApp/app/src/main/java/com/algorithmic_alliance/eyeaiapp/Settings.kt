@@ -23,6 +23,7 @@ data class Settings(
 	val mediaSource: String?,
 	var depthAudioPlayback: Boolean,
 	var objectAudioPlayback: Boolean,
+	var objectAudioPlaybackMode: String?,
 	var depthAudioFrequency: Int,
 	var depthAudioClickIncidence: Int,
 	var objectAudioPlaybackLanguage: String?,
@@ -141,6 +142,11 @@ data class Settings(
 				context.getString(R.string.object_playback_setting), true
 			)
 
+			val objectAudioPlaybackMode = sharedPreferences.getString(
+				context.getString(R.string.setting_object_playback_mode),
+				context.getString(R.string.object_playback_is_standard)
+			)
+
 			val depthAudioClickIncidence =
 				sharedPreferences.getInt(context.getString(R.string.audio_playback_rate_setting), 2)
 
@@ -182,6 +188,7 @@ data class Settings(
 				mediaSource,
 				depthAudioPlayback,
 				objectAudioPlayback,
+				objectAudioPlaybackMode,
 				depthAudioFrequency,
 				depthAudioClickIncidence,
 				objectAudioPlaybackLanguage,
@@ -209,6 +216,7 @@ data class Settings(
 		mediaSource,
 		depthAudioPlayback,
 		objectAudioPlayback,
+		objectAudioPlaybackMode,
 		depthAudioFrequency,
 		depthAudioClickIncidence,
 		objectAudioPlaybackLanguage,
@@ -248,6 +256,7 @@ data class Settings(
 			putBoolean(context.getString(R.string.enable_ocr_setting), enableOCR)
 			putBoolean(context.getString(R.string.depth_playback_setting), depthAudioPlayback)
 			putBoolean(context.getString(R.string.object_playback_setting), objectAudioPlayback)
+			putString(context.getString(R.string.setting_object_playback_mode), objectAudioPlaybackMode)
 			putBoolean(context.getString(R.string.enable_npu_delegate_setting), enableNpu)
 			putString(context.getString(R.string.rel2abs_mode_setting), rel2AbsMode.preferenceValue)
 			putInt(

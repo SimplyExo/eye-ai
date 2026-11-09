@@ -1,0 +1,48 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          mediamtx
+# Required-Start:    $network $local_fs
+# Required-Stop:     $network $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: MediaMTX Streaming Server
+### END INIT INFO
+
+NAME="mediamtx"
+DAEMON="/usr/bin/mediamtx"
+DAEMON_ARGS="/etc/mediamtx/mediamtx.yml"
+PIDFILE="/var/run/${NAME}.pid"
+LOGFILE="/var/log/${NAME}.log"
+
+case "$1" in
+    start)
+        echo "Starting $NAME..."
+        $DAEMON $DAEMON_ARGS > "$LOGFILE" 2>&1 &
+        echo $! > "$PIDFILE"
+        ;;
+    stop)
+        echo "Stopping $NAME..."
+        if [ -f "$PIDFILE" ]; then
+            kill $(cat "$PIDFILE") 2>/dev/null
+            rm -f "$PIDFILE"
+        fi
+        ;;
+    restart)
+        $0 stop
+        sleep 1
+        $0 start
+        ;;
+    status)
+        if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE") 2>/dev/null; then
+            cat "$LOGFILE"
+            echo "$NAME is running."
+        else
+            echo "$NAME is stopped."
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+exit 0

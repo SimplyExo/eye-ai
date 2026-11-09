@@ -14,6 +14,12 @@
 #define RESTART_SERVICE_TEMPLATE_RUNIT "sv restart %1 2>&1"
 #define LOGS_SERVICE_TEMPLATE_RUNIT "sv status %1 2>&1"
 
+//init
+#define START_SERVICE_TEMPLATE_INIT "/etc/init.d/%1 start 2>&1"
+#define STOP_SERVICE_TEMPLATE_INIT "/etc/init.d/%1 stop 2>&1"
+#define RESTART_SERVICE_TEMPLATE_INIT "/etc/init.d/%1 restart 2>&1"
+#define LOGS_SERVICE_TEMPLATE_INIT "/etc/init.d/%1 status 2>&1"
+
 struct cmd_output {
     int exit_code;
     QString text;
@@ -22,6 +28,7 @@ struct cmd_output {
 enum INIT_SYSTEM {
     SYSTEMD,
     RUNIT,
+    INIT,
     UNKNOWN
 };
 

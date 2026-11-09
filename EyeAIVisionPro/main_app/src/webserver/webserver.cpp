@@ -1,3 +1,4 @@
+#include <hardware/battery_voltage.hpp>
 #include <qhttpserverresponse.h>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -11,8 +12,9 @@
 
 #include <logger/logger.hpp>
 
-webserver::webserver(init_helper* mediamtx) {
+webserver::webserver(init_helper* mediamtx, battery_voltage* battery) {
     this->mediamtx = mediamtx;
+    this->battery = battery;
     
     register_url();
 }
@@ -23,6 +25,22 @@ void webserver::register_url() {
 
         QJsonObject json;
         json["mac_addr"] = bluetooth::get_bt_mac();
+        
+        return QHttpServerResponse(
+            "application/json",
+            QJsonDocument(json).toJson(QJsonDocument::Compact)
+        );
+    });
+
+    server.route("/api/battery", [this](const QHttpServerRequest &request) {
+        emit requestReceived(request);
+
+        QJsonObject json;
+
+        double voltage = battery->get_battery_voltage();
+
+        json["percentage"] = battery->get_battery_percentage(voltage);
+        json["voltage"] = voltage;
         
         return QHttpServerResponse(
             "application/json",

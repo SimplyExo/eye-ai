@@ -1,0 +1,116 @@
+header:
+  version: 14
+
+machine: raspberrypi0-wifi
+distro: eyeaivision
+target: core-image-minimal
+
+repos:
+  bitbake:
+    url: https://git.openembedded.org/bitbake
+    branch: master
+    path: sources/bitbake
+    layers:
+      .: disabled
+
+  oe-core:
+    url: https://git.openembedded.org/openembedded-core
+    branch: blacksail
+    path: sources/openembedded-core
+    layers:
+      meta:
+
+  meta-openembedded:
+    url: https://github.com/openembedded/meta-openembedded.git
+    branch: master
+    path: sources/meta-openembedded
+    layers:
+      meta-python:
+      meta-oe:
+      meta-networking:
+      meta-multimedia:
+
+  meta-raspberrypi:
+    url: https://github.com/agherzan/meta-raspberrypi.git
+    branch: master
+    path: sources/meta-raspberrypi
+    layers:
+      .:
+
+  meta-qt6:
+    url: "https://code.qt.io/yocto/meta-qt6.git"
+    branch: "dev"
+
+  meta-eyeai:
+    path: .
+
+local_conf_header:
+  raspberrypi: |
+    ENABLE_UART = "1"
+    ENABLE_I2C = "1"
+
+    # Cam support
+    VIDEO_CAMERA = "1"
+    RASPBERRYPI_CAMERA_V3 = "1"
+    GPU_MEM = "128"
+
+    # Audio support
+    MACHINE_FEATURES += "wm8960"
+
+    MODULE_COMPRESS = "0"
+    
+    # Notwendige Pakete & Treiber für den Hotspot
+    MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
+        kernel-modules \
+        linux-firmware-bcm43430 \
+        wpa-supplicant \
+        iw \
+        wireless-regdb \
+        hostapd \
+        dnsmasq \
+        iptables \
+        initscripts \
+    "
+
+  image-packages: |
+    IMAGE_INSTALL:append = " \
+        wifi-hotspot \
+        run-postinsts \
+        kernel-module-imx708 \
+        kernel-module-bcm2835-unicam \
+        kmod \
+        userland \
+        libcamera \
+        v4l-utils \
+        eyeai-i2c-driver \
+        eyeai-button-driver \
+        transistor-cutoff \
+        shutdown-button \
+        alsa-utils \
+        alsa-lib \
+        sound-init \
+        startup-sound \
+        mediamtx \
+        main-app \
+    "
+
+    IMAGE_BOOT_FILES:append = " \
+        overlays/i2c_overlay.dtbo;overlays/i2c_overlay.dtbo \
+        overlays/button_driver_overlay.dtbo;overlays/button_driver_overlay.dtbo \
+    "
+
+    RPI_EXTRA_CONFIG:append = "\ndtoverlay=i2c_overlay\n"
+    RPI_EXTRA_CONFIG:append = "\ndtoverlay=button_driver_overlay\n"
+
+  overlay-dep: |
+    do_image_wic[depends] += "eyeai-overlay:do_deploy"
+
+  kernel-autoload: |
+    KERNEL_MODULE_AUTOLOAD += "brcmfmac i2c-dev i2c-bcm2835 imx708 eyeai-i2c eyeai-button"
+
+  dev-manager: |
+    VIRTUAL-RUNTIME_dev_manager = "eudev"
+
+  root-password: |
+    INHERIT += "extrausers"
+    EXTRA_USERS_PARAMS = "usermod -p '\$6\$Kw3NzmOSEdbCmNp1\$c9thLAp6d0ck4CwY13T.GB6gB86SyYjQwcgqTX.eEv3X5UMEXPgeX0nnAHpTPc4aeUzxvQEM1TKNtD0fjHd.W/' root;"

@@ -9,16 +9,26 @@ init_helper::init_helper(QString service_name) {
     init_used = get_init_sys();
 
     if (init_used == UNKNOWN) 
-        throw std::runtime_error("Your init system is not supported! Supported init systems are systemd and runit");
+        throw std::runtime_error("Your init system is not supported! Supported init systems are systemd, runit and init");
 }
 
 cmd_output init_helper::start_service() {
     QString command_to_run;
 
-    if (init_used == SYSTEMD)
-        command_to_run = QString(START_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
-    else if (init_used == RUNIT)
-        command_to_run = QString(START_SERVICE_TEMPLATE_RUNIT).arg(service_name);
+    switch (init_used) {
+        case SYSTEMD:
+            command_to_run = QString(START_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
+            break;
+        case RUNIT:
+            command_to_run = QString(START_SERVICE_TEMPLATE_RUNIT).arg(service_name);
+            break;
+        case INIT:
+            command_to_run = QString(START_SERVICE_TEMPLATE_INIT).arg(service_name);
+            break;
+        default:
+            // Will never happen
+            break;
+    }
     
     return exec(command_to_run.toStdString().c_str());
 }
@@ -26,10 +36,20 @@ cmd_output init_helper::start_service() {
 cmd_output init_helper::stop_service() {
     QString command_to_run;
 
-    if (init_used == SYSTEMD)
-        command_to_run = QString(STOP_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
-    else if (init_used == RUNIT)
-        command_to_run = QString(STOP_SERVICE_TEMPLATE_RUNIT).arg(service_name);
+    switch (init_used) {
+        case SYSTEMD:
+            command_to_run = QString(STOP_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
+            break;
+        case RUNIT:
+            command_to_run = QString(STOP_SERVICE_TEMPLATE_RUNIT).arg(service_name);
+            break;
+        case INIT:
+            command_to_run = QString(STOP_SERVICE_TEMPLATE_INIT).arg(service_name);
+            break;
+        default:
+            // Will never happen
+            break;
+    }        
 
     return exec(command_to_run.toStdString().c_str());
 }
@@ -37,10 +57,20 @@ cmd_output init_helper::stop_service() {
 cmd_output init_helper::restart_service() {
     QString command_to_run;
 
-    if (init_used == SYSTEMD)
-        command_to_run = QString(RESTART_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
-    else if (init_used == RUNIT)
-        command_to_run = QString(RESTART_SERVICE_TEMPLATE_RUNIT).arg(service_name);
+    switch (init_used) {
+        case SYSTEMD:
+            command_to_run = QString(RESTART_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
+            break;
+        case RUNIT:
+            command_to_run = QString(RESTART_SERVICE_TEMPLATE_RUNIT).arg(service_name);
+            break;
+        case INIT:
+            command_to_run = QString(RESTART_SERVICE_TEMPLATE_INIT).arg(service_name);
+            break;
+        default:
+            // Will never happen
+            break;
+    }
 
     return exec(command_to_run.toStdString().c_str());
 }
@@ -48,10 +78,20 @@ cmd_output init_helper::restart_service() {
 cmd_output init_helper::get_logs() {
     QString command_to_run;
 
-    if (init_used == SYSTEMD)
-        command_to_run = QString(LOGS_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
-    else if (init_used == RUNIT)
-        command_to_run = QString(LOGS_SERVICE_TEMPLATE_RUNIT).arg(service_name);
+    switch (init_used) {
+        case SYSTEMD:
+            command_to_run = QString(LOGS_SERVICE_TEMPLATE_SYSTEMD).arg(service_name);
+            break;
+        case RUNIT:
+            command_to_run = QString(LOGS_SERVICE_TEMPLATE_RUNIT).arg(service_name);
+            break;
+        case INIT:
+            command_to_run = QString(LOGS_SERVICE_TEMPLATE_INIT).arg(service_name);
+            break;
+        default:
+            // Will never happen
+            break;
+    }
 
     return exec(command_to_run.toStdString().c_str());
 }
@@ -66,6 +106,8 @@ INIT_SYSTEM init_helper::get_init_sys() {
             return SYSTEMD;
         else if (text == "runit") 
             return RUNIT;
+        else if (text == "init")
+            return INIT;
     }
 
     return UNKNOWN;

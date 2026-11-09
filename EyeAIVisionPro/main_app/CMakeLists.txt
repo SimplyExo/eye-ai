@@ -35,10 +35,25 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Bluetooth
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
+IF (DEFINED ENV{BUILD_RPIOS})  # for builds using chroot
+    MESSAGE(STATUS "Setting AutoMOC executable to /usr/lib/qt6/libexec/moc...")
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        AUTOMOC ON
+        AUTOUIC ON
+        AUTORCC ON
+        POSITION_INDEPENDENT_CODE OFF
+        AUTOMOC_EXECUTABLE "/usr/lib/qt6/libexec/moc"
+    )
+ELSE()  # when building with yocto
+    MESSAGE(STATUS "Keeping AutoMOC executable path as it is")
+    set_target_properties(${PROJECT_NAME} PROPERTIES
     AUTOMOC ON
     AUTOUIC ON
     AUTORCC ON
     POSITION_INDEPENDENT_CODE OFF
-    AUTOMOC_EXECUTABLE "/usr/lib/qt6/libexec/moc" 
+    )
+ENDIF()
+
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
 )
