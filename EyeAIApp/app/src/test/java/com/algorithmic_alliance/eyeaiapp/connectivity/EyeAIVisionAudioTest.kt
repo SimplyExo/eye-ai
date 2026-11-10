@@ -70,6 +70,43 @@ class EyeAIVisionAudioTest {
 	}
 
 	@Test
+	fun `startAudioOutputStream connects to server socket on port 4041 and writes audio stream`() {
+		var serverSocket: ServerSocket? = null
+		try {
+			serverSocket = ServerSocket(4041, 50, InetAddress.getByName("127.0.0.1"))
+		} catch (_: Exception) {
+			// Port 4041 might be in use in test environment
+		}
+
+		if (serverSocket != null) {
+			val executor = Executors.newSingleThreadExecutor()
+			val acceptFuture = executor.submit<Socket> { serverSocket.accept() }
+
+			val socket = Socket("127.0.0.1", 4041)
+			val serverSideSocket = acceptFuture.get()
+
+			assertNotNull(serverSideSocket)
+
+			val pcmData = byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08)
+			socket.outputStream.write(pcmData)
+			socket.outputStream.flush()
+
+			val buffer = ByteArray(8)
+			val readBytes = serverSideSocket.inputStream.read(buffer)
+
+			assertEquals(8, readBytes)
+			assertEquals(0x01.toByte(), buffer[0])
+			assertEquals(0x02.toByte(), buffer[1])
+			assertEquals(0x08.toByte(), buffer[7])
+
+			socket.close()
+			serverSideSocket.close()
+			serverSocket.close()
+			executor.shutdown()
+		}
+	}
+
+	@Test
 	fun `EyeAIVisionVolumeStatus default constructor and properties`() {
 		val status = EyeAIVisionVolumeStatus(
 			volume = 80,

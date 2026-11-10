@@ -766,6 +766,7 @@ class EyeAIRuntime internal constructor(
 			},
 			onWebrtcFrame = { bitmap: Bitmap ->
 				val success = flow.tryEmit(bitmap)
+				Log.v(EyeAIApp.APP_LOG_TAG, "WebRTC frame eingelesen")
 				if (!success) {
 					Log.v(EyeAIApp.APP_LOG_TAG, "WebRTC frame dropped (flow full)")
 				}
