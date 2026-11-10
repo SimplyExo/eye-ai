@@ -581,71 +581,75 @@ fun SelectSetting(
 	val selectedLabel = optionLabels.getOrNull(optionValues.indexOf(currentlySelected.orEmpty()))
 		?: currentlySelected.orEmpty()
 
-	Row(
+	Column(
 		modifier = Modifier
 			.fillMaxWidth()
 			.padding(Spacing.sm),
-		horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-		verticalAlignment = Alignment.CenterVertically
+		verticalArrangement = Arrangement.spacedBy(Spacing.sm)
 	) {
-		Column(modifier = Modifier.weight(1f)) {
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+			verticalAlignment = Alignment.CenterVertically
+		) {
 			Text(
 				settingTitle,
+				modifier = Modifier.weight(1f),
 				style = MaterialTheme.typography.bodyLarge,
 				fontWeight = FontWeight.Medium
 			)
-			if (settingDescription != "") Text(
-				settingDescription, style = MaterialTheme.typography.bodySmall
-			)
-		}
-		Box {
-			Row(
-				modifier = Modifier
-					.clickable {
-						dropDownEnabled = true
-					}
-					.semantics {
-						contentDescription =
-							context.getString(R.string.select_setting_semantic) + settingTitle
-					}, verticalAlignment = Alignment.CenterVertically
-			) {
-				Text(
-					selectedLabel, modifier = Modifier.semantics {
-						contentDescription =
-							context.getString(R.string.currently_selected_semantic) + selectedLabel
-					}, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold
-				)
-				Icon(
-					painter = painterResource(R.drawable.arrow_drop_down_24px),
-					contentDescription = ""
-				)
-			}
-			DropdownMenu(
-				expanded = dropDownEnabled, onDismissRequest = { dropDownEnabled = false }) {
-				for ((optionIndex, item) in options.withIndex()) {
-					if (resolveString(
-							LocalContext.current, item
-						) == stringResource(R.string.input_is_eyeaivision) && uiState.visionPermissionsNotGranted
-					) continue
-					DropdownMenuItem(text = {
-						Text(
-							resolveString(LocalContext.current, item),
-							style = MaterialTheme.typography.bodySmall
-						)
-					}, onClick = {
-						currentlySelected = optionValues[optionIndex]
-						Log.d(
-							LOG_TAG,
-							"[SettingsPage.SelectSetting] Changed setting $settingKey to $currentlySelected"
-						)
-						sharedPreferences.edit(commit = true) {
-							putString(settingKey, currentlySelected)
+			Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+				Row(
+					modifier = Modifier
+						.clickable {
+							dropDownEnabled = true
 						}
-						onEvent(UIEvent.UpdateSettings)
-						dropDownEnabled = false
-					})
+						.semantics {
+							contentDescription =
+								context.getString(R.string.select_setting_semantic) + settingTitle
+						}, verticalAlignment = Alignment.CenterVertically
+				) {
+					Text(
+						selectedLabel, modifier = Modifier.weight(1f, fill = false).semantics {
+							contentDescription =
+								context.getString(R.string.currently_selected_semantic) + selectedLabel
+						}, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold
+					)
+					Icon(
+						painter = painterResource(R.drawable.arrow_drop_down_24px),
+						contentDescription = ""
+					)
+				}
+				DropdownMenu(
+					expanded = dropDownEnabled, onDismissRequest = { dropDownEnabled = false }) {
+					for ((optionIndex, item) in options.withIndex()) {
+						if (resolveString(
+								LocalContext.current, item
+							) == stringResource(R.string.input_is_eyeaivision) && uiState.visionPermissionsNotGranted
+						) continue
+						DropdownMenuItem(text = {
+							Text(
+								resolveString(LocalContext.current, item),
+								style = MaterialTheme.typography.bodySmall
+							)
+						}, onClick = {
+							currentlySelected = optionValues[optionIndex]
+							Log.d(
+								LOG_TAG,
+								"[SettingsPage.SelectSetting] Changed setting $settingKey to $currentlySelected"
+							)
+							sharedPreferences.edit(commit = true) {
+								putString(settingKey, currentlySelected)
+							}
+							onEvent(UIEvent.UpdateSettings)
+							dropDownEnabled = false
+						})
+					}
 				}
 			}
+		}
+		if (settingDescription.isNotEmpty()) {
+			Text(settingDescription, style = MaterialTheme.typography.bodySmall)
 		}
 	}
 }

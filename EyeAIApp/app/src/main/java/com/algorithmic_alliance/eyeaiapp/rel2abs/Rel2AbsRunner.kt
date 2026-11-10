@@ -15,12 +15,11 @@ import kotlin.math.min
 import androidx.core.graphics.scale
 
 /**
- * Frozen Z1 and S2 deployment contracts. The V6 neural-gate modes reuse the
- * same Z1 pixel map as their visual endpoint; their object-level F1 fusion is
- * applied later by [MetricDistanceResolver].
+ * Frozen Z1 deployment contract. The V6 neural-gate modes reuse the same Z1
+ * pixel map as their visual endpoint; their object-level F1 fusion is applied
+ * later by [MetricDistanceResolver].
  */
 class Rel2AbsRunner private constructor(
-	private val context: Context,
 	private val z1: Interpreter,
 ) : AutoCloseable {
 	data class Output(val depthMeters: FloatArray, val mode: Rel2AbsMode) {
@@ -43,7 +42,6 @@ class Rel2AbsRunner private constructor(
 		}
 	}
 
-	private var s2: Interpreter? = null
 	private var closed = false
 
 	init {
@@ -82,15 +80,7 @@ class Rel2AbsRunner private constructor(
 			mutableMapOf<Int, Any>(0 to z1Output),
 		)
 		val z1Depth = decodeZ1(raw, z1Output[0][0], z1Output[0][1])
-		if (mode == Rel2AbsMode.Z1 || mode.isNeuralGate) return Output(z1Depth, mode)
-
-		val s2Features = s2Features(statistics, small)
-		val s2Output = Array(1) { FloatArray(1) }
-		val s2Interpreter = s2 ?: createS2Interpreter().also { s2 = it }
-		s2Interpreter.run(s2Features, s2Output)
-		val scale = exp(s2Output[0][0].toDouble()).toFloat().coerceIn(S2_SCALE_MIN, S2_SCALE_MAX)
-		val corrected = FloatArray(z1Depth.size) { index -> z1Depth[index] * scale }
-		return Output(corrected, mode)
+		return Output(z1Depth, mode)
 	}
 
 	@Synchronized
@@ -98,8 +88,6 @@ class Rel2AbsRunner private constructor(
 		if (closed) return
 		closed = true
 		z1.close()
-		s2?.close()
-		s2 = null
 	}
 
 	private fun prepareRgb64(source: Bitmap): Array<Array<Array<FloatArray>>> {
@@ -166,20 +154,6 @@ class Rel2AbsRunner private constructor(
 		)
 	}
 
-	private fun s2Features(statistics: FloatArray, small: Array<Array<Array<FloatArray>>>): Array<FloatArray> {
-		val result = FloatArray(S2_FEATURE_COUNT)
-		statistics.copyInto(result, 0)
-		var featureIndex = STATISTICS_COUNT + INTRINSICS_COUNT
-		for (gridY in 0 until 4) {
-			for (gridX in 0 until 4) {
-				var sum = 0f
-				for (y in 0 until 8) for (x in 0 until 8) sum += small[0][gridY * 8 + y][gridX * 8 + x][0]
-				result[featureIndex++] = sum / 64f
-			}
-		}
-		return arrayOf(result)
-	}
-
 	private fun decodeZ1(rawRelativeDepth: FloatArray, rawM: Float, rawDelta: Float): FloatArray {
 		val sigmoidM = sigmoid(rawM)
 		val sigmoidDelta = sigmoid(rawDelta)
@@ -197,20 +171,6 @@ class Rel2AbsRunner private constructor(
 	private fun sigmoid(value: Float): Float {
 		val bounded = value.coerceIn(-60f, 60f)
 		return (1.0 / (1.0 + exp(-bounded.toDouble()))).toFloat()
-	}
-
-	private fun createS2Interpreter(): Interpreter {
-		val interpreter = Interpreter(mapAsset(context, S2_ASSET), Interpreter.Options().setNumThreads(1))
-		interpreter.allocateTensors()
-		val input = interpreter.getInputTensor(0)
-		val output = interpreter.getOutputTensor(0)
-		require(input.shape().contentEquals(intArrayOf(1, S2_FEATURE_COUNT)) && input.dataType() == DataType.FLOAT32) {
-			"Unexpected frozen S2 input contract: ${input.shape().contentToString()} / ${input.dataType()}"
-		}
-		require(output.shape().contentEquals(intArrayOf(1, 1)) && output.dataType() == DataType.FLOAT32) {
-			"Unexpected frozen S2 output contract: ${output.shape().contentToString()} / ${output.dataType()}"
-		}
-		return interpreter
 	}
 
 	private fun validateZ1Contract(interpreter: Interpreter) {
@@ -238,7 +198,6 @@ class Rel2AbsRunner private constructor(
 
 	companion object {
 		const val Z1_ASSET = "rel2abs/rel2abs_z1_float32.tflite"
-		const val S2_ASSET = "rel2abs/rel2abs_s2_seed42_float32.tflite"
 		const val RAW_WIDTH = 256
 		const val RAW_HEIGHT = 256
 		private const val RGB_WIDTH = 64
@@ -247,7 +206,6 @@ class Rel2AbsRunner private constructor(
 		private const val SMALL_HEIGHT = 32
 		private const val STATISTICS_COUNT = 7
 		private const val INTRINSICS_COUNT = 5
-		private const val S2_FEATURE_COUNT = 28
 		private const val R_LOW = 121.375f
 		private const val R_HIGH = 839.5f
 		private const val M_MIN = -3.7245746f
@@ -255,8 +213,6 @@ class Rel2AbsRunner private constructor(
 		private const val DELTA_MIN = 0f
 		private const val DELTA_MAX = 3.142303f
 		private const val EPSILON = 1e-6f
-		private const val S2_SCALE_MIN = 0.25f
-		private const val S2_SCALE_MAX = 4.0f
 
 		private fun mapAsset(context: Context, assetPath: String): MappedByteBuffer =
 			context.assets.openFd(assetPath).use { descriptor ->
@@ -266,7 +222,6 @@ class Rel2AbsRunner private constructor(
 			}
 
 		fun fromAssets(context: Context): Rel2AbsRunner = Rel2AbsRunner(
-			context.applicationContext,
 			Interpreter(mapAsset(context.applicationContext, Z1_ASSET), Interpreter.Options().setNumThreads(1)),
 		)
 	}

@@ -871,7 +871,7 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 	}
 
 	/**
-	 * Runs a frozen REL2ABS Z1/S2 visual head over the raw representation emitted by
+	 * Runs the frozen REL2ABS Z1 visual head over the raw representation emitted by
 	 * the standard MiDaS-v2.1-small model. This intentionally returns null for
 	 * another depth model: using an unverified raw representation would violate
 	 * the frozen feature contract. V6 gate modes return this visual map and add

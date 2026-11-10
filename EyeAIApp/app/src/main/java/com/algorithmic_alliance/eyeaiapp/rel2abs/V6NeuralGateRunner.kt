@@ -12,7 +12,7 @@ import kotlin.math.sqrt
 import uniffi.NativeLib.UniffiDetectedObject
 
 /**
- * Small frozen V6 object gate. It is deliberately separate from the Z1/S2
+ * Small frozen V6 object gate. It is deliberately separate from the Z1
  * pixel-map runner: V6 only chooses between the visual ROI estimate and the
  * deterministic F1 size anchor.
  */

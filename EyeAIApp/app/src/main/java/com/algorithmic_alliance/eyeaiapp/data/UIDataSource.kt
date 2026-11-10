@@ -10,6 +10,7 @@ import com.algorithmic_alliance.eyeaiapp.BuildInfoHelper
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.Settings
+import com.algorithmic_alliance.eyeaiapp.audio.AudioOutputMode
 import com.algorithmic_alliance.eyeaiapp.rel2abs.Rel2AbsMode
 
 object UIDataSource {
@@ -214,6 +215,7 @@ object UIDataSource {
 					R.string.object_playback_is_standard, R.string.object_playback_is_object_watch,
                     R.string.object_playback_is_r4
 				),
+				"settingsValues" to AudioOutputMode.entries.map { it.preferenceValue },
 				"string" to R.string.setting_object_playback_mode,
 				"default" to R.string.object_playback_is_standard
 			),

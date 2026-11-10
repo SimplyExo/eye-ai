@@ -57,7 +57,7 @@ fun R4Diagnostics(runtime: EyeAIRuntime) {
 @Composable
 fun LocalSceneDescriptionControls(viewModel: MainViewModel) {
     SceneDescriptionControls(viewModel.localSceneDescriptionState,viewModel::setLocalSceneDescriptionsEnabled,
-        viewModel::speakLocalSceneDescription, viewModel.isR4Mode())
+        viewModel::speakLocalSceneDescription, viewModel.isR4Mode(), showSettingsHint = false)
 }
 
 @Composable
@@ -66,10 +66,11 @@ private fun SceneDescriptionControls(
     setEnabled: (Boolean) -> Unit,
     speak: () -> Unit,
     isR4Mode: Boolean,
+    showSettingsHint: Boolean = true,
 ) {
     val state by source.collectAsStateWithLifecycle()
     if (!isR4Mode) {
-        Text("Szenenbeschreibung (R4) in den Einstellungen auswählen.",
+        if (showSettingsHint) Text("Szenenbeschreibung in den Einstellungen auswählen.",
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
             style = MaterialTheme.typography.bodySmall)
         return
