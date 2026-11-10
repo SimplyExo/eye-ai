@@ -177,24 +177,20 @@ dependencies {
 }
 
 
-fun getGitBranch(): String {
-	return providers.exec {
-		commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
-	}.standardOutput.asText.get().trim()
-}
+fun getGitBranch(): String = getGitCommandValue("git", "rev-parse", "--abbrev-ref", "HEAD");
 
-fun getGitTag(): String {
-	return providers.exec {
-		commandLine("git", "describe", "--abbrev=0", "--tags")
-	}.standardOutput.asText.get().trim()
-}
+fun getGitTag(): String = getGitCommandValue("git", "describe", "--abbrev=0", "--tags");
 
-fun getGitCommitHash(): String {
-	return providers.exec {
-		commandLine("git", "rev-parse", "--short", "HEAD")
-	}.standardOutput.asText.get().trim()
-}
+fun getGitCommitHash(): String = getGitCommandValue("git", "rev-parse", "--short", "HEAD");
 
+private fun getGitCommandValue(vararg args: String): String {
+	return runCatching {
+		providers.exec {
+			commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
+			isIgnoreExitValue = true
+		}.standardOutput.asText.get().trim()
+	}.getOrDefault("unknown").ifBlank { "unknown" }
+}
 
 // eye-ai-core-rs-native-lib
 abstract class VerifyEyeAICoreRSBuildTask : DefaultTask() {

@@ -6,7 +6,7 @@ use std::{env, path::PathBuf, process::Command};
 // can be overridden by setting the env var ANDROID_NATIVE_API_LEVEL
 const DEFAULT_ANDROID_API_LEVEL: &str = "21";
 
-const OPENAL_SOFT_TAG: &str = "1.24.3";
+const OPENAL_SOFT_TAG: &str = "1.25.2";
 
 const OPENAL_REPO: &str = "https://github.com/kcat/openal-soft.git";
 
