@@ -1,6 +1,6 @@
 use alto::{
-	Alto, Context, ContextAttrs, DeviceObject, DistanceModel, Mono, OutputDevice, Source,
-	SourceState, ext::Alc,
+	Alto, Context, ContextAttrs, DeviceObject, DistanceModel, LoopbackAttrs, LoopbackDevice, Mono,
+	OutputDevice, Source, SourceState, Stereo, ext::Alc,
 };
 use eye_ai_core_rs_profiling_attribute::profile_function;
 use std::{
@@ -34,7 +34,8 @@ pub enum SpatialAudioError {
 
 pub struct SpatialAudio {
 	_alto: Alto,
-	_device: OutputDevice,
+	_device: Option<OutputDevice>,
+	loopback_device: Option<LoopbackDevice<Stereo<i16>>>,
 	_context: Arc<Context>,
 	depth_audio_sources_data: Arc<RwLock<Vec<DepthAudioSourceData>>>,
 	_depth_audio_thread: std::thread::JoinHandle<()>,
@@ -60,6 +61,15 @@ impl Drop for SpatialAudio {
 	}
 }
 impl SpatialAudio {
+	/// Render interleaved stereo PCM for the app's network mixer. No local playback.
+	pub fn render_network_audio(&mut self, frames: usize) -> Vec<u8> {
+		let mut samples = vec![0i16; frames * 2];
+		if let Some(device) = &mut self.loopback_device {
+			device.soft_render_samples(samples.as_mut_slice());
+		}
+		samples.into_iter().flat_map(i16::to_le_bytes).collect()
+	}
+
 	#[profile_function("profiling_frame")]
 	pub fn new(
 		settings: Arc<RwLock<SpatialAudioSettings>>,
@@ -67,6 +77,7 @@ impl SpatialAudio {
 		profiling_frame: Arc<FormattedProfilingFrame>,
 		depth_audio_thread_profiling_frame: Arc<FormattedProfilingFrame>,
 		object_audio_thread_profiling_frame: Arc<FormattedProfilingFrame>,
+		network_output: bool,
 	) -> Result<Self, SpatialAudioError> {
 		debug!(
 			settings = ?settings,
@@ -84,18 +95,32 @@ impl SpatialAudio {
 		let depth_audio_running_clone = depth_audio_running.clone();
 
 		let object_audio_running = Arc::new(AtomicBool::new(true));
-		let object_audio_running_clone = depth_audio_running.clone();
+		let object_audio_running_clone = object_audio_running.clone();
 
 		let alto = Alto::load_default()?;
-		let device = alto.open(None)?;
-		if device.is_extension_present(Alc::SoftHrtf) {
-			let attribs = ContextAttrs {
-				soft_hrtf: Some(true),
-				..Default::default()
-			};
-			device.soft_reset(Some(attribs)).unwrap();
-		}
-		let context = Arc::new(device.new_context(None)?);
+		let (device, loopback_device, context) = if network_output {
+			let device = alto.open_loopback::<Stereo<i16>>(None)?;
+			let context = device.new_context(
+				48000,
+				Some(LoopbackAttrs {
+					soft_hrtf: Some(true),
+					..Default::default()
+				}),
+			)?;
+			(None, Some(device), context)
+		} else {
+			let device = alto.open(None)?;
+			if device.is_extension_present(Alc::SoftHrtf) {
+				let attribs = ContextAttrs {
+					soft_hrtf: Some(true),
+					..Default::default()
+				};
+				device.soft_reset(Some(attribs)).unwrap();
+			}
+			let context = device.new_context(None)?;
+			(Some(device), None, context)
+		};
+		let context = Arc::new(context);
 		context.set_distance_model(DistanceModel::LinearClamped);
 		context.set_position([0.0, 0.0, 0.0])?;
 		let context_clone1 = context.clone();
@@ -111,6 +136,7 @@ impl SpatialAudio {
 		Ok(Self {
 			_alto: alto,
 			_device: device,
+			loopback_device,
 			_context: context,
 			depth_audio_sources_data,
 			_depth_audio_thread: std::thread::Builder::new()
@@ -161,8 +187,10 @@ impl SpatialAudio {
 
 		// this extension is implemented on android, such that we can restart SpatialAudio when the output device changes
 		// on desktop (linux at least), this is not needed and the extension is not implemented, as output switching happens automatically
-		if self._device.is_extension_present(Alc::Disconnect) {
-			match self._device.connected() {
+		if let Some(device) = &self._device
+			&& device.is_extension_present(Alc::Disconnect)
+		{
+			match device.connected() {
 				Ok(connected) => {
 					if !connected {
 						error!("No audio device connected right now!");
