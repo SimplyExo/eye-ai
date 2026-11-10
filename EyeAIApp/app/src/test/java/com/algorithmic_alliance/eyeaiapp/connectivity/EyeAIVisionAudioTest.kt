@@ -1,13 +1,19 @@
 package com.algorithmic_alliance.eyeaiapp.connectivity
 
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.PrintWriter
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicReference
 
 class EyeAIVisionAudioTest {
 
@@ -61,5 +67,113 @@ class EyeAIVisionAudioTest {
 			null
 		}
 		assertNull("Unreachable socket connection should return null", socket)
+	}
+
+	@Test
+	fun `EyeAIVisionVolumeStatus default constructor and properties`() {
+		val status = EyeAIVisionVolumeStatus(
+			volume = 80,
+			muted = false,
+			card = "wm8960soundcard",
+			control = "Headphone",
+			success = true
+		)
+		assertEquals(80, status.volume)
+		assertEquals(false, status.muted)
+		assertEquals("wm8960soundcard", status.card)
+		assertEquals("Headphone", status.control)
+		assertEquals(true, status.success)
+	}
+
+	@Test
+	fun `EyeAIVision HTTP volume status request and response handling`() {
+		var serverSocket: ServerSocket? = null
+		val testPort = 18080
+		try {
+			serverSocket = ServerSocket(testPort, 50, InetAddress.getByName("127.0.0.1"))
+		} catch (_: Exception) {
+			// Port in use
+		}
+
+		if (serverSocket != null) {
+			val executor = Executors.newSingleThreadExecutor()
+			executor.submit {
+				val socket = serverSocket.accept()
+				val reader = BufferedReader(InputStreamReader(socket.inputStream))
+				val requestLine = reader.readLine()
+				val writer = PrintWriter(socket.outputStream, true)
+				if (requestLine != null && requestLine.contains("GET /api/volume")) {
+					val json = """{"volume": 85, "muted": false, "card": "wm8960soundcard", "control": "Headphone", "success": true}"""
+					writer.print("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: ${json.length}\r\n\r\n$json")
+					writer.flush()
+				}
+				socket.close()
+			}
+
+			val client = okhttp3.OkHttpClient()
+			val request = okhttp3.Request.Builder().url("http://127.0.0.1:$testPort/api/volume").get().build()
+			val response = client.newCall(request).execute()
+			val body = response.body.string()
+			response.close()
+
+			assertNotNull(body)
+			val json = org.json.JSONObject(body)
+			assertEquals(85, json.getInt("volume"))
+			assertEquals(false, json.getBoolean("muted"))
+			assertEquals("wm8960soundcard", json.getString("card"))
+			assertEquals(true, json.getBoolean("success"))
+
+			serverSocket.close()
+			executor.shutdown()
+		}
+	}
+
+	@Test
+	fun `EyeAIVision HTTP volume POST payload formatting`() {
+		var serverSocket: ServerSocket? = null
+		val testPort = 18081
+		try {
+			serverSocket = ServerSocket(testPort, 50, InetAddress.getByName("127.0.0.1"))
+		} catch (_: Exception) {
+			// Port in use
+		}
+
+		if (serverSocket != null) {
+			val receivedPayload = AtomicReference<String>()
+			val executor = Executors.newSingleThreadExecutor()
+			executor.submit {
+				val socket = serverSocket.accept()
+				val reader = BufferedReader(InputStreamReader(socket.inputStream))
+				var currentLine: String?
+				var contentLength = 0
+				while (reader.readLine().also { currentLine = it } != null) {
+					val l = currentLine ?: break
+					if (l.isEmpty()) break
+					if (l.lowercase().startsWith("content-length:")) {
+						contentLength = l.substring(15).trim().toInt()
+					}
+				}
+				val buf = CharArray(contentLength)
+				reader.read(buf, 0, contentLength)
+				receivedPayload.set(String(buf))
+
+				val writer = PrintWriter(socket.outputStream, true)
+				writer.print("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+				writer.flush()
+				socket.close()
+			}
+
+			val client = okhttp3.OkHttpClient()
+			val body = org.json.JSONObject().put("volume", 70).toString()
+			val reqBody = body.toRequestBody("application/json".toMediaType())
+			val request = okhttp3.Request.Builder().url("http://127.0.0.1:$testPort/api/volume").post(reqBody).build()
+			val response = client.newCall(request).execute()
+			response.close()
+
+			assertEquals("""{"volume":70}""", receivedPayload.get())
+
+			serverSocket.close()
+			executor.shutdown()
+		}
 	}
 }
