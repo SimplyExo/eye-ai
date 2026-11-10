@@ -1,6 +1,7 @@
 #pragma once
 
 #include <hardware/battery_voltage.hpp>
+#include <hardware/volume_control.hpp>
 #include <init_helper/init_helper.hpp>
 #include <QHttpServer>
 #include <qtmetamacros.h>
@@ -11,7 +12,7 @@ class webserver : public QObject {
     Q_OBJECT
 
     public:
-        webserver(init_helper* mediamtx, battery_voltage* battery);
+        webserver(init_helper* mediamtx, battery_voltage* battery, volume_control* volume = nullptr);
 
         int start_server();
         static QString methodToString(QHttpServerRequest::Method method);
@@ -23,6 +24,7 @@ class webserver : public QObject {
 
         init_helper* mediamtx;
         battery_voltage* battery;
+        volume_control* volume;
 
         void register_url();
 
