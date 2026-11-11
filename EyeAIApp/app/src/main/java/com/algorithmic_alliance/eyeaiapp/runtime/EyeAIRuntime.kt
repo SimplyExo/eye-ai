@@ -839,7 +839,7 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 							"Analysis input stalled for ${ageNanos / 1_000_000} ms; clearing model outputs",
 						)
 						_state.update {
-							it.copy(lastError = "Kein neues Kamerabild; Analyse wird neu gestartet")
+							it.copy(lastError = it.lastError ?: "Kein neues Kamerabild empfangen")
 						}
 					}
 
@@ -887,6 +887,8 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun startEyeAIVisionSource() {
 		val flow = MutableSharedFlow<Bitmap>(replay = 1, extraBufferCapacity = 1)
+		val streamFailed = AtomicBoolean(false)
+		_state.update { it.copy(mediaPreviewBitmap = null) }
 		bitmapFlowValue = flow
 
 		// Support for WebRTC (WHEP)
@@ -903,7 +905,14 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 				Log.e(EyeAIApp.APP_LOG_TAG, "!!! Socket failed: ${error.message} !!!")
 				_state.update { it.copy(lastError = error.message) }
 			},
+			onStreamError = { message ->
+				streamFailed.set(true)
+				_state.update { it.copy(lastError = message, mediaPreviewBitmap = null) }
+			},
 			onWebrtcFrame = { bitmap: Bitmap ->
+				if (streamFailed.getAndSet(false)) {
+					_state.update { it.copy(lastError = null) }
+				}
 				val success = flow.tryEmit(bitmap)
 				Log.v(EyeAIApp.APP_LOG_TAG, "WebRTC frame eingelesen")
 				if (!success) {

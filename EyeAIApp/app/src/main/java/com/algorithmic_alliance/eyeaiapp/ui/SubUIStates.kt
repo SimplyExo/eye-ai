@@ -54,7 +54,8 @@ data class DebugPageUIState(
 
 @Immutable
 data class MediaPreviewUIState(
-	val mediaPreviewBitmap: Bitmap? = null
+	val mediaPreviewBitmap: Bitmap? = null,
+	val lastError: String? = null
 )
 
 @Immutable

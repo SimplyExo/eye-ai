@@ -58,6 +58,7 @@ open class EyeAIVision(
 	private val onConnectingSocket: () -> Unit,
 	private val onSocketConnectionEstablished: () -> Unit,
 	private val onSocketFailed: (Exception) -> Unit,
+	private val onStreamError: (String) -> Unit = {},
 	private val onWebrtcFrame: (Bitmap) -> Unit
 ) {
 	private val context: Context = app.applicationContext
@@ -157,7 +158,7 @@ open class EyeAIVision(
 		// initialize webrtc
 		Log.e(EyeAIApp.APP_LOG_TAG, "!!! Starting EyeAIVision source: ip=$ip, url=$whepUrl !!!")
 		Log.e(EyeAIApp.APP_LOG_TAG, "!!! Initializing WebRtcClient for WHEP: $whepUrl !!!")
-		webRtcClientValue = WebRtcClient(app) { bitmap ->
+		webRtcClientValue = WebRtcClient(app, onStreamError = onStreamError) { bitmap ->
 			Log.v(EyeAIApp.APP_LOG_TAG, "EyeAIVision received WebRTC frame, invoking callback")
 			onWebrtcFrame(bitmap)
 		}.also {
@@ -172,6 +173,11 @@ open class EyeAIVision(
 	private fun ensureWiFiNetworkBound() {
 		try {
 			val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
+			// Keep the exact network selected by the connection page. Android may
+			// report a different default WiFi network when using concurrent WiFi.
+			val boundNetwork = cm.boundNetworkForProcess
+			if (boundNetwork != null && cm.getNetworkCapabilities(boundNetwork)
+					?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true) return
 			val activeNetwork = cm.activeNetwork
 			if (activeNetwork != null) {
 				val caps = cm.getNetworkCapabilities(activeNetwork)

@@ -26,6 +26,7 @@ data class UIState(
 	val speechResponseText: String = "",
 	val depthPreviewBitmap: Bitmap? = null,
 	val mediaPreviewBitmap: Bitmap? = null,
+	val lastError: String? = null,
 	val debugInputPreviewBitmap: Bitmap? = null,
 	val performanceText: String = "",
 	val detectedObjects: Array<UniffiDetectedObject> = emptyArray(),
@@ -60,6 +61,7 @@ data class UIState(
 		if (speechResponseText != other.speechResponseText) return false
 		if (depthPreviewBitmap != other.depthPreviewBitmap) return false
 		if (mediaPreviewBitmap != other.mediaPreviewBitmap) return false
+		if (lastError != other.lastError) return false
 		if (debugInputPreviewBitmap != other.debugInputPreviewBitmap) return false
 		if (performanceText != other.performanceText) return false
 		if (!detectedObjects.contentEquals(other.detectedObjects)) return false
@@ -91,6 +93,7 @@ data class UIState(
 		result = 31 * result + speechResponseText.hashCode()
 		result = 31 * result + (depthPreviewBitmap?.hashCode() ?: 0)
 		result = 31 * result + (mediaPreviewBitmap?.hashCode() ?: 0)
+		result = 31 * result + (lastError?.hashCode() ?: 0)
 		result = 31 * result + (debugInputPreviewBitmap?.hashCode() ?: 0)
 		result = 31 * result + performanceText.hashCode()
 		result = 31 * result + detectedObjects.contentHashCode()
