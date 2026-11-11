@@ -325,6 +325,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 	private fun initCamera(previewView: androidx.camera.view.PreviewView?) {
 		app.aiData.detectedObjects.set(emptyArray<UniffiDetectedObject>())
 		val currentSource = app.settings.inputSource
+		if (currentSource == app.getString(R.string.input_is_eyeaivision) && !hasVisionPermissions(app)) {
+			_uiState.update { it.copy(appMissingVisionPermission = true) }
+			return
+		}
 		Log.d(LOG_TAG, "[MainViewModel] initCamera: source=$currentSource")
 		_uiState.update {
 			it.copy(

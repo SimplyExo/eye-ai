@@ -55,6 +55,12 @@ fun connectToDevice(
 		}
 
 		"eye-ai-vision" -> {
+			if (selectedDevice != context.getString(R.string.choose_camera_as_input_text) &&
+				!hasVisionPermissions(context)) {
+				onEvent(UIEvent.OnUpdateAppMissingVisionPermission(true))
+				onResult(false)
+				return
+			}
 			//TODO input device setting
 			if (selectedDevice != context.getString(R.string.choose_camera_as_input_text)) {
 				Log.d(

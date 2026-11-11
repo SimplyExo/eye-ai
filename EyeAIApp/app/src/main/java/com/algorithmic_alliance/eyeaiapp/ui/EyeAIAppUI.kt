@@ -130,13 +130,7 @@ fun EyeAIAppUI(
 				context, Manifest.permission.RECORD_AUDIO
 			) == PackageManager.PERMISSION_GRANTED
 
-			val hasNearbyWIFI = ContextCompat.checkSelfPermission(
-				context, Manifest.permission.NEARBY_WIFI_DEVICES
-			) == PackageManager.PERMISSION_GRANTED
-
-			val hasLocation = ContextCompat.checkSelfPermission(
-				context, Manifest.permission.ACCESS_FINE_LOCATION
-			) == PackageManager.PERMISSION_GRANTED
+			val hasVision = hasVisionPermissions(context)
 
 			if (!hasCamera) {
 				onEvent(UIEvent.OnUpdateAppMissingCameraPermission(true))
@@ -145,7 +139,7 @@ fun EyeAIAppUI(
 				onEvent(UIEvent.OnUpdateAppMissingVoskPermission(true))
 			}
 
-			if ((!hasNearbyWIFI || !hasLocation) && viewModel.appInputSource() == context.getString(
+			if (!hasVision && viewModel.appInputSource() == context.getString(
 					R.string.input_is_eyeaivision
 				)
 			) {
@@ -456,20 +450,15 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 	val context = LocalContext.current
 	val lifecycleOwner = LocalLifecycleOwner.current
 	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-	val hasRequestedKey = "has_requested_vision_permission"
+	// A previous WiFi-only request must not count as a denial of the new LAN permission.
+	val hasRequestedKey = if (Build.VERSION.SDK_INT >= 37) {
+		"has_requested_vision_permission_lan"
+	} else "has_requested_vision_permission"
 	val appInputSourceKey = stringResource(R.string.input_source_setting)
 	val inputIsVision = stringResource(R.string.input_is_eyeaivision)
 	val inputIsCamera = stringResource(R.string.input_is_camera)
 
-	val permissionsToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-		arrayOf(
-			Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.NEARBY_WIFI_DEVICES
-		)
-	} else {
-		arrayOf(
-			Manifest.permission.ACCESS_FINE_LOCATION
-		)
-	}
+	val permissionsToRequest = visionPermissionsForApi(Build.VERSION.SDK_INT)
 
 	fun disableVisionSetting() {
 		if (sharedPreferences.getString(appInputSourceKey, inputIsCamera) == inputIsVision) {
@@ -502,8 +491,8 @@ fun AppMissingVisionPermissionDialog(onEvent: (UIEvent) -> Unit) {
 
 	val launcher = rememberLauncherForActivityResult(
 		ActivityResultContracts.RequestMultiplePermissions()
-	) { permissionsMap ->
-		val allGranted = permissionsMap.values.all { it }
+	) { _ ->
+		val allGranted = hasVisionPermissions(context)
 
 		if (allGranted) {
 			onEvent(UIEvent.OnUpdateAppMissingVisionPermission(false))
