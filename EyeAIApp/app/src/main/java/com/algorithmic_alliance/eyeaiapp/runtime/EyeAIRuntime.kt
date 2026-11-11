@@ -482,7 +482,10 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 		cleanupStep("frame analyzer") { frameAnalyzer.stop() }
 		cleanupStep("video source") { stopVideoSource() }
 		voskUserStart.set(false)
-		cleanupStep("Vosk listener") { voskModel.stopListening() }
+		cleanupStep("Vosk listener") {
+			voskModel.stopListening()
+			eyeAIVisionValue?.stopAudioStream()
+		}
 		cleanupStep("TTS") { synchronized(stateLock) { textToSpeechInstanceValue }?.stop() }
 		orientationSpeechId = null
 		cleanupStep("spatial-audio engine") { SpatialAudio.stop() }
@@ -528,6 +531,7 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 	fun closeSpeechService() {
 		voskUserStart.set(false)
 		voskModel.stopListening()
+		eyeAIVisionValue?.stopAudioStream()
 		voskModel.closeService()
 		publishVoskStatus(false)
 		synchronized(stateLock) { speechCallbacksInstalled = false }
@@ -543,17 +547,52 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 		spatialAudioResumeController.cancel()
 		pauseSpatialAudio()
 		initSpeechService()
-		voskModel.startListening()
-		if (!voskModel.isListening()) {
-			voskUserStart.set(false)
-			restoreSpatialAudioFromSettings("${trigger}_MODEL_NOT_READY")
-			return
+		lastFinalResultMillis = 0L
+
+		val vision = eyeAIVisionValue
+		if (vision != null) {
+			speechScope.launch(Dispatchers.IO) {
+				val inputStream = vision.startAudioStream()
+				withContext(Dispatchers.Main) {
+					if (!voskUserStart.get()) {
+						vision.stopAudioStream()
+						return@withContext
+					}
+					if (inputStream != null) {
+						voskModel.startListening(inputStream)
+					} else {
+						Log.w(
+							EyeAIApp.APP_LOG_TAG,
+							"[EyeAIRuntime] Network microphone on port 4040 unavailable; falling back to local mic"
+						)
+						voskModel.startListening()
+					}
+					if (!voskModel.isListening()) {
+						voskUserStart.set(false)
+						vision.stopAudioStream()
+						restoreSpatialAudioFromSettings("${trigger}_MODEL_NOT_READY")
+						return@withContext
+					}
+					Log.i(
+						EyeAIApp.APP_LOG_TAG,
+						"[DecisionTrace][Vosk][START] trigger=$trigger outcome=LISTENING (network_mic=${inputStream != null})",
+					)
+					publishVoskStatus(true)
+				}
+			}
+		} else {
+			voskModel.startListening()
+			if (!voskModel.isListening()) {
+				voskUserStart.set(false)
+				restoreSpatialAudioFromSettings("${trigger}_MODEL_NOT_READY")
+				return
+			}
+			Log.i(
+				EyeAIApp.APP_LOG_TAG,
+				"[DecisionTrace][Vosk][START] trigger=$trigger outcome=LISTENING",
+			)
+			publishVoskStatus(true)
 		}
-		Log.i(
-			EyeAIApp.APP_LOG_TAG,
-			"[DecisionTrace][Vosk][START] trigger=$trigger outcome=LISTENING",
-		)
-		publishVoskStatus(true)
 	}
 
 	private fun stopListening(
@@ -562,6 +601,7 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 	) {
 		if (!voskUserStart.getAndSet(false)) return
 		voskModel.stopListening()
+		eyeAIVisionValue?.stopAudioStream()
 		if (restoreAfterTts) spatialAudioResumeController.schedule(trigger)
 		else {
 			spatialAudioResumeController.cancel()
@@ -577,7 +617,7 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 	private fun onPartialSpeechRecognitionResult(partial: String) {
 		_state.update { it.copy(speechRecognitionPartialResultText = partial) }
 		if (partial.isNotEmpty()) {
-			Log.d(EyeAIApp.APP_LOG_TAG, "[Vosk] partial=$partial")
+			Log.i(EyeAIApp.APP_LOG_TAG, "[EyeAIRuntime] Partial speech recognized: '$partial'")
 		}
 	}
 
@@ -587,18 +627,26 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 
 	private fun onFinalSpeechRecognitionResult(final: String) {
 		if (final.isEmpty()) return
+		val now = System.currentTimeMillis()
+		if (now - lastFinalResultMillis <= 1_000L) {
+			Log.w(
+				EyeAIApp.APP_LOG_TAG,
+				"[EyeAIRuntime] Ignored duplicate speech recognition result within 1s: '$final'"
+			)
+			return
+		}
+		lastFinalResultMillis = now
+		Log.i(EyeAIApp.APP_LOG_TAG, "[EyeAIRuntime] Final speech recognized: '$final'")
 		val receiveTs = System.nanoTime()
+
 		_state.update {
 			it.copy(
 				speechRecognitionFinalResultText = final,
-				voskListening = false,
 			)
 		}
-		val now = System.currentTimeMillis()
-		if (now - lastFinalResultMillis <= 1_000L) return
-		lastFinalResultMillis = now
 
-		voskModel.stopListening()
+		voskModel.stopListening(playSound = false)
+		eyeAIVisionValue?.stopAudioStream()
 		vibrate(context, 100)
 		speechScope.launch {
 			Log.d(
@@ -654,7 +702,22 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 		runtimeScope.launch {
 			try {
 				if (isActive && voskUserStart.get()) {
-					voskModel.startListening()
+					lastFinalResultMillis = 0L
+					val vision = eyeAIVisionValue
+					if (vision != null) {
+						val inputStream = withContext(Dispatchers.IO) { vision.startAudioStream() }
+						if (isActive && voskUserStart.get()) {
+							if (inputStream != null) {
+								voskModel.startListening(inputStream, playSound = true)
+							} else {
+								voskModel.startListening(playSound = true)
+							}
+						} else {
+							withContext(Dispatchers.IO) { vision.stopAudioStream() }
+						}
+					} else {
+						voskModel.startListening(playSound = true)
+					}
 					publishVoskStatus(voskModel.isListening())
 				}
 			} catch (error: Throwable) {
@@ -842,6 +905,7 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 			},
 			onWebrtcFrame = { bitmap: Bitmap ->
 				val success = flow.tryEmit(bitmap)
+				Log.v(EyeAIApp.APP_LOG_TAG, "WebRTC frame eingelesen")
 				if (!success) {
 					Log.v(EyeAIApp.APP_LOG_TAG, "WebRTC frame dropped (flow full)")
 				}

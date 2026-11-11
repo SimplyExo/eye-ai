@@ -2,7 +2,7 @@
 #include <qobject.h>
 
 headphone_server::headphone_server(QObject *parent)
-    : QTcpServer(parent) {
+    : QTcpServer(parent), vol_ctrl(DEFAULT_ALSA_CARD, DEFAULT_ALSA_CONTROL) {
 }
 
 headphone_server::~headphone_server() {
@@ -131,4 +131,32 @@ void headphone_server::client_disconnected() {
 
 void headphone_server::process_error(QProcess::ProcessError error) {
     emit onError(QString("aplay error: %1 %2").arg(error).arg(audio_process->errorString()));
+}
+
+volume_state headphone_server::get_volume() {
+    return vol_ctrl.get_volume();
+}
+
+volume_state headphone_server::set_volume(int percentage) {
+    return vol_ctrl.set_volume(percentage);
+}
+
+volume_state headphone_server::increase_volume(int step) {
+    return vol_ctrl.increase_volume(step);
+}
+
+volume_state headphone_server::decrease_volume(int step) {
+    return vol_ctrl.decrease_volume(step);
+}
+
+volume_state headphone_server::set_mute(bool mute) {
+    return vol_ctrl.set_mute(mute);
+}
+
+volume_state headphone_server::toggle_mute() {
+    return vol_ctrl.toggle_mute();
+}
+
+volume_control* headphone_server::get_volume_control() {
+    return &vol_ctrl;
 }

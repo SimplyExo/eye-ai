@@ -8,14 +8,35 @@ import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.YuvImage
 import android.util.Log
-import okhttp3.*
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.webrtc.*
+import okhttp3.Response
+import org.webrtc.DataChannel
+import org.webrtc.DefaultVideoDecoderFactory
+import org.webrtc.DefaultVideoEncoderFactory
+import org.webrtc.EglBase
+import org.webrtc.IceCandidate
+import org.webrtc.MediaConstraints
+import org.webrtc.MediaStream
+import org.webrtc.MediaStreamTrack
+import org.webrtc.PeerConnection
+import org.webrtc.PeerConnectionFactory
+import org.webrtc.RtpReceiver
+import org.webrtc.RtpTransceiver
+import org.webrtc.SdpObserver
+import org.webrtc.SessionDescription
+import org.webrtc.VideoFrame
+import org.webrtc.VideoTrack
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 class WebRtcClient(
 	private val context: Context,
@@ -24,560 +45,272 @@ class WebRtcClient(
 
 	companion object {
 		private const val TAG = "WebRtcClient"
+		private const val RECONNECT_DELAY_MS = 2000L
 	}
 
-	private val executor: ExecutorService =
-		Executors.newSingleThreadExecutor()
+	private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
-	val httpClient = OkHttpClient.Builder()
-		.hostnameVerifier { hostname, _ ->
-			hostname == "192.168.4.1"
-		}
+	private val httpClient: OkHttpClient = OkHttpClient.Builder()
+		.hostnameVerifier { _, _ -> true }
+		.connectTimeout(5, TimeUnit.SECONDS)
+		.readTimeout(5, TimeUnit.SECONDS)
 		.build()
 
-	val eglBase: EglBase = EglBase.create()
-
+	private var eglBase: EglBase? = null
 	private var peerConnectionFactory: PeerConnectionFactory? = null
 	private var peerConnection: PeerConnection? = null
 	private var videoTrack: VideoTrack? = null
 
-	private var pendingUrl: String? = null
-	private var frameCount = 0
-
-	// ------------------------------------------------------------
-	// START
-	// ------------------------------------------------------------
+	private var targetUrl: String? = null
+	private val isStopped = AtomicBoolean(false)
+	private val isOfferSent = AtomicBoolean(false)
+	private var frameCount = 0L
 
 	fun start(url: String) {
-		Log.i(TAG, "Starting WHEP connection")
-		Log.i(TAG, "URL: $url")
-
-		pendingUrl = url
+		Log.i(TAG, "[WHEP] Starting WebRTC client for URL: $url")
+		targetUrl = url
+		isStopped.set(false)
 
 		executor.execute {
-			try {
-				initializeFactory()
-				createPeerConnection()
-
-				val pc = peerConnection
-					?: throw IllegalStateException("PeerConnection is null")
-
-				addReceiveTransceiver(pc)
-
-				createOffer(pc)
-
-			} catch (e: Exception) {
-				Log.e(TAG, "Failed to start WebRTC", e)
-			}
+			connectWebRtc()
 		}
 	}
 
-	// ------------------------------------------------------------
-	// FACTORY
-	// ------------------------------------------------------------
-
-	private fun initializeFactory() {
-		if (peerConnectionFactory != null) {
-			return
-		}
-
-		Log.i(TAG, "Initializing PeerConnectionFactory")
-
-		PeerConnectionFactory.initialize(
-			PeerConnectionFactory.InitializationOptions
-				.builder(context.applicationContext)
-				.createInitializationOptions()
-		)
-
-		val encoderFactory =
-			DefaultVideoEncoderFactory(
-				eglBase.eglBaseContext,
-				true,
-				true
-			)
-
-		val decoderFactory =
-			DefaultVideoDecoderFactory(
-				eglBase.eglBaseContext
-			)
-
-		peerConnectionFactory =
-			PeerConnectionFactory.builder()
-				.setVideoEncoderFactory(encoderFactory)
-				.setVideoDecoderFactory(decoderFactory)
-				.createPeerConnectionFactory()
-
-		Log.i(TAG, "PeerConnectionFactory initialized")
-	}
-
-	// ------------------------------------------------------------
-	// PEER CONNECTION
-	// ------------------------------------------------------------
-
-	private fun createPeerConnection() {
-		if (peerConnection != null) {
-			return
-		}
-
-		val config =
-			PeerConnection.RTCConfiguration(
-				emptyList()
-			).apply {
-
-				sdpSemantics =
-					PeerConnection.SdpSemantics.UNIFIED_PLAN
-
-				continualGatheringPolicy =
-					PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
-
-				// MediaMTX normally works without a public STUN
-				// server when the client can reach the server directly.
-				//
-				// If MediaMTX is behind NAT, configure TURN/STUN
-				// according to your deployment.
-			}
-
-		peerConnection =
-			peerConnectionFactory?.createPeerConnection(
-				config,
-				object : PeerConnection.Observer {
-
-					override fun onSignalingChange(
-						state: PeerConnection.SignalingState
-					) {
-						Log.i(TAG, "Signaling state: $state")
-					}
-
-					override fun onIceConnectionChange(
-						state: PeerConnection.IceConnectionState
-					) {
-						Log.i(TAG, "ICE connection state: $state")
-					}
-
-					override fun onIceGatheringChange(
-						state: PeerConnection.IceGatheringState
-					) {
-						Log.i(TAG, "ICE gathering state: $state")
-
-						if (
-							state ==
-							PeerConnection.IceGatheringState.COMPLETE
-						) {
-							sendOffer()
-						}
-					}
-
-					override fun onConnectionChange(
-						state: PeerConnection.PeerConnectionState
-					) {
-						Log.i(TAG, "Peer connection state: $state")
-					}
-
-					override fun onIceCandidate(
-						candidate: IceCandidate
-					) {
-						Log.d(
-							TAG,
-							"ICE candidate: ${candidate.sdp}"
-						)
-
-						// We intentionally wait for ICE gathering
-						// to complete and send the complete SDP
-						// to MediaMTX.
-					}
-
-					override fun onTrack(
-						transceiver: RtpTransceiver
-					) {
-						Log.i(TAG, "========== onTrack ==========")
-
-						val receiver = transceiver.receiver
-						val track = receiver.track()
-
-						Log.i(TAG, "Track: $track")
-						Log.i(TAG, "Kind: ${track?.kind()}")
-
-						if (track is VideoTrack) {
-							Log.i(TAG, "VIDEO TRACK RECEIVED")
-
-							videoTrack = track
-
-							track.setEnabled(true)
-
-							track.addSink { frame ->
-
-								frameCount++
-
-								if (frameCount % 30 == 0) {
-									Log.i(
-										TAG,
-										"Frames received: $frameCount " +
-											"${frame.buffer.width}x${frame.buffer.height}"
-									)
-								}
-
-								val bitmap =
-									videoFrameToBitmap(frame)
-
-								if (bitmap != null) {
-									onFrameReceived(bitmap)
-								}
-							}
-						}
-					}
-
-					override fun onAddStream(
-						stream: MediaStream
-					) {
-						Log.i(
-							TAG,
-							"onAddStream: ${stream.id}"
-						)
-
-						for (track in stream.videoTracks) {
-							Log.i(
-								TAG,
-								"Video track from stream: $track"
-							)
-
-							videoTrack = track
-							track.setEnabled(true)
-
-							track.addSink { frame ->
-								val bitmap =
-									videoFrameToBitmap(frame)
-
-								if (bitmap != null) {
-									onFrameReceived(bitmap)
-								}
-							}
-						}
-					}
-
-					override fun onRemoveStream(
-						stream: MediaStream
-					) {
-						Log.i(
-							TAG,
-							"onRemoveStream: ${stream.id}"
-						)
-					}
-
-					override fun onDataChannel(
-						dataChannel: DataChannel
-					) {
-						Log.d(TAG, "Data channel received")
-					}
-
-					override fun onRenegotiationNeeded() {
-						Log.d(
-							TAG,
-							"Renegotiation needed"
-						)
-					}
-
-					override fun onIceCandidatesRemoved(
-						candidates: Array<out IceCandidate>
-					) {
-					}
-
-					override fun onIceConnectionReceivingChange(
-						receiving: Boolean
-					) {
-						Log.i(
-							TAG,
-							"ICE receiving: $receiving"
-						)
-					}
-
-					override fun onAddTrack(
-						receiver: RtpReceiver,
-						mediaStreams: Array<out MediaStream>
-					) {
-						Log.i(
-							TAG,
-							"onAddTrack: ${receiver.track()?.kind()}"
-						)
-					}
-				}
-			)
-
-		if (peerConnection == null) {
-			throw IllegalStateException(
-				"Failed to create PeerConnection"
-			)
-		}
-
-		Log.i(TAG, "PeerConnection created")
-	}
-
-	// ------------------------------------------------------------
-	// TRANSCEIVER
-	// ------------------------------------------------------------
-
-	private fun addReceiveTransceiver(
-		pc: PeerConnection
-	) {
-		Log.i(TAG, "Adding RECV_ONLY video transceiver")
-
-		pc.addTransceiver(
-			MediaStreamTrack.MediaType.MEDIA_TYPE_VIDEO,
-			RtpTransceiver.RtpTransceiverInit(
-				RtpTransceiver.RtpTransceiverDirection.RECV_ONLY
-			)
-		)
-	}
-
-	// ------------------------------------------------------------
-	// OFFER
-	// ------------------------------------------------------------
-
-	private fun createOffer(
-		pc: PeerConnection
-	) {
-		Log.i(TAG, "Creating SDP offer")
-
-		val constraints =
-			MediaConstraints().apply {
-
-				mandatory.add(
-					MediaConstraints.KeyValuePair(
-						"OfferToReceiveVideo",
-						"true"
-					)
-				)
-			}
-
-		pc.createOffer(
-			object : SdpObserver {
-
-				override fun onCreateSuccess(
-					description: SessionDescription
-				) {
-					Log.i(
-						TAG,
-						"Offer created"
-					)
-
-					Log.d(
-						TAG,
-						"========== LOCAL SDP ==========\n" +
-							description.description +
-							"\n==============================="
-					)
-
-					pc.setLocalDescription(
-						object : SdpObserver {
-
-							override fun onSetSuccess() {
-								Log.i(
-									TAG,
-									"Local SDP set"
-								)
-							}
-
-							override fun onSetFailure(
-								error: String?
-							) {
-								Log.e(
-									TAG,
-									"setLocalDescription failed: $error"
-								)
-							}
-
-							override fun onCreateSuccess(
-								description: SessionDescription?
-							) {
-							}
-
-							override fun onCreateFailure(
-								error: String?
-							) {
-							}
-						},
-						description
-					)
-				}
-
-				override fun onCreateFailure(
-					error: String?
-				) {
-					Log.e(
-						TAG,
-						"createOffer failed: $error"
-					)
-				}
-
-				override fun onSetSuccess() {
-				}
-
-				override fun onSetFailure(
-					error: String?
-				) {
-					Log.e(
-						TAG,
-						"Offer set failed: $error"
-					)
-				}
-			},
-			constraints
-		)
-	}
-
-	// ------------------------------------------------------------
-	// WHEP
-	// ------------------------------------------------------------
-
-	private fun sendOffer() {
-
-		val url = pendingUrl
-			?: run {
-				Log.e(TAG, "No WHEP URL")
-				return
-			}
-
-		val sdp =
-			peerConnection
-				?.localDescription
-				?.description
-				?: run {
-					Log.e(
-						TAG,
-						"No local SDP available"
-					)
-					return
-				}
-
-		Log.i(TAG, "ICE gathering complete")
-		Log.i(TAG, "Sending WHEP offer to MediaMTX")
-
-		val body =
-			sdp.toRequestBody(
-				"application/sdp".toMediaType()
-			)
-
-		val request =
-			Request.Builder()
-				.url(url)
-				.post(body)
-				.header(
-					"Content-Type",
-					"application/sdp"
-				)
-				.header(
-					"Accept",
-					"application/sdp"
-				)
-				.build()
-
-		httpClient
-			.newCall(request)
-			.enqueue(
-				object : Callback {
-
-					override fun onFailure(
-						call: Call,
-						e: IOException
-					) {
-						Log.e(
-							TAG,
-							"WHEP request failed",
-							e
-						)
-					}
-
-					override fun onResponse(
-						call: Call,
-						response: Response
-					) {
-						response.use {
-							val answer = it.body.string()
-
-							Log.i(
-								TAG,
-								"WHEP HTTP ${it.code}"
-							)
-
-							if (!it.isSuccessful) {
-								Log.e(
-									TAG,
-									"WHEP error: $answer"
-								)
-								return
-							}
-
-							Log.i(
-								TAG,
-								"========== REMOTE SDP ==========\n" +
-									answer +
-									"\n================================="
-							)
-
-							val pc =
-								peerConnection
-									?: return
-
-							val remoteDescription =
-								SessionDescription(
-									SessionDescription.Type.ANSWER,
-									answer
-								)
-
-							pc.setRemoteDescription(
-								object : SdpObserver {
-
-									override fun onSetSuccess() {
-										Log.i(
-											TAG,
-											"Remote SDP successfully set"
-										)
-									}
-
-									override fun onSetFailure(
-										error: String?
-									) {
-										Log.e(
-											TAG,
-											"setRemoteDescription failed: $error"
-										)
-									}
-
-									override fun onCreateSuccess(
-										description: SessionDescription?
-									) {
-									}
-
-									override fun onCreateFailure(
-										error: String?
-									) {
-									}
-								},
-								remoteDescription
-							)
-						}
-					}
-				}
-			)
-	}
-
-	// ------------------------------------------------------------
-	// VIDEO -> BITMAP
-	// ------------------------------------------------------------
-
-	private fun videoFrameToBitmap(
-		frame: VideoFrame
-	): Bitmap? {
-
-		val i420 = frame.buffer.toI420()
-			?: run {
-				Log.e(TAG, "toI420() returned null")
-				return null
-			}
+	private fun connectWebRtc() {
+		if (isStopped.get()) return
+		Log.i(TAG, "[WHEP] Initializing WebRTC connection")
 
 		try {
+			closeCurrentPeerConnection()
+
+			if (eglBase == null) {
+				eglBase = EglBase.create()
+			}
+
+			if (peerConnectionFactory == null) {
+				PeerConnectionFactory.initialize(
+					PeerConnectionFactory.InitializationOptions
+						.builder(context.applicationContext)
+						.createInitializationOptions()
+				)
+
+				val eglContext = eglBase?.eglBaseContext
+				val encoderFactory = DefaultVideoEncoderFactory(eglContext, true, true)
+				val decoderFactory = DefaultVideoDecoderFactory(eglContext)
+
+				val options = PeerConnectionFactory.Options().apply {
+					networkIgnoreMask = PeerConnectionFactory.Options.ADAPTER_TYPE_CELLULAR
+					disableNetworkMonitor = true
+				}
+
+				peerConnectionFactory = PeerConnectionFactory.builder()
+					.setOptions(options)
+					.setVideoEncoderFactory(encoderFactory)
+					.setVideoDecoderFactory(decoderFactory)
+					.createPeerConnectionFactory()
+			}
+
+			val rtcConfig = PeerConnection.RTCConfiguration(emptyList()).apply {
+				sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
+				continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
+			}
+
+			val pc = peerConnectionFactory?.createPeerConnection(rtcConfig, createPeerConnectionObserver())
+				?: throw IllegalStateException("Failed to create PeerConnection")
+
+			peerConnection = pc
+			isOfferSent.set(false)
+
+			pc.addTransceiver(
+				MediaStreamTrack.MediaType.MEDIA_TYPE_VIDEO,
+				RtpTransceiver.RtpTransceiverInit(RtpTransceiver.RtpTransceiverDirection.RECV_ONLY)
+			)
+
+			val constraints = MediaConstraints().apply {
+				mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"))
+			}
+
+			pc.createOffer(object : SdpObserverAdapter("createOffer") {
+				override fun onCreateSuccess(description: SessionDescription) {
+					Log.i(TAG, "[WHEP] Local offer created; setting local description")
+					pc.setLocalDescription(object : SdpObserverAdapter("setLocalDescription") {
+						override fun onSetSuccess() {
+							Log.i(TAG, "[WHEP] Local description successfully set")
+							scheduleOfferDispatch(150L)
+						}
+					}, description)
+				}
+			}, constraints)
+
+		} catch (e: Exception) {
+			Log.e(TAG, "[WHEP] Exception creating WebRTC offer", e)
+			scheduleReconnect()
+		}
+	}
+
+	private fun createPeerConnectionObserver(): PeerConnection.Observer {
+		return object : PeerConnection.Observer {
+			override fun onSignalingChange(state: PeerConnection.SignalingState) {
+				Log.d(TAG, "[WHEP] SignalingState: $state")
+			}
+
+			override fun onIceConnectionChange(state: PeerConnection.IceConnectionState) {
+				Log.i(TAG, "[WHEP] IceConnectionState: $state")
+				if (state == PeerConnection.IceConnectionState.FAILED ||
+					state == PeerConnection.IceConnectionState.DISCONNECTED
+				) {
+					Log.w(TAG, "[WHEP] ICE disconnected or failed; scheduling reconnect")
+					scheduleReconnect()
+				}
+			}
+
+			override fun onIceGatheringChange(state: PeerConnection.IceGatheringState) {
+				Log.d(TAG, "[WHEP] IceGatheringState: $state")
+				if (state == PeerConnection.IceGatheringState.COMPLETE) {
+					scheduleOfferDispatch(0L)
+				}
+			}
+
+			override fun onConnectionChange(state: PeerConnection.PeerConnectionState) {
+				Log.i(TAG, "[WHEP] PeerConnectionState: $state")
+				if (state == PeerConnection.PeerConnectionState.FAILED) {
+					scheduleReconnect()
+				}
+			}
+
+			override fun onIceCandidate(candidate: IceCandidate) {
+				Log.d(TAG, "[WHEP] ICE candidate gathered: ${candidate.sdp}")
+			}
+
+			override fun onTrack(transceiver: RtpTransceiver) {
+				val track = transceiver.receiver.track()
+				Log.i(TAG, "[WHEP] Received track: ${track?.kind()}")
+
+				if (track is VideoTrack) {
+					videoTrack = track
+					track.setEnabled(true)
+					track.addSink { frame ->
+						frameCount++
+						if (frameCount % 30L == 0L) {
+							Log.i(TAG, "[WHEP] Received video frame #$frameCount (${frame.buffer.width}x${frame.buffer.height})")
+						}
+						val bitmap = videoFrameToBitmap(frame)
+						if (bitmap != null) {
+							onFrameReceived(bitmap)
+						}
+					}
+				}
+			}
+
+			override fun onAddStream(stream: MediaStream) {
+				for (track in stream.videoTracks) {
+					videoTrack = track
+					track.setEnabled(true)
+					track.addSink { frame ->
+						val bitmap = videoFrameToBitmap(frame)
+						if (bitmap != null) {
+							onFrameReceived(bitmap)
+						}
+					}
+				}
+			}
+
+			override fun onRemoveStream(stream: MediaStream) {}
+			override fun onDataChannel(dataChannel: DataChannel) {}
+			override fun onRenegotiationNeeded() {}
+			override fun onIceCandidatesRemoved(candidates: Array<out IceCandidate>) {}
+			override fun onIceConnectionReceivingChange(receiving: Boolean) {}
+			override fun onAddTrack(receiver: RtpReceiver, mediaStreams: Array<out MediaStream>) {}
+		}
+	}
+
+	private fun scheduleOfferDispatch(delayMs: Long) {
+		executor.schedule({
+			sendOfferToWhepServer()
+		}, delayMs, TimeUnit.MILLISECONDS)
+	}
+
+	private fun sendOfferToWhepServer() {
+		if (isStopped.get()) return
+		if (!isOfferSent.compareAndSet(false, true)) return
+
+		val url = targetUrl ?: run {
+			Log.e(TAG, "[WHEP] Target WHEP URL is null")
+			return
+		}
+
+		val sdp = peerConnection?.localDescription?.description ?: run {
+			Log.e(TAG, "[WHEP] No local SDP available to send")
+			return
+		}
+
+		Log.i(TAG, "[WHEP] Sending HTTP POST SDP offer to $url")
+
+		val requestBody = sdp.toRequestBody("application/sdp".toMediaType())
+		val request = Request.Builder()
+			.url(url)
+			.post(requestBody)
+			.header("Content-Type", "application/sdp")
+			.header("Accept", "application/sdp")
+			.build()
+
+		httpClient.newCall(request).enqueue(object : Callback {
+			override fun onFailure(call: Call, e: IOException) {
+				Log.e(TAG, "[WHEP] HTTP POST request to MediaMTX failed", e)
+				isOfferSent.set(false)
+				scheduleReconnect()
+			}
+
+			override fun onResponse(call: Call, response: Response) {
+				response.use { res ->
+					val answerSdp = res.body.string()
+					Log.i(TAG, "[WHEP] Received HTTP ${res.code} response from MediaMTX")
+
+					if (!res.isSuccessful) {
+						Log.e(TAG, "[WHEP] MediaMTX returned error HTTP ${res.code}: $answerSdp")
+						isOfferSent.set(false)
+						scheduleReconnect()
+						return
+					}
+
+					Log.d(TAG, "[WHEP] Setting remote SDP answer from MediaMTX")
+					val remoteDesc = SessionDescription(SessionDescription.Type.ANSWER, answerSdp)
+					executor.execute {
+						peerConnection?.setRemoteDescription(
+							object : SdpObserverAdapter("setRemoteDescription") {
+								override fun onSetSuccess() {
+									Log.i(TAG, "[WHEP] Remote SDP answer successfully applied")
+								}
+
+								override fun onSetFailure(error: String?) {
+									Log.e(TAG, "[WHEP] Failed to set remote SDP answer: $error")
+									isOfferSent.set(false)
+									scheduleReconnect()
+								}
+							},
+							remoteDesc
+						)
+					}
+				}
+			}
+		})
+	}
+
+	private fun scheduleReconnect() {
+		if (isStopped.get()) return
+		Log.i(TAG, "[WHEP] Scheduling reconnect in ${RECONNECT_DELAY_MS}ms")
+		executor.schedule({
+			if (!isStopped.get()) {
+				connectWebRtc()
+			}
+		}, RECONNECT_DELAY_MS, TimeUnit.MILLISECONDS)
+	}
+
+	private fun videoFrameToBitmap(frame: VideoFrame): Bitmap? {
+		val i420 = frame.buffer.toI420() ?: return null
+		return try {
 			val width = i420.width
 			val height = i420.height
-
 			val yuv = ByteArray(width * height * 3 / 2)
 
 			val y = i420.dataY
@@ -588,138 +321,80 @@ class WebRtcClient(
 			val strideU = i420.strideU
 			val strideV = i420.strideV
 
-			// Y plane
 			for (row in 0 until height) {
 				y.position(row * strideY)
-				y.get(
-					yuv,
-					row * width,
-					width
-				)
+				y.get(yuv, row * width, width)
 			}
 
-			// NV21 = Y + VU
 			val uvOffset = width * height
-
 			for (row in 0 until height / 2) {
 				for (col in 0 until width / 2) {
-
-					yuv[
-						uvOffset +
-							row * width +
-							col * 2
-					] = v.get(
-						row * strideV + col
-					)
-
-					yuv[
-						uvOffset +
-							row * width +
-							col * 2 + 1
-					] = u.get(
-						row * strideU + col
-					)
+					yuv[uvOffset + row * width + col * 2] = v.get(row * strideV + col)
+					yuv[uvOffset + row * width + col * 2 + 1] = u.get(row * strideU + col)
 				}
 			}
 
-			val jpeg = ByteArrayOutputStream()
+			val out = ByteArrayOutputStream()
+			val yuvImage = YuvImage(yuv, ImageFormat.NV21, width, height, null)
+			val success = yuvImage.compressToJpeg(Rect(0, 0, width, height), 85, out)
+			if (!success) return null
 
-			val success = YuvImage(
-				yuv,
-				ImageFormat.NV21,
-				width,
-				height,
-				null
-			).compressToJpeg(
-				Rect(
-					0,
-					0,
-					width,
-					height
-				),
-				90,
-				jpeg
-			)
+			val jpegBytes = out.toByteArray()
+			val bitmap = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.size) ?: return null
 
-			if (!success) {
-				Log.e(TAG, "YuvImage.compressToJpeg() failed")
-				return null
-			}
+			if (frame.rotation == 0) return bitmap
 
-			val bitmap = BitmapFactory.decodeByteArray(
-				jpeg.toByteArray(),
-				0,
-				jpeg.size()
-			) ?: run {
-				Log.e(TAG, "BitmapFactory.decodeByteArray() failed")
-				return null
-			}
-
-			if (frame.rotation == 0) {
-				return bitmap
-			}
-
-			val matrix = Matrix().apply {
-				postRotate(frame.rotation.toFloat())
-			}
-
-			return Bitmap.createBitmap(
-				bitmap,
-				0,
-				0,
-				bitmap.width,
-				bitmap.height,
-				matrix,
-				true
-			)
-
+			val matrix = Matrix().apply { postRotate(frame.rotation.toFloat()) }
+			Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
 		} catch (e: Exception) {
-			Log.e(TAG, "Video frame conversion failed", e)
-			return null
+			Log.e(TAG, "[WHEP] Video frame conversion failed", e)
+			null
 		} finally {
 			i420.release()
 		}
 	}
 
-	// ------------------------------------------------------------
-	// STOP
-	// ------------------------------------------------------------
+	private fun closeCurrentPeerConnection() {
+		try {
+			videoTrack?.setEnabled(false)
+			videoTrack = null
+			peerConnection?.close()
+			peerConnection?.dispose()
+			peerConnection = null
+		} catch (e: Exception) {
+			Log.w(TAG, "[WHEP] Error closing PeerConnection: ${e.message}")
+		}
+	}
 
 	fun stop() {
-
-		Log.i(TAG, "Stopping WebRTC")
+		Log.i(TAG, "[WHEP] Stopping WebRTC client")
+		isStopped.set(true)
 
 		executor.execute {
-
 			try {
-				videoTrack?.setEnabled(false)
-
-				videoTrack = null
-
-				peerConnection?.close()
-				peerConnection?.dispose()
-				peerConnection = null
+				closeCurrentPeerConnection()
 
 				peerConnectionFactory?.dispose()
 				peerConnectionFactory = null
 
+				eglBase?.release()
+				eglBase = null
 			} catch (e: Exception) {
-				Log.e(
-					TAG,
-					"Error stopping WebRTC",
-					e
-				)
+				Log.e(TAG, "[WHEP] Error disposing WebRTC resources", e)
 			} finally {
-
-				if (!executor.isShutdown) {
-					executor.shutdown()
-				}
-
-				try {
-					eglBase.release()
-				} catch (_: Exception) {
-				}
+				executor.shutdown()
 			}
+		}
+	}
+
+	private open class SdpObserverAdapter(private val tag: String) : SdpObserver {
+		override fun onCreateSuccess(description: SessionDescription) {}
+		override fun onSetSuccess() {}
+		override fun onCreateFailure(error: String?) {
+			Log.e(TAG, "[WHEP] $tag onCreateFailure: $error")
+		}
+		override fun onSetFailure(error: String?) {
+			Log.e(TAG, "[WHEP] $tag onSetFailure: $error")
 		}
 	}
 }

@@ -62,6 +62,10 @@ class controller : public QObject {
             if (!sock_result) 
                 qCCritical(logNetwork).noquote() << "Couldn't start button tcp socket!";
 
+            qCInfo(logPeripherial).noquote() << QString("ALSA headphone volume control initialized for %1 / %2")
+                .arg(head_server.get_volume_control()->get_card())
+                .arg(head_server.get_volume_control()->get_control());
+
             qCInfo(logNetwork).noquote() << "Starting HTTP server";
             
             if (!web.start_server()) {
@@ -134,7 +138,7 @@ class controller : public QObject {
         headphone_server head_server = headphone_server();
         status_led led_setter = status_led();
         battery_voltage batt_volt = battery_voltage();
-        webserver web = webserver(&mediamtx_init, &batt_volt);
+        webserver web = webserver(&mediamtx_init, &batt_volt, head_server.get_volume_control());
 
         cmd_output start_mediamtx();
 };

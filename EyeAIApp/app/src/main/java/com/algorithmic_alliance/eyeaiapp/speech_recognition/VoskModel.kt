@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
+import java.io.InputStream
 import org.json.JSONObject
 import org.vosk.LibVosk
 import org.vosk.LogLevel
@@ -12,6 +13,7 @@ import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.RecognitionListener
 import org.vosk.android.SpeechService
+import org.vosk.android.SpeechStreamService
 import org.vosk.android.StorageService
 
 class VoskModel(context: Context, val modelName: String) {
@@ -23,6 +25,7 @@ class VoskModel(context: Context, val modelName: String) {
 
 	private var model: Model? = null
 	private var speechService: SpeechService? = null
+	private var speechStreamService: SpeechStreamService? = null
 
 	@Volatile
 	private var isListening = false
@@ -47,8 +50,12 @@ class VoskModel(context: Context, val modelName: String) {
 	fun isListening(): Boolean = isListening
 	private val recognitionListener = object : RecognitionListener {
 		override fun onPartialResult(hypothesis: String) {
-			parsePartialOutput(hypothesis)?.let {
-				onPartialResultCallback(it)
+			Log.v(EyeAIApp.APP_LOG_TAG, "[VoskModel] Received partial raw JSON: $hypothesis")
+			parsePartialOutput(hypothesis)?.let { partial ->
+				if (partial.isNotEmpty()) {
+					Log.i(EyeAIApp.APP_LOG_TAG, "[VoskModel] Received partial hypothesis: '$partial'")
+				}
+				onPartialResultCallback(partial)
 			} ?: run {
 				Log.e(
 					EyeAIApp.APP_LOG_TAG, "[VoskModel] failed to parse partial result json format"
@@ -57,22 +64,23 @@ class VoskModel(context: Context, val modelName: String) {
 		}
 
 		override fun onResult(hypothesis: String) {
-			parseResultOutput(hypothesis)?.let {
-				onFinalResultCallback(it)
+			Log.d(EyeAIApp.APP_LOG_TAG, "[VoskModel] Received result raw JSON: $hypothesis")
+			parseResultOutput(hypothesis)?.let { text ->
+				Log.i(EyeAIApp.APP_LOG_TAG, "[VoskModel] Received result hypothesis: '$text'")
+				onFinalResultCallback(text)
 			} ?: run {
 				Log.e(EyeAIApp.APP_LOG_TAG, "[VoskModel] failed to parse result json format")
 			}
 		}
 
 		override fun onFinalResult(hypothesis: String) {
-			parseResultOutput(hypothesis)?.let {
-				onFinalResultCallback(it)
+			Log.d(EyeAIApp.APP_LOG_TAG, "[VoskModel] Received final raw JSON: $hypothesis")
+			parseResultOutput(hypothesis)?.let { final ->
+				Log.i(EyeAIApp.APP_LOG_TAG, "[VoskModel] Received final hypothesis: '$final'")
+				onFinalResultCallback(final)
 			} ?: run {
 				Log.e(EyeAIApp.APP_LOG_TAG, "[VoskModel] failed to parse final result json format")
 			}
-			onUpdateVoskUIStatus(false) //Callback an das UI, damit auf dem Button das richtige Icon angezeigt werden kann
-			deactivateSound?.seekTo(0)
-			deactivateSound?.start()
 		}
 
 		override fun onError(exception: Exception) {
@@ -149,12 +157,13 @@ class VoskModel(context: Context, val modelName: String) {
 		++modelLoadGeneration
 		modelLoading = false
 		try {
-			stopListening()
+			stopListening(playSound = false)
 			speechService?.shutdown()
 		} catch (e: Exception) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "[VoskModel] Exception closing service: ", e)
 		} finally {
 			speechService = null
+			speechStreamService = null
 			model = null
 			isListening = false
 			activateSound?.release()
@@ -165,13 +174,13 @@ class VoskModel(context: Context, val modelName: String) {
 	}
 
 	@Synchronized
-	fun startListening() {
-		if (isListening) {
+	fun startListening(inputStream: InputStream? = null, playSound: Boolean = true) {
+		if (isListening || speechService != null || speechStreamService != null) {
 			Log.d(
 				EyeAIApp.APP_LOG_TAG,
-				"[VoskModel] startListening called but already listening; ignoring."
+				"[VoskModel] startListening called while session active; stopping active session first."
 			)
-			return
+			stopListening(playSound = false)
 		}
 		if (model == null) {
 			Log.w(EyeAIApp.APP_LOG_TAG, "[VoskModel] cannot startListening: model not loaded")
@@ -179,12 +188,22 @@ class VoskModel(context: Context, val modelName: String) {
 		}
 		try {
 			val rec = Recognizer(model, SAMPLE_RATE)
-			speechService = SpeechService(rec, SAMPLE_RATE)
-			speechService?.startListening(recognitionListener)
+			if (inputStream != null) {
+				speechStreamService = SpeechStreamService(rec, inputStream, SAMPLE_RATE)
+				speechStreamService?.start(recognitionListener)
+			} else {
+				speechService = SpeechService(rec, SAMPLE_RATE)
+				speechService?.startListening(recognitionListener)
+			}
 			isListening = true
-			Log.d(EyeAIApp.APP_LOG_TAG, "[VoskModel] started listening")
-			activateSound?.seekTo(0)
-			activateSound?.start()
+			Log.d(
+				EyeAIApp.APP_LOG_TAG,
+				"[VoskModel] started listening (stream=${inputStream != null})"
+			)
+			if (playSound) {
+				activateSound?.seekTo(0)
+				activateSound?.start()
+			}
 		} catch (e: Exception) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "[VoskModel] failed to create/start speechService: $e")
 			isListening = false
@@ -192,7 +211,7 @@ class VoskModel(context: Context, val modelName: String) {
 	}
 
 	@Synchronized
-	fun stopListening() {
+	fun stopListening(playSound: Boolean = true) {
 		if (!isListening) {
 			Log.d(
 				EyeAIApp.APP_LOG_TAG,
@@ -202,12 +221,17 @@ class VoskModel(context: Context, val modelName: String) {
 		}
 		try {
 			speechService?.stop()
+			speechStreamService?.stop()
 			Log.d(EyeAIApp.APP_LOG_TAG, "[VoskModel] stopped listening")
-			deactivateSound?.seekTo(0)
-			deactivateSound?.start()
+			if (playSound) {
+				deactivateSound?.seekTo(0)
+				deactivateSound?.start()
+			}
 		} catch (e: Exception) {
 			Log.e(EyeAIApp.APP_LOG_TAG, "[VoskModel] error while stopping speechService: ", e)
 		} finally {
+			speechService = null
+			speechStreamService = null
 			isListening = false
 		}
 	}
