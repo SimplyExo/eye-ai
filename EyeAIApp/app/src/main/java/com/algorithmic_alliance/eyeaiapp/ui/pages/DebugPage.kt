@@ -521,6 +521,15 @@ fun MediaPreview(
 				)
 			}
 		}
+		uiState.lastError?.let { message ->
+			Text(
+				text = message,
+				color = MaterialTheme.colorScheme.onErrorContainer,
+				modifier = Modifier.align(Alignment.BottomCenter)
+					.background(MaterialTheme.colorScheme.errorContainer)
+					.padding(Spacing.sm),
+			)
+		}
 	}
 }
 

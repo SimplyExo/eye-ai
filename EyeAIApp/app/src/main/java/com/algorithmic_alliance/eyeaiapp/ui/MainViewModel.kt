@@ -114,7 +114,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 	val mediaPreviewUIState: StateFlow<MediaPreviewUIState> = _uiState.map {
 		MediaPreviewUIState(
-			mediaPreviewBitmap = it.mediaPreviewBitmap
+			mediaPreviewBitmap = it.mediaPreviewBitmap,
+			lastError = it.lastError
 		)
 	}.distinctUntilChanged()
 		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MediaPreviewUIState())
@@ -176,6 +177,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 						depthPreviewBitmap = runtimeState.depthPreviewBitmap,
 						debugInputPreviewBitmap = runtimeState.debugInputPreviewBitmap,
 						mediaPreviewBitmap = runtimeState.mediaPreviewBitmap,
+						lastError = runtimeState.lastError,
 						performanceText = runtimeState.performanceText,
 						detectedObjects = runtimeState.detectedObjects,
 						debugSegmentationBitmap = runtimeState.debugSegmentationBitmap,
