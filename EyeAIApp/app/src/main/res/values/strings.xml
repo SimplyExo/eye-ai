@@ -301,4 +301,6 @@
 <string name="scene_spatial_key" translatable="false">scene_description_spatial_audio</string>
 <string name="scene_spatial_title">Räumliche Szenenbeschreibung</string>
 <string name="scene_spatial_description">Beschreibungen aus der Richtung der Objekte hören. Verlässliche Entfernungen beeinflussen die räumliche Ausgabe.</string>
+	<string name="local_network_permission_name">Geräte im lokalen Netzwerk</string>
+	<string name="local_network_permission_explanation">EyeAI benötigt Zugriff auf das lokale Netzwerk, um Kamerabilder, Audio und Tastendrücke von der EyeAI-Vision zu übertragen.</string>
 </resources>

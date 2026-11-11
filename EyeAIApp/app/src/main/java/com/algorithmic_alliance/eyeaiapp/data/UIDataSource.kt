@@ -97,7 +97,20 @@ object UIDataSource {
 			"hardPermission" to false
 		)
 
-	)
+	) + if (Build.VERSION.SDK_INT >= 37) listOf(
+		mapOf(
+			"permissionName" to R.string.local_network_permission_name,
+			"permissions" to Manifest.permission.ACCESS_LOCAL_NETWORK,
+			"permissionExplanation" to R.string.local_network_permission_explanation,
+			"icon" to R.drawable.wifi_24px,
+			"iconDescription" to R.string.wifi_icon_description,
+			"permissionDeclineSemantic" to R.string.wifi_permission_decline_semantic,
+			"permissionAcceptSemantic" to R.string.wifi_permission_accept_semantic,
+			"confirmPermissionDeclineExplanation" to R.string.wifi_confirm_decline_explanation_text,
+			"confirmPermissionDeclineSemantic" to R.string.wifi_confirm_permission_decline_semantic,
+			"hardPermission" to false
+		)
+	) else emptyList()
 
 	/* EXPLANATION HOW TO ADD NEW SETTING
 	Categories:
