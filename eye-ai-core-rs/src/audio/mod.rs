@@ -14,3 +14,5 @@ mod spatial_audio_content;
 pub use spatial_audio_content::{
 	AudioFileData, ObjectLabelData, SpatialAudioContent, read_audio_file, read_object_label_data,
 };
+
+pub mod spatial_speech;

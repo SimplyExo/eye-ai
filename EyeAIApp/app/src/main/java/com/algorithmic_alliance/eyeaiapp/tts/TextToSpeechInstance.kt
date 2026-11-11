@@ -14,6 +14,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
 import java.util.Locale
 import java.util.UUID
 import kotlin.random.Random
@@ -31,9 +32,45 @@ class TextToSpeechInstance(
 	private val pendingCallbacks = java.util.concurrent.ConcurrentHashMap<String, () -> Unit>()
     private val startCallbacks = java.util.concurrent.ConcurrentHashMap<String, () -> Unit>()
     private val ownership=SpeechOwnership()
+    private val sceneSpeech=SceneSpeechController(context)
+    @Volatile private var externalOwner:String?=null
+    private var externalCancelled:(()->Unit)?=null
+    private var externalGeneration=0L
+    private val deferredSpeech=java.util.ArrayDeque<()->Unit>()
+    @Synchronized fun speakSpatialOwned(segments: List<com.algorithmic_alliance.eyeaiapp.scenenarrator.NarrationSegment>,owner:String,valid:()->Boolean,invalidated:Flow<Unit>,onStarted:()->Unit,onComplete:()->Unit,onCancelled:()->Unit):Boolean {
+        if(!isReadyToSpeak()||isSpeaking()||segments.isEmpty())return false
+        externalOwner=owner
+        externalCancelled=onCancelled
+        var started=false
+        val notifyStarted={if(!started){started=true;onStarted()}}
+        val generation=++externalGeneration
+        fun release():Boolean {
+            if(generation!=externalGeneration)return false
+            externalOwner=null
+            externalCancelled=null
+            while(deferredSpeech.isNotEmpty())deferredSpeech.removeFirst().invoke()
+            invokeOnFinishedWhenPlaybackStops()
+            return true
+        }
+        sceneSpeech.start(segments,tts?.voice?.name,speechRate,valid,invalidated,
+            notifyStarted,{if(release())onComplete()},
+            {remaining->
+                if(generation==externalGeneration) {
+                    externalOwner=null
+                    externalCancelled=null
+                    speakOwned(remaining.joinToString(" "){it.text},owner,notifyStarted,onComplete)
+                    while(deferredSpeech.isNotEmpty())deferredSpeech.removeFirst().invoke()
+                }
+            },{if(release())onCancelled()})
+        return true
+    }
+    private fun cancelExternalSpeech() {
+        if(externalOwner!=null) {externalGeneration++;externalOwner=null;sceneSpeech.stop();externalCancelled?.invoke();externalCancelled=null}
+        deferredSpeech.clear()
+    }
     private val activeUtterances=java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     fun stopIfOwnerPrefix(prefix: String): Boolean = synchronized(this) {
-        if(!ownership.canCancel(prefix))return@synchronized false
+        if(externalOwner?.startsWith(prefix)!=true&&!ownership.canCancel(prefix))return@synchronized false
         stop()
         true
     }
@@ -102,7 +139,7 @@ class TextToSpeechInstance(
 	private fun finishUtterance(utteranceId: String?) {
         if(utteranceId!=null&&activeUtterances.remove(utteranceId))decrementUtteranceCount()
 		utteranceId?.let { id ->
-			pendingCallbacks.remove(id)?.invoke()
+			pendingCallbacks.remove(id)?.let {callback->callbackScope.launch {callback()}}
             startCallbacks.remove(id)
             ownership.finished(id)
 			hasSpecificCallback.remove(id)
@@ -175,7 +212,8 @@ class TextToSpeechInstance(
 	//Simple stop method, supports stop button
 	@Synchronized fun stop() {
 		Log.w(EyeAIApp.APP_LOG_TAG, "TTS stop() called. Clearing queues and callbacks.")
-		if (!isReady) return
+		cancelExternalSpeech()
+        if (!isReady) return
 		try {
 			tts?.stop()
 		} catch (e: Exception) {
@@ -192,6 +230,8 @@ ownership.clear()
 
 	//Should only be used if necessary, completely shuts down the TTS-Service
 	fun shutdown() {
+        cancelExternalSpeech()
+        sceneSpeech.shutdown()
 		pendingCallbacks.clear()
         startCallbacks.clear()
 ownership.clear()
@@ -225,7 +265,7 @@ ownership.clear()
 			val utteranceCount = getActiveUtteranceCount()
 
 
-			val speakingNow = isSpeakingFlag || (utteranceCount > 0)
+			val speakingNow = isSpeakingFlag || (utteranceCount > 0) || externalOwner!=null
 
 			if (speakingNow) {
 				if (silentStart != -1L || (System.currentTimeMillis() - start) % 500 < pollIntervalMs) {
@@ -327,6 +367,10 @@ ownership.clear()
 			return
 		}
 
+        if(externalOwner!=null) {
+            if(queueMode==QUEUE_FLUSH)cancelExternalSpeech()
+            else {deferredSpeech.addLast {enqueue(text,queueMode,owner,onStarted,onComplete)};return}
+        }
         if(queueMode==QUEUE_FLUSH) {startCallbacks.clear()
 activeUtterances.clear()
         synchronized(this) {activeUtteranceCount=0}}
@@ -542,5 +586,5 @@ activeUtterances.clear()
 	@Synchronized
 	fun getActiveUtteranceCount(): Int = activeUtteranceCount
 
-	fun isSpeaking(): Boolean = tts?.isSpeaking == true || getActiveUtteranceCount() > 0
+	fun isSpeaking(): Boolean = externalOwner!=null || tts?.isSpeaking == true || getActiveUtteranceCount() > 0
 }

@@ -717,14 +717,13 @@ fn createSpatialAudio() {
 		return;
 	};
 
-	let spatial_audio = SpatialAudio::new(
+	let spatial_audio = match SpatialAudio::new(
 		SPATIAL_AUDIO_SETTINGS.clone(),
 		spatial_audio_content.clone(),
 		AUDIO_PROFILING_FRAME.clone(),
 		DEPTH_AUDIO_THREAD_PROFILING_FRAME.clone(),
 		OBJECT_AUDIO_THREAD_PROFILING_FRAME.clone(),
-	)
-	.expect("failed to create spatial audio");
+	) { Ok(engine)=>engine, Err(error)=>{error!("Spatial audio unavailable: {error}");return;} };
 
 	*SPATIAL_AUDIO.write().unwrap() = Some(spatial_audio);
 }
@@ -820,3 +819,53 @@ pub fn getEyeAICoreVersion() -> String {
 pub fn configureLlm() {}
 
 uniffi::setup_scaffolding!("NativeLib");
+
+#[uniffi::export(callback_interface)]
+pub trait SpatialSpeechListener: Send + Sync {
+	fn on_started(&self);
+	fn on_ended(&self, completed: bool);
+}
+
+#[uniffi::export]
+pub fn playSpatialSpeech(
+	pcm: Vec<u8>,
+	rate: i32,
+	horizontal_center: f32,
+	distance: f32,
+	listener: Box<dyn SpatialSpeechListener>,
+) -> Result<(), SpeechError> {
+	use eye_ai_core_rs::audio::spatial_speech::PlaybackEvent;
+
+	if !horizontal_center.is_finite() || !distance.is_finite() {
+		return Err(SpeechError::Unavailable);
+	}
+	let angle = (horizontal_center.clamp(0.0, 1.0) * 180.0 - 90.0).to_radians();
+	let distance = distance.clamp(0.5, 6.0);
+	let gain = 1.0 - (distance - 0.5) / 5.5 * 0.25;
+	let mut engine = SPATIAL_AUDIO.write().unwrap();
+	let engine = engine.as_mut().ok_or(SpeechError::Unavailable)?;
+	engine.speech.play(
+		engine.speech_context(),
+		pcm,
+		rate,
+		[angle.sin() * distance, 0.0, -angle.cos() * distance],
+		gain,
+		move |event| match event {
+			PlaybackEvent::Started => listener.on_started(),
+			PlaybackEvent::Ended(completed) => listener.on_ended(completed),
+		},
+	).map_err(|_| SpeechError::Unavailable)
+}
+
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+pub enum SpeechError {
+	#[error("Spatial speech unavailable")]
+	Unavailable,
+}
+
+#[uniffi::export]
+pub fn stopSpatialSpeech() {
+	if let Some(engine) = SPATIAL_AUDIO.write().unwrap().as_mut() {
+		engine.speech.stop();
+	}
+}

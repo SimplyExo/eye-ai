@@ -144,6 +144,7 @@ object UIDataSource {
 				"action" to ACTION_OPEN_BATTERY_OPTIMIZATION
 			)
         ), R.string.settings_category_scene_description to listOf(
+            mapOf("title" to R.string.scene_spatial_title,"description" to R.string.scene_spatial_description,"settingsType" to "checkbox","string" to R.string.scene_spatial_key,"default" to true),
             mapOf(
                 "title" to R.string.setting_scene_description_detail_title,
                 "description" to R.string.setting_scene_description_detail_description,

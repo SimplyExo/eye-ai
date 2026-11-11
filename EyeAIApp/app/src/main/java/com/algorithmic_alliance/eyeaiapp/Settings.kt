@@ -32,6 +32,7 @@ data class Settings(
 	var rel2AbsMode: Rel2AbsMode,
 	var cameraHeightTenths: Int,
 	var sceneDescriptionDetail: SceneDescriptionDetail = SceneDescriptionDetail.STANDARD,
+    var sceneDescriptionSpatialAudio: Boolean = true,
 ) : Cloneable {
     val audioOutputMode: AudioOutputMode
         get() = AudioOutputMode.fromStoredValue(objectAudioPlaybackMode)
@@ -206,6 +207,7 @@ data class Settings(
 				rel2AbsMode,
 				cameraHeightTenths,
 				descriptionDetail,
+                sharedPreferences.getBoolean("scene_description_spatial_audio",true),
 			)
 		}
 	}
@@ -234,6 +236,7 @@ data class Settings(
 		rel2AbsMode,
 		cameraHeightTenths,
 		sceneDescriptionDetail,
+        sceneDescriptionSpatialAudio,
 	)
 
 	fun save(context: Context) {
@@ -246,6 +249,7 @@ data class Settings(
 			putString("object_playback_language", objectAudioPlaybackLanguage)
 
 			//other settings
+            putBoolean("scene_description_spatial_audio",sceneDescriptionSpatialAudio)
 			putString(context.getString(R.string.scene_description_detail_setting), sceneDescriptionDetail.name)
 			putString(context.getString(R.string.depth_model_setting), depthModel)
 			putBoolean(context.getString(R.string.show_profiling_info_setting), showProfilingInfo)

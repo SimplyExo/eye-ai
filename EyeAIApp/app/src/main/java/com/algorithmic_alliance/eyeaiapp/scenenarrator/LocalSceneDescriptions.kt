@@ -16,6 +16,7 @@ import java.util.concurrent.Executors
 // Context observation runs independently of capture, R4 and speech.
 class LocalSceneDescriptions(context: Context,settleNanos: Long?=null,private val clock: ()->Long=System::nanoTime,collectionNanos: Long?=null): AutoCloseable {
     data class State(val enabled: Boolean=false,val busy: Boolean=false,val text: String="",
+        val segments: List<NarrationSegment> = emptyList(),
         val model: String="Deterministische Beschreibung + R4",val score: Double=0.0,val latencyMs: Long?=null,
         val sourceFrameId: Long?=null,val error: String?=null,val announcementId: Long=0,val phase: String="Aus",
         val r4Diagnostics: List<R4RawDiagnostic> = emptyList(),val experimentalR4Enabled: Boolean=true,
@@ -296,11 +297,11 @@ put("r4Executed",result.r4ModelExecuted)
                         put("error",result.error)} }
                         if(mutable.value.enabled&&!mutable.value.shadow&&result.text.isNotBlank()) {
                             sequence++
-                            mutable.update {it.copy(text=result.text,announcementId=sequence,sourceFrameId=capture.frame.frameId,
+                            mutable.update {it.copy(text=result.text,segments=result.segments,announcementId=sequence,sourceFrameId=capture.frame.frameId,
                                 model=result.modelName,latencyMs=(clock()-started)/1_000_000,error=result.error,r4Diagnostics=result.r4Diagnostics,
                                 phase="Orientierung bereit · wartet auf Sprachstart")}
                         }else {if(mutable.value.shadow)unspoken=null
-                        mutable.update {it.copy(text=result.text,sourceFrameId=capture.frame.frameId,r4Diagnostics=result.r4Diagnostics,
+                        mutable.update {it.copy(text=result.text,segments=result.segments,sourceFrameId=capture.frame.frameId,r4Diagnostics=result.r4Diagnostics,
                             phase=if(it.shadow)"Schattenanalyse · keine Ansage" else "Keine formulierbare Evidenz")}}
                     }else recorder.event("STALE_NARRATION_REJECTED",frame=capture.frame)
                 }
@@ -326,6 +327,12 @@ unspoken=null
         recorder.event("SPEECH_STARTED") { buildJsonObject {put("announcement",id)
         put("episode",mutable.value.episodeId)} }
         mutable.update {it.copy(phase="Orientierung wird vorgelesen …")}
+    }
+    fun speechCancelled(id: Long)=synchronized(lock) {
+        if(mutable.value.announcementId==id) {
+            policy.speechFinished()
+            mutable.update {it.copy(phase="Orientierung abgebrochen")}
+        }
     }
     fun speechFinished(id: Long)=synchronized(lock) {
         recorder.event("SPEECH_FINISHED") { buildJsonObject {put("announcement",id)} }

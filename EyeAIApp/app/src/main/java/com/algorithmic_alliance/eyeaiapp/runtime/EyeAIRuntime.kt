@@ -54,6 +54,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
@@ -246,9 +247,17 @@ class EyeAIRuntime internal constructor(
 	private fun speakSceneText(text: String, onComplete: (() -> Unit)? = null) {
         if (!isActive || !settings.isR4Mode) return
 		pauseSpatialAudio()
-		_state.update { it.copy(speechResponseText = text, ttsSpeaking = true) }
+		_state.update { it.copy(speechResponseText = if(settings.sceneDescriptionSpatialAudio)localSceneDescriptions.state.value.segments.joinToString(" "){it.text} else text, ttsSpeaking = true) }
 		val id=localSceneDescriptions.state.value.announcementId
-        val admitted=textToSpeechInstance.speakOwned(text,"orientation:$id",onStarted={localSceneDescriptions.speechStarted(id)},onComplete={
+        val valid = { isActive && settings.isR4Mode && localSceneDescriptions.isCurrentAnnouncement(id) }
+        val admitted=if(settings.sceneDescriptionSpatialAudio) textToSpeechInstance.speakSpatialOwned(
+            localSceneDescriptions.state.value.segments,"orientation:$id",
+            valid=valid,
+            invalidated=localSceneDescriptions.state.filter { !valid() }.map { Unit },
+            onStarted={localSceneDescriptions.speechStarted(id)},
+            onComplete={localSceneDescriptions.speechFinished(id);onComplete?.invoke()},
+            onCancelled={localSceneDescriptions.speechCancelled(id);onComplete?.invoke()}
+        ) else textToSpeechInstance.speakOwned(text,"orientation:$id",onStarted={localSceneDescriptions.speechStarted(id)},onComplete={
             localSceneDescriptions.speechFinished(id)
             onComplete?.invoke()
         })
@@ -326,6 +335,10 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
                 localSceneDescriptions.setExperimentalR4Enabled(true)
                 setLocalSceneDescriptionsEnabled(newSettings.isR4Mode)
             }
+        }
+        if(oldSettings.sceneDescriptionSpatialAudio != newSettings.sceneDescriptionSpatialAudio) {
+            textToSpeechInstanceValue?.stopIfOwnerPrefix("orientation:")
+            orientationSpeechId=null
         }
         if(oldSettings.sceneDescriptionDetail != newSettings.sceneDescriptionDetail) {
             localSceneDescriptions.setDetail(newSettings.sceneDescriptionDetail)

@@ -690,6 +690,7 @@ dependencies = [
  "arc-swap",
  "eye-ai-core-rs",
  "eye-ai-core-rs-profiling_attribute",
+ "thiserror 2.0.18",
  "tracing",
  "tracing-subscriber",
  "tracing-tracy",

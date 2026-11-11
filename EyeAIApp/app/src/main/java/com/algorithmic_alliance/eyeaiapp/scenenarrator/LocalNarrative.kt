@@ -4,7 +4,8 @@ import com.algorithmic_alliance.eyeaiapp.worldstate.*
 import kotlinx.serialization.json.*
 
 // Evidence-based spatial orientation for DESCRIBE.
-class LocalNarrative(private val language: JsonObject) {
+class LocalNarrative(language: JsonObject) {
+    private val renderer = OrientationRenderer(language)
     data class Prepared(val input: TinyWorldInput, val facts: List<JsonObject>, val indices: List<Int>,
         val spatialPlan: OrientationPlanner.Plan, val r4Candidates: List<R4RelationCandidate> = emptyList(),
         internal val anchorId: Int? = null, internal val detail: String = "STANDARD")
@@ -102,8 +103,13 @@ class LocalNarrative(private val language: JsonObject) {
                 args(p.facts[it]).s("relation") in SceneGraphV2.kinds || args(p.facts[it]).s("relation") in R4RelationTypes.outputIndex
             }
 
+    internal fun renderBoth(p: Prepared): Pair<String, List<NarrationSegment>> {
+        require(verifyEvidence(p)) { "Narration facts no longer match their snapshot" }
+        val segments = renderer.renderSegments(p.input, p.spatialPlan, p.detail)
+        return segments.joinToString(" ") { it.text } to segments
+    }
     fun render(p: Prepared): String {
         require(verifyEvidence(p)) { "Narration facts no longer match their snapshot" }
-        return OrientationRenderer(language).render(p.input, p.spatialPlan, p.detail)
+        return renderer.render(p.input, p.spatialPlan, p.detail)
     }
 }

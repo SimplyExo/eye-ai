@@ -7,7 +7,7 @@ import java.security.MessageDigest
 
 // Deterministic speech from evidence, with optional offline R4 perception.
 class LocalNarratorModel(context: Context) : AutoCloseable {
-    data class Result(val text: String,
+    data class Result(val text: String, val segments: List<NarrationSegment> = emptyList(),
         val error: String? = null, val r4ModelExecuted: Boolean = false,
         val modelName: String = "Deterministische Beschreibung",
         val r4Diagnostics: List<R4RawDiagnostic> = emptyList(),val r4AllDiagnostics: List<R4RawDiagnostic> = emptyList())
@@ -48,13 +48,13 @@ class LocalNarratorModel(context: Context) : AutoCloseable {
             }
         }
         val prepared = language.prepareDeterministic(input, detail, r4Result?.candidates.orEmpty())
-        val output = language.render(prepared)
+        val (output, segments) = language.renderBoth(prepared)
         val name = when {
             !useR4 -> "Deterministische Beschreibung"
             r4Result?.executed != true -> "Deterministische Beschreibung · R4 nicht verfügbar"
             else -> "Deterministische Beschreibung + R4 ${relationModel?.modelPrecision}"
         }
-        return Result(text = output, error = error, r4ModelExecuted = r4Result?.executed == true,
+        return Result(text = output, segments = segments, error = error, r4ModelExecuted = r4Result?.executed == true,
             modelName = name, r4Diagnostics = r4Result?.diagnostics.orEmpty(),r4AllDiagnostics=r4Result?.allDiagnostics.orEmpty())
     }
 

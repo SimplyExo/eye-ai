@@ -248,4 +248,7 @@
     <string name="setting_scene_description_detail_description">Choose compact phrases or a normal description in short sentences. Applies to the next description.</string>
     <string name="scene_detail_short">Short</string>
     <string name="scene_detail_standard">Normal</string>
+<string name="scene_spatial_key" translatable="false">scene_description_spatial_audio</string>
+<string name="scene_spatial_title">Spatial scene description</string>
+<string name="scene_spatial_description">Hear descriptions from the direction of the objects. Reliable distances affect spatial playback.</string>
 </resources>

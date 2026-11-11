@@ -33,6 +33,7 @@ pub enum SpatialAudioError {
 }
 
 pub struct SpatialAudio {
+ pub speech: crate::audio::spatial_speech::SpatialSpeech,
 	_alto: Alto,
 	_device: OutputDevice,
 	_context: Arc<Context>,
@@ -60,6 +61,8 @@ impl Drop for SpatialAudio {
 	}
 }
 impl SpatialAudio {
+ pub fn speech_context(&self)->Arc<Context>{self._context.clone()}
+
 	#[profile_function("profiling_frame")]
 	pub fn new(
 		settings: Arc<RwLock<SpatialAudioSettings>>,
@@ -84,7 +87,7 @@ impl SpatialAudio {
 		let depth_audio_running_clone = depth_audio_running.clone();
 
 		let object_audio_running = Arc::new(AtomicBool::new(true));
-		let object_audio_running_clone = depth_audio_running.clone();
+		let object_audio_running_clone = object_audio_running.clone();
 
 		let alto = Alto::load_default()?;
 		let device = alto.open(None)?;
@@ -93,7 +96,7 @@ impl SpatialAudio {
 				soft_hrtf: Some(true),
 				..Default::default()
 			};
-			device.soft_reset(Some(attribs)).unwrap();
+			device.soft_reset(Some(attribs))?;
 		}
 		let context = Arc::new(device.new_context(None)?);
 		context.set_distance_model(DistanceModel::LinearClamped);
@@ -109,6 +112,7 @@ impl SpatialAudio {
 		let object_audio_sources_data_clone = object_audio_sources_data.clone();
 
 		Ok(Self {
+ speech: Default::default(),
 			_alto: alto,
 			_device: device,
 			_context: context,
@@ -287,6 +291,7 @@ fn depth_audio_thread(
 			profile_scope!(profiling_frame, "Wait for resume");
 
 			while settings.read().unwrap().depth_audio_paused {
+ if !running.load(Ordering::Relaxed) {return;}
 				std::thread::sleep(Duration::from_millis(500));
 			}
 		}
