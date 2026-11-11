@@ -16,6 +16,7 @@ import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.Settings
+import com.algorithmic_alliance.eyeaiapp.audio.AppAudioOutput
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudioResumeController
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudioResumeOutcome
@@ -305,6 +306,10 @@ class EyeAIRuntime internal constructor(
 			initializeModels()
 			textToSpeechInstance
 			frameAnalyzer.start()
+			if (settings.inputSource == context.getString(R.string.input_is_eyeaivision)) {
+				textToSpeechInstanceValue?.stop()
+				AppAudioOutput.start("192.168.4.1")
+			}
 			SpatialAudio.setup(context)
 			SpatialAudio.start()
 			serviceOwner = WeakReference(owner)
@@ -789,6 +794,10 @@ class EyeAIRuntime internal constructor(
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun stopVideoSource() {
+		if (AppAudioOutput.isNetworkOutput) {
+			textToSpeechInstanceValue?.stop()
+			AppAudioOutput.stop()
+		}
 		cameraManager.stop()
 		mediaPlayerValue?.shutdown()
 		mediaPlayerValue = null

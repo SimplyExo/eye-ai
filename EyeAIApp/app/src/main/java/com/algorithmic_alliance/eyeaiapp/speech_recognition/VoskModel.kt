@@ -1,7 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.speech_recognition
 
 import android.content.Context
-import android.media.MediaPlayer
+import com.algorithmic_alliance.eyeaiapp.audio.AppSoundPlayer
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.R
@@ -43,8 +43,8 @@ class VoskModel(context: Context, val modelName: String) {
 	@Volatile
 	private var onUpdateVoskUIStatus: (status: Boolean) -> Unit = {}
 
-	private var activateSound: MediaPlayer? = null
-	private var deactivateSound: MediaPlayer? = null
+	private var activateSound: AppSoundPlayer? = null
+	private var deactivateSound: AppSoundPlayer? = null
 
 
 	fun isListening(): Boolean = isListening
@@ -96,8 +96,8 @@ class VoskModel(context: Context, val modelName: String) {
 		LibVosk.setLogLevel(LogLevel.DEBUG)
 
 		// MediaPlayer initialisieren
-		activateSound = MediaPlayer.create(context, R.raw.activate)
-		deactivateSound = MediaPlayer.create(context, R.raw.deactivate)
+		activateSound = AppSoundPlayer.create(context, R.raw.activate)
+		deactivateSound = AppSoundPlayer.create(context, R.raw.deactivate)
 	}
 
 	fun initService(
@@ -148,8 +148,8 @@ class VoskModel(context: Context, val modelName: String) {
 
 	@Synchronized
 	private fun ensureSoundPlayers() {
-		if (activateSound == null) activateSound = MediaPlayer.create(context, R.raw.activate)
-		if (deactivateSound == null) deactivateSound = MediaPlayer.create(context, R.raw.deactivate)
+		if (activateSound == null) activateSound = AppSoundPlayer.create(context, R.raw.activate)
+		if (deactivateSound == null) deactivateSound = AppSoundPlayer.create(context, R.raw.deactivate)
 	}
 
 	@Synchronized
