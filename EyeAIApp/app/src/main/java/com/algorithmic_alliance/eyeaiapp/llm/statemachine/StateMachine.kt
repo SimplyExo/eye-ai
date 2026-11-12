@@ -152,7 +152,7 @@ class StateMachine(
             runCatching { previous.save(eyeAIApp); eyeAIApp.updateSettings() }
             Log.e(EyeAIApp.APP_LOG_TAG, "Mode change failed", error)
             speechOutputHandler.speakAndHandleUi("Der Modus konnte nicht gewechselt werden.")
-            return StateUpdate(returnState, lastDialogContext)
+            return StateUpdate(returnState, lastDialogContext, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
         }
         val name = when (mode) {
             com.algorithmic_alliance.eyeaiapp.audio.AudioOutputMode.STANDARD -> "Normaler Modus"
@@ -161,7 +161,7 @@ class StateMachine(
         }
         Log.d(EyeAIApp.APP_LOG_TAG, "[ModeRouter] accepted=true mode=$mode")
         speechOutputHandler.speakAndHandleUi("$name aktiviert.")
-        return StateUpdate(returnState, lastDialogContext, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
+        return StateUpdate(returnState, lastDialogContext, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
     }
 
 	private fun handleUnresolvedCommand(
