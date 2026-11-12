@@ -34,6 +34,7 @@ data class Settings(
 	var sceneDescriptionDetail: SceneDescriptionDetail = SceneDescriptionDetail.STANDARD,
     var sceneDescriptionSpatialAudio: Boolean = true,
     var enableModeVoiceSwitch: Boolean = true,
+	var showSegmentationOverlay: Boolean = true,
 ) : Cloneable {
     val audioOutputMode: AudioOutputMode
         get() = AudioOutputMode.fromStoredValue(objectAudioPlaybackMode)
@@ -184,6 +185,8 @@ data class Settings(
 			)
 			val rel2AbsMode = Rel2AbsMode.forCameraHeightTenths(cameraHeightTenths)
 
+			val showSegmentationOverlay = sharedPreferences.getBoolean(context.getString(R.string.segmentation_overlay_enabled), true)
+
 			return Settings(
 				depthModel,
 				maxDepthFrameRate,
@@ -210,6 +213,7 @@ data class Settings(
 				descriptionDetail,
                 sharedPreferences.getBoolean("scene_description_spatial_audio",true),
                 sharedPreferences.getBoolean("enable_mode_voice_switch", true),
+				showSegmentationOverlay,
 			)
 		}
 	}
@@ -240,6 +244,7 @@ data class Settings(
 		sceneDescriptionDetail,
         sceneDescriptionSpatialAudio,
         enableModeVoiceSwitch,
+		showSegmentationOverlay,
 	)
 
 	fun save(context: Context) {
@@ -285,6 +290,7 @@ data class Settings(
 					Rel2AbsMode.MAX_CAMERA_HEIGHT_TENTHS,
 				),
 			)
+			putBoolean(context.getString(R.string.segmentation_overlay_enabled), showSegmentationOverlay)
 
 			// Frame Rate Limits
 			maxDepthFrameRate?.let {

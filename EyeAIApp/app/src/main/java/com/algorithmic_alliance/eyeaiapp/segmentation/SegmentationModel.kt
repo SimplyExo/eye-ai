@@ -2,7 +2,8 @@ package com.algorithmic_alliance.eyeaiapp.segmentation
 
 import android.content.Context
 import android.graphics.Bitmap
-import androidx.core.graphics.scale
+import android.graphics.Canvas
+import android.graphics.Rect
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import org.json.JSONObject
 
@@ -15,6 +16,16 @@ class SegmentationModel(var info: SegmentationModelInfo) {
 	var tensorHeight = 0
 
 	private var initialized = false
+
+	// Wiederverwendete Objekte: werden nur in create() neu angelegt, nicht pro Frame
+	private var inputBuffer: NativeLib.NativeFloatBuffer? = null
+	private var scaledBitmap: Bitmap? = null
+	private var scaledCanvas: Canvas? = null
+	private val srcRect = Rect()
+	private val dstRect = Rect()
+
+	@Volatile
+	private var currentEnableNpu: Boolean? = null
 
 	@Synchronized
 	fun create(
@@ -68,28 +79,39 @@ class SegmentationModel(var info: SegmentationModelInfo) {
 		tensorWidth = inputShape[2]
 		tensorHeight = inputShape[3]
 
+		allocateBuffers()
+
 		currentEnableNpu = enableNpu
 		initialized = true
 	}
 
-	@Volatile
-	private var currentEnableNpu: Boolean? = null
+	private fun allocateBuffers() {
+		scaledBitmap?.recycle()
+		val bitmap = Bitmap.createBitmap(tensorWidth, tensorHeight, Bitmap.Config.ARGB_8888)
+		scaledBitmap = bitmap
+		scaledCanvas = Canvas(bitmap)
+		inputBuffer = NativeLib.NativeFloatBuffer(tensorWidth * tensorHeight * 3)
+		dstRect.set(0, 0, tensorWidth, tensorHeight)
+	}
 
+	/** Published masks retain their own storage for asynchronous consumers. */
 	@Synchronized
 	fun runInference(frame: Bitmap): NativeLib.NativeIntBuffer? {
-		if (!initialized) {			/*Log.e(
-				"SEGMENTATION",
-				"Tried to run Segmentation inference on uninitialized segmentation model, call create first!"
-			)*/
-			return null
-		}
-
-		val resizedBitmap = frame.scale(tensorWidth, tensorHeight, false)
-		val input = NativeLib.bitmapToRgbHwc255FloatArray(resizedBitmap)
+		if (!initialized) return null
+		val canvas = scaledCanvas ?: return null
+		val scaled = scaledBitmap ?: return null
+		val input = inputBuffer ?: return null
 		val output = NativeLib.NativeIntBuffer(tensorWidth * tensorHeight)
 
-		uniffi.NativeLib.runSegmentationOperation(input.asUniffiWrapper(), output.asUniffiWrapper())
+		// Frame ohne neue Bitmap auf Tensorgröße skalieren
+		srcRect.set(0, 0, frame.width, frame.height)
+		canvas.drawBitmap(frame, srcRect, dstRect, null)
 
+		// In den vorhandenen Buffer schreiben (Position zurücksetzen!)
+		input.floatBuffer.clear()
+		NativeLib.bitmapToRgbHwc255FloatArray(scaled, input.floatBuffer)
+
+		uniffi.NativeLib.runSegmentationOperation(input.asUniffiWrapper(), output.asUniffiWrapper())
 		return output
 	}
 }

@@ -43,6 +43,7 @@
 	<string name="object_playback_is_object_watch" translatable="false">Objekt-Watch</string>
 	<string name="object_playback_is_r4" translatable="false">Szenenbeschreibung</string>
 	<string name="object_playback_is_standard" translatable="false">Normal</string>
+	<string name="segmentation_overlay_enabled" translatable="false">segmentation_overlay_enabled</string>
 
 
 	<!--Strings for Text in the UI  -->
