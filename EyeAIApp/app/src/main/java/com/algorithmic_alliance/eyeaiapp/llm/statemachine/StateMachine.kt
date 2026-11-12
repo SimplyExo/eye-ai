@@ -247,7 +247,7 @@ class StateMachine(
 
 	private fun openGuidedSettingsMenu(): StateUpdate {
 		speechOutputHandler.speakAndHandleUi(LocalInteractionMessages.SETTINGS_MENU)
-		return StateUpdate(State.SETTINGS_MENU, null)
+		return StateUpdate.awaitingReply(State.SETTINGS_MENU, null)
 	}
 
 	private suspend fun handleDirectSettingsRequest(
@@ -296,11 +296,28 @@ class StateMachine(
 				"Welches Objekt soll ich vermessen? Ich sehe: ${visibleObjects.take(5).joinToString(", ")}."
 			}
 			speechOutputHandler.speakAndHandleUi(response)
-			return StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
+            return if (visibleObjects.isNotEmpty()) awaitObjectQuery(distanceOnly = true)
+            else StateUpdate(State.IDLE, null)
 		}
 
 		return handleObjectDetectionRequest(objectQuery, distanceOnly = true)
 	}
+
+    private fun awaitObjectQuery(distanceOnly: Boolean): StateUpdate {
+        val context = org.json.JSONObject().put("distance_only", distanceOnly).toString()
+        return StateUpdate.awaitingReply(State.OBJECT_QUERY, context)
+    }
+
+    fun handleObjectQueryReply(input: String): StateUpdate {
+        val distanceOnly = runCatching {
+            org.json.JSONObject(requireNotNull(lastDialogContext)).getBoolean("distance_only")
+        }.getOrNull() ?: run {
+            speechOutputHandler.speakAndHandleUi("Die ursprüngliche Anfrage ist nicht mehr verfügbar.")
+            return StateUpdate(State.IDLE, null)
+        }
+        val query = if (distanceOnly) DistanceQueryExtractor.extract(input) ?: input else input
+        return handleObjectDetectionRequest(query, distanceOnly)
+    }
 
 	private fun handleObjectDetectionRequest(userInput: String, distanceOnly: Boolean): StateUpdate {
 		val germanObjectQuery = userInput.trim()
@@ -321,7 +338,8 @@ class StateMachine(
 			} else {
 				speechOutputHandler.speakAndHandleUi("Entschuldigung, ich konnte gerade keine Objekte erkennen.")
 			}
-			return StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
+			return if (availableGermanObjects.isNotEmpty()) awaitObjectQuery(distanceOnly)
+            else StateUpdate(State.IDLE, null)
 		}
 
 		Log.d(
@@ -388,10 +406,12 @@ class StateMachine(
 			is ObjectDetectionHandler.ObjectDetectionResult.NoQueryProvided -> {
 				Log.d(EyeAIApp.APP_LOG_TAG, "No query provided")
 				speechOutputHandler.speakAndHandleUi("Bitte nennen Sie ein spezifisches Objekt.")
+                return awaitObjectQuery(distanceOnly)
 			}
 		}
 
-		return StateUpdate(State.IDLE, null)
+		// Object and distance queries finish after this response; listening resumes on user input.
+		return StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
 	}
 
 
@@ -455,7 +475,7 @@ class StateMachine(
 		)
 		speechOutputHandler.speakAndHandleUi(settingIntent.missingOperationQuestion())
 		lastDialogContext = jsonParser.createSettingsContext(settingIntent)
-		return StateUpdate(State.SETTINGS_CHOICE, lastDialogContext)
+		return StateUpdate.awaitingReply(State.SETTINGS_CHOICE, lastDialogContext)
 	}
 
 	private fun requestExternalIntentContextSwitch(
@@ -473,7 +493,7 @@ class StateMachine(
 		speechOutputHandler.speakAndHandleUi(
 			PendingExternalIntentPresentation.confirmationQuestion(intentResult.intent)
 		)
-		return StateUpdate(State.SETTINGS_EXTERNAL_CONFIRMATION, pendingContext)
+		return StateUpdate.awaitingReply(State.SETTINGS_EXTERNAL_CONFIRMATION, pendingContext)
 	}
 
 	private fun remindUserSettingsAreAlreadyOpen(): StateUpdate {
@@ -485,7 +505,7 @@ class StateMachine(
 		speechOutputHandler.speakAndHandleUi(
 			"Sie befinden sich bereits in den Einstellungen. ${LocalInteractionMessages.SETTINGS_MENU}"
 		)
-		return StateUpdate(State.SETTINGS_MENU, null)
+		return StateUpdate.awaitingReply(State.SETTINGS_MENU, null)
 	}
 
 	private suspend fun executePendingExternalIntent(
@@ -529,7 +549,7 @@ class StateMachine(
 			speechOutputHandler.speakAndHandleUi(
 				"Der vorgemerkte Befehl ist nicht mehr verfügbar. ${LocalInteractionMessages.SETTINGS_MENU}"
 			)
-			return StateUpdate(State.SETTINGS_MENU, null)
+			return StateUpdate.awaitingReply(State.SETTINGS_MENU, null)
 		}
 
 		// Do not run yes/no through the ten intent classes. This explicit
@@ -553,7 +573,7 @@ class StateMachine(
 				speechOutputHandler.speakAndHandleUi(
 					"Okay, Sie bleiben in den Einstellungen. ${LocalInteractionMessages.SETTINGS_MENU}"
 				)
-				StateUpdate(State.SETTINGS_MENU, null)
+				StateUpdate.awaitingReply(State.SETTINGS_MENU, null)
 			}
 
 			ContextSwitchConfirmationResult.UNKNOWN -> {
@@ -564,7 +584,7 @@ class StateMachine(
 				speechOutputHandler.speakAndHandleUi(
 					"Ich konnte die Bestätigung nicht eindeutig zuordnen. " + "Bitte antworten Sie mit Ja oder Nein."
 				)
-				StateUpdate(State.SETTINGS_EXTERNAL_CONFIRMATION, lastDialogContext)
+				StateUpdate.awaitingReply(State.SETTINGS_EXTERNAL_CONFIRMATION, lastDialogContext)
 			}
 
 			ContextSwitchConfirmationResult.FAILED -> {

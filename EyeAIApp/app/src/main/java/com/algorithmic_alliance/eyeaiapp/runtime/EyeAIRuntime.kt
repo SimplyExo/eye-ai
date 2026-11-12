@@ -541,6 +541,7 @@ class EyeAIRuntime internal constructor(
 			} else {
 				when (currentState) {
 					EyeAIState.IDLE -> stateMachine.handleIdle(final)
+                    EyeAIState.OBJECT_QUERY -> stateMachine.handleObjectQueryReply(final)
 					EyeAIState.SETTINGS_MENU -> stateMachine.handleSettingsMenu(final)
 					EyeAIState.SETTINGS_CHOICE -> stateMachine.handleSettingsChoice(final)
 					EyeAIState.SETTINGS_ACTION -> stateMachine.handleSettingsAction(final)
@@ -564,6 +565,7 @@ class EyeAIRuntime internal constructor(
 	private fun onTtsFinishedSpeaking() {
 		_state.update { it.copy(ttsSpeaking = false) }
 		if (!isActive || !voskUserStart.get()) return
+		if (voskModel.isListening()) return
 		if (!voskStarting.compareAndSet(false, true)) return
 		runtimeScope.launch {
 			try {
