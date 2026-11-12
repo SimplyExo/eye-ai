@@ -3,17 +3,11 @@ package com.algorithmic_alliance.eyeaiapp.connectivity
 import android.content.Context
 import android.database.ContentObserver
 import android.graphics.Bitmap
-import android.media.AudioAttributes
-import android.media.AudioFormat
 import android.media.AudioManager
-import android.media.AudioPlaybackCaptureConfiguration
-import android.media.AudioRecord
-import android.media.projection.MediaProjection
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -66,7 +60,6 @@ open class EyeAIVision(
 	private var audioSocket: Socket? = null
 	private var audioOutputSocket: Socket? = null
 	private var audioOutputStream: OutputStream? = null
-	private var isAudioCaptureRunning: Boolean = false
 	private var webRtcClientValue: WebRtcClient? = null
 	private val socketExecutor = Executors.newSingleThreadExecutor()
 	private val socketThread: CoroutineScope =
@@ -366,100 +359,6 @@ open class EyeAIVision(
 	}
 
 	/**
-	 * Starts capturing app audio playback on Android 10+ (API 29+) and streams it as 48kHz Stereo PCM (s16le) to port 4041.
-	 */
-	fun startAudioPlaybackCapture(mediaProjection: MediaProjection? = null): Boolean {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-			Log.w(EyeAIApp.APP_LOG_TAG, "[EyeAIVisionAudioOutput] AudioPlaybackCapture requires Android 10 (API 29)+")
-			return false
-		}
-		if (isAudioCaptureRunning) return true
-		isAudioCaptureRunning = true
-
-		socketThread.launch(Dispatchers.IO) {
-			val outputStream = startAudioOutputStream()
-			if (outputStream == null) {
-				Log.e(EyeAIApp.APP_LOG_TAG, "[EyeAIVisionAudioOutput] Failed to open port 4041 stream for audio capture")
-				isAudioCaptureRunning = false
-				return@launch
-			}
-
-			val sampleRate = 48000
-			val channelConfig = AudioFormat.CHANNEL_IN_STEREO
-			val audioFormat = AudioFormat.ENCODING_PCM_16BIT
-			val minBufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
-			val bufferSize = maxOf(minBufferSize, 4096)
-
-			var audioRecord: AudioRecord? = null
-			try {
-				val recordBuilder = AudioRecord.Builder()
-					.setAudioFormat(
-						AudioFormat.Builder()
-							.setEncoding(audioFormat)
-							.setSampleRate(sampleRate)
-							.setChannelMask(channelConfig)
-							.build()
-					)
-					.setBufferSizeInBytes(bufferSize)
-
-				if (mediaProjection != null) {
-					val config = AudioPlaybackCaptureConfiguration.Builder(mediaProjection)
-						.addMatchingUsage(AudioAttributes.USAGE_MEDIA)
-						.addMatchingUsage(AudioAttributes.USAGE_GAME)
-						.addMatchingUsage(AudioAttributes.USAGE_UNKNOWN)
-						.addMatchingUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
-						.addMatchingUsage(AudioAttributes.USAGE_ASSISTANT)
-						.build()
-					recordBuilder.setAudioPlaybackCaptureConfig(config)
-				}
-
-				try {
-					audioRecord = recordBuilder.build()
-				} catch (e: SecurityException) {
-					Log.e(EyeAIApp.APP_LOG_TAG, "[EyeAIVisionAudioOutput] Permission denied for AudioRecord: ${e.message}")
-					stopAudioOutputStream()
-					isAudioCaptureRunning = false
-					return@launch
-				}
-
-				audioRecord.startRecording()
-				Log.i(EyeAIApp.APP_LOG_TAG, "[EyeAIVisionAudioOutput] Audio playback capture started (48kHz Stereo s16le)")
-
-				val buffer = ByteArray(bufferSize)
-				while (isActive && isAudioCaptureRunning && audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
-					val bytesRead = audioRecord.read(buffer, 0, buffer.size)
-					if (bytesRead > 0) {
-						outputStream.write(buffer, 0, bytesRead)
-						outputStream.flush()
-					} else if (bytesRead < 0) {
-						Log.w(EyeAIApp.APP_LOG_TAG, "[EyeAIVisionAudioOutput] AudioRecord read error: $bytesRead")
-						break
-					}
-				}
-			} catch (e: Exception) {
-				Log.e(EyeAIApp.APP_LOG_TAG, "[EyeAIVisionAudioOutput] Exception in audio capture loop", e)
-			} finally {
-				try {
-					audioRecord?.stop()
-					audioRecord?.release()
-				} catch (_: Exception) {}
-				stopAudioOutputStream()
-				isAudioCaptureRunning = false
-				Log.i(EyeAIApp.APP_LOG_TAG, "[EyeAIVisionAudioOutput] Audio playback capture stopped")
-			}
-		}
-		return true
-	}
-
-	/**
-	 * Stops capturing app audio playback and closes port 4041 stream.
-	 */
-	fun stopAudioPlaybackCapture() {
-		isAudioCaptureRunning = false
-		stopAudioOutputStream()
-	}
-
-	/**
 	 * Fetches the volume status from EyeAIVision HTTP API (GET /api/volume).
 	 */
 	fun fetchVolumeStatus(): EyeAIVisionVolumeStatus? {
@@ -636,7 +535,6 @@ open class EyeAIVision(
 
 	/** Stops the existing external source without touching the common analyzer/models. */
 	fun close() {
-		stopAudioPlaybackCapture()
 		stopVolumeObserver()
 		stopAudioStream()
 		stopAudioOutputStream()

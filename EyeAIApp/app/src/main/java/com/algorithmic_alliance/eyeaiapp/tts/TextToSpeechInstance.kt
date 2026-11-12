@@ -7,6 +7,10 @@ import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
 import android.util.Log
 import com.algorithmic_alliance.eyeaiapp.EyeAIApp
+import com.algorithmic_alliance.eyeaiapp.audio.AppAudioOutput
+import com.algorithmic_alliance.eyeaiapp.audio.PcmMixer
+import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -68,7 +72,6 @@ class TextToSpeechInstance(
         if(externalOwner!=null) {externalGeneration++;externalOwner=null;sceneSpeech.stop();externalCancelled?.invoke();externalCancelled=null}
         deferredSpeech.clear()
     }
-    private val activeUtterances=java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     fun stopIfOwnerPrefix(prefix: String): Boolean = synchronized(this) {
         if(externalOwner?.startsWith(prefix)!=true&&!ownership.canCancel(prefix))return@synchronized false
         stop()
@@ -76,9 +79,16 @@ class TextToSpeechInstance(
     }
 
 	private val hasSpecificCallback = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+	private class NetworkUtterance(
+		val file: File,
+		val destination: (String, ShortArray, () -> Unit) -> Unit,
+	)
+	private val networkUtterances = ConcurrentHashMap<String, NetworkUtterance>()
+	private val networkDecodeDispatcher = Dispatchers.IO.limitedParallelism(1)
 
 	// active utterance counter
 	private var activeUtteranceCount = 0
+	private val activeUtteranceIds = ConcurrentHashMap.newKeySet<String>()
 
 	private val callbackScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -136,14 +146,14 @@ class TextToSpeechInstance(
 
 	}
 
+	@Synchronized
 	private fun finishUtterance(utteranceId: String?) {
-        if(utteranceId!=null&&activeUtterances.remove(utteranceId))decrementUtteranceCount()
-		utteranceId?.let { id ->
-			pendingCallbacks.remove(id)?.let {callback->callbackScope.launch {callback()}}
-            startCallbacks.remove(id)
-            ownership.finished(id)
-			hasSpecificCallback.remove(id)
-		}
+		if (utteranceId == null || !activeUtteranceIds.remove(utteranceId)) return
+		decrementUtteranceCount()
+		pendingCallbacks.remove(utteranceId)?.let { callback -> callbackScope.launch { callback() } }
+		startCallbacks.remove(utteranceId)
+		ownership.finished(utteranceId)
+		hasSpecificCallback.remove(utteranceId)
 		if (getActiveUtteranceCount() == 0) {
 			invokeOnFinishedWhenPlaybackStops()
 		}
@@ -153,17 +163,46 @@ class TextToSpeechInstance(
 	// ------------------------------
 	// Utterance listener
 	// ------------------------------
+    @Synchronized
+    private fun notifyUtteranceStarted(id: String) {
+        if (!activeUtteranceIds.contains(id)) return
+        ownership.started(id)
+        startCallbacks.remove(id)?.let { callback -> callbackScope.launch { callback() } }
+    }
+
 	private fun setupUtteranceListener() {
 		tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
 			override fun onStart(utteranceId: String?) {
 				Log.d(EyeAIApp.APP_LOG_TAG, "TTS onStart utterance=$utteranceId")
-                utteranceId?.let { id->
-                    ownership.started(id)
-                    startCallbacks.remove(id)?.let {callback->callbackScope.launch {callback()}}
+                // File synthesis starts before network playback; notify after decoding instead.
+                if (utteranceId != null && !networkUtterances.containsKey(utteranceId)) {
+                    notifyUtteranceStarted(utteranceId)
                 }
 			}
 
 			override fun onDone(utteranceId: String?) {
+				val network = utteranceId?.let { networkUtterances[it] }
+				if (network != null && utteranceId != null) {
+					callbackScope.launch(networkDecodeDispatcher) {
+						try {
+							val samples = PcmMixer.decodeWave(network.file.readBytes())
+							callbackScope.launch {
+								if (networkUtterances[utteranceId] === network) {
+									notifyUtteranceStarted(utteranceId)
+									network.destination("tts", samples) {
+										if (networkUtterances.remove(utteranceId, network)) finishUtterance(utteranceId)
+									}
+								}
+							}
+						} catch (error: Exception) {
+							Log.e(EyeAIApp.APP_LOG_TAG, "Could not prepare network speech", error)
+							callbackScope.launch {
+								if (networkUtterances.remove(utteranceId, network)) finishUtterance(utteranceId)
+							}
+						} finally { network.file.delete() }
+					}
+					return
+				}
 				Log.d(EyeAIApp.APP_LOG_TAG, "TTS onDone utterance=$utteranceId")
 				finishUtterance(utteranceId)
 
@@ -178,6 +217,7 @@ class TextToSpeechInstance(
 
 			@Deprecated("Deprecated in Java")
 			override fun onError(utteranceId: String?) {
+				utteranceId?.let { networkUtterances.remove(it)?.file?.delete() }
 				Log.e(EyeAIApp.APP_LOG_TAG, "TTS onError utterance=$utteranceId")
 				finishUtterance(utteranceId)
 
@@ -191,6 +231,7 @@ class TextToSpeechInstance(
 			}
 
 			override fun onStop(utteranceId: String?, interrupted: Boolean) {
+				utteranceId?.let { networkUtterances.remove(it)?.file?.delete() }
 				Log.d(
 					EyeAIApp.APP_LOG_TAG,
 					"TTS onStop utterance=$utteranceId interrupted=$interrupted"
@@ -211,6 +252,7 @@ class TextToSpeechInstance(
 
 	//Simple stop method, supports stop button
 	@Synchronized fun stop() {
+		cancelNetworkSpeech()
 		Log.w(EyeAIApp.APP_LOG_TAG, "TTS stop() called. Clearing queues and callbacks.")
 		cancelExternalSpeech()
         if (!isReady) return
@@ -222,8 +264,8 @@ class TextToSpeechInstance(
 		pendingCallbacks.clear()
         startCallbacks.clear()
 ownership.clear()
-        activeUtterances.clear()
 		hasSpecificCallback.clear()
+		activeUtteranceIds.clear()
 		synchronized(this) { activeUtteranceCount = 0 }
 		invokeOnFinishedWhenPlaybackStops()
 	}
@@ -232,11 +274,12 @@ ownership.clear()
 	fun shutdown() {
         cancelExternalSpeech()
         sceneSpeech.shutdown()
+		cancelNetworkSpeech()
 		pendingCallbacks.clear()
         startCallbacks.clear()
 ownership.clear()
-        activeUtterances.clear()
 		hasSpecificCallback.clear()
+		activeUtteranceIds.clear()
 		synchronized(this) { activeUtteranceCount = 0 }
 		try {
 			tts?.stop()
@@ -358,6 +401,7 @@ ownership.clear()
     }
 
     @Synchronized private fun enqueue(text: String,queueMode: Int,owner: String?,onStarted: (() -> Unit)?,onComplete: (() -> Unit)?) {
+        if (AppAudioOutput.isNetworkOutput && queueMode == QUEUE_FLUSH) stop()
 		if (!isReady) {
 			if (onComplete != null) {
 				onComplete.invoke()
@@ -371,17 +415,21 @@ ownership.clear()
             if(queueMode==QUEUE_FLUSH)cancelExternalSpeech()
             else {deferredSpeech.addLast {enqueue(text,queueMode,owner,onStarted,onComplete)};return}
         }
-        if(queueMode==QUEUE_FLUSH) {startCallbacks.clear()
-activeUtterances.clear()
-        synchronized(this) {activeUtteranceCount=0}}
+        if (queueMode == QUEUE_FLUSH) {
+            pendingCallbacks.clear()
+            startCallbacks.clear()
+            hasSpecificCallback.clear()
+            activeUtteranceIds.clear()
+            ownership.clear()
+            activeUtteranceCount = 0
+        }
 		if (onComplete != null) {
 			val utteranceId = UUID.randomUUID().toString()
             ownership.enqueue(utteranceId,owner ?: "dialog",queueMode==QUEUE_FLUSH)
-            activeUtterances.add(utteranceId)
             onStarted?.let {startCallbacks[utteranceId]=it}
 			pendingCallbacks[utteranceId] = onComplete
 			hasSpecificCallback.add(utteranceId)
-			incrementUtteranceCount()
+			incrementUtteranceCount(utteranceId)
 			val params = Bundle().apply {
 				putString(
 					TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId
@@ -391,13 +439,12 @@ activeUtterances.clear()
 				EyeAIApp.APP_LOG_TAG,
 				"speak enqueued utterance=$utteranceId (with specific callback) and queueMode=$queueMode"
 			)
-			if(tts?.speak(text,queueMode,params,utteranceId)!=TextToSpeech.SUCCESS)finishUtterance(utteranceId)
+			speakWithOutput(text, queueMode, params, utteranceId)
 		} else {
 			val utteranceId = "utt_${System.currentTimeMillis()}_${Random.nextInt(10000)}"
             ownership.enqueue(utteranceId,owner ?: "dialog",queueMode==QUEUE_FLUSH)
-            activeUtterances.add(utteranceId)
             onStarted?.let {startCallbacks[utteranceId]=it}
-			incrementUtteranceCount()
+			incrementUtteranceCount(utteranceId)
 			val queueModeStr = if (queueMode == QUEUE_FLUSH) "QUEUE_FLUSH" else "QUEUE_ADD"
 			val params = Bundle().apply {
 				putString(
@@ -408,8 +455,37 @@ activeUtterances.clear()
 				EyeAIApp.APP_LOG_TAG,
 				"speak enqueued utterance=$utteranceId with queueMode=$queueModeStr"
 			)
-			if(tts?.speak(text,queueMode,params,utteranceId)!=TextToSpeech.SUCCESS)finishUtterance(utteranceId)
+			speakWithOutput(text, queueMode, params, utteranceId)
 		}
+	}
+
+	private fun speakWithOutput(text: String, queueMode: Int, params: Bundle, utteranceId: String) {
+		val destination = AppAudioOutput.destination()
+		if (destination == null) {
+			if (tts?.speak(text, queueMode, params, utteranceId) != TextToSpeech.SUCCESS) {
+				finishUtterance(utteranceId)
+			}
+			return
+		}
+		try {
+			val file = File.createTempFile("network-tts-", ".wav", context.cacheDir)
+			networkUtterances[utteranceId] = NetworkUtterance(file, destination)
+			if (tts?.synthesizeToFile(text, params, file, utteranceId) != TextToSpeech.SUCCESS) {
+				networkUtterances.remove(utteranceId)?.file?.delete()
+				finishUtterance(utteranceId)
+			}
+		} catch (error: Exception) {
+			Log.e(EyeAIApp.APP_LOG_TAG, "Could not synthesize network speech", error)
+			networkUtterances.remove(utteranceId)?.file?.delete()
+			finishUtterance(utteranceId)
+		}
+	}
+
+	private fun cancelNetworkSpeech() {
+		AppAudioOutput.remove("tts")
+		val cancelled = networkUtterances.values.toList()
+		networkUtterances.clear()
+		cancelled.forEach { it.file.delete() }
 	}
 
 
@@ -572,7 +648,8 @@ activeUtterances.clear()
 	// counter helpers, needed for debugging only
 	// ------------------------------
 	@Synchronized
-	private fun incrementUtteranceCount() {
+	private fun incrementUtteranceCount(utteranceId: String) {
+		activeUtteranceIds.add(utteranceId)
 		activeUtteranceCount++
 		Log.d(EyeAIApp.APP_LOG_TAG, "TTS activeUtterances increment -> $activeUtteranceCount")
 	}

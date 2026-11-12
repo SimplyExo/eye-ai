@@ -1,7 +1,7 @@
 package com.algorithmic_alliance.eyeaiapp.ui.pages
 
 import android.annotation.SuppressLint
-import android.media.MediaPlayer
+import com.algorithmic_alliance.eyeaiapp.audio.AppSoundPlayer
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -147,7 +147,7 @@ fun Tutorial(
 	val context = LocalContext.current
 	val focusRequester = remember { FocusRequester() }
 	val mediaPlayer = remember(audioRes) {
-		MediaPlayer.create(context, audioRes)
+		AppSoundPlayer.create(context, audioRes)
 	}
 	LaunchedEffect(mediaPlayer) {
 		focusRequester.requestFocus()
@@ -160,8 +160,7 @@ fun Tutorial(
 
 		onDispose {
 			mediaPlayer.setOnCompletionListener(null)
-			mediaPlayer.pause()
-			mediaPlayer.seekTo(0)
+			mediaPlayer.release()
 		}
 	}
 	val isDark = isSystemInDarkTheme()

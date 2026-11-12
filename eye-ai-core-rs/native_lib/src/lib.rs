@@ -50,6 +50,8 @@ static LAST_FORMATTED_SEGMENTATION_PROFILING_INFO: LazyLock<ArcSwap<String>> =
 	LazyLock::new(|| ArcSwap::new(Arc::new(String::new())));
 
 static SPATIAL_AUDIO: LazyLock<RwLock<Option<SpatialAudio>>> = LazyLock::new(|| RwLock::new(None));
+static NETWORK_AUDIO_OUTPUT: std::sync::atomic::AtomicBool =
+	std::sync::atomic::AtomicBool::new(false);
 static SPATIAL_AUDIO_SETTINGS: LazyLock<Arc<RwLock<SpatialAudioSettings>>> =
 	LazyLock::new(|| Arc::new(RwLock::new(SpatialAudioSettings::default())));
 static SPATIAL_AUDIO_CONTENT: LazyLock<RwLock<Option<Arc<SpatialAudioContent>>>> =
@@ -131,6 +133,7 @@ fn try_change_spatial_audio<R>(f: impl FnOnce(&mut SpatialAudio) -> R) -> Option
 				AUDIO_PROFILING_FRAME.clone(),
 				DEPTH_AUDIO_THREAD_PROFILING_FRAME.clone(),
 				OBJECT_AUDIO_THREAD_PROFILING_FRAME.clone(),
+				NETWORK_AUDIO_OUTPUT.load(std::sync::atomic::Ordering::Relaxed),
 			)
 			.unwrap()
 		});
@@ -717,15 +720,43 @@ fn createSpatialAudio() {
 		return;
 	};
 
+	let mut current_audio = SPATIAL_AUDIO.write().unwrap();
 	let spatial_audio = match SpatialAudio::new(
 		SPATIAL_AUDIO_SETTINGS.clone(),
 		spatial_audio_content.clone(),
 		AUDIO_PROFILING_FRAME.clone(),
 		DEPTH_AUDIO_THREAD_PROFILING_FRAME.clone(),
 		OBJECT_AUDIO_THREAD_PROFILING_FRAME.clone(),
-	) { Ok(engine)=>engine, Err(error)=>{error!("Spatial audio unavailable: {error}");return;} };
+		NETWORK_AUDIO_OUTPUT.load(std::sync::atomic::Ordering::Relaxed),
+	) {
+        Ok(engine) => engine,
+        Err(error) => {
+            error!("Spatial audio unavailable: {error}");
+            return;
+        }
+    };
 
-	*SPATIAL_AUDIO.write().unwrap() = Some(spatial_audio);
+	*current_audio = Some(spatial_audio);
+}
+
+/// Switch output before creating the spatial engine. Dropping it stops its workers.
+#[uniffi::export]
+pub fn setNetworkAudioOutput(enabled: bool) {
+	let mut audio = SPATIAL_AUDIO.write().unwrap();
+	if NETWORK_AUDIO_OUTPUT.swap(enabled, std::sync::atomic::Ordering::Relaxed) != enabled {
+		*audio = None;
+	}
+}
+
+#[uniffi::export]
+pub fn renderNetworkAudio(frames: u32) -> Vec<u8> {
+	let frames = frames.min(4800) as usize;
+	SPATIAL_AUDIO
+		.write()
+		.unwrap()
+		.as_mut()
+		.map(|audio| audio.render_network_audio(frames))
+		.unwrap_or_else(|| vec![0; frames * 4])
 }
 
 #[uniffi::export]

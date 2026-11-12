@@ -16,6 +16,7 @@ import com.algorithmic_alliance.eyeaiapp.EyeAIApp
 import com.algorithmic_alliance.eyeaiapp.NativeLib
 import com.algorithmic_alliance.eyeaiapp.R
 import com.algorithmic_alliance.eyeaiapp.Settings
+import com.algorithmic_alliance.eyeaiapp.audio.AppAudioOutput
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudio
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudioResumeController
 import com.algorithmic_alliance.eyeaiapp.audio.SpatialAudioResumeOutcome
@@ -440,6 +441,10 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 			localSceneDescriptions.setExperimentalR4Enabled(true)
 			setLocalSceneDescriptionsEnabled(settings.isR4Mode)
 			frameAnalyzer.start()
+			if (settings.inputSource == context.getString(R.string.input_is_eyeaivision)) {
+				textToSpeechInstanceValue?.stop()
+				AppAudioOutput.start("192.168.4.1")
+			}
 			SpatialAudio.setup(context)
 			SpatialAudio.start()
 			serviceOwner = WeakReference(owner)
@@ -937,6 +942,10 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	private fun stopVideoSource() {
+		if (AppAudioOutput.isNetworkOutput) {
+			textToSpeechInstanceValue?.stop()
+			AppAudioOutput.stop()
+		}
 		cameraManager.stop()
 		mediaPlayerValue?.shutdown()
 		mediaPlayerValue = null
