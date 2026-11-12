@@ -200,6 +200,13 @@ object UIDataSource {
 				"default" to Settings.DEFAULT_FRAME_RATE_LIMIT
 			)
 		), R.string.settings_category_speech_recognition to listOf(
+            mapOf(
+                "title" to R.string.mode_voice_switch_title,
+                "description" to R.string.mode_voice_switch_description,
+                "settingsType" to "checkbox",
+                "string" to R.string.mode_voice_switch_key,
+                "default" to true
+            ),
 			mapOf(
 				"title" to R.string.setting_speech_recognition_enabled_title,
 				"description" to R.string.setting_speech_recognition_description,

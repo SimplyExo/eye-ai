@@ -10,6 +10,8 @@ class NLPModel(initialInfo: NLPModelInfo) : AutoCloseable {
 
 	private var interpreter: Interpreter? = null
 	private var tokenizer: IntentTokenizer? = null
+    private var modeInterpreter: Interpreter? = null
+    private var modeThreshold = ModeRouterDecision.THRESHOLD
 
 	val isInitialized: Boolean
 		@Synchronized get() = interpreter != null && tokenizer != null
@@ -36,6 +38,31 @@ class NLPModel(initialInfo: NLPModelInfo) : AutoCloseable {
 		interpreter = newInterpreter
 		tokenizer = loadedTokenizer.tokenizer
 		info = modelInfo
+        modeInterpreter?.close()
+        modeInterpreter = null
+        try {
+            val config = org.json.JSONObject(context.assets.open("nlp-v2/mode-router/config.json").bufferedReader().use { it.readText() })
+            val labels = config.getJSONArray("labels")
+            require((0 until labels.length()).map { labels.getString(it) } == ModeRouterDecision.LABELS)
+            require(modelInfo.tokenizerAssetDirectory == "nlp-v2/tokenizers/T2")
+            modeThreshold = config.getDouble("threshold").toFloat()
+            require(modeThreshold == ModeRouterDecision.THRESHOLD)
+            val buffer = modelInfo.copy(tfliteAssetPath = "nlp-v2/mode-router/model.tflite").loadModelFile(context)
+            val digest = java.security.MessageDigest.getInstance("SHA-256")
+            digest.update(buffer.asReadOnlyBuffer())
+            require(digest.digest().joinToString("") { "%02x".format(it.toInt() and 255) } == config.getString("model_sha256"))
+            val router = Interpreter(buffer, Interpreter.Options().setNumThreads(2))
+            try {
+                require(router.inputTensorCount == 1 && router.outputTensorCount == 1)
+                require(router.getInputTensor(0).shape().contentEquals(intArrayOf(1, INPUT_LENGTH)))
+                require(router.getInputTensor(0).dataType() == DataType.INT32)
+                require(router.getOutputTensor(0).shape().contentEquals(intArrayOf(1, 4)))
+                require(router.getOutputTensor(0).dataType() == DataType.FLOAT32)
+                modeInterpreter = router
+            } catch (error: Throwable) { router.close(); throw error }
+        } catch (error: Exception) {
+            android.util.Log.e("EyeAI", "Mode router unavailable; using legacy intent classifier", error)
+        }
 	}
 
 	/** Runs exactly one NLP V2 inference and preserves the unchanged input text. */
@@ -50,10 +77,22 @@ class NLPModel(initialInfo: NLPModelInfo) : AutoCloseable {
 		return IntentResult.fromProbabilities(originalText, probabilities)
 	}
 
+    /** Returns null for NO_MODE, low confidence or an unavailable router. */
+    @Synchronized
+    fun classifyMode(originalText: String): com.algorithmic_alliance.eyeaiapp.audio.AudioOutputMode? {
+        val router = modeInterpreter ?: return null
+        val encoder = tokenizer ?: return null
+        val probabilities = FloatArray(4)
+        router.run(arrayOf(encoder.encode(originalText)), arrayOf(probabilities))
+        return ModeRouterDecision.select(probabilities, modeThreshold)
+    }
+
 	@Synchronized
 	override fun close() {
 		interpreter?.close()
 		interpreter = null
+        modeInterpreter?.close()
+        modeInterpreter = null
 		tokenizer = null
 	}
 

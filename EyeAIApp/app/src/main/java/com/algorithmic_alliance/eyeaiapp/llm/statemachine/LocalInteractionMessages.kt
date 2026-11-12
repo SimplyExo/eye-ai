@@ -11,5 +11,7 @@ object LocalInteractionMessages {
 	Es besteht die Möglichkeit die Sprechgeschwindigkeit der Sprachausgabe anzupassen, die Stimme des Assitentenagenten zu ändern, die Tonhöhe der Distanztöne zu ändern,
 	die Schläge pro Sekunde für die Distanzhinweistöne zu ändern, oder aber die Einstellungen zu verlassen. 
 
+	Sie können auch zum normalen Modus, zu Objectwatch oder zur Szenenbeschreibung wechseln.
+
 	Welche dieser Optionen möchten Sie wählen?"""
 }

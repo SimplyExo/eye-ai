@@ -303,4 +303,7 @@
 <string name="scene_spatial_description">Beschreibungen aus der Richtung der Objekte hören. Verlässliche Entfernungen beeinflussen die räumliche Ausgabe.</string>
 	<string name="local_network_permission_name">Geräte im lokalen Netzwerk</string>
 	<string name="local_network_permission_explanation">EyeAI benötigt Zugriff auf das lokale Netzwerk, um Kamerabilder, Audio und Tastendrücke von der EyeAI-Vision zu übertragen.</string>
+    <string name="mode_voice_switch_key" translatable="false">enable_mode_voice_switch</string>
+    <string name="mode_voice_switch_title">Modus per Sprache wechseln</string>
+    <string name="mode_voice_switch_description">Normaler Modus, Objectwatch oder Szenenbeschreibung per Sprachbefehl auswählen, auch im gesprochenen Einstellungsmenü.</string>
 </resources>

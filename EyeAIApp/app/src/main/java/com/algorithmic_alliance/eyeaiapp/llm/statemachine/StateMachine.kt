@@ -71,6 +71,7 @@ class StateMachine(
 	private val nlpConfidenceThreshold = 0.6f
 
 	suspend fun handleIdle(final: String): StateUpdate {
+        handleModeSwitch(final, State.IDLE)?.let { return it }
 		val intentResult = classifyIntentWithNLP(final)
 		val confidence = intentResult?.confidence ?: 0f
 		val nlpIntent = intentResult?.intent?.takeIf { confidence >= nlpConfidenceThreshold }
@@ -135,6 +136,33 @@ class StateMachine(
 			}
 		}
 	}
+
+    private fun handleModeSwitch(text: String, returnState: State): StateUpdate? {
+        if (!eyeAIApp.settings.enableModeVoiceSwitch) return null
+        val mode = try { nlpModel.classifyMode(text) } catch (error: Exception) {
+            Log.e(EyeAIApp.APP_LOG_TAG, "Mode inference failed; using legacy intents", error)
+            null
+        } ?: return null
+        lastIntentResult = null
+        val previous = eyeAIApp.settings.clone()
+        try {
+            previous.clone().apply { objectAudioPlaybackMode = mode.preferenceValue }.save(eyeAIApp)
+            eyeAIApp.updateSettings()
+        } catch (error: Exception) {
+            runCatching { previous.save(eyeAIApp); eyeAIApp.updateSettings() }
+            Log.e(EyeAIApp.APP_LOG_TAG, "Mode change failed", error)
+            speechOutputHandler.speakAndHandleUi("Der Modus konnte nicht gewechselt werden.")
+            return StateUpdate(returnState, lastDialogContext)
+        }
+        val name = when (mode) {
+            com.algorithmic_alliance.eyeaiapp.audio.AudioOutputMode.STANDARD -> "Normaler Modus"
+            com.algorithmic_alliance.eyeaiapp.audio.AudioOutputMode.OBJECT_WATCH -> "Objectwatch"
+            com.algorithmic_alliance.eyeaiapp.audio.AudioOutputMode.R4 -> "Szenenbeschreibung"
+        }
+        Log.d(EyeAIApp.APP_LOG_TAG, "[ModeRouter] accepted=true mode=$mode")
+        speechOutputHandler.speakAndHandleUi("$name aktiviert.")
+        return StateUpdate(returnState, lastDialogContext, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
+    }
 
 	private fun handleUnresolvedCommand(
 		nextState: State = State.IDLE,
@@ -396,6 +424,7 @@ class StateMachine(
 
 
 	fun handleSettingsMenu(final: String): StateUpdate {
+        handleModeSwitch(final, State.SETTINGS_MENU)?.let { return it }
 		val intentResult = classifyIntentWithNLP(final)
 		if (intentResult == null) {
 			Log.d(

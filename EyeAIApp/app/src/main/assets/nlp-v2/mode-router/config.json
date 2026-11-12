@@ -1,0 +1,12 @@
+{
+  "labels": [
+    "MODE_NORMAL",
+    "MODE_OBJECT_WATCH",
+    "MODE_SCENE_DESCRIPTION",
+    "NO_MODE"
+  ],
+  "threshold": 0.3971867859363556,
+  "tokenizer": "T2",
+  "source_seed": 20260812,
+  "model_sha256": "d4b8517754c651cdacbcf04feb86039742669c0be6ef9eac8b1980a89c35e5ee"
+}

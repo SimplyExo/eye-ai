@@ -33,6 +33,7 @@ data class Settings(
 	var cameraHeightTenths: Int,
 	var sceneDescriptionDetail: SceneDescriptionDetail = SceneDescriptionDetail.STANDARD,
     var sceneDescriptionSpatialAudio: Boolean = true,
+    var enableModeVoiceSwitch: Boolean = true,
 ) : Cloneable {
     val audioOutputMode: AudioOutputMode
         get() = AudioOutputMode.fromStoredValue(objectAudioPlaybackMode)
@@ -208,6 +209,7 @@ data class Settings(
 				cameraHeightTenths,
 				descriptionDetail,
                 sharedPreferences.getBoolean("scene_description_spatial_audio",true),
+                sharedPreferences.getBoolean("enable_mode_voice_switch", true),
 			)
 		}
 	}
@@ -237,6 +239,7 @@ data class Settings(
 		cameraHeightTenths,
 		sceneDescriptionDetail,
         sceneDescriptionSpatialAudio,
+        enableModeVoiceSwitch,
 	)
 
 	fun save(context: Context) {
@@ -247,6 +250,8 @@ data class Settings(
 			putInt("audio_playback_rate", depthAudioClickIncidence)
 			putInt("audio_frequency_range", depthAudioFrequency)
 			putString("object_playback_language", objectAudioPlaybackLanguage)
+
+			putBoolean("enable_mode_voice_switch", enableModeVoiceSwitch)
 
 			//other settings
             putBoolean("scene_description_spatial_audio",sceneDescriptionSpatialAudio)
