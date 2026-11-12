@@ -19,11 +19,14 @@ class AppSoundPlayer(private val context: Context, private val resource: Int) {
 	private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 	private val main = Handler(Looper.getMainLooper())
 	private var local: MediaPlayer? = null
+	@Volatile private var localPlayRequested = false
+	@Volatile private var localSeekPending = false
 	private var completion: ((AppSoundPlayer) -> Unit)? = null
 	@Volatile private var generation = 0
 	@Volatile private var pending = false
 	@Volatile private var paused = true
-	val isPlaying: Boolean get() = (pending && !paused) || local?.isPlaying == true
+	val isPlaying: Boolean get() = (pending && !paused) ||
+		(localPlayRequested && localSeekPending) || local?.isPlaying == true
 
 	fun setOnCompletionListener(listener: ((AppSoundPlayer) -> Unit)?) { completion = listener }
 
@@ -32,11 +35,24 @@ class AppSoundPlayer(private val context: Context, private val resource: Int) {
 		if (destination == null) {
 			val player = local ?: MediaPlayer.create(context, resource).also {
 				local = it
-				it.setOnCompletionListener { completion?.invoke(this) }
+				it.setOnCompletionListener {
+					localPlayRequested = false
+					completion?.invoke(this)
+				}
+				it.setOnSeekCompleteListener { ready ->
+					if (local === ready) {
+						localSeekPending = false
+						if (localPlayRequested) ready.start()
+					}
+				}
 			}
-			player.start()
+			localPlayRequested = true
+			// MediaPlayer seeks asynchronously. Starting before completion can replay
+			// the cue when the pending seek subsequently jumps back to the beginning.
+			if (!localSeekPending) player.start()
 			return
 		}
+		localPlayRequested = false
 		local?.pause()
 		paused = false
 		if (pending) {
@@ -67,6 +83,7 @@ class AppSoundPlayer(private val context: Context, private val resource: Int) {
 
 	fun pause() {
 		paused = true
+		localPlayRequested = false
 		AppAudioOutput.pause(bus)
 		local?.pause()
 	}
@@ -77,7 +94,10 @@ class AppSoundPlayer(private val context: Context, private val resource: Int) {
 		++generation
 		pending = false
 		AppAudioOutput.remove(bus)
-		local?.seekTo(0)
+		local?.let {
+			localSeekPending = true
+			it.seekTo(0)
+		}
 	}
 
 	fun release() {
@@ -85,6 +105,7 @@ class AppSoundPlayer(private val context: Context, private val resource: Int) {
 		scope.cancel()
 		local?.release()
 		local = null
+		localSeekPending = false
 		completion = null
 	}
 

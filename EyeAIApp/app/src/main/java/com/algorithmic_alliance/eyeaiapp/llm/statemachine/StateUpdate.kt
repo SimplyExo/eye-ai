@@ -8,5 +8,11 @@ enum class VoskRestartPolicy {
 data class StateUpdate(
 	val newState: EyeAIState,
 	val newJson: String?,
-	val voskRestartPolicy: VoskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS
-)
+	val voskRestartPolicy: VoskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART
+) {
+    companion object {
+        /** Use only when the spoken response requests an answer in this dialog. */
+        fun awaitingReply(state: EyeAIState, context: String?) =
+            StateUpdate(state, context, VoskRestartPolicy.AUTO_RESTART_AFTER_TTS)
+    }
+}

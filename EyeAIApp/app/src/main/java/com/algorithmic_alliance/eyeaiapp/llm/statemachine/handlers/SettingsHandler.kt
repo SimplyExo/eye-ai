@@ -108,7 +108,7 @@ class SettingsHandler(
 			)
 			speakAndHandleUi(result.confirmationQuestion)
 			onJsonUpdate(result.confirmationJson)
-			StateUpdate(State.SETTINGS_ACTION, result.confirmationJson)
+			StateUpdate.awaitingReply(State.SETTINGS_ACTION, result.confirmationJson)
 		}
 
 		is LocalSettingsDialogResult.FollowUp -> {
@@ -150,9 +150,9 @@ class SettingsHandler(
 						State.SETTINGS_MENU,
 						false
 					)
-					speakAndHandleUi("Okay, Sie bleiben in den Einstellungen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen.")
+					speakAndHandleUi("Okay, Sie bleiben in den Einstellungen. Hier sind ihre Funktionen im Einstellungsmenü: Sprachgeschwindigkeit ändern, Stimme ändern, Schläge pro Sekunde ändern, Frequenz anpassen, Einstellungen verlassen. Was möchten Sie ändern?")
 					onJsonUpdate(null)
-					StateUpdate(State.SETTINGS_MENU, null)
+					StateUpdate.awaitingReply(State.SETTINGS_MENU, null)
 				}
 
 				ConfirmationLabel.UNKNOWN -> {
@@ -185,7 +185,7 @@ class SettingsHandler(
 					StateUpdate(
 						State.SETTINGS_ACTION,
 						currentJson,
-						VoskRestartPolicy.AUTO_RESTART_AFTER_TTS
+						VoskRestartPolicy.REQUIRE_MANUAL_RESTART
 					)
 				}
 			}
@@ -259,7 +259,7 @@ class SettingsHandler(
 				speakAndHandleUi("Fehler bei der Verarbeitung.")
 				onJsonUpdate(null)
 				StateUpdate(
-					State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.AUTO_RESTART_AFTER_TTS
+					State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART
 				)
 			}
 		}
