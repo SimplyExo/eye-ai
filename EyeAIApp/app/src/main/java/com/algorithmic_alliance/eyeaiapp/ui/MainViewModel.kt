@@ -47,7 +47,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 	fun appInputSource(): String = eyeAIApp().settings.inputSource as String
 
-	private val _uiState = MutableStateFlow(UIState())
+	private val _uiState = MutableStateFlow(UIState(segmentationOverlayEnabled = app.settings.showSegmentationOverlay))
 	val uiState: StateFlow<UIState> = _uiState.asStateFlow()
 
 	val connectionPageUIState: StateFlow<ConnectionPageUIState> = _uiState.map {
@@ -209,7 +209,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 			UIEvent.InitVoskService -> runtime.initSpeechService()
 			UIEvent.CloseVoskService -> runtime.closeSpeechService()
 			UIEvent.OnReloadDebugPage -> reloadDebugPage()
-			UIEvent.UpdateSettings -> app.updateSettings()
+			UIEvent.UpdateSettings -> {
+                app.updateSettings()
+                _uiState.update { it.copy(segmentationOverlayEnabled = app.settings.showSegmentationOverlay) }
+            }
 			is UIEvent.OnUpdatePermissionTutorialCompleted -> _uiState.update {
 				it.copy(
 					permissionTutorialCompleted = event.value

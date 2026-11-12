@@ -402,9 +402,9 @@ put("fxPx",frame.cameraIntrinsics?.fxPx)
 					onUpdate(
 						FrameAnalysisUpdate(
 							depthPreviewBitmap = colorMappedImage,
-							debugInputBitmap = frame.bitmap.takeIf {
-								runtime.settings.showDebugInputBitmap
-							},
+							debugInputBitmap = if (runtime.settings.showDebugInputBitmap) {
+								frame.bitmap.copy(Bitmap.Config.ARGB_8888, false)
+							} else null,
 							performanceText = performanceText,
 						)
 					)
@@ -578,11 +578,9 @@ put("name",o.clsName)
                         if (contextNarrator.observing) worldState.segmentation(frame.stamp, contextFrame)
                     }
 					else worldState.analyzer.invalidateSegmentation(frame.stamp, Availability.UNSUPPORTED)
-					val colorMappedImage = NativeLib.segmentationColormap(
-						output.prediction.asUniffiWrapper(),
-						output.inputDim,
-						output.classColors
-					)
+					val colorMappedImage = if (runtime.settings.showSegmentationOverlay) {
+                        NativeLib.segmentationColormap(output.prediction.asUniffiWrapper(), output.inputDim, output.classColors)
+                    } else null
 					onUpdate(
 						FrameAnalysisUpdate(
 							debugSegmentationBitmap = colorMappedImage,
