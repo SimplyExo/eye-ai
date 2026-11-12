@@ -391,7 +391,8 @@ class StateMachine(
 			}
 		}
 
-		return StateUpdate(State.IDLE, null)
+		// Object and distance queries finish after this response; listening resumes on user input.
+		return StateUpdate(State.IDLE, null, voskRestartPolicy = VoskRestartPolicy.REQUIRE_MANUAL_RESTART)
 	}
 
 
