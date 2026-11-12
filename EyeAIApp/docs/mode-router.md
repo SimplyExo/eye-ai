@@ -23,3 +23,7 @@ Die bekannten Offline-Blindwerte sind 89,74% auf Modus-Clean und 85,64% auf synt
 Lokal bestanden 133 Unit-Tests, darunter fünf nicht versionierte Router-Tests. Die neuen Testdateien sind auf Nutzerwunsch nicht Teil dieses Commits.
 
 Die lokal ausgeführten Router-Unit-Tests prüfen Klassenreihenfolge, NO_MODE-Rückfall, Ablehnung unsicherer Ausgaben, den separaten Schwellwert und ungültige Modellwerte. Eine Offline-Inferenz mit dem gebündelten Modell erkennt „Szenenbeschreibung“, „Normaler Modus“ und „Objectwatch“ als die jeweiligen Modi. „Lies mir den Text vor“ und „Öffne die Einstellungen“ ergeben NO_MODE. Native Bibliothek und generierte Rust-Bindings wurden für den lokalen Build aus dem identischen Basisbranch übernommen; sie sind wie bisher generierte Build-Voraussetzungen. Ein echter Mikrofon-/ASR-/Audio-Gerätetest ist separat erforderlich.
+
+## Wiederaufnahme nach Sprachausgabe
+
+Abgeschlossene Antworten und reine Fehler-/Statusmeldungen verlangen standardmäßig einen manuellen Mikrofonstart. Nur Dialogschritte, die ausdrücklich eine Antwort anfordern (Einstellungsmenü, fehlende Werte, Bestätigungen und Wiederholungsaufforderungen), aktivieren Vosk nach der Ausgabe erneut. Die Entscheidung wird explizit im Dialog getroffen, nicht anhand von Fragezeichen im gesprochenen Text. Objekt-Rückfragen besitzen einen eigenen Dialogzustand mit erhaltenem Entfernungs-/Positionsauftrag; nach der Objektantwort und Ergebnisansage endet die automatische Wiederaufnahme.
