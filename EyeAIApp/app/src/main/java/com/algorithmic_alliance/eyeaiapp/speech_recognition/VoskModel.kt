@@ -175,7 +175,11 @@ class VoskModel(context: Context, val modelName: String) {
 
 	@Synchronized
 	fun startListening(inputStream: InputStream? = null, playSound: Boolean = true) {
-		if (isListening || speechService != null || speechStreamService != null) {
+		if (isListening) {
+			Log.d(EyeAIApp.APP_LOG_TAG, "[VoskModel] startListening ignored: session already active")
+			return
+		}
+		if (speechService != null || speechStreamService != null) {
 			Log.d(
 				EyeAIApp.APP_LOG_TAG,
 				"[VoskModel] startListening called while session active; stopping active session first."
@@ -219,6 +223,8 @@ class VoskModel(context: Context, val modelName: String) {
 			)
 			return
 		}
+		// Claim this transition before stopping services, which can emit callbacks.
+		isListening = false
 		try {
 			speechService?.stop()
 			speechStreamService?.stop()

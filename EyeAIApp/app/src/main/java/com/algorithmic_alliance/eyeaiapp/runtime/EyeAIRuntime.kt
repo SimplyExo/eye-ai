@@ -703,6 +703,7 @@ _state.update {it.copy(ttsSpeaking=textToSpeechInstance.isSpeaking())}
 	private fun onTtsFinishedSpeaking() {
 		_state.update { it.copy(ttsSpeaking = false) }
 		if (!isActive || !voskUserStart.get()) return
+		if (voskModel.isListening()) return
 		if (!voskStarting.compareAndSet(false, true)) return
 		runtimeScope.launch {
 			try {
